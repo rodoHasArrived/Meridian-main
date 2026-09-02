@@ -268,8 +268,15 @@ public sealed record AssetAcquisitionLotDto(
     decimal Quantity,
     decimal UnitCost,
     string AccountId,
+    // Omitted from serialization when absent. AssetLotMutationInstructionValidator.Fingerprint
+    // hashes this instruction whole and the result is retained on the accounting-event spine, so
+    // writing these as explicit nulls would invalidate the fingerprint of every already-posted
+    // acquisition and make its retained payload unverifiable.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     decimal? OriginalFace = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     decimal? BookedFactor = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     decimal? ParBasis = null)
 {
     /// <summary>

@@ -1,11 +1,11 @@
 {
   "total_files": 664,
-  "total_lines": 139734,
+  "total_lines": 139754,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 263,
-  "average_lines": 210.4,
+  "average_lines": 210.5,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1608,7 +1608,7 @@
     },
     {
       "path": "docs/architecture/security-lot-convergence-blueprint.md",
-      "line_count": 256,
+      "line_count": 264,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2200,7 +2200,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 176,
+      "line_count": 179,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2336,7 +2336,7 @@
     },
     {
       "path": "docs/generated/database/contracts/asset-operations-contracts-page-01.md",
-      "line_count": 657,
+      "line_count": 660,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2568,7 +2568,7 @@
     },
     {
       "path": "docs/generated/database/modules/ledger.md",
-      "line_count": 454,
+      "line_count": 457,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2664,7 +2664,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10785,
+      "line_count": 10788,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

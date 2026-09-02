@@ -24,14 +24,14 @@ public static class AtomicTaxLotJournalFingerprint
             requirePostingCommand: false,
             requireExpectedVersion: false);
 
-        // Version 2 records the acquisition lot's par conventions (original face, booked factor,
-        // par basis). LedgerTaxLotRecord is serialized whole below, so those fields entered the
-        // digest the moment they were added to the record and every acquisition fingerprint changed;
-        // the bump makes that break explicit and greppable rather than silent. Two acquisitions that
-        // differ only in the factor their face was booked at are different commands and must not
-        // share an idempotency identity.
+        // Stays at version 1. The acquisition lot's par conventions (original face, booked factor,
+        // par basis) are omitted from serialization when absent, so a lot that never recorded them
+        // hashes exactly as it did before they existed and a retained batch still replays
+        // idempotently. A lot that does state them participates in the digest, which is correct:
+        // two acquisitions differing only in the factor their face was booked at are different
+        // commands and must not share an idempotency identity.
         var payload = new FingerprintPayload(
-            FingerprintVersion: 2,
+            FingerprintVersion: 1,
             command.MutationBatchId,
             command.LedgerBookId,
             canonicalJournal,

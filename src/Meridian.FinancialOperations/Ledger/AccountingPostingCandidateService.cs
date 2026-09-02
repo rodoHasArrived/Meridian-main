@@ -550,6 +550,7 @@ public sealed class AccountingPostingCandidateService :
                 request.LedgerBookId!.Value,
                 securityId,
                 positionId,
+                requestedEvent.EffectiveDate,
                 issues,
                 ct)
             .ConfigureAwait(false);
@@ -1319,18 +1320,22 @@ public sealed class AccountingPostingCandidateService :
     }
 
     /// <summary>
-    /// Resolves held face from the open lots of record for one (security, book position) scope,
-    /// restated to a factor of 1 — the basis <see cref="FactorPaydownProjectionService"/> multiplies
-    /// by the factor delta. Each lot is restated through the canonical <c>FaceValueLot</c> aggregate
-    /// so the face it was booked at, the pool factor it was booked under, and the basis its price was
-    /// struck in are all honoured rather than presumed. Fails closed: a scope with no open lots, or
-    /// any open lot that never recorded its par conventions, yields a typed issue instead of a
-    /// substituted quantity.
+    /// Resolves held face from the lots of record open under one (security, book position) scope and
+    /// acquired on or before <paramref name="effectiveDate"/>, restated to a factor of 1 — the basis
+    /// <see cref="FactorPaydownProjectionService"/> multiplies by the factor delta. Each lot is
+    /// restated through the canonical <c>FaceValueLot</c> aggregate so the face it was booked at, the
+    /// pool factor it was booked under, and the basis its price was struck in are all honoured rather
+    /// than presumed. The acquisition bound is load-bearing: pool factors publish after the fact, so a
+    /// paydown is always posted with a lag, and a lot bought between the effective date and the
+    /// posting would otherwise be paid down for a period it did not hold. Fails closed: a scope with
+    /// no qualifying lots, or any such lot that never recorded its par conventions, yields a typed
+    /// issue instead of a substituted quantity.
     /// </summary>
     private async Task<decimal?> ResolveLotOfRecordHeldFaceAsync(
         Guid ledgerBookId,
         Guid securityId,
         Guid positionId,
+        DateOnly effectiveDate,
         ICollection<PostingRuleJournalCandidateIssueDto> issues,
         CancellationToken ct)
     {
@@ -1338,7 +1343,7 @@ public sealed class AccountingPostingCandidateService :
         try
         {
             lots = await _taxLotStore!
-                .ListOpenTaxLotsByAssetScopeAsync(ledgerBookId, securityId, positionId, ct)
+                .ListOpenTaxLotsByAssetScopeAsync(ledgerBookId, securityId, positionId, effectiveDate, ct)
                 .ConfigureAwait(false);
         }
         catch (NotSupportedException)
@@ -1357,7 +1362,7 @@ public sealed class AccountingPostingCandidateService :
             issues.Add(Issue(
                 "posting-candidate.instrument-lot-of-record-missing",
                 AccountingConfigurationValidationSeverityDto.Critical,
-                $"Book position '{positionId:D}' holds no open lot of record for security '{securityId:D}', so held face cannot be derived.",
+                $"Book position '{positionId:D}' holds no lot of record for security '{securityId:D}' acquired on or before {effectiveDate:yyyy-MM-dd}, so held face cannot be derived.",
                 "bookPositionId",
                 "Post the acquisition lots for the position before projecting a principal paydown against it."));
             return null;

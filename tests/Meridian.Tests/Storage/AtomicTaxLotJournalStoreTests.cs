@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -329,6 +330,147 @@ public sealed class AtomicTaxLotJournalStoreTests
         => string.Join(
             '\n',
             sql.Split('\n').Where(static line => !line.TrimStart().StartsWith("--", StringComparison.Ordinal)));
+
+    [Fact]
+    public void Fingerprint_IsUnchangedForALotThatRecordedNoFaceTerms()
+    {
+        // LedgerTaxLotRecord is serialized whole into the canonical fingerprint, so adding members
+        // that write as explicit nulls would change the digest of every acquisition batch already
+        // posted and turn an idempotent replay into an idempotency collision. The three face terms
+        // are omitted when absent, so a lot that never recorded them must hash to exactly the digest
+        // it had before the columns existed.
+        var command = BuildAcquisitionCommand();
+        var lot = command.AcquisitionLot!;
+
+        lot.OriginalFace.Should().BeNull();
+        lot.HasFaceValueTerms.Should().BeFalse();
+
+        // Frozen before the face terms were added to the record.
+        AtomicTaxLotJournalFingerprint.Compute(command)
+            .Should().Be(command.CanonicalFingerprint)
+            .And.Subject.As<string>()
+            .Should().NotContain("originalFace");
+
+        var serialized = System.Text.Json.JsonSerializer.Serialize(
+            lot,
+            new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+        serialized.Should().NotContain("originalFace");
+        serialized.Should().NotContain("bookedFactor");
+        serialized.Should().NotContain("parBasis");
+
+        // A lot that does state its conventions participates: two acquisitions differing only in the
+        // factor their face was booked at are different commands.
+        var stated = lot with { OriginalFace = 100_000m, BookedFactor = 1m, ParBasis = 100m };
+        AtomicTaxLotJournalFingerprint.Compute(command with { AcquisitionLot = stated })
+            .Should().NotBe(command.CanonicalFingerprint);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task FaceTerms_SurviveARealRoundTripAndTheAsOfScopedRead()
+    {
+        // The eleven tax_lots column lists in this store feed one ORDINAL-positional reader, so a
+        // list that drifts reads a value out of the wrong column rather than failing to compile.
+        // Only a real database proves they still agree.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var ledgerBookId = Guid.NewGuid();
+        var recordedAt = DateTimeOffset.Parse("2026-01-02T12:00:00Z");
+        await database.JournalStore.SaveLedgerBookAsync(new LedgerBookRecord(
+            ledgerBookId,
+            "fund-alpha",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Fund Alpha GAAP",
+            "USD",
+            recordedAt,
+            recordedAt,
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "gaap-policy",
+            AccountingPolicyVersion: "v1"));
+
+        // A pool bought when the factor was already 0.80, quoted per unit of face rather than per
+        // 100 — the case that silently mis-scales when the conventions are not recorded.
+        var source = new FaceValueLot(
+            "lot-pool-2026-01",
+            TestSecurityId,
+            new DateOnly(2026, 1, 15),
+            originalFace: 800_000m,
+            pricePercentOfPar: 1.02m,
+            bookedFactor: 0.8m,
+            parBasis: 1m);
+        var quantity = source.OriginalFace / LedgerTaxLotFaceValueTerms.LedgerLotParBasis;
+        var lot = new LedgerTaxLotRecord(
+            Guid.NewGuid(),
+            ledgerBookId,
+            new LedgerAccount("Investments", LedgerAccountType.Asset, "FNPOOL1"),
+            source.LotId,
+            source.AcquiredDate,
+            quantity,
+            quantity,
+            source.PricePercentOfPar * LedgerTaxLotFaceValueTerms.LedgerLotParBasis / source.ParBasis,
+            "USD",
+            recordedAt,
+            recordedAt,
+            SecurityId: TestSecurityId,
+            BookPositionId: TestBookPositionId).WithFaceValueTerms(source);
+
+        var saved = await database.JournalStore.SaveTaxLotAsync(lot);
+        saved.OriginalFace.Should().Be(800_000m);
+        saved.BookedFactor.Should().Be(0.8m);
+        saved.ParBasis.Should().Be(1m);
+
+        // Read back through the asset-scoped seam the paydown path uses.
+        var onDate = await database.JournalStore.ListOpenTaxLotsByAssetScopeAsync(
+            ledgerBookId, TestSecurityId, TestBookPositionId, new DateOnly(2026, 2, 1));
+        var restated = onDate.Should().ContainSingle().Subject.ToFaceValueLot();
+        restated.Should().NotBeNull();
+        restated!.OriginalFace.Should().Be(source.OriginalFace);
+        restated.PricePercentOfPar.Should().Be(source.PricePercentOfPar);
+        restated.BookedFactor.Should().Be(source.BookedFactor);
+        restated.ParBasis.Should().Be(source.ParBasis);
+        restated.CostBasis.Should().Be(source.CostBasis);
+
+        // Face restated to a factor of 1 — the basis a paydown multiplies by the factor delta.
+        restated.CurrentFace(1m).Should().Be(1_000_000m);
+
+        // The read is bounded by the effective date: a paydown dated before the acquisition must
+        // not see this lot at all.
+        var beforeAcquisition = await database.JournalStore.ListOpenTaxLotsByAssetScopeAsync(
+            ledgerBookId, TestSecurityId, TestBookPositionId, new DateOnly(2026, 1, 14));
+        beforeAcquisition.Should().BeEmpty();
+
+        // Every other tax_lots read path shares the same ordinal reader.
+        var byAccount = await database.JournalStore.ListOpenTaxLotsAsync(ledgerBookId, lot.Account);
+        byAccount.Should().ContainSingle().Which.ParBasis.Should().Be(1m);
+        var byId = await database.JournalStore.GetTaxLotsByIdsAsync(ledgerBookId, [lot.TaxLotRecordId]);
+        byId.Should().ContainSingle().Which.OriginalFace.Should().Be(800_000m);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task FaceTerms_AreRejectedByTheDatabaseWhenIncomplete()
+    {
+        // ck_tax_lots_face_terms_complete is the durable half of the all-three-or-none rule; the
+        // typed guard in the store is the other half. Prove the database enforces it independently.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var schema = database.Options.SchemaName;
+        await using var connection = new Npgsql.NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            insert into {schema}.tax_lots (
+                tax_lot_record_id, ledger_book_id, account_name, account_type, lot_id,
+                acquired_date, original_quantity, open_quantity, unit_cost, currency,
+                created_at, updated_at, original_face)
+            values (
+                gen_random_uuid(), gen_random_uuid(), 'Investments', 'Asset', 'lot-partial',
+                date '2026-01-15', 100, 100, 102, 'USD', now(), now(), 100000);
+            """;
+
+        var act = async () => await command.ExecuteNonQueryAsync();
+
+        (await act.Should().ThrowAsync<Npgsql.PostgresException>())
+            .Which.Message.Should().Contain("ck_tax_lots_face_terms_complete");
+    }
 
     [Fact]
     public void FaceValueTerms_RoundTripThroughTheLotOfRecordPreserveParConventions()

@@ -6,9 +6,10 @@
 -- the recorded face was booked at (booked_factor), and the face amount itself (original_face). Until
 -- now none of those facts survived into `tax_lots`: the lot of record carried only unit-denominated
 -- original_quantity/open_quantity/unit_cost, so "face" was recoverable only by assuming quantity x
--- 100 and a booked factor of 1. That assumption is precisely what the aggregate exists to kill --
--- a per-unit-priced lot mis-amortizes through math that assumes 100, and a pool bought at factor
--- 0.80 has its principal paydown overstated by 25% when the booked factor is presumed to be 1.
+-- 100 and a booked factor of 1. That assumption is precisely what the aggregate exists to kill.
+-- A per-unit-priced lot mis-amortizes through math that assumes 100; and a pool bought when the
+-- factor was already 0.80 has 800 of face booked against 1,000 at issuance, so presuming a booked
+-- factor of 1 uses 800 where 1,000 is owed and understates every principal paydown by 20%.
 --
 -- All three columns are NULLABLE and constrained all-three-or-none. Legacy rows are NOT backfilled:
 -- V_ledger_028 already records the convention that derived tax facts are not denormalized onto
@@ -18,8 +19,10 @@
 -- were recorded" therefore stays a checkable fact, and consumers fail closed when it is absent
 -- rather than silently inheriting a default.
 --
--- The ledger migration runner replays every script on each startup (there is no version table), so
--- every statement here is written to be re-runnable: `add column if not exists` for the columns, and
+-- The runner records applied scripts by checksum in `ledger_journal_schema_migrations` and skips
+-- those that match, but this set runs under DriftPolicy.Reapply and a script whose checksum is
+-- absent or changed is replayed against a schema that may already carry its objects. Every statement
+-- here is therefore written to be re-runnable: `add column if not exists` for the columns, and
 -- pg_constraint lookups guarding each `add constraint`.
 
 alter table __SCHEMA__.tax_lots

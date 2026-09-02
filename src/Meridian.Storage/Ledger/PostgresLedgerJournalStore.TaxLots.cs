@@ -406,6 +406,7 @@ public sealed partial class PostgresLedgerJournalStore
         Guid ledgerBookId,
         Guid securityId,
         Guid bookPositionId,
+        DateOnly effectiveDate,
         CancellationToken ct = default)
     {
         if (ledgerBookId == Guid.Empty)
@@ -455,12 +456,14 @@ public sealed partial class PostgresLedgerJournalStore
             where ledger_book_id = @ledger_book_id
               and security_id = @security_id
               and book_position_id = @book_position_id
+              and acquired_date <= @effective_date
               and open_quantity > 0
             order by acquired_date, lot_id;
             """;
         command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
         command.Parameters.AddWithValue("security_id", securityId);
         command.Parameters.AddWithValue("book_position_id", bookPositionId);
+        command.Parameters.AddWithValue("effective_date", effectiveDate);
 
         var lots = new List<LedgerTaxLotRecord>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);

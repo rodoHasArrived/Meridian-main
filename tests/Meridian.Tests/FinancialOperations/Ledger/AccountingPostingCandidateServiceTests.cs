@@ -756,6 +756,31 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_IgnoresLotsAcquiredAfterTheEffectiveDate()
+    {
+        // Pool factors publish after the fact, so a paydown is always posted with a lag. A second
+        // piece of the same pool bought between the effective date and the posting did not hold the
+        // position over the paydown period; counting it would double the principal. The factor half
+        // of the projection is selected as-of the effective date, and the face half must be too.
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+        var scope = harness.TaxLots.OpenLots[0];
+        harness.TaxLots.OpenLots.Add(BuildFaceLotOfRecord(
+            scope.LedgerBookId,
+            scope.SecurityId,
+            scope.BookPositionId,
+            originalFace: 96_250m,
+            bookedFactor: 0.9625m,
+            parBasis: 100m,
+            acquiredDate: new DateOnly(2026, 6, 10),
+            lotId: "lot-fnpool1-2026-06"));
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeFalse();
+        result.TotalDebits.Should().Be(1_750m, "the later lot did not hold the position over the paydown period");
+    }
+
+    [Fact]
     public async Task BuildCandidateAsync_MbsFactorPaydown_LotWithoutRecordedFaceTermsFailsClosed()
     {
         // A lot booked before the par conventions were retained states nothing rather than
@@ -1950,15 +1975,17 @@ public sealed class AccountingPostingCandidateServiceTests
         decimal bookedFactor,
         decimal parBasis,
         decimal? openQuantity = null,
-        bool withFaceTerms = true)
+        bool withFaceTerms = true,
+        DateOnly? acquiredDate = null,
+        string lotId = "lot-fnpool1-2026-01")
     {
         var quantity = originalFace / LedgerTaxLotFaceValueTerms.LedgerLotParBasis;
         return new LedgerTaxLotRecord(
-            Guid.Parse("c1000000-0000-4000-8000-0000000000f1"),
+            Guid.Parse($"c1000000-0000-4000-8000-{lotId.GetHashCode(StringComparison.Ordinal) & 0xffffff:x12}"),
             ledgerBookId,
             new LedgerAccount("Investments", LedgerAccountType.Asset, "FNPOOL1"),
-            "lot-fnpool1-2026-01",
-            new DateOnly(2026, 1, 1),
+            lotId,
+            acquiredDate ?? new DateOnly(2026, 1, 1),
             quantity,
             openQuantity ?? quantity,
             UnitCost: 100m,
@@ -2497,11 +2524,13 @@ public sealed class AccountingPostingCandidateServiceTests
             Guid ledgerBookId,
             Guid securityId,
             Guid bookPositionId,
+            DateOnly effectiveDate,
             CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<LedgerTaxLotRecord>>(OpenLots
                 .Where(lot => lot.LedgerBookId == ledgerBookId &&
                               lot.SecurityId == securityId &&
                               lot.BookPositionId == bookPositionId &&
+                              lot.AcquiredDate <= effectiveDate &&
                               lot.OpenQuantity > 0m)
                 .ToArray());
 
