@@ -1216,12 +1216,14 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// of the question matter: <see cref="CouponArmReads"/> decides whether the selected arm reads
     /// the key at all, and <see cref="CodecCanRead"/> decides whether reading it yields anything —
     /// <c>spreadBps: "N/A"</c> IS read by the Floating arm and still lands as null.
-    /// <para>The one populated value a non-reading arm may drop safely is a numeric zero, because
-    /// zero is exactly what the codec substitutes for an absent scalar
-    /// (<c>GetOptionalDecimal(json, "couponRate") ?? 0m</c>). A vendor payload spelling "no fixed
-    /// rate" as <c>couponRate: 0</c> beside a floating coupon states nothing the structure has not
-    /// already said, so refusing it would freeze an ordinary row to protect a zero — while 4.25 in
-    /// that same slot is a number the record states and the write would delete.</para>
+    /// <para>The one populated value a non-reading arm may drop safely is a zero <c>couponRate</c>,
+    /// and the reason is specific to that key rather than to zero: <c>couponRate</c> is the only
+    /// companion the codec SUBSTITUTES for (<c>GetOptionalDecimal(json, "couponRate") ?? 0m</c>), so
+    /// a vendor payload spelling "no fixed rate" as <c>couponRate: 0</c> beside a floating coupon
+    /// states exactly what an absent key already states. Every other companion is
+    /// <c>ToOption(GetOptionalDecimal(...))</c>, whose absence reads as <c>None</c> and serializes
+    /// as <see langword="null"/> — so <c>spreadBps: 0</c> is a stated zero that becomes a null, a
+    /// difference the projection store exposes, and it is refused like any other dropped value.</para>
     /// </summary>
     private static bool OrphansFlatCompanion(JsonElement terms, string arm, string key)
     {
@@ -1232,8 +1234,18 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         return CouponArmReads(arm, key)
             ? !CodecCanRead(terms, key)
-            : !IsNumericZero(terms, key);
+            : !StatesTheSameAbsence(terms, key);
     }
+
+    /// <summary>
+    /// True when <paramref name="key"/> states exactly what its own absence would state, so dropping
+    /// it changes nothing. Only <c>couponRate</c> qualifies, and only at zero: it is the single
+    /// coupon companion whose reader substitutes a value for the missing key rather than decoding it
+    /// to <c>None</c>. Generalizing this to "any numeric zero" would have made an explicitly
+    /// submitted <c>spreadBps: 0</c> silently droppable, which is a stated zero becoming a null.
+    /// </summary>
+    private static bool StatesTheSameAbsence(JsonElement document, string key)
+        => string.Equals(key, "couponRate", StringComparison.Ordinal) && IsNumericZero(document, key);
 
     /// <summary>True when <paramref name="key"/> holds a JSON number the codec would decode as zero.</summary>
     private static bool IsNumericZero(JsonElement document, string key)
@@ -1356,6 +1368,15 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // the serializer emits it null — so the exit would let a repair silently delete terms the
         // operator explicitly submitted. Same rule for a clear, where the cleared field holds none
         // of them.
+        // The document must also not say the same field twice under two spellings. The codec reads
+        // the canonical key ordinally and never sees the variant, so a patch carrying both
+        // exerciseStyle "American" and ExerciseStyle "European" persists the first and drops the
+        // second without trace — the stored-record rule, applied to the document that replaces it.
+        if (CaseVariantKeys(patch, field.Key).Length > 0)
+        {
+            return false;
+        }
+
         if (patched.ValueKind == JsonValueKind.String)
         {
             var named = patched.GetString();
@@ -1406,9 +1427,27 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         JsonElement document,
         SecurityAssetTermField field,
         string? value)
-        => field.Escape is { } escape
-            && escape.DependentKeys.Any(key => CarriesValue(document, key)
-                && !DependentBlockBelongsTo(key, value));
+    {
+        if (field.Escape is not { } escape)
+        {
+            return false;
+        }
+
+        // The escape's LABEL key is owned by the escape value and nothing else: ToEquityClassification
+        // Option reads otherClassification only on the "Other" arms, and the serializer emits it as
+        // null for every declared classification. A repair naming "Common" while still carrying
+        // otherClassification therefore drops the label — the same silent deletion as a dependent
+        // block, one key over. Checking DependentKeys alone missed it because the label is not one
+        // of them; it is the escape's own third field.
+        if (CarriesValue(document, escape.LabelKey)
+            && !string.Equals(value, escape.Value, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return escape.DependentKeys.Any(key => CarriesValue(document, key)
+            && !DependentBlockBelongsTo(key, value));
+    }
 
     /// <summary>
     /// Which vocabulary members own each dependent block, mirroring

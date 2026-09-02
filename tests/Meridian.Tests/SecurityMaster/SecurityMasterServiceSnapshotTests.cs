@@ -1272,6 +1272,128 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_BondDeclaringFixedBesideAZeroSpread_RefusesTheWrite()
+    {
+        // The zero carve-out belongs to couponRate alone, and the reason is the key rather than the
+        // number: couponRate is the only companion the codec SUBSTITUTES for (`?? 0m`), so a zero
+        // there states what an absent key already states. spreadBps is ToOption(...), whose absence
+        // reads as None and serializes as null — so a zero spread is a stated zero becoming a null,
+        // a difference the projection store exposes, and it is dropped like any other value.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = "Fixed",
+            ["couponRate"] = 4.25m,
+            ["spreadBps"] = 0m,
+            ["isCallable"] = false,
+            ["subclass"] = "Corporate"
+        });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*spreadBps*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_EquityRepairCarryingAnOtherClassificationLabelItCannotHold_RefusesTheWrite()
+    {
+        // otherClassification is the escape's LABEL key, not one of its dependent blocks, so
+        // checking DependentKeys alone walked straight past it. ToEquityClassificationOption reads
+        // the label only on the "Other" arms and the serializer emits it null for every declared
+        // classification, so a repair naming "Common" while still carrying the label drops it —
+        // the same silent deletion as a dependent block, one key over.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Equity",
+            "Vendor preferred",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["shareClass"] = "B",
+                ["classification"] = "Commmon",
+                ["preferredTerms"] = PreferredTerms()
+            });
+
+        await service.Invoking(s => s.AmendTermsAsync(TermsAmendRequest(
+                securityId,
+                JsonSerializer.SerializeToElement(new Dictionary<string, object>(StringComparer.Ordinal)
+                {
+                    ["shareClass"] = "B",
+                    ["classification"] = "Common",
+                    ["otherClassification"] = "LegacyPreferred"
+                }))))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Commmon*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_RepairPatchSayingTheSameDiscriminantTwice_RefusesTheWrite()
+    {
+        // The case-variant rule applied to the document that REPLACES the record, not only to the
+        // one being replaced. The codec reads the canonical key ordinally and never sees the
+        // variant, so this patch persists "American" and drops the submitted "European" without
+        // trace — a repair that loses a value the operator stated in the same breath.
+        var securityId = Guid.NewGuid();
+        var underlyingId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Option",
+            "Asian-style option",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["underlyingId"] = underlyingId,
+                ["putCall"] = "Call",
+                ["strike"] = 190m,
+                ["expiry"] = "2027-07-16",
+                ["multiplier"] = 100m,
+                ["exerciseStyle"] = "Asian",
+                ["isAdjusted"] = false
+            });
+
+        await service.Invoking(s => s.AmendTermsAsync(TermsAmendRequest(
+                securityId,
+                JsonSerializer.SerializeToElement(new Dictionary<string, object>(StringComparer.Ordinal)
+                {
+                    ["underlyingId"] = underlyingId,
+                    ["putCall"] = "Call",
+                    ["strike"] = 190m,
+                    ["expiry"] = "2027-07-16",
+                    ["multiplier"] = 100m,
+                    ["exerciseStyle"] = "American",
+                    ["ExerciseStyle"] = "European",
+                    ["isAdjusted"] = false
+                }))))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*exerciseStyle 'Asian'*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_OptionWhoseExerciseStyleIsNotAString_RefusesTheWrite()
     {
         // GetOptionalString ignores a token of the wrong JSON kind, so ParseExerciseStyle never sees
