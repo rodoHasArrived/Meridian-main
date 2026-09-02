@@ -701,7 +701,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 "asset class, so the write is refused. Apply the change from a node that supports this asset class.");
         }
 
-        EnsureEquityClassificationRoundTripsSafely(projection);
+        EnsureDeclaredVocabulariesRoundTripSafely(projection);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
     }
 
@@ -822,43 +822,75 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     }
 
     /// <summary>
-    /// Same read-tolerance-must-not-become-write-tolerance rule, one level down: an equity whose
-    /// stored classification discriminant this node does not recognize deserializes as
-    /// <c>EquityClassification.Other(raw)</c>, which re-serializes WITHOUT the record's
-    /// <c>preferredTerms</c>/<c>convertibleTerms</c> blocks. When those blocks are present the write
-    /// would silently delete structure this node did not understand, so it is refused; without them
-    /// the Other round-trip is lossless (the raw label survives as <c>otherClassification</c>).
+    /// Same read-tolerance-must-not-become-write-tolerance rule, one level down from the asset class:
+    /// a stored DISCRIMINANT value this node does not recognize still deserializes — that is the
+    /// point of read tolerance — but it deserializes into something else, and re-serializing it on
+    /// amend or deactivate writes that something else back. This walks the vocabularies
+    /// <see cref="SecurityAssetTermsSchema"/> declares for the record's asset class rather than
+    /// hard-coding one check per field, so a vocabulary added to the table is guarded here the day
+    /// it is declared.
+    /// <para>Whether an unrecognized value is actually lossy is the schema's
+    /// <see cref="SecurityAssetTermField.CarriesUndeclaredValueVerbatim"/>/
+    /// <see cref="SecurityAssetTermField.Escape"/> trichotomy:</para>
+    /// <list type="bullet">
+    /// <item>Carried verbatim — an option's <c>putCall</c> re-serializes intact. Never refused here;
+    /// the vocabulary constrains what a write may assert, not what an old row may keep.</item>
+    /// <item>An escape — an unknown equity <c>classification</c> becomes <c>Other(raw)</c> and the
+    /// label survives as <c>otherClassification</c>, so the round-trip is lossless UNLESS the record
+    /// carries the escape's dependent blocks (<c>preferredTerms</c>/<c>convertibleTerms</c>), which
+    /// the escape decode has nowhere to reattach and would silently delete.</item>
+    /// <item>Neither — an unknown <c>couponType</c> collapses to <c>Fixed</c> and the label is gone
+    /// from the row. Always refused.</item>
+    /// </list>
     /// </summary>
-    private static void EnsureEquityClassificationRoundTripsSafely(SecurityProjectionRecord projection)
+    private static void EnsureDeclaredVocabulariesRoundTripSafely(SecurityProjectionRecord projection)
     {
-        if (!string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
-            || projection.AssetSpecificTerms.ValueKind != JsonValueKind.Object
-            || !projection.AssetSpecificTerms.TryGetProperty("classification", out var classification)
-            || classification.ValueKind != JsonValueKind.String)
+        var terms = projection.AssetSpecificTerms;
+        if (terms.ValueKind != JsonValueKind.Object)
         {
             return;
         }
 
-        // The serializer's discriminants are exact-case; anything else round-trips as Other.
-        var raw = classification.GetString();
-        var isKnownDiscriminant = raw is "Common" or "Preferred" or "Convertible" or "ConvertiblePreferred" or "Other";
-        if (isKnownDiscriminant)
+        foreach (var field in SecurityAssetTermsSchema.DiscriminantFields(projection.AssetClass))
         {
-            return;
-        }
+            // The serializer's discriminants are exact-case, so SecurityAssetTermField.Allows is too.
+            if (!terms.TryGetProperty(field.Key, out var value)
+                || value.ValueKind != JsonValueKind.String
+                || field.Allows(value.GetString()))
+            {
+                continue;
+            }
 
-        var carriesNestedTerms =
-            (projection.AssetSpecificTerms.TryGetProperty("preferredTerms", out var preferred)
-                && preferred.ValueKind == JsonValueKind.Object)
-            || (projection.AssetSpecificTerms.TryGetProperty("convertibleTerms", out var convertible)
-                && convertible.ValueKind == JsonValueKind.Object);
-        if (carriesNestedTerms)
-        {
-            throw new InvalidOperationException(
-                $"Security '{projection.SecurityId:D}' is an equity with classification '{raw}', which this node does not " +
-                "recognize, and it carries preferred/convertible term blocks tied to that classification. Re-serializing it " +
-                "here would degrade the classification to 'Other' and drop those blocks, so the write is refused. Apply the " +
-                "change from a node that supports this classification.");
+            // A value the codec carries verbatim re-serializes intact, so the vocabulary constrains
+            // what a WRITE may assert (see the mapping and the field-edit validator) without making
+            // an odd value already in the row a reason to refuse amending or deactivating it.
+            if (field.CarriesUndeclaredValueVerbatim)
+            {
+                continue;
+            }
+
+            var raw = value.GetString();
+            if (field.Escape is not { } escape)
+            {
+                throw new InvalidOperationException(
+                    $"Security '{projection.SecurityId:D}' has {field.Key} '{raw}', which this node does not recognize and " +
+                    $"cannot carry — the declared values are {string.Join(", ", field.AllowedValues)}. Re-serializing it here " +
+                    "would rewrite it as one of those and drop the terms that depend on it, so the write is refused. Apply " +
+                    "the change from a node that supports this value.");
+            }
+
+            var dependentKeys = escape.DependentKeys
+                .Where(key => terms.TryGetProperty(key, out var dependent)
+                    && dependent.ValueKind is JsonValueKind.Object or JsonValueKind.Array)
+                .ToArray();
+            if (dependentKeys.Length > 0)
+            {
+                throw new InvalidOperationException(
+                    $"Security '{projection.SecurityId:D}' has {field.Key} '{raw}', which this node does not recognize, and " +
+                    $"it carries {string.Join(" and ", dependentKeys)} tied to that value. Re-serializing it here would " +
+                    $"degrade {field.Key} to '{escape.Value}' and drop those blocks, so the write is refused. Apply the " +
+                    "change from a node that supports this value.");
+            }
         }
     }
 
