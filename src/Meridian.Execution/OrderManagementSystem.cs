@@ -510,6 +510,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             {
                 var dispatchControlRequest = requiresLiveOrderReadinessGate ? safeRequest : request;
                 var dispatchDecision = _operatorControls.EvaluateOrder(dispatchControlRequest, _portfolioState, runId);
+                // The submission audit describes the controls that actually authorized routing,
+                // which are these, not the gate's: an override consumed at the gate can have
+                // expired by now with the breaker since closed, and the evidence must not say
+                // an override was applied to a dispatch that needed none.
+                operatorControlDecision = dispatchDecision;
                 if (!dispatchDecision.IsApproved)
                 {
                     // Nothing reached the gateway, so the reserved capacity and any governed
@@ -1302,6 +1307,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         // the submit acknowledgement (or a later broker report) will establish a fresh
         // mapping before the kill switch relies on it.
         _orderBrokerIds.TryRemove(orderId, out _);
+        _adoptedFillGaps.TryRemove(orderId, out _);
 
         return true;
     }
@@ -1407,6 +1413,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             }
 
             var adoptedUntrackedFill = false;
+            var lateAdoptedIncrement = false;
             if (updatedState is null)
             {
                 // A report for an order this process never registered: a fill is adopted and
@@ -1426,6 +1433,21 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 // both delivery shapes end with the children tracked. TryRegisterOrder makes a
                 // second sighting of the same child a no-op.
                 RegisterGatewayChildOrders(orderId!, updatedState, report);
+
+                if (isFillReport && updatedState.FilledQuantity <= previousFilledQuantity)
+                {
+                    // The cumulative books nothing, which for an adopted order may mean an
+                    // earlier event of it delivered after the one that adopted it. Its own
+                    // quantity is then claimed against the adoption gap rather than dropped.
+                    var claimedFrom = await TryClaimLateAdoptedIncrementAsync(orderId!, updatedState, report, ct)
+                        .ConfigureAwait(false);
+                    if (claimedFrom is { } bookFrom)
+                    {
+                        previousFilledQuantity = bookFrom;
+                        adoptedUntrackedFill = true;
+                        lateAdoptedIncrement = true;
+                    }
+                }
             }
 
             // A refused untracked fill still enters the funnel, which for an order this OMS does
@@ -1449,14 +1471,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     // The adoption audit must describe what happened, not what was attempted:
                     // an entry saying the fill was booked, written before the handoff ran,
                     // would stand as evidence over a ledger that never accepted it.
-                    await RecordUntrackedFillOutcomeAsync(orderId!, updatedState!, report, handoffFailure, ct)
+                    await RecordUntrackedFillOutcomeAsync(orderId!, updatedState!, report, handoffFailure, ct, lateAdoptedIncrement)
                         .ConfigureAwait(false);
                     throw;
                 }
 
                 if (adoptedUntrackedFill)
                 {
-                    await RecordUntrackedFillOutcomeAsync(orderId!, updatedState!, report, null, ct)
+                    await RecordUntrackedFillOutcomeAsync(orderId!, updatedState!, report, null, ct, lateAdoptedIncrement)
                         .ConfigureAwait(false);
                 }
             }
@@ -2005,52 +2027,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             Reason: reasonCode,
             Scope: BuildOrderAuditScope(request, runId),
             Metadata: metadata), ct).ConfigureAwait(false);
-    }
-
-    private void TrimRetainedOrdersIfNeeded()
-    {
-        if (_orders.Count <= _options.ValidatedMaxRetainedOrders)
-        {
-            return;
-        }
-
-        // A fill that has left the order book but not yet reached the portfolio still needs
-        // its tracked state and its sidecars. ProcessFillReportAsync reads the contract
-        // multiplier from _orderContractMultipliers, so evicting an option order in that
-        // window makes the fill fall back to 1 and books a standard contract at a hundredth
-        // of its exposure; losing the order entirely can also leave the report untracked.
-        var pendingFillOrderIds = _pendingFillReservations.Keys
-            .Select(static report => report.ClientOrderId ?? report.OrderId)
-            .Where(static id => !string.IsNullOrWhiteSpace(id))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var removableOrderIds = _orders.Values
-            .Where(order => order.Status is
-                OrderStatus.Filled or
-                OrderStatus.Cancelled or
-                OrderStatus.Rejected or
-                OrderStatus.Expired)
-            // A parked order is recorded Rejected but is not finished: its escalation is
-            // still live in the durable queue and can still route. Evicting its tracked
-            // state makes CancelOrderAsync answer "order not found", stranding an approval
-            // the submitter can no longer withdraw. Retain it until the escalation
-            // resolves, which is exactly when its reservation is dropped.
-            .Where(order => !_parkedOrderIds.ContainsKey(order.OrderId))
-            .Where(order => !pendingFillOrderIds.Contains(order.OrderId))
-            .OrderBy(static order => order.LastUpdatedAt ?? order.CreatedAt)
-            .Take(_orders.Count - _options.ValidatedMaxRetainedOrders)
-            .Select(static order => order.OrderId)
-            .ToArray();
-
-        foreach (var removableOrderId in removableOrderIds)
-        {
-            _orders.TryRemove(removableOrderId, out _);
-            _orderBrokerIds.TryRemove(removableOrderId, out _);
-            _orderSessionIds.TryRemove(removableOrderId, out _);
-            _orderFinancialAccountIds.TryRemove(removableOrderId, out _);
-            _orderContractMultipliers.TryRemove(removableOrderId, out _);
-            _orderFaceValueSizing.TryRemove(removableOrderId, out _);
-        }
     }
 
     private sealed class OperationLease(OrderManagementSystem owner) : IDisposable
