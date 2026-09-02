@@ -145,12 +145,27 @@ rather than waived**, and the row moved to `accepted` with `evidence_posture: co
    per-event quantity is deliberately not booked; that refusal is logged at error level and audited
    as `UntrackedFillNotBooked` instead of being acknowledged quietly. Proven by
    `RestartReplay_FillForAnOrderTheNewHostNeverTracked_ReachesAccountingAsTheEventIncrementOnly`.
+   Tightened on 2026-09-02 after the merge review: adoption books only what the live book can
+   establish. A buy that opens or adds to a long is established by its own fill price, and a
+   reduction (a sell within a known long, a buy within a known short) by the lot it reduces; a
+   sell into no long, or either side reversing through zero, cannot be told from the close of a
+   position lost with the previous host and is retained as `UntrackedFillNotBooked` for the
+   activity-sync lane rather than booked as a phantom short-open with zero-gain proceeds. And
+   because the durable inbox guarantees admission, not booking, and delivers out of order, an
+   adopted order remembers the earlier quantity its adoption assumed booked; an earlier fill of it
+   delivered after the event that adopted it books its own quantity against that gap instead of
+   being suppressed by the order's cumulative. Proven by
+   `RestartReplay_UntrackedSellWithNoKnownLong_IsRetainedRatherThanBookedAsAShort`,
+   `RestartReplay_UntrackedSellAgainstAKnownLong_BooksTheCloseAgainstItsLot`,
+   `RestartReplay_EarlierIncrementDeliveredAfterTheCompletionThatAdoptedTheOrder_IsStillBooked`,
+   and `UntrackedFillPositionContextTests`.
 
 **What this acceptance is of.** The adoption policy in item 3 is the one judgement the closure
 makes that the operator may wish to revisit: a fill on the connected account for an order this host
 never placed — a restart survivor or an out-of-band order — now posts to the posting scope rather
-than being acknowledged without booking. The alternative left real fills off the ledger with only a
-warning log. It is recorded here so that the acceptance is of that behaviour, not of silence.
+than being acknowledged without booking, when and only when the book can establish what the fill
+did to it. The alternative left real fills off the ledger with only a warning log. It is recorded
+here so that the acceptance is of that behaviour, not of silence.
 
 ## Rows not in scope for this record
 
