@@ -3254,7 +3254,11 @@ means the candidate was drafted for a different action — or, because the case 
 identity, for a different case, which closes the cross-case attach with the same check. This is a
 recomputation, but not the kind the remedy below warns against: it is the same function over
 inputs that are all retained, not a reconstruction of a hash whose inputs were discarded. It needs
-the identity builder exposed (it is private, `Fingerprints.cs:10`) — a code change, not a
+one shared helper that performs the *complete* derivation — `DeterministicGuid` over
+`BuildEventIdentity` — because both halves are private (`Fingerprints.cs:10` and `:253`), and
+exposing only the string builder would make attach re-implement the hash-and-version-bits
+transform, which is exactly how a verifier drifts from its producer (an earlier version of this
+sentence named only the builder; corrected 2026-09-02, after review). A code change, not a
 retention change — and one caution: the identity carries no version token, so a future change to
 its composition must be versioned or the check silently drifts.
 
@@ -3310,8 +3314,10 @@ Two subtleties for the implementer, both about what *not* to do:
     action.** The spine's event id is `DeterministicGuid(BuildEventIdentity(...))` over the source
     action id and nine other inputs that are all retained on the snapshot or owned by the case
     (the sharpest-instance paragraph above walks each one). Recompute it with the case's
-    `CorporateActionId` and compare to `spine.EventId`; expose the private identity builder to do
-    so (`Fingerprints.cs:10`). No retention change, and the same check binds the case id.
+    `CorporateActionId` and compare to `spine.EventId`, through one shared helper for the whole
+    `DeterministicGuid(BuildEventIdentity(...))` derivation — both are private
+    (`Fingerprints.cs:10`, `:253`), and a verifier that reproduces only the string half drifts.
+    No retention change, and the same check binds the case id.
   - **Not comparable at attach today: the lot snapshot and policy decision.** Their id and version
     are on the retained rows; their *role* is not, and nothing else retained on the candidate
     carries them typed or derives them (the roles paragraph above). The remedy is to retain them:
