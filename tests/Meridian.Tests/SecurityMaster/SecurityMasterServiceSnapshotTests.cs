@@ -414,7 +414,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 null,
                 "deactivate")))
             .Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*a legacy nested 'coupon' object but no couponType*");
+            .WithMessage("*coupon.kind and coupon.index and coupon.spreadBps*");
 
         await eventStore.DidNotReceive().AppendAsync(
             Arg.Any<Guid>(),
@@ -453,13 +453,56 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
-    public async Task DeactivateAsync_BondWithFlatCouponTypeAlongsideANestedCoupon_IsNotRefused()
+    public async Task DeactivateAsync_BondKeepingOneCouponValueOnlyInTheNestedObject_RefusesTheWrite()
     {
-        // When both shapes are present the flat keys are authoritative and already describe the
-        // structure — the same precedence the projection store applies — so the vestigial nested
-        // object carries nothing the record would lose, and the lifecycle must not be blocked.
+        // A flat couponType is NOT on its own proof the nested object is vestigial. The projection
+        // store falls back per FIELD, so a row can name its structure flat while keeping one value
+        // only nested — here the spread. The store reports 125; ToBondTerms reads only the flat
+        // spreadBps, finds none, and re-serializes it null. Judging the nested object by presence
+        // rather than by contents would wave this through.
         var securityId = Guid.NewGuid();
         var (eventStore, service) = CreateNestedCouponBondHarness(securityId, includeFlatCouponType: true);
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*coupon.spreadBps*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWhoseNestedCouponOnlyDuplicatesTheFlatKeys_IsNotRefused()
+    {
+        // The other side of that line: when every populated nested member has a flat counterpart,
+        // the object really is vestigial and the codec loses nothing by dropping it. Blocking this
+        // lifecycle would be a false positive.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = "Floating",
+            ["floatingIndex"] = "SOFR",
+            ["spreadBps"] = 125m,
+            ["coupon"] = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["kind"] = "Floating",
+                ["index"] = "SOFR",
+                ["spreadBps"] = 125m
+            },
+            ["isCallable"] = false,
+            ["subclass"] = "FloatingRate"
+        });
 
         await service.DeactivateAsync(new DeactivateSecurityRequest(
             securityId,
@@ -473,6 +516,75 @@ public sealed class SecurityMasterServiceSnapshotTests
         await eventStore.Received(1).AppendAsync(
             securityId,
             2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWithAnEmptyNestedCouponEnvelope_IsNotRefused()
+    {
+        // An empty (or all-null) coupon envelope carries no structure to preserve, so refusing it
+        // would block the lifecycle to protect nothing.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponRate"] = 4.25m,
+            ["coupon"] = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["kind"] = null,
+                ["index"] = "   "
+            },
+            ["isCallable"] = false,
+            ["subclass"] = "Corporate"
+        });
+
+        await service.DeactivateAsync(new DeactivateSecurityRequest(
+            securityId,
+            2,
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "deactivate"));
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWithOrphanedInflationIndexation_RefusesTheWrite()
+    {
+        // inflationBaseIndexValue and inflationIndexRatio are read only by the InflationLinked arm,
+        // so without a couponType naming it they are dropped exactly like the floating companions.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2036-01-15",
+            ["couponRate"] = 1.25m,
+            ["inflationBaseIndexValue"] = 305.109m,
+            ["inflationIndexRatio"] = 1.0432m,
+            ["isCallable"] = false,
+            ["subclass"] = "InflationLinked"
+        });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*inflationBaseIndexValue and inflationIndexRatio*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
             Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
             Arg.Any<CancellationToken>());
     }

@@ -949,16 +949,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         var terms = projection.AssetSpecificTerms;
         if (!string.Equals(projection.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
-            || terms.ValueKind != JsonValueKind.Object
-            || terms.TryGetProperty("couponType", out _))
+            || terms.ValueKind != JsonValueKind.Object)
         {
             return;
         }
 
-        var carriesNestedCoupon = terms.TryGetProperty("coupon", out var nested)
-            && nested.ValueKind == JsonValueKind.Object;
-        var orphanedKeys = OrphanedCouponStructureKeys(terms);
-        if (!carriesNestedCoupon && orphanedKeys.Length == 0)
+        var orphaned = OrphanedCouponStructure(terms);
+        if (orphaned.Length == 0)
         {
             return;
         }
@@ -969,31 +966,80 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
         }
 
-        var carried = carriesNestedCoupon
-            ? "a legacy nested 'coupon' object"
-            : $"coupon structure in {string.Join(" and ", orphanedKeys)}";
         var declared = string.Join(", ", couponType?.AllowedValues ?? Array.Empty<string>());
         throw new InvalidOperationException(
-            $"Security '{projection.SecurityId:D}' is a bond carrying {carried} but no couponType naming it. The " +
-            "canonical codec reads only the flat discriminant, so it loads the record as a fixed coupon and would " +
-            "re-serialize it that way, dropping that structure. The write is refused. To repair the record here, " +
-            $"amend it with a COMPLETE asset-terms document naming a declared couponType ({declared}) — the " +
-            "amendment replaces the terms wholesale, so any field the patch omits is dropped with them — and note " +
-            "that a deactivation cannot carry a patch, so repair it first.");
+            $"Security '{projection.SecurityId:D}' is a bond whose {string.Join(" and ", orphaned)} the canonical " +
+            "codec cannot read, so it loads the record as a fixed coupon and would re-serialize it that way, " +
+            "dropping that structure. The write is refused. To repair the record here, amend it with a COMPLETE " +
+            $"asset-terms document naming a declared couponType ({declared}) and carrying those values in the flat " +
+            "keys — the amendment replaces the terms wholesale, so any field the patch omits is dropped with them — " +
+            "and note that a deactivation cannot carry a patch, so repair it first.");
     }
 
     /// <summary>
-    /// The coupon-structure companions that are populated in <paramref name="terms"/>. A canonical
-    /// fixed-coupon bond emits every one of these as <see langword="null"/> or <c>[]</c>, so only a
-    /// genuinely populated value counts — a presence-only check would refuse every ordinary bond.
+    /// Flat coupon-structure companions that only the non-Fixed arms of <c>ToBondTerms</c> read, so
+    /// without a <c>couponType</c> naming them the Fixed read orphans them. <c>couponRate</c> and
+    /// <c>dayCount</c> are deliberately absent: the Fixed arm reads both, so they survive.
     /// </summary>
-    private static string[] OrphanedCouponStructureKeys(JsonElement terms)
-        => new[] { "floatingIndex", "spreadBps", "capRate", "floorRate", "inflationIndex", "stepSchedule" }
-            .Where(key => terms.TryGetProperty(key, out var value)
-                && value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined)
-                && (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() > 0)
-                && (value.ValueKind != JsonValueKind.String || !string.IsNullOrWhiteSpace(value.GetString())))
-            .ToArray();
+    private static readonly string[] FlatCouponStructureKeys =
+    [
+        "floatingIndex", "spreadBps", "capRate", "floorRate",
+        "inflationIndex", "inflationBaseIndexValue", "inflationIndexRatio", "stepSchedule"
+    ];
+
+    /// <summary>
+    /// The legacy nested <c>coupon</c> members and the flat key each corresponds to, mirroring the
+    /// per-field fallback in <c>PostgresSecurityMasterStore.TryBuildBondProjection</c>. That
+    /// per-field shape is why the nested object cannot be judged present-or-absent: a row can carry
+    /// its discriminant flat and one value only nested.
+    /// </summary>
+    private static readonly (string Nested, string Flat)[] NestedCouponMembers =
+    [
+        ("kind", "couponType"), ("rate", "couponRate"), ("index", "floatingIndex"),
+        ("spreadBps", "spreadBps"), ("dayCountConvention", "dayCount")
+    ];
+
+    /// <summary>
+    /// The coupon structure this record carries that the canonical codec would drop on
+    /// re-serialization, named for the refusal message. Two independent sources:
+    /// <list type="bullet">
+    /// <item>flat companions with no <c>couponType</c> naming them — the Fixed read ignores every
+    /// one. Gated on the discriminant's ABSENCE, which is what keeps this off canonically-written
+    /// rows: the serializer always emits it.</item>
+    /// <item>nested <c>coupon</c> members whose flat counterpart is missing — the codec reads only
+    /// the flat key, so the nested value is invisible to it and gone on the next write. Judged per
+    /// member rather than by the object's presence, so a vestigial duplicate of the flat payload
+    /// (and an empty <c>coupon: {}</c>) is correctly ignored, while a mixed row that keeps one value
+    /// only nested is correctly refused.</item>
+    /// </list>
+    /// Only a POPULATED value counts in either case: the canonical serializer emits the flat
+    /// companions as <see langword="null"/>/<c>[]</c> for a genuine fixed coupon, so a
+    /// presence-only test would refuse every ordinary bond.
+    /// </summary>
+    private static string[] OrphanedCouponStructure(JsonElement terms)
+    {
+        var orphaned = new List<string>();
+        if (!terms.TryGetProperty("couponType", out _))
+        {
+            orphaned.AddRange(FlatCouponStructureKeys.Where(key => CarriesValue(terms, key)));
+        }
+
+        if (terms.TryGetProperty("coupon", out var nested) && nested.ValueKind == JsonValueKind.Object)
+        {
+            orphaned.AddRange(NestedCouponMembers
+                .Where(member => CarriesValue(nested, member.Nested) && !CarriesValue(terms, member.Flat))
+                .Select(member => $"coupon.{member.Nested}"));
+        }
+
+        return orphaned.ToArray();
+    }
+
+    /// <summary>True when <paramref name="key"/> holds a value, not null, blank, or an empty array.</summary>
+    private static bool CarriesValue(JsonElement document, string key)
+        => document.TryGetProperty(key, out var value)
+            && value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined)
+            && (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() > 0)
+            && (value.ValueKind != JsonValueKind.String || !string.IsNullOrWhiteSpace(value.GetString()));
 
     /// <summary>
     /// True when the amendment's patch positively names a value this node can decode for

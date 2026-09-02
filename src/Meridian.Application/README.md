@@ -573,6 +573,21 @@ gate implementation and snapshot persistence.
 Keep W6-BTSTUDIO-001 acceptance criteria in roadmap exit criteria and verify this lane with
 `BacktestStudioRunOrchestratorTests` when changing backtesting evidence behavior.
 
+Security Master amend and deactivate are refused when re-serializing the record would silently
+rewrite it: an asset class, equity classification, CustomAsset envelope, or declared discriminant
+value this node cannot round-trip, and — for bonds — coupon structure the canonical codec cannot
+read, meaning flat companions (`floatingIndex`, `spreadBps`, cap/floor, the inflation triple,
+`stepSchedule`) with no `couponType` naming them, or legacy nested `coupon` members whose flat
+counterpart is missing. Reads stay tolerant throughout; only the write is refused, so such a record
+stays readable and reportable. **The refusal has one exit, and operators need it:** an amendment
+whose `AssetSpecificTermsPatch` names a declared value for the offending field. The patch replaces
+the kind wholesale, so it must be a COMPLETE asset-terms document — every field it omits is dropped
+with the misread. A deactivation cannot carry a patch, so a frozen record is repaired first and
+deactivated second. Unlike an unrecognized asset class, an undeclared `couponType` names no other
+node that could apply the change, so without that exit the row would be permanently unamendable.
+Verify this lane with `SecurityMasterServiceSnapshotTests` and
+`SecurityAssetTermsSchemaRoundTripTests`.
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase
