@@ -3353,11 +3353,13 @@ Two subtleties for the implementer, both about what *not* to do:
   - **Not comparable at attach today: the lot snapshot and policy decision.** Their id and version
     are on the retained rows; their *role* is not, and nothing else retained on the candidate
     carries them typed or derives them (the roles paragraph above). The remedy is to retain them:
-    either persist the two authoritative identities into retained spine state at drafting time —
-    the projection DTO carries both typed (`CorporateActionAccountingProjectionService.cs:212-214`)
-    — or retain the role on the evidence rows so attach can find the `LotSnapshot` and
-    `PolicyDecision` rows as such. Until then a subject-id scan is a second assertion wearing the
-    first one's evidence.
+    either persist the two identities into retained spine state at drafting time — the projection
+    DTO carries both typed (`CorporateActionAccountingProjectionService.cs:212-214`) — or retain
+    the role on the evidence rows so attach can find the `LotSnapshot` and `PolicyDecision` rows as
+    such. Either way they are authorities only if the drafting orchestrator bound them from store
+    reads rather than copying them from its own request (B3): the projector takes them as request
+    fields and checks them against a manifest that is itself request-supplied (`:1880-1915`).
+    Until then a subject-id scan is a second assertion wearing the first one's evidence.
   - **Not comparable at attach today: `PostingIntentHash` and `PostingIdempotencyKey`.** The
     retained candidate declares no member for either
     (`PostingRuleJournalCandidateRequestDto`, `AccountingConfigurationDtos.cs:848-902`), no nested
@@ -3420,9 +3422,16 @@ the case to 4; the stale candidate is attached at expected version 4, with its o
 B1's field checks pass — they should, the fields are the candidate's); the store bumps to 5 and
 stamps 5; ReadyForApproval, approval, and posting all find the binding current, and version-3
 economics post. The lane's gates are exact-version about the binding and silent about the
-candidate. This is within reach of the workstation's ordinary flow, not only an adversarial one:
-an operator who drafts, then changes the case — new evidence, an election — then attaches the
-earlier draft, produces it.
+candidate. Reach, stated exactly (corrected 2026-09-02, after review; the first version of this
+paragraph called it "the workstation's ordinary flow"): no shipped client calls the attach route —
+the browser workstation carries only the generated route constant, unused
+(`ui-api-routes.generated.ts:315`), and the desktop workstation nothing — and the corporate-action
+projector and mapper that would draft the candidate have no production caller at all
+(`LedgerFeatureRegistration.cs:54-59` registers them; nothing resolves them). The three case
+routes are live API (`SecurityMasterEndpoints.CorporateActionOperations.cs:606, :630, :654`), and
+the one production path that drafts a spine event is the generic ledger route (B3, below). So the
+defect is reachable today by an API integration, not by an operator flow; there is no data to
+repair yet, which is the argument for fixing it now rather than a reason to wait.
 
 **Remedy.** Retain, at drafting time, the projection inputs that can stale — the case version, and
 with it the election id and version and the position snapshot id from the same digest — typed on
@@ -3437,9 +3446,63 @@ because the store verifies `ExpectedVersion` and increments exactly once, so tha
 is one earlier. The post-attach stamp is correct for the currency gate it feeds; the drafting-time
 version is a second, separately retained field, and the new attach check is where it is consumed.
 `BuildProjectionInputHash` already names the right set (`:48-52`); the work is to retain it in the
-clear as well as in the digest. This belongs with B1's priority entry, not after it: it is the same
-defect — attach trusting instead of verifying — at the field the rest of the lane's correctness is
-gated on.
+clear as well as in the digest. One precondition, without which retention changes nothing (added
+2026-09-02, after review): the retained value must be what an *authoritative case read* produced
+at drafting, not what the drafting request said. The projector has no case-store dependency and
+checks only that `CaseVersion` is positive (`CorporateActionAccountingProjectionService.cs:250`), so
+a request-supplied number, retained and compared to `ExpectedVersion`, is two caller assertions
+agreeing with each other. The drafting orchestrator — which does not yet exist, see B3 — must load
+the case and bind its version into the projection request; the same holds for the election and
+position-snapshot inputs, and for B1's lot and policy identities. This belongs with B1's priority
+entry, not after it: it is the same defect — attach trusting instead of verifying — at the field
+the rest of the lane's correctness is gated on.
+
+### B3 — The drafting boundary is a client request
+
+Filed 2026-09-02 from review of B2's remedy (the reviewer's point that a retained drafting-time
+case version compared to the attach request's expected version is two caller-supplied values).
+Following that point to its origin changes what B1 and B2 can mean until it is fixed.
+
+Every authority B1 and B2 propose to compare against at attach — the lineage's input hash, the
+event identity, the evidence rows, the kind, and any drafting-time version retained in future —
+originates in the request that drafted the spine event. At the pinned source that request has one
+production origin, and it is not the corporate-action projector.
+`CorporateActionAccountingProjectionService` and `CorporateActionAssetAccountingEventMapper`, which
+compute the hashes and validate the role-bearing manifest, are registered
+(`LedgerFeatureRegistration.cs:54-59`) and resolved by nothing; no non-test code builds a
+`CorporateActionAccountingProjectionRequest`. What does draft spine events is the generic ledger
+route: `MapPost(UiApiRoutes.LedgerAssetAccountingEventProjections)` takes a
+`ProjectAssetAccountingEventRequestDto` from the body
+(`LedgerEndpoints.AccountingConfiguration.cs:322`), requires ledger-mutation permission (`:324`),
+rebinds the actor and tenant scope (`:344-352`), and hands the rest to the spine. The spine takes
+the event kind, economic event (its id included), lineage (its `TermsHash` included), retained
+evidence rows, and projected effect from that request into the record as given
+(`AssetAccountingEventSpineService.cs:149-170`); what it resolves server-side is the security,
+position, ledger book, and period (`:216-238`) — scope, not economics. The request DTO's own
+contract says it is an "authoritative handoff from an Asset Operations projector"
+(`AssetAccountingEventDtos.cs:207-209`); the route makes it a handoff from whoever holds ledger
+mutation.
+
+The consequence for B1 and B2: with the drafting boundary where it is, attach-time comparison
+proves that the attach request is consistent with the drafting request — not that either is
+correct. A caller with ledger-mutation permission can draft a `CorporateAction`-kind spine whose
+lineage hash, evidence rows, and event id are whatever makes B1's checks pass, including the
+deterministic event identity, which is a function of public inputs; retaining a case version that
+caller supplied does not bind the economics to the case. The spine's fingerprint and the scope
+resolution keep the *record* honest; nothing keeps the *economics* honest. B1's field-level
+remedies remain right — they make the binding mean what the drafting request said — but their
+value is bounded by B3 until the drafting request is server-authored.
+
+**Remedy.** Two halves, and together they are the precondition for B1 and B2. First, a
+server-side corporate-action drafting orchestrator: load the case, the lot snapshot, the policy
+decision, and the election from their stores; build the projection request and the role-bearing
+manifest from those reads; project (`ICorporateActionAccountingProjectionService`), map
+(`ICorporateActionAssetAccountingEventMapper`), and draft into the spine in process — the path the
+projector and mapper were written for and that nothing exercises. Second, close the generic route
+to this kind: refuse `EventKind == CorporateAction` on `LedgerAssetAccountingEventProjections`, or
+require on it an attestation only the in-process projector can produce, so a corporate-action
+spine has exactly one origin. With both, the values B1 and B2 retain and compare are authorities;
+with neither, they are the drafting caller's word, retained.
 
 ### Smaller notes, not filed as findings
 
@@ -3475,8 +3538,9 @@ gated on.
 
 Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
 
-1. **Make attach verify the candidate instead of trusting the request (B1) and instead of
-   stamping the case version (B2).** Three comparisons can run at attach against data already
+1. **Make the lane's drafting server-authored (B3), then make attach verify the candidate
+   instead of trusting the request (B1) and instead of stamping the case version (B2).** Three
+   comparisons can run at attach against data already
    loaded — `spine.EventKind` against `CorporateAction`, `ProjectionInputHash` against the
    candidate's `ProjectionLineage.TermsHash`, and the case's `CorporateActionId` through the
    deterministic event identity against `spine.EventId` — and four need the authority retained
@@ -3491,9 +3555,13 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    there; `bound_case_version` stays the post-attach stamp the currency gate needs, and is not
    where the candidate's currency gets tested (B2). This entry has been corrected with its finding:
    the first version said all six fields were comparable at attach, the second said three, the
-   third said one; the count is the least important part of it. Do this while the lane is new and
-   its one consumer is the workstation; every month of postings makes retrofitted verification a
-   data-repair exercise.
+   third said one; the count is the least important part of it. B3 comes first because without it
+   B1's and B2's comparisons verify the drafting caller's word against itself. Do this while the
+   lane has no shipped consumer — the case routes are live API with no client caller, and the
+   drafting pipeline has no production caller at all (an earlier version of this entry said the
+   lane's one consumer was the workstation; it has none at the pin — corrected 2026-09-02, after
+   review) — so there is nothing to repair; every month of postings after a consumer lands makes
+   retrofitted verification a data-repair exercise.
 2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
    both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
    side", which an earlier version of this entry said while the same list it introduces names an
@@ -3593,4 +3661,6 @@ the authority per field, then look for it in every form the snapshot retains bef
 it. The same review added B2, extended the P4 backfill row to the inner method's success
 accounting, restored the desktop deactivation actor to P1's open table, and — in a fourth round —
 added the spine-kind check the attach path lacks, the posting idempotency key that posting never
-reads, and the desktop backfill's actor to P1's inventory.
+reads, and the desktop backfill's actor to P1's inventory; a fifth round, following the B2
+remedy's precondition to its origin, added B3 — the drafting boundary is a client request — which
+bounds what B1 and B2 can prove until a server-authored drafting path exists.
