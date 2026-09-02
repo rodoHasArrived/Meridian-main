@@ -393,6 +393,142 @@ public sealed class SecurityMasterServiceSnapshotTests
         }
     }
 
+    [Fact]
+    public async Task DeactivateAsync_BondWithOnlyALegacyNestedCoupon_RefusesTheWrite()
+    {
+        // The vocabulary walk inspects the FLAT couponType the serializer writes, so a coupon
+        // carried in the legacy nested object slips past it — while being lossy in exactly the same
+        // way: ToBondTerms has no nested-coupon fallback, reads the row as a fixed coupon, and
+        // re-serializes it flat, dropping the nested index and spread. The projection store reads
+        // this shape deliberately for externally-authored payloads, so such rows are expected.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateNestedCouponBondHarness(securityId, includeFlatCouponType: false);
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*legacy nested 'coupon' object*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_LegacyNestedCouponPatchNamingADeclaredCouponType_RepairsTheRecord()
+    {
+        // Same repair exit: the patch replaces the kind wholesale, so the nested object is not
+        // re-serialized away — it is superseded by flat coupon fields the codec actually reads.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateNestedCouponBondHarness(securityId, includeFlatCouponType: false);
+
+        var detail = await service.AmendTermsAsync(BondAmendRequest(
+            securityId,
+            JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2035-06-15",
+                couponType = "Floating",
+                floatingIndex = "SOFR",
+                spreadBps = 125m,
+                isCallable = false,
+                subclass = "FloatingRate"
+            })));
+
+        detail.AssetSpecificTerms.GetProperty("couponType").GetString().Should().Be("Floating");
+        detail.AssetSpecificTerms.GetProperty("floatingIndex").GetString().Should().Be("SOFR");
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWithFlatCouponTypeAlongsideANestedCoupon_IsNotRefused()
+    {
+        // When both shapes are present the flat keys are authoritative and already describe the
+        // structure — the same precedence the projection store applies — so the vestigial nested
+        // object carries nothing the record would lose, and the lifecycle must not be blocked.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateNestedCouponBondHarness(securityId, includeFlatCouponType: true);
+
+        await service.DeactivateAsync(new DeactivateSecurityRequest(
+            securityId,
+            2,
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "deactivate"));
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// A stored bond whose coupon lives in the legacy nested <c>coupon</c> object, optionally
+    /// alongside the flat <c>couponType</c> the canonical serializer writes.
+    /// </summary>
+    private static (ISecurityMasterEventStore EventStore, SecurityMasterService Service) CreateNestedCouponBondHarness(
+        Guid securityId,
+        bool includeFlatCouponType)
+    {
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var terms = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["coupon"] = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["kind"] = "Floating",
+                ["index"] = "SOFR",
+                ["spreadBps"] = 125m
+            },
+            ["isCallable"] = false,
+            ["subclass"] = "FloatingRate"
+        };
+        if (includeFlatCouponType)
+        {
+            terms["couponType"] = "Floating";
+            terms["floatingIndex"] = "SOFR";
+        }
+
+        var projection = CreateProjection(securityId, "Bond", SecurityStatusDto.Active, "External floater", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(terms)
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(projection);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        return (eventStore, service);
+    }
+
     private static AmendSecurityTermsRequest BondAmendRequest(Guid securityId, JsonElement? assetSpecificTermsPatch)
         => new(
             SecurityId: securityId,

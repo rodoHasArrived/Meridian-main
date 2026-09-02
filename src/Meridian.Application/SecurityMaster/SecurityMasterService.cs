@@ -702,6 +702,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         }
 
         EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
+        EnsureLegacyNestedCouponRoundTripsSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
     }
 
@@ -916,6 +917,50 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                     "change from a node that supports this value." + repairHint);
             }
         }
+    }
+
+    /// <summary>
+    /// The vocabulary walk inspects the FLAT discriminant keys the canonical serializer writes. A
+    /// bond carrying the legacy nested <c>coupon</c> object instead has no flat <c>couponType</c>
+    /// for that walk to see, yet it is lossy in exactly the same way: <c>ToBondTerms</c> has no
+    /// nested-coupon fallback, so the record reads as <c>Fixed(couponRate ?? 0)</c> and
+    /// re-serializing flattens it to <c>couponType: "Fixed"</c>, dropping the nested index, spread,
+    /// and day count. Nothing in this repo writes that shape, but the projection store reads it
+    /// deliberately — <c>PostgresSecurityMasterStore.TryBuildBondProjection</c> falls back to
+    /// <c>coupon.kind</c>/<c>rate</c>/<c>index</c> "for externally-authored payloads that still use
+    /// it", with a regression test pinning the behaviour — so such rows are expected to exist.
+    /// <para>Only refused when the nested object is the ONLY coupon information. When a flat
+    /// <c>couponType</c> is also present the flat keys are authoritative and already describe the
+    /// structure, which is the same precedence the projection store applies (flat first, nested as
+    /// fallback), so the vestigial object carries nothing the record would lose.</para>
+    /// </summary>
+    private static void EnsureLegacyNestedCouponRoundTripsSafely(
+        SecurityProjectionRecord projection,
+        JsonElement? assetSpecificTermsPatch)
+    {
+        var terms = projection.AssetSpecificTerms;
+        if (!string.Equals(projection.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
+            || terms.ValueKind != JsonValueKind.Object
+            || terms.TryGetProperty("couponType", out _)
+            || !terms.TryGetProperty("coupon", out var nested)
+            || nested.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        var couponType = SecurityAssetTermsSchema.Field("Bond", "couponType");
+        if (couponType is not null && PatchDeclaresValueFor(assetSpecificTermsPatch, couponType))
+        {
+            return;
+        }
+
+        var declared = string.Join(", ", couponType?.AllowedValues ?? Array.Empty<string>());
+        throw new InvalidOperationException(
+            $"Security '{projection.SecurityId:D}' is a bond whose coupon is carried in the legacy nested 'coupon' " +
+            "object, which the canonical codec does not read — it loads the record as a fixed coupon and would " +
+            "re-serialize it flat, dropping the nested index, spread, and day count. The write is refused. To repair " +
+            $"the record here, amend it with an asset-terms patch naming a declared couponType ({declared}) and the " +
+            "matching flat coupon fields; a deactivation cannot carry a patch, so repair it first.");
     }
 
     /// <summary>
