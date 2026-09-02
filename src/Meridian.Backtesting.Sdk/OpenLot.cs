@@ -89,6 +89,7 @@ public sealed record OpenLot(
     /// identical lots compare unequal after serialization or independent materialization.
     /// </summary>
     private sealed class BasisComponentCollection : IList<OpenLotBasisComponent>,
+        IReadOnlyList<OpenLotBasisComponent>,
         IEquatable<BasisComponentCollection>
     {
         public static readonly BasisComponentCollection Empty = new([]);
