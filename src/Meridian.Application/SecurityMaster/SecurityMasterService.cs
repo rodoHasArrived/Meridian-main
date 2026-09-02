@@ -701,7 +701,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 "asset class, so the write is refused. Apply the change from a node that supports this asset class.");
         }
 
-        EnsureDeclaredVocabulariesRoundTripSafely(projection);
+        EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
     }
 
@@ -842,8 +842,20 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// <item>Neither — an unknown <c>couponType</c> collapses to <c>Fixed</c> and the label is gone
     /// from the row. Always refused.</item>
     /// </list>
+    /// <para>Every refusal here has one governed exit, the same one
+    /// <see cref="EnsureCustomAssetEnvelopeRoundTripsSafely"/> instructs: an amendment whose patch
+    /// names a DECLARED value for the offending field. The patch replaces the kind wholesale (the
+    /// F# amend binds <c>Kind = defaultArg command.Kind current.Kind</c>), so the undecodable stored
+    /// value is never re-serialized and that amendment is what repairs the record. Without the exit
+    /// the refusal is a dead end for the dropped-value fields: "apply the change from a node that
+    /// supports this value" is sound advice for an unrecognized ASSET CLASS, where a newer node
+    /// plausibly has the deserializer, but an undeclared <c>couponType</c> names no node at all —
+    /// it is bad data, so the only node that can fix it is this one, and a row carrying one would
+    /// otherwise be permanently unamendable AND undeactivatable.</para>
     /// </summary>
-    private static void EnsureDeclaredVocabulariesRoundTripSafely(SecurityProjectionRecord projection)
+    private static void EnsureDeclaredVocabulariesRoundTripSafely(
+        SecurityProjectionRecord projection,
+        JsonElement? assetSpecificTermsPatch)
     {
         var terms = projection.AssetSpecificTerms;
         if (terms.ValueKind != JsonValueKind.Object)
@@ -869,14 +881,26 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 continue;
             }
 
+            // The governed exit: this amendment declares the value itself, so the stored one is
+            // replaced rather than re-serialized and nothing is lost. Checked before both throws —
+            // it is the repair route each of their messages points at.
+            if (PatchDeclaresValueFor(assetSpecificTermsPatch, field))
+            {
+                continue;
+            }
+
             var raw = value.GetString();
+            var repairHint =
+                $" To repair the record here, amend it with an asset-terms patch naming a declared {field.Key} " +
+                $"({string.Join(", ", field.AllowedValues)}, matched case-sensitively); a deactivation cannot carry " +
+                "a patch, so repair it first.";
             if (field.Escape is not { } escape)
             {
                 throw new InvalidOperationException(
                     $"Security '{projection.SecurityId:D}' has {field.Key} '{raw}', which this node does not recognize and " +
                     $"cannot carry — the declared values are {string.Join(", ", field.AllowedValues)}. Re-serializing it here " +
-                    "would rewrite it as one of those and drop the terms that depend on it, so the write is refused. Apply " +
-                    "the change from a node that supports this value.");
+                    "would rewrite it as one of those and drop the terms that depend on it, so the write is refused." +
+                    repairHint);
             }
 
             var dependentKeys = escape.DependentKeys
@@ -889,10 +913,23 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                     $"Security '{projection.SecurityId:D}' has {field.Key} '{raw}', which this node does not recognize, and " +
                     $"it carries {string.Join(" and ", dependentKeys)} tied to that value. Re-serializing it here would " +
                     $"degrade {field.Key} to '{escape.Value}' and drop those blocks, so the write is refused. Apply the " +
-                    "change from a node that supports this value.");
+                    "change from a node that supports this value." + repairHint);
             }
         }
     }
+
+    /// <summary>
+    /// True when the amendment's patch positively names a value this node can decode for
+    /// <paramref name="field"/>. A patch that omits the key, blanks it, or repeats an undeclared
+    /// value is deliberately NOT an exit: the write-mode mapping would decode it to the same
+    /// fallback and complete the very rewrite the refusal exists to stop.
+    /// </summary>
+    private static bool PatchDeclaresValueFor(JsonElement? assetSpecificTermsPatch, SecurityAssetTermField field)
+        => assetSpecificTermsPatch is JsonElement patch
+            && patch.ValueKind == JsonValueKind.Object
+            && patch.TryGetProperty(field.Key, out var patched)
+            && patched.ValueKind == JsonValueKind.String
+            && field.Allows(patched.GetString());
 
     private static SecurityProjectionRecord CreateProjectionFromResult(
         SecurityMasterCommandResultWrapper result,
