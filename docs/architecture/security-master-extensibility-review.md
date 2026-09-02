@@ -3062,7 +3062,11 @@ unconfigured local-development posture, the same decision `HasPermission` and th
 resolver already make for that host. That is a documented, consistent posture, not drift; the
 parity P5 required was for the credential-backed and named-anonymous-role hosts, and both are
 established. Second, closure is scoped to the Security Master lane: the same sweep found the P5
-shape alive one lane over — see the strategy-promotion note below.
+shape alive one lane over — see the strategy-promotion note below. Third, closure is of
+authorization only: the deactivate dialog the gate now guards still attributes its write to the
+literal `"User"` (`SecurityMasterDeactivateViewModel.cs:80`, unchanged at the pin) — P1's wiring
+defect, whose 2026-08-28 analysis stands; it is carried in the open table below and in priority 5
+(added 2026-09-02, after review: the first version of this block did not name it).
 
 Residue, neither of which reopens the item: `CanModifySecurityMaster` raises no change
 notification and no gated command's `NotifyCanExecuteChanged` is invoked on sign-in/out, so a
@@ -3114,12 +3118,13 @@ still live, per the table below.
 | N4/N5 | Pack registry overlap rule cannot fire; shared prose contract schema | `SecurityAssetPackRegistry.cs` untouched in the range. |
 | N6 | Projection fan-out per upsert | Store untouched in the range. |
 | P4 (semantic) | Classifier has no content-equivalence check | `SecurityMasterIngestFailureClassifier.cs:38-51`, re-read this pass — see the closure bullet above for why the cancellation fix does not close this. |
-| P4 (backfill) | Both swallow points, and the `break` | `TradingParametersBackfillService.cs` unchanged: the `SearchAsync` catch still swallows and `return`s (`:62-70`), the loop still `break`s on `IsCancellationRequested` (`:85-89`), and the per-item `catch (Exception)` (`:98-108`) still counts a swallowed cancellation as `failureCount++` — **including the one `BackfillTickerAsync` correctly rethrows at `:223-227`**, so the inner fix is defeated one frame up and the run completes with a spurious failure count. |
+| P4 (backfill) | Both swallow points, the `break`, and the success count | `TradingParametersBackfillService.cs` unchanged: the `SearchAsync` catch still swallows and `return`s (`:62-70`), the loop still `break`s on `IsCancellationRequested` (`:85-89`), and the per-item `catch (Exception)` (`:98-108`) still counts a swallowed cancellation as `failureCount++` — **including the one `BackfillTickerAsync` correctly rethrows at `:223-227`**, so the inner fix is defeated one frame up and the run completes with a spurious failure count. The inner method misreports the other way as well (added 2026-09-02, after review; the row's first version listed only the cancellation sites): `BackfillTickerAsync` returns normally on a missing API key (`:118-122`), a non-success status (`:136-141`), an empty result (`:146-152`), and a missing security (`:194-198`), and its `HttpRequestException` (`:219-222`) and `Exception` (`:228-231`) catches log and return — every one of which the loop then counts as `successCount++` (`:101`). The interface returns `Task` with no per-ticker outcome (`ITradingParametersBackfillService.cs:12`), and the desktop handler reports "completed successfully" on any normal return (`SecurityMasterViewModel.cs:2237-2241`). |
 | P4 (WPF plumbing) | Desktop backfill has nothing to cancel with | `OnBackfillTradingParams()` takes no token and passes none (`SecurityMasterViewModel.cs:2224, :2237`); the sibling import handler plumbs one (`Import.cs:18, :69`), so the pattern exists in the same file. |
 | P4 (Polygon fetch) | Cancellation and HTTP failure read as end-of-pagination | `PolygonSecurityMasterIngestProvider.cs:128-149` unchanged: `catch (Exception)` returns `null`, `FetchAllAsync` `break`s on `null` (`:80-82`) and returns the partial set as a normal result. |
 | P1 (CLI) | `--imported-by` stamps an unvalidated caller string | `SecurityMasterCommands.cs:364-368` unchanged; neither validation against a known identity nor a documented trust exception has appeared. |
 | P1 (alias corrections) | The correcting actor is discarded | `PostgresSecurityMasterStore.Aliases.cs` untouched in the range; the conflict path still omits `created_by` (correctly, per P3b) and still records the corrector nowhere. |
 | P1 (remaining constraints) | `SourceSystem` from trusted metadata; valid-time gates; nested identifier windows; alias source-role decision | `SecurityMasterService.cs` untouched in the range; none of the four has landed. |
+| P1 (desktop deactivate) | Desktop deactivation attributes its write to a literal | `SecurityMasterDeactivateViewModel.cs` unchanged in the range: `UpdatedBy: "User"` (`:80`) on the request the new P5 gate (`:60-68`) authorizes — authorized now, still unattributed; the 2026-08-28 wiring analysis stands. Row added 2026-09-02, after review: the table's first version omitted it. |
 | P3b | Recorded-as-of's alias promise not narrowed | No alias versioning or event backing in the range, and no documented narrowing of the recorded-as-of promise for aliases. The interim state — frozen creation fields, overwritten `alias_value` — is exactly the one the item said must not be mistaken for closure. |
 | — | Deferred quartet | Relational projections for private/alternative classes, valid-time term history, codec generation, N6 amplification — posture unchanged. |
 
@@ -3205,7 +3210,9 @@ this id *as* the lot snapshot". The attach step checks only that the list is non
 (`CorporateActionCaseAccountingService.cs:369-373`). An earlier version of this paragraph
 (corrected 2026-09-02, after review) said the three assertions were comparable at attach "by
 subject id and version"; the id and version are retained, the role that makes the comparison mean
-something is not.
+something is not. For the source action there is a second retained authority the rows are not —
+the deterministic event identity, next paragraph — so the role gap leaves the lot and policy
+identities, not all three, without anything retained to compare against.
 
 **The sharpest instance: nothing ties the bound spine event to the case's own corporate action.**
 The cross-checks at attach are security, tenant/company, and accounting scope
@@ -3223,16 +3230,33 @@ then no longer attach or post its own event (`spine.PostedJournalImpact is not n
 attach, the adoption path correctly refuses an approval reference that is not its own, and the
 route left is the restatement lane). The mechanism is certain from source; how often two Drafted
 spines coexist in one scope is not established here, and does not need to be for the gate to be
-worth having. Where the identity to compare against lives is the part an earlier version of this
-paragraph got wrong (corrected 2026-09-02, after review): drafting requires a
+worth having. Where the identity to compare against lives is the part this paragraph has now got
+wrong twice (both corrected 2026-09-02, after review). Drafting requires a
 `SourceCorporateActionId` (`CorporateActionAccountingProjectionService.cs:243`) and requires the
 SourceEvent-role manifest row to bind exactly that id as its subject (`:1880-1888`) — but the role
 is dropped from the retained rows (previous paragraph), and the source fields the candidate does
 retain are not the action id: `EconomicEvent.SourceEntityId` and `ProjectionLineage.SourceEntityId`
-are the drafting request's separate free-text `SourceEntityId` (`:141, :150-151, :170-171`). So the
-case's `CorporateActionId` has nothing typed to be checked against at attach until the
-source-action identity is retained — on the candidate directly, or by retaining the role on the
-evidence rows so the SourceEvent row can be found as such.
+are the drafting request's separate free-text `SourceEntityId` (`:141, :150-151, :170-171`). The
+second version stopped there and concluded nothing typed was retained. Something is: the event
+identity itself. `BuildEventIdentity` joins the source action id, source event version, case id,
+security, position, ledger book, action type, basis, effective date, and source content hash
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:10-22`); the projection derives the
+event id from it (`DeterministicGuid`, `CorporateActionAccountingProjectionService.cs:137`), and
+that id is retained as the economic event's `EventId` (`:145`) and as the spine's own event id — the
+key attach already loads the snapshot by (`CorporateActionCaseAccountingService.cs:286-290`). Every
+other input is retained on the fingerprint-verified snapshot or is the case's own: event version
+(`EconomicEvent.EventVersion`), security, position, book, and basis (`spine.Scope`,
+`AssetAccountingEventDtos.cs:68-79`), action type (`ProjectionLineage.Scenario`, set at
+`CorporateActionAccountingProjectionService.cs:167`), effective date and source hash
+(`EconomicEvent`, set at `:148, :154`), case id (the case). So attach can recompute
+the identity with the *case's* `CorporateActionId` and compare it to `spine.EventId`: a mismatch
+means the candidate was drafted for a different action — or, because the case id is in the
+identity, for a different case, which closes the cross-case attach with the same check. This is a
+recomputation, but not the kind the remedy below warns against: it is the same function over
+inputs that are all retained, not a reconstruction of a hash whose inputs were discarded. It needs
+the identity builder exposed (it is private, `Fingerprints.cs:10`) — a code change, not a
+retention change — and one caution: the identity carries no version token, so a future change to
+its composition must be versioned or the check silently drifts.
 
 Two subtleties for the implementer, both about what *not* to do:
 
@@ -3246,17 +3270,22 @@ Two subtleties for the implementer, both about what *not* to do:
   binding (above) removes what that selection can smuggle; re-labelling the preparer would instead
   relabel the economics author, the alias-update mistake from P3b's history arriving from the other
   direction.
-- **The remedy is comparison against a retained authority, not a second assertion — and for five
+- **The remedy is comparison against a retained authority, not a second assertion — and for four
   of the six fields the authority is not yet retained in a form attach can use.** This paragraph
-  has been corrected twice, and the corrections pulled in opposite directions, which is why the
+  has been corrected three times, and the corrections pulled in both directions, which is why the
   split below names the authority for each field rather than a count. The first version claimed
   every caller-asserted field had "an authoritative counterpart already in memory at attach time",
   including "recomputable hashes" and a "derivable idempotency key" — wrong in kind, the remedy
   failure this document tracks. The second (2026-09-01) moved the three hash-and-key fields to
   "not comparable" and kept the three identities as comparable "by subject id and version" — wrong
-  on both sides in smaller ways: it missed a nested authority the candidate does retain, and it
-  counted an id-plus-version match as a binding when the role that makes it one is not retained
-  (both corrected 2026-09-02, after review). What the retained candidate actually carries:
+  on both sides: it missed a nested authority the candidate does retain, and it counted an
+  id-plus-version match as a binding when the role that makes it one is not retained. The third
+  (2026-09-02) fixed those two and then over-corrected the identities, listing all three as needing
+  retention when the source action has a retained, derived authority (the event identity, above).
+  The lesson the sequence teaches is procedural: for each field, name its authority, then look for
+  it in *every* form the snapshot retains — direct member, nested member, and deterministic
+  derivation from retained inputs — before classifying it. What the retained candidate actually
+  carries:
   - **Comparable at attach today: `ProjectionInputHash`.** The projection service writes the
     computed input hash into the lineage as `TermsHash`
     (`CorporateActionAccountingProjectionService.cs:161-178`, `TermsHash: projectionInputHash` at
@@ -3271,16 +3300,26 @@ Two subtleties for the implementer, both about what *not* to do:
     (`ProjectionLineageDto`, `InstrumentPositionDtos.cs:147`), and other projection lanes put a
     different hash in it (`FactorPaydownProjectionService.cs:151`) — the equality is this lane's
     convention, so the comparison should be written as one, and a dedicated retained field would
-    make the contract explicit without being a precondition for the check.
-  - **Not comparable at attach today: the three identities — lot snapshot, policy decision, source
-    corporate action.** Their id and version are on the retained rows; their *role* is not, and
-    nothing else retained on the candidate carries them typed (the two paragraphs above). The
-    remedy is to retain them: either persist the three authoritative identities into retained
-    spine state at drafting time — the drafting request carries all three typed
-    (`CorporateActionAccountingProjectionService.cs:13` for the source action; the projection DTO
-    carries the lot and policy identities at `:212-214`) — or retain the role on the evidence rows
-    so attach can find the `LotSnapshot`, `PolicyDecision`, and `SourceEvent` rows as such. Until
-    then a subject-id scan is a second assertion wearing the first one's evidence.
+    make the contract explicit without being a precondition for the check. Be exact about what
+    the equality establishes: that the hash the binding stores is the candidate's own digest and
+    not a caller string — the field-level point this item makes. It does **not** establish that
+    the candidate was computed for the case state being attached: the digest commits the case
+    version and election inputs (`Fingerprints.cs:48-52`) but is opaque to them, so a candidate
+    drafted at an earlier case version passes this check with its own digest. That is B2, below.
+  - **Comparable at attach today, by recomputing a retained identity: the source corporate
+    action.** The spine's event id is `DeterministicGuid(BuildEventIdentity(...))` over the source
+    action id and nine other inputs that are all retained on the snapshot or owned by the case
+    (the sharpest-instance paragraph above walks each one). Recompute it with the case's
+    `CorporateActionId` and compare to `spine.EventId`; expose the private identity builder to do
+    so (`Fingerprints.cs:10`). No retention change, and the same check binds the case id.
+  - **Not comparable at attach today: the lot snapshot and policy decision.** Their id and version
+    are on the retained rows; their *role* is not, and nothing else retained on the candidate
+    carries them typed or derives them (the roles paragraph above). The remedy is to retain them:
+    either persist the two authoritative identities into retained spine state at drafting time —
+    the projection DTO carries both typed (`CorporateActionAccountingProjectionService.cs:212-214`)
+    — or retain the role on the evidence rows so attach can find the `LotSnapshot` and
+    `PolicyDecision` rows as such. Until then a subject-id scan is a second assertion wearing the
+    first one's evidence.
   - **Not comparable at attach today: `PostingIntentHash` and `PostingIdempotencyKey`.** The
     retained candidate declares no member for either
     (`PostingRuleJournalCandidateRequestDto`, `AccountingConfigurationDtos.cs:848-902`), no nested
@@ -3296,6 +3335,58 @@ Two subtleties for the implementer, both about what *not* to do:
 
   Requiring the request to match retained authorities keeps the request DTO as an
   idempotency-friendly command envelope while making the stored binding mean what it says.
+
+### B2 — Attach stamps the binding's case version instead of verifying the candidate's
+
+Filed 2026-09-02 from review of B1's remedy (the reviewer's point that hash equality proves the
+caller copied the candidate's digest, not that the digest was computed for the case being
+attached). It is B1's thesis at the one field the lane's exact-version promise rests on.
+
+Migration 031 says the binding "retains the ... case, scope, policy, and period versions it was
+prepared against, so ReadyForApproval and posting can be gated on durable exact-version evidence"
+(`031_security_master_corporate_action_accounting_lane.sql:3-7`). The case version it retains is
+not the one the candidate was prepared against. The service builds the binding with
+`BoundCaseVersion: 0` (`CorporateActionCaseAccountingService.cs:378`); the store then bumps the
+case (`UpdateCaseVersionAsync`, `PostgresCorporateActionOperationsStore.Cases.cs:947`,
+`Version = processingCase.Version + 1`) and stamps the binding with the version it just created
+(`PostgresCorporateActionOperationsStore.Accounting.cs:116-127`, `BoundCaseVersion =
+updatedCase.Version` at `:123`). Every downstream exact-version gate then compares that stamp to
+the case's current version — `EnsureBindingSupportsReadyForApproval`
+(`CorporateActionCaseAccountingContracts.cs:310-314`) and the availability projection
+(`CorporateActionOperationsService.cs:827-830`) — which detects a case change *after* attach and
+can never detect staleness *at* attach, because the stamp was made current by construction.
+
+The case version the economics were actually computed for exists in exactly one retained place:
+committed into the projection input hash, alongside the election version, policy-decision
+version, and position snapshot id
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:48-52`), where it is opaque. Nothing
+on the spine carries it typed: the scope retains security and position versions but no case
+version (`AssetAccountingEventScopeDto`, `AssetAccountingEventDtos.cs:68-79`), neither
+`EconomicEventReferenceDto` (`InstrumentPositionDtos.cs:112-123`) nor `ProjectionLineageDto`
+(`:134-149`) has a field for it, and the projection DTO's own `CaseId`/`CaseVersion` pair
+(`CorporateActionAccountingProjectionService.cs:203-204`) is not among what the mapper forwards on
+the event request (`CorporateActionAssetAccountingEventMapper.cs:174-187`).
+
+The consequence: a candidate is drafted against case version 3; new evidence or an election moves
+the case to 4; the stale candidate is attached at expected version 4, with its own hashes (so
+B1's field checks pass — they should, the fields are the candidate's); the store bumps to 5 and
+stamps 5; ReadyForApproval, approval, and posting all find the binding current, and version-3
+economics post. The lane's gates are exact-version about the binding and silent about the
+candidate. This is within reach of the workstation's ordinary flow, not only an adversarial one:
+an operator who drafts, then changes the case — new evidence, an election — then attaches the
+earlier draft, produces it.
+
+**Remedy.** Retain, at drafting time, the projection inputs that can stale — the case version, and
+with it the election id and version and the position snapshot id from the same digest — typed on
+the spine candidate (or the drafted spine's scope). At attach, compare the retained case version
+to the case version the caller asserts and the store already checks the row against
+(`request.ExpectedVersion`, `PostgresCorporateActionOperationsStore.Accounting.cs:103-106`), and
+refuse `ProjectionStale` when they differ; stamp `bound_case_version` from that verified value's
+successor rather than from whatever the bump produced, so the column means what 031 says it
+means. `BuildProjectionInputHash` already names the right set (`:48-52`); the work is to retain it
+in the clear as well as in the digest. This belongs with B1's priority entry, not after it: it is
+the same defect — attach trusting instead of verifying — at the field the rest of the lane's
+correctness is gated on.
 
 ### Smaller notes, not filed as findings
 
@@ -3331,27 +3422,40 @@ Two subtleties for the implementer, both about what *not* to do:
 
 Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
 
-1. **Bind the accounting lane's assertions to retained authorities (B1).** One comparison can run
-   at attach against data already loaded — `ProjectionInputHash` against the candidate's
-   `ProjectionLineage.TermsHash` — and five need the authority retained first: the lot, policy,
-   and source-action identities, whose retained evidence rows carry id and version but not the
-   role that binds them, and the posting-intent hash and idempotency key, which the candidate
-   neither carries nor can recompute (see the remedy under B1, corrected 2026-09-01 and again
-   2026-09-02; the first version of this entry said all six were comparable at attach, the second
-   said three). Retain those at drafting time — the identities either directly or by keeping the
-   role on the evidence rows, the hash and key as values — then compare; and persist the
-   source-action identity on the binding so gates after attach can re-check it too. Do this while
-   the lane is new and its one consumer is the workstation; every month of postings makes
-   retrofitted verification a data-repair exercise.
-2. **Finish P4's cancellation remediation where it actually still lives.** The create loops and
-   EDGAR's broad catches are done and verified — not "the ingest side", which an earlier version
-   of this entry said while the same list it introduces names an open ingest path; what remains is
-   exactly the two backfill swallows
+1. **Make attach verify the candidate instead of trusting the request (B1) and instead of
+   stamping the case version (B2).** Two comparisons can run at attach against data already
+   loaded — `ProjectionInputHash` against the candidate's `ProjectionLineage.TermsHash`, and the
+   case's `CorporateActionId` through the deterministic event identity against `spine.EventId` —
+   and four need the authority retained first: the lot and policy identities, whose retained
+   evidence rows carry id and version but not the role that binds them, and the posting-intent
+   hash and idempotency key, which the candidate neither carries nor can recompute. Retain those at
+   drafting time — the identities either directly or by keeping the role on the evidence rows, the
+   hash and key as values — then compare. In the same change retain the drafting-time case version
+   (with the election and position-snapshot inputs from the same digest) typed on the candidate,
+   compare it to the asserted case version at attach, and stamp `bound_case_version` from the
+   verified value, so the exact-version gates downstream test the candidate's currency and not a
+   stamp attach made current by construction (B2). This entry has been corrected with its finding:
+   the first version said all six fields were comparable at attach, the second said three, the
+   third said one; the count is the least important part of it. Do this while the lane is new and
+   its one consumer is the workstation; every month of postings makes retrofitted verification a
+   data-repair exercise.
+2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
+   both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
+   side", which an earlier version of this entry said while the same list it introduces names an
+   open ingest path. What remains on the cancellation half is the two backfill swallows
    (`TradingParametersBackfillService.cs:62-70, :98-108`), the `break` that should be a throw
    (`:85-89`), the WPF token plumbing (`SecurityMasterViewModel.cs:2224`), and Polygon's
    `FetchPageAsync` null-on-failure (`:128-149`) — the last of which is also a *silent truncation*
-   defect for ordinary HTTP errors, independent of cancellation. Scope by method, per the item: the
-   per-item catch fix alone is defeated by the search catch above it.
+   defect for ordinary HTTP errors, independent of cancellation. What remains on the reporting half
+   is the backfill's success accounting (added 2026-09-02, after review; an earlier version of this
+   entry said "exactly" of the cancellation sites and stopped there): every normal return from
+   `BackfillTickerAsync` — missing key, non-success status, empty result, missing security,
+   swallowed HTTP or unexpected exception (`:118-122, :136-141, :146-152, :194-198, :219-222,
+   :228-231`) — is counted as a success (`:101`) and reported to the operator as one
+   (`SecurityMasterViewModel.cs:2237-2241`). The remedy is P4's own prescription one method down: a
+   typed per-ticker outcome, or a propagated failure, before the count is incremented. Scope by
+   method, per the item: the per-item catch fix alone is defeated by the search catch above it,
+   and a cancellation fix alone closes P4 with failed tickers still counted as successes.
 3. **The classifier's payload-equivalence check (P4's semantic half).** Unchanged in posture and
    now the only part of the duplicate-classification defect left: a reused `SecurityId` with
    different terms is still `Skipped`. The typed outcome exists; it needs the content-equivalence
@@ -3361,10 +3465,18 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    unchanged, and nothing in this range touched them. They outrank item 3 in institutional risk
    (silent zero-interest projection; silent wrong-security resolution) but are listed after it here
    only because their remedies are already fully specified above and need no new analysis.
-5. **The two attribution stragglers travel together.** The CLI override validation (P1's import
-   path) and the corporate-action verb's hardcoded actor are one decision — what a CLI run is
-   allowed to assert about identity — and should be settled once, in both places, with the trust
-   assumption written down.
+5. **The attribution stragglers are three, not two — two by decision, one by wiring.** The CLI
+   override validation (P1's import path) and the corporate-action verb's hardcoded actor are one
+   decision — what a CLI run is allowed to assert about identity — and should be settled once, in
+   both places, with the trust assumption written down. The third is the desktop deactivation
+   dialog's literal `UpdatedBy: "User"` (`SecurityMasterDeactivateViewModel.cs:80`), which the new
+   P5 gate authorizes without attributing; its remedy is already specified — thread the desktop
+   actor source through a constructor that does not yet accept it, per the 2026-08-28 wiring
+   analysis — and P1's attribution work must not close with it outstanding. An earlier version of
+   this entry counted two (corrected 2026-09-02, after review): the pass re-verified P1's CLI,
+   alias, and constraint rows and did not carry the desktop row into the table, so the priority
+   built on the table inherited the omission — a frame limiting what was seen, the failure the
+   Method section names.
 
 ---
 
@@ -3404,3 +3516,12 @@ accounting lane end to end: `CorporateActionCaseAccountingService`,
 `SecurityMasterEndpoints.CorporateActionOperations.cs`, and the drafting-side authorities they bind
 to (`CorporateActionAccountingProjectionService`, `CorporateActionAssetAccountingEventMapper`,
 `AssetAccountingEventDtos` spine validation).
+
+Review of that pass's pull request (2026-09-02) corrected its B1 remedy three times before it
+converged, each time because an authority had been sought in one form only — as a direct member,
+when it was nested (`ProjectionLineage.TermsHash`); as an evidence row, when the row had lost the
+role that made it evidence; as a retained value, when it was a deterministic derivation of
+retained values (the event identity). The procedural rule that fell out is recorded under B1: name
+the authority per field, then look for it in every form the snapshot retains before classifying
+it. The same review added B2, extended the P4 backfill row to the inner method's success
+accounting, and restored the desktop deactivation actor to P1's open table.
