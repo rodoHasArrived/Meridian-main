@@ -48,7 +48,11 @@ lookup paths, and evidence trails those layers rely on.
 - `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
-  that can play saved data back. `JsonFileIBDataResultStore` requires tenant/company scope on writes
+  that can play saved data back. `JsonlReplayer` external-sorts physical partitions by full UTC
+  timestamp with ordinal file and physical-line tie-breakers, fails closed on malformed or null
+  records, and closes bounded replay-page handles before yielding events. Atomic preparation
+  admission prevents concurrent merge batches from deadlocking while keeping reader/writer use
+  bounded. `JsonFileIBDataResultStore` requires tenant/company scope on writes
   and queries, keys matching result identities by that scope, and excludes unscoped legacy rows
   during restart hydration.
 - `Services/CanonicalSymbolRegistry.cs` - storage-backed canonical symbol resolver implementing

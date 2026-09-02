@@ -89,6 +89,7 @@ export interface QuantParameterPanelState {
   ariaLive: "polite" | "assertive";
   tone: "default" | "pending" | "warning";
   showRows: boolean;
+  controlsDisabled: boolean;
 }
 
 export interface QuantLabToolbarItem {
@@ -241,14 +242,21 @@ export function useQuantLabScreenViewModel(
   const [run, setRun] = useState<QuantRunState>(initialQuantRunState);
   const [detectedParams, setDetectedParams] = useState<QuantParameter[]>([]);
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
-  const [parameterPhase, setParameterPhase] = useState<QuantParameterPhase>("idle");
+  const [parameterPhase, setParameterPhase] = useState<QuantParameterPhase>("extracting");
+  const [parameterScanRevision, setParameterScanRevision] = useState(0);
   const [selectedTradeRowId, setSelectedTradeRowId] = useState<string | null>(null);
   const sourceRef = useRef(DEFAULT_QUANT_SOURCE);
+  const detectedParamsRef = useRef<QuantParameter[]>([]);
+  const parameterMetadataSourceRef = useRef<string | null>(null);
   const initialParameterScanScheduledRef = useRef(false);
+  const runInFlightRef = useRef(false);
 
   const updateSource = useCallback((nextSource: string) => {
     sourceRef.current = nextSource;
+    parameterMetadataSourceRef.current = null;
+    setParameterPhase(nextSource.trim() ? "extracting" : "idle");
     setSource(nextSource);
+    setParameterScanRevision((current) => current + 1);
     setRun((current) => markQuantRunSourceDrift(current, nextSource));
   }, []);
 
@@ -275,7 +283,10 @@ export function useQuantLabScreenViewModel(
 
   useEffect(() => {
     if (!source.trim()) {
+      detectedParamsRef.current = [];
       setDetectedParams([]);
+      setParamValues({});
+      parameterMetadataSourceRef.current = null;
       setParameterPhase("idle");
       return;
     }
@@ -284,18 +295,27 @@ export function useQuantLabScreenViewModel(
     let requestStarted = false;
     const isInitialScan = !initialParameterScanScheduledRef.current;
     initialParameterScanScheduledRef.current = true;
+    parameterMetadataSourceRef.current = null;
     setParameterPhase("extracting");
     const timer = window.setTimeout(() => {
       requestStarted = true;
       services.extractParameters(source)
         .then((response) => {
-          if (cancelled) return;
-          setDetectedParams((prev) => mergeQuantParameters(prev, response.parameters));
-          setParamValues((prev) => initializeNewParameterValues(prev, response.parameters));
+          if (cancelled || sourceRef.current !== source) return;
+          const previousParameters = detectedParamsRef.current;
+          detectedParamsRef.current = response.parameters;
+          setDetectedParams(response.parameters);
+          setParamValues((prev) => reconcileQuantParameterValues(
+            prev,
+            previousParameters,
+            response.parameters
+          ));
+          parameterMetadataSourceRef.current = source;
           setParameterPhase(response.parameters.length > 0 ? "ready" : "idle");
         })
         .catch(() => {
-          if (cancelled) return;
+          if (cancelled || sourceRef.current !== source) return;
+          parameterMetadataSourceRef.current = null;
           setParameterPhase("unavailable");
         });
     }, isInitialScan ? 0 : 600);
@@ -307,24 +327,35 @@ export function useQuantLabScreenViewModel(
         initialParameterScanScheduledRef.current = false;
       }
     };
-  }, [services, source]);
+  }, [parameterScanRevision, services, source]);
 
   useEffect(() => {
     const runtimeParameters = run.result?.runtimeParameters;
-    if (!runtimeParameters || runtimeParameters.length === 0) return;
-    setDetectedParams((prev) => mergeQuantParameters(prev, runtimeParameters));
+    if (!runtimeParameters || runtimeParameters.length === 0 ||
+        run.sourceChangedSinceRun === true || run.submittedSource !== sourceRef.current ||
+        parameterMetadataSourceRef.current !== run.submittedSource) return;
+    const mergedParameters = mergeQuantParameters(detectedParamsRef.current, runtimeParameters);
+    detectedParamsRef.current = mergedParameters;
+    setDetectedParams(mergedParameters);
     setParamValues((prev) => initializeNewParameterValues(prev, runtimeParameters));
     setParameterPhase("ready");
-  }, [run.result]);
+  }, [run.result, run.sourceChangedSinceRun, run.submittedSource]);
 
   const runScriptCommand = useCallback(async () => {
-    const validation = validateQuantSource(source);
+    if (runInFlightRef.current) return;
+
+    const submittedSource = sourceRef.current;
+    const validation = validateQuantSource(submittedSource) ?? validateQuantParameterMetadata(
+      submittedSource,
+      parameterMetadataSourceRef.current,
+      parameterPhase
+    );
     if (validation) {
       setRun({ phase: "error", result: null, error: validation, submittedSource: null, sourceChangedSinceRun: false });
       return;
     }
 
-    const submittedSource = sourceRef.current;
+    runInFlightRef.current = true;
     setRun({
       phase: "running",
       result: null,
@@ -354,15 +385,14 @@ export function useQuantLabScreenViewModel(
         sourceChangedSinceRun: sourceRef.current !== submittedSource
       });
       setSelectedTradeRowId(null);
+    } finally {
+      runInFlightRef.current = false;
     }
-  }, [detectedParams, paramValues, services, source]);
+  }, [detectedParams, parameterPhase, paramValues, services]);
 
   const loadTemplate = useCallback((template: QuantTemplate) => {
     updateSource(template.source);
-    setRun(initialQuantRunState);
-    setDetectedParams([]);
-    setParamValues({});
-    setParameterPhase("extracting");
+    setRun((current) => current.phase === "running" ? current : initialQuantRunState);
     setSelectedTradeRowId(null);
   }, [updateSource]);
 
@@ -401,7 +431,12 @@ export function useQuantLabScreenViewModel(
     });
   }, [tradeRows]);
 
-  const runCommand = buildRunCommandState(source, run.phase, run.sourceChangedSinceRun === true);
+  const runCommand = buildRunCommandState(
+    source,
+    run.phase,
+    run.sourceChangedSinceRun === true,
+    parameterPhase
+  );
   const templatesPanel = buildTemplatePanelState(templatesPhase, templatesError);
   const parameterPanel = buildParameterPanelState(parameterPhase, parameterRows.length, source.trim().length > 0);
   const tradeLedger = useMemo(
@@ -458,6 +493,38 @@ export function initializeNewParameterValues(
   return changed ? next : existing;
 }
 
+export function reconcileQuantParameterValues(
+  existing: Record<string, string>,
+  previousParams: QuantParameter[],
+  params: QuantParameter[]
+): Record<string, string> {
+  const previousByName = new Map(
+    previousParams.map((parameter) => [parameter.name.toLowerCase(), parameter] as const)
+  );
+  const retained: Record<string, string> = {};
+  for (const parameter of params) {
+    const previous = previousByName.get(parameter.name.toLowerCase());
+    if (!previous || !hasCompatibleQuantParameterDescriptor(previous, parameter)) continue;
+
+    const priorValue = Object.entries(existing)
+      .find(([name]) => name.toLowerCase() === previous.name.toLowerCase())?.[1];
+    if (priorValue !== undefined) retained[parameter.name] = priorValue;
+  }
+
+  return initializeNewParameterValues(retained, params);
+}
+
+function hasCompatibleQuantParameterDescriptor(
+  previous: QuantParameter,
+  current: QuantParameter
+): boolean {
+  return previous.name.toLowerCase() === current.name.toLowerCase() &&
+    previous.typeName === current.typeName &&
+    previous.defaultValue === current.defaultValue &&
+    previous.min === current.min &&
+    previous.max === current.max;
+}
+
 export function buildQuantParameters(
   params: QuantParameter[],
   values: Record<string, string>
@@ -493,13 +560,31 @@ export function validateQuantSource(source: string): string | null {
   return source.trim() ? null : "Enter some script source first.";
 }
 
+function validateQuantParameterMetadata(
+  source: string,
+  parameterMetadataSource: string | null,
+  parameterPhase: QuantParameterPhase
+): string | null {
+  if (parameterMetadataSource === source) return null;
+  return parameterPhase === "unavailable"
+    ? "Parameter extraction is unavailable for the current source. Edit the source or load a template to retry before running."
+    : "Wait for runtime parameter detection to finish before running.";
+}
+
 export function buildRunCommandState(
   source: string,
   phase: QuantRunState["phase"],
-  sourceChangedSinceRun = false
+  sourceChangedSinceRun = false,
+  parameterPhase: QuantParameterPhase = "idle"
 ): QuantCommandState {
   const sourceError = validateQuantSource(source);
   const running = phase === "running";
+  const parameterError = parameterPhase === "extracting"
+    ? "Wait for runtime parameter detection to finish before running."
+    : parameterPhase === "unavailable"
+      ? "Parameter extraction is unavailable for the current source. Edit the source or load a template to retry before running."
+      : null;
+  const disabledReason = sourceError ?? parameterError;
   return {
     label: running ? "Running..." : sourceChangedSinceRun && sourceError === null ? "Run current source" : "Run",
     ariaLabel: running
@@ -507,8 +592,8 @@ export function buildRunCommandState(
       : sourceChangedSinceRun && sourceError === null
         ? "Run current edited script source"
         : "Run script",
-    disabled: running || sourceError !== null,
-    disabledReason: sourceError,
+    disabled: running || disabledReason !== null,
+    disabledReason,
     busy: running
   };
 }
@@ -639,7 +724,8 @@ export function buildParameterPanelState(
     listLabel: "Script parameters",
     statusRole: "status" as const,
     ariaLive: "polite" as const,
-    showRows: rowCount > 0
+    showRows: rowCount > 0,
+    controlsDisabled: phase === "extracting" || phase === "unavailable"
   };
 
   if (rowCount > 0) {
@@ -655,7 +741,9 @@ export function buildParameterPanelState(
       return {
         ...base,
         tone: "warning",
-        statusMessage: "Parameter extraction is unavailable. Existing values can still be edited and submitted."
+        statusRole: "alert",
+        ariaLive: "assertive",
+        statusMessage: "Parameter extraction failed for the current source. Retained values are shown for reference and will not be submitted; edit the source or load a template to retry."
       };
     }
 
@@ -686,7 +774,9 @@ export function buildParameterPanelState(
     return {
       ...base,
       tone: "warning",
-      statusMessage: "Parameter extraction is unavailable. The script can still run with inline defaults."
+      statusRole: "alert",
+      ariaLive: "assertive",
+      statusMessage: "Parameter extraction failed for the current source. Run is disabled until the source can be scanned."
     };
   }
 

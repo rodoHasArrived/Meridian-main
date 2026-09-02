@@ -113,6 +113,12 @@ function createDeferred<T>() {
   return { promise, resolve, reject };
 }
 
+async function getEnabledRunButton() {
+  const runButton = screen.getByRole("button", { name: /Run script/i });
+  await waitFor(() => expect(runButton).toBeEnabled(), { timeout: 2_000 });
+  return runButton;
+}
+
 describe("QuantLabScreen", () => {
   beforeEach(() => {
     vi.spyOn(api, "getQuantTemplates").mockResolvedValue(templates);
@@ -144,7 +150,7 @@ describe("QuantLabScreen", () => {
     renderWithRouter(<QuantLabScreen />);
     await waitForAsyncEffects();
 
-    await user.click(screen.getByRole("button", { name: /Run script/i }));
+    await user.click(await getEnabledRunButton());
 
     await waitFor(() => expect(runSpy).toHaveBeenCalledTimes(1));
     expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
@@ -168,7 +174,7 @@ describe("QuantLabScreen", () => {
     const editor = screen.getByLabelText("Script source") as HTMLTextAreaElement;
     await user.clear(editor);
     await user.type(editor, "Print(\"submitted\");");
-    await user.click(screen.getByRole("button", { name: /Run script/i }));
+    await user.click(await getEnabledRunButton());
 
     await user.clear(editor);
     await user.type(editor, "Print(\"edited\");");
@@ -192,7 +198,7 @@ describe("QuantLabScreen", () => {
     renderWithRouter(<QuantLabScreen />);
     await waitForAsyncEffects();
 
-    await user.click(screen.getByRole("button", { name: /Run script/i }));
+    await user.click(await getEnabledRunButton());
 
     expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
     const emptyEvidenceTitle = screen.getByText("Run completed without runtime evidence");
@@ -206,7 +212,7 @@ describe("QuantLabScreen", () => {
     renderWithRouter(<QuantLabScreen />);
     await waitForAsyncEffects();
 
-    await user.click(screen.getByRole("button", { name: /Run script/i }));
+    await user.click(await getEnabledRunButton());
 
     expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
     const buyRow = screen.getByRole("row", { name: /select spy buy trade/i });
@@ -231,7 +237,7 @@ describe("QuantLabScreen", () => {
     renderWithRouter(<QuantLabScreen />);
     await waitForAsyncEffects();
 
-    await user.click(screen.getByRole("button", { name: /Run script/i }));
+    await user.click(await getEnabledRunButton());
 
     expect(await screen.findByRole("heading", { name: /Run finished with errors/i })).toBeInTheDocument();
     expect(screen.getByText(/missing semicolon/i)).toBeInTheDocument();
@@ -244,7 +250,7 @@ describe("QuantLabScreen", () => {
     renderWithRouter(<QuantLabScreen />);
     await waitForAsyncEffects();
 
-    await user.click(screen.getByRole("button", { name: /Run script/i }));
+    await user.click(await getEnabledRunButton());
 
     expect(await screen.findByRole("heading", { name: /Run failed/i })).toBeInTheDocument();
     expect(screen.getAllByText(/Quant Lab is not enabled/i).length).toBeGreaterThan(0);
@@ -298,5 +304,45 @@ describe("QuantLabScreen", () => {
     expect(lookback).toHaveAttribute("id", "quant-param-lookback");
     expect(lookback).toHaveAttribute("aria-describedby", "quant-param-lookback-description");
     expect(screen.getByText("Rolling window length")).toHaveAttribute("id", "quant-param-lookback-description");
+  });
+
+  it("retains but disables stale parameter controls when current-source extraction fails", async () => {
+    vi.mocked(api.extractQuantParameters)
+      .mockResolvedValueOnce({
+        parameters: [
+          {
+            name: "lookback",
+            label: "Lookback",
+            typeName: "int",
+            defaultValue: "20",
+            description: "Rolling window length",
+            min: 1,
+            max: 252
+          }
+        ]
+      })
+      .mockRejectedValueOnce(new Error("extractor unavailable"));
+    const runSpy = vi.spyOn(api, "runQuantScript");
+    const user = userEvent.setup();
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    const lookback = await screen.findByLabelText("Lookback parameter");
+    expect(lookback).toBeEnabled();
+
+    const editor = screen.getByLabelText("Script source") as HTMLTextAreaElement;
+    await user.type(editor, "\nPrint(\"new source\");");
+
+    expect(await screen.findByText(
+      /retained values are shown for reference and will not be submitted/i,
+      undefined,
+      { timeout: 2_000 }
+    ))
+      .toHaveAttribute("role", "alert");
+    expect(lookback).toBeDisabled();
+    const runButton = screen.getByRole("button", { name: /Run script/i });
+    expect(runButton).toBeDisabled();
+    expect(runButton).toHaveAttribute("title", expect.stringMatching(/unavailable for the current source/i));
+    expect(runSpy).not.toHaveBeenCalled();
   });
 });

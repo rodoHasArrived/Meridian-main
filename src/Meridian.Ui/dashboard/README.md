@@ -1008,6 +1008,13 @@ Strategy wording while retained `Research*` DTO and component names remain compa
 Strategy Builder promotion-review warnings use risk/control wording in the browser view model,
 matching the shared strategy-service validation copy while retained cell kinds remain compatibility
 inputs.
+Quant Lab treats runtime-parameter extraction as a launch prerequisite for the exact editor source.
+While extraction is pending or unavailable, Run stays disabled; a failed refresh may retain the
+last usable descriptors and overrides for reference, but those values cannot be submitted for the
+new source. Successful refresh replaces removed descriptors and preserves only matching overrides.
+This fail-closed behavior and deterministic replay hardening support
+[`PRD-106`](../../../docs/product/implementation-todo-list.md) without changing the bounded
+`W6-BTSTUDIO-001` Covered Call evidence-loop completion claim.
 The host-composed W6 browser path is the Covered Call form in
 `covered-call-screen.view-model.ts`. Before calling the Covered Call API it requires operator
 acceptance text as a future review requirement and at least one bounded, strict
