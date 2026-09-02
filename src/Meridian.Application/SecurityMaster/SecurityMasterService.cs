@@ -877,6 +877,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             if (!terms.TryGetProperty(field.Key, out var value)
                 || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
             {
+                EnsureNoCaseVariantDiscriminant(projection, terms, field, assetSpecificTermsPatch);
                 continue;
             }
 
@@ -950,7 +951,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             }
 
             var dependentKeys = escape.DependentKeys
-                .Where(key => CarriesDependentBlock(terms, key))
+                .Where(key => CarriesValue(terms, key))
                 .ToArray();
             if (dependentKeys.Length > 0)
             {
@@ -962,6 +963,64 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             }
         }
     }
+
+    /// <summary>
+    /// The exact key is absent, so the record has no discriminant the codec can read — but it may
+    /// still SAY one, under a spelling the codec never looks at. Every read is ordinal
+    /// (<c>JsonElement.TryGetProperty</c>, and the codec's own <c>GetOptionalString</c>), so
+    /// <c>ExerciseStyle</c> is not <c>exerciseStyle</c>: the field decodes to its missing-key result
+    /// and re-serializing writes a fresh document without the stray key, so the value is gone with
+    /// no trace — and for an escape field the blocks that hung off it go with it, since the decode
+    /// lands on <c>None</c> rather than on the case that owns them.
+    /// <para>Stored documents really do carry case-variant keys:
+    /// <c>ApprovedFieldEditCanonicalMergeHandler.RemoveKeyVariants</c> strips them, matching
+    /// <see cref="StringComparison.OrdinalIgnoreCase"/>, for exactly that reason. The bond coupon
+    /// guard already refuses this shape for <c>couponType</c>; it is a property of every declared
+    /// vocabulary, not of that one field, so it belongs on the schema-driven walk.</para>
+    /// <para>A REQUIRED discriminant is left alone for the same reason a wrong-kind token is:
+    /// <c>GetRequiredString</c> throws, so the record fails loudly on read rather than being
+    /// silently rewritten, and no patch could repair it from here.</para>
+    /// </summary>
+    private static void EnsureNoCaseVariantDiscriminant(
+        SecurityProjectionRecord projection,
+        JsonElement terms,
+        SecurityAssetTermField field,
+        JsonElement? assetSpecificTermsPatch)
+    {
+        if (field.Required)
+        {
+            return;
+        }
+
+        var variants = CaseVariantKeys(terms, field.Key);
+        if (variants.Length == 0 || PatchRepairsValueFor(assetSpecificTermsPatch, field))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Security '{projection.SecurityId:D}' carries {string.Join(" and ", variants)} where this node reads " +
+            $"only '{field.Key}', matched case-sensitively, so the codec cannot see that value at all: the record " +
+            $"loads with no {field.Key} and re-serializing would write a document without the stray key, dropping " +
+            "it. The write is refused. To repair the record here, amend it with a COMPLETE asset-terms document " +
+            $"spelling the key '{field.Key}' and naming a declared value " +
+            $"({string.Join(", ", field.AllowedValues)}) — the amendment replaces the terms wholesale, so any field " +
+            "the patch omits is dropped with them — and note that a deactivation cannot carry a patch, so repair it " +
+            "first.");
+    }
+
+    /// <summary>
+    /// Populated keys in <paramref name="document"/> that differ from <paramref name="key"/> only by
+    /// case, and which every ordinal read therefore misses.
+    /// </summary>
+    private static string[] CaseVariantKeys(JsonElement document, string key)
+        => document
+            .EnumerateObject()
+            .Where(property => !string.Equals(property.Name, key, StringComparison.Ordinal)
+                && string.Equals(property.Name, key, StringComparison.OrdinalIgnoreCase)
+                && CarriesValue(document, property.Name))
+            .Select(property => property.Name)
+            .ToArray();
 
     /// <summary>
     /// The vocabulary walk inspects the FLAT discriminant keys the canonical serializer writes. A
@@ -1128,20 +1187,11 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         if (!CodecCanRead(terms, "couponType"))
         {
-            // A case-variant spelling is not the discriminant: every read of it is ordinal
-            // (JsonElement.TryGetProperty, and the codec's own GetOptionalString), so the codec
-            // cannot see it, the record still loads as a fixed coupon, and re-serializing writes a
-            // fresh document without the stray key — the value is gone with no trace. Stored
-            // documents really do carry case-variant keys; ApprovedFieldEditCanonicalMergeHandler
-            // .RemoveKeyVariants exists to strip them, matching OrdinalIgnoreCase. Only VARIANT
-            // spellings are named here — the exact key, present but undecodable, is the declared
-            // vocabulary's business and EnsureDeclaredVocabulariesRoundTripSafely refuses it there.
-            orphaned.AddRange(terms
-                .EnumerateObject()
-                .Where(property => !string.Equals(property.Name, "couponType", StringComparison.Ordinal)
-                    && string.Equals(property.Name, "couponType", StringComparison.OrdinalIgnoreCase)
-                    && CarriesValue(terms, property.Name))
-                .Select(property => property.Name));
+            // A case-variant spelling is not the discriminant, so the record still loads as a fixed
+            // coupon and re-serializing writes a fresh document without the stray key. The same
+            // helper the schema-driven walk uses, so the two cannot drift; the exact key, present
+            // but undecodable, is that walk's business and it refuses it there.
+            orphaned.AddRange(CaseVariantKeys(terms, "couponType"));
         }
 
         if (terms.TryGetProperty("coupon", out var nested) && nested.ValueKind == JsonValueKind.Object)
@@ -1345,13 +1395,19 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// vocabulary but that <paramref name="value"/> does not own, so the decode has nowhere to
     /// reattach it and the write would drop it. <see langword="null"/> as the value asks the same
     /// question of a cleared field, which owns none of them.
+    /// <para>"Carries" is <see cref="CarriesValue"/>, the same populated test the rest of these
+    /// guards use, and deliberately not "is an object or an array". A block of the wrong JSON kind
+    /// is not carried more safely for being malformed — <c>preferredTerms: "…"</c> beside a
+    /// classification that does not own it is dropped exactly as an object would be, and under one
+    /// that DOES own it <c>GetRequiredObject</c> throws rather than passing it through. Recognizing
+    /// only the well-formed shapes would have made the malformed ones the way around this check.</para>
     /// </summary>
     private static bool CarriesDependentBlocksTheValueCannotHold(
         JsonElement document,
         SecurityAssetTermField field,
         string? value)
         => field.Escape is { } escape
-            && escape.DependentKeys.Any(key => CarriesDependentBlock(document, key)
+            && escape.DependentKeys.Any(key => CarriesValue(document, key)
                 && !DependentBlockBelongsTo(key, value));
 
     /// <summary>
@@ -1369,10 +1425,6 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         _ => false,
     };
 
-    /// <summary>True when <paramref name="key"/> holds a populated dependent block.</summary>
-    private static bool CarriesDependentBlock(JsonElement document, string key)
-        => document.TryGetProperty(key, out var dependent)
-            && dependent.ValueKind is JsonValueKind.Object or JsonValueKind.Array;
 
     private static SecurityProjectionRecord CreateProjectionFromResult(
         SecurityMasterCommandResultWrapper result,

@@ -575,9 +575,10 @@ Keep W6-BTSTUDIO-001 acceptance criteria in roadmap exit criteria and verify thi
 
 Security Master amend and deactivate are refused when re-serializing the record would silently
 rewrite it: an asset class, equity classification, CustomAsset envelope, or declared discriminant
-value this node cannot round-trip — including a discriminant stored as the wrong JSON kind, which
-the string readers cannot see at all — and, for bonds, coupon structure the canonical codec does not
-read. `ToBondTerms` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
+value this node cannot round-trip — including a discriminant the codec cannot see at all, whether
+because it is stored as the wrong JSON kind or under a case-variant key (every read is ordinal, so
+`ExerciseStyle` is not `exerciseStyle`) — and, for bonds, coupon structure the canonical codec does
+not read. `ToBondTerms` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
 `stepSchedule`, the inflation triple, `dayCount`) ONE COUPON ARM AT A TIME, so a populated companion
 is lost whenever the arm the record resolves to does not read it — a `floatingIndex` beside
 `couponType: "Fixed"` as surely as one with no `couponType` at all — and so are legacy nested

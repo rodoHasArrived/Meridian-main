@@ -1192,6 +1192,86 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_OptionWithACaseVariantExerciseStyleKey_RefusesTheWrite()
+    {
+        // Every read of a discriminant is ordinal — JsonElement.TryGetProperty and the codec's own
+        // GetOptionalString — so "ExerciseStyle" is not the discriminant: the codec cannot see it,
+        // the style decodes to None, and re-serializing writes a fresh document without the stray
+        // key, taking "American" with it. The bond guard already refused this shape for couponType;
+        // it is a property of every declared vocabulary, not of that one field.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Option",
+            "Vendor option",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["underlyingId"] = Guid.NewGuid(),
+                ["putCall"] = "Call",
+                ["strike"] = 190m,
+                ["expiry"] = "2027-07-16",
+                ["multiplier"] = 100m,
+                ["ExerciseStyle"] = "American",
+                ["isAdjusted"] = false
+            });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*ExerciseStyle*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_EquityRepairCarryingAWrongKindPreferredBlock_RefusesTheWrite()
+    {
+        // The malformed-shape hole in the ownership check: recognizing only objects and arrays as
+        // dependent blocks would have made a wrong-kind token the way around it. A preferredTerms
+        // string beside classification "Common" is dropped exactly as an object would be — Common
+        // reads no preferred block and the serializer emits null — so the repair would still delete
+        // data the operator submitted, just data that arrived malformed.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Equity",
+            "Vendor preferred",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["shareClass"] = "B",
+                ["classification"] = "Commmon",
+                ["preferredTerms"] = PreferredTerms()
+            });
+
+        await service.Invoking(s => s.AmendTermsAsync(TermsAmendRequest(
+                securityId,
+                JsonSerializer.SerializeToElement(new Dictionary<string, object>(StringComparer.Ordinal)
+                {
+                    ["shareClass"] = "B",
+                    ["classification"] = "Common",
+                    ["preferredTerms"] = "6.25% cumulative, senior 2x"
+                }))))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*preferredTerms*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_OptionWhoseExerciseStyleIsNotAString_RefusesTheWrite()
     {
         // GetOptionalString ignores a token of the wrong JSON kind, so ParseExerciseStyle never sees
