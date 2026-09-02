@@ -174,7 +174,17 @@ internal sealed class SimulatedPortfolio
                 account.ShortLots[symbol] = shortLots;
             }
 
-            shortLots.AddLast(new OpenLot(Guid.NewGuid(), symbol, shortOpenQty, price, fill.FilledAt, fill.FillId, account.Account.AccountId));
+            shortLots.AddLast(new OpenLot(
+                Guid.NewGuid(),
+                symbol,
+                shortOpenQty,
+                price,
+                fill.FilledAt,
+                fill.FillId,
+                account.Account.AccountId)
+            {
+                IsShort = true
+            });
         }
 
         if (qty > 0 && existingQty < 0)
@@ -206,39 +216,122 @@ internal sealed class SimulatedPortfolio
 
     public void ApplyAssetEvent(AssetEvent assetEvent)
     {
-        _stateVersion++;
         ArgumentNullException.ThrowIfNull(assetEvent);
 
-        var account = ResolveBrokerageAccount(null);
         var symbol = assetEvent.Symbol;
         var targetSymbol = assetEvent.DestinationSymbol;
-        var existingQty = account.Positions.GetValueOrDefault(symbol);
-        var impactedUnits = existingQty;
-        decimal totalCashImpact = 0m;
+        if (assetEvent.HasPositionTransformation && assetEvent.PositionFactor <= 0m)
+            throw new InvalidOperationException($"Asset event factor must be positive for {symbol}.");
 
-        if (assetEvent.HasPositionTransformation && existingQty != 0)
+        var authoritativeReferencePrice = assetEvent.HasPositionTransformation
+            ? ResolveMarketReferencePrice(assetEvent)
+            : null;
+        // Freeze every impacted account and its cash-in-lieu reference before mutating any
+        // position or global mark. This prevents account iteration order from changing a later
+        // account's economics; an account-specific average-cost fallback remains account-specific.
+        var impactedAccounts = _accounts.Values
+            .Where(static account => account.Account.Kind == FinancialAccountKind.Brokerage)
+            .Select(account => (
+                Account: account,
+                ExistingQuantity: account.Positions.GetValueOrDefault(symbol)))
+            .Where(static item => item.ExistingQuantity != 0)
+            .Select(item => (
+                item.Account,
+                item.ExistingQuantity,
+                ReferencePrice: assetEvent.HasPositionTransformation
+                    ? authoritativeReferencePrice ?? ResolveReferencePrice(
+                        item.Account,
+                        assetEvent,
+                        item.ExistingQuantity,
+                        assetEvent.PositionFactor)
+                    : (decimal?)null))
+            .ToArray();
+
+        // Combining unlike directions requires explicit close/cover economics. A corporate action
+        // cannot silently net a transformed source book against an existing opposite-direction
+        // destination book because doing so would leave the aggregate quantity, lot direction,
+        // and retained basis in disagreement. Validate the entire account set before any mutation.
+        if (assetEvent.HasPositionTransformation &&
+            !targetSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
         {
-            totalCashImpact += ApplyPositionTransformation(account, assetEvent, existingQty, targetSymbol);
+            foreach (var impacted in impactedAccounts)
+            {
+                var transformedQuantity = ConvertToWholeUnits(
+                    impacted.ExistingQuantity * assetEvent.PositionFactor);
+                var existingTargetQuantity = impacted.Account.Positions.GetValueOrDefault(targetSymbol);
+                if (transformedQuantity != 0 &&
+                    existingTargetQuantity != 0 &&
+                    (transformedQuantity > 0) != (existingTargetQuantity > 0))
+                {
+                    throw new InvalidOperationException(
+                        $"Asset event {symbol} -> {targetSymbol} would combine opposite position directions " +
+                        $"in account '{impacted.Account.Account.AccountId}'. Close or cover the destination " +
+                        "position before applying the event.");
+                }
+            }
         }
 
-        if (assetEvent.CashPerShare != 0m && existingQty != 0)
+        _stateVersion++;
+
+        foreach (var impacted in impactedAccounts)
         {
-            totalCashImpact += ApplyPerShareCashAdjustment(account, assetEvent, existingQty);
+            var account = impacted.Account;
+            var existingQty = impacted.ExistingQuantity;
+
+            decimal totalCashImpact = 0m;
+            PositionTransformationResult transformation = default;
+            if (assetEvent.HasPositionTransformation)
+            {
+                transformation = ApplyPositionTransformation(
+                    account,
+                    assetEvent,
+                    existingQty,
+                    targetSymbol,
+                    impacted.ReferencePrice);
+                totalCashImpact += transformation.CashInLieu;
+            }
+
+            if (assetEvent.CashPerShare != 0m)
+                totalCashImpact += ApplyPerShareCashAdjustment(account, assetEvent, existingQty);
+
+            account.MarginBalance = account.Cash < 0m ? account.Cash : 0m;
+            _cashFlows.Add(new AssetEventCashFlow(
+                assetEvent.EffectiveAt,
+                totalCashImpact,
+                symbol,
+                assetEvent.EventType,
+                existingQty,
+                assetEvent.CashPerShare,
+                assetEvent.TargetSymbol,
+                assetEvent.PositionFactor,
+                assetEvent.Description)
+            {
+                AccountId = account.Account.AccountId,
+                FractionalUnits = transformation.FractionalUnits,
+                BasisDisposed = transformation.BasisDisposed,
+                RealizedPnl = transformation.RealizedPnl
+            });
         }
 
-        if (account.Cash < 0)
-            account.MarginBalance = Math.Min(account.MarginBalance, account.Cash);
+        var hasSuccessorPosition = impactedAccounts.Any(item =>
+            ConvertToWholeUnits(item.ExistingQuantity * assetEvent.PositionFactor) != 0);
+        if (authoritativeReferencePrice is > 0m && hasSuccessorPosition)
+        {
+            _lastPrices[targetSymbol] = authoritativeReferencePrice.Value;
+        }
 
-        _cashFlows.Add(new AssetEventCashFlow(
-            assetEvent.EffectiveAt,
-            totalCashImpact,
-            symbol,
-            assetEvent.EventType,
-            impactedUnits,
-            assetEvent.CashPerShare,
-            assetEvent.TargetSymbol,
-            assetEvent.PositionFactor,
-            assetEvent.Description));
+        if (assetEvent.HasPositionTransformation &&
+            targetSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase) &&
+            !hasSuccessorPosition)
+        {
+            _lastPrices.Remove(symbol);
+        }
+
+        if (assetEvent.HasPositionTransformation &&
+            !targetSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+        {
+            _lastPrices.Remove(symbol);
+        }
     }
 
     // ── Day-end accruals ─────────────────────────────────────────────────────
@@ -345,6 +438,13 @@ internal sealed class SimulatedPortfolio
                     continue;
                 result.AddRange(lots);
             }
+
+            foreach (var (sym, lots) in account.ShortLots)
+            {
+                if (symbol != null && !sym.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                result.AddRange(lots);
+            }
         }
         return result;
     }
@@ -375,23 +475,51 @@ internal sealed class SimulatedPortfolio
         return amount;
     }
 
-    private decimal ApplyPositionTransformation(AccountState account, AssetEvent assetEvent, long existingQty, string targetSymbol)
+    private PositionTransformationResult ApplyPositionTransformation(
+        AccountState account,
+        AssetEvent assetEvent,
+        long existingQty,
+        string targetSymbol,
+        decimal? referencePriceOverride)
     {
         var factor = assetEvent.PositionFactor;
-        if (factor == 0m)
-            throw new InvalidOperationException($"Asset event factor cannot be zero for {assetEvent.Symbol}.");
+        if (factor <= 0m)
+            throw new InvalidOperationException($"Asset event factor must be positive for {assetEvent.Symbol}.");
 
         var transformedQtyDecimal = existingQty * factor;
         var transformedQty = ConvertToWholeUnits(transformedQtyDecimal);
         var fractionalUnits = transformedQtyDecimal - transformedQty;
-        var referencePrice = ResolveReferencePrice(account, assetEvent, existingQty, factor);
+        var referencePrice = referencePriceOverride ?? ResolveReferencePrice(account, assetEvent, existingQty, factor);
         var cashInLieu = fractionalUnits * referencePrice;
 
-        var transformedLongLots = TransformLots(account.Lots.GetValueOrDefault(assetEvent.Symbol), factor);
-        var transformedShortLots = TransformLots(account.ShortLots.GetValueOrDefault(assetEvent.Symbol), factor);
+        var sourceLongBasis = ComputeLotBasis(account.Lots.GetValueOrDefault(assetEvent.Symbol));
+        var sourceShortBasis = ComputeLotBasis(account.ShortLots.GetValueOrDefault(assetEvent.Symbol));
+        var transformedLotQuantity = Math.Abs(transformedQty);
+        var transformedLongLots = TransformLots(
+            account.Lots.GetValueOrDefault(assetEvent.Symbol),
+            factor,
+            transformedLotQuantity,
+            targetSymbol);
+        var transformedShortLots = TransformLots(
+            account.ShortLots.GetValueOrDefault(assetEvent.Symbol),
+            factor,
+            transformedLotQuantity,
+            targetSymbol);
+        var sourceBasis = existingQty < 0 ? sourceShortBasis : sourceLongBasis;
+        var retainedBasis = existingQty < 0
+            ? ComputeLotBasis(transformedShortLots)
+            : ComputeLotBasis(transformedLongLots);
+        var fractionalBasis = Math.Max(0m, sourceBasis - retainedBasis);
+        var fractionalRealized = fractionalUnits == 0m
+            ? 0m
+            : existingQty < 0
+                ? fractionalBasis + cashInLieu
+                : cashInLieu - fractionalBasis;
         var transformedRealized = account.RealizedPnl.GetValueOrDefault(assetEvent.Symbol);
-        var existingTargetRealized = account.RealizedPnl.GetValueOrDefault(targetSymbol);
-        var transformedPrice = referencePrice > 0m ? referencePrice : _lastPrices.GetValueOrDefault(assetEvent.Symbol, 0m);
+        var existingTargetRealized = targetSymbol.Equals(assetEvent.Symbol, StringComparison.OrdinalIgnoreCase)
+            ? 0m
+            : account.RealizedPnl.GetValueOrDefault(targetSymbol);
+        var successorRealized = existingTargetRealized + transformedRealized + fractionalRealized;
 
         RemoveSymbolState(account, assetEvent.Symbol);
 
@@ -401,18 +529,29 @@ internal sealed class SimulatedPortfolio
             MergeLots(account.Lots, targetSymbol, transformedLongLots);
             MergeLots(account.ShortLots, targetSymbol, transformedShortLots);
             account.AvgCost[targetSymbol] = ComputeAvgCost(account, targetSymbol);
-            account.RealizedPnl[targetSymbol] = existingTargetRealized + transformedRealized;
-            if (transformedPrice > 0m)
-                _lastPrices[targetSymbol] = transformedPrice;
         }
+
+        if (successorRealized != 0m || transformedQty != 0)
+            account.RealizedPnl[targetSymbol] = successorRealized;
 
         if (cashInLieu != 0m)
-        {
             account.Cash += cashInLieu;
-            PostAssetCashLedgerEntry(account, assetEvent, cashInLieu, existingQty, assetEvent.Symbol, targetSymbol, suffix: "cash in lieu");
-        }
 
-        return cashInLieu;
+        PostAssetPositionTransformationLedgerEntries(
+            account,
+            assetEvent,
+            existingQty,
+            targetSymbol,
+            retainedBasis,
+            fractionalBasis,
+            cashInLieu,
+            fractionalRealized);
+
+        return new PositionTransformationResult(
+            cashInLieu,
+            fractionalUnits,
+            fractionalBasis,
+            fractionalRealized);
     }
 
     private decimal ResolveReferencePrice(AccountState account, AssetEvent assetEvent, long existingQty, decimal factor)
@@ -420,7 +559,9 @@ internal sealed class SimulatedPortfolio
         if (assetEvent.ReferencePrice is { } explicitReference && explicitReference > 0m)
             return explicitReference;
 
-        if (_lastPrices.TryGetValue(assetEvent.DestinationSymbol, out var destinationPrice) && destinationPrice > 0m)
+        if (!assetEvent.DestinationSymbol.Equals(assetEvent.Symbol, StringComparison.OrdinalIgnoreCase) &&
+            _lastPrices.TryGetValue(assetEvent.DestinationSymbol, out var destinationPrice) &&
+            destinationPrice > 0m)
             return destinationPrice;
 
         if (_lastPrices.TryGetValue(assetEvent.Symbol, out var sourcePrice) && sourcePrice > 0m)
@@ -431,6 +572,28 @@ internal sealed class SimulatedPortfolio
             return factor == 0m ? avgCost : avgCost / Math.Abs(factor);
 
         return existingQty == 0 ? 0m : 1m;
+    }
+
+    private decimal? ResolveMarketReferencePrice(AssetEvent assetEvent)
+    {
+        if (assetEvent.ReferencePrice is > 0m)
+            return assetEvent.ReferencePrice;
+
+        if (!assetEvent.DestinationSymbol.Equals(assetEvent.Symbol, StringComparison.OrdinalIgnoreCase) &&
+            _lastPrices.TryGetValue(assetEvent.DestinationSymbol, out var destinationPrice) &&
+            destinationPrice > 0m)
+        {
+            return destinationPrice;
+        }
+
+        if (_lastPrices.TryGetValue(assetEvent.Symbol, out var sourcePrice) && sourcePrice > 0m)
+        {
+            return assetEvent.PositionFactor == 0m
+                ? sourcePrice
+                : sourcePrice / Math.Abs(assetEvent.PositionFactor);
+        }
+
+        return null;
     }
 
     private void PostAssetCashLedgerEntry(
@@ -522,23 +685,393 @@ internal sealed class SimulatedPortfolio
         ? (long)Math.Floor(quantity)
         : (long)Math.Ceiling(quantity);
 
-    private static LinkedList<OpenLot> TransformLots(LinkedList<OpenLot>? source, decimal factor)
+    private static LinkedList<OpenLot> TransformLots(
+        LinkedList<OpenLot>? source,
+        decimal factor,
+        long transformedPositionQuantity,
+        string targetSymbol)
     {
         var result = new LinkedList<OpenLot>();
-        if (source is null || source.Count == 0)
+        if (source is null || source.Count == 0 || transformedPositionQuantity <= 0)
             return result;
+
+        var absoluteFactor = Math.Abs(factor);
+        var exactTransformedQuantity = source.Sum(static lot => lot.Quantity) * absoluteFactor;
+        if (exactTransformedQuantity <= 0m)
+            return result;
+
+        if (ConvertToWholeUnits(exactTransformedQuantity) != transformedPositionQuantity)
+        {
+            throw new InvalidOperationException(
+                "Corporate-action lot quantity does not reconcile to the transformed position quantity.");
+        }
+
+        // Allocate exact successor entitlements in FIFO order. Existing component provenance is
+        // flattened and scaled, so a second corporate action does not turn a prior composite into
+        // one opaque source lot. A fractional entitlement carries its own basis into the next
+        // component instead of assigning all earlier basis to whichever lot crosses a cumulative
+        // whole-unit boundary. For example, lots of 3 @ $100 and 1 @ $200 in a 1-for-2 reverse
+        // split become 1 @ $200 plus a synthesized 1 @ $300 lot assembled from the two remaining
+        // half-share entitlements.
+        var remainingWholeUnits = transformedPositionQuantity;
+        var pendingQuantity = 0m;
+        var pendingBasis = 0m;
+        OpenLot? pendingTemplate = null;
+        var pendingComponents = new List<OpenLotBasisComponent>();
+        var pendingParentLotIds = new List<Guid>();
+        var outputOrdinal = 0;
 
         foreach (var lot in source)
         {
-            var transformedQty = ConvertToWholeUnits(lot.Quantity * factor);
-            if (transformedQty == 0)
-                continue;
+            IReadOnlyList<OpenLotBasisComponent> sourceComponents = lot.BasisComponents is { Count: > 0 }
+                ? lot.BasisComponents
+                :
+                [
+                    new OpenLotBasisComponent(
+                        lot.LotId,
+                        lot.OpenFillId,
+                        lot.OpenedAt,
+                        lot.Quantity,
+                        lot.CostBasis())
+                ];
 
-            var transformedPrice = factor == 0m ? lot.EntryPrice : lot.EntryPrice / Math.Abs(factor);
-            result.AddLast(lot with { Quantity = Math.Abs(transformedQty), EntryPrice = transformedPrice });
+            if (sourceComponents.Sum(static component => component.SuccessorQuantity) != lot.Quantity)
+            {
+                throw new InvalidOperationException(
+                    $"Corporate-action lot '{lot.LotId:N}' component quantities do not reconcile to its whole quantity.");
+            }
+
+            foreach (var sourceComponent in sourceComponents)
+            {
+                var unallocatedEntitlement = sourceComponent.SuccessorQuantity * absoluteFactor;
+                var unallocatedBasis = sourceComponent.AllocatedBasis;
+
+                if (pendingQuantity > 0m && remainingWholeUnits > 0)
+                {
+                    var consumed = Math.Min(1m - pendingQuantity, unallocatedEntitlement);
+                    if (consumed > 0m)
+                    {
+                        var consumedBasis = TakeAllocatedBasis(
+                            ref unallocatedEntitlement,
+                            ref unallocatedBasis,
+                            consumed);
+                        pendingQuantity += consumed;
+                        pendingBasis += consumedBasis;
+                        AddBasisComponent(
+                            pendingComponents,
+                            sourceComponent,
+                            consumed,
+                            consumedBasis);
+                        AddParentLot(pendingParentLotIds, lot.LotId);
+                    }
+
+                    if (pendingQuantity == 1m)
+                    {
+                        result.AddLast(CreateTransformedLot(
+                            pendingTemplate!,
+                            targetSymbol,
+                            1,
+                            pendingBasis,
+                            pendingComponents,
+                            absoluteFactor,
+                            outputOrdinal,
+                            pendingParentLotIds,
+                            synthesizeIdentity: true));
+                        outputOrdinal++;
+                        remainingWholeUnits--;
+                        pendingQuantity = 0m;
+                        pendingBasis = 0m;
+                        pendingTemplate = null;
+                        pendingComponents.Clear();
+                        pendingParentLotIds.Clear();
+                    }
+                }
+
+                if (remainingWholeUnits > 0)
+                {
+                    var wholeFromComponent = Math.Min(
+                        remainingWholeUnits,
+                        ConvertToWholeUnits(unallocatedEntitlement));
+                    if (wholeFromComponent > 0)
+                    {
+                        var directBasis = TakeAllocatedBasis(
+                            ref unallocatedEntitlement,
+                            ref unallocatedBasis,
+                            wholeFromComponent);
+                        var directComponent = sourceComponent with
+                        {
+                            SuccessorQuantity = wholeFromComponent,
+                            AllocatedBasis = directBasis
+                        };
+                        result.AddLast(CreateTransformedLot(
+                            lot,
+                            targetSymbol,
+                            wholeFromComponent,
+                            directBasis,
+                            [directComponent],
+                            absoluteFactor,
+                            outputOrdinal,
+                            [lot.LotId],
+                            synthesizeIdentity: lot.BasisComponents.Count > 1));
+                        outputOrdinal++;
+                        remainingWholeUnits -= wholeFromComponent;
+                    }
+                }
+
+                if (unallocatedEntitlement > 0m)
+                {
+                    pendingTemplate ??= lot;
+                    pendingQuantity += unallocatedEntitlement;
+                    pendingBasis += unallocatedBasis;
+                    AddBasisComponent(
+                        pendingComponents,
+                        sourceComponent,
+                        unallocatedEntitlement,
+                        unallocatedBasis);
+                    AddParentLot(pendingParentLotIds, lot.LotId);
+                }
+            }
         }
 
+        if (remainingWholeUnits != 0 || result.Last is null || pendingQuantity >= 1m)
+            throw new InvalidOperationException("Corporate-action lot allocation did not match the transformed position quantity.");
+
         return result;
+    }
+
+    private static decimal TakeAllocatedBasis(
+        ref decimal remainingQuantity,
+        ref decimal remainingBasis,
+        decimal quantity)
+    {
+        if (quantity <= 0m || quantity > remainingQuantity)
+            throw new ArgumentOutOfRangeException(nameof(quantity));
+
+        var allocatedBasis = quantity == remainingQuantity
+            ? remainingBasis
+            : remainingBasis * quantity / remainingQuantity;
+        remainingQuantity -= quantity;
+        remainingBasis -= allocatedBasis;
+        return allocatedBasis;
+    }
+
+    private static void AddBasisComponent(
+        List<OpenLotBasisComponent> components,
+        OpenLotBasisComponent source,
+        decimal successorQuantity,
+        decimal allocatedBasis)
+    {
+        if (components.Count > 0 &&
+            components[^1].SourceLotId == source.SourceLotId &&
+            components[^1].SourceOpenFillId == source.SourceOpenFillId &&
+            components[^1].OpenedAt == source.OpenedAt)
+        {
+            var previous = components[^1];
+            components[^1] = previous with
+            {
+                SuccessorQuantity = previous.SuccessorQuantity + successorQuantity,
+                AllocatedBasis = previous.AllocatedBasis + allocatedBasis
+            };
+            return;
+        }
+
+        components.Add(source with
+        {
+            SuccessorQuantity = successorQuantity,
+            AllocatedBasis = allocatedBasis
+        });
+    }
+
+    private static void AddParentLot(List<Guid> parentLotIds, Guid lotId)
+    {
+        if (parentLotIds.Count == 0 || parentLotIds[^1] != lotId)
+            parentLotIds.Add(lotId);
+    }
+
+    private static OpenLot CreateTransformedLot(
+        OpenLot template,
+        string targetSymbol,
+        long quantity,
+        decimal allocatedBasis,
+        IReadOnlyList<OpenLotBasisComponent> basisComponents,
+        decimal factor,
+        int outputOrdinal,
+        IReadOnlyList<Guid> parentLotIds,
+        bool synthesizeIdentity)
+    {
+        var components = basisComponents.ToArray();
+        var openedAt = components.Max(static component => component.OpenedAt);
+        var lotId = synthesizeIdentity
+            ? CreateTransformedIdentity(
+                "lot",
+                targetSymbol,
+                factor,
+                outputOrdinal,
+                components,
+                parentLotIds)
+            : template.LotId;
+        var openFillId = synthesizeIdentity
+            ? CreateTransformedIdentity(
+                "fill",
+                targetSymbol,
+                factor,
+                outputOrdinal,
+                components,
+                parentLotIds)
+            : template.OpenFillId;
+
+        return template with
+        {
+            LotId = lotId,
+            Symbol = targetSymbol,
+            Quantity = quantity,
+            EntryPrice = allocatedBasis / quantity,
+            OpenedAt = openedAt,
+            OpenFillId = openFillId,
+            Notes = components.Length > 1
+                ? BuildCompositeLotNotes(template.Notes, components)
+                : template.Notes,
+            BasisComponents = components
+        };
+    }
+
+    private static Guid CreateTransformedIdentity(
+        string identityKind,
+        string targetSymbol,
+        decimal factor,
+        int outputOrdinal,
+        IReadOnlyList<OpenLotBasisComponent> components,
+        IReadOnlyList<Guid> parentLotIds)
+    {
+        var invariant = System.Globalization.CultureInfo.InvariantCulture;
+        var componentIdentity = string.Join(
+            ",",
+            components.Select(component => string.Join(
+                ":",
+                component.SourceLotId.ToString("N"),
+                component.SourceOpenFillId.ToString("N"),
+                component.OpenedAt.ToUniversalTime().Ticks.ToString(invariant),
+                component.SuccessorQuantity.ToString("G29", invariant),
+                component.AllocatedBasis.ToString("G29", invariant))));
+        var identity = string.Join(
+            "|",
+            identityKind,
+            targetSymbol.ToUpperInvariant(),
+            factor.ToString("G29", invariant),
+            outputOrdinal.ToString(invariant),
+            string.Join(",", parentLotIds.Select(static id => id.ToString("N"))),
+            componentIdentity);
+        var hash = System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(identity));
+        return new Guid(hash.AsSpan(0, 16));
+    }
+
+    private static string BuildCompositeLotNotes(
+        string? existingNotes,
+        IReadOnlyList<OpenLotBasisComponent> components)
+    {
+        var provenance = "Corporate-action composite from lots " +
+            string.Join(
+                ", ",
+                components
+                    .Select(static component => component.SourceLotId)
+                    .Distinct()
+                    .Select(static id => id.ToString("N")));
+        return string.IsNullOrWhiteSpace(existingNotes)
+            ? provenance
+            : $"{existingNotes}; {provenance}";
+    }
+
+    private static decimal ComputeLotBasis(LinkedList<OpenLot>? lots) =>
+        lots?.Sum(static lot => lot.CostBasis()) ?? 0m;
+
+    private void PostAssetPositionTransformationLedgerEntries(
+        AccountState account,
+        AssetEvent assetEvent,
+        long existingQuantity,
+        string targetSymbol,
+        decimal retainedBasis,
+        decimal fractionalBasis,
+        decimal cashInLieu,
+        decimal fractionalRealized)
+    {
+        if (_ledger is null)
+            return;
+
+        var accountId = account.Account.AccountId;
+        var sourceSymbol = assetEvent.Symbol;
+        var isShort = existingQuantity < 0;
+        var metadata = BuildAssetEventMetadata(
+            account,
+            assetEvent,
+            sourceSymbol,
+            targetSymbol,
+            existingQuantity,
+            cashInLieu,
+            "position transformation");
+
+        if (retainedBasis != 0m &&
+            !targetSymbol.Equals(sourceSymbol, StringComparison.OrdinalIgnoreCase))
+        {
+            var sourceAccount = isShort
+                ? LedgerAccounts.ShortSecuritiesPayable(sourceSymbol, accountId)
+                : LedgerAccounts.Securities(sourceSymbol, accountId);
+            var targetAccount = isShort
+                ? LedgerAccounts.ShortSecuritiesPayable(targetSymbol, accountId)
+                : LedgerAccounts.Securities(targetSymbol, accountId);
+            IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> transferLines =
+                isShort
+                ?
+                [
+                    (sourceAccount, retainedBasis, 0m),
+                    (targetAccount, 0m, retainedBasis)
+                ]
+                :
+                [
+                    (targetAccount, retainedBasis, 0m),
+                    (sourceAccount, 0m, retainedBasis)
+                ];
+            _ledger.PostLines(
+                assetEvent.EffectiveAt,
+                $"Transfer retained basis {sourceSymbol} -> {targetSymbol} – {account.Account.DisplayName}",
+                transferLines,
+                metadata);
+        }
+
+        if (fractionalBasis == 0m && cashInLieu == 0m)
+            return;
+
+        var lines = new List<(LedgerAccount account, decimal debit, decimal credit)>();
+        var cashAccount = LedgerAccounts.CashAccount(accountId);
+        if (isShort)
+        {
+            if (fractionalBasis > 0m)
+                lines.Add((LedgerAccounts.ShortSecuritiesPayable(sourceSymbol, accountId), fractionalBasis, 0m));
+            if (cashInLieu < 0m)
+                lines.Add((cashAccount, 0m, Math.Abs(cashInLieu)));
+            else if (cashInLieu > 0m)
+                lines.Add((cashAccount, cashInLieu, 0m));
+        }
+        else
+        {
+            if (cashInLieu > 0m)
+                lines.Add((cashAccount, cashInLieu, 0m));
+            else if (cashInLieu < 0m)
+                lines.Add((cashAccount, 0m, Math.Abs(cashInLieu)));
+            if (fractionalBasis > 0m)
+                lines.Add((LedgerAccounts.Securities(sourceSymbol, accountId), 0m, fractionalBasis));
+        }
+
+        if (fractionalRealized > 0m)
+            lines.Add((LedgerAccounts.RealizedGainFor(accountId), 0m, fractionalRealized));
+        else if (fractionalRealized < 0m)
+            lines.Add((LedgerAccounts.RealizedLossFor(accountId), Math.Abs(fractionalRealized), 0m));
+
+        _ledger.PostLines(
+            assetEvent.EffectiveAt,
+            $"Cash in lieu {sourceSymbol} -> {targetSymbol} – {account.Account.DisplayName}",
+            lines,
+            metadata with { ActivityType = $"asset_event_{assetEvent.EventType.ToString().ToLowerInvariant()}_cash_in_lieu" });
     }
 
     private static void MergeLots(
@@ -565,7 +1098,6 @@ internal sealed class SimulatedPortfolio
         account.AvgCost.Remove(symbol);
         account.Lots.Remove(symbol);
         account.ShortLots.Remove(symbol);
-        _lastPrices.Remove(symbol);
         account.RealizedPnl.Remove(symbol);
     }
 
@@ -830,7 +1362,10 @@ internal sealed class SimulatedPortfolio
                 var shortMv = positions.Values.Where(position => position.Quantity < 0)
                     .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
                 var equity = account.Cash + longMv + shortMv;
-                var openLots = account.Lots.Values.SelectMany(static l => l).ToList();
+                var openLots = account.Lots.Values
+                    .Concat(account.ShortLots.Values)
+                    .SelectMany(static lots => lots)
+                    .ToList();
                 return new FinancialAccountSnapshot(
                     account.Account.AccountId,
                     account.Account.DisplayName,
@@ -859,11 +1394,17 @@ internal sealed class SimulatedPortfolio
 
             var avgCost = account.AvgCost.GetValueOrDefault(symbol, 0m);
             var lastPrice = _lastPrices.GetValueOrDefault(symbol, avgCost);
-            var unrealised = (lastPrice - avgCost) * qty;
             var realised = account.RealizedPnl.GetValueOrDefault(symbol, 0m);
-            var openLots = account.Lots.TryGetValue(symbol, out var lots)
-                ? (IReadOnlyList<OpenLot>)lots.ToList()
-                : Array.Empty<OpenLot>();
+            IReadOnlyList<OpenLot> openLots;
+            if (qty < 0 && account.ShortLots.TryGetValue(symbol, out var shortLots))
+                openLots = shortLots.ToList();
+            else if (account.Lots.TryGetValue(symbol, out var lots))
+                openLots = lots.ToList();
+            else
+                openLots = Array.Empty<OpenLot>();
+            var unrealised = openLots.Count > 0
+                ? openLots.Sum(lot => lot.UnrealizedPnl(lastPrice))
+                : (lastPrice - avgCost) * qty;
             result[symbol] = new Position(symbol, qty, avgCost, unrealised, realised, openLots);
         }
 
@@ -891,7 +1432,7 @@ internal sealed class SimulatedPortfolio
         foreach (var lot in lots)
         {
             totalQty += lot.Quantity;
-            totalCost += lot.Quantity * lot.EntryPrice;
+            totalCost += lot.CostBasis();
         }
 
         return totalQty == 0 ? 0m : totalCost / totalQty;
@@ -929,10 +1470,15 @@ internal sealed class SimulatedPortfolio
             var node = slice.Lot;
             var lot = node.Value;
             var quantity = (long)slice.Quantity;
+            var lotBasis = lot.CostBasis();
+            var basisRemoved = slice.ClosesLot
+                ? lotBasis
+                : lotBasis * quantity / lot.Quantity;
+            var closedEntryPrice = basisRemoved / quantity;
 
-            realised += quantity * (sellPrice - lot.EntryPrice);
+            realised += (quantity * sellPrice) - basisRemoved;
             account.ClosedLots.Add(new ClosedLot(
-                lot.LotId, symbol, quantity, lot.EntryPrice, lot.OpenedAt,
+                lot.LotId, symbol, quantity, closedEntryPrice, lot.OpenedAt,
                 lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId));
 
             if (slice.ClosesLot)
@@ -942,7 +1488,7 @@ internal sealed class SimulatedPortfolio
             else
             {
                 // Replace lot with reduced quantity, preserve original LotId.
-                lots.AddBefore(node, lot with { Quantity = lot.Quantity - quantity });
+                lots.AddBefore(node, ReduceOpenLot(lot, lot.Quantity - quantity, lotBasis - basisRemoved));
                 lots.Remove(node);
             }
         }
@@ -974,12 +1520,16 @@ internal sealed class SimulatedPortfolio
             var node = slice.Lot;
             var lot = node.Value;
             var lotClose = (long)slice.Quantity;
-            var lotProceeds = lotClose * lot.EntryPrice;
+            var lotBasis = lot.CostBasis();
+            var lotProceeds = slice.ClosesLot
+                ? lotBasis
+                : lotBasis * lotClose / lot.Quantity;
+            var closedEntryPrice = lotProceeds / lotClose;
             realised += lotProceeds - lotClose * coverPrice;
             shortSaleProceeds += lotProceeds;
 
             account.ClosedLots.Add(new ClosedLot(
-                lot.LotId, symbol, lotClose, lot.EntryPrice, lot.OpenedAt,
+                lot.LotId, symbol, lotClose, closedEntryPrice, lot.OpenedAt,
                 lot.OpenFillId, coverPrice, closedAt, closeFillId, account.Account.AccountId, IsShort: true));
 
             if (slice.ClosesLot)
@@ -988,12 +1538,45 @@ internal sealed class SimulatedPortfolio
             }
             else
             {
-                lots.AddBefore(node, lot with { Quantity = lot.Quantity - lotClose });
+                lots.AddBefore(node, ReduceOpenLot(lot, lot.Quantity - lotClose, lotBasis - lotProceeds));
                 lots.Remove(node);
             }
         }
 
         return (realised, shortSaleProceeds);
+    }
+
+    private static OpenLot ReduceOpenLot(OpenLot lot, long remainingQuantity, decimal remainingBasis)
+    {
+        OpenLotBasisComponent[] basisComponents = [];
+        if (lot.BasisComponents is { Count: > 0 })
+        {
+            var lotBasis = lot.CostBasis();
+            var quantityRatio = (decimal)remainingQuantity / lot.Quantity;
+            var basisRatio = lotBasis == 0m ? quantityRatio : remainingBasis / lotBasis;
+            basisComponents = lot.BasisComponents
+                .Select(component => component with
+                {
+                    SuccessorQuantity = component.SuccessorQuantity * quantityRatio,
+                    AllocatedBasis = component.AllocatedBasis * basisRatio
+                })
+                .ToArray();
+            var last = basisComponents[^1];
+            basisComponents[^1] = last with
+            {
+                SuccessorQuantity = last.SuccessorQuantity +
+                    (remainingQuantity - basisComponents.Sum(static component => component.SuccessorQuantity)),
+                AllocatedBasis = last.AllocatedBasis +
+                    (remainingBasis - basisComponents.Sum(static component => component.AllocatedBasis))
+            };
+        }
+
+        return lot with
+        {
+            Quantity = remainingQuantity,
+            EntryPrice = remainingBasis / remainingQuantity,
+            BasisComponents = basisComponents
+        };
     }
 
     /// <summary>
@@ -1009,7 +1592,8 @@ internal sealed class SimulatedPortfolio
         return method switch
         {
             LotSelectionMethod.Lifo => IterateReverse(lots),
-            LotSelectionMethod.Hifo => lots.EnumerateNodes().OrderByDescending(n => n.Value.EntryPrice),
+            LotSelectionMethod.Hifo => lots.EnumerateNodes()
+                .OrderByDescending(n => n.Value.CostBasis() / n.Value.Quantity),
             LotSelectionMethod.SpecificId when targetLotId.HasValue =>
                 SpecificIdFirst(lots, targetLotId.Value),
             _ => lots.EnumerateNodes(),   // Fifo + SpecificId fallback
@@ -1035,6 +1619,12 @@ internal sealed class SimulatedPortfolio
         foreach (var node in lots.EnumerateNodes().Where(n => n.Value.LotId != targetLotId))
             yield return node;
     }
+
+    private readonly record struct PositionTransformationResult(
+        decimal CashInLieu,
+        decimal FractionalUnits,
+        decimal BasisDisposed,
+        decimal RealizedPnl);
 
     private sealed class AccountState(FinancialAccount account)
     {

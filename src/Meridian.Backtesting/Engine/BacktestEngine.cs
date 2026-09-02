@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
@@ -6,6 +7,7 @@ using Meridian.Backtesting.Portfolio;
 using Meridian.Contracts.Backtesting;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Replay;
 using Meridian.Storage.Services;
@@ -257,22 +259,124 @@ public sealed class BacktestEngine(
             if (!Directory.Exists(symbolRoot))
                 symbolRoot = request.DataRoot;  // flat layout fallback
 
-            var reader = new JsonlReplayer(symbolRoot);
-            var symbolStream = FilterBySymbolAndDate(reader.ReadEventsAsync(), symbol, request.From, request.To);
-
-            // Apply corporate action adjustments if enabled
             if (request.AdjustForCorporateActions && corporateActionAdjustment != null)
             {
-                symbolStream = ApplyCorporateActionAdjustmentsAsync(symbolStream, symbol, corporateActionAdjustment, ct);
+                streams.Add(CapturePrepareAndReplayAsync(symbolRoot, symbol, request, ct));
+                continue;
             }
 
+            var reader = new JsonlReplayer(symbolRoot);
+            var symbolStream = FilterBySymbolAndDate(
+                reader.ReadEventsAsync(ct),
+                symbol,
+                request.From,
+                request.To,
+                ct);
             streams.Add(symbolStream);
         }
         return Task.FromResult<IReadOnlyList<IAsyncEnumerable<MarketEvent>>>(streams);
     }
 
     /// <summary>
-    /// Wraps a symbol stream to apply corporate action adjustments incrementally to HistoricalBar events.
+    /// Captures the exact filtered replay used to prepare a corporate-action plan, then executes
+    /// from that immutable snapshot. Preparation and execution therefore cannot observe different
+    /// market data when a source partition is concurrently appended or replaced.
+    /// </summary>
+    private async IAsyncEnumerable<MarketEvent> CapturePrepareAndReplayAsync(
+        string symbolRoot,
+        string symbol,
+        BacktestRequest request,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        var snapshotPath = Path.Combine(
+            Path.GetTempPath(),
+            $"meridian-backtest-snapshot-{Guid.NewGuid():N}.jsonl");
+
+        try
+        {
+            var historicalBars = new List<HistoricalBar>();
+            await using (var writer = new StreamWriter(new FileStream(
+                             snapshotPath,
+                             FileMode.CreateNew,
+                             FileAccess.Write,
+                             FileShare.None,
+                             4096,
+                             FileOptions.Asynchronous | FileOptions.SequentialScan)))
+            {
+                var captureReader = new JsonlReplayer(symbolRoot);
+                await foreach (var evt in FilterBySymbolAndDate(
+                                   captureReader.ReadEventsAsync(ct),
+                                   symbol,
+                                   request.From,
+                                   request.To,
+                                   ct).ConfigureAwait(false))
+                {
+                    if (evt.Payload is HistoricalBar bar)
+                        historicalBars.Add(bar);
+
+                    var json = JsonSerializer.Serialize(
+                        evt,
+                        MarketDataJsonContext.HighPerformanceOptions);
+                    await writer.WriteLineAsync(json.AsMemory(), ct).ConfigureAwait(false);
+                }
+
+                await writer.FlushAsync(ct).ConfigureAwait(false);
+            }
+
+            var effectiveThroughUtc = new DateTimeOffset(
+                request.To.ToDateTime(TimeOnly.MaxValue),
+                TimeSpan.Zero);
+            var adjustmentPlan = await corporateActionAdjustment!
+                .PrepareAsync(historicalBars, symbol, effectiveThroughUtc, ct)
+                .ConfigureAwait(false);
+            logger.LogInformation(
+                "Prepared corporate-action plan {ContentVersion} for {Symbol}: {BarCount} bars through {EffectiveThroughUtc}",
+                adjustmentPlan.ContentVersion,
+                symbol,
+                adjustmentPlan.BarCount,
+                adjustmentPlan.EffectiveThroughUtc);
+
+            var snapshotReader = new JsonlReplayer(snapshotPath);
+            await foreach (var evt in ApplyCorporateActionPlanAsync(
+                               snapshotReader.ReadEventsAsync(ct),
+                               symbol,
+                               adjustmentPlan,
+                               ct).ConfigureAwait(false))
+            {
+                yield return evt;
+            }
+        }
+        finally
+        {
+            if (File.Exists(snapshotPath))
+                File.Delete(snapshotPath);
+        }
+    }
+
+    /// <summary>
+    /// Applies a prepared immutable corporate-action plan to HistoricalBar events while preserving
+    /// streaming for the execution pass.
+    /// </summary>
+    internal static async IAsyncEnumerable<MarketEvent> ApplyCorporateActionPlanAsync(
+        IAsyncEnumerable<MarketEvent> source,
+        string symbol,
+        CorporateActionAdjustmentPlan adjustmentPlan,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(adjustmentPlan);
+
+        await foreach (var evt in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            if (evt.Payload is HistoricalBar bar)
+                yield return evt with { Symbol = symbol, Payload = adjustmentPlan.Apply(bar) };
+            else
+                yield return evt;
+        }
+    }
+
+    /// <summary>
+    /// Compatibility wrapper for callers that explicitly exercise the legacy per-bar seam.
     /// </summary>
     internal static async IAsyncEnumerable<MarketEvent> ApplyCorporateActionAdjustmentsAsync(
         IAsyncEnumerable<MarketEvent> source,
@@ -741,7 +845,7 @@ public sealed class BacktestEngine(
                 maximumPerOrder: request.CommissionMaximum)
         };
 
-    private static IReadOnlyList<TradeTicket> BuildTradeTickets(IReadOnlyList<CashFlowEntry> cashFlows)
+    internal static IReadOnlyList<TradeTicket> BuildTradeTickets(IReadOnlyList<CashFlowEntry> cashFlows)
     {
         var tickets = new List<TradeTicket>(cashFlows.Count);
 
@@ -781,7 +885,8 @@ public sealed class BacktestEngine(
                         BuildAssetEventNarrative(assetEvent),
                         assetEvent.Amount,
                         assetEvent.UnitsImpacted,
-                        assetEvent.CashPerShare));
+                        assetEvent.CashPerShare,
+                        AccountId: assetEvent.AccountId));
                     break;
                 case DividendCashFlow dividend:
                     tickets.Add(new TradeTicket(

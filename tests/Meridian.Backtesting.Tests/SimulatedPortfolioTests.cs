@@ -413,8 +413,12 @@ public sealed class SimulatedPortfolioTests
         var newPosition = portfolio.GetCurrentPositions()["MSFT"];
         newPosition.Quantity.Should().Be(1);
         newPosition.AverageCostBasis.Should().Be(180m);
+        newPosition.RealizedPnl.Should().Be(110m);
         portfolio.Cash.Should().Be(9_945m);
-        ledger.GetBalance(LedgerAccounts.CorporateActionIncomeFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(215m);
+        ledger.GetBalance(LedgerAccounts.CorporateActionIncomeFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(15m);
+        ledger.GetBalance(LedgerAccounts.RealizedGainFor(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(110m);
+        ledger.GetBalance(LedgerAccounts.Securities("ATVI", BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Securities("MSFT", BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(180m);
     }
 
 }

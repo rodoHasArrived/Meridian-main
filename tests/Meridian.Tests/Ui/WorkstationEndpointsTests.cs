@@ -5891,7 +5891,9 @@ public sealed partial class WorkstationEndpointsTests
                 quantity: 1_000_000L,
                 entryPrice: 0.97m,
                 accountId: "structured-income-account",
-                accountDisplayName: "Structured Income Account")));
+                accountDisplayName: "Structured Income Account",
+                isShort: true,
+                legacyLotWithoutDirection: true)));
 
         var client = app.GetTestClient();
         var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot?fundProfileId=alpha-credit");
@@ -5965,7 +5967,9 @@ public sealed partial class WorkstationEndpointsTests
         openLot.FactorAdjustedFace.Should().Be(982_500m);
         openLot.CostBasis.Should().Be(970_000m);
         openLot.EntryPrice.Should().Be(0.97m);
-        openLot.UnrealizedPnl.Should().Be(12_500m);
+        openLot.IsShort.Should().BeTrue();
+        openLot.UnrealizedPnl.Should().Be(12_500m,
+            "a profitable legacy short lot must recover direction from its account position and use entry-minus-mark economics");
         openLot.SettleDate.Should().Be(new DateTimeOffset(2026, 5, 16, 14, 0, 0, TimeSpan.Zero));
         snapshot.RecommendedActions.Should().Contain(action =>
             action.Kind == SecurityMasterRecommendedActionKind.EditSelectedSecurity &&
@@ -8742,7 +8746,9 @@ public sealed partial class WorkstationEndpointsTests
         long quantity,
         decimal entryPrice,
         string accountId,
-        string accountDisplayName)
+        string accountDisplayName,
+        bool isShort = false,
+        bool legacyLotWithoutDirection = false)
     {
         var startedAt = new DateTimeOffset(2026, 5, 14, 14, 0, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddDays(6);
@@ -8754,32 +8760,40 @@ public sealed partial class WorkstationEndpointsTests
             OpenedAt: startedAt,
             OpenFillId: Guid.Parse("44444444-dddd-4444-eeee-444444444444"),
             AccountId: accountId,
-            Notes: "Trust remittance carry lot");
+            Notes: "Trust remittance carry lot")
+        {
+            IsShort = isShort && !legacyLotWithoutDirection
+        };
+        var signedPositionQuantity = isShort ? -quantity : quantity;
         var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
         {
-            [symbol] = new(symbol, quantity, entryPrice, 12_500m, 0m, [openLot])
+            [symbol] = new(symbol, signedPositionQuantity, entryPrice, 12_500m, 0m, [openLot])
         };
+        var longMarketValue = isShort ? 0m : 982_500m;
+        var shortMarketValue = isShort ? -957_500m : 0m;
+        var snapshotCash = isShort ? 2_190_000m : 250_000m;
+        var totalEquity = snapshotCash + longMarketValue + shortMarketValue;
         var accountSnapshot = new FinancialAccountSnapshot(
             AccountId: accountId,
             DisplayName: accountDisplayName,
             Kind: FinancialAccountKind.Brokerage,
             Institution: "Structured Credit Broker",
-            Cash: 250_000m,
+            Cash: snapshotCash,
             MarginBalance: 0m,
-            LongMarketValue: 982_500m,
-            ShortMarketValue: 0m,
-            Equity: 1_232_500m,
+            LongMarketValue: longMarketValue,
+            ShortMarketValue: shortMarketValue,
+            Equity: totalEquity,
             Positions: positions,
             Rules: new FinancialAccountRules(),
             OpenLots: [openLot]);
         var snapshot = new PortfolioSnapshot(
             Timestamp: completedAt,
             Date: DateOnly.FromDateTime(completedAt.UtcDateTime),
-            Cash: 250_000m,
+            Cash: snapshotCash,
             MarginBalance: 0m,
-            LongMarketValue: 982_500m,
-            ShortMarketValue: 0m,
-            TotalEquity: 1_232_500m,
+            LongMarketValue: longMarketValue,
+            ShortMarketValue: shortMarketValue,
+            TotalEquity: totalEquity,
             DailyReturn: 0m,
             Positions: positions,
             Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
@@ -8819,11 +8833,22 @@ public sealed partial class WorkstationEndpointsTests
             SymbolAttribution: new Dictionary<string, SymbolAttribution>());
 
         var ledger = new global::Meridian.Ledger.Ledger();
-        PostBalancedEntry(ledger, startedAt, $"Buy {symbol}",
-        [
-            (LedgerAccounts.Securities(symbol), 970_000m, 0m),
-            (LedgerAccounts.Cash, 0m, 970_000m)
-        ]);
+        if (isShort)
+        {
+            PostBalancedEntry(ledger, startedAt, $"Short sell {symbol}",
+            [
+                (LedgerAccounts.CashAccount(accountId), 970_000m, 0m),
+                (LedgerAccounts.ShortSecuritiesPayable(symbol, accountId), 0m, 970_000m)
+            ]);
+        }
+        else
+        {
+            PostBalancedEntry(ledger, startedAt, $"Buy {symbol}",
+            [
+                (LedgerAccounts.Securities(symbol, accountId), 970_000m, 0m),
+                (LedgerAccounts.CashAccount(accountId), 0m, 970_000m)
+            ]);
+        }
 
         return new BacktestResult(
             Request: request,

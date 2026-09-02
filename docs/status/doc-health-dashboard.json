@@ -1,11 +1,11 @@
 {
   "total_files": 664,
-  "total_lines": 139713,
+  "total_lines": 139763,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 263,
-  "average_lines": 210.4,
+  "average_lines": 210.5,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2664,7 +2664,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10783,
+      "line_count": 10785,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5208,7 +5208,7 @@
     },
     {
       "path": "src/Meridian.Backtesting.Sdk/README.md",
-      "line_count": 76,
+      "line_count": 90,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5216,7 +5216,7 @@
     },
     {
       "path": "src/Meridian.Backtesting/README.md",
-      "line_count": 159,
+      "line_count": 180,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5224,7 +5224,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1485,
+      "line_count": 1488,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5480,7 +5480,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2306,
+      "line_count": 2313,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5488,7 +5488,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1399,
+      "line_count": 1400,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5536,7 +5536,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 810,
+      "line_count": 812,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
