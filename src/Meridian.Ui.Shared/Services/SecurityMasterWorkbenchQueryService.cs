@@ -3350,16 +3350,18 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             {
                 var quantity = snapshotLot.Lot.Quantity;
                 var price = snapshotLot.Lot.EntryPrice;
-                var position = latestSnapshot.Positions.TryGetValue(snapshotLot.Lot.Symbol, out var matchedPosition)
-                    ? matchedPosition
-                    : null;
+                var position = ResolveSnapshotPosition(latestSnapshot, snapshotLot);
                 var impliedMarketPrice = TryResolveImpliedMarketPrice(position);
-                var costBasis = quantity * price;
-                var accountScopeId = matchingPositions.FirstOrDefault(static position => !string.IsNullOrWhiteSpace(position.AccountScopeId))?.AccountScopeId
-                    ?? snapshotLot.AccountId
-                    ?? snapshotLot.Lot.AccountId;
-                var accountScopeDisplayName = matchingPositions.FirstOrDefault(static position => !string.IsNullOrWhiteSpace(position.AccountScopeDisplayName))?.AccountScopeDisplayName
-                    ?? snapshotLot.AccountDisplayName;
+                // IsShort is additive and therefore false when an older persisted snapshot did
+                // not contain the field. Recover direction from the account-scoped signed
+                // position so legacy short lots cannot be presented with inverted economics.
+                var isShort = snapshotLot.Lot.IsShort || (position?.Quantity ?? 0) < 0;
+                var costBasis = snapshotLot.Lot.CostBasis();
+                var accountScopeId = snapshotLot.AccountId
+                    ?? snapshotLot.Lot.AccountId
+                    ?? matchingPositions.FirstOrDefault(static position => !string.IsNullOrWhiteSpace(position.AccountScopeId))?.AccountScopeId;
+                var accountScopeDisplayName = snapshotLot.AccountDisplayName
+                    ?? matchingPositions.FirstOrDefault(static position => !string.IsNullOrWhiteSpace(position.AccountScopeDisplayName))?.AccountScopeDisplayName;
                 var vehicleScopeId = matchingPositions.FirstOrDefault(static position => !string.IsNullOrWhiteSpace(position.VehicleScopeId))?.VehicleScopeId;
                 var vehicleScopeDisplayName = matchingPositions.FirstOrDefault(static position => !string.IsNullOrWhiteSpace(position.VehicleScopeDisplayName))?.VehicleScopeDisplayName;
                 var (originalFace, currentFace, factorAdjustedQuantity, factorAdjustedFace) = ProjectLotFaces(quantity, lotModel, currentFactor);
@@ -3384,7 +3386,13 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                     FactorAdjustedFace: factorAdjustedFace,
                     CostBasis: costBasis,
                     EntryPrice: price,
-                    UnrealizedPnl: impliedMarketPrice.HasValue ? snapshotLot.Lot.UnrealizedPnl(impliedMarketPrice.Value) : null,
+                    UnrealizedPnl: impliedMarketPrice.HasValue
+                        ? isShort == snapshotLot.Lot.IsShort
+                            ? snapshotLot.Lot.UnrealizedPnl(impliedMarketPrice.Value)
+                            : quantity * (isShort
+                                ? price - impliedMarketPrice.Value
+                                : impliedMarketPrice.Value - price)
+                        : null,
                     Currency: detail.Currency,
                     LotStatus: "Open",
                     SourceSystem: "strategy-run-snapshot",
@@ -3393,7 +3401,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                     SourceUpdatedBy: null,
                     SourceReason: "Latest scoped run snapshot",
                     IsLongTerm: snapshotLot.Lot.IsLongTerm(latestSnapshot.Timestamp),
-                    Notes: snapshotLot.Lot.Notes));
+                    Notes: snapshotLot.Lot.Notes)
+                {
+                    IsShort = isShort
+                });
             }
         }
 
@@ -4661,6 +4672,23 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         }
 
         return position.AverageCostBasis + (position.UnrealizedPnl / position.Quantity);
+    }
+
+    private static Position? ResolveSnapshotPosition(
+        PortfolioSnapshot snapshot,
+        SnapshotOpenLotEnvelope snapshotLot)
+    {
+        var accountId = snapshotLot.AccountId ?? snapshotLot.Lot.AccountId;
+        if (!string.IsNullOrWhiteSpace(accountId) &&
+            snapshot.Accounts.TryGetValue(accountId, out var account) &&
+            account.Positions.TryGetValue(snapshotLot.Lot.Symbol, out var accountPosition))
+        {
+            return accountPosition;
+        }
+
+        return snapshot.Positions.TryGetValue(snapshotLot.Lot.Symbol, out var aggregatePosition)
+            ? aggregatePosition
+            : null;
     }
 
     private static (decimal? OriginalFace, decimal? CurrentFace, decimal? FactorAdjustedQuantity, decimal? FactorAdjustedFace) ProjectLotFaces(

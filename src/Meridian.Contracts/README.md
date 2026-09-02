@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-08-03
+last_reviewed: 2026-09-02
 ---
 
 # src/Meridian.Contracts
@@ -55,6 +55,9 @@ or provider implementations.
 - `Workstation/` - workstation and operator workflow DTOs, including the persisted statement
   reconciliation report status, stage, current retained JSON/CSV artifact generation, immutable
   superseded-generation manifest and receipt history, evidence-link, and recovery payloads.
+  Security Master open-lot DTOs carry additive init-only `IsShort` direction without changing their
+  positional constructor/deconstruction shape, so browser and desktop consumers do not infer lot
+  direction from an always-positive lot quantity.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
   and event references, projection lineage, and query/command service contracts.

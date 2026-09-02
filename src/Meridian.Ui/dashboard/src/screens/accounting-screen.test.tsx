@@ -698,6 +698,7 @@ const securityTrustSnapshot: SecurityMasterTrustSnapshot = {
         costBasis: 99000,
         entryPrice: 99,
         unrealizedPnl: 1250,
+        isShort: false,
         currency: "USD",
         lotStatus: "Open",
         sourceSystem: "ledger",

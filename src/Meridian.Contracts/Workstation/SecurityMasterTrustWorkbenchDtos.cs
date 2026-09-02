@@ -330,7 +330,11 @@ public sealed record SecurityMasterOpenLotDto(
     string? SourceUpdatedBy,
     string? SourceReason,
     bool IsLongTerm,
-    string? Notes);
+    string? Notes)
+{
+    /// <summary>True when the positive lot quantity represents a short position.</summary>
+    public bool IsShort { get; init; }
+}
 
 public sealed record SecurityMasterOpenLotProvenanceDto(
     string ProvenanceId,

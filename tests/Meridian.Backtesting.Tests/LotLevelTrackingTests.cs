@@ -260,6 +260,24 @@ public sealed class LotLevelTrackingTests
     }
 
     [Fact]
+    public void OpenShortLot_UnrealizedPnl_InvertsLongEconomics()
+    {
+        var lot = new OpenLot(
+            Guid.NewGuid(),
+            "AAPL",
+            10,
+            100m,
+            DateTimeOffset.UtcNow,
+            Guid.NewGuid())
+        {
+            IsShort = true
+        };
+
+        lot.UnrealizedPnl(80m).Should().Be(200m);
+        lot.UnrealizedPnl(150m).Should().Be(-500m);
+    }
+
+    [Fact]
     public void OpenLot_IsLongTerm_WhenOlderThan365Days()
     {
         var lot = new OpenLot(Guid.NewGuid(), "X", 1, 100m,

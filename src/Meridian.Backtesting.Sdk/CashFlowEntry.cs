@@ -71,4 +71,14 @@ public sealed record AssetEventCashFlow(
     decimal CashPerShare,
     string? RelatedSymbol = null,
     decimal PositionFactor = 1m,
-    string? Description = null) : CashFlowEntry(Timestamp, Amount);
+    string? Description = null) : CashFlowEntry(Timestamp, Amount)
+{
+    /// <summary>Exact non-whole successor quantity settled as cash in lieu.</summary>
+    public decimal FractionalUnits { get; init; }
+
+    /// <summary>Tax-lot basis relieved for the cash-in-lieu disposal.</summary>
+    public decimal BasisDisposed { get; init; }
+
+    /// <summary>Realized gain (positive) or loss (negative) on the cash-in-lieu disposal.</summary>
+    public decimal RealizedPnl { get; init; }
+}

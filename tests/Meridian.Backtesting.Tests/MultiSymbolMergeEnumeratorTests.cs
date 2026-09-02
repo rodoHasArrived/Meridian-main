@@ -63,6 +63,27 @@ public sealed class MultiSymbolMergeEnumeratorTests
     }
 
     [Fact]
+    public async Task MergeAsync_PrimingFailure_DisposesEveryEnumeratorCreatedSoFar()
+    {
+        var first = new TrackingAsyncEnumerable(
+            [MakeTradeEvent("AAPL", DateTimeOffset.UnixEpoch)]);
+        var second = new ThrowingAsyncEnumerable();
+
+        Func<Task> act = async () =>
+        {
+            await foreach (var _ in MultiSymbolMergeEnumerator.MergeAsync([first, second]))
+            {
+                // The second stream fails while the merge is still priming.
+            }
+        };
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("snapshot preparation failed");
+        first.DisposeCount.Should().Be(1);
+        second.DisposeCount.Should().Be(1);
+    }
+
+    [Fact]
     public async Task ApplyCorporateActionAdjustmentsAsync_MixedStream_YieldsWithoutBufferingFutureBars()
     {
         var adjustment = new TrackingCorporateActionAdjustmentService();
@@ -162,6 +183,28 @@ public sealed class MultiSymbolMergeEnumeratorTests
                 Current = events[_index];
                 return ValueTask.FromResult(true);
             }
+
+            public ValueTask DisposeAsync()
+            {
+                owner.DisposeCount++;
+                return ValueTask.CompletedTask;
+            }
+        }
+    }
+
+    private sealed class ThrowingAsyncEnumerable : IAsyncEnumerable<MarketEvent>
+    {
+        public int DisposeCount { get; private set; }
+
+        public IAsyncEnumerator<MarketEvent> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+            new Enumerator(this);
+
+        private sealed class Enumerator(ThrowingAsyncEnumerable owner) : IAsyncEnumerator<MarketEvent>
+        {
+            public MarketEvent Current => null!;
+
+            public ValueTask<bool> MoveNextAsync() =>
+                ValueTask.FromException<bool>(new InvalidOperationException("snapshot preparation failed"));
 
             public ValueTask DisposeAsync()
             {

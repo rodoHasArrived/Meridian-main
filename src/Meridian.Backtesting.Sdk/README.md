@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING-SDK
 path: src/Meridian.Backtesting.Sdk
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-05-20
+last_reviewed: 2026-09-02
 ---
 
 # src/Meridian.Backtesting.Sdk
@@ -41,6 +41,20 @@ Use this module when a backtesting contract must be shared across runtime and st
   engines. Native results are marked with full canonical coverage, while QuantConnect Lean imports
   normalize into the same `BacktestResult` storage model with `SummaryOnly` coverage metadata and
   compatibility warnings for missing fill, cash-flow, attribution, and ledger artifacts.
+- `OpenLot.IsShort` is an optional init-only direction flag that preserves the existing positional
+  constructor and deconstruction shapes. Lot quantities stay positive; directed short lots calculate unrealized P&L as
+  `(entryPrice - currentPrice) * quantity` and retain that direction when exposed through position
+  or financial-account snapshots.
+- `OpenLot.BasisComponents` is a copied, read-only init-only collection for synthesized
+  corporate-action lots. It preserves the exact successor quantity, allocated basis, source lot,
+  source fill, and acquisition date for every contributor without changing the legacy constructor
+  or deconstruction shape. Mixed-age lots use the newest component for `Age` and require every
+  component to qualify for `IsLongTerm`.
+- `AssetEventCashFlow.AccountId` identifies the brokerage account affected by multi-account asset
+  events through the inherited init-only property without changing the asset-event constructor or
+  deconstruction shape.
+- `AssetEventCashFlow.FractionalUnits`, `BasisDisposed`, and `RealizedPnl` retain cash-in-lieu
+  disposal evidence even when an all-fraction transformation leaves no successor position.
 
 ## Diagrams
 

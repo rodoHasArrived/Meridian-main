@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-08-03
+last_reviewed: 2026-09-02
 ---
 
 # src/Meridian.Backtesting
@@ -38,6 +38,26 @@ Principal-paydown position adjustments consume Instruments `FactorPaydownProject
 total basis by the projected monetary principal, and then recompute per-unit basis. The historical
 adjuster therefore uses the same held-face/factor economics as the governed production proof while
 remaining a rebuildable simulation rather than an accounting write path.
+
+Corporate-action-adjusted engine runs capture the exact symbol/date-filtered JSONL event window,
+prepare one immutable adjustment plan from its complete bar history and one Security Master query
+snapshot, and execute from that captured window. `BacktestRequest.To` is the economic cutoff for
+effective actions; it is not a transaction-time Security Master revision boundary. Only confirmed
+(or legacy confirmed-by-default), non-cancelled actions effective by that cutoff are eligible.
+
+Portfolio asset events fan out to every brokerage account holding the source symbol. Whole-unit
+transformations apportion successor shares through exact FIFO entitlements. Fractional entitlements
+carry their own basis across lot boundaries, and a combined whole share receives a deterministic
+composite lot/fill identity plus immutable component basis provenance. Chained actions scale the
+original components instead of collapsing them into the intermediate synthetic lot. Cash-in-lieu
+disposals relieve the remaining fractional securities basis or short payable and recognize the
+resulting account-scoped gain or loss in both the ledger and asset-event cash-flow evidence, including
+when no successor position remains. Canonical symbol attribution is still fill-derived: it neither
+replays corporate-action quantity/basis changes before later fills nor includes cash-in-lieu P&L. A
+source-to-destination collision with opposite position directions fails before mutation because it
+requires explicit close/cover economics. Short lots preserve explicit direction in position,
+account, and aggregate snapshots. Legacy adjustment services that cannot enforce the engine's
+effective-through boundary fail closed until they implement prepared plans.
 
 Use this module for strategy backtests, simulation runtime behavior, and backtesting evidence.
 Backtest Studio engines must return canonical SDK `BacktestResult` instances so native Meridian and
@@ -116,9 +136,10 @@ Studio UX remains deferred.
 - `MultiSymbolMergeEnumerator` uses a heap for multi-symbol replay and a single-stream fast path
   for one-symbol runs, avoiding per-event heap churn on large historical windows while preserving
   cancellation and enumerator disposal.
-- Corporate-action adjustment in `BacktestEngine` adjusts historical bars one event at a time after
-  cached Security Master action lookup, so mixed bar/trade/depth streams do not buffer replay
-  windows before yielding downstream events.
+- Corporate-action adjustment in `BacktestEngine` uses a two-pass path: it persists the exact
+  filtered mixed-event stream to a temporary JSONL snapshot while retaining its historical bars for
+  plan preparation, then streams execution from that snapshot. This prevents preparation/execution
+  drift without retaining non-bar market events in memory.
 
 ## Diagrams
 

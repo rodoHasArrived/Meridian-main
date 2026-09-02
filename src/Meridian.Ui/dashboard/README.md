@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-04
+last_reviewed: 2026-09-02
 ---
 
 # src/Meridian.Ui/dashboard
@@ -96,7 +96,8 @@ The browser workstation exposes `/accounting/entity-setup` for the shared fund-s
 This is the active operator UI lane; keep shared contract compatibility with retained WPF consumers. Security
 Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
 `openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure
-review.
+review. Open-lot rows render explicit Long/Short direction in the table, detail panel, and accessible
+row description rather than inferring direction from the positive lot quantity.
 The Settings workspace also owns the browser asset-profile governance surface for custom Security
 Master assets: it reads approved profiles, drafts profile variants from starter templates, submits
 approval/rollback lineage actions through the shared Security Master endpoints, and creates

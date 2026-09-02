@@ -63,6 +63,7 @@ export interface SecurityMasterOpenLot {
   sourceReason: string | null;
   isLongTerm: boolean;
   notes: string | null;
+  isShort: boolean;
 }
 
 export interface SecurityMasterOpenLotProvenance {
