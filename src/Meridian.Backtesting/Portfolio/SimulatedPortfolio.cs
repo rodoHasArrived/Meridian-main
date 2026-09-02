@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Meridian.Contracts.Integrity;
 using Meridian.Ledger;
 
 namespace Meridian.Backtesting.Portfolio;
@@ -961,8 +962,7 @@ internal sealed class SimulatedPortfolio
             outputOrdinal.ToString(invariant),
             string.Join(",", parentLotIds.Select(static id => id.ToString("N"))),
             componentIdentity);
-        var hash = System.Security.Cryptography.SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(identity));
+        var hash = Sha256Digest.ComputeBytesUtf8(identity);
         return new Guid(hash.AsSpan(0, 16));
     }
 
