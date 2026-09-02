@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "ecb5dd1b520900b658c290ff4ea2209fd941a99d41ac893011201b7e6c5b14d8",
+      "fingerprint": "1437d4aefd4553658078ab7c634e08d2301486ff8cec298a833128aac98792f9",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -365,6 +365,9 @@
         "Meridian.Contracts.AssetOperations.CorporateActionSuccessorRoleDto",
         "Meridian.Contracts.AssetOperations.CorporateActionTaxClassificationDto",
         "Meridian.Contracts.AssetOperations.CorporateActionTreatmentDecisionDto",
+        "Meridian.Contracts.AssetOperations.DirectLoanCovenantDto",
+        "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
+        "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
         "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
         "Meridian.Contracts.AssetOperations.IAssetOperationsCommandService",
         "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
@@ -397,6 +400,8 @@
         "Meridian.Contracts.AssetOperations.ProjectionLineageDto",
         "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto",
         "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator",
+        "Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto",
+        "Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto",
         "Meridian.Contracts.Backfill.BackfillJobStatus",
         "Meridian.Contracts.Backfill.BackfillProgress",
         "Meridian.Contracts.Backfill.BackfillProviderAttemptProgressDto",
@@ -2667,7 +2672,7 @@
       "directories": [
         "src/Meridian.Contracts/AssetOperations"
       ],
-      "fingerprint": "0b0880096caeed31620446c48aac21c6ebe1a52af71b8bda3c9499d241264896",
+      "fingerprint": "b80b1aaadcd60fb93f7576682d0ae63df27b76872fb6b192e6d2b48350d1ac7d",
       "id": "asset-operations-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AssetOperations"
@@ -2748,6 +2753,9 @@
         "Meridian.Contracts.AssetOperations.CorporateActionSuccessorRoleDto",
         "Meridian.Contracts.AssetOperations.CorporateActionTaxClassificationDto",
         "Meridian.Contracts.AssetOperations.CorporateActionTreatmentDecisionDto",
+        "Meridian.Contracts.AssetOperations.DirectLoanCovenantDto",
+        "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
+        "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
         "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
         "Meridian.Contracts.AssetOperations.IAssetOperationsCommandService",
         "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
@@ -2779,7 +2787,9 @@
         "Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto",
         "Meridian.Contracts.AssetOperations.ProjectionLineageDto",
         "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto",
-        "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
+        "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator",
+        "Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto",
+        "Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto"
       ],
       "schemas": [
         "asset_operations"
@@ -3794,7 +3804,7 @@
       ]
     }
   ],
-  "fingerprint": "04ff94d763794055983a9a4d66cb0735115870368f5a7f4016ec2991a8a28628",
+  "fingerprint": "790452b96d5773625da34c925f19bd2c76d476351c6b0a68982856b0b7fc9927",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4128,7 +4138,7 @@
         "all-contracts",
         "asset-operations-contracts"
       ],
-      "fingerprint": "b05fdc2b470b8d7b1d76a84a3239b55214608962de70d8914899ca071a484aef",
+      "fingerprint": "8ccd829cd8e3a69134d042f2329b55d3a1aeeecaa1e4a7b0992c6fa947706c61",
       "mapped_schemas": [
         "asset_operations"
       ],
@@ -4209,6 +4219,9 @@
         "Meridian.Contracts.AssetOperations.CorporateActionSuccessorRoleDto",
         "Meridian.Contracts.AssetOperations.CorporateActionTaxClassificationDto",
         "Meridian.Contracts.AssetOperations.CorporateActionTreatmentDecisionDto",
+        "Meridian.Contracts.AssetOperations.DirectLoanCovenantDto",
+        "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
+        "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
         "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
         "Meridian.Contracts.AssetOperations.IAssetOperationsCommandService",
         "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
@@ -4240,7 +4253,9 @@
         "Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto",
         "Meridian.Contracts.AssetOperations.ProjectionLineageDto",
         "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto",
-        "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
+        "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator",
+        "Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto",
+        "Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto"
       ]
     },
     {
@@ -5679,7 +5694,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "4afd5bb7101268be36ba689fba1e8339f83546e1ff23489af8e9402f8c113644",
+      "fingerprint": "5e2278a58e9e9ac6ce16668bf5b9ee6a76072eb9ffeb6d1868e401329621fa60",
       "mapped_schemas": [
         "security_master"
       ],
@@ -57603,6 +57618,417 @@
         "asset-operations-contracts"
       ],
       "enum_members": [],
+      "fingerprint": "4f89c4d066fea02b3950dc54eba42c65e5f9c1dcc835409c042f6e9e6d491c3f",
+      "full_name": "Meridian.Contracts.AssetOperations.DirectLoanCovenantDto",
+      "id": "Meridian.Contracts.AssetOperations.DirectLoanCovenantDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CovenantType",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 29,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Notes",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 31,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Ordinal",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 28,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 27,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Threshold",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 30,
+          "type": "string"
+        }
+      ],
+      "name": "DirectLoanCovenantDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.DirectLoanCovenantDto",
+      "references": [],
+      "source": {
+        "line": 26,
+        "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 26,
+          "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "128ac35616d73d0c2a2857d690437832195ffb13e409b5249acc520f22460c8c",
+      "full_name": "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
+      "id": "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Amount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 38,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Ordinal",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 36,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PaymentDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 37,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 35,
+          "type": "Guid"
+        }
+      ],
+      "name": "DirectLoanPrincipalPaymentDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
+      "references": [],
+      "source": {
+        "line": 34,
+        "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 34,
+          "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "348127b61cd09a1e28a850ca8c1ad90d71569db3738bde75450e5e117e6bfc81",
+      "full_name": "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
+      "id": "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Borrower",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 12,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 11,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CurrentCouponRate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 16,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DisplayName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 10,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Maturity",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 13,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PricingSource",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 18,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrimaryIdentifier",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 19,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReferenceIndex",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 14,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResetFrequency",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 17,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 9,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SpreadBps",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 15,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Version",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 20,
+          "type": "long"
+        }
+      ],
+      "name": "DirectLoanReferenceDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
+      "references": [],
+      "source": {
+        "line": 8,
+        "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 8,
+          "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
       "fingerprint": "f7a7dd7554cdaf658eaf25ecf65e95c745d6ae2f89703ff0bf257e9c8c3c00fa",
       "full_name": "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
       "id": "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
@@ -61727,6 +62153,322 @@
         {
           "line": 141,
           "path": "src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "73aeadf6edf2d278291face79ad621c22bcbbbdd11f57b40a9ab9676747c19ca",
+      "full_name": "Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto",
+      "id": "Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AsOfDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 64,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Factor",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 65,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Ordinal",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 63,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 62,
+          "type": "Guid"
+        }
+      ],
+      "name": "StructuredCreditFactorPointDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto",
+      "references": [],
+      "source": {
+        "line": 61,
+        "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 61,
+          "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "3b3cf907700448b55228c6a8b301c7fa685baeb3723495973f4a48a455bf4414",
+      "full_name": "Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto",
+      "id": "Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CollateralType",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 51,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CouponOrIndex",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 54,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 48,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CurrentFactor",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 53,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DisplayName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 47,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FactorScheduleReference",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 55,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Maturity",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 56,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OriginalFace",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 52,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PoolId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 50,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrimaryIdentifier",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 57,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 46,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Tranche",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 49,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Version",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 58,
+          "type": "long"
+        }
+      ],
+      "name": "StructuredCreditReferenceDto",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto",
+      "references": [],
+      "source": {
+        "line": 45,
+        "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 45,
+          "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs"
         }
       ],
       "type_parameters": []
@@ -203272,7 +204014,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ed1cf40c2f68482f53f4a5fbc613caa0173c6d3088b35dce3f219c8b8bbcc3cc",
+      "fingerprint": "26ae9b6c55c3df2c117ba5005401bb4b46baacd1a285a1aa8f8cb16bb8053c56",
       "full_name": "Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
       "id": "Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
       "kind": "class",
@@ -203286,12 +204028,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
       "references": [],
       "source": {
-        "line": 578,
+        "line": 594,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
       },
       "sources": [
         {
-          "line": 578,
+          "line": 594,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
         }
       ],
@@ -220073,7 +220815,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a2fba9d78e2c9adebe54beb9fa19da9cd5717a6c64e515247e7ce63539ecd4b5",
+      "fingerprint": "40c84e0c9de3f32123465cfbbcfa91b850469a56223a424719f801c5379c63f6",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
       "kind": "class",
@@ -220087,12 +220829,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
       "references": [],
       "source": {
-        "line": 569,
+        "line": 585,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
       },
       "sources": [
         {
-          "line": 569,
+          "line": 585,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
         }
       ],
@@ -220389,7 +221131,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "3f2d5f56e167b80245a624b43b065b59bcf0700bd902d59e6b91ca321aad0341",
+      "fingerprint": "8a7fa1aa6d1b73e10310403f1fe3b9a322404d3de03ded85c87e7c34d451a172",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog",
       "kind": "class",
@@ -220418,11 +221160,25 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
+          "name": "AssetOperationsCapableAssetClasses",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 464,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
           "name": "IdentifierOnlyImportableAssetClasses",
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 500,
+          "source_line": 516,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -220456,7 +221212,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "1e1a79779f0af5ed4e12b7d03d3c1c3b121000caac8098b00e1621ddd8589c97",
+      "fingerprint": "e1ce74a6a4e7302baa18d3e017bab29301d3eba13ed3eb65adda834b47548d5c",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "kind": "record",
@@ -220476,7 +221232,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 561,
+          "source_line": 577,
           "type": "string?"
         },
         {
@@ -220491,7 +221247,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 560,
+          "source_line": 576,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -220506,7 +221262,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 557,
+          "source_line": 573,
           "type": "bool"
         },
         {
@@ -220520,7 +221276,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 551,
+          "source_line": 567,
           "type": "string"
         },
         {
@@ -220535,7 +221291,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 556,
+          "source_line": 572,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -220549,7 +221305,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<SecurityIdentifierKind>",
-          "source_line": 555,
+          "source_line": 571,
           "type": "IReadOnlyList<SecurityIdentifierKind>"
         },
         {
@@ -220564,7 +221320,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 558,
+          "source_line": 574,
           "type": "bool"
         },
         {
@@ -220578,7 +221334,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 554,
+          "source_line": 570,
           "type": "bool"
         },
         {
@@ -220592,7 +221348,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 552,
+          "source_line": 568,
           "type": "bool"
         },
         {
@@ -220607,7 +221363,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 562,
+          "source_line": 578,
           "type": "bool"
         },
         {
@@ -220622,7 +221378,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 559,
+          "source_line": 575,
           "type": "bool"
         },
         {
@@ -220636,7 +221392,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 553,
+          "source_line": 569,
           "type": "bool"
         }
       ],
@@ -220648,12 +221404,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityIdentifierKind"
       ],
       "source": {
-        "line": 550,
+        "line": 566,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
       },
       "sources": [
         {
-          "line": 550,
+          "line": 566,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs"
         }
       ],

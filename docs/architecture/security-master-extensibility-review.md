@@ -211,6 +211,16 @@ partition, so "adding a catalog class without a projection forces this list to b
 review". `SecurityAssetClassCatalogTests` locks the C# catalog to `AssetClassRegistry.assetClasses`.
 This is the right governance instinct.
 
+> **Updated 2026-09-02 — the projected/unprojected counts below are superseded.** `DirectLoan` and
+> `StructuredCredit` now have relational terms projections (migration 033), taking the projected set
+> from 11 classes to 13. The declared-gap machinery was also split in two, because "we chose not to
+> project it" was never an available answer for an Asset Operations class: a class whose catalog
+> capabilities include `LedgerProjection` can now only be unprojected by sitting in
+> `OpsCapableProjectionBacklog`, which `ProjectionCoverage_ReachesEveryOpsCapableAssetClassOutsideTheBacklog`
+> holds to shrink-only. `IntentionallyUnprojectedAssetClasses` keeps the nine classes that are
+> genuine decisions. Every passage below that reads "11 projected / 15 declared gaps" describes the
+> state before that change; the partition guard itself is unchanged in intent.
+
 **Open-lot modeling for par instruments is careful.** `FaceValueLot` makes previously implicit
 conventions explicit — quote basis (`ParBasis`, so a per-unit-priced lot cannot silently
 mis-amortize through math assuming 100), booked pool factor, and Security Master identity — and owns
@@ -2611,7 +2621,7 @@ field definition (A4).
 | N4 | `ValidateAll()` cannot fire its own overlap rule | `ValidateAll()` still calls `ValidateCandidateSet([])` (`SecurityAssetPackRegistry.cs:258-261`) and the overlap check still filters to groups containing a candidate pack (`:289`), so `candidateIds` is empty and no group survives. `DirectLoan` is still claimed by both `private-loan-credit` (`:198`) and `mortgage-facility-intercompany` (`:223`). |
 | N5 | Per-pack contract schema is one shared prose object | All ten packs still receive the same three static instances — `ContractSchema` (`:37`), `StandardValidationRules` (`:117`), `StandardReportingTaxonomy` (`:153`) — through `Pack(...)` (`:401, 413, 414`), and `ValidateDescriptor` still checks them only for non-emptiness. `InferLifecycleEvent` (`:482-518`) still derives lifecycle routing by substring-matching English journal-template names. |
 | N6 | Projection fan-out writes to every asset class on every upsert | `ProjectionWriters` is still fanned out unconditionally per record; the registry shape is right, the per-record amplification is unchanged. |
-| — | Relational projections for private/alternative classes | Still 11 projected classes (`PostgresSecurityMasterStore.ProjectedAssetClasses`) against 26 catalog classes, with the 15-class gap enumerated and partition-locked in `SecurityAssetTermsSchemaTests`. Governed, not drifting. |
+| — | Relational projections for private/alternative classes | Still 11 projected classes (`PostgresSecurityMasterStore.ProjectedAssetClasses`) against 26 catalog classes, with the 15-class gap enumerated and partition-locked in `SecurityAssetTermsSchemaTests`. Governed, not drifting. **(Superseded 2026-09-02: `DirectLoan` and `StructuredCredit` are now projected — 13 of 26 — and the four remaining Asset Operations classes moved from the declared-gap list to a shrink-only `OpsCapableProjectionBacklog`.)** |
 | — | Valid-time term history | `securities` still holds one current row per security; `effective_to` is written only by `DeactivateProjectionAsync` (`PostgresSecurityMasterStore.cs:100-117`), so it is a lifecycle window, not a version key. Term as-of remains per-security event replay via `RebuildAsOfAsync` — correct for one security, with no bulk point-in-time universe read behind it. |
 | — | Codec generation from `SecurityAssetTermsSchema` | Both arms still hand-written behind `SecurityAssetTermsSchemaRoundTripTests`. |
 

@@ -293,6 +293,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDepositReferenceProjectionStore, PostgresDepositReferenceProjectionStore>();
             services.AddSingleton<IMoneyMarketFundReferenceProjectionStore, PostgresMoneyMarketFundReferenceProjectionStore>();
             services.AddSingleton<ICertificateOfDepositReferenceProjectionStore, PostgresCertificateOfDepositReferenceProjectionStore>();
+            services.AddSingleton<IDirectLoanReferenceProjectionStore, PostgresDirectLoanReferenceProjectionStore>();
+            services.AddSingleton<IStructuredCreditReferenceProjectionStore, PostgresStructuredCreditReferenceProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
@@ -325,6 +327,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDepositReferenceService, DepositProjectionService>();
             services.AddSingleton<IMoneyMarketFundReferenceService, MoneyMarketFundProjectionService>();
             services.AddSingleton<ICertificateOfDepositReferenceService, CertificateOfDepositProjectionService>();
+            services.AddSingleton<IDirectLoanReferenceService, DirectLoanProjectionService>();
+            services.AddSingleton<IStructuredCreditReferenceService, StructuredCreditProjectionService>();
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
             services.AddHostedService<SecurityMasterProjectionWarmupService>();
             if (options.EnableHttpClientFactory)
@@ -426,6 +430,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IDepositReferenceService, NullDepositReferenceService>();
         services.TryAddSingleton<IMoneyMarketFundReferenceService, NullMoneyMarketFundReferenceService>();
         services.TryAddSingleton<ICertificateOfDepositReferenceService, NullCertificateOfDepositReferenceService>();
+        services.TryAddSingleton<IDirectLoanReferenceService, NullDirectLoanReferenceService>();
+        services.TryAddSingleton<IStructuredCreditReferenceService, NullStructuredCreditReferenceService>();
         services.TryAddSingleton<ISecurityMasterAmender, NullSecurityMasterService>();
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();

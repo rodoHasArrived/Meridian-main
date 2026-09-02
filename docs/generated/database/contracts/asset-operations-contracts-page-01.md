@@ -2,7 +2,7 @@
 
 # `asset-operations-contracts` data objects - page 1 of 2
 
-Objects 1-80 of 107. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 112. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -547,6 +547,33 @@ classDiagram
         +AccountingRulePackReferenceDto RuleProfile
         +DateOnly RuleProfileEffectiveFrom
     }
+    class Meridian_Contracts_AssetOperations_DirectLoanCovenantDto["DirectLoanCovenantDto"] {
+        +string CovenantType
+        +string? Notes
+        +int Ordinal
+        +Guid SecurityId
+        +string Threshold
+    }
+    class Meridian_Contracts_AssetOperations_DirectLoanPrincipalPaymentDto["DirectLoanPrincipalPaymentDto"] {
+        +decimal Amount
+        +int Ordinal
+        +DateOnly PaymentDate
+        +Guid SecurityId
+    }
+    class Meridian_Contracts_AssetOperations_DirectLoanReferenceDto["DirectLoanReferenceDto"] {
+        +string Borrower
+        +string Currency
+        +decimal? CurrentCouponRate
+        +string DisplayName
+        +DateOnly? Maturity
+        +string? PricingSource
+        +string PrimaryIdentifier
+        +string? ReferenceIndex
+        +string? ResetFrequency
+        +Guid SecurityId
+        +decimal? SpreadBps
+        +long Version
+    }
     class Meridian_Contracts_AssetOperations_EconomicEventReferenceDto["EconomicEventReferenceDto"] {
         +Guid? BookPositionId
         +Guid? CausationId
@@ -562,12 +589,6 @@ classDiagram
         +string? SourceContentHash
     }
     class Meridian_Contracts_AssetOperations_IAssetOperationsCommandService["IAssetOperationsCommandService"] {
-    }
-    class Meridian_Contracts_AssetOperations_IAssetOperationsQueryService["IAssetOperationsQueryService"] {
-    }
-    class Meridian_Contracts_AssetOperations_IPortfolioCapitalScheduleProvider["IPortfolioCapitalScheduleProvider"] {
-    }
-    class Meridian_Contracts_AssetOperations_IPortfolioCashBalanceProvider["IPortfolioCashBalanceProvider"] {
     }
     Meridian_Contracts_AssetOperations_AppendAssetAccountingLifecycleStageRequestDto --> Meridian_Contracts_AssetOperations_AssetAccountingLifecycleStageDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineAppendResultDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto

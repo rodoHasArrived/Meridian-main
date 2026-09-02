@@ -452,6 +452,22 @@ public static class SecurityAssetClassCatalog
         => GetOrDefault(assetClass).AssetOperationsCapabilities ?? AssetOperationsCapabilitySet.IdentityOnly;
 
     /// <summary>
+    /// The asset classes the catalog gives an Asset Operations capability set — the classes that go
+    /// beyond <see cref="AssetOperationsCapabilitySet.IdentityOnly"/> to declare LifecycleState,
+    /// ProjectedCashFlows, ActualActivity, Reconciliation, LedgerProjection and WorkflowAudit.
+    /// <para>
+    /// Naming the set once lets surfaces that owe these classes more than identity — relational term
+    /// projections, readiness reporting, coverage guards — agree on which classes those are, instead
+    /// of each re-deriving it from a null check or a capability-string match.
+    /// </para>
+    /// </summary>
+    public static IReadOnlyList<string> AssetOperationsCapableAssetClasses { get; } =
+        Descriptors
+            .Where(static descriptor => descriptor.AssetOperationsCapabilities is not null)
+            .Select(static descriptor => descriptor.AssetClass)
+            .ToArray();
+
+    /// <summary>
     /// Resolves the accounting-slice instrument class a record posts as, from the class names it
     /// declares — most specific first (canonical asset class, then type name, then sub-type), with
     /// the coarse classification taxonomy last. Returns <see langword="null"/> when no declared name

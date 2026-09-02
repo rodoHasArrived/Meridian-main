@@ -2128,6 +2128,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanCovenantDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
     },
     {
@@ -2315,6 +2333,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto"
     },
     {
       "kind": "contract-set-member",
@@ -16342,6 +16372,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanCovenantDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
     },
     {
@@ -16529,6 +16577,18 @@
       "label": "",
       "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto"
     },
     {
       "kind": "contract-set-member",
@@ -44114,6 +44174,44 @@
       "target": "database:security_master.securities_pkey"
     },
     {
+      "constraint": "direct_loan_covenant_projection_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.direct_loan_covenant_projection",
+      "target": "database:security_master.direct_loan_projection"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection",
+      "target": "database:security_master.direct_loan_projection.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection",
+      "target": "database:security_master.direct_loan_projection_pkey"
+    },
+    {
+      "constraint": "direct_loan_principal_schedule_projection_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.direct_loan_principal_schedule_projection",
+      "target": "database:security_master.direct_loan_projection"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.direct_loan_principal_schedule_projection_security_id_fkey on security_master.direct_loan_principal_schedule_projection",
+      "target": "database:security_master.direct_loan_projection.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.direct_loan_principal_schedule_projection_security_id_fkey on security_master.direct_loan_principal_schedule_projection",
+      "target": "database:security_master.direct_loan_projection_pkey"
+    },
+    {
       "constraint": "equity_projection_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -44967,6 +45065,25 @@
       "label": "",
       "source": "database:security_master.servicing_revision_source_servicer_report_batch_id_fkey on security_master.servicing_revision_source",
       "target": "database:security_master.servicer_report_batch_pkey"
+    },
+    {
+      "constraint": "structured_credit_factor_schedule_projection_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.structured_credit_factor_schedule_projection",
+      "target": "database:security_master.structured_credit_projection"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.structured_credit_factor_schedule_projection_security_id_fkey on security_master.structured_credit_factor_schedule_projection",
+      "target": "database:security_master.structured_credit_projection.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.structured_credit_factor_schedule_projection_security_id_fkey on security_master.structured_credit_factor_schedule_projection",
+      "target": "database:security_master.structured_credit_projection_pkey"
     },
     {
       "kind": "module-contract-map",
@@ -45841,6 +45958,24 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.direct_loan_covenant_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.direct_loan_principal_schedule_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.direct_loan_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.drawdown_lot_projection"
     },
     {
@@ -46177,6 +46312,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.structured_credit_factor_schedule_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.structured_credit_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.swap_projection"
     },
     {
@@ -46199,7 +46346,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "de462e5501f6f97124bc0ee0e71bee09a620877fee1211c72669e54dbe878a5b",
+  "fingerprint": "f3dac3483943f4de931d1b41e65ee68516275fadddf2175d0c60193cda23e453",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -48378,6 +48525,24 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.DirectLoanCovenantDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.DirectLoanCovenantDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
@@ -48567,6 +48732,18 @@
       "id": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto"
     },
     {
       "classification": "class",
@@ -66685,6 +66862,44 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.direct_loan_covenant_projection",
+      "kind": "database-table",
+      "label": "security_master.direct_loan_covenant_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection",
+      "kind": "database-object",
+      "label": "security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection"
+    },
+    {
+      "id": "database:security_master.direct_loan_principal_schedule_projection",
+      "kind": "database-table",
+      "label": "security_master.direct_loan_principal_schedule_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.direct_loan_principal_schedule_projection_security_id_fkey on security_master.direct_loan_principal_schedule_projection",
+      "kind": "database-object",
+      "label": "security_master.direct_loan_principal_schedule_projection_security_id_fkey on security_master.direct_loan_principal_schedule_projection"
+    },
+    {
+      "id": "database:security_master.direct_loan_projection",
+      "kind": "database-table",
+      "label": "security_master.direct_loan_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.direct_loan_projection.security_id",
+      "kind": "database-object",
+      "label": "security_master.direct_loan_projection.security_id"
+    },
+    {
+      "id": "database:security_master.direct_loan_projection_pkey",
+      "kind": "database-object",
+      "label": "security_master.direct_loan_projection_pkey"
+    },
+    {
       "id": "database:security_master.drawdown_lot_projection",
       "kind": "database-table",
       "label": "security_master.drawdown_lot_projection",
@@ -67361,6 +67576,33 @@
       "label": "security_master.servicing_revision_source_servicer_report_batch_id_fkey on security_master.servicing_revision_source"
     },
     {
+      "id": "database:security_master.structured_credit_factor_schedule_projection",
+      "kind": "database-table",
+      "label": "security_master.structured_credit_factor_schedule_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.structured_credit_factor_schedule_projection_security_id_fkey on security_master.structured_credit_factor_schedule_projection",
+      "kind": "database-object",
+      "label": "security_master.structured_credit_factor_schedule_projection_security_id_fkey on security_master.structured_credit_factor_schedule_projection"
+    },
+    {
+      "id": "database:security_master.structured_credit_projection",
+      "kind": "database-table",
+      "label": "security_master.structured_credit_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.structured_credit_projection.security_id",
+      "kind": "database-object",
+      "label": "security_master.structured_credit_projection.security_id"
+    },
+    {
+      "id": "database:security_master.structured_credit_projection_pkey",
+      "kind": "database-object",
+      "label": "security_master.structured_credit_projection_pkey"
+    },
+    {
       "id": "database:security_master.swap_projection",
       "kind": "database-table",
       "label": "security_master.swap_projection",
@@ -67469,10 +67711,10 @@
   ],
   "summary": {
     "contract_references": 3069,
-    "contract_set_memberships": 3632,
-    "edges": 7677,
-    "foreign_keys": 120,
+    "contract_set_memberships": 3642,
+    "edges": 7701,
+    "foreign_keys": 123,
     "logical_references": 6,
-    "nodes": 3677
+    "nodes": 3694
   }
 }

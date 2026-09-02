@@ -10,14 +10,17 @@ namespace Meridian.Tests.SecurityMaster;
 /// against drift: it must stay in lock-step with the authoritative asset-class catalog, declare each
 /// class's fields without duplication, and remain the shared reference the projection and validation
 /// codecs are measured against. Also binds the store's projection coverage to the catalog so the
-/// catalog-vs-projection gap stays explicit and enforced rather than accidental.
+/// catalog-vs-projection gap stays explicit and enforced rather than accidental, and holds the
+/// Asset Operations classes to a stricter rule: a class whose declared capabilities include
+/// LedgerProjection cannot be written off as an intentional gap, only tracked on a shrinking
+/// backlog.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityAssetTermsSchemaTests
 {
     // The asset classes the platform deliberately does not give a dedicated relational projection.
     // Adding a catalog class without a projection forces this list to be updated in review, so the
-    // 26-vs-11 catalog-vs-projection gap is a conscious decision instead of silent drift.
+    // catalog-vs-projection gap is a conscious decision instead of silent drift.
     private static readonly string[] IntentionallyUnprojectedAssetClasses =
     [
         "CommercialPaper",
@@ -26,15 +29,24 @@ public sealed class SecurityAssetTermsSchemaTests
         "CashSweep",
         "OtherSecurity",
         "CustomAsset",
-        "DirectLoan",
-        "StructuredCredit",
-        "PrivateFundInterest",
-        "PrivateCompanyEquity",
-        "RealEstateHolding",
-        "CommitmentGuarantee",
         "Cfd",
         "Warrant",
         "InvestmentFund"
+    ];
+
+    // The Asset Operations classes still waiting for a relational terms projection. These are NOT
+    // intentional gaps: an ops-capable class declares ProjectedCashFlows, Reconciliation and
+    // LedgerProjection, so its economic terms drive money movement and leaving them reachable only
+    // by parsing the JSONB blob one security at a time is a coverage gap. They sit in their own list
+    // because the guards below hold the backlog to a different standard than a declared gap — it may
+    // only ever shrink, and each entry costs a SecurityTermsProjectionRegistry descriptor plus its
+    // DDL to clear.
+    private static readonly string[] OpsCapableProjectionBacklog =
+    [
+        "PrivateFundInterest",
+        "PrivateCompanyEquity",
+        "RealEstateHolding",
+        "CommitmentGuarantee"
     ];
 
     [Fact]
@@ -112,9 +124,44 @@ public sealed class SecurityAssetTermsSchemaTests
         projected.Should().NotIntersectWith(IntentionallyUnprojectedAssetClasses,
             "a class is either projected or a declared gap, never both");
 
+        projected.Should().NotIntersectWith(OpsCapableProjectionBacklog,
+            "a class is either projected or on the backlog, never both");
+
+        IntentionallyUnprojectedAssetClasses.Should().NotIntersectWith(OpsCapableProjectionBacklog,
+            "a missing projection is either a decision or a backlog item, and the two carry different obligations");
+
         projected
             .Concat(IntentionallyUnprojectedAssetClasses)
+            .Concat(OpsCapableProjectionBacklog)
             .Should().BeEquivalentTo(SecurityAssetClassCatalog.AssetClasses,
-                "every catalog class must be either projected or an explicitly declared projection gap");
+                "every catalog class must be projected, an explicitly declared projection gap, or a declared backlog item");
+    }
+
+    [Fact]
+    public void ProjectionCoverage_ReachesEveryOpsCapableAssetClassOutsideTheBacklog()
+    {
+        // The partition guard above is satisfied by naming a class an intentional gap. For an
+        // Asset Operations class that answer is not available: the catalog gives it
+        // ProjectedCashFlows, Reconciliation and LedgerProjection, so its terms are economics the
+        // platform acts on, and "we chose not to project it" would contradict the capabilities it
+        // publishes. This guard is what makes the backlog the only way to be ops-capable and
+        // unprojected.
+        SecurityAssetClassCatalog.AssetOperationsCapableAssetClasses
+            .Except(OpsCapableProjectionBacklog, StringComparer.Ordinal)
+            .Should().BeSubsetOf(PostgresSecurityMasterStore.ProjectedAssetClasses,
+                "an ops-capable class declares LedgerProjection, so its economic terms need a relational "
+                + "projection rather than living only inside the asset_specific_terms blob");
+    }
+
+    [Fact]
+    public void OpsCapableProjectionBacklog_NamesOnlyOpsCapableClassesThatAreStillUnprojected()
+    {
+        OpsCapableProjectionBacklog.Should().OnlyContain(
+            assetClass => SecurityAssetClassCatalog.AssetOperationsCapableAssetClasses.Contains(assetClass),
+            "the backlog tracks the ops-capable set; a class outside it belongs in IntentionallyUnprojectedAssetClasses");
+
+        OpsCapableProjectionBacklog.Should().NotIntersectWith(
+            PostgresSecurityMasterStore.ProjectedAssetClasses,
+            "a class that gained a projection must leave the backlog, or the coverage guard above silently stops covering it");
     }
 }
