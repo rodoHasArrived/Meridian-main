@@ -2151,6 +2151,7 @@ Meridian-main
 │   │   │   ├── web-portfolio-brokerage-sync.png
 │   │   │   ├── web-portfolio-cash-ladder.png
 │   │   │   ├── web-portfolio-family-office.png
+│   │   │   ├── web-portfolio-loan-book.png
 │   │   │   ├── web-portfolio-workspace.png
 │   │   │   ├── web-reporting-evidence-workbench.png
 │   │   │   ├── web-reporting-exports.png
