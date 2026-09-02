@@ -896,8 +896,9 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 continue;
             }
 
-            // The serializer's discriminants are exact-case, so SecurityAssetTermField.Allows is too.
-            if (!unreadableToken && field.Allows(value.GetString()))
+            // The serializer's discriminants are exact-case, so SecurityAssetTermField.Allows is too
+            // — but matched against the value as the DECODER matches it, not as the key stores it.
+            if (!unreadableToken && field.Allows(AsTheDecoderMatchesIt(field, value.GetString())))
             {
                 continue;
             }
@@ -1400,6 +1401,23 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// </summary>
     private static bool ClearingIsARepairFor(SecurityAssetTermField field)
         => !field.Required && MissingKeyDefaultFor(field) is null;
+
+    /// <summary>
+    /// The stored value as the DECODER matches it, which is not always as the record spells it.
+    /// <c>ParseExerciseStyle</c> switches on <c>value?.Trim()</c>, so a stored <c>" American "</c>
+    /// decodes to <c>American</c> and re-serializes as the canonical spelling: a lossless
+    /// canonicalization, and refusing it would freeze a valid record over whitespace. Every other
+    /// discriminant switches on the raw string (<c>ToBondTerms</c>,
+    /// <c>ToEquityClassificationOption</c>), where padding really does fall through to the
+    /// missing-value default and really is lost.
+    /// <para>This is a READ question and deliberately not a write one. <c>EnsureDeclaredVocabularies
+    /// OnWrite</c> compares the untrimmed value, so a write ASSERTING <c>" American "</c> is still
+    /// refused — read tolerance for a value already in a row is not licence to accept a padded one
+    /// on the way in. Same reason <see cref="PatchRepairsValueFor"/> stays strict: a repair document
+    /// is a write.</para>
+    /// </summary>
+    private static string? AsTheDecoderMatchesIt(SecurityAssetTermField field, string? value)
+        => string.Equals(field.Key, "exerciseStyle", StringComparison.Ordinal) ? value?.Trim() : value;
 
     /// <summary>
     /// The declared value the canonical codec SUBSTITUTES when a discriminant key is absent or null,

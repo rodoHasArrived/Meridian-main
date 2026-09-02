@@ -1394,6 +1394,47 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_OptionWhoseExerciseStyleIsPaddedButDeclared_IsNotRefused()
+    {
+        // A false positive in the guard rather than a miss, and the more damaging kind: it freezes a
+        // record that writes back perfectly. ParseExerciseStyle switches on value?.Trim(), so
+        // " American " decodes to American and the serializer emits the canonical spelling —
+        // re-serializing canonicalizes whitespace and loses nothing. The vocabulary check therefore
+        // has to match the value the way the DECODER matches it, not the way the key stores it.
+        // The write side stays strict: asserting " American " in a create or patch is still refused.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Option",
+            "Padded-style option",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["underlyingId"] = Guid.NewGuid(),
+                ["putCall"] = "Call",
+                ["strike"] = 190m,
+                ["expiry"] = "2027-07-16",
+                ["multiplier"] = 100m,
+                ["exerciseStyle"] = " American ",
+                ["isAdjusted"] = false
+            });
+
+        await service.DeactivateAsync(new DeactivateSecurityRequest(
+            securityId,
+            2,
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "deactivate"));
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_OptionWhoseExerciseStyleIsNotAString_RefusesTheWrite()
     {
         // GetOptionalString ignores a token of the wrong JSON kind, so ParseExerciseStyle never sees
