@@ -85,9 +85,9 @@ public sealed class PortfolioCorporateActionSnapshotTests
         var firstOpenedAt = OpenedAt.AddYears(-2);
         var secondOpenedAt = OpenedAt.AddMonths(-1);
         portfolio.ProcessFill(new FillEvent(
-            Guid.NewGuid(), firstFillId, "XYZ", 1L, 100m, 0m, firstOpenedAt));
+            firstFillId, Guid.NewGuid(), "XYZ", 1L, 100m, 0m, firstOpenedAt));
         portfolio.ProcessFill(new FillEvent(
-            Guid.NewGuid(), secondFillId, "XYZ", 1L, 200m, 0m, secondOpenedAt));
+            secondFillId, Guid.NewGuid(), "XYZ", 1L, 200m, 0m, secondOpenedAt));
         var sourceLots = portfolio.GetOpenLots("XYZ").ToArray();
         var originalBasis = sourceLots
             .Sum(static lot => lot.Quantity * lot.EntryPrice);
@@ -198,7 +198,7 @@ public sealed class PortfolioCorporateActionSnapshotTests
             annualShortRebateRate: 0.02);
         var fillId = Guid.NewGuid();
         portfolio.ProcessFill(new FillEvent(
-            Guid.NewGuid(), fillId, "XYZ", 1L, 100m, 0m, OpenedAt));
+            fillId, Guid.NewGuid(), "XYZ", 1L, 100m, 0m, OpenedAt));
         var originalLotId = portfolio.GetOpenLots("XYZ").Should().ContainSingle().Subject.LotId;
 
         portfolio.ApplyAssetEvent(new AssetEvent(
