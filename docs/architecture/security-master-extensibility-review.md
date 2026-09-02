@@ -3055,7 +3055,7 @@ fail-closed check decides (`:77`). Composition is sound: the parent view model c
 `DesktopMutationAuthorization` over the DI-singleton session (`SecurityMasterViewModel.cs:1583`,
 `App.xaml.cs:449`) and hands the same instance to all three child dialogs (`:1670, :1698, :1722`).
 
-Two boundaries of this closure, stated so it is not read wider than it is. First, a null session,
+Three boundaries of this closure, stated so it is not read wider than it is. First, a null session,
 or a credential-free host that names no anonymous role, remains fail-open
 (`DesktopMutationPermissionResolver.cs:70-77`) — the resolver's comment records this as the shell's
 unconfigured local-development posture, the same decision `HasPermission` and the read-scope
@@ -3520,7 +3520,7 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    unchanged, and nothing in this range touched them. They outrank item 3 in institutional risk
    (silent zero-interest projection; silent wrong-security resolution) but are listed after it here
    only because their remedies are already fully specified above and need no new analysis.
-5. **The attribution stragglers are four, not two — two by decision, two by wiring.** The CLI
+5. **The actor-source stragglers are four, not two — two by decision, two by wiring.** The CLI
    override validation (P1's import path) and the corporate-action verb's hardcoded actor are one
    decision — what a CLI run is allowed to assert about identity — and should be settled once, in
    both places, with the trust assumption written down. The third is the desktop deactivation
@@ -3533,10 +3533,17 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    an actor (`ITradingParametersBackfillService.cs:12`, `SecurityMasterViewModel.cs:2237`); the
    remedy is the same actor source threaded through the command and the service signature, with
    `SourceSystem: "PolygonBackfill"` left as it is. P1's attribution work must not close with
-   either outstanding. This entry has counted two, then three (both corrected 2026-09-02, after
-   review): the pass re-verified P1's CLI, alias, and constraint rows and did not carry the
-   desktop rows into the table, so the priority built on the table inherited the omissions — a
-   frame limiting what was seen, the failure the Method section names.
+   either outstanding. This entry is scoped to *actor-source* defects — sites that have an
+   operator to name and stamp a literal or an unvalidated string instead — which is why it counts
+   four while the open table carries a fifth attribution row: alias corrections record the
+   correcting actor nowhere (`PostgresSecurityMasterStore.Aliases.cs`, the P1 alias row above).
+   That one is a recording gap, not a wiring one — there is no field to thread an actor into — and
+   its remedy is bound to the alias source-role decision under P1's remaining constraints, so it is
+   deliberately not folded into this count (scoping stated 2026-09-02, after review). This entry
+   has counted two, then three (both corrected 2026-09-02, after review): the pass re-verified P1's
+   CLI, alias, and constraint rows and did not carry the desktop rows into the table, so the
+   priority built on the table inherited the omissions — a frame limiting what was seen, the
+   failure the Method section names.
 
 ---
 
