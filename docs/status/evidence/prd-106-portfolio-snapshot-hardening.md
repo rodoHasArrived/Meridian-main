@@ -61,7 +61,8 @@ For an adjusted run, the engine first writes the date- and symbol-filtered event
 temporary JSONL snapshot. It prepares one adjustment plan from all historical bars in that file and
 one Security Master query result, then executes from the snapshot rather than reopening the source
 partition. The plan's content version hashes the captured bars, economic cutoff, and effective
-action terms.
+action terms. The internal snapshot reader fails the run on a blank, malformed, or null captured
+event instead of applying the storage replayer's best-effort line skipping.
 
 The request `To` timestamp is an **economic effective-through cutoff**, not a storage transaction-
 time revision boundary. The current Security Master query contract does not expose revision
@@ -86,6 +87,20 @@ successor exists, and account ledger retain the cash-in-lieu accounting result, 
 not use symbol attribution to reconcile any transformed lot sequence. Adding corporate-action-aware
 metric attribution is intentionally excluded from this slice and remains an open PRD-106
 reconciliation action.
+
+Two additional accounting limits remain review-blocking evidence rather than completion claims:
+
+- When a synthesized composite open lot is closed, the existing `ClosedLot` contract retains only
+  scalar lot identity, price, and holding-period fields. Its component-level source-lot and
+  acquisition-date provenance is therefore not preserved through the close transition.
+- Multi-account asset-event application validates known cross-account direction collisions before
+  mutation, but the account transformations and ledger postings are still sequential rather than
+  transactionally atomic. An unexpected exception during a later account transformation or post
+  can leave earlier accounts mutated. Recovery/atomic commit semantics remain outside this slice.
+
+Both require separate contract and transaction-design work under PRD-106. Until then, independent
+Accounting and Backtesting reviewers must treat the re-cut as draft and must not infer full tax-lot
+lineage or atomic multi-account recovery from the focused tests.
 
 The temporary snapshot is deleted in the iterator's `finally` path. Review must confirm cancellation
 and exceptional disposal exercise that path on hosted runners.

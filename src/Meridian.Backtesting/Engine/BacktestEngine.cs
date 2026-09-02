@@ -336,9 +336,8 @@ public sealed class BacktestEngine(
                 adjustmentPlan.BarCount,
                 adjustmentPlan.EffectiveThroughUtc);
 
-            var snapshotReader = new JsonlReplayer(snapshotPath);
             await foreach (var evt in ApplyCorporateActionPlanAsync(
-                               snapshotReader.ReadEventsAsync(ct),
+                               ReadCapturedSnapshotAsync(snapshotPath, ct),
                                symbol,
                                adjustmentPlan,
                                ct).ConfigureAwait(false))
@@ -350,6 +349,65 @@ public sealed class BacktestEngine(
         {
             if (File.Exists(snapshotPath))
                 File.Delete(snapshotPath);
+        }
+    }
+
+    /// <summary>
+    /// Replays an engine-owned capture without the best-effort malformed-line behavior used for
+    /// external storage partitions. Any blank, malformed, or null event makes the adjusted run
+    /// fail closed because preparation and execution must observe the same complete snapshot.
+    /// </summary>
+    internal static async IAsyncEnumerable<MarketEvent> ReadCapturedSnapshotAsync(
+        string snapshotPath,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(snapshotPath);
+
+        await using var stream = new FileStream(
+            snapshotPath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            4096,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var reader = new StreamReader(stream);
+        var lineNumber = 0L;
+
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+            if (line is null)
+                yield break;
+
+            lineNumber++;
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                throw new InvalidDataException(
+                    $"Captured backtest snapshot '{snapshotPath}' contains a blank event at line {lineNumber}.");
+            }
+
+            MarketEvent? evt;
+            try
+            {
+                evt = JsonSerializer.Deserialize<MarketEvent>(
+                    line,
+                    MarketDataJsonContext.HighPerformanceOptions);
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidDataException(
+                    $"Captured backtest snapshot '{snapshotPath}' contains invalid JSON at line {lineNumber}.",
+                    ex);
+            }
+
+            if (evt is null)
+            {
+                throw new InvalidDataException(
+                    $"Captured backtest snapshot '{snapshotPath}' contains a null event at line {lineNumber}.");
+            }
+
+            yield return evt;
         }
     }
 

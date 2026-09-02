@@ -27,8 +27,7 @@ public sealed record OpenLot(
     string? AccountId = null,
     string? Notes = null)
 {
-    private IReadOnlyList<OpenLotBasisComponent> _basisComponents =
-        Array.Empty<OpenLotBasisComponent>();
+    private BasisComponentCollection _basisComponents = BasisComponentCollection.Empty;
 
     /// <summary>
     /// True when the positive lot quantity represents a short-sale obligation. Kept outside the
@@ -44,7 +43,7 @@ public sealed record OpenLot(
     public IReadOnlyList<OpenLotBasisComponent> BasisComponents
     {
         get => _basisComponents;
-        init => _basisComponents = Array.AsReadOnly(value?.ToArray() ?? []);
+        init => _basisComponents = new BasisComponentCollection(value);
     }
 
     /// <summary>Exact basis represented by this lot, including synthesized components.</summary>
@@ -83,4 +82,92 @@ public sealed record OpenLot(
         BasisComponents is { Count: > 0 }
             ? BasisComponents.Max(static component => component.OpenedAt)
             : OpenedAt;
+
+    /// <summary>
+    /// Immutable, structurally comparable storage for basis provenance. Record equality compares
+    /// backing fields, so using a reference-equal read-only collection here would make otherwise
+    /// identical lots compare unequal after serialization or independent materialization.
+    /// </summary>
+    private sealed class BasisComponentCollection : IList<OpenLotBasisComponent>,
+        IEquatable<BasisComponentCollection>
+    {
+        public static readonly BasisComponentCollection Empty = new([]);
+
+        private readonly OpenLotBasisComponent[] _items;
+
+        public BasisComponentCollection(IEnumerable<OpenLotBasisComponent>? items)
+        {
+            _items = items?.ToArray() ?? [];
+        }
+
+        public int Count => _items.Length;
+
+        public bool IsReadOnly => true;
+
+        public OpenLotBasisComponent this[int index]
+        {
+            get => _items[index];
+            set => throw new NotSupportedException("Basis components are immutable.");
+        }
+
+        public bool Equals(BasisComponentCollection? other)
+        {
+            if (ReferenceEquals(this, other))
+                return true;
+            if (other is null || Count != other.Count)
+                return false;
+
+            for (var index = 0; index < Count; index++)
+            {
+                if (!EqualityComparer<OpenLotBasisComponent>.Default.Equals(
+                        _items[index],
+                        other._items[index]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public override bool Equals(object? obj) =>
+            obj is BasisComponentCollection other && Equals(other);
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCode();
+            foreach (var component in _items)
+                hash.Add(component);
+            return hash.ToHashCode();
+        }
+
+        public int IndexOf(OpenLotBasisComponent item) => Array.IndexOf(_items, item);
+
+        public bool Contains(OpenLotBasisComponent item) =>
+            Array.IndexOf(_items, item) >= 0;
+
+        public void CopyTo(OpenLotBasisComponent[] array, int arrayIndex) =>
+            _items.CopyTo(array, arrayIndex);
+
+        public IEnumerator<OpenLotBasisComponent> GetEnumerator() =>
+            ((IEnumerable<OpenLotBasisComponent>)_items).GetEnumerator();
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() =>
+            GetEnumerator();
+
+        public void Add(OpenLotBasisComponent item) =>
+            throw new NotSupportedException("Basis components are immutable.");
+
+        public void Clear() =>
+            throw new NotSupportedException("Basis components are immutable.");
+
+        public void Insert(int index, OpenLotBasisComponent item) =>
+            throw new NotSupportedException("Basis components are immutable.");
+
+        public bool Remove(OpenLotBasisComponent item) =>
+            throw new NotSupportedException("Basis components are immutable.");
+
+        public void RemoveAt(int index) =>
+            throw new NotSupportedException("Basis components are immutable.");
+    }
 }

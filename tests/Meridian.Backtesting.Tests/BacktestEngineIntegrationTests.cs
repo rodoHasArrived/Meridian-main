@@ -224,6 +224,42 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         firstRunStrategy.BarSymbolsInArrivalOrder.Should().Equal(["MSFT", "AAPL"]);
     }
 
+    [Fact]
+    public async Task ReadCapturedSnapshotAsync_MalformedLine_FailsClosedWithLineEvidence()
+    {
+        var snapshotPath = Path.Combine(_dataRoot, "captured-snapshot.jsonl");
+        var timestamp = new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero);
+        var bar = new HistoricalBar(
+            Symbol: "SPY",
+            SessionDate: new DateOnly(2024, 1, 2),
+            Open: 100m,
+            High: 101m,
+            Low: 99m,
+            Close: 100m,
+            Volume: 1_000L,
+            Source: "test",
+            SequenceNumber: 1L);
+        var evt = MarketEvent.HistoricalBar(timestamp, "SPY", bar, "test", 1L);
+        var validLine = JsonSerializer.Serialize(
+            evt,
+            MarketDataJsonContext.HighPerformanceOptions);
+        await File.WriteAllTextAsync(
+            snapshotPath,
+            validLine + Environment.NewLine + "{\"truncated\":");
+
+        Func<Task> replay = async () =>
+        {
+            await foreach (var _ in BacktestEngine.ReadCapturedSnapshotAsync(
+                               snapshotPath,
+                               CancellationToken.None))
+            {
+            }
+        };
+
+        await replay.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*invalid JSON at line 2*");
+    }
+
     // ------------------------------------------------------------------ //
     //  UTC date boundary filtering (regression: FilterBySymbolAndDate    //
     //  must use UtcDateTime.Date, not LocalDateTime.Date)                //

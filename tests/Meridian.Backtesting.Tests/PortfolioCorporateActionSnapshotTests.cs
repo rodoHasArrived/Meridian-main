@@ -42,6 +42,37 @@ public sealed class PortfolioCorporateActionSnapshotTests
     }
 
     [Fact]
+    public void OpenLot_EquivalentProvenanceCollections_PreserveRecordValueSemantics()
+    {
+        var lotId = Guid.NewGuid();
+        var openFillId = Guid.NewGuid();
+        var sourceLotId = Guid.NewGuid();
+        var sourceFillId = Guid.NewGuid();
+        var components = new[]
+        {
+            new OpenLotBasisComponent(
+                sourceLotId,
+                sourceFillId,
+                OpenedAt,
+                SuccessorQuantity: 1m,
+                AllocatedBasis: 100m)
+        };
+        var first = new OpenLot(lotId, "XYZ", 1L, 100m, OpenedAt, openFillId)
+        {
+            BasisComponents = components
+        };
+        var second = new OpenLot(lotId, "XYZ", 1L, 100m, OpenedAt, openFillId)
+        {
+            BasisComponents = components.ToList()
+        };
+
+        first.Should().Be(second,
+            "separately materialized component collections contain the same lot value");
+        first.GetHashCode().Should().Be(second.GetHashCode());
+        new HashSet<OpenLot> { first }.Should().Contain(second);
+    }
+
+    [Fact]
     public void ReverseSplit_FractionalLotsCombineIntoAggregateWholeShareAndConserveBasis()
     {
         var portfolio = new SimulatedPortfolio(
@@ -98,6 +129,8 @@ public sealed class PortfolioCorporateActionSnapshotTests
         roundTripped!.BasisComponents.Should().BeEquivalentTo(
             successorLot.BasisComponents,
             options => options.WithStrictOrdering());
+        roundTripped.Should().Be(snapshotLot,
+            "record value equality must survive independent JSON materialization");
 
         var callerOwnedComponents = successorLot.BasisComponents.ToList();
         var copiedLot = successorLot with { BasisComponents = callerOwnedComponents };
