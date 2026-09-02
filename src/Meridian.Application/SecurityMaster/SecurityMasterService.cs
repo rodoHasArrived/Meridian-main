@@ -702,7 +702,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         }
 
         EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
-        EnsureLegacyNestedCouponRoundTripsSafely(projection, assetSpecificTermsPatch);
+        EnsureBondCouponPayloadRoundTripsSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
     }
 
@@ -892,9 +892,10 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
             var raw = value.GetString();
             var repairHint =
-                $" To repair the record here, amend it with an asset-terms patch naming a declared {field.Key} " +
-                $"({string.Join(", ", field.AllowedValues)}, matched case-sensitively); a deactivation cannot carry " +
-                "a patch, so repair it first.";
+                $" To repair the record here, amend it with a COMPLETE asset-terms document naming a declared " +
+                $"{field.Key} ({string.Join(", ", field.AllowedValues)}, matched case-sensitively) — the amendment " +
+                "replaces the terms wholesale, so any field the patch omits is dropped with them — and note that a " +
+                "deactivation cannot carry a patch, so repair it first.";
             if (field.Escape is not { } escape)
             {
                 throw new InvalidOperationException(
@@ -929,21 +930,35 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// deliberately — <c>PostgresSecurityMasterStore.TryBuildBondProjection</c> falls back to
     /// <c>coupon.kind</c>/<c>rate</c>/<c>index</c> "for externally-authored payloads that still use
     /// it", with a regression test pinning the behaviour — so such rows are expected to exist.
-    /// <para>Only refused when the nested object is the ONLY coupon information. When a flat
-    /// <c>couponType</c> is also present the flat keys are authoritative and already describe the
-    /// structure, which is the same precedence the projection store applies (flat first, nested as
-    /// fallback), so the vestigial object carries nothing the record would lose.</para>
+    /// <para>The same hole is open one step wider: a document with NO <c>couponType</c> but a
+    /// populated <c>floatingIndex</c>, <c>spreadBps</c>, <c>capRate</c>, <c>floorRate</c>,
+    /// <c>inflationIndex</c>, or <c>stepSchedule</c> also reads as Fixed and orphans that payload.
+    /// Both are the same defect — coupon structure the flat discriminant does not declare — so both
+    /// are refused here.</para>
+    /// <para>Gating on the ABSENCE of <c>couponType</c> is what keeps this free of false positives:
+    /// the canonical serializer always emits the discriminant, and emits these companions as
+    /// <see langword="null"/>/<c>[]</c> for a genuine fixed coupon
+    /// (<c>Interop.SecurityMaster.assetSpecificTermsJson</c>), so no canonically-written row can
+    /// trip it. When a flat <c>couponType</c> IS present the flat keys are authoritative and already
+    /// describe the structure — the same precedence the projection store applies (flat first, nested
+    /// as fallback) — so nothing is orphaned and the ordinary lifecycle stays open.</para>
     /// </summary>
-    private static void EnsureLegacyNestedCouponRoundTripsSafely(
+    private static void EnsureBondCouponPayloadRoundTripsSafely(
         SecurityProjectionRecord projection,
         JsonElement? assetSpecificTermsPatch)
     {
         var terms = projection.AssetSpecificTerms;
         if (!string.Equals(projection.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
             || terms.ValueKind != JsonValueKind.Object
-            || terms.TryGetProperty("couponType", out _)
-            || !terms.TryGetProperty("coupon", out var nested)
-            || nested.ValueKind != JsonValueKind.Object)
+            || terms.TryGetProperty("couponType", out _))
+        {
+            return;
+        }
+
+        var carriesNestedCoupon = terms.TryGetProperty("coupon", out var nested)
+            && nested.ValueKind == JsonValueKind.Object;
+        var orphanedKeys = OrphanedCouponStructureKeys(terms);
+        if (!carriesNestedCoupon && orphanedKeys.Length == 0)
         {
             return;
         }
@@ -954,14 +969,31 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
         }
 
+        var carried = carriesNestedCoupon
+            ? "a legacy nested 'coupon' object"
+            : $"coupon structure in {string.Join(" and ", orphanedKeys)}";
         var declared = string.Join(", ", couponType?.AllowedValues ?? Array.Empty<string>());
         throw new InvalidOperationException(
-            $"Security '{projection.SecurityId:D}' is a bond whose coupon is carried in the legacy nested 'coupon' " +
-            "object, which the canonical codec does not read — it loads the record as a fixed coupon and would " +
-            "re-serialize it flat, dropping the nested index, spread, and day count. The write is refused. To repair " +
-            $"the record here, amend it with an asset-terms patch naming a declared couponType ({declared}) and the " +
-            "matching flat coupon fields; a deactivation cannot carry a patch, so repair it first.");
+            $"Security '{projection.SecurityId:D}' is a bond carrying {carried} but no couponType naming it. The " +
+            "canonical codec reads only the flat discriminant, so it loads the record as a fixed coupon and would " +
+            "re-serialize it that way, dropping that structure. The write is refused. To repair the record here, " +
+            $"amend it with a COMPLETE asset-terms document naming a declared couponType ({declared}) — the " +
+            "amendment replaces the terms wholesale, so any field the patch omits is dropped with them — and note " +
+            "that a deactivation cannot carry a patch, so repair it first.");
     }
+
+    /// <summary>
+    /// The coupon-structure companions that are populated in <paramref name="terms"/>. A canonical
+    /// fixed-coupon bond emits every one of these as <see langword="null"/> or <c>[]</c>, so only a
+    /// genuinely populated value counts — a presence-only check would refuse every ordinary bond.
+    /// </summary>
+    private static string[] OrphanedCouponStructureKeys(JsonElement terms)
+        => new[] { "floatingIndex", "spreadBps", "capRate", "floorRate", "inflationIndex", "stepSchedule" }
+            .Where(key => terms.TryGetProperty(key, out var value)
+                && value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined)
+                && (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() > 0)
+                && (value.ValueKind != JsonValueKind.String || !string.IsNullOrWhiteSpace(value.GetString())))
+            .ToArray();
 
     /// <summary>
     /// True when the amendment's patch positively names a value this node can decode for

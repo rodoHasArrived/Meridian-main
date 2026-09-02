@@ -413,7 +413,7 @@ public sealed class SecurityMasterServiceSnapshotTests
                 null,
                 "deactivate")))
             .Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*legacy nested 'coupon' object*");
+            .WithMessage("*a legacy nested 'coupon' object but no couponType*");
 
         await eventStore.DidNotReceive().AppendAsync(
             Arg.Any<Guid>(),
@@ -474,6 +474,110 @@ public sealed class SecurityMasterServiceSnapshotTests
             2,
             Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
             Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWithOrphanedFlatCouponStructure_RefusesTheWrite()
+    {
+        // The same defect one step wider: no couponType at all, but a populated floatingIndex and
+        // spread. The codec reads the record as a fixed coupon and re-serializes it that way,
+        // orphaning the structure — a very plausible vendor payload.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["floatingIndex"] = "SOFR",
+            ["spreadBps"] = 125m,
+            ["isCallable"] = false,
+            ["subclass"] = "FloatingRate"
+        });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*floatingIndex and spreadBps*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWithNoCouponTypeAndEmptyCouponCompanions_IsNotRefused()
+    {
+        // The false-positive filter that makes the orphan check safe, exercised on the only shape
+        // that reaches it — couponType absent, so the guard actually walks the companions. They are
+        // null/[] here, which is exactly what the canonical serializer emits for a genuine fixed
+        // coupon, so a presence-only test would refuse the most ordinary bond there is.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponRate"] = 4.25m,
+            ["floatingIndex"] = null,
+            ["spreadBps"] = null,
+            ["capRate"] = null,
+            ["floorRate"] = null,
+            ["inflationIndex"] = null,
+            ["stepSchedule"] = Array.Empty<object>(),
+            ["isCallable"] = false,
+            ["subclass"] = "Corporate"
+        });
+
+        await service.DeactivateAsync(new DeactivateSecurityRequest(
+            securityId,
+            2,
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "deactivate"));
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>A stored bond whose asset-specific terms are exactly <paramref name="terms"/>.</summary>
+    private static (ISecurityMasterEventStore EventStore, SecurityMasterService Service) CreateBondHarness(
+        Guid securityId,
+        object terms)
+    {
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var projection = CreateProjection(securityId, "Bond", SecurityStatusDto.Active, "Bond under guard", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(terms)
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(projection);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        return (eventStore, service);
     }
 
     /// <summary>
