@@ -1068,14 +1068,26 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return false;
         }
 
+        // Each arm mirrors the corresponding reader in SecurityMasterMapping, including its PARSE
+        // and not merely its JSON kind. The kind alone is a proxy, and the proxy is wrong in
+        // exactly the cases that matter here: 1e100 is a JSON number that TryGetDecimal rejects,
+        // and "not-a-date" is a JSON string that DateOnly.TryParse rejects. The projection store's
+        // readers parse too, so it falls through to the nested value while a kind-only check would
+        // call the flat one a representation and let the nested one be discarded.
         return SecurityAssetTermsSchema.Field("Bond", key)?.Type switch
         {
-            SecurityAssetTermFieldType.Decimal or SecurityAssetTermFieldType.Integer =>
-                value.ValueKind == JsonValueKind.Number,
+            SecurityAssetTermFieldType.Decimal =>
+                value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out _),
+            SecurityAssetTermFieldType.Integer =>
+                value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out _),
             SecurityAssetTermFieldType.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+            SecurityAssetTermFieldType.Date =>
+                value.ValueKind == JsonValueKind.String && DateOnly.TryParse(value.GetString(), out _),
+            SecurityAssetTermFieldType.Guid =>
+                value.ValueKind == JsonValueKind.String && Guid.TryParse(value.GetString(), out _),
             SecurityAssetTermFieldType.Array => value.ValueKind == JsonValueKind.Array,
             SecurityAssetTermFieldType.Object => value.ValueKind == JsonValueKind.Object,
-            // String, Date, and Guid all decode from a JSON string, as does any undeclared key.
+            // String, and any undeclared key, decode straight from a non-blank JSON string.
             _ => value.ValueKind == JsonValueKind.String,
         };
     }

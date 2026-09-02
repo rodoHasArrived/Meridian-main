@@ -632,6 +632,47 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_BondWhoseFlatCounterpartIsOutOfDecimalRange_RefusesTheWrite()
+    {
+        // The JSON kind is a proxy, and it is wrong precisely where it matters: 1e100 is a number
+        // that TryGetDecimal rejects, so both the codec and the projection store fail to read it —
+        // the store falls through to the nested 4.25 while ToBondTerms reads nothing and persists
+        // it as absent. Checking the kind alone would call the flat key a representation and let
+        // the nested rate be discarded.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = "Floating",
+            ["floatingIndex"] = "SOFR",
+            ["couponRate"] = 1e100,
+            ["coupon"] = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["rate"] = 4.25m
+            },
+            ["isCallable"] = false,
+            ["subclass"] = "FloatingRate"
+        });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*coupon.rate*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_BondWithACaseVariantCouponTypeKey_RefusesTheWrite()
     {
         // Every read of the discriminant is ordinal, so "CouponType" is not the discriminant: the
