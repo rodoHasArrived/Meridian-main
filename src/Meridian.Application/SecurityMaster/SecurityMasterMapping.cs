@@ -241,7 +241,7 @@ internal static class SecurityMasterMapping
         EnsureSupportedAssetSchemaVersion(assetClass, json);
         var terms = ResolveAssetTermsJson(json);
 
-        return assetClass switch
+        var kind = assetClass switch
         {
             "Equity" => SecurityKind.NewEquity(new EquityTerms(
                 ToOption(GetOptionalString(json, "shareClass")),
@@ -270,7 +270,7 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "deliveryLocationCode")),
                 GetOptionalBoolean(json, "isRollTarget") ?? false,
                 ToOption(GetOptionalInt(json, "rollWindowDays")))),
-            "Bond" => SecurityKind.NewBond(ToBondTerms(json)),
+            "Bond" => SecurityKind.NewBond(ToBondTerms(json, mode)),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
                 GetRequiredString(json, "baseCurrency"),
                 GetRequiredString(json, "quoteCurrency"))),
@@ -418,7 +418,49 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "issuerName")),
                 ToOption(GetOptionalString(json, "settlementType"))))
         };
+
+        EnsureDeclaredVocabulariesOnWrite(assetClass, json, mode);
+        return kind;
     }
+
+    /// <summary>
+    /// The schema-driven backstop for closed-vocabulary discriminants on the WRITE path: every
+    /// declared vocabulary in <see cref="SecurityAssetTermsSchema"/> is enforced here, so adding one
+    /// to the table constrains create/amend commands without a matching edit to this mapping.
+    /// <para>It runs AFTER the kind is built purely for diagnosis quality: the decode sites that
+    /// branch on a discriminant (the equity classification, the bond coupon structure) already throw
+    /// with the precise reason their case needs, and letting them speak first keeps those messages.
+    /// The mapping is a pure function, so nothing has been committed by the time this runs — the
+    /// ordering costs nothing but the wording of the exception.</para>
+    /// </summary>
+    private static void EnsureDeclaredVocabulariesOnWrite(
+        string assetClass, JsonElement json, SecurityKindMappingMode mode)
+    {
+        if (mode != SecurityKindMappingMode.Write || json.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        foreach (var field in SecurityAssetTermsSchema.DiscriminantFields(assetClass))
+        {
+            var raw = GetOptionalString(json, field.Key);
+            if (raw is null || field.Allows(raw))
+            {
+                continue;
+            }
+
+            throw new InvalidOperationException(UndeclaredDiscriminantValue(assetClass, field.Key, raw));
+        }
+    }
+
+    /// <summary>
+    /// The shared rejection reason for a discriminant value outside its declared vocabulary, so the
+    /// decode sites and the schema backstop reject a given value with identical wording.
+    /// </summary>
+    private static string UndeclaredDiscriminantValue(string assetClass, string key, string? value)
+        => SecurityAssetTermsSchema.Field(assetClass, key) is { } field
+            ? field.DescribeUndeclaredValue(assetClass, value)
+            : $"Value '{value}' is not a declared '{key}' value for asset class '{assetClass}'.";
 
     /// <summary>
     /// Maps a CustomAsset payload to the first-class <see cref="SecurityKind.CustomAsset"/> case,
@@ -489,7 +531,17 @@ internal static class SecurityMasterMapping
         var other => BondSubclass.NewOther(other)
     };
 
-    private static BondTerms ToBondTerms(JsonElement json)
+    /// <summary>
+    /// Decodes the flat bond coupon contract. <c>couponType</c> is a closed schema vocabulary
+    /// (<c>Fixed</c>, <c>Floating</c>, <c>ZeroCoupon</c>, <c>Step</c>, <c>InflationLinked</c>) with
+    /// no escape: an unrecognized value cannot be carried, it collapses to <c>Fixed</c> and takes
+    /// the label plus every structure-specific field (<c>floatingIndex</c>, the step schedule, the
+    /// inflation block) with it. So the fallback arm is READ tolerance only — the same
+    /// read-tolerant/write-strict split the CustomAsset envelope check and the equity classification
+    /// decode already apply. An absent <c>couponType</c> still means <c>Fixed</c> on both paths: it
+    /// is the serializer's own spelling for a plain fixed coupon, not an unreadable value.
+    /// </summary>
+    private static BondTerms ToBondTerms(JsonElement json, SecurityKindMappingMode mode)
     {
         var couponType = GetOptionalString(json, "couponType") ?? "Fixed";
         BondCouponStructure coupon = couponType switch
@@ -512,6 +564,15 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "inflationBaseIndexValue")),
                 ToOption(GetOptionalDecimal(json, "inflationIndexRatio")),
                 ToOption(GetOptionalString(json, "dayCount"))),
+            "Fixed" => BondCouponStructure.NewFixed(
+                GetOptionalDecimal(json, "couponRate") ?? 0m,
+                ToOption(GetOptionalString(json, "dayCount"))),
+            // A WRITE fails closed on an unrecognized coupon type: silently persisting a typo
+            // ("Floter") as a fixed coupon would change the bond's economics and drop the fields
+            // the named structure owns.
+            _ when mode == SecurityKindMappingMode.Write =>
+                throw new InvalidOperationException(UndeclaredDiscriminantValue("Bond", "couponType", couponType)),
+            // Read tolerance: an unrecognized coupon type must not fail every read of the row.
             _ => BondCouponStructure.NewFixed(
                 GetOptionalDecimal(json, "couponRate") ?? 0m,
                 ToOption(GetOptionalString(json, "dayCount")))
