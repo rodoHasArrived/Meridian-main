@@ -369,28 +369,29 @@ public sealed class SecurityMasterServiceSnapshotTests
     [Fact]
     public async Task DeactivateAsync_BondWithDeclaredCouponType_IsNotRefused()
     {
-        // The guard must not touch the ordinary bond lifecycle — a canonical discriminant, and an
-        // absent couponType keeping its documented Fixed default, both still write.
-        foreach (var couponType in new string?[] { "Floating", null })
-        {
-            var securityId = Guid.NewGuid();
-            var (eventStore, service) = CreateBondCouponHarness(securityId, couponType);
+        // The guard must not touch the ordinary bond lifecycle: a canonical discriminant still
+        // writes. The absent-couponType case is NOT exercised through this fixture — it carries a
+        // floating index and spread, which without a couponType naming them is precisely the
+        // orphaned payload the round-trip guard refuses. That case has its own fixture, with the
+        // empty companions a genuine fixed coupon actually has:
+        // DeactivateAsync_BondWithNoCouponTypeAndEmptyCouponCompanions_IsNotRefused.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondCouponHarness(securityId, "Floating");
 
-            await service.DeactivateAsync(new DeactivateSecurityRequest(
-                securityId,
-                2,
-                DateTimeOffset.UtcNow,
-                "test",
-                "codex",
-                null,
-                "deactivate"));
+        await service.DeactivateAsync(new DeactivateSecurityRequest(
+            securityId,
+            2,
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "deactivate"));
 
-            await eventStore.Received(1).AppendAsync(
-                securityId,
-                2,
-                Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
-                Arg.Any<CancellationToken>());
-        }
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -648,12 +649,16 @@ public sealed class SecurityMasterServiceSnapshotTests
             Reason: "amend");
 
     /// <summary>
-    /// A stored floating-rate bond whose <c>couponType</c> is <paramref name="couponType"/>, or one
-    /// with no <c>couponType</c> key at all when it is <see langword="null"/>.
+    /// A stored floating-rate bond whose <c>couponType</c> is <paramref name="couponType"/>. The
+    /// parameter is deliberately non-nullable: this fixture carries a floating index and spread, so
+    /// omitting the discriminant would make it the ORPHANED-payload shape the round-trip guard
+    /// refuses, not the "absent couponType keeps its Fixed default" case it would appear to be.
+    /// That case needs the empty companions a genuine fixed coupon has — see
+    /// <c>DeactivateAsync_BondWithNoCouponTypeAndEmptyCouponCompanions_IsNotRefused</c>.
     /// </summary>
     private static (ISecurityMasterEventStore EventStore, SecurityMasterService Service) CreateBondCouponHarness(
         Guid securityId,
-        string? couponType)
+        string couponType)
     {
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
@@ -668,15 +673,12 @@ public sealed class SecurityMasterServiceSnapshotTests
         var terms = new Dictionary<string, object>(StringComparer.Ordinal)
         {
             ["maturity"] = "2035-06-15",
+            ["couponType"] = couponType,
             ["floatingIndex"] = "SOFR",
             ["spreadBps"] = 185m,
             ["isCallable"] = false,
             ["subclass"] = "FloatingRate"
         };
-        if (couponType is not null)
-        {
-            terms["couponType"] = couponType;
-        }
 
         var projection = CreateProjection(securityId, "Bond", SecurityStatusDto.Active, "Vendor floater", 2) with
         {
