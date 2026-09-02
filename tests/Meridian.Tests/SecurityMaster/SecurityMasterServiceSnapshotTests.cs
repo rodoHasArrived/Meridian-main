@@ -632,6 +632,74 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_BondWhoseNestedCouponOnlyNamesTheDefaultFixedKind_IsNotRefused()
+    {
+        // ToBondTerms defaults an absent couponType to Fixed and the store reads the nested kind as
+        // Fixed, so both codecs already agree: re-serializing canonicalizes the JSON shape and loses
+        // nothing. Refusing here would freeze a valid legacy fixed-rate record to protect nothing.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponRate"] = 4.25m,
+            ["coupon"] = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["kind"] = "Fixed"
+            },
+            ["isCallable"] = false,
+            ["subclass"] = "Corporate"
+        });
+
+        await service.DeactivateAsync(new DeactivateSecurityRequest(
+            securityId,
+            2,
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "deactivate"));
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_RepairPatchLeavingAValueOnlyInItsNestedCoupon_RefusesTheWrite()
+    {
+        // The repair must meet the same standard as the record it repairs. This patch names a
+        // declared couponType but keeps the spread only in its own nested object, so ToAmendCommand
+        // reads the flat keys, finds no spread, and would persist the "repaired" record having
+        // already dropped it. The next amend refusing that record does not bring 125 back.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateNestedCouponBondHarness(securityId, includeFlatCouponType: false);
+
+        await service.Invoking(s => s.AmendTermsAsync(BondAmendRequest(
+                securityId,
+                JsonSerializer.SerializeToElement(new Dictionary<string, object>(StringComparer.Ordinal)
+                {
+                    ["maturity"] = "2035-06-15",
+                    ["couponType"] = "Floating",
+                    ["floatingIndex"] = "SOFR",
+                    ["coupon"] = new Dictionary<string, object>(StringComparer.Ordinal)
+                    {
+                        ["spreadBps"] = 125m
+                    },
+                    ["isCallable"] = false,
+                    ["subclass"] = "FloatingRate"
+                }))))
+            .Should().ThrowAsync<InvalidOperationException>();
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_BondWhoseFlatCounterpartIsOutOfDecimalRange_RefusesTheWrite()
     {
         // The JSON kind is a proxy, and it is wrong precisely where it matters: 1e100 is a number

@@ -960,8 +960,17 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
         }
 
+        // The exit has to hold the REPAIR to the same standard as the record it repairs. Naming a
+        // declared couponType is not enough on its own: the submitted document can carry its own
+        // orphan (a nested coupon.spreadBps with no flat counterpart), and the amendment would
+        // persist it having already dropped that value. Checking only the stored terms would let a
+        // "repair" lose the economics it was submitted to preserve — and the next amend refusing
+        // the new record does not bring the value back.
         var couponType = SecurityAssetTermsSchema.Field("Bond", "couponType");
-        if (couponType is not null && PatchDeclaresValueFor(assetSpecificTermsPatch, couponType))
+        if (couponType is not null
+            && PatchDeclaresValueFor(assetSpecificTermsPatch, couponType)
+            && assetSpecificTermsPatch is JsonElement repair
+            && OrphanedCouponStructure(repair).Length == 0)
         {
             return;
         }
@@ -1046,12 +1055,30 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             // (spreadBps: "N/A"), so treating any populated flat value as a representation would
             // discard exactly the nested value the store is reading.
             orphaned.AddRange(NestedCouponMembers
-                .Where(member => CarriesValue(nested, member.Nested) && !CodecCanRead(terms, member.Flat))
+                .Where(member => CarriesValue(nested, member.Nested)
+                    && !CodecCanRead(terms, member.Flat)
+                    && !MatchesTheMissingKeyDefault(nested, member))
                 .Select(member => $"coupon.{member.Nested}"));
         }
 
         return orphaned.ToArray();
     }
+
+    /// <summary>
+    /// True when the nested member says exactly what the codec's documented default for the absent
+    /// flat key already produces, so re-serializing canonicalizes the JSON shape and loses nothing.
+    /// <para>Only <c>coupon.kind = "Fixed"</c> qualifies. <c>ToBondTerms</c> defaults an absent
+    /// <c>couponType</c> to <c>Fixed</c> and the projection store reads the nested kind as
+    /// <c>Fixed</c>, so both codecs already agree and refusing would freeze a valid legacy record to
+    /// protect nothing. Any other nested kind names a structure the default does not produce, and
+    /// the remaining members have no defaulted counterpart at all — an absent <c>couponRate</c>
+    /// reads as <c>0</c>, which is a different number, not the same one spelled differently.</para>
+    /// </summary>
+    private static bool MatchesTheMissingKeyDefault(JsonElement nested, (string Nested, string Flat) member)
+        => member.Nested == "kind"
+            && nested.TryGetProperty("kind", out var kind)
+            && kind.ValueKind == JsonValueKind.String
+            && string.Equals(kind.GetString(), "Fixed", StringComparison.Ordinal);
 
     /// <summary>
     /// True when the canonical codec can actually DECODE <paramref name="key"/> — present,
