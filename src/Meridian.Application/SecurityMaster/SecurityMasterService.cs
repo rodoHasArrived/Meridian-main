@@ -1022,6 +1022,20 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         if (!terms.TryGetProperty("couponType", out _))
         {
             orphaned.AddRange(FlatCouponStructureKeys.Where(key => CarriesValue(terms, key)));
+
+            // A case-variant spelling is not the discriminant: every read of it is ordinal
+            // (JsonElement.TryGetProperty, and the codec's own GetOptionalString), so the codec
+            // cannot see it, the record still loads as a fixed coupon, and re-serializing writes a
+            // fresh document without the stray key — the value is gone with no trace. Stored
+            // documents really do carry case-variant keys; ApprovedFieldEditCanonicalMergeHandler
+            // .RemoveKeyVariants exists to strip them, matching OrdinalIgnoreCase. Deliberately
+            // checked only when the exact key is ABSENT, so this can never mask a canonical row
+            // (which always carries the exact spelling) or excuse orphaned companions beside it.
+            orphaned.AddRange(terms
+                .EnumerateObject()
+                .Where(property => string.Equals(property.Name, "couponType", StringComparison.OrdinalIgnoreCase)
+                    && CarriesValue(terms, property.Name))
+                .Select(property => property.Name));
         }
 
         if (terms.TryGetProperty("coupon", out var nested) && nested.ValueKind == JsonValueKind.Object)

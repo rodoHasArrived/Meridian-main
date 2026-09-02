@@ -556,6 +556,41 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_BondWithACaseVariantCouponTypeKey_RefusesTheWrite()
+    {
+        // Every read of the discriminant is ordinal, so "CouponType" is not the discriminant: the
+        // codec cannot see it, loads the record as a fixed coupon, and re-serializes a fresh
+        // document without the stray key. Stored documents do carry case-variant keys — the
+        // approved-edit merge handler strips them with OrdinalIgnoreCase for exactly that reason.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["CouponType"] = "floating",
+            ["couponRate"] = 4.25m,
+            ["isCallable"] = false,
+            ["subclass"] = "Corporate"
+        });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*CouponType*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_BondWithOrphanedInflationIndexation_RefusesTheWrite()
     {
         // inflationBaseIndexValue and inflationIndexRatio are read only by the InflationLinked arm,
