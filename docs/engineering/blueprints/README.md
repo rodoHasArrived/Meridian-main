@@ -50,17 +50,20 @@ auto-discovered by `LedgerMigrationRunner`. Ordinals are a **global, shared reso
 that hard-codes one without reserving it will collide with both its siblings and with whatever has
 shipped since it was written.
 
-**Highest ordinal on disk: `V_ledger_028__wash_sale_activation.sql`** (note `008` is used twice;
+**Highest ordinal on disk: `V_ledger_033__tax_lot_face_terms.sql`** (note `008` is used twice;
 keep new ordinals unique).
+
+Ordinals `029`–`032` shipped as `journal_leg_currency_backfill`, `journal_immutability`,
+`journal_aggregate_seal`, and `accounting_audit_chain`, consuming the ranges previously reserved for
+incentive-fee and commitment/capital-call work; `033` then landed as the tax-lot face terms below.
+The pending reservations have been shifted accordingly — re-derive again before implementing.
 
 Reservations for the in-flight blueprints:
 
 | Range | Reserved by |
 |---|---|
-| 029–030 | [Incentive-fee mechanics](../../development/accounting-blueprints/incentive-fee-mechanics.md) — policy, state |
-| 031–032 | [Commitment & capital-call engine](../../development/accounting-blueprints/commitment-and-capital-call-engine.md) — commitments, expiry events |
-| 033–035 | [Equalization / series accounting](../../development/accounting-blueprints/equalization-and-series-accounting.md) — policy, subscription lots, fund series |
-| 036–038 | [Fail-closed mark freshness](w10-mark-001-fail-closed-marks.md) — **in phase order**: 036 per-position freshness assessment, 037 valuation attempt record plus attempt-draft association (both Phase 2), 038 mark override plus audit (Phase 3) |
+| 034–036 | [Equalization / series accounting](../../development/accounting-blueprints/equalization-and-series-accounting.md) — policy, subscription lots, fund series |
+| 037–039 | [Fail-closed mark freshness](w10-mark-001-fail-closed-marks.md) — **in phase order**: 037 per-position freshness assessment, 038 valuation attempt record plus attempt-draft association (both Phase 2), 039 mark override plus audit (Phase 3) |
 
 Re-derive the next free ordinal from disk at implementation time and update this table if an
 unrelated lane lands first. Do not renumber a migration that has already shipped.

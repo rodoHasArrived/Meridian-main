@@ -24,8 +24,14 @@ public static class AtomicTaxLotJournalFingerprint
             requirePostingCommand: false,
             requireExpectedVersion: false);
 
+        // Version 2 records the acquisition lot's par conventions (original face, booked factor,
+        // par basis). LedgerTaxLotRecord is serialized whole below, so those fields entered the
+        // digest the moment they were added to the record and every acquisition fingerprint changed;
+        // the bump makes that break explicit and greppable rather than silent. Two acquisitions that
+        // differ only in the factor their face was booked at are different commands and must not
+        // share an idempotency identity.
         var payload = new FingerprintPayload(
-            FingerprintVersion: 1,
+            FingerprintVersion: 2,
             command.MutationBatchId,
             command.LedgerBookId,
             canonicalJournal,

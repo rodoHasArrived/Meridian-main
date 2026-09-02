@@ -267,7 +267,21 @@ public sealed record AssetAcquisitionLotDto(
     DateOnly AcquiredDate,
     decimal Quantity,
     decimal UnitCost,
-    string AccountId);
+    string AccountId,
+    decimal? OriginalFace = null,
+    decimal? BookedFactor = null,
+    decimal? ParBasis = null)
+{
+    /// <summary>
+    /// True when the instruction states the acquisition-time par conventions of a face-denominated
+    /// lot: the face amount, the pool factor that face was booked at, and the basis its price was
+    /// quoted against. They travel together — a face without the basis it was priced against, or
+    /// without the factor it was booked at, is a half-stated convention — so the lot of record
+    /// retains all three or none.
+    /// </summary>
+    public bool HasFaceValueTerms
+        => OriginalFace.HasValue && BookedFactor.HasValue && ParBasis.HasValue;
+}
 
 public sealed record AssetDisposalLotSelectionDto(
     Guid TaxLotRecordId,

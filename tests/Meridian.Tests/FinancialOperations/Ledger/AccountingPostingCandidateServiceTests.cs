@@ -709,6 +709,110 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_ScalesHeldFaceByTheLotsBookedFactor()
+    {
+        // The pool was bought when the factor was already 0.98: 98,000 of face was booked, which is
+        // 100,000 of original face. Held face restated to a factor of 1 is therefore 100,000 and the
+        // 0.98 -> 0.9625 paydown is 1,750 — the same amount the caller used to have to supply by
+        // hand. Sourcing it from the lot is what makes the booked factor participate at all; reading
+        // the booked face as though it were original face would understate the paydown by 2%.
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+        var scope = harness.TaxLots.OpenLots[0];
+        harness.TaxLots.OpenLots[0] = BuildFaceLotOfRecord(
+            scope.LedgerBookId,
+            scope.SecurityId,
+            scope.BookPositionId,
+            originalFace: 98_000m,
+            bookedFactor: 0.98m,
+            parBasis: 100m);
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeFalse();
+        result.TotalDebits.Should().Be(1_750m);
+        result.TotalCredits.Should().Be(1_750m);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_PartiallyRelievedLotContributesOnlyItsOpenFace()
+    {
+        // Half the lot has already been relieved, so only half its face is still held and only half
+        // the principal pays down. A held face taken from the position projection could not see this.
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+        var scope = harness.TaxLots.OpenLots[0];
+        harness.TaxLots.OpenLots[0] = BuildFaceLotOfRecord(
+            scope.LedgerBookId,
+            scope.SecurityId,
+            scope.BookPositionId,
+            originalFace: 100_000m,
+            bookedFactor: 1m,
+            parBasis: 100m,
+            openQuantity: 500m);
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request with { EventAmount = 875m });
+
+        result.HasBlockingIssues.Should().BeFalse();
+        result.TotalDebits.Should().Be(875m);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_LotWithoutRecordedFaceTermsFailsClosed()
+    {
+        // A lot booked before the par conventions were retained states nothing rather than
+        // defaulting to a price-per-100 quote at factor 1. The candidate must refuse to guess.
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+        var scope = harness.TaxLots.OpenLots[0];
+        harness.TaxLots.OpenLots[0] = BuildFaceLotOfRecord(
+            scope.LedgerBookId,
+            scope.SecurityId,
+            scope.BookPositionId,
+            originalFace: 100_000m,
+            bookedFactor: 1m,
+            parBasis: 100m,
+            withFaceTerms: false);
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.instrument-lot-face-terms-missing" && issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_PositionWithNoOpenLotFailsClosed()
+    {
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+        harness.TaxLots.OpenLots.Clear();
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.instrument-lot-of-record-missing" && issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_WithoutALotOfRecordResolverFailsClosed()
+    {
+        // The lot of record is now a required resolver for typed factor-paydown candidates; a
+        // composition that omits it must refuse the candidate rather than fall back to the caller.
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+        var withoutLots = new AccountingPostingCandidateService(
+            harness.Configuration,
+            harness.Drafts,
+            harness.LedgerBooks,
+            harness.Policies,
+            harness.AssetOperations,
+            harness.Projector);
+
+        var result = await withoutLots.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.instrument-projection-resolver-required" && issue.BlocksCandidate);
+    }
+
+    [Fact]
     public async Task BuildCandidateAsync_MbsFactorPaydown_MissingHolderRoleFailsClosed()
     {
         var harness = await CreateAuthoritativeFactorHarnessAsync();
@@ -1800,14 +1904,72 @@ public sealed class AccountingPostingCandidateServiceTests
         var draftService = new AccountingJournalDraftService(
             policyService,
             new AccountingBasisProjectionService(policyService));
+
+        // The lot of record supplies held face. A pool booked at factor 1 with 100,000 of face
+        // restates to 100,000 at factor 1, which is the basis the projection above was built on --
+        // so the posted paydown stays 1,750 while its source moves from the caller to the lot.
+        var taxLotStore = new StaticTaxLotStore();
+        taxLotStore.OpenLots.Add(BuildFaceLotOfRecord(
+            ledgerBookId,
+            securityId,
+            positionId,
+            originalFace: 100_000m,
+            bookedFactor: 1m,
+            parBasis: 100m));
+
+        var ledgerBookService = new StaticLedgerBookService(ledgerBook, period);
         var service = new AccountingPostingCandidateService(
             configurationService,
             draftService,
-            new StaticLedgerBookService(ledgerBook, period),
+            ledgerBookService,
             policyService,
             assetOperations,
+            projector,
+            taxLotStore);
+        return new AuthoritativeFactorHarness(
+            service,
+            request,
+            assetOperations,
+            taxLotStore,
+            configurationService,
+            draftService,
+            ledgerBookService,
+            policyService,
             projector);
-        return new AuthoritativeFactorHarness(service, request, assetOperations);
+    }
+
+    /// <summary>
+    /// Builds an open lot of record carrying its acquisition-time par conventions, priced at par so
+    /// the quantity/unit-cost and face/par-basis statements of the same acquisition tie exactly.
+    /// </summary>
+    private static LedgerTaxLotRecord BuildFaceLotOfRecord(
+        Guid ledgerBookId,
+        Guid securityId,
+        Guid positionId,
+        decimal originalFace,
+        decimal bookedFactor,
+        decimal parBasis,
+        decimal? openQuantity = null,
+        bool withFaceTerms = true)
+    {
+        var quantity = originalFace / LedgerTaxLotFaceValueTerms.LedgerLotParBasis;
+        return new LedgerTaxLotRecord(
+            Guid.Parse("c1000000-0000-4000-8000-0000000000f1"),
+            ledgerBookId,
+            new LedgerAccount("Investments", LedgerAccountType.Asset, "FNPOOL1"),
+            "lot-fnpool1-2026-01",
+            new DateOnly(2026, 1, 1),
+            quantity,
+            openQuantity ?? quantity,
+            UnitCost: 100m,
+            "USD",
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            SecurityId: securityId,
+            BookPositionId: positionId,
+            OriginalFace: withFaceTerms ? originalFace : null,
+            BookedFactor: withFaceTerms ? bookedFactor : null,
+            ParBasis: withFaceTerms ? parBasis : null);
     }
 
     private static async Task<AccountingPostingCandidateService> CreateSeededCandidateServiceAsync(
@@ -2263,7 +2425,13 @@ public sealed class AccountingPostingCandidateServiceTests
     private sealed record AuthoritativeFactorHarness(
         AccountingPostingCandidateService Service,
         PostingRuleJournalCandidateRequestDto Request,
-        StaticAssetOperationsQueryService AssetOperations);
+        StaticAssetOperationsQueryService AssetOperations,
+        StaticTaxLotStore TaxLots,
+        AccountingConfigurationService Configuration,
+        AccountingJournalDraftService Drafts,
+        StaticLedgerBookService LedgerBooks,
+        AccountingPolicyService Policies,
+        FactorPaydownProjectionService Projector);
 
     private sealed class StaticAssetOperationsQueryService : IAssetOperationsQueryService
     {
@@ -2314,6 +2482,68 @@ public sealed class AccountingPostingCandidateServiceTests
             CloseLedgerPeriodRequest request,
             CancellationToken ct = default)
             => Task.FromException<LedgerPeriodCloseResultDto>(new NotSupportedException());
+    }
+
+    /// <summary>
+    /// Serves the open lots of record for one asset scope. Held face for a factor paydown is now
+    /// derived from these lots rather than from the position economic-state projection, so the
+    /// harness has to state the lots the position actually holds.
+    /// </summary>
+    private sealed class StaticTaxLotStore : ILedgerJournalStore
+    {
+        public List<LedgerTaxLotRecord> OpenLots { get; } = [];
+
+        public Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsByAssetScopeAsync(
+            Guid ledgerBookId,
+            Guid securityId,
+            Guid bookPositionId,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerTaxLotRecord>>(OpenLots
+                .Where(lot => lot.LedgerBookId == ledgerBookId &&
+                              lot.SecurityId == securityId &&
+                              lot.BookPositionId == bookPositionId &&
+                              lot.OpenQuantity > 0m)
+                .ToArray());
+
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
+            => Task.FromException(new NotSupportedException());
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
+            => Task.FromResult<LedgerAccountingPeriod?>(null);
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default)
+            => Task.FromException<LedgerAccountingPeriod>(new NotSupportedException());
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+            => Task.FromResult<LedgerBookRecord?>(null);
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerBookRecord>>([]);
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default)
+            => Task.FromException<LedgerBookRecord>(new NotSupportedException());
     }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore

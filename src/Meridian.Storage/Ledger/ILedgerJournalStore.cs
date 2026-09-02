@@ -83,6 +83,21 @@ public interface ILedgerJournalStore
             new NotSupportedException("This ledger journal store does not support authoritative tax-lot identity reads."));
 
     /// <summary>
+    /// Lists the open lots of record for one (security, book position) scope. Face-denominated
+    /// economics -- principal paydown above all -- must be derived from the lots that actually hold
+    /// the position rather than from a caller-supplied quantity, and the account a lot sits under is
+    /// not known at that point; this read is the asset-scoped seam that makes the lot of record
+    /// reachable from the projection path. Served by <c>ix_tax_lots_asset_scope_open</c>.
+    /// </summary>
+    Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsByAssetScopeAsync(
+        Guid ledgerBookId,
+        Guid securityId,
+        Guid bookPositionId,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(
+            new NotSupportedException("This ledger journal store does not support asset-scoped tax-lot reads."));
+
+    /// <summary>
     /// Resolves one immutable atomic tax-lot posting batch together with its journal and mutation
     /// evidence. Public Posted projections use this read to prove that a supplied mutation-batch
     /// identity is durable authority rather than caller-provided lifecycle metadata.
@@ -347,7 +362,20 @@ public sealed record LedgerTaxLotRecord(
     Guid? OriginatingMutationBatchId = null,
     Guid? LastMutationBatchId = null,
     Guid SecurityId = default,
-    Guid BookPositionId = default);
+    Guid BookPositionId = default,
+    decimal? OriginalFace = null,
+    decimal? BookedFactor = null,
+    decimal? ParBasis = null)
+{
+    /// <summary>
+    /// True when the lot recorded the acquisition-time par conventions
+    /// (<see cref="OriginalFace"/>, <see cref="BookedFactor"/>, <see cref="ParBasis"/>). They are
+    /// persisted all-three-or-none, so a lot either states its face terms or states nothing and
+    /// consumers fail closed rather than inheriting a price-per-100, factor-1 default.
+    /// </summary>
+    public bool HasFaceValueTerms
+        => OriginalFace.HasValue && BookedFactor.HasValue && ParBasis.HasValue;
+}
 
 public enum AtomicTaxLotMutationKind
 {

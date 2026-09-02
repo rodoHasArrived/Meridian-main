@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 
@@ -149,7 +150,10 @@ public sealed class AtomicTaxLotJournalStoreTests
             ("originating batch", lot with { OriginatingMutationBatchId = Guid.NewGuid() }),
             ("last mutation batch", lot with { LastMutationBatchId = Guid.NewGuid() }),
             ("security", lot with { SecurityId = Guid.NewGuid() }),
-            ("book position", lot with { BookPositionId = Guid.NewGuid() })
+            ("book position", lot with { BookPositionId = Guid.NewGuid() }),
+            ("original face", lot with { OriginalFace = 100_000m, BookedFactor = 1m, ParBasis = 100m }),
+            ("booked factor", lot with { OriginalFace = 100_000m, BookedFactor = 0.5m, ParBasis = 100m }),
+            ("par basis", lot with { OriginalFace = 100_000m, BookedFactor = 1m, ParBasis = 1m })
         };
 
         foreach (var mutation in mutations)
@@ -299,13 +303,116 @@ public sealed class AtomicTaxLotJournalStoreTests
     }
 
     [Fact]
+    public void FaceTermsMigration_AddsNullableParConventionsWithoutBackfillingLegacyLots()
+    {
+        var sql = ReadMigration("V_ledger_033__tax_lot_face_terms.sql");
+
+        sql.Should().Contain("add column if not exists original_face numeric(38, 12) null");
+        sql.Should().Contain("add column if not exists booked_factor numeric(38, 12) null");
+        sql.Should().Contain("add column if not exists par_basis numeric(38, 12) null");
+        sql.Should().Contain("ck_tax_lots_face_terms");
+        sql.Should().Contain("ck_tax_lots_face_terms_complete");
+
+        // Idempotent replay: the runner has no version table, so every statement must be re-runnable.
+        sql.Should().Contain("pg_constraint");
+
+        // Legacy rows carry no synthetic defaults. A `not null default 100` par basis would assert
+        // the very price-per-100 convention that was never recorded for lots booked before this
+        // migration, so the columns stay nullable and unbackfilled. Assert against the DDL rather
+        // than the file, so the migration's own header prose can name what it is refusing to do.
+        var ddl = StripSqlComments(sql);
+        ddl.Should().NotContain("not null default");
+        ddl.Should().NotContain("update __SCHEMA__.tax_lots");
+    }
+
+    private static string StripSqlComments(string sql)
+        => string.Join(
+            '\n',
+            sql.Split('\n').Where(static line => !line.TrimStart().StartsWith("--", StringComparison.Ordinal)));
+
+    [Fact]
+    public void FaceValueTerms_RoundTripThroughTheLotOfRecordPreserveParConventions()
+    {
+        // The aggregate is the canonical statement of a par-denominated lot's economics; the lot of
+        // record must be able to give it back unchanged, whatever basis the price was struck in.
+        var securityId = TestSecurityId;
+        var parHundred = new FaceValueLot("lot-1", securityId, new DateOnly(2026, 1, 1),
+            originalFace: 100_000m, pricePercentOfPar: 102m, bookedFactor: 0.8m);
+        var perUnit = new FaceValueLot("lot-1", securityId, new DateOnly(2026, 1, 1),
+            originalFace: 100_000m, pricePercentOfPar: 1.02m, bookedFactor: 0.8m, parBasis: 1m);
+
+        foreach (var source in new[] { parHundred, perUnit })
+        {
+            var record = BuildBareLotOfRecord(securityId, source).WithFaceValueTerms(source);
+
+            record.OriginalFace.Should().Be(source.OriginalFace);
+            record.BookedFactor.Should().Be(source.BookedFactor);
+            record.ParBasis.Should().Be(source.ParBasis);
+            record.HasFaceValueTerms.Should().BeTrue();
+
+            var restated = record.ToFaceValueLot();
+            restated.Should().NotBeNull();
+            restated!.OriginalFace.Should().Be(source.OriginalFace);
+            restated.PricePercentOfPar.Should().Be(source.PricePercentOfPar);
+            restated.BookedFactor.Should().Be(source.BookedFactor);
+            restated.ParBasis.Should().Be(source.ParBasis);
+            restated.CostBasis.Should().Be(source.CostBasis);
+            restated.PremiumDiscount.Should().Be(source.PremiumDiscount);
+            restated.CurrentFace(0.6m).Should().Be(source.CurrentFace(0.6m));
+        }
+    }
+
+    [Fact]
+    public void FaceValueTerms_LotWithoutRecordedTermsRestatesToNullRatherThanADefaultedQuote()
+    {
+        var bare = BuildBareLotOfRecord(
+            TestSecurityId,
+            new FaceValueLot("lot-1", TestSecurityId, new DateOnly(2026, 1, 1), 100_000m, 102m));
+
+        bare.HasFaceValueTerms.Should().BeFalse();
+        bare.ToFaceValueLot().Should().BeNull();
+    }
+
+    [Fact]
+    public void FaceValueTerms_RejectARecordWhoseParAndUnitStatementsDisagree()
+    {
+        var lot = new FaceValueLot("lot-1", TestSecurityId, new DateOnly(2026, 1, 1), 100_000m, 102m);
+        var mismatched = BuildBareLotOfRecord(TestSecurityId, lot) with { OriginalQuantity = 999m, OpenQuantity = 999m };
+
+        var act = () => mismatched.WithFaceValueTerms(lot);
+
+        act.Should().Throw<LedgerValidationException>().WithMessage("*quantity*");
+    }
+
+    private static LedgerTaxLotRecord BuildBareLotOfRecord(Guid securityId, FaceValueLot source)
+    {
+        // Mirrors the engines' lot convention: quantity is the face per 100 of par, unit cost the
+        // price normalized into that same basis.
+        var quantity = source.OriginalFace / LedgerTaxLotFaceValueTerms.LedgerLotParBasis;
+        return new LedgerTaxLotRecord(
+            Guid.Parse("11111111-0000-4000-8000-000000000001"),
+            Guid.Parse("11111111-0000-4000-8000-000000000002"),
+            new LedgerAccount("Investments", LedgerAccountType.Asset, "AAPL"),
+            source.LotId,
+            source.AcquiredDate,
+            quantity,
+            quantity,
+            source.PricePercentOfPar * LedgerTaxLotFaceValueTerms.LedgerLotParBasis / source.ParBasis,
+            "USD",
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            SecurityId: securityId,
+            BookPositionId: TestBookPositionId);
+    }
+
+    [Fact]
     public void LegacyTaxLotSave_RequiresAnExactPositiveVersionAndCannotOverwriteAtomicLots()
     {
         var source = ReadRepositoryFile(
             "src",
             "Meridian.Storage",
             "Ledger",
-            "PostgresLedgerJournalStore.cs");
+            "PostgresLedgerJournalStore.TaxLots.cs");
 
         source.Should().Contain("where retained.originating_mutation_batch_id is null");
         source.Should().Contain("and @expected_version > 0");
