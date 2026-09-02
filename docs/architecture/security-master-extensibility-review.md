@@ -3183,12 +3183,29 @@ re-verifies the bindings it loads, and shape-checks the bindings it is told.** W
   authoritative values live. The values the case lane stores as its durable audit binding are
   whatever the caller sent, in fields whose names promise they are the drafting pipeline's.
 
-The retained candidate the service has already loaded carries the evidence to verify the **lot,
-policy, and source-action** assertions: drafting requires evidence rows binding the exact lot
-snapshot and policy decision by subject id and version
-(`CorporateActionAccountingProjectionService.cs:1871-1874, 1899-1915`), and the attach step holds
-that very evidence list in hand — and checks only that it is non-empty (`:369-373`). The hashes
-and idempotency key are different, per the correction below.
+The retained candidate the service has already loaded holds the evidence rows that *drafting*
+used to bind the **lot, policy, and source-action** assertions — but not in a form attach can read
+back. Drafting binds each identity to a *role*: the manifest row for the lot snapshot must carry
+`Role == LotSnapshot` with the exact subject id and version, the policy decision
+`Role == PolicyDecision`, the source action `Role == SourceEvent`
+(`CorporateActionAccountingProjectionService.cs:1871-1874, 1880-1915`). The role lives only on the
+manifest's `CorporateActionProjectionEvidenceDependencyDto`; the row type the candidate retains,
+`RetainedEvidenceIdentityDto`, has subject type, subject id, and version but no role
+(`RetainedEvidenceIdentityDto.cs:10-24`), and the mapper's manifest match pairs rows by id, URI,
+version, subject, and hash without carrying the role across
+(`CorporateActionAssetAccountingEventMapper.cs:314-320`). The projection DTO that holds the
+manifest is not retained on the spine — the mapper forwards only `request.RetainedEvidence` on the
+event request (`:174-187`). Subject type does not stand in for the role: the projection service
+constrains it only to non-empty (`CorporateActionAccountingProjectionService.cs:1857`), and the
+manifest is caller-supplied at the drafting boundary, so `"LotSnapshot"` as a subject type is a
+fixture convention, not a contract. What attach can establish from the rows today is "some
+retained row names this id at this version" — which a caller asserting the position snapshot's id
+and version as the lot snapshot's would satisfy; what the finding needs is "the projection used
+this id *as* the lot snapshot". The attach step checks only that the list is non-empty
+(`CorporateActionCaseAccountingService.cs:369-373`). An earlier version of this paragraph
+(corrected 2026-09-02, after review) said the three assertions were comparable at attach "by
+subject id and version"; the id and version are retained, the role that makes the comparison mean
+something is not.
 
 **The sharpest instance: nothing ties the bound spine event to the case's own corporate action.**
 The cross-checks at attach are security, tenant/company, and accounting scope
@@ -3206,12 +3223,16 @@ then no longer attach or post its own event (`spine.PostedJournalImpact is not n
 attach, the adoption path correctly refuses an approval reference that is not its own, and the
 route left is the restatement lane). The mechanism is certain from source; how often two Drafted
 spines coexist in one scope is not established here, and does not need to be for the gate to be
-worth having — the identity to compare against is already retained on the candidate: drafting
-requires a `SourceCorporateActionId`
-(`CorporateActionAccountingProjectionService.cs:243`) and requires the SourceEvent-role evidence
-row to bind exactly that id as its subject (`:1880-1888`), so the case's `CorporateActionId` can be
-checked against the candidate's retained SourceEvent evidence binding at attach time, where both
-sides are in memory.
+worth having. Where the identity to compare against lives is the part an earlier version of this
+paragraph got wrong (corrected 2026-09-02, after review): drafting requires a
+`SourceCorporateActionId` (`CorporateActionAccountingProjectionService.cs:243`) and requires the
+SourceEvent-role manifest row to bind exactly that id as its subject (`:1880-1888`) — but the role
+is dropped from the retained rows (previous paragraph), and the source fields the candidate does
+retain are not the action id: `EconomicEvent.SourceEntityId` and `ProjectionLineage.SourceEntityId`
+are the drafting request's separate free-text `SourceEntityId` (`:141, :150-151, :170-171`). So the
+case's `CorporateActionId` has nothing typed to be checked against at attach until the
+source-action identity is retained — on the candidate directly, or by retaining the role on the
+evidence rows so the SourceEvent row can be found as such.
 
 Two subtleties for the implementer, both about what *not* to do:
 
@@ -3225,29 +3246,53 @@ Two subtleties for the implementer, both about what *not* to do:
   binding (above) removes what that selection can smuggle; re-labelling the preparer would instead
   relabel the economics author, the alias-update mistake from P3b's history arriving from the other
   direction.
-- **The remedy is comparison against a retained authority, not a second assertion — and for three
-  of the fields the authority is not yet retained.** An earlier version of this paragraph claimed
+- **The remedy is comparison against a retained authority, not a second assertion — and for five
+  of the six fields the authority is not yet retained in a form attach can use.** This paragraph
+  has been corrected twice, and the corrections pulled in opposite directions, which is why the
+  split below names the authority for each field rather than a count. The first version claimed
   every caller-asserted field had "an authoritative counterpart already in memory at attach time",
-  including "recomputable hashes" and a "derivable idempotency key". That was wrong in kind, the
-  remedy failure this document tracks. What the retained candidate actually carries splits the
-  fields:
-  - **Comparable at attach today:** the lot snapshot, policy decision, and source corporate action —
-    each bound in the candidate's retained evidence rows by subject id and version.
-  - **Not comparable at attach today:** `ProjectionInputHash`, `PostingIntentHash`, and
-    `PostingIdempotencyKey`. The retained candidate declares no member for any of them
-    (`PostingRuleJournalCandidateRequestDto`, `AccountingConfigurationDtos.cs:848-883`), and none
-    is recomputable from it: `BuildProjectionInputHash` consumes the original projection request,
-    treatment decision, and role-bearing evidence dependencies — case and election versions,
-    position snapshot identity, model and engine versions
-    (`CorporateActionAccountingProjectionService.Fingerprints.cs:29-60`) — and
+  including "recomputable hashes" and a "derivable idempotency key" — wrong in kind, the remedy
+  failure this document tracks. The second (2026-09-01) moved the three hash-and-key fields to
+  "not comparable" and kept the three identities as comparable "by subject id and version" — wrong
+  on both sides in smaller ways: it missed a nested authority the candidate does retain, and it
+  counted an id-plus-version match as a binding when the role that makes it one is not retained
+  (both corrected 2026-09-02, after review). What the retained candidate actually carries:
+  - **Comparable at attach today: `ProjectionInputHash`.** The projection service writes the
+    computed input hash into the lineage as `TermsHash`
+    (`CorporateActionAccountingProjectionService.cs:161-178`, `TermsHash: projectionInputHash` at
+    `:174`); the lineage rides the projection DTO (`:186-191`), the mapper requires it and
+    forwards it on the event request (`CorporateActionAssetAccountingEventMapper.cs:66, :174-187`),
+    and the spine copies it onto the drafted candidate (`AssetAccountingEventSpineService.cs:504`,
+    `ProjectionLineage = source.ProjectionLineage`; the candidate's member is
+    `AccountingConfigurationDtos.cs:891`), under the canonical fingerprint attach already
+    recomputes (`CorporateActionCaseAccountingService.cs:310-316`). So `request.ProjectionInputHash`
+    can be compared at attach against `candidate.ProjectionLineage.TermsHash` now, with a null or
+    absent lineage refused. Two cautions: the field is generically named and nullable
+    (`ProjectionLineageDto`, `InstrumentPositionDtos.cs:147`), and other projection lanes put a
+    different hash in it (`FactorPaydownProjectionService.cs:151`) — the equality is this lane's
+    convention, so the comparison should be written as one, and a dedicated retained field would
+    make the contract explicit without being a precondition for the check.
+  - **Not comparable at attach today: the three identities — lot snapshot, policy decision, source
+    corporate action.** Their id and version are on the retained rows; their *role* is not, and
+    nothing else retained on the candidate carries them typed (the two paragraphs above). The
+    remedy is to retain them: either persist the three authoritative identities into retained
+    spine state at drafting time — the drafting request carries all three typed
+    (`CorporateActionAccountingProjectionService.cs:13` for the source action; the projection DTO
+    carries the lot and policy identities at `:212-214`) — or retain the role on the evidence rows
+    so attach can find the `LotSnapshot`, `PolicyDecision`, and `SourceEvent` rows as such. Until
+    then a subject-id scan is a second assertion wearing the first one's evidence.
+  - **Not comparable at attach today: `PostingIntentHash` and `PostingIdempotencyKey`.** The
+    retained candidate declares no member for either
+    (`PostingRuleJournalCandidateRequestDto`, `AccountingConfigurationDtos.cs:848-902`), no nested
+    field carries them, and neither is recomputable from it: `BuildPostingIntentHash` consumes the
+    input hash, treatment decision, computation, and currency
+    (`CorporateActionAccountingProjectionService.cs:180-184`; Fingerprints partial `:150`), and
     `BuildPostingIdempotencyKey` consumes the projection DTO and the mapped effect, including
-    `MappingHash` (`CorporateActionAssetAccountingEventMapper.cs:343-372`), inputs discarded
-    before the spine candidate is built. Prescribing "compare at attach" for these three would
-    leave them unchecked or invite a non-equivalent reconstruction. The remedy for them is to
-    **persist the authoritative values into retained spine state** (or onto the candidate) at
-    drafting time — where they are computed and attested — so attach has something real to compare;
-    until then the honest statement is that these three fields are verifiable only by extending
-    retention, not by a check the lane can add today.
+    `MappingHash` (`CorporateActionAssetAccountingEventMapper.cs:343-372`) — inputs discarded
+    before the spine candidate is built. Prescribing "compare at attach" for these two would leave
+    them unchecked or invite a non-equivalent reconstruction. The remedy is to **persist the
+    authoritative values into retained spine state** (or onto the candidate) at drafting time,
+    where they are computed and attested, so attach has something real to compare.
 
   Requiring the request to match retained authorities keeps the request DTO as an
   idempotency-friendly command envelope while making the stored binding mean what it says.
@@ -3286,15 +3331,18 @@ Two subtleties for the implementer, both about what *not* to do:
 
 Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
 
-1. **Bind the accounting lane's assertions to retained authorities (B1).** Three comparisons run
-   at attach against data already loaded — lot snapshot, policy decision, and the case's
-   `CorporateActionId`, each against the candidate's retained evidence rows (subject id +
-   version) — and three need the authority persisted first: the two hashes and the posting
-   idempotency key, which the retained candidate neither carries nor can recompute (see the
-   corrected remedy under B1; an earlier version of this entry said all six were comparable at
-   attach). Persist those at drafting time into retained spine state, then compare; and persist
-   the source-action identity on the binding so gates after attach can re-check it too. Do this while the lane is new and its one consumer is the
-   workstation; every month of postings makes retrofitted verification a data-repair exercise.
+1. **Bind the accounting lane's assertions to retained authorities (B1).** One comparison can run
+   at attach against data already loaded — `ProjectionInputHash` against the candidate's
+   `ProjectionLineage.TermsHash` — and five need the authority retained first: the lot, policy,
+   and source-action identities, whose retained evidence rows carry id and version but not the
+   role that binds them, and the posting-intent hash and idempotency key, which the candidate
+   neither carries nor can recompute (see the remedy under B1, corrected 2026-09-01 and again
+   2026-09-02; the first version of this entry said all six were comparable at attach, the second
+   said three). Retain those at drafting time — the identities either directly or by keeping the
+   role on the evidence rows, the hash and key as values — then compare; and persist the
+   source-action identity on the binding so gates after attach can re-check it too. Do this while
+   the lane is new and its one consumer is the workstation; every month of postings makes
+   retrofitted verification a data-repair exercise.
 2. **Finish P4's cancellation remediation where it actually still lives.** The create loops and
    EDGAR's broad catches are done and verified — not "the ingest side", which an earlier version
    of this entry said while the same list it introduces names an open ingest path; what remains is
