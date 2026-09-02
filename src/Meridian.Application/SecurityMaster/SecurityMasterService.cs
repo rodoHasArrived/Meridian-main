@@ -702,6 +702,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         }
 
         EnsureEquityClassificationRoundTripsSafely(projection);
+        EnsureBondCouponStructureRoundTripsSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
     }
 
@@ -861,6 +862,83 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 "change from a node that supports this classification.");
         }
     }
+
+    /// <summary>
+    /// The same rule one level down again, and the costliest instance of it: a bond whose stored
+    /// <c>couponType</c> this node does not recognize reads through the fixed-coupon fallback in
+    /// <see cref="SecurityMasterMapping"/>, and <c>BondCouponStructure</c> has no raw-carrying case
+    /// to salvage the label into. Re-serializing that read stamps <c>couponType: "Fixed"</c> at
+    /// <c>couponRate ?? 0</c> over the original and nulls the floating index, spread, cap/floor,
+    /// step schedule, and inflation indexation the label named — so a floater becomes a permanent
+    /// 0% fixed bond that accrual, amortization, and projected cash flows consume as contractual.
+    /// Unlike the equity classification guard there is no lossless variant to let through: any
+    /// unrecognized value is rewritten, so the write is refused whatever else the record carries.
+    /// <para>The one governed exit is the one the refusal instructs: an amendment whose patch names
+    /// a declared <c>couponType</c> replaces the kind wholesale (the F# amend binds
+    /// <c>Kind = defaultArg command.Kind current.Kind</c>), so the misread coupon is never written
+    /// and that amendment is how the record is repaired. A patch that omits <c>couponType</c> is not
+    /// an exit — it would re-default to Fixed and complete the same rewrite by another route.</para>
+    /// </summary>
+    private static void EnsureBondCouponStructureRoundTripsSafely(
+        SecurityProjectionRecord projection,
+        JsonElement? assetSpecificTermsPatch)
+    {
+        if (!string.Equals(projection.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
+            || !TryReadUndeclaredCouponType(projection.AssetSpecificTerms, out var raw))
+        {
+            return;
+        }
+
+        if (PatchNamesDeclaredCouponType(assetSpecificTermsPatch))
+        {
+            return;
+        }
+
+        var declared = string.Join(", ", SecurityAssetTermsSchema.AllowedValues("Bond", "couponType"));
+        throw new InvalidOperationException(
+            $"Security '{projection.SecurityId:D}' is a bond with couponType '{raw}', which this node does not " +
+            "recognize, so it reads through the fixed-coupon fallback. Amending or deactivating it here would " +
+            "re-serialize that fallback as a fixed coupon and drop the coupon structure the label named, so the " +
+            $"write is refused. Amend it with an asset-terms patch naming a declared couponType ({declared}, " +
+            "matched case-sensitively) to repair the record.");
+    }
+
+    /// <summary>
+    /// Reads a present-but-undeclared <c>couponType</c> out of a stored asset-terms document,
+    /// reporting <see langword="false"/> when the key is absent, null, blank, or an exact-case
+    /// declared value. Absent and blank both read as the documented <c>Fixed</c> default rather than
+    /// as a rewritten label, so neither is a round-trip loss. A present NON-string value does count
+    /// as undeclared: the codec's string read skips it and falls back to Fixed on the identical
+    /// path, losing it just the same.
+    /// </summary>
+    private static bool TryReadUndeclaredCouponType(JsonElement terms, out string raw)
+    {
+        raw = string.Empty;
+        if (terms.ValueKind != JsonValueKind.Object
+            || !terms.TryGetProperty("couponType", out var couponType)
+            || couponType.ValueKind == JsonValueKind.Null)
+        {
+            return false;
+        }
+
+        raw = couponType.ValueKind == JsonValueKind.String
+            ? couponType.GetString() ?? string.Empty
+            : couponType.GetRawText();
+        return !SecurityAssetTermsSchema.IsAllowedValue("Bond", "couponType", raw);
+    }
+
+    /// <summary>
+    /// True when the amendment's patch positively names a declared coupon structure. A blank or
+    /// absent <c>couponType</c> in the patch is deliberately NOT an exit: the write-mode mapping
+    /// would re-default it to <c>Fixed</c> and complete the same rewrite the refusal exists to stop.
+    /// </summary>
+    private static bool PatchNamesDeclaredCouponType(JsonElement? assetSpecificTermsPatch)
+        => assetSpecificTermsPatch is JsonElement patch
+            && patch.ValueKind == JsonValueKind.Object
+            && patch.TryGetProperty("couponType", out var couponType)
+            && couponType.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(couponType.GetString())
+            && SecurityAssetTermsSchema.IsAllowedValue("Bond", "couponType", couponType.GetString());
 
     private static SecurityProjectionRecord CreateProjectionFromResult(
         SecurityMasterCommandResultWrapper result,

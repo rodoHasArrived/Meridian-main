@@ -482,6 +482,55 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     }
 
     [Fact]
+    public void Bond_EveryDeclaredCouponType_SerializesBackToTheValueItWasGiven()
+    {
+        // Byte-stability alone cannot see this class of defect: an undeclared couponType collapses
+        // to Fixed on the FIRST pass, so both passes agree and the loop looks lossless while the
+        // submitted value is already gone. Compare the SUBMITTED discriminant against the
+        // serialized one, and do it over the schema's declared vocabulary so the closed set and the
+        // F# serializer cannot drift apart — a coupon structure added to one and not the other
+        // fails here rather than silently degrading records in production.
+        var payloadsByCouponType = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["Fixed"] = new { maturity = "2030-01-01", couponType = "Fixed", couponRate = 4.25m, isCallable = false, subclass = "Corporate" },
+            ["Floating"] = new { maturity = "2030-01-01", couponType = "Floating", floatingIndex = "SOFR", spreadBps = 185m, isCallable = false, subclass = "FloatingRate" },
+            ["ZeroCoupon"] = new { maturity = "2030-01-01", couponType = "ZeroCoupon", isCallable = false, subclass = "Sovereign" },
+            ["Step"] = new
+            {
+                maturity = "2032-06-30",
+                couponType = "Step",
+                stepSchedule = new object[] { new { effectiveDate = "2026-06-30", rate = 3.0m } },
+                isCallable = false,
+                subclass = "StepRate"
+            },
+            ["InflationLinked"] = new
+            {
+                maturity = "2036-01-15",
+                couponType = "InflationLinked",
+                couponRate = 1.25m,
+                inflationIndex = "CPI-U",
+                isCallable = false,
+                subclass = "InflationLinked"
+            }
+        };
+
+        var declared = SecurityAssetTermsSchema.AllowedValues("Bond", "couponType");
+        declared.Should().NotBeEmpty("couponType is a closed vocabulary the codec cannot round-trip outside of");
+        payloadsByCouponType.Keys.Should().BeEquivalentTo(
+            declared,
+            "every declared coupon structure needs a payload proving it survives the codec");
+
+        foreach (var couponType in declared)
+        {
+            var canonical = SerializeThroughDomain("Bond", payloadsByCouponType[couponType]);
+
+            canonical.GetProperty("couponType").GetString().Should().Be(
+                couponType,
+                "the serializer must write back the coupon structure the payload named");
+        }
+    }
+
+    [Fact]
     public void Equity_LegacyRawOtherClassification_ReadCanonicalizesAndThenRoundTripsByteStable()
     {
         // Rows written before the serializer emitted the "Other" discriminant carry the raw label

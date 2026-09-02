@@ -60,6 +60,53 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
         error.Should().Contain("does not parse as the declared type");
     }
 
+    [Theory]
+    [InlineData("Bond", "assetSpecificTerms.couponType", "Fixed")]
+    [InlineData("Bond", "assetSpecificTerms.couponType", "Floating")]
+    [InlineData("Bond", "assetSpecificTerms.couponType", "InflationLinked")]
+    [InlineData("Option", "assetSpecificTerms.exerciseStyle", "American")]
+    [InlineData("Equity", "assetSpecificTerms.classification", "ConvertiblePreferred")]
+    // Fields whose union carries the raw label stay open — constraining them would reject the
+    // vendor taxonomy their Other case exists to preserve.
+    [InlineData("Bond", "assetSpecificTerms.subclass", "SukukAlIjara")]
+    [InlineData("Bond", "assetSpecificTerms.paymentFrequency", "Every28Days")]
+    [InlineData("Option", "assetSpecificTerms.settlementType", "Physical")]
+    public void ClosedVocabularyField_WithDeclaredValue_IsValid(string assetClass, string fieldPath, string value)
+    {
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out _, out var error)
+            .Should().BeTrue(error);
+    }
+
+    [Theory]
+    // Case matters: the codecs switch ordinally, so "floating" is not a near-miss they forgive —
+    // it is a value they READ AS Fixed and re-serialize under that name.
+    [InlineData("Bond", "assetSpecificTerms.couponType", "floating")]
+    [InlineData("Bond", "assetSpecificTerms.couponType", "FLOATING")]
+    [InlineData("Bond", "assetSpecificTerms.couponType", " Floating")]
+    [InlineData("Bond", "assetSpecificTerms.couponType", "Variable")]
+    [InlineData("Bond", "assetSpecificTerms.couponType", "Zero Coupon")]
+    [InlineData("Option", "assetSpecificTerms.exerciseStyle", "american")]
+    [InlineData("Equity", "assetSpecificTerms.classification", "Commmon")]
+    public void ClosedVocabularyField_WithUndeclaredValue_IsRejected(string assetClass, string fieldPath, string value)
+    {
+        // Staging one of these would not fail later — it would publish a record whose economics
+        // were quietly rewritten to the codec's fallback, so it has to be caught at the edit.
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out _, out var error)
+            .Should().BeFalse();
+        error.Should().Contain("is not a declared value").And.Contain("case-sensitively");
+    }
+
+    [Fact]
+    public void ClosedVocabularyField_ClearingTheOverlay_IsStillAllowed()
+    {
+        // A blank value clears the overlay entry rather than asserting a discriminant, so the
+        // vocabulary must not make a staged value un-clearable.
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.couponType", null, out _, out var error)
+            .Should().BeTrue(error);
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.couponType", "   ", out _, out var blankError)
+            .Should().BeTrue(blankError);
+    }
+
     [Fact]
     public void UndeclaredField_IsRejectedWithDeclaredFieldList()
     {

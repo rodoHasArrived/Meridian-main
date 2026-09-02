@@ -121,7 +121,7 @@ public static class SecurityAssetTermsSchema
                 Req("maturity", SecurityAssetTermFieldType.Date),
                 Opt("issueDate", SecurityAssetTermFieldType.Date),
                 // couponType/couponRate/floatingIndex/spreadBps/dayCount are emitted flat by the
-                // serializer; the legacy nested "coupon" object shape is read as a fallback.
+                // serializer; only the projection store and the v2 upcaster read a nested "coupon".
                 Opt("couponType", SecurityAssetTermFieldType.String),
                 Opt("couponRate", SecurityAssetTermFieldType.Decimal),
                 Opt("floatingIndex", SecurityAssetTermFieldType.String),
@@ -351,6 +351,80 @@ public static class SecurityAssetTermsSchema
 
     /// <summary>The asset classes with a declared terms schema.</summary>
     public static IReadOnlyCollection<string> AssetClasses { get; } = FieldsByAssetClass.Keys.ToArray();
+
+    /// <summary>
+    /// The closed value vocabularies for declared term fields whose codec maps the string onto a
+    /// closed switch or discriminated union with NO raw-carrying case, so a value outside the set
+    /// cannot survive a deserialize/re-serialize pass — it is silently replaced by a different,
+    /// canonical value and the original is gone.
+    /// <para>Membership is EXACT-CASE, matching the ordinal switches in
+    /// <c>SecurityMasterMapping</c>. <c>"floating"</c> is not a near-miss those readers forgive; it
+    /// is a value they rewrite to <c>Fixed</c>. Accepting it here and persisting it verbatim (the
+    /// field-edit path stages the operator's value unchanged) would stage exactly the corruption
+    /// this table exists to stop, so the vocabulary must not be matched case-insensitively.</para>
+    /// <para>Fields whose union carries the raw label — <c>subclass</c>, <c>paymentFrequency</c>,
+    /// <c>distributionPolicy</c>, <c>votingRightsCat</c> — round-trip losslessly through their
+    /// <c>Other</c> case and are deliberately absent: constraining them would reject the free
+    /// vendor taxonomy those cases exist to preserve. Plain-string fields (<c>putCall</c>,
+    /// <c>settlementType</c>, <c>depositType</c>, <c>collateralType</c>, <c>warrantType</c>,
+    /// <c>fundType</c>, <c>sweepVehicleType</c>) are carried verbatim into the domain and are
+    /// likewise not codec-constrained; where they need a governed vocabulary it is a validation
+    /// rule (<c>AssetClassValidatorRegistry</c>), not a round-trip requirement.</para>
+    /// <para>Equity <c>classification</c> is listed for the operator-facing edit surface only. Its
+    /// write refusal lives in <c>SecurityMasterMapping.ToEquityClassificationOption</c>, which pairs
+    /// the discriminant with the <c>otherClassification</c> rule this flat table cannot express.</para>
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>> ClosedVocabulariesByAssetClass =
+        new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyList<string>>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Equity"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["classification"] = ["Common", "Preferred", "Convertible", "ConvertiblePreferred", "Other"]
+            },
+            ["Option"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["exerciseStyle"] = ["American", "European", "Bermudan"]
+            },
+            ["Bond"] = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["couponType"] = ["Fixed", "Floating", "ZeroCoupon", "Step", "InflationLinked"]
+            }
+        };
+
+    /// <summary>
+    /// Tries to resolve the closed value vocabulary for a declared term field. The key is matched
+    /// case-insensitively (as elsewhere in this table); the VALUES it yields are exact-case and must
+    /// be compared ordinally.
+    /// </summary>
+    public static bool TryGetAllowedValues(string assetClass, string key, out IReadOnlyList<string> allowedValues)
+    {
+        if (ClosedVocabulariesByAssetClass.TryGetValue(assetClass, out var vocabularies)
+            && vocabularies.TryGetValue(key, out var values))
+        {
+            allowedValues = values;
+            return true;
+        }
+
+        allowedValues = [];
+        return false;
+    }
+
+    /// <summary>
+    /// The closed value vocabulary for <paramref name="key"/> in <paramref name="assetClass"/>, or
+    /// an empty list when the field accepts free text.
+    /// </summary>
+    public static IReadOnlyList<string> AllowedValues(string assetClass, string key)
+        => TryGetAllowedValues(assetClass, key, out var allowedValues) ? allowedValues : [];
+
+    /// <summary>
+    /// True when <paramref name="value"/> is acceptable for <paramref name="key"/>: either the field
+    /// has no closed vocabulary, or the value is an exact-case member of it. A null or blank value
+    /// is acceptable — it asserts no discriminant.
+    /// </summary>
+    public static bool IsAllowedValue(string assetClass, string key, string? value)
+        => string.IsNullOrWhiteSpace(value)
+            || !TryGetAllowedValues(assetClass, key, out var allowedValues)
+            || allowedValues.Contains(value, StringComparer.Ordinal);
 
     /// <summary>The declared fields for <paramref name="assetClass"/>, or an empty list when none is declared.</summary>
     public static IReadOnlyList<SecurityAssetTermField> Fields(string assetClass)

@@ -262,6 +262,247 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_BondWithUnrecognizedCouponType_RefusesTheWrite()
+    {
+        // A vendor-supplied "floating" reads through the fixed-coupon fallback, so re-serializing it
+        // would stamp couponType "Fixed" at a 0% rate over the record and drop the floating index
+        // and spread — permanently converting a floater into a fixed bond that accrual,
+        // amortization, and projected cash flows then consume as contractual.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var projection = CreateProjection(securityId, "Bond", SecurityStatusDto.Active, "Vendor floater", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2035-06-15",
+                couponType = "floating",
+                floatingIndex = "SOFR",
+                spreadBps = 185m,
+                isCallable = false,
+                subclass = "FloatingRate"
+            })
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(projection);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*couponType 'floating'*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_BondWithUnrecognizedCouponTypeAndNoPatch_RefusesTheWrite()
+    {
+        // An amendment that leaves the asset terms alone (a ticker change, a common-terms backfill)
+        // still re-serializes the whole kind, so it completes the same rewrite as a deactivate.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var projection = CreateProjection(securityId, "Bond", SecurityStatusDto.Active, "Vendor floater", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2035-06-15",
+                couponType = "floating",
+                floatingIndex = "SOFR",
+                isCallable = false,
+                subclass = "FloatingRate"
+            })
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(projection);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        await service.Invoking(s => s.AmendTermsAsync(new AmendSecurityTermsRequest(
+                SecurityId: securityId,
+                ExpectedVersion: 2,
+                CommonTerms: JsonSerializer.SerializeToElement(new { displayName = "Renamed floater", currency = "USD" }),
+                AssetSpecificTermsPatch: null,
+                IdentifiersToAdd: Array.Empty<SecurityIdentifierDto>(),
+                IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
+                EffectiveFrom: DateTimeOffset.UtcNow,
+                SourceSystem: "test",
+                UpdatedBy: "codex",
+                SourceRecordId: null,
+                Reason: "rename")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*couponType 'floating'*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWithDeclaredCouponType_IsNotRefused()
+    {
+        // The guard is scoped to values the codec cannot round-trip. A canonical discriminant — and
+        // an absent couponType, which keeps its documented Fixed default — must still write, or the
+        // refusal would wall off the ordinary bond lifecycle.
+        foreach (var terms in new object[]
+        {
+            new { maturity = "2035-06-15", couponType = "Floating", floatingIndex = "SOFR", isCallable = false, subclass = "FloatingRate" },
+            new { maturity = "2035-06-15", couponRate = 4.25m, isCallable = false, subclass = "Corporate" }
+        })
+        {
+            var securityId = Guid.NewGuid();
+            var eventStore = Substitute.For<ISecurityMasterEventStore>();
+            var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+            var store = Substitute.For<ISecurityMasterStore>();
+            var options = new SecurityMasterOptions
+            {
+                SnapshotIntervalVersions = 50,
+                ResolveInactiveByDefault = true
+            };
+            var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+            var projection = CreateProjection(securityId, "Bond", SecurityStatusDto.Active, "Ordinary bond", 2) with
+            {
+                AssetSpecificTerms = JsonSerializer.SerializeToElement(terms)
+            };
+            store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(projection);
+
+            var service = new SecurityMasterService(
+                eventStore,
+                snapshotStore,
+                store,
+                rebuilder,
+                options,
+                NullLogger<SecurityMasterService>.Instance);
+
+            await service.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate"));
+
+            await eventStore.Received(1).AppendAsync(
+                securityId,
+                2,
+                Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+                Arg.Any<CancellationToken>());
+        }
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_BondCouponTypePatchNamingADeclaredValue_RepairsTheRecord()
+    {
+        // The governed exit the refusal instructs: the patch replaces the kind wholesale, so an
+        // amendment naming a declared couponType never re-serializes the misread — it repairs the
+        // record instead of being walled out by the guard that protects it.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        var projection = CreateProjection(securityId, "Bond", SecurityStatusDto.Active, "Vendor floater", 2) with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2035-06-15",
+                couponType = "floating",
+                floatingIndex = "SOFR",
+                spreadBps = 185m,
+                isCallable = false,
+                subclass = "FloatingRate"
+            })
+        };
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(projection);
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        var detail = await service.AmendTermsAsync(new AmendSecurityTermsRequest(
+            SecurityId: securityId,
+            ExpectedVersion: 2,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2035-06-15",
+                couponType = "Floating",
+                floatingIndex = "SOFR",
+                spreadBps = 185m,
+                isCallable = false,
+                subclass = "FloatingRate"
+            }),
+            IdentifiersToAdd: Array.Empty<SecurityIdentifierDto>(),
+            IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            SourceSystem: "test",
+            UpdatedBy: "codex",
+            SourceRecordId: null,
+            Reason: "repair the coupon structure"));
+
+        detail.AssetSpecificTerms.GetProperty("couponType").GetString().Should().Be("Floating");
+        detail.AssetSpecificTerms.GetProperty("floatingIndex").GetString().Should().Be("SOFR");
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_LegacyCustomAssetWithoutProfileEnvelope_RefusesTheWrite()
     {
         // A CustomAsset row that predates the profile envelope reads through the OtherSecurity

@@ -201,6 +201,143 @@ public sealed class SecurityMasterMappingInteropTests
             .WithMessage("*requires a non-empty 'otherClassification'*");
     }
 
+    [Fact]
+    public void ToCreateCommand_UnknownBondCouponType_RejectsTheWrite()
+    {
+        // BondCouponStructure has no raw-carrying case, so an unrecognized couponType does not
+        // fail — it reads as Fixed(couponRate ?? 0) and re-serializes as couponType "Fixed",
+        // permanently converting a floater into a 0% fixed bond. The write must fail closed.
+        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(CreateRequest("Bond", new
+        {
+            maturity = "2035-06-15",
+            couponType = "floating",
+            floatingIndex = "SOFR",
+            spreadBps = 185m,
+            isCallable = false,
+            subclass = "FloatingRate"
+        })))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*Unknown couponType 'floating'*");
+    }
+
+    [Fact]
+    public void ToCreateCommand_UnknownExerciseStyle_RejectsTheWrite()
+    {
+        // ExerciseStyle has no Other case: an unrecognized style reads as None and re-serializes
+        // as null, deleting the label rather than mis-typing it. Same write refusal.
+        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(CreateRequest("Option", new
+        {
+            underlyingId = Guid.NewGuid(),
+            putCall = "Call",
+            strike = 105.5m,
+            expiry = "2027-12-17",
+            multiplier = 100m,
+            exerciseStyle = "american",
+            isAdjusted = false
+        })))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*Unknown exerciseStyle 'american'*");
+    }
+
+    [Fact]
+    public void ToCreateCommand_DeclaredBondCouponType_IsAccepted()
+    {
+        // The refusal is scoped to values outside the declared vocabulary; the canonical
+        // discriminants — and an absent couponType, which keeps its documented Fixed default —
+        // must still write.
+        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(CreateRequest("Bond", new
+        {
+            maturity = "2035-06-15",
+            couponType = "Floating",
+            floatingIndex = "SOFR",
+            isCallable = false,
+            subclass = "FloatingRate"
+        }))).Should().NotThrow();
+
+        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(CreateRequest("Bond", new
+        {
+            maturity = "2035-06-15",
+            couponRate = 4.25m,
+            isCallable = false,
+            subclass = "Corporate"
+        }))).Should().NotThrow();
+    }
+
+    [Fact]
+    public void ToRecord_UnknownBondCouponType_StaysReadable()
+    {
+        // Read tolerance is the whole reason the write is refused rather than the read: a row a
+        // vendor feed already wrote must stay readable. Re-serializing that read is what destroys
+        // it — the loss asserted here is exactly what the service-level guard refuses to persist.
+        var record = SecurityMasterMapping.ToRecord(BondProjection("floating"));
+
+        var canonical = JsonDocument
+            .Parse(new SecurityMasterSnapshotWrapper(record).AssetSpecificTermsJson)
+            .RootElement.Clone();
+
+        canonical.GetProperty("couponType").GetString().Should().Be("Fixed");
+        canonical.GetProperty("couponRate").GetDecimal().Should().Be(0m);
+        canonical.GetProperty("floatingIndex").ValueKind.Should().Be(JsonValueKind.Null);
+        canonical.GetProperty("spreadBps").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    private static SecurityProjectionRecord BondProjection(string couponType)
+    {
+        var asOf = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        return new SecurityProjectionRecord(
+            Guid.NewGuid(),
+            "Bond",
+            SecurityStatusDto.Active,
+            "Vendor floater",
+            "USD",
+            "InternalCode",
+            "BOND-CPN-1",
+            JsonSerializer.SerializeToElement(new { displayName = "Vendor floater", currency = "USD" }),
+            JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2035-06-15",
+                couponType,
+                floatingIndex = "SOFR",
+                spreadBps = 185m,
+                isCallable = false,
+                subclass = "FloatingRate"
+            }),
+            JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "interop-tests",
+                asOf = "2026-01-01T00:00:00+00:00",
+                updatedBy = "interop-tests"
+            }),
+            1,
+            asOf,
+            null,
+            [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "BOND-CPN-1", true, asOf)],
+            []);
+    }
+
+    private static CreateSecurityRequest CreateRequest(string assetClass, object assetSpecificTerms)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new CreateSecurityRequest(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: assetClass,
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = $"{assetClass} vocabulary write guard",
+                currency = "USD"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(assetSpecificTerms),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "VOCAB-1", true, now)
+            ],
+            EffectiveFrom: now,
+            SourceSystem: "interop-tests",
+            UpdatedBy: "interop-tests",
+            SourceRecordId: $"{assetClass}-vocabulary-write-guard",
+            Reason: "Write mapping must fail closed on undeclared discriminants");
+    }
+
     private static CreateSecurityRequest EquityCreateRequest(object assetSpecificTerms)
     {
         var now = DateTimeOffset.UtcNow;

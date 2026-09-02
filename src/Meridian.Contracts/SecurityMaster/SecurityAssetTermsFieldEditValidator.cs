@@ -174,6 +174,22 @@ public static class SecurityAssetTermsFieldEditValidator
             return false;
         }
 
+        // A syntactically valid string is not enough for a field the codec reads through a closed
+        // switch with no raw-carrying case: an undeclared value does not fail downstream, it is
+        // silently READ AS a different value and re-serialized under that name, so staging it queues
+        // a publish that quietly rewrites the record's economics. This validator stages the
+        // operator's value verbatim, so the match must be exact-case — accepting "floating" here
+        // would persist the very spelling the bond codec collapses to "Fixed".
+        if (field.Type == SecurityAssetTermFieldType.String
+            && !SecurityAssetTermsSchema.IsAllowedValue(assetClass, field.Key, newValue))
+        {
+            var declared = string.Join(", ", SecurityAssetTermsSchema.AllowedValues(assetClass, field.Key));
+            error =
+                $"Value '{newValue}' is not a declared value for '{AssetSpecificTermsPrefix}{field.Key}' on asset " +
+                $"class '{assetClass}'. Declared values are {declared}, matched case-sensitively.";
+            return false;
+        }
+
         // A syntactically valid array is not enough for the KNOWN contractual schedules: their
         // rows carry the same domain invariants the canonical F# command enforces (positive
         // instalments, factors within [0, 1], unique non-increasing factor dates), and staging a

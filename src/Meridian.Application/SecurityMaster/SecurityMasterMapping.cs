@@ -254,7 +254,7 @@ internal static class SecurityMasterMapping
                 GetRequiredDateOnly(json, "expiry"),
                 GetRequiredDecimal(json, "multiplier"),
                 ToOption(GetOptionalString(json, "optChainId")),
-                ParseExerciseStyle(GetOptionalString(json, "exerciseStyle")),
+                ParseExerciseStyle(GetOptionalString(json, "exerciseStyle"), mode),
                 ToOption(GetOptionalString(json, "settlementType")),
                 GetOptionalBoolean(json, "isAdjusted") ?? false,
                 ToOption(GetOptionalDateOnly(json, "lastTradingDt")))),
@@ -270,7 +270,7 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "deliveryLocationCode")),
                 GetOptionalBoolean(json, "isRollTarget") ?? false,
                 ToOption(GetOptionalInt(json, "rollWindowDays")))),
-            "Bond" => SecurityKind.NewBond(ToBondTerms(json)),
+            "Bond" => SecurityKind.NewBond(ToBondTerms(json, mode)),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
                 GetRequiredString(json, "baseCurrency"),
                 GetRequiredString(json, "quoteCurrency"))),
@@ -489,9 +489,18 @@ internal static class SecurityMasterMapping
         var other => BondSubclass.NewOther(other)
     };
 
-    private static BondTerms ToBondTerms(JsonElement json)
+    private static BondTerms ToBondTerms(JsonElement json, SecurityKindMappingMode mode)
     {
         var couponType = GetOptionalString(json, "couponType") ?? "Fixed";
+        // A WRITE fails closed on an unrecognized discriminant. The fallback arm below is READ
+        // tolerance only: it keeps a row readable as Fixed(couponRate ?? 0), but BondCouponStructure
+        // has no raw-carrying case (unlike BondSubclass.Other or the equity classification's
+        // Other + otherClassification pair), so re-serializing that read stamps couponType "Fixed"
+        // over the original label and nulls the floating/step/inflation payload it named. Persisting
+        // "floating" — or "FRN", or " Floating"; the switch below is ordinal and untrimmed — would
+        // therefore mint a 0% fixed bond that accrual, amortization, and projected cash flows all
+        // consume as contractual.
+        EnsureWriteUsesDeclaredValue(mode, "Bond", "couponType", couponType);
         BondCouponStructure coupon = couponType switch
         {
             "Floating" => BondCouponStructure.NewFloating(
@@ -575,14 +584,50 @@ internal static class SecurityMasterMapping
     private static FSharpList<T> ToFSharpList<T>(IEnumerable<T> values)
         => ListModule.OfSeq(values);
 
-    private static FSharpOption<ExerciseStyle> ParseExerciseStyle(string? value)
-        => value?.Trim() switch
+    /// <summary>
+    /// Same read-tolerant/write-strict split as the bond coupon structure, with a quieter failure
+    /// mode: <see cref="ExerciseStyle"/> has no <c>Other</c> case, and an unrecognized style reads
+    /// as <see langword="null"/> rather than as a wrong value — the serializer then emits
+    /// <c>exerciseStyle: null</c> and the label is simply gone. Reads stay tolerant so the contract
+    /// remains readable; a write that would persist a style this node cannot round-trip is refused.
+    /// </summary>
+    private static FSharpOption<ExerciseStyle> ParseExerciseStyle(string? value, SecurityKindMappingMode mode)
+    {
+        var style = value?.Trim();
+        EnsureWriteUsesDeclaredValue(mode, "Option", "exerciseStyle", style);
+        return style switch
         {
             "American" => FSharpOption<ExerciseStyle>.Some(ExerciseStyle.American),
             "European" => FSharpOption<ExerciseStyle>.Some(ExerciseStyle.European),
             "Bermudan" => FSharpOption<ExerciseStyle>.Some(ExerciseStyle.Bermudan),
             _ => FSharpOption<ExerciseStyle>.None
         };
+    }
+
+    /// <summary>
+    /// Refuses a WRITE whose value falls outside the field's declared closed vocabulary
+    /// (<see cref="SecurityAssetTermsSchema.TryGetAllowedValues"/>). Reads are untouched — the
+    /// caller's fallback arm keeps the row readable — but those fallbacks are lossy by construction:
+    /// the domain has no slot to carry the raw label, so the next serialize writes a different value
+    /// under the same key and the original can never be recovered. Refusing at the create/amend
+    /// boundary is the same rule the asset class, the CustomAsset envelope, and the equity
+    /// classification already follow: read tolerance must not become write tolerance.
+    /// </summary>
+    private static void EnsureWriteUsesDeclaredValue(
+        SecurityKindMappingMode mode, string assetClass, string key, string? value)
+    {
+        if (mode != SecurityKindMappingMode.Write
+            || SecurityAssetTermsSchema.IsAllowedValue(assetClass, key, value))
+        {
+            return;
+        }
+
+        var declared = string.Join(", ", SecurityAssetTermsSchema.AllowedValues(assetClass, key));
+        throw new InvalidOperationException(
+            $"Unknown {key} '{value}' for asset class '{assetClass}'. Declared values are {declared}, " +
+            "matched case-sensitively. An unrecognized value is read as the default structure and " +
+            "re-serialized under that name, so it would silently replace the terms it was meant to describe.");
+    }
 
     private static FSharpOption<string> ToOption(string? value)
         => string.IsNullOrWhiteSpace(value) ? FSharpOption<string>.None : FSharpOption<string>.Some(value);
