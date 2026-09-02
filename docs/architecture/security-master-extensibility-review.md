@@ -3344,17 +3344,20 @@ attached). It is B1's thesis at the one field the lane's exact-version promise r
 
 Migration 031 says the binding "retains the ... case, scope, policy, and period versions it was
 prepared against, so ReadyForApproval and posting can be gated on durable exact-version evidence"
-(`031_security_master_corporate_action_accounting_lane.sql:3-7`). The case version it retains is
-not the one the candidate was prepared against. The service builds the binding with
-`BoundCaseVersion: 0` (`CorporateActionCaseAccountingService.cs:378`); the store then bumps the
-case (`UpdateCaseVersionAsync`, `PostgresCorporateActionOperationsStore.Cases.cs:947`,
-`Version = processingCase.Version + 1`) and stamps the binding with the version it just created
-(`PostgresCorporateActionOperationsStore.Accounting.cs:116-127`, `BoundCaseVersion =
-updatedCase.Version` at `:123`). Every downstream exact-version gate then compares that stamp to
-the case's current version — `EnsureBindingSupportsReadyForApproval`
+(`031_security_master_corporate_action_accounting_lane.sql:3-7`). The one case version it retains
+is the post-attach version, not the one the candidate was prepared against. The service builds
+the binding with `BoundCaseVersion: 0` (`CorporateActionCaseAccountingService.cs:378`); the store
+verifies the caller's `ExpectedVersion` against the row
+(`PostgresCorporateActionOperationsStore.Accounting.cs:103-106`), bumps the case exactly once
+(`UpdateCaseVersionAsync`, `PostgresCorporateActionOperationsStore.Cases.cs:947`,
+`Version = processingCase.Version + 1`), and stamps the binding with the version it just created
+(`Accounting.cs:116-127`, `BoundCaseVersion = updatedCase.Version` at `:123`). That stamp is the
+right value for what it feeds: every downstream exact-version gate compares it to the case's
+current version — `EnsureBindingSupportsReadyForApproval`
 (`CorporateActionCaseAccountingContracts.cs:310-314`) and the availability projection
-(`CorporateActionOperationsService.cs:827-830`) — which detects a case change *after* attach and
-can never detect staleness *at* attach, because the stamp was made current by construction.
+(`CorporateActionOperationsService.cs:827-830`) — which detects a case change *after* attach. What
+it cannot do is detect staleness *at* attach, because it was made current by construction, and
+nothing else retained can either.
 
 The case version the economics were actually computed for exists in exactly one retained place:
 committed into the projection input hash, alongside the election version, policy-decision
@@ -3381,12 +3384,17 @@ with it the election id and version and the position snapshot id from the same d
 the spine candidate (or the drafted spine's scope). At attach, compare the retained case version
 to the case version the caller asserts and the store already checks the row against
 (`request.ExpectedVersion`, `PostgresCorporateActionOperationsStore.Accounting.cs:103-106`), and
-refuse `ProjectionStale` when they differ; stamp `bound_case_version` from that verified value's
-successor rather than from whatever the bump produced, so the column means what 031 says it
-means. `BuildProjectionInputHash` already names the right set (`:48-52`); the work is to retain it
-in the clear as well as in the digest. This belongs with B1's priority entry, not after it: it is
-the same defect — attach trusting instead of verifying — at the field the rest of the lane's
-correctness is gated on.
+refuse `ProjectionStale` when they differ. Leave `bound_case_version` as it is: the first version
+of this paragraph (corrected 2026-09-02, after review) said to stamp it "from the verified value's
+successor" so the column would mean the version prepared against — a remedy that changes nothing,
+because the store verifies `ExpectedVersion` and increments exactly once, so that successor *is*
+`updatedCase.Version`; and one that could not mean that anyway, since the prepared-against version
+is one earlier. The post-attach stamp is correct for the currency gate it feeds; the drafting-time
+version is a second, separately retained field, and the new attach check is where it is consumed.
+`BuildProjectionInputHash` already names the right set (`:48-52`); the work is to retain it in the
+clear as well as in the digest. This belongs with B1's priority entry, not after it: it is the same
+defect — attach trusting instead of verifying — at the field the rest of the lane's correctness is
+gated on.
 
 ### Smaller notes, not filed as findings
 
@@ -3431,10 +3439,10 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    hash and idempotency key, which the candidate neither carries nor can recompute. Retain those at
    drafting time — the identities either directly or by keeping the role on the evidence rows, the
    hash and key as values — then compare. In the same change retain the drafting-time case version
-   (with the election and position-snapshot inputs from the same digest) typed on the candidate,
-   compare it to the asserted case version at attach, and stamp `bound_case_version` from the
-   verified value, so the exact-version gates downstream test the candidate's currency and not a
-   stamp attach made current by construction (B2). This entry has been corrected with its finding:
+   (with the election and position-snapshot inputs from the same digest) as its own typed field on
+   the candidate and compare it to the asserted case version at attach, refusing a stale draft
+   there; `bound_case_version` stays the post-attach stamp the currency gate needs, and is not
+   where the candidate's currency gets tested (B2). This entry has been corrected with its finding:
    the first version said all six fields were comparable at attach, the second said three, the
    third said one; the count is the least important part of it. Do this while the lane is new and
    its one consumer is the workstation; every month of postings makes retrofitted verification a
