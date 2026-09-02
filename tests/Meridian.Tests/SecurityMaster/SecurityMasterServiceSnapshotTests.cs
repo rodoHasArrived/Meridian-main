@@ -296,7 +296,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var (eventStore, service) = CreateBondCouponHarness(securityId, "floating");
 
-        await service.Invoking(s => s.AmendTermsAsync(BondAmendRequest(securityId, assetSpecificTermsPatch: null)))
+        await service.Invoking(s => s.AmendTermsAsync(TermsAmendRequest(securityId, assetSpecificTermsPatch: null)))
             .Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*couponType 'floating'*");
 
@@ -315,7 +315,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var (eventStore, service) = CreateBondCouponHarness(securityId, "floating");
 
-        await service.Invoking(s => s.AmendTermsAsync(BondAmendRequest(
+        await service.Invoking(s => s.AmendTermsAsync(TermsAmendRequest(
                 securityId,
                 JsonSerializer.SerializeToElement(new
                 {
@@ -345,7 +345,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var (eventStore, service) = CreateBondCouponHarness(securityId, "floating");
 
-        var detail = await service.AmendTermsAsync(BondAmendRequest(
+        var detail = await service.AmendTermsAsync(TermsAmendRequest(
             securityId,
             JsonSerializer.SerializeToElement(new
             {
@@ -431,7 +431,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var (eventStore, service) = CreateNestedCouponBondHarness(securityId, includeFlatCouponType: false);
 
-        var detail = await service.AmendTermsAsync(BondAmendRequest(
+        var detail = await service.AmendTermsAsync(TermsAmendRequest(
             securityId,
             JsonSerializer.SerializeToElement(new
             {
@@ -676,7 +676,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var (eventStore, service) = CreateNestedCouponBondHarness(securityId, includeFlatCouponType: false);
 
-        await service.Invoking(s => s.AmendTermsAsync(BondAmendRequest(
+        await service.Invoking(s => s.AmendTermsAsync(TermsAmendRequest(
                 securityId,
                 JsonSerializer.SerializeToElement(new Dictionary<string, object>(StringComparer.Ordinal)
                 {
@@ -881,9 +881,316 @@ public sealed class SecurityMasterServiceSnapshotTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task DeactivateAsync_BondDeclaringFixedBesideFloatingCompanions_RefusesTheWrite()
+    {
+        // A READABLE discriminant is not on its own proof the flat payload survives. ToBondTerms
+        // reads the companions one arm at a time and the Fixed arm reads neither floatingIndex nor
+        // spreadBps, while the serializer emits both as null for a fixed coupon — so this row loses
+        // its floating economics exactly as a row with no couponType at all would. The projection
+        // store decodes those columns independently of the discriminant, so an operator sees SOFR
+        // and 125 right up until this write re-serializes the record without them.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = "Fixed",
+            ["couponRate"] = 4.25m,
+            ["floatingIndex"] = "SOFR",
+            ["spreadBps"] = 125m,
+            ["isCallable"] = false,
+            ["subclass"] = "Corporate"
+        });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*floatingIndex and spreadBps*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWhoseFloatingCouponCarriesAZeroFixedRate_IsNotRefused()
+    {
+        // The carve-out that keeps the arm check off ordinary vendor rows. The Floating arm does not
+        // read couponRate, but zero is exactly what the codec substitutes for an absent scalar
+        // (GetOptionalDecimal(...) ?? 0m), so a payload spelling "no fixed rate" as 0 beside a
+        // floating coupon states nothing the structure has not already said. Refusing it would
+        // freeze an ordinary floater to protect a zero — while 4.25 in that same slot is a number
+        // the record states and the write would delete, and stays refused.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = "Floating",
+            ["couponRate"] = 0m,
+            ["floatingIndex"] = "SOFR",
+            ["spreadBps"] = 125m,
+            ["isCallable"] = false,
+            ["subclass"] = "FloatingRate"
+        });
+
+        await service.DeactivateAsync(new DeactivateSecurityRequest(
+            securityId,
+            2,
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "deactivate"));
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWhoseFloatingIndexContradictsItsDeclaredStepCoupon_RefusesTheWrite()
+    {
+        // The arm table is genuinely per-arm rather than "Fixed versus the rest": under a declared
+        // Step coupon the schedule and the day count are the arm's own payload and round-trip, while
+        // floatingIndex belongs to an arm this record does not name. The refusal naming the floating
+        // index ALONE is the discriminating evidence — naming stepSchedule too would mean the walk
+        // had fallen back to the Fixed arm instead of reading the one the record declares.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = "Step",
+            ["stepSchedule"] = new[]
+            {
+                new Dictionary<string, object>(StringComparer.Ordinal)
+                {
+                    ["effectiveDate"] = "2030-06-15",
+                    ["rate"] = 0.055m
+                }
+            },
+            ["dayCount"] = "30/360",
+            ["floatingIndex"] = "SOFR",
+            ["isCallable"] = false,
+            ["subclass"] = "StepRate"
+        });
+
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeactivateAsync(
+            new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")));
+
+        thrown.Message.Should().Contain("floatingIndex");
+        thrown.Message.Should().NotContain("stepSchedule");
+        thrown.Message.Should().NotContain("dayCount");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_RepairPatchForAnUndeclaredCouponTypeOrphaningItsOwnSpread_RefusesTheWrite()
+    {
+        // The stored record's ONLY defect is its discriminant: it carries no companions, so the
+        // orphan walk finds nothing on it. Validating the submitted document only when the stored
+        // one was itself orphaned left this path unchecked — the patch names a declared couponType,
+        // satisfies the vocabulary guard's repair exit, and keeps its spread solely in a nested
+        // coupon object ToAmendCommand never reads. The "repair" would persist a floater with no
+        // spread at all, and the next amendment refusing that record does not bring 125 back.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = "floating",
+            ["isCallable"] = false,
+            ["subclass"] = "FloatingRate"
+        });
+
+        await service.Invoking(s => s.AmendTermsAsync(TermsAmendRequest(
+                securityId,
+                JsonSerializer.SerializeToElement(new Dictionary<string, object>(StringComparer.Ordinal)
+                {
+                    ["maturity"] = "2035-06-15",
+                    ["couponType"] = "Floating",
+                    ["floatingIndex"] = "SOFR",
+                    ["coupon"] = new Dictionary<string, object>(StringComparer.Ordinal)
+                    {
+                        ["spreadBps"] = 125m
+                    },
+                    ["isCallable"] = false,
+                    ["subclass"] = "FloatingRate"
+                }))))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*coupon.spreadBps*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_BondPatchNullingAnUndeclaredCouponType_StillRefusesTheWrite()
+    {
+        // Clearing is a repair only where the codec decodes an absent key as a genuine absence.
+        // couponType is the opposite case: ToBondTerms reads a null discriminant as "Fixed", so an
+        // explicit null does not clear the coupon, it SUBSTITUTES one — the silent re-typing this
+        // guard exists to stop, arriving through the exit the guard offers.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondCouponHarness(securityId, "floating");
+
+        await service.Invoking(s => s.AmendTermsAsync(TermsAmendRequest(
+                securityId,
+                JsonSerializer.SerializeToElement(new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["maturity"] = "2035-06-15",
+                    ["couponType"] = null,
+                    ["floatingIndex"] = "SOFR",
+                    ["spreadBps"] = 185m,
+                    ["isCallable"] = false,
+                    ["subclass"] = "FloatingRate"
+                }))))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*couponType 'floating'*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_OptionWhoseExerciseStyleIsNotAString_RefusesTheWrite()
+    {
+        // GetOptionalString ignores a token of the wrong JSON kind, so ParseExerciseStyle never sees
+        // `true`: the style decodes to None and the serializer writes it back null. A wrong-kind
+        // token is not a value this codec reads badly, it is one it cannot read at all — so neither
+        // the verbatim carry nor an escape could re-emit it, and the row is as lossy as one holding
+        // an undeclared style. The write-mode backstop already rejects such a token on the way in;
+        // this is the same refusal for a row that already holds one.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Option",
+            "Vendor option",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["underlyingId"] = Guid.NewGuid(),
+                ["putCall"] = "Call",
+                ["strike"] = 190m,
+                ["expiry"] = "2027-07-16",
+                ["multiplier"] = 100m,
+                ["exerciseStyle"] = true,
+                ["isAdjusted"] = false
+            });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*exerciseStyle*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_OptionPatchClearingAnUndeclaredExerciseStyle_RepairsTheRecord()
+    {
+        // An option written as "Asian" has no declared equivalent here, so demanding one of
+        // American/European/Bermudan would make the operator assert a style the contract does not
+        // have — corrupting the record further to unblock it. An explicit null is the honest repair
+        // and a lossless one: the write mapper reads null as None and the serializer emits null, so
+        // the amendment persists exactly what was asked for and the undeclared value is not
+        // re-serialized. Omitting the key stays refused; only the positive instruction is an exit.
+        var securityId = Guid.NewGuid();
+        var underlyingId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Option",
+            "Asian-style option",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["underlyingId"] = underlyingId,
+                ["putCall"] = "Call",
+                ["strike"] = 190m,
+                ["expiry"] = "2027-07-16",
+                ["multiplier"] = 100m,
+                ["exerciseStyle"] = "Asian",
+                ["isAdjusted"] = false
+            });
+
+        var detail = await service.AmendTermsAsync(TermsAmendRequest(
+            securityId,
+            JsonSerializer.SerializeToElement(new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["underlyingId"] = underlyingId,
+                ["putCall"] = "Call",
+                ["strike"] = 190m,
+                ["expiry"] = "2027-07-16",
+                ["multiplier"] = 100m,
+                ["exerciseStyle"] = null,
+                ["isAdjusted"] = false
+            })));
+
+        // Absent and null read identically to every codec here, so the assertion accepts either
+        // rather than pinning the option serializer's shape; what it rules out is "Asian" surviving
+        // or a declared style being invented in its place.
+        var style = detail.AssetSpecificTerms.TryGetProperty("exerciseStyle", out var value)
+            ? value.ValueKind
+            : JsonValueKind.Null;
+        style.Should().Be(JsonValueKind.Null);
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
     /// <summary>A stored bond whose asset-specific terms are exactly <paramref name="terms"/>.</summary>
     private static (ISecurityMasterEventStore EventStore, SecurityMasterService Service) CreateBondHarness(
         Guid securityId,
+        object terms)
+        => CreateTermsHarness(securityId, "Bond", "Bond under guard", terms);
+
+    /// <summary>
+    /// A stored security of <paramref name="assetClass"/> whose asset-specific terms are exactly
+    /// <paramref name="terms"/>. With no events and no snapshot the rebuilder falls back to the
+    /// projection, so the document reaches the round-trip guards verbatim — which is the point:
+    /// these fixtures stand in for externally authored rows the canonical serializer never wrote.
+    /// </summary>
+    private static (ISecurityMasterEventStore EventStore, SecurityMasterService Service) CreateTermsHarness(
+        Guid securityId,
+        string assetClass,
+        string displayName,
         object terms)
     {
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
@@ -896,7 +1203,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         };
         var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
 
-        var projection = CreateProjection(securityId, "Bond", SecurityStatusDto.Active, "Bond under guard", 2) with
+        var projection = CreateProjection(securityId, assetClass, SecurityStatusDto.Active, displayName, 2) with
         {
             AssetSpecificTerms = JsonSerializer.SerializeToElement(terms)
         };
@@ -966,7 +1273,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         return (eventStore, service);
     }
 
-    private static AmendSecurityTermsRequest BondAmendRequest(Guid securityId, JsonElement? assetSpecificTermsPatch)
+    private static AmendSecurityTermsRequest TermsAmendRequest(Guid securityId, JsonElement? assetSpecificTermsPatch)
         => new(
             SecurityId: securityId,
             ExpectedVersion: 2,
