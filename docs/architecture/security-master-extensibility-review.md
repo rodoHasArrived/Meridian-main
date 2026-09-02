@@ -341,6 +341,25 @@ because both codec sides are still hand-written.
 > drift at commit time rather than in production, but adding an asset class still means editing both
 > sides by hand plus the ~7 registries above.
 
+> **Status (2026-09-02): the table now carries values, not just keys.** `SecurityAssetTermField`
+> gained an `AllowedValues` dimension, declared for the four string fields whose domain type cannot
+> round-trip an unlisted value — `classification`, `putCall`, `exerciseStyle`, `couponType`. Labels
+> whose domain type has an open "other" case (`votingRightsCat`, `subclass`, `paymentFrequency`,
+> `distributionPolicy`) are deliberately left unconstrained: they preserve any raw string today.
+> Three surfaces read the vocabularies instead of hard-coding them — `SecurityAssetTermsFieldEditValidator`
+> rejects an out-of-vocabulary edit before it stages a draft, `SecurityMasterMapping` enforces them
+> on the WRITE path (a schema-driven backstop after the kind is built, so a vocabulary added to the
+> table binds create/amend without a matching codec edit), and
+> `SecurityMasterService.EnsureAssetClassRoundTripsSafely` walks
+> `SecurityAssetTermsSchema.DiscriminantFields` rather than carrying one bespoke `Ensure…` method per
+> field. The bond `couponType` fallback arm is now read-tolerant/write-strict like the CustomAsset
+> envelope check: an unrecognized coupon type still loads as `Fixed` but can no longer be written,
+> so a typo cannot silently re-type a floater as a fixed-rate bond. The guard distinguishes what a
+> write may ASSERT from what an existing row may KEEP: a value the codec carries verbatim
+> (`putCall`) never blocks an amend, an escaped one (`classification` → `Other` +
+> `otherClassification`) blocks only when its dependent blocks are present, and a dropped one
+> (`couponType`, `exerciseStyle`) always does.
+
 ### 5. The governed edit workflow does not reach the golden record
 
 `SecurityMasterWorkbenchCommandService.UpdateSecurityFieldAsync` stages edits as
