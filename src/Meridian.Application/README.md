@@ -587,7 +587,10 @@ Reads stay tolerant throughout; only the write is refused, so such a record stay
 reportable. **The refusal has one exit, and operators need it:** an amendment whose
 `AssetSpecificTermsPatch` settles the offending field itself — naming a declared value, or, for an
 optional discriminant the codec CLEARS rather than substitutes (`exerciseStyle`, `classification`,
-but never `couponType`, whose absent read is `Fixed`), an explicit `null`. The patch replaces the
+but never `couponType`, whose absent read is `Fixed`), an explicit `null`. The value it names must
+also OWN any dependent blocks the document still carries: `preferredTerms` under a `classification`
+of `Common` is read by nothing and re-emitted as null, so that repair would delete the block it was
+sent to preserve. The patch replaces the
 kind wholesale, so it must be a COMPLETE asset-terms document — every field it omits is dropped with
 the misread. A deactivation cannot carry a patch, so a frozen record is repaired first and
 deactivated second. Unlike an unrecognized asset class, an undeclared `couponType` names no other

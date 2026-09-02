@@ -1079,6 +1079,119 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_BondWhoseNestedCouponOnlyNamesTheDefaultFixedRate_IsNotRefused()
+    {
+        // The numeric twin of the nested Fixed-kind case, and the same false positive. With no flat
+        // couponType or couponRate, ToBondTerms supplies BOTH missing-key defaults — Fixed and
+        // `?? 0m` — and the projection store reads Fixed/0 from the nested object, so the two
+        // codecs already agree and re-serializing writes the same values flat. Refusing here would
+        // freeze a valid legacy fixed-rate record for a lossless canonicalization. A nested rate of
+        // 4.25 is a different number and stays refused.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["coupon"] = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["kind"] = "Fixed",
+                ["rate"] = 0m
+            },
+            ["isCallable"] = false,
+            ["subclass"] = "Corporate"
+        });
+
+        await service.DeactivateAsync(new DeactivateSecurityRequest(
+            securityId,
+            2,
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "deactivate"));
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_EquityRepairNamingAClassificationThatCannotHoldItsPreferredTerms_RefusesTheWrite()
+    {
+        // Naming a declared value is necessary but not sufficient for the exit: the value has to be
+        // able to HOLD what the document carries. ToEquityClassificationOption decodes "Common" to
+        // EquityClassification.Common, which owns no preferred block, and the serializer emits
+        // preferredTerms as null for it — so accepting this repair would delete terms the operator
+        // explicitly submitted, in the very amendment sent to preserve the record.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Equity",
+            "Vendor preferred",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["shareClass"] = "B",
+                ["classification"] = "Commmon",
+                ["preferredTerms"] = PreferredTerms()
+            });
+
+        await service.Invoking(s => s.AmendTermsAsync(TermsAmendRequest(
+                securityId,
+                JsonSerializer.SerializeToElement(new Dictionary<string, object>(StringComparer.Ordinal)
+                {
+                    ["shareClass"] = "B",
+                    ["classification"] = "Common",
+                    ["preferredTerms"] = PreferredTerms()
+                }))))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*preferredTerms*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_EquityRepairNamingAClassificationThatOwnsItsPreferredTerms_RepairsTheRecord()
+    {
+        // The other side of that line, and the reason the check is about ownership rather than mere
+        // presence: Preferred DOES read preferredTerms (GetRequiredObject), so this repair carries
+        // the block into the amended record instead of dropping it. Refusing here would close the
+        // repair route on the one classification that can actually hold the stored blocks.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Equity",
+            "Vendor preferred",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["shareClass"] = "B",
+                ["classification"] = "Commmon",
+                ["preferredTerms"] = PreferredTerms()
+            });
+
+        var detail = await service.AmendTermsAsync(TermsAmendRequest(
+            securityId,
+            JsonSerializer.SerializeToElement(new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["shareClass"] = "B",
+                ["classification"] = "Preferred",
+                ["preferredTerms"] = PreferredTerms()
+            })));
+
+        detail.AssetSpecificTerms.GetProperty("classification").GetString().Should().Be("Preferred");
+        detail.AssetSpecificTerms.GetProperty("preferredTerms").ValueKind.Should().Be(JsonValueKind.Object);
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_OptionWhoseExerciseStyleIsNotAString_RefusesTheWrite()
     {
         // GetOptionalString ignores a token of the wrong JSON kind, so ParseExerciseStyle never sees
@@ -1174,6 +1287,24 @@ public sealed class SecurityMasterServiceSnapshotTests
             Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
             Arg.Any<CancellationToken>());
     }
+
+    /// <summary>
+    /// A preferred block the write-mode codec can actually decode — <c>ToPreferredTerms</c> requires
+    /// <c>dividendType</c> and <c>liquidationPreference</c>, so a placeholder object would fail the
+    /// mapping for the wrong reason and hide what these fixtures are about.
+    /// </summary>
+    private static Dictionary<string, object> PreferredTerms()
+        => new(StringComparer.Ordinal)
+        {
+            ["dividendRate"] = 6.25m,
+            ["dividendType"] = "Cumulative",
+            ["redemptionPrice"] = 102.5m,
+            ["liquidationPreference"] = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["kind"] = "Senior",
+                ["multiple"] = 2.0m
+            }
+        };
 
     /// <summary>A stored bond whose asset-specific terms are exactly <paramref name="terms"/>.</summary>
     private static (ISecurityMasterEventStore EventStore, SecurityMasterService Service) CreateBondHarness(

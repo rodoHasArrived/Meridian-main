@@ -921,11 +921,20 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             var clearHint = ClearingIsARepairFor(field)
                 ? $", or an explicit null {field.Key} to clear it"
                 : string.Empty;
+
+            // Naming a declared value is not sufficient where the vocabulary owns dependent blocks,
+            // so the hint has to say so — otherwise a repair rejected for carrying preferredTerms
+            // under "Common" reads as a refusal of the exact document the hint asked for.
+            var dependentHint = field.Escape is { } hintEscape && hintEscape.DependentKeys.Count > 0
+                ? $" The {field.Key} it names must also own any of " +
+                  $"{string.Join("/", hintEscape.DependentKeys)} the document still carries, or the decode has " +
+                  "nowhere to reattach them and the write drops them."
+                : string.Empty;
             var repairHint =
                 " To repair the record here, amend it with a COMPLETE asset-terms document naming a declared " +
                 $"{field.Key} ({string.Join(", ", field.AllowedValues)}, matched case-sensitively){clearHint} — the " +
                 "amendment replaces the terms wholesale, so any field the patch omits is dropped with them — and note " +
-                "that a deactivation cannot carry a patch, so repair it first.";
+                "that a deactivation cannot carry a patch, so repair it first." + dependentHint;
 
             // An escape absorbs an undeclared STRING by re-emitting the raw label under the
             // canonical escape member. An unreadable token gives it nothing to absorb — the codec
@@ -941,8 +950,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             }
 
             var dependentKeys = escape.DependentKeys
-                .Where(key => terms.TryGetProperty(key, out var dependent)
-                    && dependent.ValueKind is JsonValueKind.Object or JsonValueKind.Array)
+                .Where(key => CarriesDependentBlock(terms, key))
                 .ToArray();
             if (dependentKeys.Length > 0)
             {
@@ -1187,21 +1195,39 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// <summary>
     /// True when the nested member says exactly what the codec's documented default for the absent
     /// flat key already produces, so re-serializing canonicalizes the JSON shape and loses nothing.
-    /// <para>Only <c>coupon.kind = "Fixed"</c> qualifies, and it qualifies through
-    /// <see cref="MissingKeyDefaultFor"/> rather than a spelling of its own: <c>ToBondTerms</c>
-    /// defaults an absent <c>couponType</c> to <c>Fixed</c> and the projection store reads the
-    /// nested kind as <c>Fixed</c>, so both codecs already agree and refusing would freeze a valid
-    /// legacy record to protect nothing. Any other nested kind names a structure the default does
-    /// not produce, and the remaining members have no substituted counterpart at all — an absent
-    /// <c>couponRate</c> reads as <c>0</c>, which is a different number, not the same one spelled
-    /// differently.</para>
+    /// <para>Two members qualify, each against its own type of default. <c>coupon.kind = "Fixed"</c>
+    /// qualifies through <see cref="MissingKeyDefaultFor"/>: <c>ToBondTerms</c> defaults an absent
+    /// <c>couponType</c> to <c>Fixed</c> and the projection store reads the nested kind as
+    /// <c>Fixed</c>, so both codecs already agree. <c>coupon.rate = 0</c> qualifies because an
+    /// absent flat rate reads as <c>0m</c>, so zero really is the same number spelled differently —
+    /// a nested <c>4.25</c> is not, and stays refused. The remaining members (index, spread, day
+    /// count) have no substituted counterpart at all: an absent flat key means the value is gone,
+    /// not written another way.</para>
     /// </summary>
     private static bool MatchesTheMissingKeyDefault(JsonElement nested, (string Nested, string Flat) member)
-        => SecurityAssetTermsSchema.Field("Bond", member.Flat) is { } field
-            && MissingKeyDefaultFor(field) is { } substituted
-            && nested.TryGetProperty(member.Nested, out var value)
-            && value.ValueKind == JsonValueKind.String
-            && string.Equals(value.GetString(), substituted, StringComparison.Ordinal);
+    {
+        if (SecurityAssetTermsSchema.Field("Bond", member.Flat) is not { } field)
+        {
+            return false;
+        }
+
+        // The discriminant's substituted default is a declared vocabulary value.
+        if (MissingKeyDefaultFor(field) is { } substituted)
+        {
+            return nested.TryGetProperty(member.Nested, out var value)
+                && value.ValueKind == JsonValueKind.String
+                && string.Equals(value.GetString(), substituted, StringComparison.Ordinal);
+        }
+
+        // The scalar rate's is a NUMBER, and omitting it from this helper was the same mistake in a
+        // different type: GetOptionalDecimal(json, "couponRate") ?? 0m means an absent flat rate
+        // reads as exactly the zero a nested rate of 0 states, so both codecs already agree and
+        // re-serializing only canonicalizes the shape. Under an arm that reads no rate at all a
+        // nested zero contradicts nothing either — the same reason a flat zero is not an orphan.
+        // Any other nested rate IS a different number and stays refused.
+        return string.Equals(member.Flat, "couponRate", StringComparison.Ordinal)
+            && IsNumericZero(nested, member.Nested);
+    }
 
     /// <summary>
     /// True when the canonical codec can actually DECODE <paramref name="key"/> — present,
@@ -1274,17 +1300,21 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return false;
         }
 
+        // Naming a declared value is necessary but not sufficient: the value has to be able to HOLD
+        // what the document carries. A repair reading classification "Common" beside a populated
+        // preferredTerms decodes to EquityClassification.Common, which owns no preferred block, and
+        // the serializer emits it null — so the exit would let a repair silently delete terms the
+        // operator explicitly submitted. Same rule for a clear, where the cleared field holds none
+        // of them.
         if (patched.ValueKind == JsonValueKind.String)
         {
-            return field.Allows(patched.GetString());
+            var named = patched.GetString();
+            return field.Allows(named) && !CarriesDependentBlocksTheValueCannotHold(patch, field, named);
         }
 
-        // A cleared discriminant cannot hold the blocks that only its IN-vocabulary cases own, so a
-        // patch still carrying them would lose them on the way in — the same defect the escape's
-        // dependent-key check refuses on the stored side.
         return patched.ValueKind == JsonValueKind.Null
             && ClearingIsARepairFor(field)
-            && !CarriesEscapeDependentKeys(patch, field);
+            && !CarriesDependentBlocksTheValueCannotHold(patch, field, null);
     }
 
     /// <summary>
@@ -1311,15 +1341,38 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         => string.Equals(field.Key, "couponType", StringComparison.Ordinal) ? "Fixed" : null;
 
     /// <summary>
-    /// True when <paramref name="document"/> carries any of the blocks that hang off
-    /// <paramref name="field"/>'s in-vocabulary cases (an equity's <c>preferredTerms</c> under
-    /// <c>classification</c>), which a decode that does not land on those cases has nowhere to
-    /// reattach.
+    /// True when <paramref name="document"/> carries a block that hangs off <paramref name="field"/>'s
+    /// vocabulary but that <paramref name="value"/> does not own, so the decode has nowhere to
+    /// reattach it and the write would drop it. <see langword="null"/> as the value asks the same
+    /// question of a cleared field, which owns none of them.
     /// </summary>
-    private static bool CarriesEscapeDependentKeys(JsonElement document, SecurityAssetTermField field)
+    private static bool CarriesDependentBlocksTheValueCannotHold(
+        JsonElement document,
+        SecurityAssetTermField field,
+        string? value)
         => field.Escape is { } escape
-            && escape.DependentKeys.Any(key => document.TryGetProperty(key, out var dependent)
-                && dependent.ValueKind is JsonValueKind.Object or JsonValueKind.Array);
+            && escape.DependentKeys.Any(key => CarriesDependentBlock(document, key)
+                && !DependentBlockBelongsTo(key, value));
+
+    /// <summary>
+    /// Which vocabulary members own each dependent block, mirroring
+    /// <c>ToEquityClassificationOption</c> — the only decode with dependent blocks.
+    /// <c>preferredTerms</c> is read (via <c>GetRequiredObject</c>) by <c>Preferred</c> and
+    /// <c>ConvertiblePreferred</c>, <c>convertibleTerms</c> by <c>Convertible</c> and
+    /// <c>ConvertiblePreferred</c>; <c>Common</c> and the <c>Other</c> escape read neither, and the
+    /// serializer emits both as <see langword="null"/> for them.
+    /// </summary>
+    private static bool DependentBlockBelongsTo(string dependentKey, string? value) => dependentKey switch
+    {
+        "preferredTerms" => value is "Preferred" or "ConvertiblePreferred",
+        "convertibleTerms" => value is "Convertible" or "ConvertiblePreferred",
+        _ => false,
+    };
+
+    /// <summary>True when <paramref name="key"/> holds a populated dependent block.</summary>
+    private static bool CarriesDependentBlock(JsonElement document, string key)
+        => document.TryGetProperty(key, out var dependent)
+            && dependent.ValueKind is JsonValueKind.Object or JsonValueKind.Array;
 
     private static SecurityProjectionRecord CreateProjectionFromResult(
         SecurityMasterCommandResultWrapper result,
