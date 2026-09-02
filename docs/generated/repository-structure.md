@@ -2151,6 +2151,7 @@ Meridian-main
 │   │   │   ├── web-portfolio-brokerage-sync.png
 │   │   │   ├── web-portfolio-cash-ladder.png
 │   │   │   ├── web-portfolio-family-office.png
+│   │   │   ├── web-portfolio-loan-book.png
 │   │   │   ├── web-portfolio-workspace.png
 │   │   │   ├── web-reporting-evidence-workbench.png
 │   │   │   ├── web-reporting-exports.png
@@ -3808,6 +3809,7 @@ Meridian-main
 │   │   ├── AssetOperations
 │   │   │   ├── AssetAccountingEventDtos.cs
 │   │   │   ├── AssetOperationsDtos.cs
+│   │   │   ├── AssetOperationsReferenceDtos.cs
 │   │   │   ├── CorporateActionAccountingDtos.cs
 │   │   │   ├── InstrumentPositionDtos.cs
 │   │   │   ├── PortfolioCashLadderDtos.cs
@@ -4985,8 +4987,12 @@ Meridian-main
 │   │   │   ├── CorporateActionAccountingProjectionService.LotPlans.cs
 │   │   │   ├── CorporateActionAssetAccountingEventMapper.cs
 │   │   │   ├── CorporateActionMappedAccountingEffectAttestor.cs
+│   │   │   ├── DirectLoanProjectionService.cs
 │   │   │   ├── FactorPaydownProjectionService.cs
-│   │   │   └── PortfolioCashLadderEngine.cs
+│   │   │   ├── IDirectLoanReferenceService.cs
+│   │   │   ├── IStructuredCreditReferenceService.cs
+│   │   │   ├── PortfolioCashLadderEngine.cs
+│   │   │   └── StructuredCreditProjectionService.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   ├── CertificateOfDepositProjectionService.cs
 │   │   │   └── ICertificateOfDepositReferenceService.cs
@@ -5738,7 +5744,8 @@ Meridian-main
 │   │   │   │   ├── 029_security_master_corp_action_payload.sql
 │   │   │   │   ├── 030_security_master_corporate_action_operations.sql
 │   │   │   │   ├── 031_security_master_corporate_action_accounting_lane.sql
-│   │   │   │   └── 032_security_master_normalized_primary_identifier_uniqueness.sql
+│   │   │   │   ├── 032_security_master_normalized_primary_identifier_uniqueness.sql
+│   │   │   │   └── 033_security_master_asset_operations_projections.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -5747,6 +5754,7 @@ Meridian-main
 │   │   │   ├── ICryptoReferenceProjectionStore.cs
 │   │   │   ├── IDataVendorEntitlementStore.cs
 │   │   │   ├── IDepositReferenceProjectionStore.cs
+│   │   │   ├── IDirectLoanReferenceProjectionStore.cs
 │   │   │   ├── IEdgarReferenceDataStore.cs
 │   │   │   ├── IEquityReferenceProjectionStore.cs
 │   │   │   ├── IFutureReferenceProjectionStore.cs
@@ -5761,6 +5769,7 @@ Meridian-main
 │   │   │   ├── ISecurityMasterQualityReportStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs
+│   │   │   ├── IStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── ISwapReferenceProjectionStore.cs
 │   │   │   ├── PostgresBondReferenceProjectionStore.cs
 │   │   │   ├── PostgresCertificateOfDepositReferenceProjectionStore.cs
@@ -5772,6 +5781,7 @@ Meridian-main
 │   │   │   ├── PostgresCryptoReferenceProjectionStore.cs
 │   │   │   ├── PostgresDataVendorEntitlementStore.cs
 │   │   │   ├── PostgresDepositReferenceProjectionStore.cs
+│   │   │   ├── PostgresDirectLoanReferenceProjectionStore.cs
 │   │   │   ├── PostgresEquityReferenceProjectionStore.cs
 │   │   │   ├── PostgresFutureReferenceProjectionStore.cs
 │   │   │   ├── PostgresFxSpotReferenceProjectionStore.cs
@@ -5786,10 +5796,13 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.Aliases.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
+│   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
+│   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
 │   │   │   ├── SecurityMasterDbMapper.cs
 │   │   │   ├── SecurityMasterMigrationRunner.cs
-│   │   │   └── SecurityMasterProjectionCache.cs
+│   │   │   ├── SecurityMasterProjectionCache.cs
+│   │   │   └── SecurityTermsProjectionRegistry.cs
 │   │   ├── Services
 │   │   │   ├── AdaptivePartitionPlacementPlanner.cs
 │   │   │   ├── AuditChainService.cs
@@ -9165,6 +9178,7 @@ Meridian-main
 │   │   │   ├── AssetObligationProjectionServiceTests.cs
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
+│   │   │   ├── AssetOperationsReferenceProjectionServiceTests.cs
 │   │   │   ├── ClearwaterCorporateActionRuleProfileV1Tests.cs
 │   │   │   ├── CorporateActionAccountingProjectionServiceTests.cs
 │   │   │   ├── CorporateActionAssetAccountingEventMapperTests.cs
@@ -9782,6 +9796,7 @@ Meridian-main
 │   │   │   │   ├── ReportPeriodRangeTests.cs
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
+│   │   │   ├── AssetOperationsProjectionRoundTripTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
 │   │   │   ├── CorporateActionCaseAccountingPolicyTests.cs
@@ -9857,6 +9872,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
+│   │   │   ├── SecurityTermsProjectionRegistryTests.cs
 │   │   │   └── SecurityValidationServiceTests.cs
 │   │   ├── Serialization
 │   │   │   └── HighPerformanceJsonTests.cs
