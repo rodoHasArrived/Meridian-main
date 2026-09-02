@@ -1019,7 +1019,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     private static string[] OrphanedCouponStructure(JsonElement terms)
     {
         var orphaned = new List<string>();
-        if (!terms.TryGetProperty("couponType", out _))
+        if (!CodecCanRead(terms, "couponType"))
         {
             orphaned.AddRange(FlatCouponStructureKeys.Where(key => CarriesValue(terms, key)));
 
@@ -1040,12 +1040,44 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         if (terms.TryGetProperty("coupon", out var nested) && nested.ValueKind == JsonValueKind.Object)
         {
+            // The flat counterpart only REPRESENTS the nested value if the codec can decode it.
+            // CarriesValue is the wrong question here: the projection store's readers are
+            // type-aware and fall through to the nested value when the flat one does not parse
+            // (spreadBps: "N/A"), so treating any populated flat value as a representation would
+            // discard exactly the nested value the store is reading.
             orphaned.AddRange(NestedCouponMembers
-                .Where(member => CarriesValue(nested, member.Nested) && !CarriesValue(terms, member.Flat))
+                .Where(member => CarriesValue(nested, member.Nested) && !CodecCanRead(terms, member.Flat))
                 .Select(member => $"coupon.{member.Nested}"));
         }
 
         return orphaned.ToArray();
+    }
+
+    /// <summary>
+    /// True when the canonical codec can actually DECODE <paramref name="key"/> — present,
+    /// populated, AND of the JSON kind its declared schema type requires. Presence is not the same
+    /// question as readability, and conflating them loses data twice over: <c>couponType: null</c>
+    /// is a present property that <c>ToBondTerms</c> treats as the missing-value default, and
+    /// <c>spreadBps: "N/A"</c> is a populated value that <c>GetOptionalDecimal</c> cannot parse.
+    /// Both are invisible to the codec, so neither can stand in for the value it would drop.
+    /// </summary>
+    private static bool CodecCanRead(JsonElement document, string key)
+    {
+        if (!CarriesValue(document, key) || !document.TryGetProperty(key, out var value))
+        {
+            return false;
+        }
+
+        return SecurityAssetTermsSchema.Field("Bond", key)?.Type switch
+        {
+            SecurityAssetTermFieldType.Decimal or SecurityAssetTermFieldType.Integer =>
+                value.ValueKind == JsonValueKind.Number,
+            SecurityAssetTermFieldType.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+            SecurityAssetTermFieldType.Array => value.ValueKind == JsonValueKind.Array,
+            SecurityAssetTermFieldType.Object => value.ValueKind == JsonValueKind.Object,
+            // String, Date, and Guid all decode from a JSON string, as does any undeclared key.
+            _ => value.ValueKind == JsonValueKind.String,
+        };
     }
 
     /// <summary>True when <paramref name="key"/> holds a value, not null, blank, or an empty array.</summary>

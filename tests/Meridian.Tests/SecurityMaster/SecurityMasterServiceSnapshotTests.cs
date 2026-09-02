@@ -556,6 +556,82 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_BondWithAnExplicitlyNullCouponTypeAndFlatStructure_RefusesTheWrite()
+    {
+        // A present property is not a readable discriminant: ToBondTerms treats an explicit null as
+        // the missing-value default and reads the record as Fixed, so the floating structure is
+        // orphaned exactly as if couponType had been omitted. Keying the check on presence rather
+        // than readability would let this through.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = null,
+            ["floatingIndex"] = "SOFR",
+            ["spreadBps"] = 125m,
+            ["isCallable"] = false,
+            ["subclass"] = "FloatingRate"
+        });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*floatingIndex and spreadBps*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWhoseFlatCounterpartIsMalformed_RefusesTheWrite()
+    {
+        // The projection store's readers are type-aware and fall through to the nested value when
+        // the flat one does not parse, so a malformed flat spread is NOT a representation of the
+        // nested one — the store reports 125 while ToBondTerms reads neither and persists null.
+        // Judging the counterpart by presence rather than by decodability discards it.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = "Floating",
+            ["floatingIndex"] = "SOFR",
+            ["spreadBps"] = "N/A",
+            ["coupon"] = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["spreadBps"] = 125m
+            },
+            ["isCallable"] = false,
+            ["subclass"] = "FloatingRate"
+        });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*coupon.spreadBps*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_BondWithACaseVariantCouponTypeKey_RefusesTheWrite()
     {
         // Every read of the discriminant is ordinal, so "CouponType" is not the discriminant: the
