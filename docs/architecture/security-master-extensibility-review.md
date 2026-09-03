@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-31 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-03 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -3013,6 +3013,306 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
 the private/alternative classes, valid-time term history, codec generation from
 `SecurityAssetTermsSchema`.
 
+## Scheduled institutional-requirements pass — 2026-09-03
+
+Re-read against `7d6dbd92`. The verdict above stands unchanged. Two items closed since the last pass
+and are recorded below with the evidence that closes them; every finding the 2026-08-31 pass left
+open remains open, unchanged, at current source — as does the 2026-08-28 desktop-authorization
+defect, spot-checked because it is the most severe shipped-behaviour item the document carries.
+Five findings are new to this document, and all
+five come from two surfaces that **nine prior passes never read**: the pricing hierarchy /
+golden-copy service and the data-vendor entitlement register. No code was changed by this pass and
+no tests were run — every claim is a source read.
+
+The new items repeat the shape this document has been tracking since N1 — *a fact declared in one
+authoritative place and re-declared, incompletely, by a consumer nothing locks to it* — but they add
+a second shape that had not appeared before, because the surfaces carrying it had not been read:
+**a control surface that records rather than governs.** Prices are recorded with no currency, no
+quote basis, and no history; entitlements are recorded and never enforced. Neither is an
+extensibility risk. Both are institutional-completeness gaps on the two surfaces an auditor reaches
+for first when asking how a valuation was struck and whether the firm was licensed to use the data
+behind it.
+
+### Closed since 2026-08-31
+
+| # | Item | Evidence at `7d6dbd92` |
+| --- | --- | --- |
+| P5 (2026-08-27) | Primary-identifier uniqueness enforced on the un-normalized column | **Closed.** Two findings in this document carry the label `P5`; this is the 2026-08-27 one. The 2026-08-28 `P5` — the desktop lane mutating the golden record with no authorization check — is **not** closed: no Security Master view model in `src/Meridian.Wpf/ViewModels/` calls `DesktopAuthenticationSession.HasPermission` at `7d6dbd92`. Migration 032 drops `ux_securities_primary_identifier` and the non-unique normalized index from 016, and creates `ux_securities_normalized_primary_identifier` unique on `(primary_identifier_kind, normalized_primary_identifier_value)`. The migration opens with a `do $$` block that aggregates existing normalized collisions and `raise exception`s with `errcode 23505` and the colliding `security_id` list before touching an index — so it fails *before* changing anything and routes remediation to the governed identity workflow rather than automating a canonical-row choice. `SecurityMasterMigrationRunnerTests` carries structural guards, and `docs/operators/security-master-normalized-identifier-migration.md` documents the preflight query. This is the strongest closure the document has recorded: the fail-before-change preflight is the part that makes it safe to ship against a live universe. It closes the **database** half of A2 only — see A2 below for the half that remains. |
+| — | `couponType` silently collapsing an unrecognized value to `Fixed` | **Closed**, and closed by the mechanism four passes have been asking for. `71483dc4` gives `SecurityAssetTermField` an `AllowedValues` dimension (`SecurityAssetTermsSchema.cs:77, 88`) with `ReqOneOf`/`OptOneOf` constructors, declared for the four string fields whose domain type cannot round-trip an unlisted value — `classification`, `putCall`, `exerciseStyle`, `couponType` (`:195, 210, 217, 245`). Crucially it also declares *what the codec does with* an unrecognized value — carried verbatim, routed through an escape member, or dropped — so a guard can tell what a write may **assert** from what a stored row may **keep** (`SecurityMasterService.cs:860-894`). `SecurityAssetTermsFieldEditValidator` rejects an out-of-vocabulary edit before it stages a draft, and `SecurityMasterMapping` enforces the vocabularies as a schema-driven write-path backstop, so a vocabulary added to the table binds create/amend without a matching codec edit. `SecurityAssetTermsSchemaRoundTripTests:542` guards it. Note what this is: the first time a per-asset-class fact has been given a **declared home that consumers read** instead of re-encoding. A1, A2, A3 and A4 are all requests for the same move on four other tables. |
+
+### Re-verified as still open
+
+| # | Item | Evidence at `7d6dbd92` |
+| --- | --- | --- |
+| A1 | `DirectLoan` projects at zero interest on an invented notional | Unchanged in all three halves. `CouponRateAliases` is still `["fixedCouponRate", "couponRate", "coupon", "annualRate"]` (`StructuredCashFlowTermsResolver.cs:19`) and `DirectLoan` still emits `currentCouponRate` (`SecurityAssetTermsSchema.cs:369`); across `src/` and `tests/`, `currentCouponRate` appears at exactly four sites — the schema, the F# serializer, the C# deserializer and one round-trip fixture — and at none of them is it read by the resolver. `PrincipalFaceAliases` still matches nothing `DirectLoan` declares, and `principalBasis` still falls back to `100m` (`SecurityMasterCashFlowService.cs:240`). `StructuredCashFlowTerms` still has no top-level `referenceIndex`/`spreadBps` (`:9-23`) and the single-stream rate is still `NormalizeAnnualRate(terms.CouponRate ?? 0m) + ScenarioRateShift(scenario)` (`:314`). **One thing did change, and it is worth reading precisely:** the contractual-schedule branch now carries an explicit comment that a basis-less record (naming `DirectLoan`) keeps the calculated bullet/sinker walk rather than being treated as contractual (`:245-248`). That is a deliberate guard against a *worse* failure — a real instalment capped at 100 — not a fix for this one. The finding is now documented in the code that carries it and still open. |
+| A2 | Ambiguity detected on raw values, resolved on normalized ones | **Half closed, half open, and the open half is the one the finding is about.** Migration 032 (above) closes the database half for the primary column. Detection is unchanged: `SecurityMasterConflictDetection` still keys `$"{id.Kind}|{id.Value}"` — the raw stored value — in `DetectAll` (`:33`) and both arms of `DetectForProjection` (`:107, 115`), and still never reads the `NormalizedValue` the DTO carries. `security_identifiers` is still keyed per security with only a non-unique normalized index, and aliases are still not iterated by detection at all. So the golden-record conflict surface remains blind to exactly the punctuation- and spacing-variant duplicates that resolution silently collapses, on every identifier that is not a primary. |
+| A3 | Readiness models 13 of 26 asset classes | Unchanged. `Specifications` still holds thirteen entries — `Equity`, `Option`, `Future`, `FxSpot`, `Bond`, `DirectLoan`, `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee`, `CustomAsset`, `OtherSecurity` (`SecurityMasterOperationalReadinessService.cs:43-173`) — against 26 catalog classes. `GetReadinessAsync` still projects `Specifications` directly (`:254-259`) and the `multi-asset-classes` metric still renders `rows.Length` as the universe (`:267`). No `IntentionallyUnspecifiedClasses` set exists; the sixth parity guard is still absent. |
+| A4 | `IsProjected` / `IsSearchable` govern nothing | Unchanged. Across `src/` and `tests/`, the two flags still reach only `SecurityAssetProfileGovernanceService.cs:511, 525` (counting them into the promotion-readiness score), the WPF and browser surfaces that render those counts, and DTO/fixture declarations. No projection writer, index, or search predicate consults either. |
+| N4 | `ValidateAll()` cannot fire its own overlap rule | Unchanged. `ValidateAll()` still calls `ValidateCandidateSet([])` (`SecurityAssetPackRegistry.cs:258-261`) and the overlap check still filters to groups containing a candidate pack (`:289`), so no group survives an empty candidate set. |
+| N5 | Per-pack contract schema is one shared prose object | Unchanged. |
+| N6 | Projection fan-out writes to every asset class on every upsert | Unchanged. `ProjectionWriters` still holds eleven writers fanned out per record (`PostgresSecurityMasterStore.cs:43-56`). |
+| — | Relational projections for private/alternative classes; valid-time term history; codec generation from `SecurityAssetTermsSchema` | All three still governed-and-deferred, unchanged in posture. `FaceValueLot` still carries no acquisition currency (`FaceValueLot.cs:14-44`), as P6 reported. |
+
+### B1 — Prices carry neither a currency nor a quote basis
+
+The highest-severity item this pass, and the one with the widest blast radius, because every
+valuation, NAV and unrealized-P&L number downstream of the golden copy inherits it.
+
+`RecordRawPriceRequest` is `(SecurityId, SourceId, Price, PriceAsOf, RecordedBy)`
+(`SecurityMasterPricing.cs:65-71`). `SecurityPriceGoldenCopyDto` is `(SecurityId, GoldenCopyPrice,
+PriceKind, SelectedSource, PriceAsOf, IsStaleFallback, DaysStale, ComparisonPrices)` (`:52-62`).
+`SecurityComparisonPriceDto` is `(SourceId, Price, PriceAsOf, PctDiffFromGoldenCopy)` (`:43-47`).
+The `security_raw_prices` table is `(security_id, source_id, price numeric(28,10), price_as_of,
+recorded_by, recorded_at)` (migration `022:17-25`). **Neither a currency column nor a quote-basis
+column exists anywhere on the surface.** Two distinct defects follow, and they need separating
+because they have different remedies.
+
+**Currency.** A security carries a `Currency` (`SecurityDetailDto.Currency`), but a price does not.
+`RecordRawPriceAsync` performs no validation of any kind — not a currency check, not a sign check,
+not a check that `SourceId` appears in the security's own hierarchy
+(`SecurityMasterPricingService.cs:38-40` is a straight pass-through to the store). So a vendor
+quoting a dual-listed security in its local currency, or an FX-translated price from a second feed,
+is recorded indistinguishably from a price in the security's own currency, selected as golden copy
+by whichever source ranks higher in the chain, and returned with no indication that a conversion is
+owed. Worse, `BuildComparisons` then computes
+`Math.Round((price - goldenPrice) / goldenPrice * 100m, 4)` (`:169-171`) across the mixed set and
+publishes it as `PctDiffFromGoldenCopy` — so a pure currency difference is rendered to the operator
+as a price-deviation percentage on the surface whose entire purpose is to flag suspicious
+deviations. A GBP-versus-USD quote on the same security does not read as a data problem; it reads
+as a 27% vendor disagreement.
+
+**Quote basis.** This one the repository has already solved once, next door, and the pricing surface
+reintroduces it. `FaceValueLot` exists precisely to make the quote basis explicit — its class
+comment says it makes explicit "the quote basis the acquisition price is expressed in
+(`ParBasis` — no more silent price-per-100 assumption)" (`FaceValueLot.cs:5-12`), and it carries
+`ParBasis` as a constructor parameter defaulting to `100m`. The golden-copy surface has no such
+member, and it demonstrably needs one: `TryGetCalculatedPrice` returns `100m` for `Repo`,
+`CommercialPaper` and `CertificateOfDeposit` — percent of par — and `1m` for `MoneyMarketFund` —
+price per unit — through the same untyped `decimal GoldenCopyPrice` field
+(`SecurityMasterPricingService.cs:124-156`). A consumer receiving `100` cannot tell whether it means
+"par" or "one hundred currency units", and the two differ by a factor of the notional. The
+`PriceKind` discriminator does not carry it either: `CalculatedPar` is returned for both the `100m`
+and the `1m` cases (`:130, 148`).
+
+The remedy is the same move `FaceValueLot` already made: currency and quote basis are properties of
+a *price*, so they belong on the price record and on the DTOs that carry it, asserted at record time
+and validated against the security's own currency — not inferred by each consumer from the asset
+class. Until then, every downstream valuation consumes a bare decimal whose units are conventional.
+
+### B2 — Calculated-price rules are a four-literal `if`-chain outside the catalog, and one of them is economically wrong
+
+`TryGetCalculatedPrice` (`SecurityMasterPricingService.cs:124-156`) decides which asset classes are
+priced without an external source by three `string.Equals(assetClass, "...", OrdinalIgnoreCase)`
+comparisons covering four literals: `Repo` → par 100, `CommercialPaper` and
+`CertificateOfDeposit` → straight-line 100, `MoneyMarketFund` → 1. This is the recurring shape at
+its most literal — a per-asset-class economic fact re-declared in prose by a consumer with no link
+to `SecurityAssetClassCatalog` and no parity guard — and it is the **seventh** such registry the
+document has now catalogued. It is also, unlike the previous six, a statement about *money* rather
+than about coverage.
+
+Three consequences, in ascending severity:
+
+- **Silent omission, same as A3.** `CashSweep`, `Deposit` and `TreasuryBill` are cash-and-equivalents
+  the fund-operations lane closes on every period, and none is in the chain. They fall through to
+  the hierarchy path and, absent a configured hierarchy, `GetGoldenCopyPriceAsync` returns `null`
+  (`:58-62`) — indistinguishable to the caller from "this security has no price yet".
+- **A calculated price is structurally never stale.** The calculated branch returns
+  `DateTimeOffset.UtcNow` as `PriceAsOf`, `false` as `IsStaleFallback`, `null` as `DaysStale`, and an
+  empty comparison array (`:52-55`). So a calculated price always reports as freshly sourced,
+  regardless of when the terms behind it were last confirmed, and no staleness control can ever fire
+  on it.
+- **`MoneyMarketFund` is priced at a hard 1.0 with no NAV-type discriminator.** The comment above the
+  branch says "Non-institutional-prime money-market funds: priced at 1.0 (stable NAV)" (`:145`) —
+  and the code then applies it to **every** `MoneyMarketFund`, institutional prime funds included.
+  Those are floating-NAV funds; pricing one at exactly 1.0000 misstates its value, and the two
+  preceding bullets compound it — the misstatement is stamped `PriceAsOf: UtcNow` and
+  `IsStaleFallback: false`, so it presents as a freshly sourced price rather than as an assumption.
+  The record carries an adjacent signal: `MoneyMarketFund`'s terms declare
+  `liquidityFeeEligible` as a required boolean (`SecurityAssetTermsSchema.cs:288-294`), and
+  liquidity-fee eligibility is closely associated with exactly the institutional prime funds the
+  comment means to exclude. But it is not a NAV-type flag and should not be pressed into service as
+  one — the honest fix is a declared NAV-type term on the class, with the pricing rule reading it,
+  and the branch failing closed rather than assuming 1.0 when it is absent.
+
+The generalizing remedy is to move the calculated-price rule onto the catalog descriptor as a
+declared per-class pricing convention — basis, unit, and the term it reads — so a new asset class
+declares its pricing rule in the same row that declares everything else about it, and a parity guard
+can assert every class has one or is explicitly declared externally priced. That is the same move
+A1, A2, A3 and A4 each ask for on their own table, and the same one `71483dc4` just completed for
+term vocabularies.
+
+### B3 — Prices and hierarchies have no history, so a past valuation cannot be reproduced
+
+`security_raw_prices` is keyed `primary key (security_id, source_id)` (migration `022:24`), and
+`RecordRawPriceAsync` upserts into that key: `on conflict (security_id, source_id) do update set
+price = excluded.price, price_as_of = excluded.price_as_of, ...`
+(`PostgresSecurityMasterPricingStore.cs:96-101`). One row per source, overwritten in place. There is
+no price-history table, no `as_of` query parameter on any store or service method, and
+`GetRawPricesAsync` selects every current row for a security with no temporal predicate (`:112-137`).
+
+`security_pricing_hierarchy` is the same shape: one row per `(security_id, account_id)` whose
+`entries` jsonb, `as_of` and `updated_by` are overwritten by `UpsertHierarchyAsync` (`:55-80`).
+
+So the Security Master can answer "what is this security's price now" and cannot answer either half
+of the question an auditor actually asks: **what price did we use to strike last quarter's NAV, and
+which source hierarchy selected it?** Both inputs are destroyed by the next vendor file. That is a
+plain auditability gap on a valuation input, and it sits oddly against how carefully the rest of this
+subsystem treats history — the golden record is event-sourced with snapshots and `RebuildAsOfAsync`,
+corporate actions are append-only with amendment chains folded by a projector rather than mutated,
+and operator overrides carry approval identity and an audit trail. Prices, which are the most
+frequently changing and most valuation-relevant fact the subsystem holds, are the one thing stored
+as a mutable current-value cell.
+
+Two mitigations are already right and should be kept: the upsert is guarded by
+`where excluded.price_as_of >= security_raw_prices.price_as_of` (`:101`), so a late-arriving stale
+file cannot overwrite a newer price — a real and easily-missed correctness property — and
+`recorded_by` / `recorded_at` are captured, so the *current* row's provenance is known. The gap is
+strictly the absence of the prior rows.
+
+This is the same *shape* as the standing valid-time-term-history item, and it should **not** be
+folded into it. That item is a declared, governed deferral about bulk point-in-time reads over a
+universe whose per-security history is fully recoverable by event replay. Here there is no retained
+history to replay: the prior price is not slow to read, it is gone. The remedies differ accordingly —
+that one needs a projection, this one needs the rows kept in the first place.
+
+### B4 — Four of seven declared price kinds are unreachable, and there is no price-override lifecycle
+
+`SecurityPriceKind` declares seven members: `Raw`, `TradePrice`, `ClientOverride`,
+`MarketGoldenCopy`, `Comparison`, `CalculatedPar`, `CalculatedStraightLine`
+(`SecurityMasterPricing.cs:10-20`). `GetGoldenCopyPriceAsync` emits exactly three —
+`MarketGoldenCopy` (`SecurityMasterPricingService.cs:107`), `CalculatedPar` and
+`CalculatedStraightLine` (`:130, 140, 148`). Across `src/` and `tests/`, the identifiers
+`SecurityPriceKind.Raw`, `SecurityPriceKind.TradePrice`, `SecurityPriceKind.ClientOverride` and
+`SecurityPriceKind.Comparison` appear at **no** site outside the enum declaration itself. Four of
+seven members are declared vocabulary that nothing can produce and nothing consumes.
+
+`ClientOverride` is the one that matters. An institutional pricing surface needs an operator price
+override with a reason, an approver, and an audit trail — the exact lifecycle this subsystem already
+implements well for operator overrides on reference data, where `OperatorOverrides` carries approval
+status, reviewer identity, reviewed-at and an audit trail that `SecurityValidationService` enforces
+before governed run/ledger/report-pack use. The pricing taxonomy names the concept and no route
+reaches it: there is no override endpoint, no override column, and no override table. An operator
+who disagrees with the golden copy has no governed way to say so, which in practice means the
+correction happens somewhere the Security Master cannot see. This is A4's shape — a declared
+capability with nothing behind it — on a surface where the missing capability is a control rather
+than an index.
+
+`TradePrice` is the second-order case: it names the price-from-own-execution source that a
+reference-data-only hierarchy cannot supply, and the execution lane holds it
+(`PaperMarketObservation.LastTradePrice`) with no seam to the golden copy.
+
+**A smaller inconsistency on the same surface.** `GetComparisonPricesAsync` — the dedicated
+comparison endpoint — returns `new SecurityComparisonPriceDto(p.SourceId, p.Price, p.PriceAsOf,
+null)` (`:115-122`), hard-coding `PctDiffFromGoldenCopy` to `null` for every row. The identical
+deviation is computed correctly by `BuildComparisons` for the array embedded in the golden-copy
+response (`:158-177`). So the endpoint whose sole purpose is price comparison returns strictly less
+than the one that merely includes comparisons as a sub-field, and the deviation an operator would go
+to it for is always absent. Subject to B1: the deviation it *would* return is computed across
+possibly-mixed currencies and bases.
+
+### B5 — Vendor entitlements are a register, not a control
+
+`DataVendorEntitlementDto` models a genuine institutional concern well: vendor, `DataVendorDataType`
+(eight values including `Pricing`, `Identifiers`, `TermsAndConditions`, `CreditRatings`),
+contract reference, effective window, AUM threshold, `RequiresDirectClientContract`, renewal
+reminder days and status (`DataVendorEntitlement.cs:15-50`). Migration 020 added a scope dimension
+on top: `ClientId`, `AccountId`, `FundProfileId`, `SecurityId`, plus `SourceCategory`,
+`ExpectedRefreshCadence` and `DefaultMaxDaysStale`. Vendor-data licensing is real, it constrains
+what a firm may use and redistribute, and modeling it at all is ahead of where most systems at this
+stage are.
+
+Nothing enforces it. Outside the store, the DTO and DI registration, `IDataVendorEntitlementService`
+has exactly one consumer in `src/`: `SecurityMasterWorkbenchQueryService` builds the instrument
+passport's Clearwater evidence block (`:973-987`). No ingest path, no query path, no report-pack or
+export path consults an entitlement before using or redistributing vendor data. An expired
+`Pricing` entitlement for a vendor does not stop that vendor's prices being recorded, selected as
+golden copy, or exported in a governed report pack — it changes a panel in a passport view.
+
+Three specifics compound it:
+
+- **The scope dimension migration 020 added is ignored by its only consumer.** The passport calls
+  `_entitlementService.GetAllAsync(ct)` (`:975`) and the store's `GetAllAsync` selects every row in
+  the table with no predicate and no limit, ordered by vendor and data type
+  (`PostgresDataVendorEntitlementStore.cs:20-36`). So a single security's passport loads the firm's
+  entire entitlement register and renders entitlements scoped — by the very columns 020 added — to
+  other securities, other accounts and other fund profiles. The scope columns are selected into the
+  DTO and then not used to filter anything.
+- **`DefaultMaxDaysStale` is declared and unread.** The entitlement carries the vendor's contractual
+  refresh expectation; `PricingHierarchyEntryDto` carries its own `MaxDaysStale`
+  (`SecurityMasterPricing.cs:24-28`) and `GetGoldenCopyPriceAsync` compares against that one only
+  (`SecurityMasterPricingService.cs:87-88`). The two are never reconciled, so a hierarchy may
+  tolerate staleness the vendor contract does not.
+- **`SourceCategory` and `ExpectedRefreshCadence` are read from the database into the DTO and
+  consumed nowhere** in `src/`.
+
+The honest framing is that this is an unfinished subsystem rather than a defective one, and it should
+be recorded as such: either wire entitlement checks into the paths that use and redistribute vendor
+data — ingest, golden-copy selection, report-pack export — or restate the register as operational
+metadata so no operator reads a green entitlement panel as evidence that a control ran.
+
+### Smaller notes, not filed as findings
+
+- **The pricing endpoints are correctly governed, and that is worth recording** given P5 and P1.
+  Both mutating routes resolve the actor server-side via
+  `EndpointAuthorization.TryResolveActor` and overwrite the caller-supplied field with it —
+  `request with { UpdatedBy = actor }` and `request with { RecordedBy = actor }`
+  (`SecurityMasterEndpoints.cs:1313-1318, 1343-1348`) — so the self-asserted-provenance defect P1
+  filed against the write surface does not exist here. Both carry
+  `RequireModifySecurityMasterPermission` and the mutation rate-limit policy. The read routes are
+  ungated, which is consistent with the rest of the surface.
+- **Pricing test coverage is six cases and none of them is economic.**
+  `SecurityMasterPricingServiceTests` covers security-not-found, calculated par for `Repo` and for
+  `MoneyMarketFund`, highest-priority-fresh selection, stale fallback, and no-hierarchy — the
+  selection *mechanics*, thoroughly. Nothing asserts a currency, a basis, a deviation percentage, or
+  what a calculated price means. B1 and B2 sit underneath a green suite for the same reason A1 did:
+  the tests exercise the machinery, not the money.
+- **A future-dated price passes the staleness check.**
+  `var age = (int)(now - rawPrice.PriceAsOf).TotalDays` (`SecurityMasterPricingService.cs:87`) is
+  negative for a price stamped in the future, which satisfies `age <= entry.MaxDaysStale` for every
+  configured tolerance and selects that source as fresh. Recording is unvalidated (B1), so a vendor
+  file with a bad timestamp reaches this directly. Low severity — it needs a malformed input — but
+  the fix is one clamp.
+- **`GetComparisonPricesAsync` and `GetRawPricesAsync` are unbounded per security.** Bounded in
+  practice today by the one-row-per-source key (B3); worth stating because the natural fix for B3
+  removes that bound.
+
+### Priorities from this pass
+
+Read as a delta on the standing lists. The A-series priorities from 2026-08-31 are unchanged and
+still rank above these on cross-asset extensibility; the items below rank on institutional
+completeness of surfaces that had not previously been read.
+
+1. **Put a currency and a quote basis on the price record (B1).** It is the cheapest of the new items
+   and it gates the value of every other pricing fix: a deviation percentage, an override, or a
+   retained history is only as meaningful as the units of the number it is computed on. Follow
+   `FaceValueLot`'s `ParBasis` precedent rather than inventing a second convention, validate the
+   recorded currency against the security's own at record time, and make `BuildComparisons` refuse —
+   rather than compute — a deviation across mismatched units.
+2. **Retain price and hierarchy history (B3).** Append-only raw prices keyed by `(security_id,
+   source_id, price_as_of)` with an as-of read, and hierarchy versions with the same. Keep the
+   existing `price_as_of >=` monotonicity guard, which is correct and would otherwise be lost in the
+   rewrite. This is the item an auditor asks for by name, and it gets harder every day the current
+   table accumulates rows whose predecessors were discarded.
+3. **Decide what the unreachable price kinds mean, and build `ClientOverride` if it stays (B4).** The
+   governed-override lifecycle already exists for reference-data operator overrides; the work is
+   extending that pattern to prices, not inventing one. If overrides are not wanted, delete the four
+   unreachable members so the taxonomy stops advertising a control that does not exist. Fix
+   `GetComparisonPricesAsync`'s always-null deviation either way — it is a two-line change.
+4. **Move the calculated-price rule onto the catalog and fail closed on `MoneyMarketFund` (B2).**
+   The NAV-type half is the urgent part and is separable: stop asserting 1.0 for every money-market
+   fund. Declare a NAV-type term, read it, and return no calculated price when it is absent rather
+   than a confident wrong one. The catalog move and its parity guard are the durable half and can
+   follow.
+5. **State whether vendor entitlements are a control or a register (B5).** Cheapest first, and it is
+   a correctness fix regardless of which way the larger question goes: make the passport filter
+   `GetAllAsync` by the scope columns migration 020 added, so a security's evidence panel stops
+   showing other securities' entitlements. Then either enforce entitlements on the paths that use
+   vendor data, or restate the surface as metadata.
+
+*Deferred and unchanged in posture:* N6 projection fan-out amplification, relational projections for
+the private/alternative classes, valid-time term history, codec generation from
+`SecurityAssetTermsSchema`.
+
 ---
 
 ## Method
@@ -3030,6 +3330,16 @@ Security Master contracts, the 58 `Meridian.Application` Security Master service
 round-trip and asset-class-support test suites.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
+
+The 2026-09-03 pass re-verified every open finding against `7d6dbd92` and read, new to this document,
+the pricing and vendor-entitlement surfaces end to end: `SecurityMasterPricing.cs`,
+`ISecurityMasterPricingService`, `SecurityMasterPricingService`, `PostgresSecurityMasterPricingStore`,
+migration `022_security_master_pricing_hierarchy.sql`, `DataVendorEntitlement.cs`,
+`PostgresDataVendorEntitlementStore`, the entitlement evidence block in
+`SecurityMasterWorkbenchQueryService`, the pricing and entitlement routes in
+`Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs`, and
+`tests/Meridian.Tests/SecurityMaster/SecurityMasterPricingServiceTests.cs`. It also read migration 032
+and commit `71483dc4` to verify the two closures recorded above.
 
 The 2026-08-28 pass re-read the F# domain classification tables, `SecurityAssetClassCatalog`,
 `SecurityAssetPackRegistry`, the accounting event source adapter, `PostgresSecurityMasterStore`
