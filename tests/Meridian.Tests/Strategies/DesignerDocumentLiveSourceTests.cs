@@ -1381,12 +1381,14 @@ public sealed class DesignerDocumentLiveSourceTests
         var catalog = LiveStrategyCatalog.CreateDefault();
         var laterSourceConsulted = false;
 
-        catalog.RegisterFallback((LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
-        {
-            strategy = null;
-            failureReason = "plugin assembly 'strategy.dll' could not be loaded";
-            return false;
-        });
+        catalog.RegisterFallback(
+            "pluginAssembly",
+            (LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
+            {
+                strategy = null;
+                failureReason = "plugin assembly 'strategy.dll' could not be loaded";
+                return false;
+            });
         catalog.RegisterFallback((LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
         {
             laterSourceConsulted = true;
@@ -1395,11 +1397,78 @@ public sealed class DesignerDocumentLiveSourceTests
             return false;
         });
 
-        var resolved = catalog.TryCreate(DocumentId, Context().Parameters, out _, out var reason);
+        var resolved = catalog.TryCreate(
+            DocumentId,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["pluginAssembly"] = "strategy.dll" },
+            out _,
+            out var reason);
 
         resolved.Should().BeFalse();
         reason.Should().Contain("plugin assembly 'strategy.dll' could not be loaded").And.Contain(DocumentId);
         laterSourceConsulted.Should().BeFalse("a claimed run must not fall through to another implementation");
+    }
+
+    [Fact]
+    public void Catalog_consults_later_sources_past_an_unclaimed_diagnostic()
+    {
+        // The resolver contract lets any source decline with a diagnostic and expect the next one
+        // to be tried. Only a source whose selector the run actually carries ends resolution.
+        var catalog = LiveStrategyCatalog.CreateDefault();
+        catalog.RegisterFallback(
+            "pluginAssembly",
+            (LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
+            {
+                strategy = null;
+                failureReason = "no plugin directory is configured";
+                return false;
+            });
+        catalog.RegisterFallback((LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
+        {
+            strategy = new BuyAndHoldLiveStrategy(context.StrategyId);
+            failureReason = null;
+            return true;
+        });
+
+        var resolved = catalog.TryCreate(
+            DocumentId,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            out var strategy,
+            out var reason);
+
+        resolved.Should().BeTrue(reason);
+        strategy.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Catalog_refuses_a_selector_run_whose_own_id_is_a_builtin_strategy()
+    {
+        // No alias is needed to reach a built-in factory: a run whose own id is a registered
+        // strategy id resolves to it before any fallback, so the selected source never runs.
+        var catalog = LiveStrategyCatalog.CreateDefault();
+        var sourceConsulted = false;
+        catalog.RegisterFallback(
+            DesignerDocumentLiveSource.DesignerDocumentParameterKey,
+            (LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
+            {
+                sourceConsulted = true;
+                strategy = null;
+                failureReason = null;
+                return false;
+            });
+
+        var resolved = catalog.TryCreate(
+            BuyAndHoldLiveStrategy.CatalogId,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [DesignerDocumentLiveSource.DesignerDocumentParameterKey] = DocumentId
+            },
+            out var strategy,
+            out var reason);
+
+        resolved.Should().BeFalse();
+        strategy.Should().BeNull();
+        reason.Should().Contain("built-in").And.Contain(BuyAndHoldLiveStrategy.CatalogId);
+        sourceConsulted.Should().BeFalse("the contradiction is refused before resolution begins");
     }
 
     private static LiveStrategyCreationContext Context(StrategyDesignDocument? document = null)

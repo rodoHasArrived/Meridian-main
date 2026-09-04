@@ -71,7 +71,7 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
     private readonly Dictionary<string, Func<LiveStrategyCreationContext, ILiveStrategy>> _factories =
         new(StringComparer.OrdinalIgnoreCase);
 
-    private readonly List<LiveStrategyFallbackResolver> _fallbacks = [];
+    private readonly List<(string? SelectorKey, LiveStrategyFallbackResolver Resolver)> _fallbacks = [];
     private readonly HashSet<string> _selectorParameterKeys = new(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
@@ -90,12 +90,8 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
     /// Registers a fallback consulted (in registration order) when no factory id matches a run.
     /// This is how user-authored strategies reach live execution without a hand-written live twin.
     /// </summary>
-    public LiveStrategyCatalog RegisterFallback(LiveStrategyFallbackResolver fallback)
-    {
-        ArgumentNullException.ThrowIfNull(fallback);
-        _fallbacks.Add(fallback);
-        return this;
-    }
+    public LiveStrategyCatalog RegisterFallback(LiveStrategyFallbackResolver fallback) =>
+        RegisterFallback(selectorParameterKey: null, fallback);
 
     /// <summary>
     /// Registers a fallback along with the run parameter whose presence means it owns the run.
@@ -108,12 +104,13 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
     public LiveStrategyCatalog RegisterFallback(string? selectorParameterKey, LiveStrategyFallbackResolver fallback)
     {
         ArgumentNullException.ThrowIfNull(fallback);
-        if (!string.IsNullOrWhiteSpace(selectorParameterKey))
+        var selector = string.IsNullOrWhiteSpace(selectorParameterKey) ? null : selectorParameterKey;
+        if (selector is not null)
         {
-            _selectorParameterKeys.Add(selectorParameterKey);
+            _selectorParameterKeys.Add(selector);
         }
 
-        _fallbacks.Add(fallback);
+        _fallbacks.Add((selector, fallback));
         return this;
     }
 
@@ -138,49 +135,65 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
         ArgumentException.ThrowIfNullOrWhiteSpace(strategyId);
         var effectiveParameters = parameters ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
+        var runSelector = _selectorParameterKeys.FirstOrDefault(key =>
+            effectiveParameters.TryGetValue(key, out var selected) && !string.IsNullOrWhiteSpace(selected));
+
         var factoryId = strategyId;
+        var aliased = false;
         if (!_factories.ContainsKey(factoryId)
             && effectiveParameters.TryGetValue(LiveStrategyIdParameterKey, out var mappedId)
             && !string.IsNullOrWhiteSpace(mappedId))
         {
-            // A run that already selected an implementation cannot also alias a built-in one. The
-            // alias resolves before any fallback is consulted, so the selected source would never
-            // run: a designer or plugin run would trade a built-in strategy under its own run id,
-            // without the revision, gates, sizing, or risk guards it was approved with. The two
-            // instructions contradict each other, so neither is guessed at.
-            var selector = _selectorParameterKeys.FirstOrDefault(key =>
-                effectiveParameters.TryGetValue(key, out var selected) && !string.IsNullOrWhiteSpace(selected));
-            if (selector is not null)
-            {
-                strategy = null;
-                failureReason =
-                    $"Run '{strategyId}' names both the '{selector}' source selector and the " +
-                    $"'{LiveStrategyIdParameterKey}' alias '{mappedId.Trim()}'. The alias resolves first, so the " +
-                    "selected implementation would never run. Remove one of the two parameters.";
-                return false;
-            }
-
             factoryId = mappedId.Trim();
+            aliased = true;
+        }
+
+        // A run that already selected an implementation cannot also resolve to a built-in factory.
+        // The factory wins before any fallback is consulted, so the selected source would never
+        // run: a designer or plugin run would trade a built-in strategy under its own run id,
+        // without the revision, gates, sizing, or risk guards it was approved with. This is checked
+        // against the resolved factory id rather than only the alias, because a run whose own id
+        // happens to be a built-in id reaches the same factory without naming an alias at all.
+        if (runSelector is not null && _factories.ContainsKey(factoryId))
+        {
+            strategy = null;
+            failureReason = aliased
+                ? $"Run '{strategyId}' names both the '{runSelector}' source selector and the " +
+                  $"'{LiveStrategyIdParameterKey}' alias '{factoryId}'. The alias resolves first, so the selected " +
+                  "implementation would never run. Remove one of the two parameters."
+                : $"Run '{strategyId}' names the '{runSelector}' source selector, but its own id is the built-in " +
+                  "strategy id '" + factoryId + "'. The built-in factory resolves first, so the selected " +
+                  "implementation would never run. Rename the run, or remove the selector parameter.";
+            return false;
         }
 
         if (!_factories.TryGetValue(factoryId, out var factory))
         {
             var context = new LiveStrategyCreationContext(strategyId, effectiveParameters);
-            foreach (var fallback in _fallbacks)
+            var fallbackReasons = new List<string>();
+            foreach (var (selectorKey, resolver) in _fallbacks)
             {
-                if (fallback(context, out strategy, out var fallbackReason) && strategy is not null)
+                if (resolver(context, out strategy, out var fallbackReason) && strategy is not null)
                 {
                     failureReason = null;
                     return true;
                 }
 
-                // A source states a reason only when it recognised the run and could not build it;
-                // one that does not recognise the run declines silently so the next source can try.
-                // Continuing past a stated reason would hand an explicitly plugin-backed run whose
-                // assembly is missing to whatever source is registered next, executing a different
-                // implementation under the same run id and discarding the refusal that explains
-                // why. A run that has been claimed stops here, refused.
-                if (!string.IsNullOrWhiteSpace(fallbackReason))
+                if (string.IsNullOrWhiteSpace(fallbackReason))
+                {
+                    continue;
+                }
+
+                // Whether a refusal ends resolution depends on whether that source owns the run,
+                // not on whether it said anything: the resolver contract lets any source decline
+                // with a diagnostic and expect the next one to be tried. A source whose selector
+                // the run carries is the one that was chosen, so its refusal is the answer --
+                // continuing would hand a plugin-backed run whose assembly is missing to whatever
+                // source is registered next, executing a different implementation under the same
+                // run id and discarding the refusal that explains why.
+                if (selectorKey is not null
+                    && effectiveParameters.TryGetValue(selectorKey, out var selected)
+                    && !string.IsNullOrWhiteSpace(selected))
                 {
                     strategy = null;
 
@@ -189,13 +202,16 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
                     failureReason = $"Run '{strategyId}' could not be activated: {fallbackReason}";
                     return false;
                 }
+
+                fallbackReasons.Add(fallbackReason);
             }
 
             strategy = null;
             failureReason =
                 $"No live strategy implementation is registered for '{strategyId}'. " +
                 $"Register a factory in the live strategy catalog or set the run parameter " +
-                $"'{LiveStrategyIdParameterKey}' to one of: {string.Join(", ", StrategyIds.Order(StringComparer.OrdinalIgnoreCase))}.";
+                $"'{LiveStrategyIdParameterKey}' to one of: {string.Join(", ", StrategyIds.Order(StringComparer.OrdinalIgnoreCase))}." +
+                (fallbackReasons.Count > 0 ? $" Fallback sources: {string.Join(" | ", fallbackReasons)}" : string.Empty);
             return false;
         }
 
