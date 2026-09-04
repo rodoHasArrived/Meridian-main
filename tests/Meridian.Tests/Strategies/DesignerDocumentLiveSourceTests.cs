@@ -664,6 +664,73 @@ public sealed class DesignerDocumentLiveSourceTests
     }
 
     [Fact]
+    public void Momentum_warms_once_enough_completed_sessions_exist()
+    {
+        // The window has to retain the in-progress session on top of the 64 completed closes the
+        // 63-day comparison needs, or the field is indeterminate forever.
+        var strategy = Activate(DocumentWithGate("MOMENTUM_63D > -1"));
+        var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 50m);
+
+        strategy.Initialize(ctx);
+        for (var day = 1; day <= 70; day++)
+        {
+            strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: day), ctx);
+        }
+
+        ctx.Orders.Should().ContainSingle().Which.Should().Be(("SPY", 10L));
+    }
+
+    [Fact]
+    public void An_unranked_cap_follows_declared_universe_order()
+    {
+        // Without a rank cell every score ties, and an alphabetical tie-break would trade a subset
+        // the operator never chose.
+        var document = UniverseBuilderDocument(
+            new Dictionary<string, string>
+            {
+                ["assetClass"] = "Equity",
+                ["includeRules"] = "PRICE > 20",
+                ["maxSize"] = "2"
+            },
+            ["ZZZ", "MMM", "AAA"]);
+
+        var strategy = Activate(document);
+        var ctx = new RecordingContext(["ZZZ", "MMM", "AAA"], portfolioValue: 100_000m, lastPrice: 50m);
+
+        strategy.Initialize(ctx);
+        strategy.OnBar(Bar("ZZZ", close: 50m, volume: 1L, day: 5), ctx);
+        strategy.OnBar(Bar("MMM", close: 50m, volume: 1L, day: 5), ctx);
+        strategy.OnBar(Bar("AAA", close: 50m, volume: 1L, day: 5), ctx);
+
+        ctx.Orders.Select(order => order.Symbol).Should().BeEquivalentTo(["ZZZ", "MMM"]);
+    }
+
+    [Fact]
+    public void TryCreate_refuses_a_universe_symbol_containing_a_separator()
+    {
+        // The promoted run carries the universe as a delimited parameter the engine splits.
+        var document = TradableDocument() with { Universe = ["AAA,BBB"] };
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("comma, semicolon, or space");
+    }
+
+    [Fact]
+    public void Revision_hash_distinguishes_collection_boundaries()
+    {
+        // ["AAA,BBB"] and ["AAA","BBB"] must not hash alike, or an edit between those shapes would
+        // pass revision verification while changing which symbols trade.
+        var service = new StrategyDesignService();
+        var joined = service.Normalize(TradableDocument() with { Universe = ["AAA,BBB"] });
+        var split = service.Normalize(TradableDocument() with { Universe = ["AAA", "BBB"] });
+
+        DesignerDocumentRevision.ComputeHash(joined)
+            .Should().NotBe(DesignerDocumentRevision.ComputeHash(split));
+    }
+
+    [Fact]
     public void Activated_document_respects_a_universe_builder_max_size()
     {
         var document = UniverseBuilderDocument(

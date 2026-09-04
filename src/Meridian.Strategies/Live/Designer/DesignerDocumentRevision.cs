@@ -56,7 +56,7 @@ public static class DesignerDocumentRevision
         builder.Append(document.DocumentId).Append('\u001f')
             .Append(document.Version).Append('\u001f')
             .Append(document.DatasetReference).Append('\u001f')
-            .Append(string.Join(",", document.Universe ?? Array.Empty<string>()))
+            .Append(Encode(document.Universe))
             .Append('\u001e');
 
         foreach (var cell in document.Cells ?? Array.Empty<StrategyDesignCell>())
@@ -65,13 +65,14 @@ public static class DesignerDocumentRevision
                 .Append(cell.Kind).Append('\u001f')
                 .Append(cell.Purpose).Append('\u001f')
                 .Append(cell.Source).Append('\u001f')
-                .Append(string.Join(",", cell.FieldRefs ?? Array.Empty<string>())).Append('\u001f');
+                .Append(Encode(cell.FieldRefs)).Append('\u001f');
 
             // Ordered so an unrelated dictionary ordering change cannot move the hash.
             foreach (var parameter in (cell.Parameters ?? new Dictionary<string, string>())
                 .OrderBy(static item => item.Key, StringComparer.Ordinal))
             {
-                builder.Append(parameter.Key).Append('=').Append(parameter.Value).Append(';');
+                Append(builder, parameter.Key);
+                Append(builder, parameter.Value);
             }
 
             builder.Append('\u001e');
@@ -89,5 +90,33 @@ public static class DesignerDocumentRevision
         }
 
         return Sha256Digest.ComputeUtf8(builder.ToString());
+    }
+
+    /// <summary>
+    /// Length-prefixed encoding of a string collection.
+    /// </summary>
+    /// <remarks>
+    /// Joining with a separator is not injective: the universes <c>["AAA,BBB"]</c> and
+    /// <c>["AAA", "BBB"]</c> join to the same text and would hash identically, while the promoted
+    /// run's <c>symbols</c> parameter is split on commas — so an edit between those two shapes
+    /// could pass revision verification and still change which symbols trade. Prefixing each
+    /// element with its length makes the encoding unambiguous.
+    /// </remarks>
+    private static string Encode(IReadOnlyList<string>? values)
+    {
+        var builder = new StringBuilder();
+        builder.Append(values?.Count ?? 0).Append(':');
+        foreach (var value in values ?? Array.Empty<string>())
+        {
+            Append(builder, value);
+        }
+
+        return builder.ToString();
+    }
+
+    private static void Append(StringBuilder builder, string? value)
+    {
+        var text = value ?? string.Empty;
+        builder.Append(text.Length).Append(':').Append(text).Append(';');
     }
 }

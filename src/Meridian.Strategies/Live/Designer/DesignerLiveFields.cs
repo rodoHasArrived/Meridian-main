@@ -65,8 +65,11 @@ internal static class DesignerLiveFields
                 + "guard pass against a balance it does not govern."
         };
 
-    /// <summary>Trading sessions the longest supported window needs before it is warm.</summary>
-    public const int MaxWindow = 64;
+    /// <summary>
+    /// Sessions retained per symbol: the 64 completed closes 63-day momentum compares, plus the
+    /// session currently in progress, which metrics exclude but the window still has to hold.
+    /// </summary>
+    public const int MaxWindow = 65;
 
     /// <summary>
     /// Rolling per-symbol session closes plus the latest spot price.

@@ -149,6 +149,19 @@ internal sealed class DesignerStrategyPlan
             return false;
         }
 
+        // The promoted run carries the universe as a delimited 'symbols' parameter, which
+        // LiveTradingEngine.ResolveUniverse splits on commas, semicolons, and spaces. A symbol
+        // containing one of those would silently become two, so the ambiguity is refused at the
+        // source rather than resolved differently on each side.
+        if (Array.Find(universe, static symbol => symbol.IndexOfAny([',', ';', ' ']) >= 0) is { } delimited)
+        {
+            failureReason =
+                $"Designer document '{document.DocumentId}' declares universe symbol '{delimited}', which contains " +
+                "a comma, semicolon, or space. Those separate symbols in the promoted run's parameter set and " +
+                "cannot appear inside one.";
+            return false;
+        }
+
         // Transitions are validated and persisted as executable structure, but this plan composes
         // cells conjunctively and has no notion of ordering, branching, or bounded iteration. A
         // plain "next" edge expresses an ordering that conjunction already subsumes; anything else
@@ -789,15 +802,30 @@ internal sealed class DesignerStrategyPlan
 
         public override DesignerValue Evaluate(IReadOnlyDictionary<string, decimal> fields)
         {
+            // any-pass is commutative, so one branch being unevaluable must not decide the cell.
+            // Letting the first cold branch throw would make "momentum,price" indeterminate while
+            // "price,momentum" admits the symbol, purely from declaration order. A later branch
+            // that passes still passes; indeterminate is reported only when nothing passed and
+            // something could not be judged.
+            DesignerExpressionException? indeterminate = null;
             foreach (var branch in branches)
             {
-                if (branch.EvaluateCondition(fields))
+                try
                 {
-                    return DesignerValue.FromBoolean(true);
+                    if (branch.EvaluateCondition(fields))
+                    {
+                        return DesignerValue.FromBoolean(true);
+                    }
+                }
+                catch (DesignerExpressionException ex)
+                {
+                    indeterminate ??= ex;
                 }
             }
 
-            return DesignerValue.FromBoolean(false);
+            return indeterminate is null
+                ? DesignerValue.FromBoolean(false)
+                : throw indeterminate;
         }
 
         public override IEnumerable<string> ReferencedFields() =>

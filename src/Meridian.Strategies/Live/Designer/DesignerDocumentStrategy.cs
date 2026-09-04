@@ -212,12 +212,13 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
     {
         CancelStalePendingOrders(ctx, ctx.CurrentTime);
 
-        var eligible = new List<(string Symbol, decimal Score, IReadOnlyDictionary<string, decimal> Fields)>();
+        var eligible = new List<(string Symbol, int Order, decimal Score, IReadOnlyDictionary<string, decimal> Fields)>();
         var indeterminate = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         DateOnly? alignmentDate = null;
 
-        foreach (var symbol in _plan.Universe)
+        for (var order = 0; order < _plan.Universe.Count; order++)
         {
+            var symbol = _plan.Universe[order];
             if (!ctx.Universe.Contains(symbol))
             {
                 continue;
@@ -302,14 +303,18 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
                 }
             }
 
-            eligible.Add((symbol, score, fields));
+            eligible.Add((symbol, order, score, fields));
         }
 
         var targets = _plan.MinimumUniverseSize is { } minimum && eligible.Count < minimum
-            ? Array.Empty<(string Symbol, decimal Score, IReadOnlyDictionary<string, decimal> Fields)>()
+            ? Array.Empty<(string Symbol, int Order, decimal Score, IReadOnlyDictionary<string, decimal> Fields)>()
             : eligible
+                // Declared universe order breaks ties. Without a rank cell every score is zero, so
+                // an alphabetical tie-break would let a bounded selection trade a subset the
+                // operator never chose -- "top 5" of a ten-name document becoming the first five
+                // alphabetically rather than the first five declared.
                 .OrderByDescending(static candidate => candidate.Score)
-                .ThenBy(static candidate => candidate.Symbol, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static candidate => candidate.Order)
                 .Take(_plan.MaximumPositions ?? eligible.Count)
                 .ToArray();
 
@@ -317,6 +322,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             targets.Select(static candidate => candidate.Symbol),
             StringComparer.OrdinalIgnoreCase);
 
+        CancelObsoletePendingOrders(ctx, targetSet, indeterminate);
         CloseUnwantedPositions(ctx, targetSet, indeterminate);
         OpenTargetPositions(ctx, targets);
     }
@@ -337,15 +343,15 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
                 continue;
             }
 
-            SubmitOrder(ctx, symbol, -owned, "exiting: entry conditions no longer hold");
+            SubmitOrder(ctx, symbol, -owned, isEntry: false, "exiting: entry conditions no longer hold");
         }
     }
 
     private void OpenTargetPositions(
         IBacktestContext ctx,
-        IReadOnlyList<(string Symbol, decimal Score, IReadOnlyDictionary<string, decimal> Fields)> targets)
+        IReadOnlyList<(string Symbol, int Order, decimal Score, IReadOnlyDictionary<string, decimal> Fields)> targets)
     {
-        foreach (var (symbol, _, fields) in targets)
+        foreach (var (symbol, _, _, fields) in targets)
         {
             if (_pendingOrders.ContainsKey(symbol))
             {
@@ -359,7 +365,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             // only way a long document inheriting its own short (or the reverse) converges.
             if (owned != 0L && Math.Sign(owned) != desiredSign)
             {
-                SubmitOrder(ctx, symbol, -owned, "closing a position opposite the document's trade side");
+                SubmitOrder(ctx, symbol, -owned, isEntry: false, "closing a position opposite the document's trade side");
                 continue;
             }
 
@@ -374,7 +380,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
                 continue;
             }
 
-            SubmitOrder(ctx, symbol, quantity, $"entering via trade cell {_plan.Trade.CellId}");
+            SubmitOrder(ctx, symbol, quantity, isEntry: true, $"entering via trade cell {_plan.Trade.CellId}");
         }
     }
 
@@ -424,7 +430,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         return false;
     }
 
-    private void SubmitOrder(IBacktestContext ctx, string symbol, long quantity, string reason)
+    private void SubmitOrder(IBacktestContext ctx, string symbol, long quantity, bool isEntry, string reason)
     {
         if (quantity == 0L)
         {
@@ -432,13 +438,49 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         }
 
         var orderId = ctx.PlaceMarketOrder(symbol, quantity);
-        _pendingOrders[symbol] = new PendingOrder(orderId, quantity, ctx.CurrentTime, CancelRequested: false);
+        _pendingOrders[symbol] = new PendingOrder(orderId, quantity, ctx.CurrentTime, isEntry, CancelRequested: false);
         _logger?.LogInformation(
             "Designer document {DocumentId} {Reason} for {Symbol} quantity {Quantity}",
             _plan.DocumentId,
             reason,
             symbol,
             quantity);
+    }
+
+    /// <summary>
+    /// Cancels a working order whose intent this pass no longer wants.
+    /// </summary>
+    /// <remarks>
+    /// An order parked for approval, or otherwise slow to fill, can still complete minutes after
+    /// the strategy stopped wanting it — an entry filling into a symbol the gates have since
+    /// rejected, or an exit completing after the symbol became eligible again. Waiting for the
+    /// staleness timeout would leave that window open for its full duration. The marker is kept
+    /// after cancelling, for the same reason the timeout keeps it: without a terminal order status
+    /// there is no confirmation the cancel landed, and submitting a replacement could double-fill.
+    /// </remarks>
+    private void CancelObsoletePendingOrders(
+        IBacktestContext ctx,
+        IReadOnlySet<string> targetSet,
+        IReadOnlySet<string> indeterminate)
+    {
+        foreach (var symbol in _pendingOrders.Keys.ToArray())
+        {
+            var pending = _pendingOrders[symbol];
+            if (pending.CancelRequested || indeterminate.Contains(symbol))
+            {
+                continue;
+            }
+
+            var wanted = pending.IsEntry ? targetSet.Contains(symbol) : !targetSet.Contains(symbol);
+            if (wanted)
+            {
+                continue;
+            }
+
+            CancelPending(ctx, symbol, pending, pending.IsEntry
+                ? "the symbol is no longer a target"
+                : "the symbol is a target again");
+        }
     }
 
     /// <summary>
@@ -468,30 +510,41 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
                 continue;
             }
 
-            _pendingOrders[symbol] = pending with { CancelRequested = true };
-            try
-            {
-                ctx.CancelOrder(pending.OrderId);
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogWarning(
-                    ex,
-                    "Designer document {DocumentId} could not cancel the stale order for {Symbol}",
-                    _plan.DocumentId,
-                    symbol);
-            }
 
+            CancelPending(
+                ctx,
+                symbol,
+                pending,
+                $"it has been working for over {PendingOrderTimeout.TotalMinutes} minutes without a completing fill");
+        }
+    }
+
+    private void CancelPending(IBacktestContext ctx, string symbol, PendingOrder pending, string reason)
+    {
+        _pendingOrders[symbol] = pending with { CancelRequested = true };
+        try
+        {
+            ctx.CancelOrder(pending.OrderId);
+        }
+        catch (Exception ex)
+        {
             _logger?.LogWarning(
-                "Designer document {DocumentId} cancelled order {OrderId} for {Symbol} after {TimeoutMinutes} "
-                + "minutes with no completing fill. {Symbol} stays blocked: without a terminal order status the "
-                + "engine cannot confirm the cancel, and submitting a replacement risks a double fill",
+                ex,
+                "Designer document {DocumentId} could not cancel order {OrderId} for {Symbol}",
                 _plan.DocumentId,
                 pending.OrderId,
-                symbol,
-                PendingOrderTimeout.TotalMinutes,
                 symbol);
         }
+
+        _logger?.LogWarning(
+            "Designer document {DocumentId} cancelled order {OrderId} for {Symbol} because {Reason}. {Symbol} stays "
+            + "blocked: without a terminal order status the engine cannot confirm the cancel, and submitting a "
+            + "replacement risks a double fill",
+            _plan.DocumentId,
+            pending.OrderId,
+            symbol,
+            reason,
+            symbol);
     }
 
     /// <summary>
@@ -628,5 +681,6 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         Guid OrderId,
         long Remaining,
         DateTimeOffset PlacedAt,
+        bool IsEntry,
         bool CancelRequested);
 }
