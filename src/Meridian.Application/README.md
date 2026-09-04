@@ -577,7 +577,9 @@ Security Master amend and deactivate are refused when re-serializing the record 
 rewrite it: an asset class, equity classification, CustomAsset envelope, or declared discriminant
 value this node cannot round-trip — including a discriminant the codec cannot see at all, whether
 because it is stored as the wrong JSON kind or under a case-variant key (every read is ordinal, so
-`ExerciseStyle` is not `exerciseStyle`) — and, for bonds, coupon structure the canonical codec does
+`ExerciseStyle` is not `exerciseStyle`; the variant is refused whether or not the canonical key sits
+beside it, because a readable canonical value only means the record loads while the variant is
+dropped without trace) — and, for bonds, coupon structure the canonical codec does
 not read. `ToBondTerms` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
 `stepSchedule`, the inflation triple, `dayCount`) ONE COUPON ARM AT A TIME, so a populated companion
 is lost whenever the arm the record resolves to does not read it — a `floatingIndex` beside

@@ -985,9 +985,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// <see cref="StringComparison.OrdinalIgnoreCase"/>, for exactly that reason. The bond coupon
     /// guard already refuses this shape for <c>couponType</c>; it is a property of every declared
     /// vocabulary, not of that one field, so it belongs on the schema-driven walk.</para>
-    /// <para>A REQUIRED discriminant is left alone for the same reason a wrong-kind token is:
-    /// <c>GetRequiredString</c> throws, so the record fails loudly on read rather than being
-    /// silently rewritten, and no patch could repair it from here.</para>
+    /// <para>A REQUIRED discriminant is left alone only where the codec's own read of it THROWS.
+    /// <c>GetRequiredString</c> demands a JSON string, so a missing or wrong-kind canonical key
+    /// fails the record loudly on read and no patch could repair it from here. A READABLE canonical
+    /// value is the opposite case and was wrongly swept up with it: the record loads, and the
+    /// variant beside it is dropped on the next write exactly as an optional field's would be.
+    /// <c>putCall: "Put"</c> next to <c>PutCall: "Call"</c> loads as a put and silently loses the
+    /// call, so it is refused here too.</para>
     /// </summary>
     private static void EnsureNoCaseVariantDiscriminant(
         SecurityProjectionRecord projection,
@@ -995,7 +999,11 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         SecurityAssetTermField field,
         JsonElement? assetSpecificTermsPatch)
     {
-        if (field.Required)
+        // Mirrors GetRequiredString and nothing more: it throws on anything that is not a JSON
+        // string, and on nothing else — a blank string still loads. Asking whether the record loads,
+        // rather than whether its value is one this node likes, is what keeps the exemption to the
+        // case its justification actually covers.
+        if (field.Required && RequiredReadThrowsFor(terms, field))
         {
             return;
         }
@@ -1006,16 +1014,32 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return;
         }
 
+        var canonicalOutcome = terms.TryGetProperty(field.Key, out var canonical)
+                && canonical.ValueKind == JsonValueKind.String
+            ? $"the record loads with {field.Key} '{canonical.GetString()}' and re-serializing would write a " +
+                "document carrying only that"
+            : $"the record loads with no {field.Key} and re-serializing would write a document without the " +
+                "stray key";
+
         throw new InvalidOperationException(
             $"Security '{projection.SecurityId:D}' carries {string.Join(" and ", variants)} where this node reads " +
-            $"only '{field.Key}', matched case-sensitively, so the codec cannot see that value at all: the record " +
-            $"loads with no {field.Key} and re-serializing would write a document without the stray key, dropping " +
-            "it. The write is refused. To repair the record here, amend it with a COMPLETE asset-terms document " +
+            $"only '{field.Key}', matched case-sensitively, so the codec cannot see that value at all: " +
+            $"{canonicalOutcome}, dropping it. The write is refused. To repair the record here, amend it with a " +
+            "COMPLETE asset-terms document " +
             $"spelling the key '{field.Key}' and naming a declared value " +
             $"({string.Join(", ", field.AllowedValues)}) — the amendment replaces the terms wholesale, so any field " +
             "the patch omits is dropped with them — and note that a deactivation cannot carry a patch, so repair it " +
             "first.");
     }
+
+    /// <summary>
+    /// True when the codec's REQUIRED read of <paramref name="field"/> would throw, so the record
+    /// never loads and there is no silent rewrite to refuse. Mirrors
+    /// <c>SecurityMasterMapping.GetRequiredString</c>, which accepts any JSON string and rejects
+    /// everything else — blankness is not its question, so it must not be this one's either.
+    /// </summary>
+    private static bool RequiredReadThrowsFor(JsonElement terms, SecurityAssetTermField field)
+        => !terms.TryGetProperty(field.Key, out var value) || value.ValueKind != JsonValueKind.String;
 
     /// <summary>
     /// Populated keys in <paramref name="document"/> that differ from <paramref name="key"/> only by
@@ -1212,7 +1236,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             orphaned.AddRange(NestedCouponMembers
                 .Where(member => CarriesValue(nested, member.Nested)
                     && !CodecCanRead(terms, member.Flat)
-                    && !MatchesTheMissingKeyDefault(nested, member))
+                    && !MatchesTheMissingKeyDefault(nested, member, arm))
                 .Select(member => $"coupon.{member.Nested}"));
         }
 
@@ -1224,14 +1248,15 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// of the question matter: <see cref="CouponArmReads"/> decides whether the selected arm reads
     /// the key at all, and <see cref="CodecCanRead"/> decides whether reading it yields anything —
     /// <c>spreadBps: "N/A"</c> IS read by the Floating arm and still lands as null.
-    /// <para>The one populated value a non-reading arm may drop safely is a zero <c>couponRate</c>,
-    /// and the reason is specific to that key rather than to zero: <c>couponRate</c> is the only
-    /// companion the codec SUBSTITUTES for (<c>GetOptionalDecimal(json, "couponRate") ?? 0m</c>), so
-    /// a vendor payload spelling "no fixed rate" as <c>couponRate: 0</c> beside a floating coupon
-    /// states exactly what an absent key already states. Every other companion is
-    /// <c>ToOption(GetOptionalDecimal(...))</c>, whose absence reads as <c>None</c> and serializes
-    /// as <see langword="null"/> — so <c>spreadBps: 0</c> is a stated zero that becomes a null, a
-    /// difference the projection store exposes, and it is refused like any other dropped value.</para>
+    /// <para>A key the arm does not read is lost whatever it holds, zero included. The
+    /// substitution that makes an absent rate read as zero
+    /// (<c>GetOptionalDecimal(json, "couponRate") ?? 0m</c>) belongs to the Fixed and
+    /// InflationLinked arms, and those arms READ the key, so they are judged by
+    /// <see cref="CodecCanRead"/> and never reach this branch at all. The arms that do reach it
+    /// leave <c>BondTerms.couponRate</c> as <c>None</c>, so re-serializing writes
+    /// <c>couponRate: null</c> while <c>TryBuildBondProjection</c> reads the flat key without
+    /// consulting the arm — a stored <c>fixed_coupon_rate</c> of 0 becomes NULL. That is a stated
+    /// value turning into an absence, refused like any other.</para>
     /// </summary>
     private static bool OrphansFlatCompanion(JsonElement terms, string arm, string key)
     {
@@ -1240,20 +1265,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             return false;
         }
 
-        return CouponArmReads(arm, key)
-            ? !CodecCanRead(terms, key)
-            : !StatesTheSameAbsence(terms, key);
+        return !CouponArmReads(arm, key) || !CodecCanRead(terms, key);
     }
-
-    /// <summary>
-    /// True when <paramref name="key"/> states exactly what its own absence would state, so dropping
-    /// it changes nothing. Only <c>couponRate</c> qualifies, and only at zero: it is the single
-    /// coupon companion whose reader substitutes a value for the missing key rather than decoding it
-    /// to <c>None</c>. Generalizing this to "any numeric zero" would have made an explicitly
-    /// submitted <c>spreadBps: 0</c> silently droppable, which is a stated zero becoming a null.
-    /// </summary>
-    private static bool StatesTheSameAbsence(JsonElement document, string key)
-        => string.Equals(key, "couponRate", StringComparison.Ordinal) && IsNumericZero(document, key);
 
     /// <summary>True when <paramref name="key"/> holds a JSON number the codec would decode as zero.</summary>
     private static bool IsNumericZero(JsonElement document, string key)
@@ -1269,12 +1282,16 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// qualifies through <see cref="MissingKeyDefaultFor"/>: <c>ToBondTerms</c> defaults an absent
     /// <c>couponType</c> to <c>Fixed</c> and the projection store reads the nested kind as
     /// <c>Fixed</c>, so both codecs already agree. <c>coupon.rate = 0</c> qualifies because an
-    /// absent flat rate reads as <c>0m</c>, so zero really is the same number spelled differently —
-    /// a nested <c>4.25</c> is not, and stays refused. The remaining members (index, spread, day
-    /// count) have no substituted counterpart at all: an absent flat key means the value is gone,
-    /// not written another way.</para>
+    /// absent flat rate reads as <c>0m</c> — but only under an arm that actually performs that
+    /// substitution, which is why <paramref name="arm"/> is part of the question; a nested
+    /// <c>4.25</c> is not the same number and stays refused under every arm. The remaining members
+    /// (index, spread, day count) have no substituted counterpart at all: an absent flat key means
+    /// the value is gone, not written another way.</para>
     /// </summary>
-    private static bool MatchesTheMissingKeyDefault(JsonElement nested, (string Nested, string Flat) member)
+    private static bool MatchesTheMissingKeyDefault(
+        JsonElement nested,
+        (string Nested, string Flat) member,
+        string arm)
     {
         if (SecurityAssetTermsSchema.Field("Bond", member.Flat) is not { } field)
         {
@@ -1289,13 +1306,15 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 && string.Equals(value.GetString(), substituted, StringComparison.Ordinal);
         }
 
-        // The scalar rate's is a NUMBER, and omitting it from this helper was the same mistake in a
-        // different type: GetOptionalDecimal(json, "couponRate") ?? 0m means an absent flat rate
-        // reads as exactly the zero a nested rate of 0 states, so both codecs already agree and
-        // re-serializing only canonicalizes the shape. Under an arm that reads no rate at all a
-        // nested zero contradicts nothing either — the same reason a flat zero is not an orphan.
-        // Any other nested rate IS a different number and stays refused.
+        // The scalar rate's is a NUMBER: GetOptionalDecimal(json, "couponRate") ?? 0m means an
+        // absent flat rate reads as exactly the zero a nested rate of 0 states, so both codecs
+        // already agree and re-serializing only canonicalizes the shape. That substitution is the
+        // Fixed and InflationLinked arms', though, and the arm has to be asked. Under an arm that
+        // reads no rate the round trip writes couponRate: null, so the 0 the projection store was
+        // reading out of coupon.rate becomes NULL — the nested spelling of the same loss a flat
+        // zero suffers there. Any other nested rate IS a different number and stays refused.
         return string.Equals(member.Flat, "couponRate", StringComparison.Ordinal)
+            && CouponArmReads(arm, member.Flat)
             && IsNumericZero(nested, member.Nested);
     }
 

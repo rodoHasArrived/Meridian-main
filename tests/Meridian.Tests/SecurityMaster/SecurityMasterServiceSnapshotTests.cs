@@ -921,14 +921,16 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
-    public async Task DeactivateAsync_BondWhoseFloatingCouponCarriesAZeroFixedRate_IsNotRefused()
+    public async Task DeactivateAsync_BondWhoseFloatingCouponCarriesAZeroFixedRate_RefusesTheWrite()
     {
-        // The carve-out that keeps the arm check off ordinary vendor rows. The Floating arm does not
-        // read couponRate, but zero is exactly what the codec substitutes for an absent scalar
-        // (GetOptionalDecimal(...) ?? 0m), so a payload spelling "no fixed rate" as 0 beside a
-        // floating coupon states nothing the structure has not already said. Refusing it would
-        // freeze an ordinary floater to protect a zero — while 4.25 in that same slot is a number
-        // the record states and the write would delete, and stays refused.
+        // This shape was exempted, on the reasoning that GetOptionalDecimal(...) ?? 0m makes an
+        // absent rate read as zero, so a payload spelling "no fixed rate" as 0 beside a floating
+        // coupon states nothing new. The substitution is real; it just belongs to the Fixed and
+        // InflationLinked arms, which READ couponRate and are judged by CodecCanRead instead — they
+        // never reach that exemption. The arms that do reach it leave BondTerms.couponRate as None,
+        // so the round trip writes couponRate: null while TryBuildBondProjection reads the flat key
+        // without consulting the arm: fixed_coupon_rate goes from 0 to NULL. The exemption held
+        // nowhere its justification applied and applied everywhere it did not.
         var securityId = Guid.NewGuid();
         var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
         {
@@ -939,6 +941,118 @@ public sealed class SecurityMasterServiceSnapshotTests
             ["spreadBps"] = 125m,
             ["isCallable"] = false,
             ["subclass"] = "FloatingRate"
+        });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*couponRate*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWhoseFixedCouponCarriesAZeroRate_IsNotRefused()
+    {
+        // The other side of the same rule, and the reason the refusal above is about the ARM rather
+        // than about zero. The Fixed arm reads couponRate and the serializer emits it, so a zero
+        // here round-trips as a zero and the projection's fixed_coupon_rate is unchanged. A guard
+        // that refused every zero would freeze every genuine no-coupon fixed bond.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = "Fixed",
+            ["couponRate"] = 0m,
+            ["isCallable"] = false,
+            ["subclass"] = "Corporate"
+        });
+
+        await service.DeactivateAsync(new DeactivateSecurityRequest(
+            securityId,
+            2,
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "deactivate"));
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            2,
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_FloatingBondWhoseNestedCouponRateIsZero_RefusesTheWrite()
+    {
+        // The nested spelling of the same loss. The projection store falls back to coupon.rate for
+        // fixed_coupon_rate when the flat key is missing, so this record projects 0 today; the next
+        // write drops the nested object and emits couponRate: null under the Floating arm, and the
+        // column goes NULL. Exempting the nested zero without asking the arm repeated the flat
+        // mistake one shape over — the arm has to be part of BOTH questions.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["couponType"] = "Floating",
+            ["floatingIndex"] = "SOFR",
+            ["spreadBps"] = 125m,
+            ["coupon"] = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["rate"] = 0m
+            },
+            ["isCallable"] = false,
+            ["subclass"] = "FloatingRate"
+        });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*coupon.rate*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_BondWithNoCouponTypeAndANestedZeroRate_IsNotRefused()
+    {
+        // With no flat couponType the reader lands on Fixed, which DOES substitute zero for the
+        // absent flat rate — so the nested zero and the canonical document say the same number and
+        // re-serializing only changes the shape. This is the case the nested exemption was written
+        // for, and restricting it to the reading arms keeps it.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["maturity"] = "2035-06-15",
+            ["coupon"] = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["kind"] = "Fixed",
+                ["rate"] = 0m
+            },
+            ["isCallable"] = false,
+            ["subclass"] = "Corporate"
         });
 
         await service.DeactivateAsync(new DeactivateSecurityRequest(
@@ -1192,6 +1306,91 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_OptionCarryingBothSpellingsOfPutCall_RefusesTheWrite()
+    {
+        // A REQUIRED discriminant was exempted from the case-variant scan wholesale, on the grounds
+        // that GetRequiredString throws and so the record fails loudly rather than being rewritten.
+        // That is true only when the canonical key is unreadable. Here it is readable: the record
+        // loads as a put, and "Call" under a spelling no ordinal read looks at is dropped by the
+        // next write with no trace — the same silent loss the optional discriminants are refused
+        // for. The exemption was stated more broadly than the reasoning that earned it.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Option",
+            "Double-spelled option",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["underlyingId"] = Guid.NewGuid(),
+                ["putCall"] = "Put",
+                ["PutCall"] = "Call",
+                ["strike"] = 190m,
+                ["expiry"] = "2027-07-16",
+                ["multiplier"] = 100m,
+                ["exerciseStyle"] = "American",
+                ["isAdjusted"] = false
+            });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*carries PutCall where*loads with putCall 'Put'*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeactivateAsync_OptionWhoseOnlyPutCallIsACaseVariant_FailsTheCodecsRequiredRead()
+    {
+        // The boundary the required exemption is scoped to, kept honest from the other side. With no
+        // canonical putCall the record never loads at all: GetRequiredString throws on the read,
+        // long before anything could re-serialize it, and no patch to this guard could repair that.
+        // The refusal message here is the CODEC's, not this guard's, which is the whole point —
+        // there is nothing to refuse where the record cannot be read in the first place.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Option",
+            "Miskeyed option",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["underlyingId"] = Guid.NewGuid(),
+                ["PutCall"] = "Call",
+                ["strike"] = 190m,
+                ["expiry"] = "2027-07-16",
+                ["multiplier"] = 100m,
+                ["isAdjusted"] = false
+            });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Missing required string 'putCall'*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_OptionCarryingBothSpellingsOfExerciseStyle_RefusesTheWrite()
     {
         // A declared canonical value does not make the variant harmless — it makes it invisible.
@@ -1317,11 +1516,11 @@ public sealed class SecurityMasterServiceSnapshotTests
     [Fact]
     public async Task DeactivateAsync_BondDeclaringFixedBesideAZeroSpread_RefusesTheWrite()
     {
-        // The zero carve-out belongs to couponRate alone, and the reason is the key rather than the
-        // number: couponRate is the only companion the codec SUBSTITUTES for (`?? 0m`), so a zero
-        // there states what an absent key already states. spreadBps is ToOption(...), whose absence
-        // reads as None and serializes as null — so a zero spread is a stated zero becoming a null,
-        // a difference the projection store exposes, and it is dropped like any other value.
+        // A companion the selected arm does not read is dropped whatever it holds, and zero is not
+        // an exception: spreadBps is ToOption(...), whose absence reads as None and serializes as
+        // null, so a zero spread beside a Fixed coupon is a stated zero becoming a null — a
+        // difference the projection store exposes. Nothing about the NUMBER earns an exemption
+        // here; only an arm that reads the key does.
         var securityId = Guid.NewGuid();
         var (eventStore, service) = CreateBondHarness(securityId, new Dictionary<string, object>(StringComparer.Ordinal)
         {
