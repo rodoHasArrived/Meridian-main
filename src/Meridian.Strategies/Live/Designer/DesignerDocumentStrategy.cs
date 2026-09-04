@@ -214,6 +214,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
 
         var eligible = new List<(string Symbol, decimal Score, IReadOnlyDictionary<string, decimal> Fields)>();
         var indeterminate = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        DateOnly? alignmentDate = null;
 
         foreach (var symbol in _plan.Universe)
         {
@@ -225,29 +226,12 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             // Inventory this run cannot account for is not tradeable either way. After a host
             // restart the ownership map is empty while the broker still holds the run's earlier
             // fills, so entering would double the position; the same shape also covers a position
-            // opened by another strategy or by hand, which is not this run's to unwind. The two are
-            // indistinguishable from here, and both answers are "do not trade this symbol".
-            if (!IsAttributable(ctx, symbol))
-            {
-                // Same treatment as a cold field: for a cross-sectional plan a name that cannot be
-                // traded cannot be silently dropped from the comparison either, or the remaining
-                // names get ranked against a set the document did not describe.
-                if (IsCrossSectional)
-                {
-                    return;
-                }
-
-                indeterminate.Add(symbol);
-                continue;
-            }
-
-            if (!_windows.TryGetValue(symbol, out var window)
-                || !window.TryResolve(_plan.RequiredFields, ctx, symbol, out var fields, out _))
+            // opened by another strategy or by hand, which is not this run's to unwind.
+            if (!IsAttributable(ctx, symbol) || !_windows.TryGetValue(symbol, out var window))
             {
                 // A cross-sectional document ranks or bounds the whole universe against itself, so
                 // deciding on a partial cross-section is not a smaller version of the promoted
-                // strategy -- it is a different one. "Top 2 of 3" evaluated after the first symbol
-                // arrives would buy that symbol regardless of where it ranks. Wait for the picture.
+                // strategy -- it is a different one.
                 if (IsCrossSectional)
                 {
                     return;
@@ -257,7 +241,42 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
                 continue;
             }
 
-            if (!PassesAll(_plan.EntryGates, fields, symbol) || !PassesAll(_plan.RiskGuards, fields, symbol))
+            // Every symbol in a ranked or bounded selection has to be describing the same trading
+            // session. The first tick of a new date rolls one symbol's window before the others,
+            // and comparing a fresh session against stale ones is a comparison the document never
+            // asked for.
+            if (IsCrossSectional && _needsSessionFields)
+            {
+                if (alignmentDate is null)
+                {
+                    alignmentDate = window.LastCompletedSessionDate;
+                }
+                else if (alignmentDate != window.LastCompletedSessionDate)
+                {
+                    return;
+                }
+            }
+
+            var fields = window.CreateFieldView(ctx, symbol);
+
+            var outcome = Evaluate(_plan.EntryGates, fields, symbol);
+            if (outcome == GateOutcome.Pass)
+            {
+                outcome = Evaluate(_plan.RiskGuards, fields, symbol);
+            }
+
+            if (outcome == GateOutcome.Indeterminate)
+            {
+                if (IsCrossSectional)
+                {
+                    return;
+                }
+
+                indeterminate.Add(symbol);
+                continue;
+            }
+
+            if (outcome == GateOutcome.Fail)
             {
                 continue;
             }
@@ -272,8 +291,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
                 catch (DesignerExpressionException ex)
                 {
                     // Dropping just this candidate would rank the rest against an incomplete
-                    // cross-section -- the same defect the cold-field guard above exists to prevent.
-                    // A score the document cannot produce for one name invalidates the comparison.
+                    // cross-section -- the same defect the indeterminate handling above prevents.
                     _logger?.LogWarning(
                         "Designer document {DocumentId} could not score {Symbol}; the cross-section is "
                         + "indeterminate this pass: {Reason}",
@@ -287,9 +305,6 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             eligible.Add((symbol, score, fields));
         }
 
-        // minSize is the document's statement that the strategy is only meaningful across a
-        // breadth of names. Trading a thinner set would be a different strategy than the one
-        // promoted, so nothing is entered until the breadth exists.
         var targets = _plan.MinimumUniverseSize is { } minimum && eligible.Count < minimum
             ? Array.Empty<(string Symbol, decimal Score, IReadOnlyDictionary<string, decimal> Fields)>()
             : eligible
@@ -396,7 +411,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             [DesignerLiveFields.PortfolioWeight] = quantity * price / ctx.PortfolioValue
         };
 
-        if (PassesAll(_plan.RiskGuards, projected, symbol))
+        if (Evaluate(_plan.RiskGuards, projected, symbol) == GateOutcome.Pass)
         {
             return true;
         }
@@ -479,7 +494,14 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         }
     }
 
-    private bool PassesAll(
+    /// <summary>
+    /// Evaluates a gate set. An evaluation fault is <see cref="GateOutcome.Indeterminate"/>, not a
+    /// failure: a filter such as <c>PRICE / (PRICE - 50) &gt; 1</c> divides by zero exactly when
+    /// price reaches 50, and reading that as "the gate did not pass" would liquidate a held
+    /// position on an arithmetic accident rather than on a signal. A cold field arrives here the
+    /// same way, because the field view resolves on access.
+    /// </summary>
+    private GateOutcome Evaluate(
         IReadOnlyList<DesignerGate> gates,
         IReadOnlyDictionary<string, decimal> fields,
         string symbol)
@@ -490,24 +512,30 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             {
                 if (!gate.Expression.EvaluateCondition(fields))
                 {
-                    return false;
+                    return GateOutcome.Fail;
                 }
             }
             catch (DesignerExpressionException ex)
             {
-                // A gate that cannot be evaluated is not a gate that passed. Refusing the symbol
-                // keeps an evaluation fault from opening a position the document never authorised.
                 _logger?.LogWarning(
-                    "Designer document {DocumentId} could not evaluate gate {GateCellId} for {Symbol}: {Reason}",
+                    "Designer document {DocumentId} could not evaluate gate {GateCellId} for {Symbol}; the symbol "
+                    + "is indeterminate this pass: {Reason}",
                     _plan.DocumentId,
                     gate.CellId,
                     symbol,
                     ex.Message);
-                return false;
+                return GateOutcome.Indeterminate;
             }
         }
 
-        return true;
+        return GateOutcome.Pass;
+    }
+
+    private enum GateOutcome
+    {
+        Pass,
+        Fail,
+        Indeterminate
     }
 
     private bool IsAttributable(IBacktestContext ctx, string symbol)

@@ -88,6 +88,16 @@ internal static class DesignerLiveFields
         /// <summary>Number of sessions recorded, including the one in progress.</summary>
         public int SessionCount => _sessionCloses.Count;
 
+        /// <summary>
+        /// Trading date of the newest <em>completed</em> session, or null when none has closed.
+        /// </summary>
+        /// <remarks>
+        /// The most recent entry is the session currently in progress: its close moves with every
+        /// event until the date rolls. Session metrics read only completed sessions, so this is the
+        /// date those metrics describe, and it is what cross-sectional plans align on.
+        /// </remarks>
+        public DateOnly? LastCompletedSessionDate { get; private set; }
+
         /// <summary>Latest observed price from any event kind.</summary>
         public decimal LastPrice { get; private set; }
 
@@ -111,6 +121,13 @@ internal static class DesignerLiveFields
                 return;
             }
 
+            // The session that was in progress has just closed; its final recorded price is its
+            // close, and only now is it usable by a session metric.
+            if (_currentSessionDate is { } completed && _sessionCloses.Count > 0)
+            {
+                LastCompletedSessionDate = completed;
+            }
+
             _currentSessionDate = sessionDate;
             _sessionCloses.Enqueue(price);
             while (_sessionCloses.Count > MaxWindow)
@@ -120,35 +137,71 @@ internal static class DesignerLiveFields
         }
 
         /// <summary>
-        /// Resolves every field the plan reads for one symbol, or returns <c>false</c> with the
-        /// field that is still cold. A cold window means "no decision yet" — the caller must treat
-        /// it as neither an entry nor an exit signal.
+        /// A field view that resolves on access rather than up front.
         /// </summary>
-        public bool TryResolve(
-            IReadOnlySet<string> requiredFields,
-            IBacktestContext ctx,
-            string symbol,
-            out IReadOnlyDictionary<string, decimal> values,
-            out string? coldField)
-        {
-            var resolved = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-            coldField = null;
+        /// <remarks>
+        /// Resolving every field the plan mentions before evaluating would defeat the evaluator's
+        /// short-circuiting: <c>PORTFOLIO_WEIGHT == 0 || MOMENTUM_63D &gt; 0</c> answers true for a
+        /// flat symbol without reading momentum, but eager resolution would reject the symbol for
+        /// sixty-four sessions because momentum happens to be cold. A field is only cold if the
+        /// expression actually asks for it.
+        /// </remarks>
+        public IReadOnlyDictionary<string, decimal> CreateFieldView(IBacktestContext ctx, string symbol) =>
+            new LazyFieldView(this, ctx, symbol);
 
-            foreach (var field in requiredFields)
+        private sealed class LazyFieldView(SymbolWindow window, IBacktestContext ctx, string symbol)
+            : IReadOnlyDictionary<string, decimal>
+        {
+            private readonly Dictionary<string, decimal> _cache = new(StringComparer.OrdinalIgnoreCase);
+
+            public IEnumerable<string> Keys => Supported;
+
+            public IEnumerable<decimal> Values => Supported.Select(field => this[field]);
+
+            public int Count => Supported.Count;
+
+            public decimal this[string key] => TryGetValue(key, out var value)
+                ? value
+                : throw new KeyNotFoundException(key);
+
+            public bool ContainsKey(string key) => TryGetValue(key, out _);
+
+            public bool TryGetValue(string key, out decimal value)
             {
-                if (!TryResolveField(field, ctx, symbol, out var value))
+                if (_cache.TryGetValue(key, out value))
                 {
-                    coldField = field;
-                    values = resolved;
+                    return true;
+                }
+
+                if (!window.TryResolveField(key, ctx, symbol, out value))
+                {
                     return false;
                 }
 
-                resolved[field] = value;
+                _cache[key] = value;
+                return true;
             }
 
-            values = resolved;
-            return true;
+            public IEnumerator<KeyValuePair<string, decimal>> GetEnumerator()
+            {
+                foreach (var field in Supported)
+                {
+                    if (TryGetValue(field, out var value))
+                    {
+                        yield return new KeyValuePair<string, decimal>(field, value);
+                    }
+                }
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
+
+        /// <summary>
+        /// Closes of completed sessions only — the in-progress session is excluded because its
+        /// price is still moving, and comparing an opening tick against other symbols' completed
+        /// closes would mix timeframes inside one cross-section.
+        /// </summary>
+        private IEnumerable<decimal> CompletedCloses() => _sessionCloses.Take(_sessionCloses.Count - 1);
 
         private void ReplaceLastClose(decimal close)
         {
@@ -186,12 +239,13 @@ internal static class DesignerLiveFields
         private bool TryMomentum(out decimal value)
         {
             value = 0m;
-            if (_sessionCloses.Count < 64)
+            // 65 recorded sessions gives 64 completed ones once the in-progress session is dropped.
+            if (_sessionCloses.Count < 65)
             {
                 return false;
             }
 
-            var window = _sessionCloses.TakeLast(64).ToArray();
+            var window = CompletedCloses().TakeLast(64).ToArray();
             var baseline = window[0];
             if (baseline <= 0m)
             {
@@ -205,12 +259,12 @@ internal static class DesignerLiveFields
         private bool TryVolatility(out decimal value)
         {
             value = 0m;
-            if (_sessionCloses.Count < 21)
+            if (_sessionCloses.Count < 22)
             {
                 return false;
             }
 
-            var window = _sessionCloses.TakeLast(21).ToArray();
+            var window = CompletedCloses().TakeLast(21).ToArray();
             var returns = new double[window.Length - 1];
             for (var i = 1; i < window.Length; i++)
             {

@@ -265,9 +265,10 @@ internal sealed class DesignerStrategyPlan
 
         // Concurrent cells compose branch gates rather than adding their own condition, so they are
         // resolved after every branch cell has been compiled.
+        var claimedBranches = new HashSet<string>(StringComparer.Ordinal);
         foreach (var cell in cells.Where(static cell => string.Equals(cell.Kind, "concurrent", StringComparison.OrdinalIgnoreCase)))
         {
-            if (!TryCompileConcurrent(document, cell, branchGates, entryGates, out failureReason))
+            if (!TryCompileConcurrent(document, cell, branchGates, entryGates, claimedBranches, out failureReason))
             {
                 return false;
             }
@@ -515,6 +516,19 @@ internal sealed class DesignerStrategyPlan
                 return false;
             }
 
+            // The live path trades document.Universe and never widens it, so a minimum above that
+            // count can never be met: the run would activate and then produce an empty target set
+            // on every pass, looking live while being unable to trade.
+            var universeSize = document.Universe?.Count ?? 0;
+            if (minSize > universeSize)
+            {
+                failureReason =
+                    $"Universe-builder cell '{cell.Label}' ({cell.CellId}) requires at least {minSize} qualifying " +
+                    $"names, but the document declares only {universeSize} symbol(s) and the live engine does not " +
+                    "add more. The run could never trade.";
+                return false;
+            }
+
             minimumUniverseSize = minimumUniverseSize is { } existing ? Math.Max(existing, minSize) : minSize;
         }
 
@@ -538,6 +552,7 @@ internal sealed class DesignerStrategyPlan
         StrategyDesignCell cell,
         IReadOnlyDictionary<string, DesignerGate> branchGates,
         List<DesignerGate> entryGates,
+        HashSet<string> claimedBranches,
         out string? failureReason)
     {
         failureReason = null;
@@ -567,6 +582,22 @@ internal sealed class DesignerStrategyPlan
                 $"Concurrent cell '{cell.Label}' ({cell.CellId}) names no compiled branches.";
             return false;
         }
+
+        // An any-pass cell replaces its branches' individual gates with their disjunction. If a
+        // second concurrent cell names any of the same branches, those gates are already gone and
+        // it would silently inherit the first cell's semantics -- an all-pass over A and B reduced
+        // to "A or B". Each branch therefore belongs to exactly one concurrent cell.
+        var overlapping = branchIds.Where(claimedBranches.Contains).ToArray();
+        if (overlapping.Length > 0)
+        {
+            failureReason =
+                $"Concurrent cell '{cell.Label}' ({cell.CellId}) in designer document '{document.DocumentId}' " +
+                $"shares branch cell(s) {string.Join(", ", overlapping)} with another concurrent cell. Each branch " +
+                "can belong to only one concurrent gate; give each gate its own branch cells.";
+            return false;
+        }
+
+        claimedBranches.UnionWith(branchIds);
 
         // all-pass is the conjunction the branches already impose individually, so the branch gates
         // stay as they are. any-pass and first-wins relax them: a symbol passing any one branch is

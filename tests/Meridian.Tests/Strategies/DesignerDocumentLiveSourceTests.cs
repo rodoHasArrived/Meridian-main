@@ -587,6 +587,83 @@ public sealed class DesignerDocumentLiveSourceTests
     }
 
     [Fact]
+    public void Gate_fields_resolve_lazily_so_short_circuiting_still_works()
+    {
+        // A flat symbol satisfies the left branch, so momentum is never read. Resolving every
+        // mentioned field up front would strand this document for sixty-four sessions.
+        var strategy = Activate(DocumentWithGate("PORTFOLIO_WEIGHT == 0 || MOMENTUM_63D > 0"));
+        var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 50m);
+
+        strategy.Initialize(ctx);
+        strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: 5), ctx);
+
+        ctx.Orders.Should().ContainSingle().Which.Should().Be(("SPY", 10L));
+    }
+
+    [Fact]
+    public void A_gate_evaluation_fault_does_not_liquidate_a_holding()
+    {
+        // PRICE / (PRICE - 50) divides by zero exactly at 50. That is an arithmetic accident, not
+        // a signal that the entry condition stopped holding.
+        var strategy = Activate(DocumentWithGate("PRICE / (PRICE - 50) > 1"));
+        var ctx = new RecordingContext(
+            ["SPY"], portfolioValue: 100_000m, lastPrice: 60m, positions: [("SPY", 10L)]);
+
+        strategy.Initialize(ctx);
+        strategy.OnOrderFill(Fill("SPY", 10L), ctx);
+        strategy.OnBar(Bar("SPY", close: 60m, volume: 1L, day: 5), ctx);
+        ctx.Orders.Should().BeEmpty("the position is already held and the gate still passes");
+
+        strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: 6), ctx);
+
+        ctx.Orders.Should().BeEmpty("a division by zero is indeterminate, not an exit signal");
+    }
+
+    [Fact]
+    public void TryCreate_refuses_concurrent_cells_that_share_branches()
+    {
+        // An any-pass cell replaces its branches' gates with their disjunction; a second cell over
+        // the same branches would silently inherit those semantics.
+        var document = TradableDocument();
+        document = document with
+        {
+            Cells =
+            [
+                new StrategyDesignCell("branch-a", "A", "formula", "filter", "PRICE > 20", ["PRICE"]),
+                new StrategyDesignCell("branch-b", "B", "formula", "filter", "PRICE < 500", ["PRICE"]),
+                new StrategyDesignCell("gate-any", "Any", "concurrent", "concurrent", "any", [],
+                    new Dictionary<string, string> { ["branchIds"] = "branch-a,branch-b", ["semantics"] = "any-pass" }),
+                new StrategyDesignCell("gate-all", "All", "concurrent", "concurrent", "all", [],
+                    new Dictionary<string, string> { ["branchIds"] = "branch-a,branch-b", ["semantics"] = "all-pass" }),
+                .. document.Cells.Where(cell => cell.CellId != "liquid-universe")
+            ]
+        };
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("shares branch cell(s)").And.Contain("only one concurrent gate");
+    }
+
+    [Fact]
+    public void TryCreate_refuses_a_minimum_the_universe_can_never_reach()
+    {
+        var document = UniverseBuilderDocument(
+            new Dictionary<string, string>
+            {
+                ["assetClass"] = "Equity",
+                ["includeRules"] = "PRICE > 20",
+                ["minSize"] = "20"
+            },
+            ["AAA", "BBB"]);
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("could never trade");
+    }
+
+    [Fact]
     public void Activated_document_respects_a_universe_builder_max_size()
     {
         var document = UniverseBuilderDocument(
