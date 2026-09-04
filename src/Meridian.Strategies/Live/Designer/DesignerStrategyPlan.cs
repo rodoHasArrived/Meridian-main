@@ -162,6 +162,25 @@ internal sealed class DesignerStrategyPlan
             return false;
         }
 
+        // The live session clock resolves trading dates in US exchange-local terms, which is the
+        // only session map this path has. A symbol listed elsewhere trades across midnight Eastern
+        // inside one local session, so that clock would split it and compute momentum and
+        // volatility from closes that never happened. Nothing in the document states a venue, so
+        // the universe is restricted to the shape a plain US listing takes: one to five letters.
+        // A ticker carrying a venue or class suffix ("VOD.L", "7203.T", "BRK.B") is refused rather
+        // than assumed domestic -- the suffix that marks a foreign listing is the same shape as
+        // the one that marks a US share class, and this path cannot tell them apart.
+        if (Array.Find(universe, static symbol => !IsPlainUsListing(symbol)) is { } foreign)
+        {
+            failureReason =
+                $"Designer document '{document.DocumentId}' declares universe symbol '{foreign}'. Live session " +
+                "boundaries are resolved on the US exchange calendar, and this symbol is not in the plain " +
+                "one-to-five-letter form a US listing takes, so its trading sessions cannot be determined. " +
+                "Trading a venue with its own session calendar needs a per-venue session map the live path does " +
+                "not have.";
+            return false;
+        }
+
         // Transitions are validated and persisted as executable structure, but this plan composes
         // cells conjunctively and has no notion of ordering, branching, or bounded iteration. A
         // plain "next" edge expresses an ordering that conjunction already subsumes; anything else
@@ -427,6 +446,18 @@ internal sealed class DesignerStrategyPlan
     /// A risk cell must be executable: dropping one because its source is prose would activate a
     /// run whose stated risk limit never applies.
     /// </remarks>
+    /// <summary>
+    /// True for the plain one-to-five-letter shape a US equity or ETF ticker takes.
+    /// </summary>
+    /// <remarks>
+    /// A shape check, not a venue lookup: it is the conservative side of a question this path
+    /// cannot answer, and it is here because <see cref="DesignerSessionClock"/> can only date
+    /// sessions on one exchange calendar.
+    /// </remarks>
+    private static bool IsPlainUsListing(string symbol) =>
+        symbol.Length is > 0 and <= 5
+        && symbol.All(static character => char.IsAsciiLetter(character));
+
     private static bool TryCompileRiskGuard(
         StrategyDesignDocument document,
         StrategyDesignCell cell,

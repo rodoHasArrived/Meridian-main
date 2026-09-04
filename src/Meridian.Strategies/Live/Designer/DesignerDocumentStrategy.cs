@@ -702,13 +702,18 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
         // The unrounded size is what matters here: a 0.9-share holding belonging to someone else
         // rounds to zero in Position.Quantity and would look like no position at all.
         var held = ctx.Positions.TryGetValue(symbol, out var position) ? position.ExactQuantity : 0m;
-        if (held == 0m)
+        _ownedQuantities.TryGetValue(symbol, out var owned);
+
+        // A flat book is only this run's business when the run is flat too. If it believes it holds
+        // +10 while another strategy or a manual trade holds -10, the shared portfolio nets to zero
+        // -- and reading that as "nothing here" would let a failing gate sell 10 against an already
+        // flat book, opening a short that belongs to the other owner.
+        if (held == 0m && owned == 0L)
         {
             return true;
         }
 
-        _ownedQuantities.TryGetValue(symbol, out var owned);
-        if (owned == held)
+        if (owned == held && held != 0m)
         {
             return true;
         }
@@ -717,8 +722,10 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
         {
             _logger?.LogWarning(
                 "Designer document {DocumentId} is not trading {Symbol}: the portfolio holds {Held} share(s) but "
-                + "this run accounts for {Owned}. The remainder belongs to another strategy or to a session before "
-                + "a restart, and entering or exiting against it would act on inventory this run does not own",
+                + "this run accounts for {Owned}. The difference belongs to another strategy or to a session before "
+                + "a restart, and entering or exiting against it would act on inventory this run does not own. A "
+                + "flat portfolio against a non-zero owned quantity is the same case: external flow has offset this "
+                + "run's position rather than closed it",
                 _plan.DocumentId,
                 symbol,
                 held,

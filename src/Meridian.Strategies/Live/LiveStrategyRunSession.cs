@@ -375,6 +375,13 @@ internal sealed class LiveStrategyRunSession
 
         RetireDeclinedEscalations();
 
+        // Orders cancelled while still queued never reached the gateway, so this is the only point
+        // at which a strategy holding the symbol can learn they are dead.
+        foreach (var locallyCancelledOrderId in _context.DrainLocallyCancelledOrders())
+        {
+            NotifyOrderTerminated(locallyCancelledOrderId, LiveOrderOutcome.Cancelled);
+        }
+
         foreach (var cancelledOrderId in _context.DrainPendingCancellations())
         {
             if (!_clientIdsByOrderId.TryGetValue(cancelledOrderId, out var clientOrderId))

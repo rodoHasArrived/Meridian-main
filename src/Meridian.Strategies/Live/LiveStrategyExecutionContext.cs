@@ -20,6 +20,7 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
     private readonly Lock _orderLock = new();
     private readonly List<Order> _pendingOrders = [];
     private readonly List<Guid> _pendingCancellations = [];
+    private readonly List<Guid> _locallyCancelledOrders = [];
     private readonly string _defaultAccountId;
     private readonly Meridian.Ledger.Ledger _sessionLedger = new();
 
@@ -210,6 +211,12 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
             if (queuedIndex >= 0)
             {
                 _pendingOrders.RemoveAt(queuedIndex);
+
+                // This cancellation is already terminal and produces no execution report, so a
+                // strategy tracking the order would never hear about it. Recorded here so the run
+                // session can tell it, the same way it reports outcomes that do come back from the
+                // gateway.
+                _locallyCancelledOrders.Add(orderId);
                 return;
             }
 
@@ -245,6 +252,25 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
 
             var drained = _pendingOrders.ToArray();
             _pendingOrders.Clear();
+            return drained;
+        }
+    }
+
+    /// <summary>
+    /// Returns and clears the orders cancelled before they were ever submitted. These are terminal
+    /// on the spot: no gateway ever saw them, so no execution report will report their end.
+    /// </summary>
+    internal IReadOnlyList<Guid> DrainLocallyCancelledOrders()
+    {
+        lock (_orderLock)
+        {
+            if (_locallyCancelledOrders.Count == 0)
+            {
+                return [];
+            }
+
+            var drained = _locallyCancelledOrders.ToArray();
+            _locallyCancelledOrders.Clear();
             return drained;
         }
     }

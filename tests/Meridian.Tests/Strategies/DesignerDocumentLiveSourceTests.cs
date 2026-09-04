@@ -1150,6 +1150,39 @@ public sealed class DesignerDocumentLiveSourceTests
         ctx.Orders.Should().ContainSingle("a session-window plan decides on the roll, not on the day-end callback");
     }
 
+    [Theory]
+    [InlineData("VOD.L")]
+    [InlineData("7203")]
+    [InlineData("BRK.B")]
+    [InlineData("TOOLONG")]
+    public void TryCreate_refuses_a_universe_symbol_that_is_not_a_plain_us_listing(string symbol)
+    {
+        // Session boundaries are resolved on one exchange calendar. A listing on another venue
+        // trades across midnight Eastern inside a single local session, and a class suffix is the
+        // same shape as a venue suffix, so neither can be admitted without a per-venue session map.
+        var document = TradableDocument() with { Universe = [symbol] };
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain(symbol).And.Contain("US exchange calendar");
+    }
+
+    [Fact]
+    public void A_position_this_run_owns_is_not_exited_once_external_flow_offsets_it()
+    {
+        // The run holds +10 and someone else holds -10, so the shared book is flat. Reading that as
+        // "nothing here" and selling 10 would open a short belonging to the other owner.
+        var strategy = Activate(DocumentWithGate("PRICE > 100"));
+        var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 50m);
+
+        strategy.Initialize(ctx);
+        strategy.OnOrderFill(Fill("SPY", 10L), ctx);
+        strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: 5), ctx);
+
+        ctx.Orders.Should().BeEmpty("a flat portfolio against a non-zero owned quantity is offset, not closed");
+    }
+
     [Fact]
     public void Designer_document_reaches_live_execution_through_the_catalog()
     {
