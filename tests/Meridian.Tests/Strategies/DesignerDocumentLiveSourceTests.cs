@@ -1218,6 +1218,78 @@ public sealed class DesignerDocumentLiveSourceTests
     }
 
     [Fact]
+    public void TryCreate_refuses_a_universe_builder_cell_with_rank_purpose()
+    {
+        // Its own kind dispatch would compile the include rules and size bounds and drop the rank
+        // source, so a capped selection would take the first declared name rather than the highest
+        // scoring one -- a different strategy than the document describes.
+        var document = TradableDocument();
+        document = document with
+        {
+            Cells =
+            [
+                .. document.Cells,
+                new StrategyDesignCell(
+                    "universe-rank",
+                    "Universe rank",
+                    "universe-builder",
+                    "rank",
+                    "build the universe",
+                    ["PRICE"],
+                    new Dictionary<string, string>
+                    {
+                        ["assetClass"] = "Equity",
+                        ["includeRules"] = "PRICE > 20",
+                        ["maxSize"] = "1"
+                    })
+            ]
+        };
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("universe-builder").And.Contain("purpose 'rank'");
+    }
+
+    [Fact]
+    public void Catalog_refuses_a_run_carrying_more_than_one_source_selector()
+    {
+        // Sources are consulted in registration order, so a run naming both would execute whichever
+        // was registered first and silently ignore the other's revision, gates, and risk guards.
+        var catalog = LiveStrategyCatalog.CreateDefault();
+        catalog.RegisterFallback(
+            "pluginAssembly",
+            (LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
+            {
+                strategy = new BuyAndHoldLiveStrategy(context.StrategyId);
+                failureReason = null;
+                return true;
+            });
+        catalog.RegisterFallback(
+            DesignerDocumentLiveSource.DesignerDocumentParameterKey,
+            (LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
+            {
+                strategy = null;
+                failureReason = null;
+                return false;
+            });
+
+        var resolved = catalog.TryCreate(
+            DocumentId,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["pluginAssembly"] = "strategy.dll",
+                [DesignerDocumentLiveSource.DesignerDocumentParameterKey] = DocumentId
+            },
+            out var strategy,
+            out var reason);
+
+        resolved.Should().BeFalse("a plugin source registered first would otherwise win outright");
+        strategy.Should().BeNull();
+        reason.Should().Contain("more than one source selector");
+    }
+
+    [Fact]
     public void TryCreate_refuses_a_run_whose_symbols_differ_from_the_approved_universe()
     {
         // The revision hash pins what the document says; the symbols parameter decides what the

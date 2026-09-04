@@ -135,8 +135,25 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
         ArgumentException.ThrowIfNullOrWhiteSpace(strategyId);
         var effectiveParameters = parameters ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        var runSelector = _selectorParameterKeys.FirstOrDefault(key =>
-            effectiveParameters.TryGetValue(key, out var selected) && !string.IsNullOrWhiteSpace(selected));
+        // More than one selector is not a preference to resolve by registration order: the sources
+        // are consulted in the order the host registered them, so a run naming both a plugin
+        // assembly and a designer document would execute whichever source happens to be first and
+        // silently ignore the other's revision, gates, sizing, and risk guards.
+        var runSelectors = _selectorParameterKeys
+            .Where(key => effectiveParameters.TryGetValue(key, out var selected) && !string.IsNullOrWhiteSpace(selected))
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (runSelectors.Length > 1)
+        {
+            strategy = null;
+            failureReason =
+                $"Run '{strategyId}' names more than one source selector ({string.Join(", ", runSelectors)}). " +
+                "Each selects a different implementation, and only the source registered first would run. " +
+                "Leave exactly one.";
+            return false;
+        }
+
+        var runSelector = runSelectors.Length == 1 ? runSelectors[0] : null;
 
         var factoryId = strategyId;
         var aliased = false;

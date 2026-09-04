@@ -38,6 +38,10 @@ internal sealed class LiveStrategyRunSession
     private readonly Dictionary<string, Order> _ordersByClientId = new(StringComparer.Ordinal);
     private readonly Dictionary<Guid, string> _clientIdsByOrderId = new();
     private readonly HashSet<string> _parkedClientOrderIds = new(StringComparer.Ordinal);
+    private readonly Dictionary<Guid, int> _cancellationAttempts = [];
+
+    /// <summary>How many times a cancellation that did not take is retried before giving up.</summary>
+    private const int MaxCancellationAttempts = 3;
     private readonly LiveRunMetricsTracker _metrics;
     private readonly string _clientOrderIdPrefix;
 
@@ -389,28 +393,48 @@ internal sealed class LiveStrategyRunSession
                 continue;
             }
 
+            // Whether this cancellation will produce an execution report is decided before it is
+            // attempted: an order still parked for governed approval has no broker order to
+            // cancel, so the OMS withdraws the escalation and completes it locally and silently.
+            var wasParked = _parkedClientOrderIds.Contains(clientOrderId);
+
             try
             {
                 var cancellation = await _orderManager.CancelOrderAsync(clientOrderId, ct).ConfigureAwait(false);
 
-                // A cancellation the OMS completes locally publishes no execution report: an order
-                // still parked for governed approval has no broker order to cancel, so the
-                // escalation is simply withdrawn. Without this the terminal outcome would never
-                // reach a strategy that blocks the symbol while its order works.
                 if (cancellation.Success
                     && cancellation.OrderState?.Status is ExecutionSdk.OrderStatus.Cancelled)
                 {
-                    NotifyOrderTerminated(cancelledOrderId, LiveOrderOutcome.Cancelled);
+                    if (wasParked)
+                    {
+                        // The only case with no report to follow, so this is the one place the
+                        // strategy can learn the order is dead and the only place its mappings can
+                        // be retired without losing anything.
+                        NotifyOrderTerminated(cancelledOrderId, LiveOrderOutcome.Cancelled);
+                        ForgetOrder(clientOrderId, cancelledOrderId);
+                    }
 
-                    // Terminal and report-free, so nothing later retires this order's mappings.
-                    // Leaving them would grow the tracked set for the life of the run.
-                    ForgetOrder(clientOrderId, cancelledOrderId);
+                    // A gateway cancellation is reported. Its report may also carry a fill that
+                    // raced the cancel, and it is queued rather than applied here, so retiring the
+                    // mappings now would leave HandleExecutionReport unable to attribute that fill
+                    // -- the run's metrics and the strategy's owned quantity would then disagree
+                    // with the portfolio. The report retires them instead.
+                }
+                else if (!cancellation.Success)
+                {
+                    // The order is still working and nothing has been withdrawn. The strategy has
+                    // already marked it cancel-requested, so its own sweeps will skip it from here
+                    // on: without another attempt an unwanted order would stay live until it
+                    // filled. Requeued for a bounded number of passes rather than indefinitely,
+                    // so a permanently unreachable gateway cannot spin.
+                    RequeueCancellation(cancelledOrderId, clientOrderId, cancellation.ErrorMessage);
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogWarning(ex,
                     "Run {RunId} could not cancel order {ClientOrderId}.", _run.RunId, clientOrderId);
+                RequeueCancellation(cancelledOrderId, clientOrderId, ex.Message);
             }
         }
 
@@ -567,6 +591,31 @@ internal sealed class LiveStrategyRunSession
     }
 
     /// <summary>
+    /// Puts a cancellation that did not take back on the queue, up to
+    /// <see cref="MaxCancellationAttempts"/> times.
+    /// </summary>
+    private void RequeueCancellation(Guid orderId, string clientOrderId, string? reason)
+    {
+        _cancellationAttempts.TryGetValue(orderId, out var attempts);
+        attempts++;
+        if (attempts >= MaxCancellationAttempts)
+        {
+            _cancellationAttempts.Remove(orderId);
+            _logger.LogWarning(
+                "Run {RunId} gave up cancelling order {ClientOrderId} after {Attempts} attempts: {Reason}. The "
+                + "order may still be working at the broker.",
+                _run.RunId, clientOrderId, attempts, reason ?? "no reason given");
+            return;
+        }
+
+        _cancellationAttempts[orderId] = attempts;
+        _logger.LogInformation(
+            "Run {RunId} could not cancel order {ClientOrderId} ({Reason}); retrying on the next routing pass.",
+            _run.RunId, clientOrderId, reason ?? "no reason given");
+        _context.CancelOrder(orderId);
+    }
+
+    /// <summary>
     /// Tells a strategy that tracks its own working orders that one of them ended without a
     /// completing fill. Strategies that do not implement the seam are unaffected.
     /// </summary>
@@ -624,6 +673,7 @@ internal sealed class LiveStrategyRunSession
         _ordersByClientId.Remove(clientOrderId);
         _clientIdsByOrderId.Remove(orderId);
         _parkedClientOrderIds.Remove(clientOrderId);
+        _cancellationAttempts.Remove(orderId);
     }
 
     /// <summary>
