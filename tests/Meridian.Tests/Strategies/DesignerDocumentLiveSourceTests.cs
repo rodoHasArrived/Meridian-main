@@ -244,6 +244,58 @@ public sealed class DesignerDocumentLiveSourceTests
     }
 
     [Fact]
+    public void TryCreate_refuses_a_transition_carrying_an_evaluable_condition()
+    {
+        // Nothing evaluates transition conditions, so an edge conditioned on a real expression
+        // would let its downstream cells run unconditionally. Prose labels stay allowed.
+        var document = TradableDocument();
+        document = document with
+        {
+            Transitions =
+            [
+                new StrategyDesignTransition("t1", "liquid-universe", "buy-equities", "next", "PRICE > 100")
+            ]
+        };
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("conditioned on").And.Contain("never be applied");
+    }
+
+    [Fact]
+    public void TryCreate_allows_a_descriptive_transition_label()
+    {
+        var document = TradableDocument();
+        document = document with
+        {
+            Transitions =
+            [
+                new StrategyDesignTransition("t1", "liquid-universe", "buy-equities", "next", "universe ready")
+            ]
+        };
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeTrue(failureReason);
+    }
+
+    [Fact]
+    public void TryCreate_contains_a_malformed_document_instead_of_throwing()
+    {
+        // Duplicate cell ids make the shared design service throw rather than report. Letting that
+        // escape would abort the engine's startup resume sweep and strand every other retained run.
+        var document = TradableDocument();
+        document = document with { Cells = [.. document.Cells, document.Cells[0]] };
+
+        var handled = CreateSource(document).TryCreate(Context(document), out var strategy, out var failureReason);
+
+        handled.Should().BeFalse();
+        strategy.Should().BeNull();
+        failureReason.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
     public void TryCreate_refuses_a_non_equity_universe_builder()
     {
         var document = UniverseBuilderDocument(

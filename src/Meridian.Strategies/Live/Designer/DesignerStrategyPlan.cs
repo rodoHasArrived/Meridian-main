@@ -52,22 +52,6 @@ internal sealed class DesignerStrategyPlan
     /// <summary>Largest accepted share count / notional. Keeps sizing inside <see cref="long"/>.</summary>
     private const decimal MaxSizingValue = 1_000_000_000m;
 
-    /// <summary>
-    /// Document ids that collide with a built-in catalog factory.
-    /// </summary>
-    /// <remarks>
-    /// <c>LiveStrategyCatalog.TryCreate</c> resolves an exact factory id before consulting any
-    /// fallback, so a designer document saved under one of these ids would never reach this source:
-    /// the built-in strategy would trade instead, bypassing the document's approved revision, gates,
-    /// sizing, and risk guards entirely. Refusing the id is the only way this seam can prevent that.
-    /// </remarks>
-    private static readonly IReadOnlySet<string> ReservedDocumentIds =
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            Strategies.BuyAndHoldLiveStrategy.CatalogId,
-            Strategies.MovingAverageCrossoverLiveStrategy.CatalogId
-        };
-
     private DesignerStrategyPlan(
         string documentId,
         string name,
@@ -144,13 +128,14 @@ internal sealed class DesignerStrategyPlan
             return false;
         }
 
-        if (ReservedDocumentIds.Contains(document.DocumentId))
+        if (DesignerDocumentRevision.IsReservedDocumentId(document.DocumentId))
         {
             failureReason =
                 $"Designer document id '{document.DocumentId}' collides with a built-in live strategy. The live " +
                 "catalog resolves that id to the built-in factory before any designer document is consulted, so a " +
                 "run under this id would trade the built-in strategy while bypassing this document's approved " +
-                "revision, gates, sizing, and risk guards. Rename the document.";
+                "revision, gates, sizing, and risk guards. Rename the document. (Runs are refused this id at " +
+                "creation; this is the second line of defence.)";
             return false;
         }
 
@@ -185,6 +170,26 @@ internal sealed class DesignerStrategyPlan
                 failureReason =
                     $"Designer document '{document.DocumentId}' has transition '{transition.TransitionId}' with a " +
                     "bounded-iteration guard. The live engine has no iteration semantics to honour it.";
+                return false;
+            }
+
+            // A "next" edge is accepted because ordering is subsumed by conjunction -- but only when
+            // its condition is a label. Template edges read "universe ready" or "rank complete",
+            // which are descriptions. A condition that parses as an executable gate is a different
+            // thing: it looks like it constrains the edge, nothing evaluates it, and the downstream
+            // cells would run unconditionally. Refuse the ones that could have been executed.
+            if (!string.IsNullOrWhiteSpace(transition.Condition)
+                && DesignerExpression.TryParse(
+                    transition.Condition,
+                    DesignerLiveFields.Supported,
+                    DesignerResultKind.Boolean,
+                    out _,
+                    out _))
+            {
+                failureReason =
+                    $"Designer document '{document.DocumentId}' has transition '{transition.TransitionId}' " +
+                    $"conditioned on \"{transition.Condition}\". The live engine evaluates cells, not transition " +
+                    "conditions, so that condition would never be applied. Move it onto a filter or risk cell.";
                 return false;
             }
         }

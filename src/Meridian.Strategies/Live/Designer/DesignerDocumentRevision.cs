@@ -19,6 +19,27 @@ public static class DesignerDocumentRevision
     /// <summary>Run parameter carrying the approved document's content hash.</summary>
     public const string ParameterKey = "designerDocumentHash";
 
+    private static readonly IReadOnlySet<string> ReservedIds =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            Strategies.BuyAndHoldLiveStrategy.CatalogId,
+            Strategies.MovingAverageCrossoverLiveStrategy.CatalogId
+        };
+
+    /// <summary>
+    /// True when a document id collides with a built-in live strategy factory.
+    /// </summary>
+    /// <remarks>
+    /// <c>LiveStrategyCatalog.TryCreate</c> resolves an exact factory id before consulting any
+    /// fallback, so a run recorded under one of these ids never reaches the designer source at all:
+    /// the built-in strategy trades instead, bypassing the approved revision, gates, sizing, and
+    /// risk guards. The collision therefore has to be refused where the run is *created* — checking
+    /// it inside the fallback compiler cannot help, because that compiler is exactly what gets
+    /// skipped.
+    /// </remarks>
+    public static bool IsReservedDocumentId(string? documentId) =>
+        !string.IsNullOrWhiteSpace(documentId) && ReservedIds.Contains(documentId.Trim());
+
     /// <summary>
     /// Canonical hash of everything in a document that changes what it trades.
     /// </summary>

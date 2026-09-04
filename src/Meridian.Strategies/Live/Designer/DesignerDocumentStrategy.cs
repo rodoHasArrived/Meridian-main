@@ -45,6 +45,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
     private readonly HashSet<string> _reportedUnattributed = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _planUniverse;
     private readonly bool _needsSessionFields;
+    private readonly bool _readsSpotFields;
 
     public DesignerDocumentStrategy(DesignerStrategyPlan plan, ILogger? logger = null)
     {
@@ -58,6 +59,13 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         _needsSessionFields = plan.RequiredFields.Any(static field =>
             field.Equals(DesignerLiveFields.Momentum63D, StringComparison.OrdinalIgnoreCase)
             || field.Equals(DesignerLiveFields.Volatility20D, StringComparison.OrdinalIgnoreCase));
+
+        // A plan that also reads a spot field can change its answer between sessions, so coalescing
+        // to the session boundary would hold a position open while its PRICE gate is already
+        // failing. Only a purely session-window plan can safely wait for the session to roll.
+        _readsSpotFields = plan.RequiredFields.Any(static field =>
+            field.Equals(DesignerLiveFields.Price, StringComparison.OrdinalIgnoreCase)
+            || field.Equals(DesignerLiveFields.PortfolioWeight, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <inheritdoc/>
@@ -174,9 +182,9 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         var sessionsBefore = window!.SessionCount;
         window.Observe(price, sessionDate);
 
-        // A session-window plan can only change its mind when the session rolls; a spot-only plan
-        // can change on any event.
-        if (!_needsSessionFields || window.SessionCount != sessionsBefore)
+        // Re-decide when the session rolls, and on every event for any plan whose answer depends on
+        // a spot field. Only a plan reading session windows alone can wait for the boundary.
+        if (!_needsSessionFields || _readsSpotFields || window.SessionCount != sessionsBefore)
         {
             Rebalance(ctx);
         }
@@ -531,9 +539,25 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         return false;
     }
 
-    private decimal ResolvePrice(string symbol, IBacktestContext ctx) =>
-        ctx.GetLastPrice(symbol)
-        ?? (_windows.TryGetValue(symbol, out var window) ? window.LastPrice : 0m);
+    /// <summary>
+    /// Price used for sizing and for the projected-weight risk check.
+    /// </summary>
+    /// <remarks>
+    /// The window's own last observation is preferred over
+    /// <see cref="IBacktestContext.GetLastPrice"/>: the live context returns the cached trade
+    /// whenever one exists and does not compare it against a newer quote, so a quote-driven entry
+    /// could gate at the current midpoint and then size off a stale trade price. The window holds
+    /// whatever this strategy most recently saw, which is the price the gates just used.
+    /// </remarks>
+    private decimal ResolvePrice(string symbol, IBacktestContext ctx)
+    {
+        if (_windows.TryGetValue(symbol, out var window) && window.LastPrice > 0m)
+        {
+            return window.LastPrice;
+        }
+
+        return ctx.GetLastPrice(symbol) ?? 0m;
+    }
 
     private long ResolveQuantity(string symbol, IBacktestContext ctx)
     {

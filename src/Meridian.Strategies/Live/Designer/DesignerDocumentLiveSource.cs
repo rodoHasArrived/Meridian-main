@@ -93,29 +93,49 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             return false;
         }
 
-        // Normalizing first matches what the designer endpoints persist and validate, so a run
-        // cannot activate against a shape the designer surfaces would have rejected.
-        var normalized = _designService.Normalize(document);
-
-        if (!TryVerifyRevision(context, documentId, normalized, out failureReason))
+        // Normalization, validation, and compilation are wrapped together because a malformed
+        // stored document can make the shared design service throw rather than report -- duplicate
+        // cell ids reach its ToDictionary, for one. An escape here would propagate out of
+        // TryLaunchAsync and abort the whole startup resume sweep, so one unreadable design would
+        // stop every other retained paper and live run from resuming. It becomes this run's
+        // deferral reason instead.
+        DesignerStrategyPlan? plan;
+        try
         {
-            _logger?.LogWarning(
-                "Designer document {DocumentId} failed revision verification for run {StrategyId}: {Reason}",
-                documentId,
-                context.StrategyId,
-                failureReason);
-            return false;
+            var normalized = _designService.Normalize(document);
+
+            if (!TryVerifyRevision(context, documentId, normalized, out failureReason))
+            {
+                _logger?.LogWarning(
+                    "Designer document {DocumentId} failed revision verification for run {StrategyId}: {Reason}",
+                    documentId,
+                    context.StrategyId,
+                    failureReason);
+                return false;
+            }
+
+            var validation = _designService.Validate(normalized);
+
+            if (!DesignerStrategyPlan.TryCompile(normalized, validation, out plan, out failureReason))
+            {
+                _logger?.LogWarning(
+                    "Designer document {DocumentId} cannot be activated for run {StrategyId}: {Reason}",
+                    documentId,
+                    context.StrategyId,
+                    failureReason);
+                return false;
+            }
         }
-
-        var validation = _designService.Validate(normalized);
-
-        if (!DesignerStrategyPlan.TryCompile(normalized, validation, out var plan, out failureReason))
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            failureReason =
+                $"Designer document '{documentId}' could not be compiled: {ex.Message}. The stored design is " +
+                "malformed; re-save it from the Strategy Builder before promoting a run against it.";
             _logger?.LogWarning(
-                "Designer document {DocumentId} cannot be activated for run {StrategyId}: {Reason}",
+                ex,
+                "Designer document {DocumentId} threw while compiling for run {StrategyId}",
                 documentId,
-                context.StrategyId,
-                failureReason);
+                context.StrategyId);
             return false;
         }
 

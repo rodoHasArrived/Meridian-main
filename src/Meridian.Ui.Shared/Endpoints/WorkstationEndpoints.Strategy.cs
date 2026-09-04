@@ -267,6 +267,26 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
+            // Refused here rather than at activation: LiveStrategyCatalog resolves an exact built-in
+            // factory id before consulting any fallback, so a run recorded under one of these ids
+            // would trade the built-in strategy and never reach the designer source that carries
+            // this document's gates, sizing, and risk guards (PRD-020).
+            if (DesignerDocumentRevision.IsReservedDocumentId(document.DocumentId))
+            {
+                return Results.Json(
+                    CreateBacktestResponse(
+                        document,
+                        preview,
+                        null,
+                        metrics,
+                        $"Designer document id '{document.DocumentId}' collides with a built-in live strategy. A run "
+                        + "recorded under this id would activate the built-in strategy instead of this design, "
+                        + "bypassing its gates, sizing, and risk guards. Rename the document before running it.",
+                        biasDisclosure),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var runId = Guid.NewGuid().ToString("N");
             var entry = (StrategyRunEntry
                 .StartWithEvidence(
