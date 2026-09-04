@@ -426,6 +426,10 @@ internal sealed class LiveStrategyRunSession
                     _logger.LogWarning(
                         "Run {RunId} order {ClientOrderId} for {Symbol} was rejected: {Reason}",
                         _run.RunId, clientOrderId, order.Symbol, result.ErrorMessage ?? "no reason given");
+
+                    // A synchronous rejection never enters the report stream, so this is the only
+                    // point at which a strategy holding the symbol can learn the order is dead.
+                    NotifyOrderTerminated(order.OrderId, LiveOrderOutcome.Rejected);
                     ForgetOrder(clientOrderId, order.OrderId);
                 }
                 else if (_useSynchronousFillFallback
@@ -466,6 +470,10 @@ internal sealed class LiveStrategyRunSession
                 _logger.LogError(ex,
                     "Run {RunId} order {ClientOrderId} for {Symbol} could not be submitted.",
                     _run.RunId, clientOrderId, order.Symbol);
+
+                // Same reasoning as the rejection path: the mapping is being dropped, so no later
+                // report can release a strategy's marker for this order.
+                NotifyOrderTerminated(order.OrderId, LiveOrderOutcome.SubmissionFailed);
                 ForgetOrder(clientOrderId, order.OrderId);
             }
 

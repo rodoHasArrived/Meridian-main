@@ -632,15 +632,32 @@ internal sealed class DesignerStrategyPlan
         claimedBranches.UnionWith(branchIds);
 
         // all-pass is the conjunction the branches already impose individually, so the branch gates
-        // stay as they are. any-pass and first-wins relax them: a symbol passing any one branch is
-        // eligible, so the individual branch gates are replaced by their disjunction.
+        // stay as they are.
         if (string.Equals(semantics, "all-pass", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
 
-        if (!string.Equals(semantics, "any-pass", StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(semantics, "first-wins", StringComparison.OrdinalIgnoreCase))
+        // first-wins is a third option in the designer schema, but nothing in the repository
+        // defines what it means at runtime -- in particular whether a false or indeterminate first
+        // branch settles the symbol or defers to the next one. Running it as any-pass is a guess
+        // that changes selection: a symbol its first branch rejected would still be admitted by a
+        // later one, opening positions the promoted document did not choose. Refusing is the only
+        // reading that cannot trade something the operator did not select.
+        if (string.Equals(semantics, "first-wins", StringComparison.OrdinalIgnoreCase))
+        {
+            failureReason =
+                $"Concurrent cell '{cell.Label}' ({cell.CellId}) in designer document " +
+                $"'{document.DocumentId}' declares semantics 'first-wins'. The live engine evaluates concurrent " +
+                "branches as a conjunction (all-pass) or a disjunction (any-pass); it has no ordered first-result " +
+                "policy, and running this as any-pass would admit symbols an earlier branch rejected. Use " +
+                "'all-pass' or 'any-pass'.";
+            return false;
+        }
+
+        // any-pass relaxes the branches: a symbol passing any one of them is eligible, so the
+        // individual branch gates are replaced by their disjunction.
+        if (!string.Equals(semantics, "any-pass", StringComparison.OrdinalIgnoreCase))
         {
             failureReason =
                 $"Concurrent cell '{cell.Label}' ({cell.CellId}) declares unsupported semantics '{semantics}'.";

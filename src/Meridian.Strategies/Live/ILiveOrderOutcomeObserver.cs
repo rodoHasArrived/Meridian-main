@@ -15,7 +15,13 @@ public enum LiveOrderOutcome
     Expired,
 
     /// <summary>A governed risk approval was declined, so the parked order will never be released.</summary>
-    ApprovalDeclined
+    ApprovalDeclined,
+
+    /// <summary>
+    /// Submission failed before the order reached the venue, so no execution report will ever
+    /// carry its client order id.
+    /// </summary>
+    SubmissionFailed
 }
 
 /// <summary>

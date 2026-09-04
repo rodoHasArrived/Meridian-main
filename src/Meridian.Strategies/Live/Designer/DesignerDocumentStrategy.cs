@@ -84,7 +84,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
 
     /// <inheritdoc/>
     public void OnTrade(Trade trade, IBacktestContext ctx) =>
-        Observe(trade.Symbol, trade.Price, DateOnly.FromDateTime(trade.Timestamp.UtcDateTime), ctx);
+        Observe(trade.Symbol, trade.Price, DesignerSessionClock.SessionDate(trade.Timestamp), ctx);
 
     /// <inheritdoc/>
     public void OnQuote(BboQuotePayload quote, IBacktestContext ctx)
@@ -94,7 +94,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
             : 0m;
         if (mid > 0m)
         {
-            Observe(quote.Symbol, mid, DateOnly.FromDateTime(quote.Timestamp.UtcDateTime), ctx);
+            Observe(quote.Symbol, mid, DesignerSessionClock.SessionDate(quote.Timestamp), ctx);
         }
     }
 
@@ -185,7 +185,26 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
     }
 
     /// <inheritdoc/>
-    public void OnDayEnd(DateOnly date, IBacktestContext ctx) => Rebalance(ctx);
+    /// <remarks>
+    /// A plan reading session windows deliberately does <em>not</em> decide here. The live session
+    /// raises this callback on seeing the first event of a new date, before that event is
+    /// dispatched, so the session that just ended is still the in-progress one every session
+    /// metric excludes: any decision taken now is computed from the session before last. Worse, a
+    /// cross-sectional plan could queue an order from those stale closes, and the alignment check
+    /// on the following tick returns without unwinding it, so the order routes anyway. The roll
+    /// itself is the trigger for these plans, and <see cref="Observe"/> reports it.
+    /// Stale pending orders are still swept, because that is time-based rather than signal-based.
+    /// </remarks>
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx)
+    {
+        if (_needsSessionFields)
+        {
+            CancelStalePendingOrders(ctx, ctx.CurrentTime);
+            return;
+        }
+
+        Rebalance(ctx);
+    }
 
     /// <inheritdoc/>
     public void OnFinished(IBacktestContext ctx)
@@ -259,7 +278,11 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
 
         var eligible = new List<(string Symbol, int Order, decimal Score, IReadOnlyDictionary<string, decimal> Fields)>();
         var indeterminate = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        DateOnly? alignmentDate = null;
+        // Seeded flags rather than "is the date null": a window with no completed session yet
+        // reports null, and treating null as "not seeded" would let the next symbol seed instead,
+        // silently skipping the comparison between the two.
+        var sessionAlignment = (Seeded: false, Date: (DateOnly?)null);
+        var spotAlignment = (Seeded: false, Date: (DateOnly?)null);
 
         for (var order = 0; order < _plan.Universe.Count; order++)
         {
@@ -293,11 +316,28 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
             // asked for.
             if (IsCrossSectional && _needsSessionFields)
             {
-                if (alignmentDate is null)
+                if (!sessionAlignment.Seeded)
                 {
-                    alignmentDate = window.LastCompletedSessionDate;
+                    sessionAlignment = (true, window.LastCompletedSessionDate);
                 }
-                else if (alignmentDate != window.LastCompletedSessionDate)
+                else if (sessionAlignment.Date != window.LastCompletedSessionDate)
+                {
+                    return;
+                }
+            }
+
+            // The same requirement, one timeframe down, for a plan ranking or bounding on a spot
+            // field. A window keeps its last observation indefinitely, so a symbol that stopped
+            // trading yesterday would still enter today's cross-section at yesterday's price --
+            // out-ranking a symbol quoted seconds ago and sizing a market order from a price the
+            // book no longer shows. Candidates must at least have been seen in the same session.
+            if (IsCrossSectional && _readsSpotFields)
+            {
+                if (!spotAlignment.Seeded)
+                {
+                    spotAlignment = (true, window.CurrentSessionDate);
+                }
+                else if (spotAlignment.Date != window.CurrentSessionDate)
                 {
                     return;
                 }

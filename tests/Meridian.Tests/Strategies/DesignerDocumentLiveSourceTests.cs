@@ -1012,6 +1012,145 @@ public sealed class DesignerDocumentLiveSourceTests
     }
 
     [Fact]
+    public void A_late_observation_from_an_earlier_session_is_ignored()
+    {
+        // Nothing upstream guarantees timestamp monotonicity. Treating an older date as a forward
+        // roll would append it as a new session and warm a session metric on sessions that never
+        // happened -- and then append the current date a second time on the next in-session event.
+        var strategy = Activate(DocumentWithGate("VOLATILITY_20D < 5"));
+        var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 100m);
+        strategy.Initialize(ctx);
+
+        // 21 sessions: one short of the 22 the 20-session metric needs.
+        for (var day = 0; day < 21; day++)
+        {
+            strategy.OnBar(Bar("SPY", close: 100m, volume: 1L, day: day), ctx);
+        }
+
+        ctx.Orders.Should().BeEmpty("21 recorded sessions cannot compute a 20-session metric");
+
+        for (var repeat = 0; repeat < 5; repeat++)
+        {
+            strategy.OnBar(Bar("SPY", close: 100m, volume: 1L, day: 3), ctx);
+        }
+
+        ctx.Orders.Should().BeEmpty("replaying an earlier session must not manufacture new sessions");
+
+        strategy.OnBar(Bar("SPY", close: 100m, volume: 1L, day: 21), ctx);
+        ctx.Orders.Should().ContainSingle("the 22nd real session completes the window");
+    }
+
+    [Fact]
+    public void An_extended_hours_event_stays_in_its_own_exchange_session()
+    {
+        // 19:30 Eastern is already the next day in UTC. Dating sessions by the UTC calendar would
+        // close the session mid-flight and merge the late quote into the following one.
+        var strategy = Activate(DocumentWithGate("VOLATILITY_20D < 5"));
+        var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 100m);
+        strategy.Initialize(ctx);
+
+        // 21 sessions, each dated 2026-01-01 + day at 12:00 UTC (07:00 Eastern, same date).
+        for (var day = 0; day < 21; day++)
+        {
+            strategy.OnTrade(TradeAt("SPY", 100m, day, day), ctx);
+        }
+
+        ctx.Orders.Should().BeEmpty("21 recorded sessions cannot compute a 20-session metric");
+
+        // 2026-01-22T00:30Z is 19:30 Eastern on 2026-01-21 — the session already in progress.
+        var afterHours = new Trade(
+            new DateTimeOffset(2026, 1, 22, 0, 30, 0, TimeSpan.Zero),
+            "SPY",
+            100m,
+            100L,
+            AggressorSide.Buy,
+            999);
+        strategy.OnTrade(afterHours, ctx);
+
+        ctx.Orders.Should().BeEmpty("an after-hours print belongs to the session it traded in");
+    }
+
+    [Fact]
+    public void TryCreate_refuses_first_wins_concurrent_semantics()
+    {
+        // The designer schema offers first-wins, but nothing defines its runtime meaning. Running
+        // it as any-pass would admit symbols an earlier branch rejected.
+        var document = TradableDocument();
+        document = document with
+        {
+            Cells =
+            [
+                .. document.Cells,
+                new StrategyDesignCell("branch-a", "Branch A", "formula", "filter", "PRICE > 10", ["PRICE"]),
+                new StrategyDesignCell("branch-b", "Branch B", "formula", "filter", "PRICE > 90", ["PRICE"]),
+                new StrategyDesignCell(
+                    "concurrent",
+                    "Either branch",
+                    "concurrent",
+                    "filter",
+                    "evaluate both branches",
+                    [],
+                    new Dictionary<string, string> { ["branchIds"] = "branch-a,branch-b", ["semantics"] = "first-wins" })
+            ]
+        };
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("first-wins").And.Contain("no ordered first-result policy");
+    }
+
+    [Fact]
+    public void A_spot_cross_section_waits_for_every_candidate_to_trade_this_session()
+    {
+        // A window keeps its last observation for ever. Without a common as-of boundary, a symbol
+        // last quoted yesterday still enters today's ranking at yesterday's price.
+        var document = UniverseBuilderDocument(
+            new Dictionary<string, string>
+            {
+                ["assetClass"] = "Equity",
+                ["includeRules"] = "PRICE > 20",
+                ["maxSize"] = "2"
+            },
+            ["AAA", "BBB"],
+            rankSource: "PRICE");
+
+        var strategy = Activate(document);
+        var ctx = new RecordingContext(["AAA", "BBB"], portfolioValue: 100_000m, lastPrice: 50m);
+        strategy.Initialize(ctx);
+
+        strategy.OnBar(Bar("AAA", close: 200m, volume: 1L, day: 5), ctx);
+        strategy.OnBar(Bar("BBB", close: 150m, volume: 1L, day: 6), ctx);
+
+        ctx.Orders.Should().BeEmpty("AAA's price is from the previous session, so the cross-section is not comparable");
+
+        strategy.OnBar(Bar("AAA", close: 100m, volume: 1L, day: 6), ctx);
+        ctx.Orders.Select(order => order.Symbol).Should().BeEquivalentTo(["BBB", "AAA"]);
+    }
+
+    [Fact]
+    public void A_session_plan_does_not_decide_at_day_end()
+    {
+        // The live session raises OnDayEnd before dispatching the new date's first event, so every
+        // session metric there still excludes the session that just closed.
+        var strategy = Activate(DocumentWithGate("VOLATILITY_20D < 5"));
+        var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 100m);
+        strategy.Initialize(ctx);
+
+        for (var day = 0; day < 22; day++)
+        {
+            strategy.OnBar(Bar("SPY", close: 100m, volume: 1L, day: day), ctx);
+        }
+
+        ctx.Orders.Should().ContainSingle();
+        ((ILiveOrderOutcomeObserver)strategy).OnOrderTerminated(ctx.OrderIds[0], LiveOrderOutcome.Rejected);
+
+        strategy.OnDayEnd(new DateOnly(2026, 1, 23), ctx);
+
+        ctx.Orders.Should().ContainSingle("a session-window plan decides on the roll, not on the day-end callback");
+    }
+
+    [Fact]
     public void Designer_document_reaches_live_execution_through_the_catalog()
     {
         // The end-to-end PRD-020 seam: the catalog resolves a designer run that CreateDefault

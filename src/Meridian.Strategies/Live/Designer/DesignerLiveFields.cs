@@ -102,6 +102,14 @@ internal static class DesignerLiveFields
         public decimal LastPrice { get; private set; }
 
         /// <summary>
+        /// Trading date of the session this window is currently recording, or null before the
+        /// first observation. This is how fresh <see cref="LastPrice"/> is: a cross-section
+        /// comparing spot prices has to know whether a symbol's price is from today or from
+        /// whenever it last traded.
+        /// </summary>
+        public DateOnly? CurrentSessionDate => _currentSessionDate;
+
+        /// <summary>
         /// Records an observation against the trading session <paramref name="sessionDate"/>
         /// identifies. Later prices within the same session restate its close rather than
         /// advancing the window.
@@ -119,6 +127,17 @@ internal static class DesignerLiveFields
         public bool Observe(decimal price, DateOnly sessionDate)
         {
             if (price <= 0m)
+            {
+                return false;
+            }
+
+            // A late event carrying an older session date is not a roll and must not be recorded.
+            // Treating every unequal date as a forward roll would close the current session, append
+            // the older date as a new one, and then append the current date again when the next
+            // in-session event arrives -- duplicating sessions and corrupting both rolling metrics.
+            // Nothing upstream guarantees timestamp monotonicity, so the guard belongs here. The
+            // price is dropped with it: an older quote is not the latest price either.
+            if (_currentSessionDate is { } active && sessionDate < active)
             {
                 return false;
             }
