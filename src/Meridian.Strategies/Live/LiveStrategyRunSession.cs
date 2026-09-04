@@ -401,6 +401,10 @@ internal sealed class LiveStrategyRunSession
                     && cancellation.OrderState?.Status is ExecutionSdk.OrderStatus.Cancelled)
                 {
                     NotifyOrderTerminated(cancelledOrderId, LiveOrderOutcome.Cancelled);
+
+                    // Terminal and report-free, so nothing later retires this order's mappings.
+                    // Leaving them would grow the tracked set for the life of the run.
+                    ForgetOrder(clientOrderId, cancelledOrderId);
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)

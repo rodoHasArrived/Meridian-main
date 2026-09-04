@@ -72,6 +72,7 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
         new(StringComparer.OrdinalIgnoreCase);
 
     private readonly List<LiveStrategyFallbackResolver> _fallbacks = [];
+    private readonly HashSet<string> _selectorParameterKeys = new(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
     public IReadOnlyCollection<string> StrategyIds => _factories.Keys.ToArray();
@@ -92,6 +93,26 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
     public LiveStrategyCatalog RegisterFallback(LiveStrategyFallbackResolver fallback)
     {
         ArgumentNullException.ThrowIfNull(fallback);
+        _fallbacks.Add(fallback);
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a fallback along with the run parameter whose presence means it owns the run.
+    /// </summary>
+    /// <remarks>
+    /// A declared selector makes the run's choice of implementation explicit, so the catalog can
+    /// refuse a run that also names a built-in factory alias instead of silently letting the alias
+    /// win. Pass <c>null</c> for a source that claims runs by some other means.
+    /// </remarks>
+    public LiveStrategyCatalog RegisterFallback(string? selectorParameterKey, LiveStrategyFallbackResolver fallback)
+    {
+        ArgumentNullException.ThrowIfNull(fallback);
+        if (!string.IsNullOrWhiteSpace(selectorParameterKey))
+        {
+            _selectorParameterKeys.Add(selectorParameterKey);
+        }
+
         _fallbacks.Add(fallback);
         return this;
     }
@@ -122,6 +143,23 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
             && effectiveParameters.TryGetValue(LiveStrategyIdParameterKey, out var mappedId)
             && !string.IsNullOrWhiteSpace(mappedId))
         {
+            // A run that already selected an implementation cannot also alias a built-in one. The
+            // alias resolves before any fallback is consulted, so the selected source would never
+            // run: a designer or plugin run would trade a built-in strategy under its own run id,
+            // without the revision, gates, sizing, or risk guards it was approved with. The two
+            // instructions contradict each other, so neither is guessed at.
+            var selector = _selectorParameterKeys.FirstOrDefault(key =>
+                effectiveParameters.TryGetValue(key, out var selected) && !string.IsNullOrWhiteSpace(selected));
+            if (selector is not null)
+            {
+                strategy = null;
+                failureReason =
+                    $"Run '{strategyId}' names both the '{selector}' source selector and the " +
+                    $"'{LiveStrategyIdParameterKey}' alias '{mappedId.Trim()}'. The alias resolves first, so the " +
+                    "selected implementation would never run. Remove one of the two parameters.";
+                return false;
+            }
+
             factoryId = mappedId.Trim();
         }
 

@@ -177,10 +177,17 @@ internal static class DesignerLiveFields
         /// sixty-four sessions because momentum happens to be cold. A field is only cold if the
         /// expression actually asks for it.
         /// </remarks>
-        public IReadOnlyDictionary<string, decimal> CreateFieldView(IBacktestContext ctx, string symbol) =>
-            new LazyFieldView(this, ctx, symbol);
+        public IReadOnlyDictionary<string, decimal> CreateFieldView(
+            IBacktestContext ctx,
+            IReadOnlyDictionary<string, Position> positions,
+            string symbol) =>
+            new LazyFieldView(this, ctx, positions, symbol);
 
-        private sealed class LazyFieldView(SymbolWindow window, IBacktestContext ctx, string symbol)
+        private sealed class LazyFieldView(
+            SymbolWindow window,
+            IBacktestContext ctx,
+            IReadOnlyDictionary<string, Position> positions,
+            string symbol)
             : IReadOnlyDictionary<string, decimal>
         {
             private readonly Dictionary<string, decimal> _cache = new(StringComparer.OrdinalIgnoreCase);
@@ -204,7 +211,7 @@ internal static class DesignerLiveFields
                     return true;
                 }
 
-                if (!window.TryResolveField(key, ctx, symbol, out value))
+                if (!window.TryResolveField(key, ctx, positions, symbol, out value))
                 {
                     return false;
                 }
@@ -245,7 +252,12 @@ internal static class DesignerLiveFields
             }
         }
 
-        private bool TryResolveField(string field, IBacktestContext ctx, string symbol, out decimal value)
+        private bool TryResolveField(
+            string field,
+            IBacktestContext ctx,
+            IReadOnlyDictionary<string, Position> positions,
+            string symbol,
+            out decimal value)
         {
             switch (field.ToUpperInvariant())
             {
@@ -257,7 +269,7 @@ internal static class DesignerLiveFields
                 case Volatility20D:
                     return TryVolatility(out value);
                 case PortfolioWeight:
-                    return TryPortfolioWeight(ctx, symbol, out value);
+                    return TryPortfolioWeight(ctx, positions, symbol, out value);
                 default:
                     // Unreachable for a compiled plan: DesignerStrategyPlan refuses unsupported
                     // fields before a strategy is ever constructed. Guarded anyway so a future
@@ -316,7 +328,11 @@ internal static class DesignerLiveFields
             return true;
         }
 
-        private bool TryPortfolioWeight(IBacktestContext ctx, string symbol, out decimal value)
+        private bool TryPortfolioWeight(
+            IBacktestContext ctx,
+            IReadOnlyDictionary<string, Position> positions,
+            string symbol,
+            out decimal value)
         {
             value = 0m;
             var portfolioValue = ctx.PortfolioValue;
@@ -325,7 +341,7 @@ internal static class DesignerLiveFields
                 return false;
             }
 
-            var quantity = ctx.Positions.TryGetValue(symbol, out var position) ? position.ExactQuantity : 0m;
+            var quantity = positions.TryGetValue(symbol, out var position) ? position.ExactQuantity : 0m;
             if (quantity == 0m)
             {
                 return true;

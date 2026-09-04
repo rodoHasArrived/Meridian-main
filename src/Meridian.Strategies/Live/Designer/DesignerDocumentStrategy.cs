@@ -276,6 +276,12 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
     {
         CancelStalePendingOrders(ctx, ctx.CurrentTime);
 
+        // One projection per pass, not one per symbol. On the live context every Positions access
+        // rebuilds the whole shared portfolio into fresh Position records, and a spot-field plan
+        // rebalances on every quote, so reading it per symbol turns one market event into as many
+        // full portfolio copies as the universe has names.
+        var positions = ctx.Positions;
+
         var eligible = new List<(string Symbol, int Order, decimal Score, IReadOnlyDictionary<string, decimal> Fields)>();
         var indeterminate = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         // Seeded flags rather than "is the date null": a window with no completed session yet
@@ -296,7 +302,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
             // restart the ownership map is empty while the broker still holds the run's earlier
             // fills, so entering would double the position; the same shape also covers a position
             // opened by another strategy or by hand, which is not this run's to unwind.
-            if (!IsAttributable(ctx, symbol) || !_windows.TryGetValue(symbol, out var window))
+            if (!IsAttributable(positions, symbol) || !_windows.TryGetValue(symbol, out var window))
             {
                 // A working order outlives the judgement that created it. If external flow changed
                 // the holding while this run's entry was parked for approval, that entry can still
@@ -354,7 +360,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
                 }
             }
 
-            var fields = window.CreateFieldView(ctx, symbol);
+            var fields = window.CreateFieldView(ctx, positions, symbol);
 
             var outcome = Evaluate(_plan.EntryGates, fields, symbol);
             if (outcome == GateOutcome.Pass)
@@ -708,11 +714,11 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
         Indeterminate
     }
 
-    private bool IsAttributable(IBacktestContext ctx, string symbol)
+    private bool IsAttributable(IReadOnlyDictionary<string, Position> positions, string symbol)
     {
         // The unrounded size is what matters here: a 0.9-share holding belonging to someone else
         // rounds to zero in Position.Quantity and would look like no position at all.
-        var held = ctx.Positions.TryGetValue(symbol, out var position) ? position.ExactQuantity : 0m;
+        var held = positions.TryGetValue(symbol, out var position) ? position.ExactQuantity : 0m;
         _ownedQuantities.TryGetValue(symbol, out var owned);
 
         // A flat book is only this run's business when the run is flat too. If it believes it holds

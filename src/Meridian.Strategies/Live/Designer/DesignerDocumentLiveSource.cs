@@ -70,6 +70,9 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
     }
 
     /// <inheritdoc/>
+    /// <inheritdoc/>
+    public string? SelectorParameterKey => DesignerDocumentParameterKey;
+
     public bool TryCreate(
         LiveStrategyCreationContext context,
         out IBacktestStrategy? strategy,
@@ -219,9 +222,15 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
         if (string.IsNullOrWhiteSpace(declared))
         {
-            // Nothing to disagree with: LiveTradingEngine.ResolveUniverse falls back to the host's
-            // configured symbols, which the deferral path already reports as an unusable universe.
-            return true;
+            // Not benign: LiveTradingEngine.ResolveUniverse falls back to the host's configured
+            // DefaultSymbols and defers only when that is empty too, so a run without its own
+            // universe would trade whatever the host happens to be configured with -- under this
+            // document's revision, gates, and sizing.
+            failureReason =
+                $"Run '{context.StrategyId}' carries designer document '{documentId}' but names no universe. " +
+                "Without one the engine falls back to the host's default symbols, which are not the universe this " +
+                "document was approved with. Re-run and promote the design so the run carries its own universe.";
+            return false;
         }
 
         // The engine splits this parameter on the same three separators, and the plan already

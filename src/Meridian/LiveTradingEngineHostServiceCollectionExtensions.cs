@@ -60,17 +60,19 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
             foreach (var source in sp.GetServices<IBacktestStrategyLiveSource>())
             {
                 var capturedSource = source;
-                catalog.RegisterFallback((LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
-                {
-                    if (!capturedSource.TryCreate(context, out var inner, out failureReason) || inner is null)
+                catalog.RegisterFallback(
+                    capturedSource.SelectorParameterKey,
+                    (LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
                     {
-                        strategy = null;
-                        return false;
-                    }
+                        if (!capturedSource.TryCreate(context, out var inner, out failureReason) || inner is null)
+                        {
+                            strategy = null;
+                            return false;
+                        }
 
-                    strategy = new BacktestStrategyLiveAdapter(context.StrategyId, inner);
-                    return true;
-                });
+                        strategy = new BacktestStrategyLiveAdapter(context.StrategyId, inner);
+                        return true;
+                    });
             }
 
             return catalog;

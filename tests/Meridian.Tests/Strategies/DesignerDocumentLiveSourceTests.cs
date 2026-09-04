@@ -7,6 +7,7 @@ using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Live;
 using Meridian.Strategies.Live.Designer;
+using Meridian.Strategies.Live.Strategies;
 using Meridian.Strategies.Services;
 using Xunit;
 
@@ -1264,6 +1265,62 @@ public sealed class DesignerDocumentLiveSourceTests
         var handled = CreateSource(document).TryCreate(context, out _, out var failureReason);
 
         handled.Should().BeTrue(failureReason);
+    }
+
+    [Fact]
+    public void TryCreate_refuses_a_designer_run_that_names_no_universe()
+    {
+        // LiveTradingEngine.ResolveUniverse falls back to the host's DefaultSymbols and defers only
+        // when that is empty too, so a run without its own universe would trade whatever the host
+        // is configured with, under this document's revision and risk guards.
+        var document = TradableDocument();
+        var context = new LiveStrategyCreationContext(
+            DocumentId,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [DesignerDocumentLiveSource.DesignerDocumentParameterKey] = DocumentId,
+                [DesignerDocumentRevision.ParameterKey] =
+                    DesignerDocumentRevision.ComputeHash(new StrategyDesignService().Normalize(document))
+            });
+
+        var handled = CreateSource(document).TryCreate(context, out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("names no universe").And.Contain("default symbols");
+    }
+
+    [Fact]
+    public void Catalog_refuses_a_run_that_names_both_a_selector_and_a_factory_alias()
+    {
+        // The alias resolves before any fallback is consulted, so a designer run aliased to a
+        // built-in factory would trade that strategy under its own run id, without the revision,
+        // gates, sizing, or risk guards it was approved with.
+        var catalog = LiveStrategyCatalog.CreateDefault();
+        var sourceConsulted = false;
+        catalog.RegisterFallback(
+            DesignerDocumentLiveSource.DesignerDocumentParameterKey,
+            (LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
+            {
+                sourceConsulted = true;
+                strategy = null;
+                failureReason = null;
+                return false;
+            });
+
+        var resolved = catalog.TryCreate(
+            DocumentId,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [DesignerDocumentLiveSource.DesignerDocumentParameterKey] = DocumentId,
+                ["liveStrategyId"] = BuyAndHoldLiveStrategy.CatalogId
+            },
+            out var strategy,
+            out var reason);
+
+        resolved.Should().BeFalse();
+        strategy.Should().BeNull();
+        reason.Should().Contain(DesignerDocumentLiveSource.DesignerDocumentParameterKey).And.Contain("alias");
+        sourceConsulted.Should().BeFalse("the contradiction is refused before any source is consulted");
     }
 
     [Fact]
