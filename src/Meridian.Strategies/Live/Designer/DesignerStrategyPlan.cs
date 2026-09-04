@@ -692,6 +692,8 @@ internal sealed class DesignerStrategyPlan
     /// <summary>Disjunction of branch conditions used by any-pass/first-wins concurrent cells.</summary>
     private sealed class AnyOfGate(IReadOnlyList<DesignerExpression> branches) : DesignerExpression
     {
+        public override DesignerResultKind ResultKind => DesignerResultKind.Boolean;
+
         public override DesignerValue Evaluate(IReadOnlyDictionary<string, decimal> fields)
         {
             foreach (var branch in branches)

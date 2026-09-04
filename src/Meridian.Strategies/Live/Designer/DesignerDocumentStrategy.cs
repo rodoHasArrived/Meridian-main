@@ -51,12 +51,11 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         _logger = logger;
         _planUniverse = new HashSet<string>(plan.Universe, StringComparer.OrdinalIgnoreCase);
 
-        // A plan reading only spot fields can decide on every tick cheaply. One reading a session
-        // window cannot change its answer until a new bar lands, so re-running the full
+        // A plan reading only spot fields can decide on every event cheaply. One reading a session
+        // window cannot change its answer until the session rolls, so re-running the full
         // cross-section per quote would be pure cost.
         _needsSessionFields = plan.RequiredFields.Any(static field =>
-            field.Equals(DesignerLiveFields.AverageVolume20D, StringComparison.OrdinalIgnoreCase)
-            || field.Equals(DesignerLiveFields.Momentum63D, StringComparison.OrdinalIgnoreCase)
+            field.Equals(DesignerLiveFields.Momentum63D, StringComparison.OrdinalIgnoreCase)
             || field.Equals(DesignerLiveFields.Volatility20D, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -75,7 +74,8 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             _plan.RankExpression is not null);
 
     /// <inheritdoc/>
-    public void OnTrade(Trade trade, IBacktestContext ctx) => ObserveSpot(trade.Symbol, trade.Price, ctx);
+    public void OnTrade(Trade trade, IBacktestContext ctx) =>
+        Observe(trade.Symbol, trade.Price, DateOnly.FromDateTime(trade.Timestamp.UtcDateTime), ctx);
 
     /// <inheritdoc/>
     public void OnQuote(BboQuotePayload quote, IBacktestContext ctx)
@@ -85,21 +85,13 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             : 0m;
         if (mid > 0m)
         {
-            ObserveSpot(quote.Symbol, mid, ctx);
+            Observe(quote.Symbol, mid, DateOnly.FromDateTime(quote.Timestamp.UtcDateTime), ctx);
         }
     }
 
     /// <inheritdoc/>
-    public void OnBar(HistoricalBar bar, IBacktestContext ctx)
-    {
-        if (!TryGetWindow(bar.Symbol, out var window))
-        {
-            return;
-        }
-
-        window!.ObserveSession(bar.Close, bar.Volume, bar.SessionDate);
-        Rebalance(ctx);
-    }
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx) =>
+        Observe(bar.Symbol, bar.Close, bar.SessionDate, ctx);
 
     /// <inheritdoc/>
     public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx)
@@ -162,15 +154,28 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         || _plan.MinimumUniverseSize is not null
         || _plan.MaximumPositions is not null;
 
-    private void ObserveSpot(string symbol, decimal price, IBacktestContext ctx)
+    /// <summary>
+    /// Records one observation and re-decides when the answer could have changed.
+    /// </summary>
+    /// <remarks>
+    /// The session date comes from the event itself rather than from a bar, because the trading
+    /// engine's market-event tap withholds <see cref="HistoricalBar"/> from the strategy hub: on
+    /// the live path a strategy sees only trades and quotes, so a bar-only session clock would
+    /// leave every session window permanently cold and the document silently unable to trade.
+    /// </remarks>
+    private void Observe(string symbol, decimal price, DateOnly sessionDate, IBacktestContext ctx)
     {
         if (!TryGetWindow(symbol, out var window) || price <= 0m)
         {
             return;
         }
 
-        window!.ObserveSpot(price);
-        if (!_needsSessionFields)
+        var sessionsBefore = window!.SessionCount;
+        window.Observe(price, sessionDate);
+
+        // A session-window plan can only change its mind when the session rolls; a spot-only plan
+        // can change on any event.
+        if (!_needsSessionFields || window.SessionCount != sessionsBefore)
         {
             Rebalance(ctx);
         }

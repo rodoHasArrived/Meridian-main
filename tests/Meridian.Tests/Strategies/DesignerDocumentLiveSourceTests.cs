@@ -125,6 +125,7 @@ public sealed class DesignerDocumentLiveSourceTests
     [InlineData("OPTION_DELTA")]
     [InlineData("DURATION")]
     [InlineData("LEDGER_CASH")]
+    [InlineData("VOLUME_AVG_20D")]
     public void TryCreate_refuses_fields_with_no_live_source(string fieldRef)
     {
         var document = WithExtraCell(
@@ -359,47 +360,54 @@ public sealed class DesignerDocumentLiveSourceTests
     {
         // A restart leaves the rolling window empty. Treating "no data yet" as a failed condition
         // would liquidate a valid position merely because history has not warmed.
-        var strategy = Activate(DocumentWithGate("VOLUME_AVG_20D > 1000000"));
+        var strategy = Activate(DocumentWithGate("VOLATILITY_20D < 0.30"));
         var ctx = new RecordingContext(
             ["SPY"], portfolioValue: 100_000m, lastPrice: 50m, positions: [("SPY", 10L)]);
 
         strategy.Initialize(ctx);
         strategy.OnOrderFill(Fill("SPY", 10L), ctx);
-
-        // One bar is nowhere near the twenty sessions VOLUME_AVG_20D needs.
-        strategy.OnBar(Bar("SPY", close: 50m, volume: 5_000_000L, day: 1), ctx);
+        strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: 1), ctx);
 
         ctx.Orders.Should().BeEmpty("a cold window is neither an entry nor an exit signal");
 
-        // Once warm and failing, the same holding is exited.
-        for (var day = 2; day <= 21; day++)
+        // Warm and calm: the guard passes, so the holding stays.
+        for (var day = 2; day <= 25; day++)
         {
-            strategy.OnBar(Bar("SPY", close: 50m, volume: 10L, day: day), ctx);
+            strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: day), ctx);
+        }
+
+        ctx.Orders.Should().BeEmpty("a flat price series is well inside the 30% volatility guard");
+
+        // Warm and violent: the guard now fails, so the run exits its own position.
+        for (var day = 26; day <= 60; day++)
+        {
+            strategy.OnBar(Bar("SPY", close: day % 2 == 0 ? 50m : 100m, volume: 1L, day: day), ctx);
         }
 
         ctx.Orders.Should().ContainSingle().Which.Should().Be(("SPY", -10L));
     }
 
     [Fact]
-    public void Session_windows_advance_per_session_not_per_tick()
+    public void Session_windows_advance_per_session_not_per_event()
     {
-        // VOLUME_AVG_20D is a 20-session metric. Twenty trades within one session must not warm it.
-        var strategy = Activate(DocumentWithGate("VOLUME_AVG_20D > 1000000"));
+        // VOLATILITY_20D is a 20-session metric. The live strategy hub carries trades and quotes
+        // but never bars, so sessions are keyed off the event timestamp: many trades inside one
+        // date must count as one session, not twenty.
+        var strategy = Activate(DocumentWithGate("VOLATILITY_20D < 0.30"));
         var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 50m);
 
         strategy.Initialize(ctx);
         for (var i = 0; i < 40; i++)
         {
-            strategy.OnTrade(
-                new Trade(DateTimeOffset.UnixEpoch, "SPY", 50m, 100L, AggressorSide.Buy, i),
-                ctx);
+            strategy.OnTrade(TradeAt("SPY", 50m, day: 1, sequence: i), ctx);
         }
 
-        ctx.Orders.Should().BeEmpty("trades carry no session volume and must not advance a daily window");
+        ctx.Orders.Should().BeEmpty("forty trades within one session are one session, not forty");
 
-        for (var day = 1; day <= 20; day++)
+        // Distinct dates roll the session window, and the document activates off ticks alone.
+        for (var day = 2; day <= 25; day++)
         {
-            strategy.OnBar(Bar("SPY", close: 50m, volume: 5_000_000L, day: day), ctx);
+            strategy.OnTrade(TradeAt("SPY", 50m, day: day, sequence: day), ctx);
         }
 
         ctx.Orders.Should().ContainSingle().Which.Should().Be(("SPY", 10L));
@@ -408,7 +416,7 @@ public sealed class DesignerDocumentLiveSourceTests
     [Fact]
     public void Repeated_bars_for_one_session_do_not_double_count()
     {
-        var strategy = Activate(DocumentWithGate("VOLUME_AVG_20D > 1000000"));
+        var strategy = Activate(DocumentWithGate("VOLATILITY_20D < 0.30"));
         var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 50m);
 
         strategy.Initialize(ctx);
@@ -616,6 +624,14 @@ public sealed class DesignerDocumentLiveSourceTests
 
     private static HistoricalBar Bar(string symbol, decimal close, long volume, int day) =>
         new(symbol, new DateOnly(2026, 1, 1).AddDays(day), close, close, close, close, volume, "test", 0L, null);
+
+    private static Trade TradeAt(string symbol, decimal price, int day, int sequence) => new(
+        new DateTimeOffset(new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc)).AddDays(day),
+        symbol,
+        price,
+        100L,
+        AggressorSide.Buy,
+        sequence);
 
     private static FillEvent Fill(string symbol, long quantity) => new(
         FillId: Guid.NewGuid(),

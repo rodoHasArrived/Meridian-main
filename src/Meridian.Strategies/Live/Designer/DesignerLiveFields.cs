@@ -16,7 +16,6 @@ namespace Meridian.Strategies.Live.Designer;
 internal static class DesignerLiveFields
 {
     public const string Price = "PRICE";
-    public const string AverageVolume20D = "VOLUME_AVG_20D";
     public const string Momentum63D = "MOMENTUM_63D";
     public const string Volatility20D = "VOLATILITY_20D";
     public const string PortfolioWeight = "PORTFOLIO_WEIGHT";
@@ -26,7 +25,6 @@ internal static class DesignerLiveFields
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             Price,
-            AverageVolume20D,
             Momentum63D,
             Volatility20D,
             PortfolioWeight
@@ -46,6 +44,16 @@ internal static class DesignerLiveFields
             ["OPTION_DELTA"] = "Options-chain greek; the live trading engine consumes equity trades, quotes, and bars only.",
             ["OPTION_EXPIRATION"] = "Options-chain expiration date; not resolvable from the live market feed.",
 
+            // Live strategies are fed from the market-event hub, and the trading engine's event tap
+            // deliberately withholds HistoricalBar from it -- bars feed the paper-matching price
+            // envelope instead. Session closes can be derived from trade and quote timestamps, but
+            // session *volume* cannot: the ticks one process observes are not the session's traded
+            // volume, and a liquidity filter fed an undercount would silently exclude names it was
+            // written to admit.
+            ["VOLUME_AVG_20D"] =
+                "The live strategy feed carries trades and quotes, not session bars, so traded volume "
+                + "per session is not observable on this path.",
+
             // The catalog defines LEDGER_CASH as cash from Meridian ledger projections. The live
             // strategy context exposes only the brokerage/session cash balance, which is a
             // different authority: a ledger-based liquidity guard could pass on broker cash while
@@ -61,66 +69,53 @@ internal static class DesignerLiveFields
     public const int MaxWindow = 64;
 
     /// <summary>
-    /// Rolling per-symbol session observations plus the latest spot price.
+    /// Rolling per-symbol session closes plus the latest spot price.
     /// </summary>
     /// <remarks>
-    /// The two are deliberately separate. <c>PRICE</c> is a spot value and tracks every trade and
-    /// quote, but <c>MOMENTUM_63D</c> and <c>VOLATILITY_20D</c> are defined by the catalog as
-    /// 63- and 20-<em>trading-session</em> metrics. Advancing their window per tick would warm a
-    /// "63-day" signal after sixty-four quotes and compute intraday tick returns under a daily
-    /// field name, so the session series advances only on bars, once per session date.
+    /// The two are deliberately separate. <c>PRICE</c> is a spot value and tracks every event, but
+    /// <c>MOMENTUM_63D</c> and <c>VOLATILITY_20D</c> are defined by the catalog as 63- and
+    /// 20-<em>trading-session</em> metrics. Advancing their window per event would warm a "63-day"
+    /// signal after sixty-four quotes and compute intraday tick returns under a daily field name.
+    /// Sessions are therefore keyed by the event's own date: repeated events within a date restate
+    /// that session's close, and a new date opens a new session. That works on the live path, where
+    /// the strategy hub carries trades and quotes but never bars, as well as on bar replay.
     /// </remarks>
     internal sealed class SymbolWindow
     {
         private readonly Queue<decimal> _sessionCloses = new(MaxWindow);
-        private readonly Queue<long> _sessionVolumes = new(MaxWindow);
-        private DateOnly? _lastSessionDate;
+        private DateOnly? _currentSessionDate;
 
-        /// <summary>Number of completed sessions recorded.</summary>
+        /// <summary>Number of sessions recorded, including the one in progress.</summary>
         public int SessionCount => _sessionCloses.Count;
 
         /// <summary>Latest observed price from any event kind.</summary>
         public decimal LastPrice { get; private set; }
 
-        /// <summary>Records a spot price from a trade or quote. Does not advance the session series.</summary>
-        public void ObserveSpot(decimal price)
-        {
-            if (price > 0m)
-            {
-                LastPrice = price;
-            }
-        }
-
         /// <summary>
-        /// Records a completed session bar. A repeated <paramref name="sessionDate"/> replaces the
-        /// existing entry rather than appending, so a restated bar does not double-count a session.
+        /// Records an observation against the trading session <paramref name="sessionDate"/>
+        /// identifies. Later prices within the same session restate its close rather than
+        /// advancing the window.
         /// </summary>
-        public void ObserveSession(decimal close, long volume, DateOnly sessionDate)
+        public void Observe(decimal price, DateOnly sessionDate)
         {
-            if (close <= 0m)
+            if (price <= 0m)
             {
                 return;
             }
 
-            LastPrice = close;
+            LastPrice = price;
 
-            if (_lastSessionDate == sessionDate && _sessionCloses.Count > 0)
+            if (_currentSessionDate == sessionDate && _sessionCloses.Count > 0)
             {
-                ReplaceLast(close, volume);
+                ReplaceLastClose(price);
                 return;
             }
 
-            _lastSessionDate = sessionDate;
-            _sessionCloses.Enqueue(close);
-            _sessionVolumes.Enqueue(volume);
+            _currentSessionDate = sessionDate;
+            _sessionCloses.Enqueue(price);
             while (_sessionCloses.Count > MaxWindow)
             {
                 _sessionCloses.Dequeue();
-            }
-
-            while (_sessionVolumes.Count > MaxWindow)
-            {
-                _sessionVolumes.Dequeue();
             }
         }
 
@@ -155,23 +150,14 @@ internal static class DesignerLiveFields
             return true;
         }
 
-        private void ReplaceLast(decimal close, long volume)
+        private void ReplaceLastClose(decimal close)
         {
             var closes = _sessionCloses.ToArray();
-            var volumes = _sessionVolumes.ToArray();
             closes[^1] = close;
-            volumes[^1] = volume;
-
             _sessionCloses.Clear();
-            _sessionVolumes.Clear();
             foreach (var value in closes)
             {
                 _sessionCloses.Enqueue(value);
-            }
-
-            foreach (var value in volumes)
-            {
-                _sessionVolumes.Enqueue(value);
             }
         }
 
@@ -182,8 +168,6 @@ internal static class DesignerLiveFields
                 case Price:
                     value = LastPrice;
                     return LastPrice > 0m;
-                case AverageVolume20D:
-                    return TryAverageVolume(out value);
                 case Momentum63D:
                     return TryMomentum(out value);
                 case Volatility20D:
@@ -197,18 +181,6 @@ internal static class DesignerLiveFields
                     value = 0m;
                     return false;
             }
-        }
-
-        private bool TryAverageVolume(out decimal value)
-        {
-            value = 0m;
-            if (_sessionVolumes.Count < 20)
-            {
-                return false;
-            }
-
-            value = (decimal)_sessionVolumes.TakeLast(20).Average();
-            return true;
         }
 
         private bool TryMomentum(out decimal value)
