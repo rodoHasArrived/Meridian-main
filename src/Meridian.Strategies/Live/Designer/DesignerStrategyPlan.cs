@@ -15,8 +15,7 @@ internal enum DesignerSizingMethod
 {
     FixedShares,
     FixedNotional,
-    PercentAum,
-    EqualWeight
+    PercentAum
 }
 
 /// <summary>A named, compiled boolean gate traced back to the cell that produced it.</summary>
@@ -52,6 +51,22 @@ internal sealed class DesignerStrategyPlan
 {
     /// <summary>Largest accepted share count / notional. Keeps sizing inside <see cref="long"/>.</summary>
     private const decimal MaxSizingValue = 1_000_000_000m;
+
+    /// <summary>
+    /// Document ids that collide with a built-in catalog factory.
+    /// </summary>
+    /// <remarks>
+    /// <c>LiveStrategyCatalog.TryCreate</c> resolves an exact factory id before consulting any
+    /// fallback, so a designer document saved under one of these ids would never reach this source:
+    /// the built-in strategy would trade instead, bypassing the document's approved revision, gates,
+    /// sizing, and risk guards entirely. Refusing the id is the only way this seam can prevent that.
+    /// </remarks>
+    private static readonly IReadOnlySet<string> ReservedDocumentIds =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            Strategies.BuyAndHoldLiveStrategy.CatalogId,
+            Strategies.MovingAverageCrossoverLiveStrategy.CatalogId
+        };
 
     private DesignerStrategyPlan(
         string documentId,
@@ -126,6 +141,16 @@ internal sealed class DesignerStrategyPlan
             failureReason =
                 $"Designer document '{document.DocumentId}' does not pass designer validation and cannot be " +
                 $"activated: {string.Join(" | ", errors)}";
+            return false;
+        }
+
+        if (ReservedDocumentIds.Contains(document.DocumentId))
+        {
+            failureReason =
+                $"Designer document id '{document.DocumentId}' collides with a built-in live strategy. The live " +
+                "catalog resolves that id to the built-in factory before any designer document is consulted, so a " +
+                "run under this id would trade the built-in strategy while bypassing this document's approved " +
+                "revision, gates, sizing, and risk guards. Rename the document.";
             return false;
         }
 
@@ -311,15 +336,35 @@ internal sealed class DesignerStrategyPlan
                 document, cell, entryGates, ref minimumUniverseSize, ref maximumPositions, out failureReason);
         }
 
+        // Purpose is classified before kind for the executable purposes. Designer validation does not
+        // constrain kind/purpose combinations, so a cell can declare kind "governance" with purpose
+        // "rank"; checking kind first would drop it as documentation and quietly trade an unranked
+        // universe.
+        if (string.Equals(purpose, "rank", StringComparison.OrdinalIgnoreCase))
+        {
+            return TryCompileRank(document, cell, ref rank, out failureReason);
+        }
+
         if (string.Equals(kind, "governance", StringComparison.OrdinalIgnoreCase))
         {
             // A risk-purpose governance cell must be executable: dropping one because its source is
             // prose would activate a run whose stated risk limit never applies. A control-purpose
             // cell ("attach payoff and run trace") is review documentation and carries no runtime
-            // condition, so an unparseable one is left as documentation.
-            if (!string.Equals(purpose, "risk", StringComparison.OrdinalIgnoreCase))
+            // condition, so an unparseable one is left as documentation. Any other purpose is a
+            // combination this compiler has no semantics for, and is refused rather than assumed.
+            if (string.Equals(purpose, "control", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
+            }
+
+            if (!string.Equals(purpose, "risk", StringComparison.OrdinalIgnoreCase))
+            {
+                failureReason =
+                    $"Governance cell '{cell.Label}' ({cell.CellId}) in designer document " +
+                    $"'{document.DocumentId}' declares purpose '{purpose}'. The live engine executes governance " +
+                    "cells with purpose 'risk' and treats purpose 'control' as review documentation; it has no " +
+                    "semantics for any other combination.";
+                return false;
             }
 
             if (!DesignerExpression.TryParse(
@@ -336,33 +381,6 @@ internal sealed class DesignerStrategyPlan
             }
 
             riskGuards.Add(new DesignerGate(cell.CellId, cell.Label, guard!));
-            return true;
-        }
-
-        if (string.Equals(purpose, "rank", StringComparison.OrdinalIgnoreCase))
-        {
-            if (!DesignerExpression.TryParse(
-                    cell.Source ?? string.Empty,
-                    DesignerLiveFields.Supported,
-                    DesignerResultKind.Number,
-                    out var rankExpression,
-                    out var rankError))
-            {
-                failureReason =
-                    $"Rank cell '{cell.Label}' ({cell.CellId}) in designer document '{document.DocumentId}' is not " +
-                    $"an executable score: {rankError} Source: \"{cell.Source}\".";
-                return false;
-            }
-
-            if (rank is not null)
-            {
-                failureReason =
-                    $"Designer document '{document.DocumentId}' declares more than one rank cell; the live engine " +
-                    "orders candidates by a single score.";
-                return false;
-            }
-
-            rank = rankExpression;
             return true;
         }
 
@@ -393,6 +411,38 @@ internal sealed class DesignerStrategyPlan
             $"kind '{kind}'. The live engine executes visual, formula, universe-builder, concurrent, governance, and " +
             "trade cells.";
         return false;
+    }
+
+    private static bool TryCompileRank(
+        StrategyDesignDocument document,
+        StrategyDesignCell cell,
+        ref DesignerExpression? rank,
+        out string? failureReason)
+    {
+        if (!DesignerExpression.TryParse(
+                cell.Source ?? string.Empty,
+                DesignerLiveFields.Supported,
+                DesignerResultKind.Number,
+                out var rankExpression,
+                out var rankError))
+        {
+            failureReason =
+                $"Rank cell '{cell.Label}' ({cell.CellId}) in designer document '{document.DocumentId}' is not " +
+                $"an executable score: {rankError} Source: \"{cell.Source}\".";
+            return false;
+        }
+
+        if (rank is not null)
+        {
+            failureReason =
+                $"Designer document '{document.DocumentId}' declares more than one rank cell; the live engine " +
+                "orders candidates by a single score.";
+            return false;
+        }
+
+        rank = rankExpression;
+        failureReason = null;
+        return true;
     }
 
     private static bool TryCompileUniverseBuilder(
@@ -617,7 +667,17 @@ internal sealed class DesignerStrategyPlan
         }
         else if (string.Equals(sizingMethodRaw, "EqualWeight", StringComparison.OrdinalIgnoreCase))
         {
-            sizingMethod = DesignerSizingMethod.EqualWeight;
+            // EqualWeight is only meaningful if holdings are resized as the target set changes: when
+            // a two-name portfolio drops to one, the survivor has to move from 50% to 100%. This
+            // engine enters a position once and exits it once -- it does not trade the delta back to
+            // a target weight -- so honouring the name would require rebalancing semantics that do
+            // not exist here, and pretending otherwise would leave the position permanently
+            // mis-weighted against the promoted intent.
+            failureReason =
+                $"Trade cell '{cell.Label}' ({cell.CellId}) declares EqualWeight sizing, which requires the engine " +
+                "to resize holdings as the target set changes. Designer runs enter and exit a position once and do " +
+                "not rebalance to a target weight; use FixedShares, FixedNotional, or PercentAUM.";
+            return false;
         }
         else
         {
@@ -642,46 +702,43 @@ internal sealed class DesignerStrategyPlan
         }
 
         var sizingValue = 0m;
-        if (sizingMethod != DesignerSizingMethod.EqualWeight)
+        var raw = parameters.GetValueOrDefault("sizingValue", string.Empty);
+        if (!decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out sizingValue)
+            || sizingValue <= 0m)
         {
-            var raw = parameters.GetValueOrDefault("sizingValue", string.Empty);
-            if (!decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out sizingValue)
-                || sizingValue <= 0m)
-            {
-                failureReason =
-                    $"Trade cell '{cell.Label}' ({cell.CellId}) needs a positive sizingValue for sizingMethod " +
-                    $"'{sizingMethodRaw}'; found '{raw}'.";
-                return false;
-            }
+            failureReason =
+                $"Trade cell '{cell.Label}' ({cell.CellId}) needs a positive sizingValue for sizingMethod " +
+                $"'{sizingMethodRaw}'; found '{raw}'.";
+            return false;
+        }
 
-            // Flooring 1.9 shares to 1 at execution would be an approximation of the promoted
-            // intent, so a non-integral share count is refused where the operator can still fix it.
-            if (sizingMethod == DesignerSizingMethod.FixedShares && decimal.Truncate(sizingValue) != sizingValue)
-            {
-                failureReason =
-                    $"Trade cell '{cell.Label}' ({cell.CellId}) declares FixedShares sizingValue '{raw}'. Share " +
-                    "counts must be whole numbers; the engine will not round a promoted quantity.";
-                return false;
-            }
+        // Flooring 1.9 shares to 1 at execution would be an approximation of the promoted
+        // intent, so a non-integral share count is refused where the operator can still fix it.
+        if (sizingMethod == DesignerSizingMethod.FixedShares && decimal.Truncate(sizingValue) != sizingValue)
+        {
+            failureReason =
+                $"Trade cell '{cell.Label}' ({cell.CellId}) declares FixedShares sizingValue '{raw}'. Share " +
+                "counts must be whole numbers; the engine will not round a promoted quantity.";
+            return false;
+        }
 
-            // Bounds the value before the decimal-to-long conversion on the live event path, so an
-            // oversized figure is a deferral an operator can read rather than an OverflowException
-            // inside a market-event callback.
-            if (sizingMethod != DesignerSizingMethod.PercentAum && sizingValue > MaxSizingValue)
-            {
-                failureReason =
-                    $"Trade cell '{cell.Label}' ({cell.CellId}) declares sizingValue '{raw}', beyond the supported " +
-                    $"limit of {MaxSizingValue}.";
-                return false;
-            }
+        // Bounds the value before the decimal-to-long conversion on the live event path, so an
+        // oversized figure is a deferral an operator can read rather than an OverflowException
+        // inside a market-event callback.
+        if (sizingMethod != DesignerSizingMethod.PercentAum && sizingValue > MaxSizingValue)
+        {
+            failureReason =
+                $"Trade cell '{cell.Label}' ({cell.CellId}) declares sizingValue '{raw}', beyond the supported " +
+                $"limit of {MaxSizingValue}.";
+            return false;
+        }
 
-            if (sizingMethod == DesignerSizingMethod.PercentAum && sizingValue > 1m)
-            {
-                failureReason =
-                    $"Trade cell '{cell.Label}' ({cell.CellId}) declares PercentAUM sizingValue '{raw}'. Express " +
-                    "the weight as a fraction of portfolio value (0.05 for five percent).";
-                return false;
-            }
+        if (sizingMethod == DesignerSizingMethod.PercentAum && sizingValue > 1m)
+        {
+            failureReason =
+                $"Trade cell '{cell.Label}' ({cell.CellId}) declares PercentAUM sizingValue '{raw}'. Express " +
+                "the weight as a fraction of portfolio value (0.05 for five percent).";
+            return false;
         }
 
         trade = new DesignerTradeIntent(cell.CellId, cell.Label, side, sizingMethod, sizingValue);

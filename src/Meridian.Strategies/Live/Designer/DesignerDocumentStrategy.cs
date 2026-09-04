@@ -42,6 +42,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, PendingOrder> _pendingOrders = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, long> _ownedQuantities = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _reportedUnattributed = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _planUniverse;
     private readonly bool _needsSessionFields;
 
@@ -201,7 +202,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
 
     private void Rebalance(IBacktestContext ctx)
     {
-        ExpireStalePendingOrders(ctx.CurrentTime);
+        CancelStalePendingOrders(ctx, ctx.CurrentTime);
 
         var eligible = new List<(string Symbol, decimal Score, IReadOnlyDictionary<string, decimal> Fields)>();
         var indeterminate = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -210,6 +211,25 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         {
             if (!ctx.Universe.Contains(symbol))
             {
+                continue;
+            }
+
+            // Inventory this run cannot account for is not tradeable either way. After a host
+            // restart the ownership map is empty while the broker still holds the run's earlier
+            // fills, so entering would double the position; the same shape also covers a position
+            // opened by another strategy or by hand, which is not this run's to unwind. The two are
+            // indistinguishable from here, and both answers are "do not trade this symbol".
+            if (!IsAttributable(ctx, symbol))
+            {
+                // Same treatment as a cold field: for a cross-sectional plan a name that cannot be
+                // traded cannot be silently dropped from the comparison either, or the remaining
+                // names get ranked against a set the document did not describe.
+                if (IsCrossSectional)
+                {
+                    return;
+                }
+
+                indeterminate.Add(symbol);
                 continue;
             }
 
@@ -241,9 +261,18 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
                 {
                     score = _plan.RankExpression.Evaluate(fields).Number;
                 }
-                catch (DesignerExpressionException)
+                catch (DesignerExpressionException ex)
                 {
-                    continue;
+                    // Dropping just this candidate would rank the rest against an incomplete
+                    // cross-section -- the same defect the cold-field guard above exists to prevent.
+                    // A score the document cannot produce for one name invalidates the comparison.
+                    _logger?.LogWarning(
+                        "Designer document {DocumentId} could not score {Symbol}; the cross-section is "
+                        + "indeterminate this pass: {Reason}",
+                        _plan.DocumentId,
+                        symbol,
+                        ex.Message);
+                    return;
                 }
             }
 
@@ -316,7 +345,7 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
                 continue;
             }
 
-            var quantity = ResolveQuantity(symbol, targets.Count, ctx);
+            var quantity = ResolveQuantity(symbol, ctx);
             if (quantity == 0L || !RiskGuardsAllowEntry(symbol, quantity, fields, ctx))
             {
                 continue;
@@ -379,8 +408,8 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             return;
         }
 
-        _pendingOrders[symbol] = new PendingOrder(quantity, ctx.CurrentTime);
-        ctx.PlaceMarketOrder(symbol, quantity);
+        var orderId = ctx.PlaceMarketOrder(symbol, quantity);
+        _pendingOrders[symbol] = new PendingOrder(orderId, quantity, ctx.CurrentTime, CancelRequested: false);
         _logger?.LogInformation(
             "Designer document {DocumentId} {Reason} for {Symbol} quantity {Quantity}",
             _plan.DocumentId,
@@ -389,27 +418,56 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             quantity);
     }
 
-    private void ExpireStalePendingOrders(DateTimeOffset now)
+    /// <summary>
+    /// Cancels an order that has been working past <see cref="PendingOrderTimeout"/> without
+    /// completing, and leaves the symbol blocked.
+    /// </summary>
+    /// <remarks>
+    /// The marker is deliberately <em>not</em> cleared. Freeing the symbol would let the next
+    /// rebalance submit a replacement while the original is still live at the broker, and both
+    /// could fill — doubling an entry or overselling an exit. <see cref="IBacktestStrategy"/>
+    /// surfaces fills but no terminal order status, so there is no signal here that a cancel
+    /// succeeded; refusing to send a second order is the only safe reading. A symbol stuck this way
+    /// is logged at warning level rather than silently retried.
+    /// </remarks>
+    private void CancelStalePendingOrders(IBacktestContext ctx, DateTimeOffset now)
     {
         if (_pendingOrders.Count == 0)
         {
             return;
         }
 
-        var stale = _pendingOrders
-            .Where(entry => now - entry.Value.PlacedAt > PendingOrderTimeout)
-            .Select(static entry => entry.Key)
-            .ToArray();
-
-        foreach (var symbol in stale)
+        foreach (var symbol in _pendingOrders.Keys.ToArray())
         {
-            _pendingOrders.Remove(symbol);
+            var pending = _pendingOrders[symbol];
+            if (pending.CancelRequested || now - pending.PlacedAt <= PendingOrderTimeout)
+            {
+                continue;
+            }
+
+            _pendingOrders[symbol] = pending with { CancelRequested = true };
+            try
+            {
+                ctx.CancelOrder(pending.OrderId);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(
+                    ex,
+                    "Designer document {DocumentId} could not cancel the stale order for {Symbol}",
+                    _plan.DocumentId,
+                    symbol);
+            }
+
             _logger?.LogWarning(
-                "Designer document {DocumentId} clearing a pending order marker for {Symbol} after {TimeoutMinutes} "
-                + "minutes with no fill; the symbol becomes eligible again",
+                "Designer document {DocumentId} cancelled order {OrderId} for {Symbol} after {TimeoutMinutes} "
+                + "minutes with no completing fill. {Symbol} stays blocked: without a terminal order status the "
+                + "engine cannot confirm the cancel, and submitting a replacement risks a double fill",
                 _plan.DocumentId,
+                pending.OrderId,
                 symbol,
-                PendingOrderTimeout.TotalMinutes);
+                PendingOrderTimeout.TotalMinutes,
+                symbol);
         }
     }
 
@@ -444,11 +502,40 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         return true;
     }
 
+    private bool IsAttributable(IBacktestContext ctx, string symbol)
+    {
+        var held = ctx.Positions.TryGetValue(symbol, out var position) ? position.Quantity : 0L;
+        if (held == 0L)
+        {
+            return true;
+        }
+
+        _ownedQuantities.TryGetValue(symbol, out var owned);
+        if (owned == held)
+        {
+            return true;
+        }
+
+        if (_reportedUnattributed.Add(symbol))
+        {
+            _logger?.LogWarning(
+                "Designer document {DocumentId} is not trading {Symbol}: the portfolio holds {Held} share(s) but "
+                + "this run accounts for {Owned}. The remainder belongs to another strategy or to a session before "
+                + "a restart, and entering or exiting against it would act on inventory this run does not own",
+                _plan.DocumentId,
+                symbol,
+                held,
+                owned);
+        }
+
+        return false;
+    }
+
     private decimal ResolvePrice(string symbol, IBacktestContext ctx) =>
         ctx.GetLastPrice(symbol)
         ?? (_windows.TryGetValue(symbol, out var window) ? window.LastPrice : 0m);
 
-    private long ResolveQuantity(string symbol, int targetCount, IBacktestContext ctx)
+    private long ResolveQuantity(string symbol, IBacktestContext ctx)
     {
         var price = ResolvePrice(symbol, ctx);
         if (price <= 0m)
@@ -462,9 +549,6 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             DesignerSizingMethod.FixedShares => trade.SizingValue,
             DesignerSizingMethod.FixedNotional => decimal.Floor(trade.SizingValue / price),
             DesignerSizingMethod.PercentAum => decimal.Floor(ctx.PortfolioValue * trade.SizingValue / price),
-            DesignerSizingMethod.EqualWeight => targetCount <= 0
-                ? 0m
-                : decimal.Floor(ctx.PortfolioValue / targetCount / price),
             _ => 0m
         };
 
@@ -488,5 +572,9 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         return trade.Side == DesignerTradeSide.Short ? -quantity : quantity;
     }
 
-    private readonly record struct PendingOrder(long Remaining, DateTimeOffset PlacedAt);
+    private readonly record struct PendingOrder(
+        Guid OrderId,
+        long Remaining,
+        DateTimeOffset PlacedAt,
+        bool CancelRequested);
 }

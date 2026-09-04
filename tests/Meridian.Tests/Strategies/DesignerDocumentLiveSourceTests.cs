@@ -310,6 +310,115 @@ public sealed class DesignerDocumentLiveSourceTests
         failureReason.Should().Contain("does not pass designer validation").And.Contain("DatasetRequired");
     }
 
+    [Theory]
+    [InlineData("buy-and-hold")]
+    [InlineData("moving-average-crossover")]
+    public void TryCreate_refuses_a_document_id_that_collides_with_a_built_in_strategy(string reservedId)
+    {
+        // LiveStrategyCatalog resolves an exact factory id before any fallback, so a document saved
+        // under a built-in id would trade the built-in strategy and skip this source entirely --
+        // bypassing the approved revision, gates, sizing, and risk guards.
+        var document = TradableDocument() with { DocumentId = reservedId };
+        var context = new LiveStrategyCreationContext(
+            reservedId,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [DesignerDocumentLiveSource.DesignerDocumentParameterKey] = reservedId,
+                [DesignerDocumentRevision.ParameterKey] =
+                    DesignerDocumentRevision.ComputeHash(new StrategyDesignService().Normalize(document))
+            });
+
+        var handled = new DesignerDocumentLiveSource(new FakeDesignRepository(document), new StrategyDesignService())
+            .TryCreate(context, out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("collides with a built-in live strategy").And.Contain("Rename the document");
+    }
+
+    [Fact]
+    public void TryCreate_compiles_a_rank_cell_by_purpose_regardless_of_kind()
+    {
+        // Designer validation does not constrain kind/purpose pairs. Classifying by kind first
+        // would drop this as governance documentation and trade an unranked universe.
+        var document = WithExtraCell(new StrategyDesignCell(
+            "odd-rank", "Rank", "governance", "rank", "PRICE > 20", ["PRICE"]));
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("Expected a numeric score");
+    }
+
+    [Fact]
+    public void TryCreate_refuses_an_unsupported_governance_purpose()
+    {
+        var document = WithExtraCell(new StrategyDesignCell(
+            "odd-governance", "Odd", "governance", "universe", "PRICE > 1", ["PRICE"]));
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("no semantics for any other combination");
+    }
+
+    [Fact]
+    public void TryCreate_refuses_equal_weight_sizing()
+    {
+        // EqualWeight only means anything if holdings are resized as the target set changes, and
+        // this engine enters and exits once rather than trading toward a target weight.
+        var document = DocumentWithTradeParameters(new Dictionary<string, string>
+        {
+            ["instrument"] = "Equity",
+            ["direction"] = "Buy",
+            ["sizingMethod"] = "EqualWeight"
+        });
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("EqualWeight").And.Contain("do not rebalance to a target weight");
+    }
+
+    [Fact]
+    public void Activated_document_will_not_trade_inventory_it_cannot_account_for()
+    {
+        // A host restart leaves the ownership map empty while the broker still holds the run's
+        // earlier fills. Entering again would double the position.
+        var strategy = Activate(TradableDocument());
+        var ctx = new RecordingContext(
+            ["SPY"], portfolioValue: 100_000m, lastPrice: 50m, positions: [("SPY", 10L)]);
+
+        strategy.Initialize(ctx);
+        strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: 5), ctx);
+
+        ctx.Orders.Should().BeEmpty("the position predates this strategy instance and is not its to double or unwind");
+    }
+
+    [Fact]
+    public void Cross_section_is_abandoned_when_a_rank_score_cannot_be_computed()
+    {
+        // PRICE / (PRICE - 50) faults for a symbol trading at exactly 50. Ranking the rest against
+        // an incomplete cross-section is the defect the cold-field guard already refuses.
+        var document = UniverseBuilderDocument(
+            new Dictionary<string, string>
+            {
+                ["assetClass"] = "Equity",
+                ["includeRules"] = "PRICE > 20",
+                ["maxSize"] = "2"
+            },
+            ["AAA", "BBB"],
+            rankSource: "PRICE / (PRICE - 50)");
+
+        var strategy = Activate(document);
+        var ctx = new RecordingContext(["AAA", "BBB"], portfolioValue: 100_000m, lastPrice: 60m);
+
+        strategy.Initialize(ctx);
+        strategy.OnBar(Bar("AAA", close: 60m, volume: 1L, day: 5), ctx);
+        strategy.OnBar(Bar("BBB", close: 50m, volume: 1L, day: 5), ctx);
+
+        ctx.Orders.Should().BeEmpty("one unscoreable name makes the whole ranked selection indeterminate");
+    }
+
     [Fact]
     public void Activated_document_enters_a_position_once_its_conditions_hold()
     {
@@ -336,22 +445,19 @@ public sealed class DesignerDocumentLiveSourceTests
     }
 
     [Fact]
-    public void Activated_document_exits_only_the_quantity_this_run_opened()
+    public void Activated_document_exits_the_position_it_opened()
     {
         var strategy = Activate(TradableDocument());
-        // The shared portfolio holds 40 shares; only 10 of them came from this run.
+        // Portfolio and ownership agree: the ten shares are this run's own fill.
         var ctx = new RecordingContext(
-            ["SPY"], portfolioValue: 100_000m, lastPrice: 50m, positions: [("SPY", 40L)]);
+            ["SPY"], portfolioValue: 100_000m, lastPrice: 50m, positions: [("SPY", 10L)]);
 
         strategy.Initialize(ctx);
-        strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: 5), ctx);
-        ctx.Orders.Should().ContainSingle().Which.Should().Be(("SPY", 10L));
         strategy.OnOrderFill(Fill("SPY", 10L), ctx);
 
-        // Gate now fails, so the run exits — its own ten shares, not the shared forty.
-        ctx.Orders.Clear();
-        strategy.OnBar(Bar("SPY", close: 5m, volume: 1L, day: 6), ctx);
+        strategy.OnBar(Bar("SPY", close: 5m, volume: 1L, day: 5), ctx);
 
+        // Sized from what this run filled, not from the shared portfolio quantity.
         ctx.Orders.Should().ContainSingle().Which.Should().Be(("SPY", -10L));
     }
 
