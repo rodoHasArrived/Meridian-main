@@ -358,6 +358,26 @@ internal sealed class DesignerStrategyPlan
             return false;
         }
 
+        // A risk-purpose cell is compiled as a projected-position guard below, but only the kinds
+        // whose source is a plain condition can be one. A trade cell carries sizing, a concurrent
+        // cell carries branch ids, and a universe-builder cell carries include rules and size
+        // bounds -- none of them is a single expression to re-evaluate against a projected
+        // position. Compiling those under their own kind would file the cell's condition as an
+        // ordinary entry gate, which passes trivially on a flat symbol and never constrains the
+        // order it was written to govern, so the combination is refused instead.
+        if (string.Equals(purpose, "risk", StringComparison.OrdinalIgnoreCase)
+            && (string.Equals(kind, "trade", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(kind, "concurrent", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(kind, "universe-builder", StringComparison.OrdinalIgnoreCase)))
+        {
+            failureReason =
+                $"Cell '{cell.Label}' ({cell.CellId}) in designer document '{document.DocumentId}' declares kind " +
+                $"'{kind}' with purpose 'risk'. A risk guard is re-evaluated against the position an order would " +
+                "create, which requires the cell to be a single condition; this kind is not. Move the limit onto a " +
+                "formula, visual, or governance cell with purpose 'risk'.";
+            return false;
+        }
+
         if (string.Equals(kind, "trade", StringComparison.OrdinalIgnoreCase)
             || string.Equals(kind, "concurrent", StringComparison.OrdinalIgnoreCase))
         {

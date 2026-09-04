@@ -128,7 +128,6 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
         if (!_factories.TryGetValue(factoryId, out var factory))
         {
             var context = new LiveStrategyCreationContext(strategyId, effectiveParameters);
-            var fallbackReasons = new List<string>();
             foreach (var fallback in _fallbacks)
             {
                 if (fallback(context, out strategy, out var fallbackReason) && strategy is not null)
@@ -137,9 +136,17 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
                     return true;
                 }
 
+                // A source states a reason only when it recognised the run and could not build it;
+                // one that does not recognise the run declines silently so the next source can try.
+                // Continuing past a stated reason would hand an explicitly plugin-backed run whose
+                // assembly is missing to whatever source is registered next, executing a different
+                // implementation under the same run id and discarding the refusal that explains
+                // why. A run that has been claimed stops here, refused.
                 if (!string.IsNullOrWhiteSpace(fallbackReason))
                 {
-                    fallbackReasons.Add(fallbackReason);
+                    strategy = null;
+                    failureReason = fallbackReason;
+                    return false;
                 }
             }
 
@@ -147,8 +154,7 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
             failureReason =
                 $"No live strategy implementation is registered for '{strategyId}'. " +
                 $"Register a factory in the live strategy catalog or set the run parameter " +
-                $"'{LiveStrategyIdParameterKey}' to one of: {string.Join(", ", StrategyIds.Order(StringComparer.OrdinalIgnoreCase))}." +
-                (fallbackReasons.Count > 0 ? $" Fallback sources: {string.Join(" | ", fallbackReasons)}" : string.Empty);
+                $"'{LiveStrategyIdParameterKey}' to one of: {string.Join(", ", StrategyIds.Order(StringComparer.OrdinalIgnoreCase))}.";
             return false;
         }
 

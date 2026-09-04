@@ -36,6 +36,12 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
     /// <summary>Run parameter naming the designer document to activate.</summary>
     public const string DesignerDocumentParameterKey = "designerDocumentId";
 
+    /// <summary>
+    /// Run parameters naming the universe, in the order <c>LiveTradingEngine.ResolveUniverse</c>
+    /// reads them.
+    /// </summary>
+    private static readonly string[] UniverseParameterKeys = ["symbols", "symbol"];
+
     private static readonly TimeSpan DefaultLoadTimeout = TimeSpan.FromSeconds(30);
 
     private readonly IStrategyDesignRepository? _repository;
@@ -114,6 +120,16 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
                 return false;
             }
 
+            if (!TryVerifyUniverse(context, documentId, normalized, out failureReason))
+            {
+                _logger?.LogWarning(
+                    "Designer document {DocumentId} failed universe verification for run {StrategyId}: {Reason}",
+                    documentId,
+                    context.StrategyId,
+                    failureReason);
+                return false;
+            }
+
             var validation = _designService.Validate(normalized);
 
             if (!DesignerStrategyPlan.TryCompile(normalized, validation, out plan, out failureReason))
@@ -179,6 +195,58 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
     /// so there is no earlier run to grandfather, and treating a missing hash as "trust it" would
     /// leave the governance hole open for exactly the runs that skip promotion.
     /// </remarks>
+    /// <summary>
+    /// Confirms the run trades the document's own universe.
+    /// </summary>
+    /// <remarks>
+    /// The revision hash pins <em>what</em> the document says; the run's <c>symbols</c> parameter
+    /// decides which names the engine actually feeds the strategy. They are set together when a
+    /// designer backtest is promoted, but a run reaching this seam through another publication
+    /// path can carry a valid hash against a narrowed or altered symbol list. The strategy would
+    /// then simply skip the plan symbols the engine did not resolve, and a ranked or bounded
+    /// document would select from a smaller universe than the one that was approved -- a different
+    /// strategy wearing the approved one's revision.
+    /// </remarks>
+    private static bool TryVerifyUniverse(
+        LiveStrategyCreationContext context,
+        string documentId,
+        StrategyDesignDocument normalized,
+        out string? failureReason)
+    {
+        failureReason = null;
+        var declared = UniverseParameterKeys
+            .Select(key => context.Parameters.TryGetValue(key, out var value) ? value : null)
+            .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
+        if (string.IsNullOrWhiteSpace(declared))
+        {
+            // Nothing to disagree with: LiveTradingEngine.ResolveUniverse falls back to the host's
+            // configured symbols, which the deferral path already reports as an unusable universe.
+            return true;
+        }
+
+        // The engine splits this parameter on the same three separators, and the plan already
+        // refuses symbols containing any of them.
+        var runUniverse = declared
+            .Split([',', ';', ' '], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var documentUniverse = (normalized.Universe ?? Array.Empty<string>())
+            .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (runUniverse.SetEquals(documentUniverse))
+        {
+            return true;
+        }
+
+        failureReason =
+            $"Run '{context.StrategyId}' names universe [{string.Join(", ", runUniverse.Order(StringComparer.OrdinalIgnoreCase))}] " +
+            $"but designer document '{documentId}' at the approved revision declares " +
+            $"[{string.Join(", ", documentUniverse.Order(StringComparer.OrdinalIgnoreCase))}]. Activating would trade " +
+            "a different universe than the one the document was approved with. Re-run and promote the design so the " +
+            "run carries its own universe.";
+        return false;
+    }
+
     private static bool TryVerifyRevision(
         LiveStrategyCreationContext context,
         string documentId,

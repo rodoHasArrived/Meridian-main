@@ -298,6 +298,17 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOu
             // opened by another strategy or by hand, which is not this run's to unwind.
             if (!IsAttributable(ctx, symbol) || !_windows.TryGetValue(symbol, out var window))
             {
+                // A working order outlives the judgement that created it. If external flow changed
+                // the holding while this run's entry was parked for approval, that entry can still
+                // be released and fill -- adding exposure to inventory the ownership guard has just
+                // decided this run must not trade. CancelObsoletePendingOrders will not do it: it
+                // skips indeterminate symbols by design. The marker stays until the cancellation is
+                // confirmed, for the usual reason: an unresolved order can still fill.
+                if (_pendingOrders.TryGetValue(symbol, out var orphaned) && !orphaned.CancelRequested)
+                {
+                    CancelPending(ctx, symbol, orphaned, "the symbol is no longer attributable to this run");
+                }
+
                 // A cross-sectional document ranks or bounds the whole universe against itself, so
                 // deciding on a partial cross-section is not a smaller version of the promoted
                 // strategy -- it is a different one.

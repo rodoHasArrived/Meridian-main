@@ -1184,6 +1184,89 @@ public sealed class DesignerDocumentLiveSourceTests
     }
 
     [Fact]
+    public void TryCreate_refuses_a_universe_builder_cell_with_risk_purpose()
+    {
+        // A universe-builder cell carries include rules and size bounds, not one condition, so it
+        // cannot be re-evaluated against a projected position. Compiling it under its own kind
+        // would file its rules as ordinary entry gates, which pass trivially on a flat symbol.
+        var document = TradableDocument();
+        document = document with
+        {
+            Cells =
+            [
+                .. document.Cells,
+                new StrategyDesignCell(
+                    "universe-risk",
+                    "Universe risk",
+                    "universe-builder",
+                    "risk",
+                    "build the universe",
+                    ["PORTFOLIO_WEIGHT"],
+                    new Dictionary<string, string>
+                    {
+                        ["assetClass"] = "Equity",
+                        ["includeRules"] = "PORTFOLIO_WEIGHT <= 0.10"
+                    })
+            ]
+        };
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("universe-builder").And.Contain("purpose 'risk'");
+    }
+
+    [Fact]
+    public void TryCreate_refuses_a_run_whose_symbols_differ_from_the_approved_universe()
+    {
+        // The revision hash pins what the document says; the symbols parameter decides what the
+        // engine actually feeds the strategy. A run carrying a valid hash against a narrowed list
+        // would select from a smaller universe than the one that was approved.
+        var document = UniverseBuilderDocument(
+            new Dictionary<string, string>
+            {
+                ["assetClass"] = "Equity",
+                ["includeRules"] = "PRICE > 20",
+                ["maxSize"] = "2"
+            },
+            ["AAA", "BBB", "CCC"]);
+
+        var context = new LiveStrategyCreationContext(
+            DocumentId,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [DesignerDocumentLiveSource.DesignerDocumentParameterKey] = DocumentId,
+                [DesignerDocumentRevision.ParameterKey] =
+                    DesignerDocumentRevision.ComputeHash(new StrategyDesignService().Normalize(document)),
+                ["symbols"] = "AAA,BBB"
+            });
+
+        var handled = CreateSource(document).TryCreate(context, out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("CCC").And.Contain("different universe");
+    }
+
+    [Fact]
+    public void TryCreate_accepts_a_run_whose_symbols_match_the_approved_universe()
+    {
+        var document = TradableDocument();
+        var context = new LiveStrategyCreationContext(
+            DocumentId,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [DesignerDocumentLiveSource.DesignerDocumentParameterKey] = DocumentId,
+                [DesignerDocumentRevision.ParameterKey] =
+                    DesignerDocumentRevision.ComputeHash(new StrategyDesignService().Normalize(document)),
+                ["symbols"] = "SPY"
+            });
+
+        var handled = CreateSource(document).TryCreate(context, out _, out var failureReason);
+
+        handled.Should().BeTrue(failureReason);
+    }
+
+    [Fact]
     public void Designer_document_reaches_live_execution_through_the_catalog()
     {
         // The end-to-end PRD-020 seam: the catalog resolves a designer run that CreateDefault
@@ -1229,7 +1312,37 @@ public sealed class DesignerDocumentLiveSourceTests
         var resolved = catalog.TryCreate(DocumentId, Context().Parameters, out _, out var reason);
 
         resolved.Should().BeFalse();
-        reason.Should().Contain("Fallback sources:").And.Contain("not found");
+        reason.Should().Contain("not found");
+    }
+
+    [Fact]
+    public void Catalog_stops_at_the_source_that_claimed_the_run()
+    {
+        // A source states a reason only when it recognised the run and refused it. Continuing past
+        // that would let a later source execute a different implementation under the same run id
+        // -- a plugin-backed run whose assembly is missing silently becoming a designer run.
+        var catalog = LiveStrategyCatalog.CreateDefault();
+        var laterSourceConsulted = false;
+
+        catalog.RegisterFallback((LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
+        {
+            strategy = null;
+            failureReason = "plugin assembly 'strategy.dll' could not be loaded";
+            return false;
+        });
+        catalog.RegisterFallback((LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
+        {
+            laterSourceConsulted = true;
+            strategy = null;
+            failureReason = null;
+            return false;
+        });
+
+        var resolved = catalog.TryCreate(DocumentId, Context().Parameters, out _, out var reason);
+
+        resolved.Should().BeFalse();
+        reason.Should().Be("plugin assembly 'strategy.dll' could not be loaded");
+        laterSourceConsulted.Should().BeFalse("a claimed run must not fall through to another implementation");
     }
 
     private static LiveStrategyCreationContext Context(StrategyDesignDocument? document = null) => new(

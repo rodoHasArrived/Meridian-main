@@ -391,7 +391,17 @@ internal sealed class LiveStrategyRunSession
 
             try
             {
-                await _orderManager.CancelOrderAsync(clientOrderId, ct).ConfigureAwait(false);
+                var cancellation = await _orderManager.CancelOrderAsync(clientOrderId, ct).ConfigureAwait(false);
+
+                // A cancellation the OMS completes locally publishes no execution report: an order
+                // still parked for governed approval has no broker order to cancel, so the
+                // escalation is simply withdrawn. Without this the terminal outcome would never
+                // reach a strategy that blocks the symbol while its order works.
+                if (cancellation.Success
+                    && cancellation.OrderState?.Status is ExecutionSdk.OrderStatus.Cancelled)
+                {
+                    NotifyOrderTerminated(cancelledOrderId, LiveOrderOutcome.Cancelled);
+                }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
