@@ -100,7 +100,10 @@ classDiagram
     class Meridian_Contracts_AssetOperations_AssetAcquisitionLotDto["AssetAcquisitionLotDto"] {
         +string AccountId
         +DateOnly AcquiredDate
+        +decimal? BookedFactor
         +string LotId
+        +decimal? OriginalFace
+        +decimal? ParBasis
         +decimal Quantity
         +Guid TaxLotRecordId
         +decimal UnitCost

@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "4d54aeb9b635f35f7fb15d23f0f56886208a0713de015ec1344c8af0becd442a",
+  "database_fingerprint": "3ba08aa3c7f8aacf775ddeaf60696cde40b803a81dcc33d49ca13a2eed6d14e6",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -1845,6 +1845,78 @@
       "source_name": null,
       "source_schema": "ledger",
       "target": "ledger.tax_lots.currency",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "58af9cfa61edceb26fbe5b4c513f04e034097b8a2b06fd1961f1811e1a71f975",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.booked_factor",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "3634b97b149ebf591aecc4f8e4a245aa5a9a735e78fb9f67b27c8582c79fafce",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.original_face",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ea2ea689dbb82935a12a6fa88ac451a69cb414801c826b54864c211b172483c4",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.par_basis",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "d524514e91f4e982168f9479700aad932ef90744e6f00714b7546c72dbd280e0",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.booked_factor",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "3806319469886285d44c71a80607c99df2993058ee659ee2fb9130eca12301c1",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.original_face",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "4dad81610d373d12b319012b72354be7cd677498d1c9310988b8e2b9b5a53664",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.par_basis",
       "target_kind": "table column",
       "target_name": "tax_lots",
       "target_schema": "ledger"
@@ -11209,6 +11281,10 @@
       "object": "column:ledger.tax_lots.book_position_id"
     },
     {
+      "fingerprint": "a258c1546a7d64d52edface85f009f5a3a51cddc6258066b78992f752675999c",
+      "object": "column:ledger.tax_lots.booked_factor"
+    },
+    {
       "fingerprint": "b7bf957a3c8944699de1b06cf3dc9a9d0748051b9b5a4b7de758dfbedf4e5bb2",
       "object": "column:ledger.tax_lots.created_at"
     },
@@ -11241,12 +11317,20 @@
       "object": "column:ledger.tax_lots.open_quantity"
     },
     {
+      "fingerprint": "1b815aa0ca820c72cb7bc8a5cf85d23f3f603185c766e1e55d595f3142472162",
+      "object": "column:ledger.tax_lots.original_face"
+    },
+    {
       "fingerprint": "2bebdbfced258c67fcd521ad46f546fa114ce1d6a4474ea686cc36c2c17f95f2",
       "object": "column:ledger.tax_lots.original_quantity"
     },
     {
       "fingerprint": "cf06b42dd1cd177b160623d840851c9952c303f77bca29556d47055892e0775c",
       "object": "column:ledger.tax_lots.originating_mutation_batch_id"
+    },
+    {
+      "fingerprint": "9b3f456e806756befc4505082b9d37df50b64e91dcb9c70187168a96fffd283e",
+      "object": "column:ledger.tax_lots.par_basis"
     },
     {
       "fingerprint": "a558401582ce2b92faf5dbfce7ef8e24d525aafb71fe0d9de2bf7ffd31eb012d",
@@ -16813,6 +16897,14 @@
       "object": "constraint:ledger.tax_lots.ck_tax_lots_currency"
     },
     {
+      "fingerprint": "0677a9d83cdf2db08407e22ddb40b14bb095b1772e5ae2d63859490cd0243a60",
+      "object": "constraint:ledger.tax_lots.ck_tax_lots_face_terms"
+    },
+    {
+      "fingerprint": "3babaaf0d44bd6ad99d30103062ae6af76e0dcef1abf9599894d9e85c73514c8",
+      "object": "constraint:ledger.tax_lots.ck_tax_lots_face_terms_complete"
+    },
+    {
       "fingerprint": "9f0f099c0b37a1db3b1605b7cf6c770499f89866346a0fb93ac2e1aa96772a95",
       "object": "constraint:ledger.tax_lots.ck_tax_lots_quantity"
     },
@@ -19043,6 +19135,30 @@
     {
       "fingerprint": "2462618a5bbef7cdf1540aecdce0c1298835ef21020c548b952d28dcc00c2b59",
       "object": "dependency:ledger.ck_tax_lots_currency on ledger.tax_lots->ledger.tax_lots.currency:normal"
+    },
+    {
+      "fingerprint": "58af9cfa61edceb26fbe5b4c513f04e034097b8a2b06fd1961f1811e1a71f975",
+      "object": "dependency:ledger.ck_tax_lots_face_terms on ledger.tax_lots->ledger.tax_lots.booked_factor:normal"
+    },
+    {
+      "fingerprint": "3634b97b149ebf591aecc4f8e4a245aa5a9a735e78fb9f67b27c8582c79fafce",
+      "object": "dependency:ledger.ck_tax_lots_face_terms on ledger.tax_lots->ledger.tax_lots.original_face:normal"
+    },
+    {
+      "fingerprint": "ea2ea689dbb82935a12a6fa88ac451a69cb414801c826b54864c211b172483c4",
+      "object": "dependency:ledger.ck_tax_lots_face_terms on ledger.tax_lots->ledger.tax_lots.par_basis:normal"
+    },
+    {
+      "fingerprint": "d524514e91f4e982168f9479700aad932ef90744e6f00714b7546c72dbd280e0",
+      "object": "dependency:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots->ledger.tax_lots.booked_factor:normal"
+    },
+    {
+      "fingerprint": "3806319469886285d44c71a80607c99df2993058ee659ee2fb9130eca12301c1",
+      "object": "dependency:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots->ledger.tax_lots.original_face:normal"
+    },
+    {
+      "fingerprint": "4dad81610d373d12b319012b72354be7cd677498d1c9310988b8e2b9b5a53664",
+      "object": "dependency:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots->ledger.tax_lots.par_basis:normal"
     },
     {
       "fingerprint": "53d04414067b745ac0d114587658226d46c66280ade634ece30823954874510d",
@@ -23813,7 +23929,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "167a27b209b2cb89a5c701a2cdb167a16609136e19689a2db875026a9ad5302d",
+      "fingerprint": "a12446d85c57a739c3af589b758178f3129a4fb8cb4606b90a2ea993159ab2d7",
       "object": "schema:ledger"
     },
     {
@@ -24137,7 +24253,7 @@
       "object": "table:ledger.tax_lot_policies"
     },
     {
-      "fingerprint": "04aa80e7d8c747736777fa0a07cb11475b80df7869035d59cb36957709336308",
+      "fingerprint": "7ea420c279b6df078d0299cdfaa88587b0495b7b83bb7bd69887f9724a669428",
       "object": "table:ledger.tax_lots"
     },
     {
@@ -59092,6 +59208,78 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "58af9cfa61edceb26fbe5b4c513f04e034097b8a2b06fd1961f1811e1a71f975",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lots.booked_factor",
+          "target_kind": "table column",
+          "target_name": "tax_lots",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "3634b97b149ebf591aecc4f8e4a245aa5a9a735e78fb9f67b27c8582c79fafce",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lots.original_face",
+          "target_kind": "table column",
+          "target_name": "tax_lots",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "ea2ea689dbb82935a12a6fa88ac451a69cb414801c826b54864c211b172483c4",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lots.par_basis",
+          "target_kind": "table column",
+          "target_name": "tax_lots",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "d524514e91f4e982168f9479700aad932ef90744e6f00714b7546c72dbd280e0",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lots.booked_factor",
+          "target_kind": "table column",
+          "target_name": "tax_lots",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "3806319469886285d44c71a80607c99df2993058ee659ee2fb9130eca12301c1",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lots.original_face",
+          "target_kind": "table column",
+          "target_name": "tax_lots",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "4dad81610d373d12b319012b72354be7cd677498d1c9310988b8e2b9b5a53664",
+          "kind": "normal",
+          "source": "ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lots.par_basis",
+          "target_kind": "table column",
+          "target_name": "tax_lots",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "53d04414067b745ac0d114587658226d46c66280ade634ece30823954874510d",
           "kind": "normal",
           "source": "ledger.ck_tax_lots_quantity on ledger.tax_lots",
@@ -59684,7 +59872,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "167a27b209b2cb89a5c701a2cdb167a16609136e19689a2db875026a9ad5302d",
+      "fingerprint": "a12446d85c57a739c3af589b758178f3129a4fb8cb4606b90a2ea993159ab2d7",
       "foreign_tables": [],
       "functions": [
         {
@@ -70961,6 +71149,54 @@
               "security_labels": [],
               "type_name": "uuid",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "1b815aa0ca820c72cb7bc8a5cf85d23f3f603185c766e1e55d595f3142472162",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "original_face",
+              "nullable": true,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "a258c1546a7d64d52edface85f009f5a3a51cddc6258066b78992f752675999c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "booked_factor",
+              "nullable": true,
+              "ordinal_position": 23,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "9b3f456e806756befc4505082b9d37df50b64e91dcb9c70187168a96fffd283e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "par_basis",
+              "nullable": true,
+              "ordinal_position": 24,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -70998,6 +71234,50 @@
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lots_currency",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "original_face",
+                "booked_factor",
+                "par_basis"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((original_face IS NULL OR original_face > 0::numeric) AND (booked_factor IS NULL OR booked_factor > 0::numeric AND booked_factor <= 1::numeric) AND (par_basis IS NULL OR par_basis > 0::numeric))",
+              "delete_action": null,
+              "fingerprint": "0677a9d83cdf2db08407e22ddb40b14bb095b1772e5ae2d63859490cd0243a60",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_tax_lots_face_terms",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "original_face",
+                "booked_factor",
+                "par_basis"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (original_face IS NULL AND booked_factor IS NULL AND par_basis IS NULL OR original_face IS NOT NULL AND booked_factor IS NOT NULL AND par_basis IS NOT NULL)",
+              "delete_action": null,
+              "fingerprint": "3babaaf0d44bd6ad99d30103062ae6af76e0dcef1abf9599894d9e85c73514c8",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_tax_lots_face_terms_complete",
               "no_inherit": false,
               "referenced_columns": [],
               "referenced_schema": null,
@@ -71178,7 +71458,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "04aa80e7d8c747736777fa0a07cb11475b80df7869035d59cb36957709336308",
+          "fingerprint": "7ea420c279b6df078d0299cdfaa88587b0495b7b83bb7bd69887f9724a669428",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -82980,6 +83260,54 @@
               "security_labels": [],
               "type_name": "uuid",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "1b815aa0ca820c72cb7bc8a5cf85d23f3f603185c766e1e55d595f3142472162",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "original_face",
+              "nullable": true,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "a258c1546a7d64d52edface85f009f5a3a51cddc6258066b78992f752675999c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "booked_factor",
+              "nullable": true,
+              "ordinal_position": 23,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "9b3f456e806756befc4505082b9d37df50b64e91dcb9c70187168a96fffd283e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "par_basis",
+              "nullable": true,
+              "ordinal_position": 24,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -83017,6 +83345,50 @@
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_tax_lots_currency",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "original_face",
+                "booked_factor",
+                "par_basis"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK ((original_face IS NULL OR original_face > 0::numeric) AND (booked_factor IS NULL OR booked_factor > 0::numeric AND booked_factor <= 1::numeric) AND (par_basis IS NULL OR par_basis > 0::numeric))",
+              "delete_action": null,
+              "fingerprint": "0677a9d83cdf2db08407e22ddb40b14bb095b1772e5ae2d63859490cd0243a60",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_tax_lots_face_terms",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "original_face",
+                "booked_factor",
+                "par_basis"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (original_face IS NULL AND booked_factor IS NULL AND par_basis IS NULL OR original_face IS NOT NULL AND booked_factor IS NOT NULL AND par_basis IS NOT NULL)",
+              "delete_action": null,
+              "fingerprint": "3babaaf0d44bd6ad99d30103062ae6af76e0dcef1abf9599894d9e85c73514c8",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_tax_lots_face_terms_complete",
               "no_inherit": false,
               "referenced_columns": [],
               "referenced_schema": null,
@@ -83197,7 +83569,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "04aa80e7d8c747736777fa0a07cb11475b80df7869035d59cb36957709336308",
+          "fingerprint": "7ea420c279b6df078d0299cdfaa88587b0495b7b83bb7bd69887f9724a669428",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

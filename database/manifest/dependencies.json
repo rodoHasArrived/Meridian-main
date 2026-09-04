@@ -41393,6 +41393,42 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.booked_factor"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.original_face"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.par_basis"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.booked_factor"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.original_face"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.par_basis"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_tax_lots_quantity on ledger.tax_lots",
       "target": "database:ledger.tax_lots.open_quantity"
     },
@@ -46364,7 +46400,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "023420db5f265ab3fea2e9980230ea738e98c04dfd086b3e2aba167e8c713012",
+  "fingerprint": "8beaf6bc276cceb5752f1e4319baa20cdb5649b49be61e770b6bbaebd2ba5009",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -63744,6 +63780,16 @@
       "label": "ledger.ck_tax_lots_currency on ledger.tax_lots"
     },
     {
+      "id": "database:ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_face_terms on ledger.tax_lots"
+    },
+    {
+      "id": "database:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots"
+    },
+    {
       "id": "database:ledger.ck_tax_lots_quantity on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.ck_tax_lots_quantity on ledger.tax_lots"
@@ -64145,6 +64191,11 @@
       "label": "ledger.tax_lots.book_position_id"
     },
     {
+      "id": "database:ledger.tax_lots.booked_factor",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.booked_factor"
+    },
+    {
       "id": "database:ledger.tax_lots.currency",
       "kind": "database-object",
       "label": "ledger.tax_lots.currency"
@@ -64155,9 +64206,19 @@
       "label": "ledger.tax_lots.open_quantity"
     },
     {
+      "id": "database:ledger.tax_lots.original_face",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.original_face"
+    },
+    {
       "id": "database:ledger.tax_lots.original_quantity",
       "kind": "database-object",
       "label": "ledger.tax_lots.original_quantity"
+    },
+    {
+      "id": "database:ledger.tax_lots.par_basis",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.par_basis"
     },
     {
       "id": "database:ledger.tax_lots.security_id",
@@ -67736,9 +67797,9 @@
   "summary": {
     "contract_references": 3070,
     "contract_set_memberships": 3644,
-    "edges": 7704,
+    "edges": 7710,
     "foreign_keys": 123,
     "logical_references": 6,
-    "nodes": 3695
+    "nodes": 3700
   }
 }

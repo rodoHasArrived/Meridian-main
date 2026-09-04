@@ -5608,7 +5608,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_029__journal_leg_currency_backfill.sql
 │   │   │   │   ├── V_ledger_030__journal_immutability.sql
 │   │   │   │   ├── V_ledger_031__journal_aggregate_seal.sql
-│   │   │   │   └── V_ledger_032__accounting_audit_chain.sql
+│   │   │   │   ├── V_ledger_032__accounting_audit_chain.sql
+│   │   │   │   └── V_ledger_033__tax_lot_face_terms.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5623,6 +5624,7 @@ Meridian-main
 │   │   │   ├── LedgerPeriodPostingGuard.cs
 │   │   │   ├── LedgerRetainedValueComparison.cs
 │   │   │   ├── LedgerStoreExtensions.cs
+│   │   │   ├── LedgerTaxLotFaceValueTerms.cs
 │   │   │   ├── PostgresAccountingConfigurationStore.cs
 │   │   │   ├── PostgresFundProfileTenancyRegistry.cs
 │   │   │   ├── PostgresLedgerBookService.cs
@@ -5631,6 +5633,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
+│   │   │   ├── PostgresLedgerJournalStore.TaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Validation.cs
 │   │   │   ├── PostgresLedgerJournalStore.WashSale.cs
 │   │   │   ├── RetainedPostingEquivalence.cs

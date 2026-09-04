@@ -122,6 +122,14 @@ Additive ledger columns precede any cutover:
 - `functional_cost_basis`;
 - `par_basis`, `booked_factor`, `amortization_method`, and `effective_yield` for face lots.
 
+`original_face`, `booked_factor`, and `par_basis` **landed** in
+`V_ledger_033__tax_lot_face_terms.sql`, nullable and constrained all-three-or-none so a lot either
+states its acquisition-time par conventions or states nothing; legacy rows are not backfilled with
+synthetic defaults. `LedgerTaxLotFaceValueTerms` (`src/Meridian.Storage/Ledger/`) is the seam that
+writes those terms from, and restates them back into, the canonical `FaceValueLot` aggregate, and
+`AccountingPostingCandidateService` now derives factor-paydown held face from the lots of record
+through it. `amortization_method` and `effective_yield` remain proposed.
+
 `security_id` and `book_position_id` become non-null only after the legacy-row exception queue is
 empty. Mutation rows retain before/after snapshots and the Security Master version used.
 
