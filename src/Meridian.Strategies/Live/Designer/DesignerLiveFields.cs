@@ -20,7 +20,6 @@ internal static class DesignerLiveFields
     public const string Momentum63D = "MOMENTUM_63D";
     public const string Volatility20D = "VOLATILITY_20D";
     public const string PortfolioWeight = "PORTFOLIO_WEIGHT";
-    public const string LedgerCash = "LEDGER_CASH";
 
     /// <summary>Catalog fields the live evaluator can resolve.</summary>
     public static readonly IReadOnlySet<string> Supported =
@@ -30,8 +29,7 @@ internal static class DesignerLiveFields
             AverageVolume20D,
             Momentum63D,
             Volatility20D,
-            PortfolioWeight,
-            LedgerCash
+            PortfolioWeight
         };
 
     /// <summary>Why a catalog field that exists has no live source, keyed by field id.</summary>
@@ -46,60 +44,90 @@ internal static class DesignerLiveFields
             ["RATING"] = "Security Master rating bucket is a string; designer expressions are numeric.",
             ["DURATION"] = "Security Master effective duration; not resolvable from the live market feed.",
             ["OPTION_DELTA"] = "Options-chain greek; the live trading engine consumes equity trades, quotes, and bars only.",
-            ["OPTION_EXPIRATION"] = "Options-chain expiration date; not resolvable from the live market feed."
+            ["OPTION_EXPIRATION"] = "Options-chain expiration date; not resolvable from the live market feed.",
+
+            // The catalog defines LEDGER_CASH as cash from Meridian ledger projections. The live
+            // strategy context exposes only the brokerage/session cash balance, which is a
+            // different authority: a ledger-based liquidity guard could pass on broker cash while
+            // the governed ledger balance says otherwise. Refusing is the honest answer until a
+            // ledger projection is wired into the live context.
+            ["LEDGER_CASH"] =
+                "The catalog sources this from Meridian ledger projections, but the live strategy context "
+                + "exposes only brokerage cash. Resolving it from the wrong authority could let a ledger "
+                + "guard pass against a balance it does not govern."
         };
 
-    /// <summary>Number of observations the longest supported window needs before it is warm.</summary>
+    /// <summary>Trading sessions the longest supported window needs before it is warm.</summary>
     public const int MaxWindow = 64;
 
     /// <summary>
-    /// Rolling per-symbol price and volume observations. Sized to the longest window any supported
-    /// field needs (63-day momentum, so 64 observations including the base).
+    /// Rolling per-symbol session observations plus the latest spot price.
     /// </summary>
+    /// <remarks>
+    /// The two are deliberately separate. <c>PRICE</c> is a spot value and tracks every trade and
+    /// quote, but <c>MOMENTUM_63D</c> and <c>VOLATILITY_20D</c> are defined by the catalog as
+    /// 63- and 20-<em>trading-session</em> metrics. Advancing their window per tick would warm a
+    /// "63-day" signal after sixty-four quotes and compute intraday tick returns under a daily
+    /// field name, so the session series advances only on bars, once per session date.
+    /// </remarks>
     internal sealed class SymbolWindow
     {
-        private readonly Queue<decimal> _prices = new(MaxWindow);
-        private readonly Queue<long> _volumes = new(MaxWindow);
+        private readonly Queue<decimal> _sessionCloses = new(MaxWindow);
+        private readonly Queue<long> _sessionVolumes = new(MaxWindow);
+        private DateOnly? _lastSessionDate;
 
-        public int Count => _prices.Count;
+        /// <summary>Number of completed sessions recorded.</summary>
+        public int SessionCount => _sessionCloses.Count;
 
+        /// <summary>Latest observed price from any event kind.</summary>
         public decimal LastPrice { get; private set; }
 
-        /// <summary>
-        /// Records one observation. <paramref name="volume"/> is null for trade and quote events,
-        /// which carry no session volume: the volume series simply does not advance, because
-        /// pushing a zero would drag VOLUME_AVG_20D down and let a liquidity filter admit a name
-        /// it was written to exclude.
-        /// </summary>
-        public void Observe(decimal price, long? volume)
+        /// <summary>Records a spot price from a trade or quote. Does not advance the session series.</summary>
+        public void ObserveSpot(decimal price)
         {
-            if (price <= 0m)
+            if (price > 0m)
+            {
+                LastPrice = price;
+            }
+        }
+
+        /// <summary>
+        /// Records a completed session bar. A repeated <paramref name="sessionDate"/> replaces the
+        /// existing entry rather than appending, so a restated bar does not double-count a session.
+        /// </summary>
+        public void ObserveSession(decimal close, long volume, DateOnly sessionDate)
+        {
+            if (close <= 0m)
             {
                 return;
             }
 
-            LastPrice = price;
-            _prices.Enqueue(price);
-            while (_prices.Count > MaxWindow)
-            {
-                _prices.Dequeue();
-            }
+            LastPrice = close;
 
-            if (volume is not { } observed)
+            if (_lastSessionDate == sessionDate && _sessionCloses.Count > 0)
             {
+                ReplaceLast(close, volume);
                 return;
             }
 
-            _volumes.Enqueue(observed);
-            while (_volumes.Count > MaxWindow)
+            _lastSessionDate = sessionDate;
+            _sessionCloses.Enqueue(close);
+            _sessionVolumes.Enqueue(volume);
+            while (_sessionCloses.Count > MaxWindow)
             {
-                _volumes.Dequeue();
+                _sessionCloses.Dequeue();
+            }
+
+            while (_sessionVolumes.Count > MaxWindow)
+            {
+                _sessionVolumes.Dequeue();
             }
         }
 
         /// <summary>
         /// Resolves every field the plan reads for one symbol, or returns <c>false</c> with the
-        /// field that is still cold. A cold window means "do not trade yet", never "assume zero".
+        /// field that is still cold. A cold window means "no decision yet" — the caller must treat
+        /// it as neither an entry nor an exit signal.
         /// </summary>
         public bool TryResolve(
             IReadOnlySet<string> requiredFields,
@@ -127,6 +155,26 @@ internal static class DesignerLiveFields
             return true;
         }
 
+        private void ReplaceLast(decimal close, long volume)
+        {
+            var closes = _sessionCloses.ToArray();
+            var volumes = _sessionVolumes.ToArray();
+            closes[^1] = close;
+            volumes[^1] = volume;
+
+            _sessionCloses.Clear();
+            _sessionVolumes.Clear();
+            foreach (var value in closes)
+            {
+                _sessionCloses.Enqueue(value);
+            }
+
+            foreach (var value in volumes)
+            {
+                _sessionVolumes.Enqueue(value);
+            }
+        }
+
         private bool TryResolveField(string field, IBacktestContext ctx, string symbol, out decimal value)
         {
             switch (field.ToUpperInvariant())
@@ -142,9 +190,6 @@ internal static class DesignerLiveFields
                     return TryVolatility(out value);
                 case PortfolioWeight:
                     return TryPortfolioWeight(ctx, symbol, out value);
-                case LedgerCash:
-                    value = ctx.Cash;
-                    return true;
                 default:
                     // Unreachable for a compiled plan: DesignerStrategyPlan refuses unsupported
                     // fields before a strategy is ever constructed. Guarded anyway so a future
@@ -157,24 +202,24 @@ internal static class DesignerLiveFields
         private bool TryAverageVolume(out decimal value)
         {
             value = 0m;
-            if (_volumes.Count < 20)
+            if (_sessionVolumes.Count < 20)
             {
                 return false;
             }
 
-            value = (decimal)_volumes.TakeLast(20).Average();
+            value = (decimal)_sessionVolumes.TakeLast(20).Average();
             return true;
         }
 
         private bool TryMomentum(out decimal value)
         {
             value = 0m;
-            if (_prices.Count < 64)
+            if (_sessionCloses.Count < 64)
             {
                 return false;
             }
 
-            var window = _prices.TakeLast(64).ToArray();
+            var window = _sessionCloses.TakeLast(64).ToArray();
             var baseline = window[0];
             if (baseline <= 0m)
             {
@@ -188,12 +233,12 @@ internal static class DesignerLiveFields
         private bool TryVolatility(out decimal value)
         {
             value = 0m;
-            if (_prices.Count < 21)
+            if (_sessionCloses.Count < 21)
             {
                 return false;
             }
 
-            var window = _prices.TakeLast(21).ToArray();
+            var window = _sessionCloses.TakeLast(21).ToArray();
             var returns = new double[window.Length - 1];
             for (var i = 1; i < window.Length; i++)
             {

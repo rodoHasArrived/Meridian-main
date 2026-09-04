@@ -50,6 +50,9 @@ internal sealed record DesignerTradeIntent(
 /// </remarks>
 internal sealed class DesignerStrategyPlan
 {
+    /// <summary>Largest accepted share count / notional. Keeps sizing inside <see cref="long"/>.</summary>
+    private const decimal MaxSizingValue = 1_000_000_000m;
+
     private DesignerStrategyPlan(
         string documentId,
         string name,
@@ -134,6 +137,31 @@ internal sealed class DesignerStrategyPlan
         {
             failureReason = $"Designer document '{document.DocumentId}' declares no universe symbols.";
             return false;
+        }
+
+        // Transitions are validated and persisted as executable structure, but this plan composes
+        // cells conjunctively and has no notion of ordering, branching, or bounded iteration. A
+        // plain "next" edge expresses an ordering that conjunction already subsumes; anything else
+        // -- a loop with MaxIterations, a conditional branch -- would change what the document
+        // means, so it is refused rather than silently flattened.
+        foreach (var transition in document.Transitions ?? Array.Empty<StrategyDesignTransition>())
+        {
+            if (!string.Equals(transition.Kind, "next", StringComparison.OrdinalIgnoreCase))
+            {
+                failureReason =
+                    $"Designer document '{document.DocumentId}' has transition '{transition.TransitionId}' of kind " +
+                    $"'{transition.Kind}'. The live engine evaluates cells as a conjunction and cannot execute " +
+                    "branching or looping transitions; express the strategy as filter, rank, risk, and trade cells.";
+                return false;
+            }
+
+            if (transition.MaxIterations is not null)
+            {
+                failureReason =
+                    $"Designer document '{document.DocumentId}' has transition '{transition.TransitionId}' with a " +
+                    "bounded-iteration guard. The live engine has no iteration semantics to honour it.";
+                return false;
+            }
         }
 
         if (cells.FirstOrDefault(static cell => string.Equals(cell.Kind, "code", StringComparison.OrdinalIgnoreCase)) is { } codeCell)
@@ -294,7 +322,12 @@ internal sealed class DesignerStrategyPlan
                 return true;
             }
 
-            if (!DesignerExpression.TryParse(cell.Source ?? string.Empty, DesignerLiveFields.Supported, out var guard, out var guardError))
+            if (!DesignerExpression.TryParse(
+                    cell.Source ?? string.Empty,
+                    DesignerLiveFields.Supported,
+                    DesignerResultKind.Boolean,
+                    out var guard,
+                    out var guardError))
             {
                 failureReason =
                     $"Risk guard cell '{cell.Label}' ({cell.CellId}) in designer document '{document.DocumentId}' " +
@@ -308,7 +341,12 @@ internal sealed class DesignerStrategyPlan
 
         if (string.Equals(purpose, "rank", StringComparison.OrdinalIgnoreCase))
         {
-            if (!DesignerExpression.TryParse(cell.Source ?? string.Empty, DesignerLiveFields.Supported, out var rankExpression, out var rankError))
+            if (!DesignerExpression.TryParse(
+                    cell.Source ?? string.Empty,
+                    DesignerLiveFields.Supported,
+                    DesignerResultKind.Number,
+                    out var rankExpression,
+                    out var rankError))
             {
                 failureReason =
                     $"Rank cell '{cell.Label}' ({cell.CellId}) in designer document '{document.DocumentId}' is not " +
@@ -331,7 +369,12 @@ internal sealed class DesignerStrategyPlan
         if (string.Equals(kind, "visual", StringComparison.OrdinalIgnoreCase)
             || string.Equals(kind, "formula", StringComparison.OrdinalIgnoreCase))
         {
-            if (!DesignerExpression.TryParse(cell.Source ?? string.Empty, DesignerLiveFields.Supported, out var gate, out var gateError))
+            if (!DesignerExpression.TryParse(
+                    cell.Source ?? string.Empty,
+                    DesignerLiveFields.Supported,
+                    DesignerResultKind.Boolean,
+                    out var gate,
+                    out var gateError))
             {
                 failureReason =
                     $"Cell '{cell.Label}' ({cell.CellId}) in designer document '{document.DocumentId}' is not an " +
@@ -363,6 +406,22 @@ internal sealed class DesignerStrategyPlan
         failureReason = null;
         var parameters = cell.Parameters;
 
+        // The trade cell's instrument check alone is not enough: a universe-builder declaring a
+        // fixed-income or options asset class would otherwise compile and push its symbols through
+        // the equity order path, contradicting the non-equity refusal boundary.
+        var assetClass = parameters is not null && parameters.TryGetValue("assetClass", out var declaredAssetClass)
+            ? declaredAssetClass
+            : string.Empty;
+        if (!string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(assetClass, "ETF", StringComparison.OrdinalIgnoreCase))
+        {
+            failureReason =
+                $"Universe-builder cell '{cell.Label}' ({cell.CellId}) in designer document " +
+                $"'{document.DocumentId}' builds a '{assetClass}' universe. The live trading engine routes " +
+                "equity and ETF orders only.";
+            return false;
+        }
+
         foreach (var (key, negate) in new[] { ("includeRules", Negate: false), ("excludeRules", Negate: true) })
         {
             if (parameters is null || !parameters.TryGetValue(key, out var raw) || string.IsNullOrWhiteSpace(raw))
@@ -372,7 +431,12 @@ internal sealed class DesignerStrategyPlan
 
             foreach (var rule in raw.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
             {
-                if (!DesignerExpression.TryParse(rule, DesignerLiveFields.Supported, out var expression, out var ruleError))
+                if (!DesignerExpression.TryParse(
+                        rule,
+                        DesignerLiveFields.Supported,
+                        DesignerResultKind.Boolean,
+                        out var expression,
+                        out var ruleError))
                 {
                     failureReason =
                         $"Universe-builder cell '{cell.Label}' ({cell.CellId}) in designer document " +
@@ -562,6 +626,21 @@ internal sealed class DesignerStrategyPlan
             return false;
         }
 
+        // priceConstraint is not part of the validated trade-cell contract, but the shipped trade
+        // template sets it to VWAP and an operator who writes one means it. The order gateway has
+        // no VWAP or scheduled-execution route, and quietly downgrading a constrained instruction
+        // to a market order is exactly the kind of substitution this row exists to remove.
+        var priceConstraint = parameters.GetValueOrDefault("priceConstraint", string.Empty);
+        if (!string.IsNullOrWhiteSpace(priceConstraint)
+            && !string.Equals(priceConstraint, "Market", StringComparison.OrdinalIgnoreCase))
+        {
+            failureReason =
+                $"Trade cell '{cell.Label}' ({cell.CellId}) requests price constraint '{priceConstraint}'. The live " +
+                "engine places market orders for designer documents and has no route that honours that "
+                + "instruction; set priceConstraint to Market, or remove it, to promote this design.";
+            return false;
+        }
+
         var sizingValue = 0m;
         if (sizingMethod != DesignerSizingMethod.EqualWeight)
         {
@@ -572,6 +651,27 @@ internal sealed class DesignerStrategyPlan
                 failureReason =
                     $"Trade cell '{cell.Label}' ({cell.CellId}) needs a positive sizingValue for sizingMethod " +
                     $"'{sizingMethodRaw}'; found '{raw}'.";
+                return false;
+            }
+
+            // Flooring 1.9 shares to 1 at execution would be an approximation of the promoted
+            // intent, so a non-integral share count is refused where the operator can still fix it.
+            if (sizingMethod == DesignerSizingMethod.FixedShares && decimal.Truncate(sizingValue) != sizingValue)
+            {
+                failureReason =
+                    $"Trade cell '{cell.Label}' ({cell.CellId}) declares FixedShares sizingValue '{raw}'. Share " +
+                    "counts must be whole numbers; the engine will not round a promoted quantity.";
+                return false;
+            }
+
+            // Bounds the value before the decimal-to-long conversion on the live event path, so an
+            // oversized figure is a deferral an operator can read rather than an OverflowException
+            // inside a market-event callback.
+            if (sizingMethod != DesignerSizingMethod.PercentAum && sizingValue > MaxSizingValue)
+            {
+                failureReason =
+                    $"Trade cell '{cell.Label}' ({cell.CellId}) declares sizingValue '{raw}', beyond the supported " +
+                    $"limit of {MaxSizingValue}.";
                 return false;
             }
 

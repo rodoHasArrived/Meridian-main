@@ -5,6 +5,7 @@ using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.QuantScript.Compilation;
+using Meridian.Strategies.Live.Designer;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
@@ -280,7 +281,19 @@ public static partial class WorkstationEndpoints
                     {
                         ["designerDocumentId"] = document.DocumentId,
                         ["datasetFingerprint"] = preview.Compiled.DatasetFingerprint,
-                        ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture)
+                        ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture),
+
+                        // The document's universe is carried as 'symbols' because promotion copies
+                        // this parameter set verbatim and LiveTradingEngine.ResolveUniverse reads
+                        // only 'symbol'/'symbols'. Without it a promoted designer run defers for
+                        // having no trading universe, or silently trades the host's DefaultSymbols
+                        // instead of the design's own (PRD-020).
+                        ["symbols"] = string.Join(",", document.Universe),
+
+                        // Pins activation to this exact revision: the design repository returns the
+                        // latest saved draft for a document id, so an edit made after this backtest
+                        // would otherwise become what a promoted run trades.
+                        [DesignerDocumentRevision.ParameterKey] = DesignerDocumentRevision.ComputeHash(document)
                     },
                     operatorAcceptanceCriteria: evidenceLoop.OperatorAcceptanceCriteria,
                     retainedEvidenceReferences: evidenceLoop.RetainedEvidenceReferences,

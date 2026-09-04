@@ -1,12 +1,17 @@
 using System.Globalization;
+using Meridian.Core.Exceptions;
 
 namespace Meridian.Strategies.Live.Designer;
 
+/// <summary>The static result shape of a designer expression.</summary>
+internal enum DesignerResultKind
+{
+    Number,
+    Boolean
+}
+
 /// <summary>
 /// Value produced by evaluating a <see cref="DesignerExpression"/>: either a number or a boolean.
-/// Kept as an explicit two-state value rather than <see cref="object"/> so every operator has to
-/// state which shape it accepts, and a type mismatch is a named evaluation failure instead of a
-/// cast exception on the live trading path.
 /// </summary>
 internal readonly struct DesignerValue
 {
@@ -31,31 +36,46 @@ internal readonly struct DesignerValue
 }
 
 /// <summary>
-/// Raised when designer source cannot be parsed into the closed expression grammar. Carries the
-/// operator-facing message the live source turns into a fail-closed deferral reason.
+/// Raised when designer source cannot be parsed into the closed expression grammar, or when a
+/// bounded evaluation fault (a cold field, arithmetic overflow, division by zero) makes a value
+/// unavailable. Carries the operator-facing message the live source turns into a fail-closed
+/// deferral reason.
 /// </summary>
-internal sealed class DesignerExpressionException(string message) : Exception(message);
+internal sealed class DesignerExpressionException(string message) : MeridianException(message);
 
 /// <summary>
 /// A parsed, immutable expression over the Strategy Designer field catalog.
 /// </summary>
 /// <remarks>
+/// <para>
 /// This is deliberately <em>not</em> a script host. The grammar is closed — numeric literals,
 /// catalog field identifiers, comparison, boolean, and arithmetic operators, and parentheses —
 /// with no calls, no assignment, no member access, and no identifier that is not a catalog field.
 /// That is what lets designer documents reach live execution without the isolation boundary
 /// <c>PRD-012</c> requires for arbitrary C#: there is no code here to contain, because a document
-/// cannot express anything outside this grammar. Sources that need more than the grammar offers
-/// (a <c>code</c> cell, an unparseable formula) are refused at compile time by
-/// <see cref="DesignerStrategyPlan"/> rather than degraded to a default.
+/// cannot express anything outside this grammar.
+/// </para>
+/// <para>
+/// Operand shapes are checked while parsing, so <see cref="ResultKind"/> is known before a run
+/// activates. A filter that reads <c>PRICE</c> rather than a condition, or a rank that reads
+/// <c>PRICE &gt; 20</c> rather than a score, is refused at compile time instead of activating and
+/// then silently matching nothing on every event.
+/// </para>
 /// </remarks>
 internal abstract class DesignerExpression
 {
     /// <summary>Longest source accepted. Bounds parser work on operator-supplied text.</summary>
     private const int MaxSourceLength = 4096;
 
-    /// <summary>Maximum nesting depth. Bounds recursion so a pathological source cannot overflow.</summary>
+    /// <summary>
+    /// Maximum bracket/unary nesting depth. Counted only where the parser actually recurses into
+    /// a nested sub-expression, so the limit describes source nesting rather than the number of
+    /// precedence levels the grammar happens to have.
+    /// </summary>
     private const int MaxDepth = 32;
+
+    /// <summary>The shape this expression evaluates to, known statically.</summary>
+    public abstract DesignerResultKind ResultKind { get; }
 
     /// <summary>Evaluates against one symbol's resolved field values.</summary>
     public abstract DesignerValue Evaluate(IReadOnlyDictionary<string, decimal> fields);
@@ -64,9 +84,8 @@ internal abstract class DesignerExpression
     public abstract IEnumerable<string> ReferencedFields();
 
     /// <summary>
-    /// Evaluates and coerces to a boolean gate result. A numeric result is a shape error, not a
-    /// truthiness conversion: "PRICE" is not a condition, and silently treating a non-zero price
-    /// as "true" would let a malformed filter admit every symbol.
+    /// Evaluates as a gate. <see cref="ResultKind"/> is checked at compile time, so reaching this
+    /// with a numeric expression is a programming error rather than a document error.
     /// </summary>
     public bool EvaluateCondition(IReadOnlyDictionary<string, decimal> fields)
     {
@@ -82,7 +101,7 @@ internal abstract class DesignerExpression
     /// </summary>
     /// <exception cref="DesignerExpressionException">
     /// The source is empty, too long, too deeply nested, references an identifier that is not a
-    /// known catalog field, or is not valid in the grammar.
+    /// known catalog field, mixes operand shapes, or is not valid in the grammar.
     /// </exception>
     public static DesignerExpression Parse(string source, IReadOnlySet<string> knownFields)
     {
@@ -105,17 +124,29 @@ internal abstract class DesignerExpression
     }
 
     /// <summary>
-    /// Attempts a parse, returning the operator-facing failure message instead of throwing.
+    /// Attempts a parse, additionally requiring <paramref name="requiredKind"/>, and returns the
+    /// operator-facing failure message instead of throwing.
     /// </summary>
     public static bool TryParse(
         string source,
         IReadOnlySet<string> knownFields,
+        DesignerResultKind requiredKind,
         out DesignerExpression? expression,
         out string? failureReason)
     {
         try
         {
-            expression = Parse(source, knownFields);
+            var parsed = Parse(source, knownFields);
+            if (parsed.ResultKind != requiredKind)
+            {
+                expression = null;
+                failureReason = requiredKind == DesignerResultKind.Boolean
+                    ? "Expected a true/false condition (for example 'PRICE > 20'), but the source is a numeric value."
+                    : "Expected a numeric score (for example 'MOMENTUM_63D - VOLATILITY_20D'), but the source is a true/false condition.";
+                return false;
+            }
+
+            expression = parsed;
             failureReason = null;
             return true;
         }
@@ -129,6 +160,8 @@ internal abstract class DesignerExpression
 
     private sealed class Literal(decimal value) : DesignerExpression
     {
+        public override DesignerResultKind ResultKind => DesignerResultKind.Number;
+
         public override DesignerValue Evaluate(IReadOnlyDictionary<string, decimal> fields) =>
             DesignerValue.FromNumber(value);
 
@@ -137,6 +170,8 @@ internal abstract class DesignerExpression
 
     private sealed class Field(string fieldId) : DesignerExpression
     {
+        public override DesignerResultKind ResultKind => DesignerResultKind.Number;
+
         public override DesignerValue Evaluate(IReadOnlyDictionary<string, decimal> fields) =>
             fields.TryGetValue(fieldId, out var value)
                 ? DesignerValue.FromNumber(value)
@@ -150,32 +185,30 @@ internal abstract class DesignerExpression
 
     private sealed class Not(DesignerExpression inner) : DesignerExpression
     {
-        public override DesignerValue Evaluate(IReadOnlyDictionary<string, decimal> fields)
-        {
-            var value = inner.Evaluate(fields);
-            return value.IsBoolean
-                ? DesignerValue.FromBoolean(!value.Boolean)
-                : throw new DesignerExpressionException("'!' requires a true/false operand.");
-        }
+        public override DesignerResultKind ResultKind => DesignerResultKind.Boolean;
+
+        public override DesignerValue Evaluate(IReadOnlyDictionary<string, decimal> fields) =>
+            DesignerValue.FromBoolean(!inner.Evaluate(fields).Boolean);
 
         public override IEnumerable<string> ReferencedFields() => inner.ReferencedFields();
     }
 
     private sealed class Negate(DesignerExpression inner) : DesignerExpression
     {
-        public override DesignerValue Evaluate(IReadOnlyDictionary<string, decimal> fields)
-        {
-            var value = inner.Evaluate(fields);
-            return value.IsNumber
-                ? DesignerValue.FromNumber(-value.Number)
-                : throw new DesignerExpressionException("Unary '-' requires a numeric operand.");
-        }
+        public override DesignerResultKind ResultKind => DesignerResultKind.Number;
+
+        public override DesignerValue Evaluate(IReadOnlyDictionary<string, decimal> fields) =>
+            DesignerValue.FromNumber(Checked(() => -inner.Evaluate(fields).Number));
 
         public override IEnumerable<string> ReferencedFields() => inner.ReferencedFields();
     }
 
     private sealed class Binary(string op, DesignerExpression left, DesignerExpression right) : DesignerExpression
     {
+        public override DesignerResultKind ResultKind => op is "+" or "-" or "*" or "/"
+            ? DesignerResultKind.Number
+            : DesignerResultKind.Boolean;
+
         public override DesignerValue Evaluate(IReadOnlyDictionary<string, decimal> fields)
         {
             // Short-circuit before evaluating the right operand so a guard like
@@ -183,7 +216,7 @@ internal abstract class DesignerExpression
             // not yet warm.
             if (op is "&&" or "||")
             {
-                var leftGate = AsBoolean(left.Evaluate(fields), op);
+                var leftGate = left.Evaluate(fields).Boolean;
                 if (op == "&&" && !leftGate)
                 {
                     return DesignerValue.FromBoolean(false);
@@ -194,7 +227,7 @@ internal abstract class DesignerExpression
                     return DesignerValue.FromBoolean(true);
                 }
 
-                return DesignerValue.FromBoolean(AsBoolean(right.Evaluate(fields), op));
+                return DesignerValue.FromBoolean(right.Evaluate(fields).Boolean);
             }
 
             var leftValue = left.Evaluate(fields);
@@ -202,46 +235,49 @@ internal abstract class DesignerExpression
 
             if (op is "==" or "!=")
             {
-                if (leftValue.IsBoolean != rightValue.IsBoolean)
-                {
-                    throw new DesignerExpressionException(
-                        $"'{op}' cannot compare a number with a true/false value.");
-                }
-
                 var equal = leftValue.IsBoolean
                     ? leftValue.Boolean == rightValue.Boolean
                     : leftValue.Number == rightValue.Number;
                 return DesignerValue.FromBoolean(op == "==" ? equal : !equal);
             }
 
-            var a = AsNumber(leftValue, op);
-            var b = AsNumber(rightValue, op);
+            var a = leftValue.Number;
+            var b = rightValue.Number;
             return op switch
             {
                 ">" => DesignerValue.FromBoolean(a > b),
                 ">=" => DesignerValue.FromBoolean(a >= b),
                 "<" => DesignerValue.FromBoolean(a < b),
                 "<=" => DesignerValue.FromBoolean(a <= b),
-                "+" => DesignerValue.FromNumber(a + b),
-                "-" => DesignerValue.FromNumber(a - b),
-                "*" => DesignerValue.FromNumber(a * b),
+                "+" => DesignerValue.FromNumber(Checked(() => a + b)),
+                "-" => DesignerValue.FromNumber(Checked(() => a - b)),
+                "*" => DesignerValue.FromNumber(Checked(() => a * b)),
                 "/" => b == 0m
                     ? throw new DesignerExpressionException("Division by zero.")
-                    : DesignerValue.FromNumber(a / b),
+                    : DesignerValue.FromNumber(Checked(() => a / b)),
                 _ => throw new DesignerExpressionException($"Unsupported operator '{op}'.")
             };
         }
 
         public override IEnumerable<string> ReferencedFields() =>
             left.ReferencedFields().Concat(right.ReferencedFields());
+    }
 
-        private static bool AsBoolean(DesignerValue value, string op) => value.IsBoolean
-            ? value.Boolean
-            : throw new DesignerExpressionException($"'{op}' requires true/false operands.");
-
-        private static decimal AsNumber(DesignerValue value, string op) => value.IsNumber
-            ? value.Number
-            : throw new DesignerExpressionException($"'{op}' requires numeric operands.");
+    /// <summary>
+    /// Runs a decimal operation, converting an overflow into the bounded evaluation failure the
+    /// strategy already handles. Letting <see cref="OverflowException"/> escape would take down a
+    /// market-event callback rather than skipping the symbol.
+    /// </summary>
+    private static decimal Checked(Func<decimal> operation)
+    {
+        try
+        {
+            return operation();
+        }
+        catch (OverflowException)
+        {
+            throw new DesignerExpressionException("Arithmetic overflow while evaluating the expression.");
+        }
     }
 
     private enum TokenKind
@@ -393,11 +429,11 @@ internal abstract class DesignerExpression
 
         private DesignerExpression ParseOr(int depth)
         {
-            var left = ParseAnd(Deepen(depth));
+            var left = ParseAnd(depth);
             while (Current is { Kind: TokenKind.Operator, Text: "||" })
             {
                 _position++;
-                left = new Binary("||", left, ParseAnd(Deepen(depth)));
+                left = Combine("||", left, ParseAnd(depth));
             }
 
             return left;
@@ -405,11 +441,11 @@ internal abstract class DesignerExpression
 
         private DesignerExpression ParseAnd(int depth)
         {
-            var left = ParseComparison(Deepen(depth));
+            var left = ParseComparison(depth);
             while (Current is { Kind: TokenKind.Operator, Text: "&&" })
             {
                 _position++;
-                left = new Binary("&&", left, ParseComparison(Deepen(depth)));
+                left = Combine("&&", left, ParseComparison(depth));
             }
 
             return left;
@@ -417,7 +453,7 @@ internal abstract class DesignerExpression
 
         private DesignerExpression ParseComparison(int depth)
         {
-            var left = ParseAdditive(Deepen(depth));
+            var left = ParseAdditive(depth);
             if (Current.Kind == TokenKind.Operator
                 && Current.Text is ">" or ">=" or "<" or "<=" or "==" or "!=")
             {
@@ -425,7 +461,7 @@ internal abstract class DesignerExpression
                 _position++;
                 // Not a loop: "a < b < c" is a modelling mistake, not a chained comparison, and
                 // ExpectEnd surfaces it rather than quietly comparing a boolean against a number.
-                return new Binary(op, left, ParseAdditive(Deepen(depth)));
+                return Combine(op, left, ParseAdditive(depth));
             }
 
             return left;
@@ -433,12 +469,12 @@ internal abstract class DesignerExpression
 
         private DesignerExpression ParseAdditive(int depth)
         {
-            var left = ParseMultiplicative(Deepen(depth));
+            var left = ParseMultiplicative(depth);
             while (Current.Kind == TokenKind.Operator && Current.Text is "+" or "-")
             {
                 var op = Current.Text;
                 _position++;
-                left = new Binary(op, left, ParseMultiplicative(Deepen(depth)));
+                left = Combine(op, left, ParseMultiplicative(depth));
             }
 
             return left;
@@ -446,12 +482,12 @@ internal abstract class DesignerExpression
 
         private DesignerExpression ParseMultiplicative(int depth)
         {
-            var left = ParseUnary(Deepen(depth));
+            var left = ParseUnary(depth);
             while (Current.Kind == TokenKind.Operator && Current.Text is "*" or "/")
             {
                 var op = Current.Text;
                 _position++;
-                left = new Binary(op, left, ParseUnary(Deepen(depth)));
+                left = Combine(op, left, ParseUnary(depth));
             }
 
             return left;
@@ -462,16 +498,22 @@ internal abstract class DesignerExpression
             if (Current is { Kind: TokenKind.Operator, Text: "!" })
             {
                 _position++;
-                return new Not(ParseUnary(Deepen(depth)));
+                var operand = ParseUnary(Deepen(depth));
+                return operand.ResultKind == DesignerResultKind.Boolean
+                    ? new Not(operand)
+                    : throw new DesignerExpressionException("'!' requires a true/false operand.");
             }
 
             if (Current is { Kind: TokenKind.Operator, Text: "-" })
             {
                 _position++;
-                return new Negate(ParseUnary(Deepen(depth)));
+                var operand = ParseUnary(Deepen(depth));
+                return operand.ResultKind == DesignerResultKind.Number
+                    ? new Negate(operand)
+                    : throw new DesignerExpressionException("Unary '-' requires a numeric operand.");
             }
 
-            return ParsePrimary(Deepen(depth));
+            return ParsePrimary(depth);
         }
 
         private DesignerExpression ParsePrimary(int depth)
@@ -502,7 +544,7 @@ internal abstract class DesignerExpression
             if (Current.Kind == TokenKind.OpenParen)
             {
                 _position++;
-                var inner = ParseExpression(depth);
+                var inner = ParseExpression(Deepen(depth));
                 if (Current.Kind != TokenKind.CloseParen)
                 {
                     throw new DesignerExpressionException("Missing ')'.");
@@ -516,6 +558,30 @@ internal abstract class DesignerExpression
                 Current.Kind == TokenKind.End
                     ? "Expression ended unexpectedly."
                     : $"Unexpected '{Current.Text}'.");
+        }
+
+        /// <summary>
+        /// Builds a binary node after checking both operand shapes, so a mismatch is a parse
+        /// failure the operator sees rather than a run that activates and never matches.
+        /// </summary>
+        private static DesignerExpression Combine(string op, DesignerExpression left, DesignerExpression right)
+        {
+            var required = op switch
+            {
+                "&&" or "||" => DesignerResultKind.Boolean,
+                "==" or "!=" => left.ResultKind,
+                _ => DesignerResultKind.Number
+            };
+
+            if (left.ResultKind != required || right.ResultKind != required)
+            {
+                throw new DesignerExpressionException(
+                    required == DesignerResultKind.Boolean
+                        ? $"'{op}' requires true/false operands."
+                        : $"'{op}' requires numeric operands.");
+            }
+
+            return new Binary(op, left, right);
         }
 
         private static int Deepen(int depth) => depth < MaxDepth

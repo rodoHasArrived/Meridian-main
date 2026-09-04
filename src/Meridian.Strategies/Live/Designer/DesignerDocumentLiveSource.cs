@@ -96,6 +96,17 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
         // Normalizing first matches what the designer endpoints persist and validate, so a run
         // cannot activate against a shape the designer surfaces would have rejected.
         var normalized = _designService.Normalize(document);
+
+        if (!TryVerifyRevision(context, documentId, normalized, out failureReason))
+        {
+            _logger?.LogWarning(
+                "Designer document {DocumentId} failed revision verification for run {StrategyId}: {Reason}",
+                documentId,
+                context.StrategyId,
+                failureReason);
+            return false;
+        }
+
         var validation = _designService.Validate(normalized);
 
         if (!DesignerStrategyPlan.TryCompile(normalized, validation, out var plan, out failureReason))
@@ -138,6 +149,49 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
         return false;
     }
 
+    /// <summary>
+    /// Confirms the loaded document is the revision the run was promoted against.
+    /// </summary>
+    /// <remarks>
+    /// The repository returns the latest saved revision for a document id, so without this an edit
+    /// made after backtest or approval would silently become what the promoted run trades. The
+    /// hash is required rather than optional: no designer run could activate before this change,
+    /// so there is no earlier run to grandfather, and treating a missing hash as "trust it" would
+    /// leave the governance hole open for exactly the runs that skip promotion.
+    /// </remarks>
+    private static bool TryVerifyRevision(
+        LiveStrategyCreationContext context,
+        string documentId,
+        StrategyDesignDocument normalized,
+        out string? failureReason)
+    {
+        if (!context.Parameters.TryGetValue(DesignerDocumentRevision.ParameterKey, out var approvedHash)
+            || string.IsNullOrWhiteSpace(approvedHash))
+        {
+            failureReason =
+                $"Run references designer document '{documentId}' but carries no " +
+                $"'{DesignerDocumentRevision.ParameterKey}', so the engine cannot tell whether the stored design " +
+                "is still the one that was backtested and approved. Re-run the design and promote it again.";
+            return false;
+        }
+
+        var actualHash = DesignerDocumentRevision.ComputeHash(normalized);
+        if (!string.Equals(actualHash, approvedHash.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            failureReason =
+                $"Designer document '{documentId}' has changed since this run was promoted (approved revision " +
+                $"{Shorten(approvedHash)}, stored revision {Shorten(actualHash)}). Re-run the backtest and promote " +
+                "the current design rather than activating an unapproved revision.";
+            return false;
+        }
+
+        failureReason = null;
+        return true;
+    }
+
+    private static string Shorten(string hash) =>
+        hash.Length <= 12 ? hash : string.Concat(hash.AsSpan(0, 12), "...");
+
     private StrategyDesignDocument? LoadDocument(string documentId, out string? failureReason)
     {
         try
@@ -146,9 +200,15 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             // repository read is bridged here under an explicit timeout: a stalled store must
             // defer the run with a reason, never hold the launch loop open indefinitely.
             using var timeout = new CancellationTokenSource(_loadTimeout);
+
+            // WaitAsync enforces the bound even when a repository implementation ignores the token:
+            // cancelling a token cannot stop a delegate that has already started, so relying on
+            // cooperative cancellation alone would let a stalled store block the promotion path
+            // and the startup resume sweep indefinitely.
             var document = Task.Run(
                     () => _repository!.GetAsync(documentId, timeout.Token),
-                    timeout.Token)
+                    CancellationToken.None)
+                .WaitAsync(_loadTimeout)
                 .GetAwaiter()
                 .GetResult();
 
@@ -163,7 +223,7 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             failureReason = null;
             return document;
         }
-        catch (OperationCanceledException)
+        catch (Exception ex) when (ex is OperationCanceledException or TimeoutException)
         {
             failureReason =
                 $"Loading designer document '{documentId}' exceeded {_loadTimeout.TotalSeconds:F0}s; " +
