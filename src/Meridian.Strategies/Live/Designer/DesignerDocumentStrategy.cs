@@ -351,6 +351,13 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
         IBacktestContext ctx,
         IReadOnlyList<(string Symbol, int Order, decimal Score, IReadOnlyDictionary<string, decimal> Fields)> targets)
     {
+        // A bounded plan rotating names must not hold both sides of the rotation. An exit and its
+        // replacement entry are enqueued in the same pass, and on a live gateway the entry can fill
+        // while the exit is still working, so a pending exit does not yet free a slot.
+        var occupied = _plan.Universe.Count(candidate =>
+            (_ownedQuantities.TryGetValue(candidate, out var ownedQuantity) && ownedQuantity != 0L)
+            || (_pendingOrders.TryGetValue(candidate, out var pendingOrder) && pendingOrder.IsEntry));
+
         foreach (var (symbol, _, _, fields) in targets)
         {
             if (_pendingOrders.ContainsKey(symbol))
@@ -374,12 +381,25 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
                 continue;
             }
 
+            if (_plan.MaximumPositions is { } cap && occupied >= cap)
+            {
+                _logger?.LogInformation(
+                    "Designer document {DocumentId} is holding {Symbol} back: {Occupied} of {Cap} position slot(s) "
+                    + "are held or pending, and an exit still working does not free one",
+                    _plan.DocumentId,
+                    symbol,
+                    occupied,
+                    cap);
+                continue;
+            }
+
             var quantity = ResolveQuantity(symbol, ctx);
             if (quantity == 0L || !RiskGuardsAllowEntry(symbol, quantity, fields, ctx))
             {
                 continue;
             }
 
+            occupied++;
             SubmitOrder(ctx, symbol, quantity, isEntry: true, $"entering via trade cell {_plan.Trade.CellId}");
         }
     }
@@ -593,8 +613,10 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
 
     private bool IsAttributable(IBacktestContext ctx, string symbol)
     {
-        var held = ctx.Positions.TryGetValue(symbol, out var position) ? position.Quantity : 0L;
-        if (held == 0L)
+        // The unrounded size is what matters here: a 0.9-share holding belonging to someone else
+        // rounds to zero in Position.Quantity and would look like no position at all.
+        var held = ctx.Positions.TryGetValue(symbol, out var position) ? position.ExactQuantity : 0m;
+        if (held == 0m)
         {
             return true;
         }

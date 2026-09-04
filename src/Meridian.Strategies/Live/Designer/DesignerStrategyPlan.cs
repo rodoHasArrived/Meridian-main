@@ -186,23 +186,19 @@ internal sealed class DesignerStrategyPlan
                 return false;
             }
 
-            // A "next" edge is accepted because ordering is subsumed by conjunction -- but only when
-            // its condition is a label. Template edges read "universe ready" or "rank complete",
-            // which are descriptions. A condition that parses as an executable gate is a different
-            // thing: it looks like it constrains the edge, nothing evaluates it, and the downstream
-            // cells would run unconditionally. Refuse the ones that could have been executed.
-            if (!string.IsNullOrWhiteSpace(transition.Condition)
-                && DesignerExpression.TryParse(
-                    transition.Condition,
-                    DesignerLiveFields.Supported,
-                    DesignerResultKind.Boolean,
-                    out _,
-                    out _))
+            // A "next" edge is accepted because ordering is subsumed by conjunction, but only when
+            // it carries no condition. Nothing here evaluates transition conditions, so any text in
+            // that field goes unhonoured -- and there is no reliable way to tell a descriptive
+            // label from a condition the operator meant ("PRICE >" is a typo, "PRICE" is a value,
+            // an expression over an unmapped field is a real intent this engine cannot resolve).
+            // Refusing all of them is the only reading that cannot silently drop a constraint.
+            if (!string.IsNullOrWhiteSpace(transition.Condition))
             {
                 failureReason =
                     $"Designer document '{document.DocumentId}' has transition '{transition.TransitionId}' " +
-                    $"conditioned on \"{transition.Condition}\". The live engine evaluates cells, not transition " +
-                    "conditions, so that condition would never be applied. Move it onto a filter or risk cell.";
+                    $"carrying the condition \"{transition.Condition}\". The live engine evaluates cells, not " +
+                    "transition conditions, so it would never be applied. Move the constraint onto a filter or " +
+                    "risk cell and leave the transition condition empty.";
                 return false;
             }
         }

@@ -297,13 +297,16 @@ internal static class DesignerLiveFields
                 return false;
             }
 
-            var quantity = ctx.Positions.TryGetValue(symbol, out var position) ? position.Quantity : 0L;
-            if (quantity == 0L)
+            var quantity = ctx.Positions.TryGetValue(symbol, out var position) ? position.ExactQuantity : 0m;
+            if (quantity == 0m)
             {
                 return true;
             }
 
-            var price = ctx.GetLastPrice(symbol) ?? LastPrice;
+            // The window's own observation wins, as it does for order sizing: the live context
+            // returns the cached trade whenever one exists and never compares it against a newer
+            // quote, which would leave an exposure guard measuring a stale price.
+            var price = LastPrice > 0m ? LastPrice : ctx.GetLastPrice(symbol) ?? 0m;
             if (price <= 0m)
             {
                 return false;

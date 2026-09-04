@@ -79,7 +79,12 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
                 pair.Value.Quantity,
                 pair.Value.AverageCostBasis,
                 pair.Value.UnrealizedPnl,
-                pair.Value.RealizedPnl),
+                pair.Value.RealizedPnl)
+            {
+                // The unrounded size travels with the position: a strategy attributing ownership
+                // cannot tell a foreign fractional holding from no holding without it.
+                ExactQuantity = pair.Value.ExactQuantity
+            },
             StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>

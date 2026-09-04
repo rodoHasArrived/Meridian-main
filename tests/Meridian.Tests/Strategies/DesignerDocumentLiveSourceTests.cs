@@ -260,18 +260,38 @@ public sealed class DesignerDocumentLiveSourceTests
         var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
 
         handled.Should().BeFalse();
-        failureReason.Should().Contain("conditioned on").And.Contain("never be applied");
+        failureReason.Should().Contain("carrying the condition").And.Contain("never be applied");
     }
 
     [Fact]
-    public void TryCreate_allows_a_descriptive_transition_label()
+    public void TryCreate_refuses_a_prose_transition_condition_too()
     {
+        // There is no reliable way to tell a label from a constraint the operator meant, and
+        // nothing evaluates either, so both are refused rather than one being silently dropped.
         var document = TradableDocument();
         document = document with
         {
             Transitions =
             [
                 new StrategyDesignTransition("t1", "liquid-universe", "buy-equities", "next", "universe ready")
+            ]
+        };
+
+        var handled = CreateSource(document).TryCreate(Context(document), out _, out var failureReason);
+
+        handled.Should().BeFalse();
+        failureReason.Should().Contain("carrying the condition");
+    }
+
+    [Fact]
+    public void TryCreate_allows_a_transition_with_no_condition()
+    {
+        var document = TradableDocument();
+        document = document with
+        {
+            Transitions =
+            [
+                new StrategyDesignTransition("t1", "liquid-universe", "buy-equities", "next", string.Empty)
             ]
         };
 
@@ -731,6 +751,25 @@ public sealed class DesignerDocumentLiveSourceTests
     }
 
     [Fact]
+    public void A_foreign_fractional_holding_blocks_the_symbol()
+    {
+        // Position.Quantity rounds 0.9 shares to zero. Without the unrounded size the ownership
+        // guard would read "no position" and enter on top of someone else's holding.
+        var strategy = Activate(TradableDocument());
+        var ctx = new RecordingContext(
+            ["SPY"],
+            portfolioValue: 100_000m,
+            lastPrice: 50m,
+            positions: [("SPY", 0L)],
+            exactQuantity: 0.9m);
+
+        strategy.Initialize(ctx);
+        strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: 5), ctx);
+
+        ctx.Orders.Should().BeEmpty("a fractional holding this run does not own is still not its inventory");
+    }
+
+    [Fact]
     public void Activated_document_respects_a_universe_builder_max_size()
     {
         var document = UniverseBuilderDocument(
@@ -1055,7 +1094,8 @@ public sealed class DesignerDocumentLiveSourceTests
             IEnumerable<string> universe,
             decimal portfolioValue,
             decimal lastPrice,
-            IEnumerable<(string Symbol, long Quantity)>? positions = null)
+            IEnumerable<(string Symbol, long Quantity)>? positions = null,
+            decimal? exactQuantity = null)
         {
             Universe = universe.ToHashSet(StringComparer.OrdinalIgnoreCase);
             PortfolioValue = portfolioValue;
@@ -1063,7 +1103,9 @@ public sealed class DesignerDocumentLiveSourceTests
             _lastPrice = lastPrice;
             _positions = (positions ?? Enumerable.Empty<(string Symbol, long Quantity)>()).ToDictionary(
                 item => item.Symbol,
-                item => new Position(item.Symbol, item.Quantity, 100m, 0m, 0m),
+                item => exactQuantity is { } exact
+                    ? new Position(item.Symbol, item.Quantity, 100m, 0m, 0m) { ExactQuantity = exact }
+                    : new Position(item.Symbol, item.Quantity, 100m, 0m, 0m),
                 StringComparer.OrdinalIgnoreCase);
         }
 
