@@ -9,6 +9,7 @@ using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Live;
+using Meridian.Strategies.Live.Designer;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +44,15 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
         services.AddSingleton<IBacktestStrategyLiveSource>(static sp => new PluginBacktestStrategyLiveSource(
             sp.GetRequiredService<LiveTradingEngineOptions>().StrategyPluginDirectory,
             sp.GetService<ILogger<PluginBacktestStrategyLiveSource>>()));
+
+        // Strategy Designer documents: registered after the plugin source so an explicitly
+        // plugin-backed run still resolves to its assembly (PRD-020). The design repository is
+        // resolved optionally because hosts can compose the trading engine without the workstation
+        // design surfaces; the source then defers designer runs with that as the stated reason.
+        services.AddSingleton<IBacktestStrategyLiveSource>(static sp => new DesignerDocumentLiveSource(
+            sp.GetService<IStrategyDesignRepository>(),
+            sp.GetService<StrategyDesignService>() ?? new StrategyDesignService(),
+            sp.GetService<ILogger<DesignerDocumentLiveSource>>()));
 
         services.TryAddSingleton<ILiveStrategyCatalog>(static sp =>
         {

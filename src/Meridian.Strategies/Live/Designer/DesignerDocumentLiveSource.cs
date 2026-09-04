@@ -1,0 +1,184 @@
+using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Services;
+using Microsoft.Extensions.Logging;
+
+namespace Meridian.Strategies.Live.Designer;
+
+/// <summary>
+/// Resolves promoted runs whose strategy is a Strategy Designer document, closing the
+/// designer-strategy activation gap tracked by <c>PRD-020</c>.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Before this source existed, <see cref="LiveStrategyCatalog"/> resolved only the two built-in
+/// reference strategies and plugin assemblies, so a promoted designer run recorded governance and
+/// then deferred forever. Registering this source as an <see cref="IBacktestStrategyLiveSource"/>
+/// gives designer documents the same live path plugin strategies already had.
+/// </para>
+/// <para>
+/// Resolution is fail-closed at every step: the document must exist, pass designer validation, and
+/// compile to a <see cref="DesignerStrategyPlan"/> whose every construct has real live semantics.
+/// Each refusal returns a reason the catalog surfaces through
+/// <c>LiveTradingEngine.DeferAsync</c>, which records it as an operator-visible
+/// <c>ActivationDeferred</c> lifecycle event on the run itself.
+/// </para>
+/// <para>
+/// No arbitrary code executes here. Designer documents compile to a closed expression grammar
+/// (<see cref="DesignerExpression"/>), so this path needs none of the process isolation
+/// <c>PRD-012</c> requires for QuantLab's Roslyn scripting; documents that do carry free-form code
+/// are refused and pointed at the plugin or QuantLab route instead.
+/// </para>
+/// </remarks>
+public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
+{
+    /// <summary>Run parameter naming the designer document to activate.</summary>
+    public const string DesignerDocumentParameterKey = "designerDocumentId";
+
+    private static readonly TimeSpan DefaultLoadTimeout = TimeSpan.FromSeconds(30);
+
+    private readonly IStrategyDesignRepository? _repository;
+    private readonly StrategyDesignService _designService;
+    private readonly ILogger<DesignerDocumentLiveSource>? _logger;
+    private readonly TimeSpan _loadTimeout;
+
+    /// <param name="repository">
+    /// Design document store. Null on a host that composes the trading engine without the
+    /// workstation design surfaces; designer-backed runs then defer with that as the stated
+    /// reason rather than the source silently not being consulted.
+    /// </param>
+    /// <param name="designService">Normalization and validation shared with the designer endpoints.</param>
+    /// <param name="logger">Optional logger.</param>
+    /// <param name="loadTimeout">Bounds the bridged repository read; defaults to 30 seconds.</param>
+    public DesignerDocumentLiveSource(
+        IStrategyDesignRepository? repository,
+        StrategyDesignService designService,
+        ILogger<DesignerDocumentLiveSource>? logger = null,
+        TimeSpan? loadTimeout = null)
+    {
+        _repository = repository;
+        _designService = designService ?? throw new ArgumentNullException(nameof(designService));
+        _logger = logger;
+        _loadTimeout = loadTimeout is { } timeout && timeout > TimeSpan.Zero ? timeout : DefaultLoadTimeout;
+    }
+
+    /// <inheritdoc/>
+    public bool TryCreate(
+        LiveStrategyCreationContext context,
+        out IBacktestStrategy? strategy,
+        out string? failureReason)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        strategy = null;
+        failureReason = null;
+
+        if (!TryResolveDocumentId(context, out var documentId))
+        {
+            // Not a designer-backed run. Stay silent so other fallbacks get their turn.
+            return false;
+        }
+
+        if (_repository is null)
+        {
+            failureReason =
+                $"Run references designer document '{documentId}', but no strategy design repository is " +
+                "registered on this host, so the design cannot be loaded.";
+            return false;
+        }
+
+        var document = LoadDocument(documentId, out failureReason);
+        if (document is null)
+        {
+            return false;
+        }
+
+        // Normalizing first matches what the designer endpoints persist and validate, so a run
+        // cannot activate against a shape the designer surfaces would have rejected.
+        var normalized = _designService.Normalize(document);
+        var validation = _designService.Validate(normalized);
+
+        if (!DesignerStrategyPlan.TryCompile(normalized, validation, out var plan, out failureReason))
+        {
+            _logger?.LogWarning(
+                "Designer document {DocumentId} cannot be activated for run {StrategyId}: {Reason}",
+                documentId,
+                context.StrategyId,
+                failureReason);
+            return false;
+        }
+
+        strategy = new DesignerDocumentStrategy(plan!, _logger);
+        failureReason = null;
+        return true;
+    }
+
+    /// <summary>
+    /// A run is designer-backed when it names a document explicitly. The run's own strategy id is
+    /// accepted as the document id only under the <c>strategy-design-</c> prefix the designer
+    /// assigns, so an unrelated run id is never treated as a missing designer document and does
+    /// not mask the catalog's own "no implementation registered" message.
+    /// </summary>
+    private static bool TryResolveDocumentId(LiveStrategyCreationContext context, out string documentId)
+    {
+        if (context.Parameters.TryGetValue(DesignerDocumentParameterKey, out var explicitId)
+            && !string.IsNullOrWhiteSpace(explicitId))
+        {
+            documentId = explicitId.Trim();
+            return true;
+        }
+
+        if (context.StrategyId.StartsWith("strategy-design-", StringComparison.OrdinalIgnoreCase))
+        {
+            documentId = context.StrategyId.Trim();
+            return true;
+        }
+
+        documentId = string.Empty;
+        return false;
+    }
+
+    private StrategyDesignDocument? LoadDocument(string documentId, out string? failureReason)
+    {
+        try
+        {
+            // The catalog contract is synchronous and sits on the promotion path, so the async
+            // repository read is bridged here under an explicit timeout: a stalled store must
+            // defer the run with a reason, never hold the launch loop open indefinitely.
+            using var timeout = new CancellationTokenSource(_loadTimeout);
+            var document = Task.Run(
+                    () => _repository!.GetAsync(documentId, timeout.Token),
+                    timeout.Token)
+                .GetAwaiter()
+                .GetResult();
+
+            if (document is null)
+            {
+                failureReason =
+                    $"Designer document '{documentId}' was not found in the strategy design repository. " +
+                    "Save the design before promoting a run that references it.";
+                return null;
+            }
+
+            failureReason = null;
+            return document;
+        }
+        catch (OperationCanceledException)
+        {
+            failureReason =
+                $"Loading designer document '{documentId}' exceeded {_loadTimeout.TotalSeconds:F0}s; " +
+                "the run stays deferred rather than activating without its design.";
+            _logger?.LogWarning(
+                "Timed out loading designer document {DocumentId} after {TimeoutSeconds}s",
+                documentId,
+                _loadTimeout.TotalSeconds);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            failureReason = $"Designer document '{documentId}' could not be loaded: {ex.Message}";
+            _logger?.LogWarning(ex, "Failed to load designer document {DocumentId}", documentId);
+            return null;
+        }
+    }
+}
