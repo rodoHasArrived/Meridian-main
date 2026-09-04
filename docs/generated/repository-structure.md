@@ -5866,6 +5866,7 @@ Meridian-main
 │   │   │   │   ├── DesignerDocumentStrategy.cs
 │   │   │   │   ├── DesignerExpression.cs
 │   │   │   │   ├── DesignerLiveFields.cs
+│   │   │   │   ├── DesignerSessionClock.cs
 │   │   │   │   └── DesignerStrategyPlan.cs
 │   │   │   ├── Strategies
 │   │   │   │   ├── BuyAndHoldLiveStrategy.cs
