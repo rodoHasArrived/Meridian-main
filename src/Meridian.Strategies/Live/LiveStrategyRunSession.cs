@@ -520,7 +520,46 @@ internal sealed class LiveStrategyRunSession
             or ExecutionSdk.OrderStatus.Rejected
             or ExecutionSdk.OrderStatus.Expired)
         {
+            // A strategy that blocks a symbol while its order works needs the terminal outcome to
+            // unblock it; a fill already reaches it through OnOrderFill, so only the non-filling
+            // endings are reported.
+            if (report.OrderStatus is not ExecutionSdk.OrderStatus.Filled)
+            {
+                NotifyOrderTerminated(order.OrderId, report.OrderStatus switch
+                {
+                    ExecutionSdk.OrderStatus.Rejected => LiveOrderOutcome.Rejected,
+                    ExecutionSdk.OrderStatus.Expired => LiveOrderOutcome.Expired,
+                    _ => LiveOrderOutcome.Cancelled
+                });
+            }
+
             ForgetOrder(clientOrderId, order.OrderId);
+        }
+    }
+
+    /// <summary>
+    /// Tells a strategy that tracks its own working orders that one of them ended without a
+    /// completing fill. Strategies that do not implement the seam are unaffected.
+    /// </summary>
+    private void NotifyOrderTerminated(Guid orderId, LiveOrderOutcome outcome)
+    {
+        if (_strategy is not ILiveOrderOutcomeObserver observer)
+        {
+            return;
+        }
+
+        try
+        {
+            observer.OnOrderTerminated(orderId, outcome);
+        }
+        catch (Exception ex)
+        {
+            // A strategy fault while releasing its own bookkeeping must not abort the report loop:
+            // the remaining reports still have to be applied to metrics and position state.
+            _logger.LogWarning(
+                ex,
+                "Run {RunId} strategy faulted handling the terminal outcome {Outcome} for order {OrderId}.",
+                _run.RunId, outcome, orderId);
         }
     }
 
@@ -583,6 +622,7 @@ internal sealed class LiveStrategyRunSession
 
             if (_ordersByClientId.TryGetValue(clientOrderId, out var order))
             {
+                NotifyOrderTerminated(order.OrderId, LiveOrderOutcome.ApprovalDeclined);
                 ForgetOrder(clientOrderId, order.OrderId);
             }
             else

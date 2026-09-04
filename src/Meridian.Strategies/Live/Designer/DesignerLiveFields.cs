@@ -88,9 +88,6 @@ internal static class DesignerLiveFields
         private readonly Queue<decimal> _sessionCloses = new(MaxWindow);
         private DateOnly? _currentSessionDate;
 
-        /// <summary>Number of sessions recorded, including the one in progress.</summary>
-        public int SessionCount => _sessionCloses.Count;
-
         /// <summary>
         /// Trading date of the newest <em>completed</em> session, or null when none has closed.
         /// </summary>
@@ -109,11 +106,21 @@ internal static class DesignerLiveFields
         /// identifies. Later prices within the same session restate its close rather than
         /// advancing the window.
         /// </summary>
-        public void Observe(decimal price, DateOnly sessionDate)
+        /// <returns>
+        /// True when this observation opened a new session, so session metrics now describe a
+        /// different close than they did before the call.
+        /// </returns>
+        /// <remarks>
+        /// The roll is reported rather than left for callers to infer from the window's size: once
+        /// the window holds <see cref="MaxWindow"/> sessions, opening a new one dequeues the oldest
+        /// and the retained count stops changing, so a size comparison would stop detecting rolls
+        /// exactly when the session metrics finally have enough history to be usable.
+        /// </remarks>
+        public bool Observe(decimal price, DateOnly sessionDate)
         {
             if (price <= 0m)
             {
-                return;
+                return false;
             }
 
             LastPrice = price;
@@ -121,7 +128,7 @@ internal static class DesignerLiveFields
             if (_currentSessionDate == sessionDate && _sessionCloses.Count > 0)
             {
                 ReplaceLastClose(price);
-                return;
+                return false;
             }
 
             // The session that was in progress has just closed; its final recorded price is its
@@ -137,6 +144,8 @@ internal static class DesignerLiveFields
             {
                 _sessionCloses.Dequeue();
             }
+
+            return true;
         }
 
         /// <summary>

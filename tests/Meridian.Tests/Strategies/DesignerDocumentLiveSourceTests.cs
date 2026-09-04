@@ -896,6 +896,122 @@ public sealed class DesignerDocumentLiveSourceTests
     }
 
     [Fact]
+    public void Risk_purpose_binds_as_a_guard_whatever_kind_the_cell_declares()
+    {
+        // Designer validation does not constrain kind against purpose, so an operator can write a
+        // risk limit on a formula cell. Compiled as an entry gate it would pass trivially on a flat
+        // symbol and never be measured against the order it governs.
+        var document = TradableDocument();
+        document = document with
+        {
+            Cells =
+            [
+                .. document.Cells.Where(cell => cell.CellId != "risk-guard"),
+                new StrategyDesignCell(
+                    "weight-cap",
+                    "Exposure cap",
+                    "formula",
+                    "risk",
+                    "PORTFOLIO_WEIGHT <= 0.10",
+                    ["PORTFOLIO_WEIGHT"])
+            ]
+        };
+        document = DocumentWithTradeParameters(
+            new Dictionary<string, string>
+            {
+                ["instrument"] = "Equity",
+                ["direction"] = "Buy",
+                ["sizingMethod"] = "PercentAUM",
+                ["sizingValue"] = "0.5"
+            },
+            document);
+
+        var strategy = Activate(document);
+        var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 50m);
+
+        strategy.Initialize(ctx);
+        strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: 5), ctx);
+
+        ctx.Orders.Should().BeEmpty("a risk-purpose cell is a risk guard even when its kind is 'formula'");
+    }
+
+    [Fact]
+    public void A_terminal_order_outcome_releases_the_symbol()
+    {
+        var strategy = Activate(TradableDocument());
+        var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 50m);
+
+        strategy.Initialize(ctx);
+        strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: 5), ctx);
+        ctx.Orders.Should().ContainSingle();
+
+        // While the order is unresolved the symbol stays blocked: it could still fill, and a
+        // replacement would double the position.
+        strategy.OnBar(Bar("SPY", close: 51m, volume: 1L, day: 6), ctx);
+        ctx.Orders.Should().ContainSingle("an unresolved order must not be replaced");
+
+        strategy.Should().BeAssignableTo<ILiveOrderOutcomeObserver>();
+        ((ILiveOrderOutcomeObserver)strategy).OnOrderTerminated(ctx.OrderIds[0], LiveOrderOutcome.Rejected);
+
+        strategy.OnBar(Bar("SPY", close: 52m, volume: 1L, day: 7), ctx);
+        ctx.Orders.Should().HaveCount(2, "a rejected order must not block the symbol for the life of the run");
+    }
+
+    [Fact]
+    public void A_terminal_outcome_for_an_unknown_order_changes_nothing()
+    {
+        var strategy = Activate(TradableDocument());
+        var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 50m);
+
+        strategy.Initialize(ctx);
+        strategy.OnBar(Bar("SPY", close: 50m, volume: 1L, day: 5), ctx);
+
+        ((ILiveOrderOutcomeObserver)strategy).OnOrderTerminated(Guid.NewGuid(), LiveOrderOutcome.Cancelled);
+
+        strategy.OnBar(Bar("SPY", close: 51m, volume: 1L, day: 6), ctx);
+        ctx.Orders.Should().ContainSingle("another run's order id must not release this run's marker");
+    }
+
+    [Fact]
+    public void The_live_adapter_forwards_terminal_outcomes_to_an_observing_strategy()
+    {
+        var inner = new RecordingObserverStrategy();
+        var adapter = new BacktestStrategyLiveAdapter("designer-doc", inner);
+        var orderId = Guid.NewGuid();
+
+        adapter.OnOrderTerminated(orderId, LiveOrderOutcome.Expired);
+
+        inner.Terminated.Should().ContainSingle().Which.Should().Be((orderId, LiveOrderOutcome.Expired));
+    }
+
+    [Fact]
+    public void A_session_only_plan_still_re_decides_once_its_window_is_full()
+    {
+        // The window holds MaxWindow sessions, so past that point a roll enqueues one close and
+        // dequeues another and the session count stops changing. A plan reading only session
+        // fields would then never re-decide from market events again.
+        var document = DocumentWithGate("MOMENTUM_63D > 0");
+        var strategy = Activate(document);
+        var ctx = new RecordingContext(["SPY"], portfolioValue: 100_000m, lastPrice: 50m);
+        strategy.Initialize(ctx);
+
+        // Sessions 1-64 flat, so momentum is exactly zero on the first session it can be computed.
+        for (var day = 0; day < 64; day++)
+        {
+            strategy.OnTrade(TradeAt("SPY", 100m, day, day), ctx);
+        }
+
+        strategy.OnTrade(TradeAt("SPY", 90m, 64, 64), ctx);
+        ctx.Orders.Should().BeEmpty("momentum over a flat window is zero, which does not pass '> 0'");
+
+        // Session 66 drops session 1, so the comparison window shifts even though the count cannot.
+        strategy.OnTrade(TradeAt("SPY", 200m, 65, 65), ctx);
+        strategy.OnTrade(TradeAt("SPY", 200m, 66, 66), ctx);
+
+        ctx.Orders.Should().ContainSingle("a session roll past MaxWindow still changes what momentum reads");
+    }
+
+    [Fact]
     public void Designer_document_reaches_live_execution_through_the_catalog()
     {
         // The end-to-end PRD-020 seam: the catalog resolves a designer run that CreateDefault
@@ -1085,6 +1201,52 @@ public sealed class DesignerDocumentLiveSourceTests
             Task.FromResult<IReadOnlyList<StrategyDesignDraftSummary>>([]);
     }
 
+    /// <summary>
+    /// Minimal strategy that records the terminal outcomes forwarded to it, so the adapter's
+    /// forwarding can be asserted without a live session.
+    /// </summary>
+    private sealed class RecordingObserverStrategy : IBacktestStrategy, ILiveOrderOutcomeObserver
+    {
+        public List<(Guid OrderId, LiveOrderOutcome Outcome)> Terminated { get; } = [];
+
+        public string Name => "recording-observer";
+
+        public void Initialize(IBacktestContext ctx)
+        {
+        }
+
+        public void OnTrade(Trade trade, IBacktestContext ctx)
+        {
+        }
+
+        public void OnQuote(BboQuotePayload quote, IBacktestContext ctx)
+        {
+        }
+
+        public void OnBar(HistoricalBar bar, IBacktestContext ctx)
+        {
+        }
+
+        public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx)
+        {
+        }
+
+        public void OnOrderFill(FillEvent fill, IBacktestContext ctx)
+        {
+        }
+
+        public void OnDayEnd(DateOnly date, IBacktestContext ctx)
+        {
+        }
+
+        public void OnFinished(IBacktestContext ctx)
+        {
+        }
+
+        public void OnOrderTerminated(Guid orderId, LiveOrderOutcome outcome) =>
+            Terminated.Add((orderId, outcome));
+    }
+
     private sealed class RecordingContext : IBacktestContext
     {
         private readonly Dictionary<string, Position> _positions;
@@ -1111,6 +1273,8 @@ public sealed class DesignerDocumentLiveSourceTests
 
         public List<(string Symbol, long Quantity)> Orders { get; } = [];
 
+        public List<Guid> OrderIds { get; } = [];
+
         public IReadOnlySet<string> Universe { get; }
 
         public DateTimeOffset CurrentTime { get; } = DateTimeOffset.UnixEpoch;
@@ -1133,7 +1297,9 @@ public sealed class DesignerDocumentLiveSourceTests
         public Guid PlaceMarketOrder(string symbol, long quantity)
         {
             Orders.Add((symbol, quantity));
-            return Guid.NewGuid();
+            var orderId = Guid.NewGuid();
+            OrderIds.Add(orderId);
+            return orderId;
         }
 
         public Guid PlaceMarketOrder(string symbol, long quantity, string accountId) =>

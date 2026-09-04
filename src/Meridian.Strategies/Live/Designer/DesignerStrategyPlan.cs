@@ -360,43 +360,34 @@ internal sealed class DesignerStrategyPlan
             return TryCompileRank(document, cell, ref rank, out failureReason);
         }
 
+        // A risk-purpose cell is a risk guard whatever kind it declares. The distinction is not
+        // cosmetic: an entry gate is judged against the symbol as it stands, while a risk guard is
+        // re-judged against the position the order would create. A limit like
+        // PORTFOLIO_WEIGHT <= 0.10 passes trivially on a flat symbol, so compiling one as an entry
+        // gate would let any size through and breach the promoted control on the very order it
+        // governs.
+        if (string.Equals(purpose, "risk", StringComparison.OrdinalIgnoreCase))
+        {
+            return TryCompileRiskGuard(document, cell, riskGuards, out failureReason);
+        }
+
         if (string.Equals(kind, "governance", StringComparison.OrdinalIgnoreCase))
         {
-            // A risk-purpose governance cell must be executable: dropping one because its source is
-            // prose would activate a run whose stated risk limit never applies. A control-purpose
-            // cell ("attach payoff and run trace") is review documentation and carries no runtime
-            // condition, so an unparseable one is left as documentation. Any other purpose is a
-            // combination this compiler has no semantics for, and is refused rather than assumed.
+            // A control-purpose cell ("attach payoff and run trace") is review documentation and
+            // carries no runtime condition, so an unparseable one is left as documentation. Any
+            // other purpose on a governance cell is a combination this compiler has no semantics
+            // for, and is refused rather than assumed.
             if (string.Equals(purpose, "control", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            if (!string.Equals(purpose, "risk", StringComparison.OrdinalIgnoreCase))
-            {
-                failureReason =
-                    $"Governance cell '{cell.Label}' ({cell.CellId}) in designer document " +
-                    $"'{document.DocumentId}' declares purpose '{purpose}'. The live engine executes governance " +
-                    "cells with purpose 'risk' and treats purpose 'control' as review documentation; it has no " +
-                    "semantics for any other combination.";
-                return false;
-            }
-
-            if (!DesignerExpression.TryParse(
-                    cell.Source ?? string.Empty,
-                    DesignerLiveFields.Supported,
-                    DesignerResultKind.Boolean,
-                    out var guard,
-                    out var guardError))
-            {
-                failureReason =
-                    $"Risk guard cell '{cell.Label}' ({cell.CellId}) in designer document '{document.DocumentId}' " +
-                    $"is not an executable condition: {guardError} Source: \"{cell.Source}\".";
-                return false;
-            }
-
-            riskGuards.Add(new DesignerGate(cell.CellId, cell.Label, guard!));
-            return true;
+            failureReason =
+                $"Governance cell '{cell.Label}' ({cell.CellId}) in designer document " +
+                $"'{document.DocumentId}' declares purpose '{purpose}'. The live engine executes governance " +
+                "cells with purpose 'risk' and treats purpose 'control' as review documentation; it has no " +
+                "semantics for any other combination.";
+            return false;
         }
 
         if (string.Equals(kind, "visual", StringComparison.OrdinalIgnoreCase)
@@ -426,6 +417,38 @@ internal sealed class DesignerStrategyPlan
             $"kind '{kind}'. The live engine executes visual, formula, universe-builder, concurrent, governance, and " +
             "trade cells.";
         return false;
+    }
+
+    /// <summary>
+    /// Compiles a risk-purpose cell into a guard re-evaluated against the projected post-order
+    /// position.
+    /// </summary>
+    /// <remarks>
+    /// A risk cell must be executable: dropping one because its source is prose would activate a
+    /// run whose stated risk limit never applies.
+    /// </remarks>
+    private static bool TryCompileRiskGuard(
+        StrategyDesignDocument document,
+        StrategyDesignCell cell,
+        List<DesignerGate> riskGuards,
+        out string? failureReason)
+    {
+        if (!DesignerExpression.TryParse(
+                cell.Source ?? string.Empty,
+                DesignerLiveFields.Supported,
+                DesignerResultKind.Boolean,
+                out var guard,
+                out var guardError))
+        {
+            failureReason =
+                $"Risk guard cell '{cell.Label}' ({cell.CellId}) in designer document '{document.DocumentId}' " +
+                $"is not an executable condition: {guardError} Source: \"{cell.Source}\".";
+            return false;
+        }
+
+        riskGuards.Add(new DesignerGate(cell.CellId, cell.Label, guard!));
+        failureReason = null;
+        return true;
     }
 
     private static bool TryCompileRank(

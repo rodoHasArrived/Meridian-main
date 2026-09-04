@@ -27,12 +27,12 @@ namespace Meridian.Strategies.Live.Designer;
 /// not liquidate valid holdings while history warms.
 /// </para>
 /// </remarks>
-internal sealed class DesignerDocumentStrategy : IBacktestStrategy
+internal sealed class DesignerDocumentStrategy : IBacktestStrategy, ILiveOrderOutcomeObserver
 {
     /// <summary>
-    /// How long a submitted order may stay pending before the symbol is retried. The strategy sees
-    /// fills but not rejections, cancellations, or submission failures, so without this bound one
-    /// rejected order would block a symbol from being entered or exited for the life of the run.
+    /// How long a submitted order may work before the strategy asks for it to be cancelled. This
+    /// is the backstop for an order the gateway never resolves: a terminal outcome that does
+    /// arrive releases the symbol through <see cref="OnOrderTerminated"/> well before the bound.
     /// </summary>
     private static readonly TimeSpan PendingOrderTimeout = TimeSpan.FromMinutes(5);
 
@@ -147,6 +147,44 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
     }
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// A terminal outcome is the confirmation the pending marker was waiting for. Until one
+    /// arrives the symbol stays blocked, because an unresolved order could still fill and a
+    /// replacement would double it; once the gateway says the order ended without completing,
+    /// holding the block would strand the symbol for the life of the run over one transient
+    /// rejection. Whatever quantity filled before the order ended is already in
+    /// <c>_ownedQuantities</c> via <see cref="OnOrderFill"/>, so the next pass re-decides from a
+    /// true position. No context is available here, so that pass is the next market event or
+    /// day end rather than an immediate rebalance.
+    /// </remarks>
+    public void OnOrderTerminated(Guid orderId, LiveOrderOutcome outcome)
+    {
+        string? released = null;
+        foreach (var (symbol, pending) in _pendingOrders)
+        {
+            if (pending.OrderId == orderId)
+            {
+                released = symbol;
+                break;
+            }
+        }
+
+        if (released is null)
+        {
+            return;
+        }
+
+        _pendingOrders.Remove(released);
+        _logger?.LogInformation(
+            "Designer document {DocumentId} released {Symbol}: order {OrderId} ended as {Outcome} without "
+            + "completing, so the symbol is eligible again on the next pass",
+            _plan.DocumentId,
+            released,
+            orderId,
+            outcome);
+    }
+
+    /// <inheritdoc/>
     public void OnDayEnd(DateOnly date, IBacktestContext ctx) => Rebalance(ctx);
 
     /// <inheritdoc/>
@@ -179,12 +217,19 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
             return;
         }
 
-        var sessionsBefore = window!.SessionCount;
-        window.Observe(price, sessionDate);
+        var sessionRolled = window!.Observe(price, sessionDate);
 
         // Re-decide when the session rolls, and on every event for any plan whose answer depends on
         // a spot field. Only a plan reading session windows alone can wait for the boundary.
-        if (!_needsSessionFields || _readsSpotFields || window.SessionCount != sessionsBefore)
+        //
+        // The roll is reported by the window rather than inferred from its size. A saturated window
+        // dequeues as it enqueues, so a session-count comparison stops detecting rolls after
+        // MaxWindow sessions -- which is the moment 63-day momentum first has enough history to be
+        // usable. A session-only plan would then re-decide solely from OnDayEnd, which the live
+        // session raises before dispatching the first event of the new date, while the close that
+        // just ended is still the in-progress session the metrics exclude. It would trade one full
+        // session stale, indefinitely.
+        if (!_needsSessionFields || _readsSpotFields || sessionRolled)
         {
             Rebalance(ctx);
         }
@@ -475,8 +520,9 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
     /// the strategy stopped wanting it — an entry filling into a symbol the gates have since
     /// rejected, or an exit completing after the symbol became eligible again. Waiting for the
     /// staleness timeout would leave that window open for its full duration. The marker is kept
-    /// after cancelling, for the same reason the timeout keeps it: without a terminal order status
-    /// there is no confirmation the cancel landed, and submitting a replacement could double-fill.
+    /// after cancelling, because a cancel request is not an outcome: the order can still fill in
+    /// the race, and submitting a replacement before the gateway resolves it could double-fill.
+    /// <see cref="OnOrderTerminated"/> releases the symbol once the outcome is known.
     /// </remarks>
     private void CancelObsoletePendingOrders(
         IBacktestContext ctx,
@@ -508,12 +554,12 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
     /// completing, and leaves the symbol blocked.
     /// </summary>
     /// <remarks>
-    /// The marker is deliberately <em>not</em> cleared. Freeing the symbol would let the next
-    /// rebalance submit a replacement while the original is still live at the broker, and both
-    /// could fill — doubling an entry or overselling an exit. <see cref="IBacktestStrategy"/>
-    /// surfaces fills but no terminal order status, so there is no signal here that a cancel
-    /// succeeded; refusing to send a second order is the only safe reading. A symbol stuck this way
-    /// is logged at warning level rather than silently retried.
+    /// The marker is deliberately <em>not</em> cleared here. Freeing the symbol at the moment the
+    /// cancel is requested would let the next rebalance submit a replacement while the original is
+    /// still live at the broker, and both could fill — doubling an entry or overselling an exit.
+    /// The release comes from <see cref="OnOrderTerminated"/> instead, once the gateway confirms
+    /// the order ended. A symbol whose order is never resolved either way stays blocked, and is
+    /// logged at warning level rather than silently retried.
     /// </remarks>
     private void CancelStalePendingOrders(IBacktestContext ctx, DateTimeOffset now)
     {
@@ -558,8 +604,8 @@ internal sealed class DesignerDocumentStrategy : IBacktestStrategy
 
         _logger?.LogWarning(
             "Designer document {DocumentId} cancelled order {OrderId} for {Symbol} because {Reason}. {Symbol} stays "
-            + "blocked: without a terminal order status the engine cannot confirm the cancel, and submitting a "
-            + "replacement risks a double fill",
+            + "blocked until the order's terminal outcome arrives, because a cancel request is not an outcome and "
+            + "submitting a replacement first risks a double fill",
             _plan.DocumentId,
             pending.OrderId,
             symbol,
