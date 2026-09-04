@@ -1402,14 +1402,21 @@ public sealed class DesignerDocumentLiveSourceTests
         laterSourceConsulted.Should().BeFalse("a claimed run must not fall through to another implementation");
     }
 
-    private static LiveStrategyCreationContext Context(StrategyDesignDocument? document = null) => new(
-        DocumentId,
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            [DesignerDocumentLiveSource.DesignerDocumentParameterKey] = DocumentId,
-            [DesignerDocumentRevision.ParameterKey] = DesignerDocumentRevision.ComputeHash(
-                new StrategyDesignService().Normalize(document ?? TradableDocument()))
-        });
+    private static LiveStrategyCreationContext Context(StrategyDesignDocument? document = null)
+    {
+        var normalized = new StrategyDesignService().Normalize(document ?? TradableDocument());
+        return new LiveStrategyCreationContext(
+            DocumentId,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [DesignerDocumentLiveSource.DesignerDocumentParameterKey] = DocumentId,
+                [DesignerDocumentRevision.ParameterKey] = DesignerDocumentRevision.ComputeHash(normalized),
+
+                // Promotion copies the document's universe into the run's parameter set, and
+                // activation refuses a run without one, so the harness has to carry it too.
+                ["symbols"] = string.Join(",", normalized.Universe)
+            });
+    }
 
     private static DesignerDocumentLiveSource CreateSource(StrategyDesignDocument? document = null) =>
         new(new FakeDesignRepository(document), new StrategyDesignService());

@@ -123,22 +123,25 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
                 return false;
             }
 
-            if (!TryVerifyUniverse(context, documentId, normalized, out failureReason))
-            {
-                _logger?.LogWarning(
-                    "Designer document {DocumentId} failed universe verification for run {StrategyId}: {Reason}",
-                    documentId,
-                    context.StrategyId,
-                    failureReason);
-                return false;
-            }
-
             var validation = _designService.Validate(normalized);
 
             if (!DesignerStrategyPlan.TryCompile(normalized, validation, out plan, out failureReason))
             {
                 _logger?.LogWarning(
                     "Designer document {DocumentId} cannot be activated for run {StrategyId}: {Reason}",
+                    documentId,
+                    context.StrategyId,
+                    failureReason);
+                return false;
+            }
+
+            // Checked after compilation so a document the operator can still fix -- an unusable
+            // symbol, an unsupported cell -- is reported as such, rather than as a mismatch
+            // against a run parameter derived from that same document.
+            if (!TryVerifyUniverse(context, documentId, normalized, out failureReason))
+            {
+                _logger?.LogWarning(
+                    "Designer document {DocumentId} failed universe verification for run {StrategyId}: {Reason}",
                     documentId,
                     context.StrategyId,
                     failureReason);
