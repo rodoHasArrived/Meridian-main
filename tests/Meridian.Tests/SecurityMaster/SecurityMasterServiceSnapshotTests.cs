@@ -1192,6 +1192,49 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task DeactivateAsync_OptionCarryingBothSpellingsOfExerciseStyle_RefusesTheWrite()
+    {
+        // A declared canonical value does not make the variant harmless — it makes it invisible.
+        // The codec reads "American" ordinally and never sees "European", so the next write keeps
+        // the first and drops the second with no trace. Running the case-variant check only where
+        // the canonical key was ABSENT missed exactly this shape, which is the same rule applied to
+        // one side of a symmetry: the patch-side duplicate check already refused it on the way in.
+        var securityId = Guid.NewGuid();
+        var (eventStore, service) = CreateTermsHarness(
+            securityId,
+            "Option",
+            "Double-spelled option",
+            new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["underlyingId"] = Guid.NewGuid(),
+                ["putCall"] = "Call",
+                ["strike"] = 190m,
+                ["expiry"] = "2027-07-16",
+                ["multiplier"] = 100m,
+                ["exerciseStyle"] = "American",
+                ["ExerciseStyle"] = "European",
+                ["isAdjusted"] = false
+            });
+
+        await service.Invoking(s => s.DeactivateAsync(new DeactivateSecurityRequest(
+                securityId,
+                2,
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "deactivate")))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*ExerciseStyle*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task DeactivateAsync_OptionWithACaseVariantExerciseStyleKey_RefusesTheWrite()
     {
         // Every read of a discriminant is ordinal — JsonElement.TryGetProperty and the codec's own

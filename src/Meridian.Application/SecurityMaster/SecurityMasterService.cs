@@ -874,10 +874,15 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         foreach (var field in SecurityAssetTermsSchema.DiscriminantFields(projection.AssetClass))
         {
+            // Checked for EVERY field, before any exit: a populated case variant is lost whether or
+            // not the canonical key is present. Running it only where the canonical key was absent
+            // missed the record that carries BOTH — the codec reads the canonical spelling, the
+            // variant is invisible to it, and the next write drops that value with no trace.
+            EnsureNoCaseVariantDiscriminant(projection, terms, field, assetSpecificTermsPatch);
+
             if (!terms.TryGetProperty(field.Key, out var value)
                 || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
             {
-                EnsureNoCaseVariantDiscriminant(projection, terms, field, assetSpecificTermsPatch);
                 continue;
             }
 
@@ -966,13 +971,15 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     }
 
     /// <summary>
-    /// The exact key is absent, so the record has no discriminant the codec can read — but it may
-    /// still SAY one, under a spelling the codec never looks at. Every read is ordinal
-    /// (<c>JsonElement.TryGetProperty</c>, and the codec's own <c>GetOptionalString</c>), so
-    /// <c>ExerciseStyle</c> is not <c>exerciseStyle</c>: the field decodes to its missing-key result
-    /// and re-serializing writes a fresh document without the stray key, so the value is gone with
-    /// no trace — and for an escape field the blocks that hung off it go with it, since the decode
-    /// lands on <c>None</c> rather than on the case that owns them.
+    /// The record may SAY a discriminant under a spelling the codec never looks at. Every read is
+    /// ordinal (<c>JsonElement.TryGetProperty</c>, and the codec's own <c>GetOptionalString</c>), so
+    /// <c>ExerciseStyle</c> is not <c>exerciseStyle</c>: the variant is invisible to the decode and
+    /// re-serializing writes a fresh document without the stray key, so its value is gone with no
+    /// trace. That holds whether or not the canonical key is also present — with it, the codec reads
+    /// the canonical value and drops the variant; without it, the field decodes to its missing-key
+    /// result and for an escape field the blocks that hung off it go too, since the decode lands on
+    /// <c>None</c> rather than on the case that owns them. Both shapes lose a stated value, so this
+    /// runs for every declared field rather than only where the canonical key is missing.
     /// <para>Stored documents really do carry case-variant keys:
     /// <c>ApprovedFieldEditCanonicalMergeHandler.RemoveKeyVariants</c> strips them, matching
     /// <see cref="StringComparison.OrdinalIgnoreCase"/>, for exactly that reason. The bond coupon
