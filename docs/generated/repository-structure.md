@@ -5860,6 +5860,12 @@ Meridian-main
 │   │   │   ├── IStrategyLifecycle.cs
 │   │   │   └── IStrategyRepository.cs
 │   │   ├── Live
+│   │   │   ├── Designer
+│   │   │   │   ├── DesignerDocumentLiveSource.cs
+│   │   │   │   ├── DesignerDocumentStrategy.cs
+│   │   │   │   ├── DesignerExpression.cs
+│   │   │   │   ├── DesignerLiveFields.cs
+│   │   │   │   └── DesignerStrategyPlan.cs
 │   │   │   ├── Strategies
 │   │   │   │   ├── BuyAndHoldLiveStrategy.cs
 │   │   │   │   └── MovingAverageCrossoverLiveStrategy.cs
@@ -9992,6 +9998,7 @@ Meridian-main
 │   │   │   │   └── CoveredCallRunProjectionTests.cs
 │   │   │   ├── AggregatePortfolioServiceTests.cs
 │   │   │   ├── CashFlowProjectionTests.cs
+│   │   │   ├── DesignerDocumentLiveSourceTests.cs
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
 │   │   │   ├── LiveRunMetricsTrackerTests.cs

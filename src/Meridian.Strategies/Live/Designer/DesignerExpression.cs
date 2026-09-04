@@ -476,50 +476,46 @@ internal abstract class DesignerExpression
 
         private DesignerExpression ParsePrimary(int depth)
         {
-            switch (Current.Kind)
+            if (Current.Kind == TokenKind.Number)
             {
-                case TokenKind.Number:
-                {
-                    var value = Current.Number;
-                    _position++;
-                    return new Literal(value);
-                }
-
-                case TokenKind.Identifier:
-                {
-                    var name = Current.Text;
-                    _position++;
-
-                    // The closed identifier set is the containment property: anything that is not a
-                    // catalog field -- a method name, a keyword, a smuggled symbol -- stops here.
-                    if (!knownFields.Contains(name))
-                    {
-                        throw new DesignerExpressionException(
-                            $"'{name}' is not a Strategy Designer catalog field.");
-                    }
-
-                    return new Field(name);
-                }
-
-                case TokenKind.OpenParen:
-                {
-                    _position++;
-                    var inner = ParseExpression(depth);
-                    if (Current.Kind != TokenKind.CloseParen)
-                    {
-                        throw new DesignerExpressionException("Missing ')'.");
-                    }
-
-                    _position++;
-                    return inner;
-                }
-
-                default:
-                    throw new DesignerExpressionException(
-                        Current.Kind == TokenKind.End
-                            ? "Expression ended unexpectedly."
-                            : $"Unexpected '{Current.Text}'.");
+                var value = Current.Number;
+                _position++;
+                return new Literal(value);
             }
+
+            if (Current.Kind == TokenKind.Identifier)
+            {
+                var name = Current.Text;
+                _position++;
+
+                // The closed identifier set is the containment property: anything that is not a
+                // catalog field -- a method name, a keyword, a smuggled symbol -- stops here.
+                if (!knownFields.Contains(name))
+                {
+                    throw new DesignerExpressionException(
+                        $"'{name}' is not a Strategy Designer catalog field.");
+                }
+
+                return new Field(name);
+            }
+
+            if (Current.Kind == TokenKind.OpenParen)
+            {
+                _position++;
+                var inner = ParseExpression(depth);
+                if (Current.Kind != TokenKind.CloseParen)
+                {
+                    throw new DesignerExpressionException("Missing ')'.");
+                }
+
+                _position++;
+                return inner;
+            }
+
+            throw new DesignerExpressionException(
+                Current.Kind == TokenKind.End
+                    ? "Expression ended unexpectedly."
+                    : $"Unexpected '{Current.Text}'.");
         }
 
         private static int Deepen(int depth) => depth < MaxDepth

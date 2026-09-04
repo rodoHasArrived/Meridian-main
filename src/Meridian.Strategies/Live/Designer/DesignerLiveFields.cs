@@ -129,108 +129,114 @@ internal static class DesignerLiveFields
 
         private bool TryResolveField(string field, IBacktestContext ctx, string symbol, out decimal value)
         {
-            value = 0m;
             switch (field.ToUpperInvariant())
             {
                 case Price:
-                    if (LastPrice <= 0m)
-                    {
-                        return false;
-                    }
-
                     value = LastPrice;
-                    return true;
-
+                    return LastPrice > 0m;
                 case AverageVolume20D:
-                    if (_volumes.Count < 20)
-                    {
-                        return false;
-                    }
-
-                    value = (decimal)_volumes.TakeLast(20).Average();
-                    return true;
-
+                    return TryAverageVolume(out value);
                 case Momentum63D:
-                {
-                    if (_prices.Count < 64)
-                    {
-                        return false;
-                    }
-
-                    var window = _prices.TakeLast(64).ToArray();
-                    var baseline = window[0];
-                    if (baseline <= 0m)
-                    {
-                        return false;
-                    }
-
-                    value = (window[^1] - baseline) / baseline;
-                    return true;
-                }
-
+                    return TryMomentum(out value);
                 case Volatility20D:
-                {
-                    if (_prices.Count < 21)
-                    {
-                        return false;
-                    }
-
-                    var window = _prices.TakeLast(21).ToArray();
-                    var returns = new double[window.Length - 1];
-                    for (var i = 1; i < window.Length; i++)
-                    {
-                        if (window[i - 1] <= 0m)
-                        {
-                            return false;
-                        }
-
-                        returns[i - 1] = (double)((window[i] - window[i - 1]) / window[i - 1]);
-                    }
-
-                    var mean = returns.Average();
-                    var variance = returns.Sum(r => (r - mean) * (r - mean)) / (returns.Length - 1);
-                    // Annualized on 252 sessions to match how the catalog describes the field to
-                    // operators ("realized volatility"), so a 0.30 threshold in a designer document
-                    // means the same thing it means on the research screens.
-                    value = (decimal)(Math.Sqrt(variance) * Math.Sqrt(252d));
-                    return true;
-                }
-
+                    return TryVolatility(out value);
                 case PortfolioWeight:
-                {
-                    var portfolioValue = ctx.PortfolioValue;
-                    if (portfolioValue <= 0m)
-                    {
-                        return false;
-                    }
-
-                    var quantity = ctx.Positions.TryGetValue(symbol, out var position) ? position.Quantity : 0L;
-                    if (quantity == 0L)
-                    {
-                        value = 0m;
-                        return true;
-                    }
-
-                    var price = ctx.GetLastPrice(symbol) ?? LastPrice;
-                    if (price <= 0m)
-                    {
-                        return false;
-                    }
-
-                    value = quantity * price / portfolioValue;
-                    return true;
-                }
-
+                    return TryPortfolioWeight(ctx, symbol, out value);
                 case LedgerCash:
                     value = ctx.Cash;
                     return true;
-
                 default:
                     // Unreachable for a compiled plan: DesignerStrategyPlan refuses unsupported
                     // fields before a strategy is ever constructed. Guarded anyway so a future
                     // catalog addition fails closed instead of resolving to zero.
+                    value = 0m;
                     return false;
             }
+        }
+
+        private bool TryAverageVolume(out decimal value)
+        {
+            value = 0m;
+            if (_volumes.Count < 20)
+            {
+                return false;
+            }
+
+            value = (decimal)_volumes.TakeLast(20).Average();
+            return true;
+        }
+
+        private bool TryMomentum(out decimal value)
+        {
+            value = 0m;
+            if (_prices.Count < 64)
+            {
+                return false;
+            }
+
+            var window = _prices.TakeLast(64).ToArray();
+            var baseline = window[0];
+            if (baseline <= 0m)
+            {
+                return false;
+            }
+
+            value = (window[^1] - baseline) / baseline;
+            return true;
+        }
+
+        private bool TryVolatility(out decimal value)
+        {
+            value = 0m;
+            if (_prices.Count < 21)
+            {
+                return false;
+            }
+
+            var window = _prices.TakeLast(21).ToArray();
+            var returns = new double[window.Length - 1];
+            for (var i = 1; i < window.Length; i++)
+            {
+                if (window[i - 1] <= 0m)
+                {
+                    return false;
+                }
+
+                returns[i - 1] = (double)((window[i] - window[i - 1]) / window[i - 1]);
+            }
+
+            var mean = returns.Average();
+            var variance = returns.Sum(r => (r - mean) * (r - mean)) / (returns.Length - 1);
+            // Annualized on 252 sessions to match how the catalog describes the field to
+            // operators ("realized volatility"), so a 0.30 threshold in a designer document
+            // means the same thing it means on the research screens.
+            value = (decimal)(Math.Sqrt(variance) * Math.Sqrt(252d));
+            return true;
+        }
+
+        private bool TryPortfolioWeight(IBacktestContext ctx, string symbol, out decimal value)
+        {
+            value = 0m;
+            var portfolioValue = ctx.PortfolioValue;
+            if (portfolioValue <= 0m)
+            {
+                return false;
+            }
+
+            var quantity = ctx.Positions.TryGetValue(symbol, out var position) ? position.Quantity : 0L;
+            if (quantity == 0L)
+            {
+                return true;
+            }
+
+            var price = ctx.GetLastPrice(symbol) ?? LastPrice;
+            if (price <= 0m)
+            {
+                return false;
+            }
+
+            value = quantity * price / portfolioValue;
+            return true;
         }
     }
 }
