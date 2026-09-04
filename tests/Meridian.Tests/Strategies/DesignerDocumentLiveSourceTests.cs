@@ -1341,7 +1341,7 @@ public sealed class DesignerDocumentLiveSourceTests
         var resolved = catalog.TryCreate(DocumentId, Context().Parameters, out _, out var reason);
 
         resolved.Should().BeFalse();
-        reason.Should().Be("plugin assembly 'strategy.dll' could not be loaded");
+        reason.Should().Contain("plugin assembly 'strategy.dll' could not be loaded").And.Contain(DocumentId);
         laterSourceConsulted.Should().BeFalse("a claimed run must not fall through to another implementation");
     }
 

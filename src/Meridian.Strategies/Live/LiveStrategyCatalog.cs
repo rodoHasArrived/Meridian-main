@@ -145,7 +145,10 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
                 if (!string.IsNullOrWhiteSpace(fallbackReason))
                 {
                     strategy = null;
-                    failureReason = fallbackReason;
+
+                    // Named, because this reason reaches the operator as the run's
+                    // ActivationDeferred text and a bare refusal does not say which run deferred.
+                    failureReason = $"Run '{strategyId}' could not be activated: {fallbackReason}";
                     return false;
                 }
             }
