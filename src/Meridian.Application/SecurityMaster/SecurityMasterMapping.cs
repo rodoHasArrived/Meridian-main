@@ -443,8 +443,25 @@ internal static class SecurityMasterMapping
 
         foreach (var field in SecurityAssetTermsSchema.DiscriminantFields(assetClass))
         {
-            var raw = GetOptionalString(json, field.Key);
-            if (raw is null || field.Allows(raw))
+            // Absent (or explicitly null) leaves the decode site's documented default alone — an
+            // omitted couponType is legitimately Fixed. A present token of the WRONG KIND is not
+            // absent, though it reaches the decode sites as if it were: GetOptionalString erases a
+            // number, bool, object, or array to null, so the write persists the missing-value
+            // default and discards the structure the payload named, which is the same silent
+            // rewrite an undeclared spelling would cause. Refuse it the same way.
+            if (!json.TryGetProperty(field.Key, out var token) || token.ValueKind == JsonValueKind.Null)
+            {
+                continue;
+            }
+
+            if (token.ValueKind != JsonValueKind.String)
+            {
+                throw new InvalidOperationException(
+                    UndeclaredDiscriminantValue(assetClass, field.Key, token.GetRawText()));
+            }
+
+            var raw = token.GetString();
+            if (field.Allows(raw))
             {
                 continue;
             }
