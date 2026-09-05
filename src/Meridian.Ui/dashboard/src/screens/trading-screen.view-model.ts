@@ -13,6 +13,10 @@ import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import {
+  buildCircuitBreakerActionResult,
+  buildExecutionControlsPanel
+} from "@/screens/trading-screen.execution-controls";
+import {
   buildTradingReadinessSummaryRows,
   formatReadinessStatusValue,
   formatTradingUtcDateTime as formatUtcDateTime,
@@ -21,6 +25,7 @@ import {
 } from "@/screens/trading-screen.readiness-summary";
 import type {
   ExecutionAuditEntry,
+  ExecutionCircuitBreakerActivationResponse,
   ExecutionControlSnapshot,
   OperatorWorkItem,
   OrderResult,
@@ -34,6 +39,7 @@ import type {
   ReplayFileRecord,
   ReplayStatus,
   TradingActionResult,
+  UpdateExecutionCircuitBreakerRequest,
   TradingFill,
   TradingOperatorReadiness,
   TradingOrder,
@@ -1176,6 +1182,11 @@ export interface ExecutionControlsPanel {
   statusTone: ExecutionEvidenceTone;
   ariaLabel: string;
   rows: ExecutionEvidenceFieldRow[];
+  breakerAction: TradingConfirmAction;
+  breakerActionLabel: string;
+  breakerActionDisabled: boolean;
+  breakerActionDisabledReason: string | null;
+  breakerActionAriaLabel: string;
 }
 
 export interface ExecutionEvidenceState {
@@ -1358,41 +1369,6 @@ function buildExecutionAuditRow(entry: ExecutionAuditEntry): ExecutionAuditRow {
   };
 }
 
-function buildExecutionControlsPanel(snapshot: ExecutionControlSnapshot): ExecutionControlsPanel {
-  const breakerOpen = snapshot.circuitBreaker.isOpen;
-  const symbolLimitCount = Object.keys(snapshot.symbolPositionLimits).length;
-  const overrideCount = snapshot.manualOverrides.length;
-
-  return {
-    title: "Execution controls snapshot",
-    statusLabel: `Breaker ${breakerOpen ? "Open" : "Closed"}`,
-    statusTone: breakerOpen ? "danger" : "success",
-    ariaLabel: `Execution controls snapshot: breaker ${breakerOpen ? "open" : "closed"}, ${symbolLimitCount} symbol ${symbolLimitCount === 1 ? "limit" : "limits"}, ${overrideCount} active ${overrideCount === 1 ? "override" : "overrides"}.`,
-    rows: [
-      {
-        id: "default-limit",
-        label: "Default limit",
-        value: snapshot.defaultMaxPositionSize === null ? "Not set" : String(snapshot.defaultMaxPositionSize)
-      },
-      {
-        id: "symbol-limits",
-        label: "Symbol limits",
-        value: formatExecutionSymbolLimits(snapshot.symbolPositionLimits)
-      },
-      {
-        id: "active-overrides",
-        label: "Active overrides",
-        value: formatExecutionManualOverrides(snapshot.manualOverrides)
-      },
-      {
-        id: "as-of",
-        label: "As of",
-        value: snapshot.asOf
-      }
-    ]
-  };
-}
-
 function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
   const occurredAt = new Date(entry.occurredAt);
   if (Number.isNaN(occurredAt.getTime())) {
@@ -1448,25 +1424,6 @@ function mapExecutionOutcomeTone(outcome: string): ExecutionEvidenceTone {
   }
 
   return "warning";
-}
-
-function formatExecutionSymbolLimits(limits: Record<string, number>): string {
-  const entries = Object.entries(limits);
-  if (entries.length === 0) {
-    return "None";
-  }
-
-  return entries.map(([symbol, limit]) => `${symbol}=${limit}`).join(", ");
-}
-
-function formatExecutionManualOverrides(overrides: ExecutionControlSnapshot["manualOverrides"]): string {
-  if (overrides.length === 0) {
-    return "None";
-  }
-
-  return overrides
-    .map((entry) => `${entry.kind}${entry.symbol ? ` (${entry.symbol})` : ""}`)
-    .join(", ");
 }
 
 function buildExecutionEvidenceAnnouncement({
@@ -2685,7 +2642,9 @@ export type TradingConfirmAction =
   | { kind: "cancel-all" }
   | { kind: "close-position"; positionKey: string; symbol: string }
   | { kind: "pause-strategy"; strategyId: string }
-  | { kind: "stop-strategy"; strategyId: string };
+  | { kind: "stop-strategy"; strategyId: string }
+  | { kind: "open-circuit-breaker" }
+  | { kind: "close-circuit-breaker" };
 
 export interface StrategyLifecycleControlsState {
   strategyId: string;
@@ -2852,6 +2811,9 @@ export interface TradingConfirmServices {
   closePosition: (positionKey: string, fundAccountId?: string | null) => Promise<TradingActionResult>;
   pauseStrategy: (strategyId: string) => Promise<{ success: boolean; reason: string | null }>;
   stopStrategy: (strategyId: string) => Promise<{ success: boolean; reason: string | null }>;
+  updateExecutionCircuitBreaker: (
+    request: UpdateExecutionCircuitBreakerRequest
+  ) => Promise<ExecutionCircuitBreakerActivationResponse>;
 }
 
 export interface TradingConfirmViewModel extends TradingConfirmDialogState {
@@ -2867,7 +2829,8 @@ const defaultTradingConfirmServices: TradingConfirmServices = {
   cancelAllOrders: () => workstationApi.cancelAllOrders(),
   closePosition: (positionKey, fundAccountId) => workstationApi.closePosition(positionKey, fundAccountId),
   pauseStrategy: (strategyId) => workstationApi.pauseStrategy(strategyId),
-  stopStrategy: (strategyId) => workstationApi.stopStrategy(strategyId)
+  stopStrategy: (strategyId) => workstationApi.stopStrategy(strategyId),
+  updateExecutionCircuitBreaker: (request) => workstationApi.updateExecutionCircuitBreaker(request)
 };
 
 export function useTradingConfirmViewModel({
@@ -2991,7 +2954,8 @@ function isDestructiveTradingAction(action: TradingConfirmAction | null): boolea
   return action?.kind === "cancel-order"
     || action?.kind === "cancel-all"
     || action?.kind === "close-position"
-    || action?.kind === "stop-strategy";
+    || action?.kind === "stop-strategy"
+    || action?.kind === "open-circuit-breaker";
 }
 
 function buildTradingConfirmDisabledReason(state: TradingConfirmState, isCompleted: boolean): string | null {
@@ -3059,6 +3023,17 @@ async function executeTradingConfirmAction(
     return services.closePosition(action.positionKey, fundAccountId);
   }
 
+  if (action.kind === "open-circuit-breaker" || action.kind === "close-circuit-breaker") {
+    const shouldOpen = action.kind === "open-circuit-breaker";
+    const response = await services.updateExecutionCircuitBreaker({
+      isOpen: shouldOpen,
+      reason: shouldOpen
+        ? "Kill switch pulled from the browser workstation."
+        : "Circuit breaker reset from the browser workstation."
+    });
+    return buildCircuitBreakerActionResult(shouldOpen, response);
+  }
+
   const raw = action.kind === "pause-strategy"
     ? await services.pauseStrategy(action.strategyId)
     : await services.stopStrategy(action.strategyId);
@@ -3079,6 +3054,8 @@ function tradingConfirmActionLabel(action: TradingConfirmAction): string {
     case "close-position": return `Close position - ${action.symbol}`;
     case "pause-strategy": return `Pause strategy - ${action.strategyId}`;
     case "stop-strategy": return `Stop strategy - ${action.strategyId}`;
+    case "open-circuit-breaker": return "Open execution circuit breaker";
+    case "close-circuit-breaker": return "Reset execution circuit breaker";
   }
 }
 
@@ -3094,6 +3071,10 @@ function tradingConfirmActionDescription(action: TradingConfirmAction): string {
       return "The strategy will stop processing new signals until manually resumed. Open positions and orders remain unchanged.";
     case "stop-strategy":
       return "The strategy will be stopped and its session will be closed. Open positions remain until manually flattened.";
+    case "open-circuit-breaker":
+      return "This halts new order submission across gateways and immediately sweeps every open order for cancellation. Partial fills that already occurred are not reversed, and positions remain until manually flattened.";
+    case "close-circuit-breaker":
+      return "This resets the breaker and allows order submission to resume. Orders cancelled by the halt are not restored.";
   }
 }
 
@@ -3109,6 +3090,10 @@ function tradingConfirmAcknowledgementDescription(action: TradingConfirmAction):
       return `Pause strategy ${action.strategyId} while leaving existing orders and positions unchanged.`;
     case "stop-strategy":
       return `Stop strategy ${action.strategyId} while leaving open positions for manual handling.`;
+    case "open-circuit-breaker":
+      return "Halt order submission and cancel every open order after reviewing partial-fill risk.";
+    case "close-circuit-breaker":
+      return "Allow order submission to resume after confirming the book is in a state the desk accepts.";
   }
 }
 
@@ -3120,6 +3105,9 @@ function tradingConfirmActionDomKey(action: TradingConfirmAction): string {
     case "pause-strategy":
     case "stop-strategy":
       return `${action.kind}-${action.strategyId}`;
+    case "open-circuit-breaker":
+    case "close-circuit-breaker":
+      return action.kind;
   }
 }
 
