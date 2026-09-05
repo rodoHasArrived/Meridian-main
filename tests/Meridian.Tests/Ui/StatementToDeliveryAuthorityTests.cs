@@ -225,7 +225,8 @@ public sealed class StatementToDeliveryAuthorityTests
             new ImmediateReportingReleaseConsistencyGate());
         var closeManagement = new AccountingCloseManagementService(
             statementIntake.Operations,
-            postingBridge);
+            postingBridge,
+            closeReadinessGuard: statementIntake.CloseAuthority);
         await SignOffRequiredCloseTasksAsync(closeManagement, approvedWorkflow, ct);
         var closeCorrelationId = $"statement-delivery:{statementRunId}:hard-close";
         var closeEvidenceLinks = (resolvedQueueItem.EvidenceLinks ?? [])
@@ -247,7 +248,9 @@ public sealed class StatementToDeliveryAuthorityTests
                 ClosePackageManifestId: "statement-close-manifest-june-2026",
                 ClosePackageRetainedManifestRoute:
                     "/api/workstation/reporting/packages/statement-close-package-june-2026",
-                ControllerRole: "Controller"),
+                ControllerRole: "Controller",
+                CloseScope: new(FundProfileId.ToString("D"), LedgerBookId, approvedWorkflow.FundAccountId,
+                    "entity-statement-fund", approvedWorkflow.PeriodId)),
             "fund-controller",
             "tenant-alpha",
             "company-alpha",
@@ -744,11 +747,15 @@ public sealed class StatementToDeliveryAuthorityTests
             LedgerBookId,
             AccountingPeriodId);
         journalStore.SeedBeginningCapital(1_000_000m);
-        var operations = new OperationsContinuityWorkflowService(
+        OperationsContinuityWorkflowService? operations = null;
+        var closeAuthority = new FundOpsCloseLaneScenarioTests.WorkflowEvidenceCloseAuthority(
+            () => operations, FundProfileId.ToString("D"), LedgerBookId, "entity-statement-fund");
+        operations = new OperationsContinuityWorkflowService(
             new InMemoryOperationsContinuityRepository(derivation),
             auditStore,
             derivation,
-            journalStore);
+            journalStore,
+            closeReadinessGuard: closeAuthority);
         var queue = new FileReconciliationBreakQueueRepository(
             Path.Combine(dataRoot, "reconciliation-casework"),
             NullLogger<FileReconciliationBreakQueueRepository>.Instance);
@@ -801,6 +808,7 @@ public sealed class StatementToDeliveryAuthorityTests
             workflow,
             casework,
             operations,
+            closeAuthority,
             auditStore,
             queue,
             statementEvidenceStore,
@@ -1688,6 +1696,7 @@ public sealed class StatementToDeliveryAuthorityTests
         StatementReconciliationReportWorkflowService workflow,
         StatementReconciliationCaseworkHandoffService casework,
         OperationsContinuityWorkflowService operations,
+        IClosePublicationReadinessGuard closeAuthority,
         InMemoryOperationsWorkflowAuditStore auditStore,
         FileReconciliationBreakQueueRepository queue,
         FileEvidenceArtifactStore statementEvidenceStore,
@@ -1700,6 +1709,7 @@ public sealed class StatementToDeliveryAuthorityTests
         public StatementReconciliationReportWorkflowService Workflow { get; } = workflow;
         public StatementReconciliationCaseworkHandoffService Casework { get; } = casework;
         public OperationsContinuityWorkflowService Operations { get; } = operations;
+        public IClosePublicationReadinessGuard CloseAuthority { get; } = closeAuthority;
         public InMemoryOperationsWorkflowAuditStore AuditStore { get; } = auditStore;
         public FileReconciliationBreakQueueRepository Queue { get; } = queue;
         public FileEvidenceArtifactStore StatementEvidenceStore { get; } = statementEvidenceStore;

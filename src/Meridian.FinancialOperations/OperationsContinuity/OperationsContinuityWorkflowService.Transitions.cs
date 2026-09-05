@@ -20,6 +20,7 @@ public sealed partial class OperationsContinuityWorkflowService
         Func<OperationsContinuityWorkflow, IReadOnlyList<OperationsEvidenceLinkDto>, DateTimeOffset, OperationsWorkflowBlockerDto?>? command = null,
         bool allowClosedWorkflow = false,
         bool requireIntactAuditChain = false,
+        Func<OperationsContinuityWorkflow, CancellationToken, Task<IReadOnlyList<OperationsWorkflowBlockerDto>>>? boundaryPrecondition = null,
         CancellationToken ct = default)
     {
         if (workflowId == Guid.Empty)
@@ -164,6 +165,14 @@ public sealed partial class OperationsContinuityWorkflowService
         var fromStatus = _statusDerivation.Derive(workflow);
         var fromGateStatus = gate.HasValue ? GetGate(workflow, gate.Value).Status : (OperationsGateStatusDto?)null;
         var now = DateTimeOffset.UtcNow;
+        if (boundaryPrecondition is not null)
+        {
+            var boundaryBlockers = await boundaryPrecondition(workflow, ct).ConfigureAwait(false);
+            if (boundaryBlockers.Count > 0)
+                return await PersistBlockedAttemptAsync(workflow, expectedVersion, actor, rationale, correlationId,
+                    eventType, gate, "CLOSE_READINESS_REQUIRED", "Shared close evidence changed before publication.",
+                    boundaryBlockers, evidence, ct).ConfigureAwait(false);
+        }
         var workflowForCommit = CloneWorkflow(workflow);
         if (command?.Invoke(workflowForCommit, evidence, now) is { } commandBlocker)
         {

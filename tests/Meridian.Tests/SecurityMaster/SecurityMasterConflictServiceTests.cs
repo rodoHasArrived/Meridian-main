@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
@@ -15,6 +16,37 @@ namespace Meridian.Tests.SecurityMaster;
 [Trait("Category", "Unit")]
 public sealed class SecurityMasterConflictServiceTests
 {
+    [Theory]
+    [InlineData(".", ".")]
+    [InlineData("\r\n", " ")]
+    [InlineData("\0\t\u001b\u007f\u0085", " ")]
+    [InlineData("\u2028\u2029", " ")]
+    public async Task ResolveAsync_UntrustedResolver_RendersOneLogLineAndPreservesAuditIdentity(
+        string separator, string renderedSeparator)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeProjection(Guid.NewGuid(), "Cusip", "037833100", provider: "provA"),
+            MakeProjection(Guid.NewGuid(), "Cusip", "037833100", provider: "provB")
+        });
+        var logger = new RecordingLogger<SecurityMasterConflictService>();
+        var service = new SecurityMasterConflictService(store, logger);
+        var conflict = (await service.GetOpenConflictsAsync(timeout.Token)).Single();
+        var resolver = $"operator@meridian.test{separator}approval=forged";
+
+        var updated = await service.ResolveAsync(
+            new ResolveConflictRequest(conflict.ConflictId, "AcceptA", resolver), timeout.Token);
+
+        updated.Should().NotBeNull();
+        updated!.Status.Should().Be("Resolved");
+        updated.ResolvedBy.Should().Be(resolver);
+        (await service.GetConflictAsync(conflict.ConflictId, timeout.Token))!.ResolvedBy.Should().Be(resolver);
+        logger.Entries.Last().Message.Should().Be(
+            $"Conflict {conflict.ConflictId} for security {conflict.SecurityId} Resolved by operator@meridian.test{renderedSeparator}approval=forged");
+    }
+
     private static SecurityProjectionRecord MakeProjection(
         Guid securityId,
         string identifierKind,

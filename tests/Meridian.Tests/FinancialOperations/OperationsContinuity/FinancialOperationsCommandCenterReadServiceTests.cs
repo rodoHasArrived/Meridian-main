@@ -989,7 +989,7 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
         => new(
             new StubOperationsContinuityWorkflowService(workflow),
             calendar is null ? null : new StubCloseCalendarService(calendar),
-            cockpit is null ? null : new StubPrivateCapitalCloseCockpitService(cockpit), CreateBookService(), CreateClosePlanService(workflow));
+            cockpit is null ? null : new StubPrivateCapitalCloseCockpitService(cockpit), CreateBookService(), CreateClosePlanService(workflow), CreateSubjectSource());
 
     private static OperationsContinuityWorkflowDto CreateWorkflow(
         IReadOnlyList<OperationsApprovalDto>? approvals = null,
@@ -1119,7 +1119,7 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
             blockedLaneCount,
             cockpitLanes,
             [new(workflow.WorkflowId, workflow.FundAccountId, workflow.PeriodId, workflow.Status,
-                100, true, "/workstation/accounting", null, null, 0, 0, workflow.UpdatedAtUtc)],
+                100, true, "/workstation/accounting", null, null, 0, 0, workflow.UpdatedAtUtc, workflow.Version)],
             [],
             [],
             [],

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
@@ -181,7 +182,8 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
         _logger.LogInformation(
             "Conflict {ConflictId} for security {SecurityId} {Status} by {ResolvedBy}",
-            request.ConflictId, existing.SecurityId, newStatus, request.ResolvedBy);
+            request.ConflictId, existing.SecurityId, newStatus,
+            Regex.Replace(request.ResolvedBy ?? string.Empty, @"[\r\n\p{Cc}\u2028\u2029]+", " "));
 
         return Task.FromResult<SecurityMasterConflict?>(updated);
     }

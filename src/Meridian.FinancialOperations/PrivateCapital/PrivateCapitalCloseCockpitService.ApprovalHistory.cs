@@ -154,7 +154,8 @@ public sealed partial class PrivateCapitalCloseCockpitService
                 approval.Approval.DecidedAtUtc,
                 workflowRoute,
                 evidence.Count,
-                evidence);
+                evidence,
+                IsCurrentDecision: approval.Index == workflow.Approvals.Count - 1);
         }
 
         var package = workflow.ClosePackage;

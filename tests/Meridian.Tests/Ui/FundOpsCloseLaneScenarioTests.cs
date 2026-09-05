@@ -20,6 +20,7 @@ namespace Meridian.Tests.Ui;
 [Trait("Category", "W4Acceptance")]
 public sealed class FundOpsCloseLaneScenarioTests
 {
+    private static readonly Guid ScenarioBookId = Guid.Parse("33333333-3333-3333-3333-333333333333");
     [Fact]
     public async Task FundOpsPeriodClose_FullLaneFromOpenToClosedWithAuditTrail()
     {
@@ -33,7 +34,7 @@ public sealed class FundOpsCloseLaneScenarioTests
             "2026-05",
             null,
             "custodian",
-            "ops-user"));
+            "ops-user", LedgerBookId: ScenarioBookId));
 
         start.Success.Should().BeTrue("workflow should start cleanly");
         start.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.CollectingBrokerData,
@@ -172,9 +173,10 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "ops-user",
                 Rationale: "Closing May 2026 accounting period",
                 ReportPackId: "report-pack-may-2026",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+                CloseScope: CloseScope((await service.GetAsync(workflowId))!)));
 
-        closed.Success.Should().BeTrue();
+        closed.Success.Should().BeTrue("the retained close prerequisites must permit publication: {0}", CloseDiagnostics(closed));
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed,
             "the period close sequence should end in Closed state");
 
@@ -213,7 +215,7 @@ public sealed class FundOpsCloseLaneScenarioTests
 
         // Advance to the point where ledger entries are posted.
         var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
-            fundAccountId, "2026-05", null, "custodian", "ops-user"));
+            fundAccountId, "2026-05", null, "custodian", "ops-user", LedgerBookId: ScenarioBookId));
         var workflowId = start.Workflow!.WorkflowId;
 
         var import = await service.ImportBrokerDataAsync(workflowId,
@@ -313,9 +315,10 @@ public sealed class FundOpsCloseLaneScenarioTests
             new OperationsCloseWorkflowRequestDto(
                 approved.Workflow!.Version, "ops-user",
                 "Period closed after break resolution", "report-pack-break-test",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+                CloseScope: CloseScope((await service.GetAsync(workflowId))!)));
 
-        closed.Success.Should().BeTrue();
+        closed.Success.Should().BeTrue("the retained close prerequisites must permit publication: {0}", CloseDiagnostics(closed));
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
 
         // The audit timeline must capture both the break and its resolution.
@@ -337,7 +340,7 @@ public sealed class FundOpsCloseLaneScenarioTests
 
         // Advance to post-reconciliation state.
         var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
-            fundAccountId, "2026-05", null, "custodian", "ops-user"));
+            fundAccountId, "2026-05", null, "custodian", "ops-user", LedgerBookId: ScenarioBookId));
         var workflowId = start.Workflow!.WorkflowId;
 
         var import = await service.ImportBrokerDataAsync(workflowId,
@@ -388,7 +391,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "ops-user",
                 "Attempting to close before report-pack and approval readiness",
                 "report-pack-not-yet-ready",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+                CloseScope: CloseScope((await service.GetAsync(workflowId))!)));
 
         blockedClose.Success.Should().BeFalse("close execution must fail closed while W4 readiness is incomplete");
         blockedClose.ErrorCode.Should().Be("CLOSE_READINESS_FAILED");
@@ -552,9 +556,10 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "ops-user",
                 Rationale: "Close recovered period after remediation.",
                 ReportPackId: "report-pack-recovery-2",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+                CloseScope: CloseScope((await service.GetAsync(workflow.WorkflowId))!)));
 
-        closed.Success.Should().BeTrue();
+        closed.Success.Should().BeTrue("the retained close prerequisites must permit publication: {0}", CloseDiagnostics(closed));
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
         AssertCloseReadinessReady(closed.Workflow.CloseReadiness);
         closed.Workflow.ClosePackage.Should().NotBeNull();
@@ -637,11 +642,73 @@ public sealed class FundOpsCloseLaneScenarioTests
         var derivation = new OperationsStatusDerivationService();
         repository = new InMemoryOperationsContinuityRepository(derivation);
         auditStore = new InMemoryOperationsWorkflowAuditStore();
-        return new OperationsContinuityWorkflowService(
+        OperationsContinuityWorkflowService? service = null;
+        var authority = new WorkflowEvidenceCloseAuthority(() => service, "fund-alpha", ScenarioBookId, "entity-master");
+        service = new OperationsContinuityWorkflowService(
             repository,
             auditStore,
             derivation,
-            new RecordingLedgerJournalStore());
+            new RecordingLedgerJournalStore(),
+            closeReadinessGuard: authority);
+        return service;
+    }
+
+    private static string CloseDiagnostics(OperationsTransitionResultDto result)
+        => $"{result.ErrorCode}; {string.Join("; ", result.Blockers.Select(blocker => $"{blocker.Code}: {blocker.Message}"))}; " +
+           $"workflow {result.Workflow?.WorkflowId:D} v{result.Workflow?.Version} {result.Workflow?.Status}; " +
+           $"book {result.Workflow?.LedgerBookId:D}, account {result.Workflow?.FundAccountId:D}, period {result.Workflow?.PeriodId}";
+
+    private static CloseReadinessScopeDto CloseScope(OperationsContinuityWorkflowDto workflow)
+        => new("fund-alpha", ScenarioBookId, workflow.FundAccountId, "entity-master", workflow.PeriodId);
+
+    // These adjacent scenarios exercise workflow, posting, and delivery authority. The dedicated
+    // publication acceptance suite owns the complete private-capital/shared-reader graph. This
+    // fixture authority still requires this scenario's exact declared subject and retained facts.
+    internal sealed class WorkflowEvidenceCloseAuthority(
+        Func<IOperationsContinuityWorkflowService?> workflowFactory,
+        string fundProfileId, Guid ledgerBookId, string entityId) : IClosePublicationReadinessGuard
+    {
+        public async Task<IReadOnlyList<OperationsWorkflowBlockerDto>> ValidateAsync(
+            Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope,
+            string? tenantId = null, string? companyId = null, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (scope is null || scope.FundProfileId != fundProfileId || scope.LedgerBookId != ledgerBookId ||
+                scope.EntityId != entityId || (!string.IsNullOrWhiteSpace(tenantId) && tenantId != "tenant-alpha") ||
+                (!string.IsNullOrWhiteSpace(companyId) && companyId != "company-alpha"))
+                return Block("SCENARIO_CLOSE_SCOPE_MISMATCH", "Close must use the scenario's declared fund, book, entity, tenant, and company.");
+            var source = workflowFactory();
+            var workflow = source is null ? null : await source.GetAsync(workflowId, ct);
+            if (workflow is null || workflow.Version != expectedVersion || workflow.WorkflowId != workflowId ||
+                workflow.LedgerBookId != ledgerBookId || workflow.FundAccountId != scope.FundAccountId ||
+                workflow.PeriodId != scope.PeriodId)
+                return Block("SCENARIO_CLOSE_WORKFLOW_MISMATCH", "Close evidence must match the exact current account-period workflow and version.");
+            var latestApproval = workflow.Approvals.LastOrDefault();
+            var reportId = workflow.ReportPackReadiness.ReportPackId;
+            var hasReportEvidence = !string.IsNullOrWhiteSpace(reportId) && workflow.ReportPackReadiness.EvidenceLinks
+                .Concat(latestApproval?.EvidenceLinks ?? [])
+                .Any(link => string.Equals(link.EvidenceId, reportId, StringComparison.Ordinal));
+            var missing = new List<string>();
+            if (workflow.CloseReadiness?.IsReadyToClose != true)
+                missing.Add("workflow readiness");
+            missing.AddRange(workflow.Blockers.Select(blocker => $"workflow blocker {blocker.Code}"));
+            if (workflow.Gates.Count == 0)
+                missing.Add("workflow gates");
+            missing.AddRange(workflow.Gates.Where(gate => gate.Status != OperationsGateStatusDto.Passed)
+                .Select(gate => $"gate {gate.GateKey}: {gate.Status}"));
+            if (latestApproval?.Status != OperationsApprovalStateDto.Approved)
+                missing.Add("current approved decision");
+            if (!workflow.ReportPackReadiness.IsReady || !hasReportEvidence)
+                missing.Add($"ready report {reportId} with matching retained report or approval evidence");
+            missing.AddRange(workflow.EvidencePackages.Where(package => package.RequiredForClose && !package.IsReady)
+                .Select(package => $"required package {package.PackageId}: {package.Status} ({package.Summary})"));
+            if (missing.Count > 0)
+                return Block("SCENARIO_CLOSE_EVIDENCE_REQUIRED", string.Join("; ", missing));
+            return [];
+        }
+
+        private static IReadOnlyList<OperationsWorkflowBlockerDto> Block(string code, string message)
+            => [new(code, message, OperationsGateKeyDto.Approval, "Critical", [])];
     }
 
     private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
@@ -666,7 +733,7 @@ public sealed class FundOpsCloseLaneScenarioTests
             periodId,
             null,
             "custodian",
-            "ops-user"));
+            "ops-user", LedgerBookId: ScenarioBookId));
         var workflowId = start.Workflow!.WorkflowId;
         var import = await service.ImportBrokerDataAsync(
             workflowId,
