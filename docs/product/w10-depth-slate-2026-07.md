@@ -392,6 +392,11 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
 
 ### `W10-SEAM-001` — close readiness
 
+Implementation in progress (2026-09-04): the Financial Operations command center now carries a typed scope/contributor/blocker projection, exposes its previously missing browser route, and feeds browser and WPF close headlines. Requests never fill missing scope dimensions from a selected workflow. Calendar identities bind through the exact book-scoped workflow; private-capital results must match every declared dimension; the close plan must match the workflow version. Contributor absence, failure, ambiguity, or stale evaluation blocks readiness. The fund-wide workspace no longer publishes an independent ready claim.
+
+Remaining acceptance work: prove complete contributor subject ownership and coherent snapshots under concurrent changes, wire scoped selection and blocker recovery through every close entry point, and retain browser/WPF plus hosted integration evidence. This implementation is not production certification.
+
+
 - Four services compute close readiness and a fifth computes asset-class coverage under a readiness
   name. Between them they encode readiness five incompatible ways: a scored close-readiness record, an
   evidence-status enum, an accounting-readiness enum, and two different free-string status

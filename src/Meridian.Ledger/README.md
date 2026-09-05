@@ -11,6 +11,10 @@ last_reviewed: 2026-07-10
 
 # src/Meridian.Ledger
 
+## Shared close and lot convergence
+
+`OpenLotReliefService` uses the shared decimal consumption walk for canonical FIFO/LIFO/HIFO/SpecificId/AverageCost selection and retains transaction and functional basis separately. It refuses mixed security, position, book, quantity-basis, and currency scopes. This is a shadow migration kernel; existing writer/selector cutover remains gated on parity and retained acquisition evidence.
+
 ## Purpose
 
 Ledger provides accounting and books support for reconciliation, governed reporting, and fund operations.

@@ -208,6 +208,125 @@ public sealed class PositionBlotterViewModelTests
         });
     }
 
+    /// <summary>
+    /// The position endpoints answer 200 with a status; a Rejected or PendingApproval result is a
+    /// position still open, and reporting it as "submitted" would tell an operator flattening a
+    /// book that a close was under way while nothing had reached the broker.
+    /// </summary>
+    [Fact]
+    public void ClassifyActionResponse_AcceptedStatus_CountsAsSubmitted()
+    {
+        var outcome = PositionBlotterViewModel.ClassifyActionResponse(
+            httpSuccess: true,
+            errorMessage: null,
+            actionStatus: "Accepted",
+            actionMessage: "Order accepted.",
+            productDescription: "AAPL equity long");
+
+        outcome.Submitted.Should().BeTrue();
+        outcome.Kind.Should().Be(PositionBlotterViewModel.PositionActionOutcomeKind.Submitted);
+        outcome.Detail.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("Rejected", "Execution circuit breaker is open.")]
+    [InlineData("Failed", "Gateway refused the close.")]
+    public void ClassifyActionResponse_HttpSuccessCarryingARefusal_IsNotSubmittedAndKeepsTheReason(
+        string status,
+        string reason)
+    {
+        var outcome = PositionBlotterViewModel.ClassifyActionResponse(
+            httpSuccess: true,
+            errorMessage: null,
+            actionStatus: status,
+            actionMessage: reason,
+            productDescription: "AAPL equity long");
+
+        outcome.Submitted.Should().BeFalse("a 200 is not a close; the action status is");
+        outcome.Kind.Should().Be(PositionBlotterViewModel.PositionActionOutcomeKind.Failed);
+        outcome.Detail.Should().Be($"AAPL equity long: {reason}");
+    }
+
+    /// <summary>
+    /// A parked close is neither submitted nor failed. Reporting it as a failure invites a
+    /// resubmission that parks a second order under a fresh client id, and approving both
+    /// over-closes the position; the endpoint's own instruction must reach the operator.
+    /// </summary>
+    [Fact]
+    public void ClassifyActionResponse_PendingApproval_IsItsOwnOutcomeAndKeepsTheInstruction()
+    {
+        const string instruction = "Parked for governed approval (esc-1); an approver must release it. Do not resubmit.";
+
+        var outcome = PositionBlotterViewModel.ClassifyActionResponse(
+            httpSuccess: true,
+            errorMessage: null,
+            actionStatus: "PendingApproval",
+            actionMessage: instruction,
+            productDescription: "AAPL equity long");
+
+        outcome.Submitted.Should().BeFalse();
+        outcome.Kind.Should().Be(PositionBlotterViewModel.PositionActionOutcomeKind.PendingApproval);
+        outcome.Detail.Should().Be($"AAPL equity long: {instruction}");
+    }
+
+    [Fact]
+    public void ComposeActionStatus_PendingApprovalOnly_TellsTheOperatorNotToResubmit()
+    {
+        var text = PositionBlotterViewModel.ComposeActionStatus(
+            "Close",
+            "close",
+            successes: 0,
+            pendingApprovals: new[] { "AAPL equity long: Parked for governed approval (esc-1). Do not resubmit." },
+            failures: Array.Empty<string>());
+
+        text.Should().StartWith("1 parked for governed approval; do not resubmit");
+        text.Should().Contain("esc-1");
+        text.Should().NotContain("Unable to close");
+        text.Should().NotContain("submitted");
+    }
+
+    [Fact]
+    public void ComposeActionStatus_MixedOutcomes_NamesEachGroup()
+    {
+        var text = PositionBlotterViewModel.ComposeActionStatus(
+            "Close",
+            "close",
+            successes: 1,
+            pendingApprovals: new[] { "TSLA short hedge: parked" },
+            failures: new[] { "NVDA review-only lot: Rejected" });
+
+        text.Should().Be(
+            "Close submitted for 1 position(s); 1 parked for governed approval; do not resubmit (TSLA short hedge: parked); 1 failed (NVDA review-only lot: Rejected).");
+    }
+
+    [Fact]
+    public void ClassifyActionResponse_HttpSuccessWithoutAStatusOrMessage_NamesTheMissingStatus()
+    {
+        var outcome = PositionBlotterViewModel.ClassifyActionResponse(
+            httpSuccess: true,
+            errorMessage: null,
+            actionStatus: null,
+            actionMessage: null,
+            productDescription: "AAPL equity long");
+
+        outcome.Submitted.Should().BeFalse();
+        outcome.Detail.Should().Contain("no status");
+    }
+
+    [Fact]
+    public void ClassifyActionResponse_HttpFailure_KeepsTheTransportError()
+    {
+        var outcome = PositionBlotterViewModel.ClassifyActionResponse(
+            httpSuccess: false,
+            errorMessage: "503 Service Unavailable",
+            actionStatus: null,
+            actionMessage: null,
+            productDescription: "AAPL equity long");
+
+        outcome.Submitted.Should().BeFalse();
+        outcome.Detail.Should().Be("AAPL equity long: 503 Service Unavailable");
+    }
+
     private static PositionBlotterViewModel CreateLoadedViewModel(params BlotterEntry[] entries)
     {
         var vm = new PositionBlotterViewModel(ApiClientService.Instance, NavigationService.Instance);

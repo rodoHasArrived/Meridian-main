@@ -15,6 +15,10 @@ The desktop workstation is installed as part of the single Meridian product and 
 on demand from the browser workstation. It is not a separate end-user package or Start
 Menu product.
 
+## Shared close and lot convergence
+
+Fund Ledger carries its explicitly selected book/account/entity/period context to the shared command-center service. Both the queue and private-capital close headline consume the shared decision; clear local lane inputs cannot establish close readiness. The browser and WPF use the same contributor manifest and blocking rules.
+
 ## Purpose
 
 WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside

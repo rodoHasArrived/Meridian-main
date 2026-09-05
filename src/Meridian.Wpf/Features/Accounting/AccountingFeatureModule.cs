@@ -244,7 +244,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IOperationsCloseCalendarService>(),
-                sp.GetService<IPrivateCapitalCloseCockpitService>()));
+                sp.GetService<IPrivateCapitalCloseCockpitService>(),
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<IAccountingCloseManagementService>()));
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();

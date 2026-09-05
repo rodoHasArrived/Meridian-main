@@ -11,6 +11,10 @@ last_reviewed: 2026-07-27
 
 # src/Meridian.FinancialOperations
 
+## Shared close and lot convergence
+
+The Financial Operations command center owns the shared close decision. It requires an explicit fund profile, ledger book, fund account, entity, and period; validates book/profile binding and exact workflow identity; and includes workflow, calendar, version-matched close-plan, and private-capital contributors. Missing, ambiguous, failing, or older-than-five-minute contributor evaluations block. Asset coverage and fund-wide diagnostic metrics do not establish readiness. Focused proof: `FinancialOperationsCommandCenterReadServiceTests`.
+
 ## Purpose
 
 Physical bounded-context module project for reconciliation, accounting records, payment approvals,
