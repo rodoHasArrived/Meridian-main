@@ -4,6 +4,60 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.IOpenLotReliefService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.LotQuantityBasis"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotValidation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingApprovalQueueConfigurationDto"
     },
     {
@@ -10625,6 +10679,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.CashSyncWindow"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessContributionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessScopeDto"
     },
     {
       "kind": "contract-set-member",
@@ -21867,6 +21945,42 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAmortizationMethod"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.LotQuantityBasis"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactIssueDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingConfigurationValidationSeverityDto"
     },
@@ -32565,6 +32679,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessContributionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.CloseWorkflow",
       "target": "contract:Meridian.Contracts.Workstation.FundWorkflowCommandMetadata"
     },
@@ -33311,6 +33443,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionRowDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsEvidenceLinkDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FinancialOperationsCommandCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto"
     },
     {
       "kind": "contract-reference",
@@ -41375,6 +41513,24 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.acquisition_terms"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.book_position_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
       "target": "database:ledger.tax_lots.book_position_id"
     },
@@ -46400,7 +46556,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "8beaf6bc276cceb5752f1e4319baa20cdb5649b49be61e770b6bbaebd2ba5009",
+  "fingerprint": "6ffab4a6c515f29308e328e496942802890c6cf97b962ffee65cc17779b94844",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -46452,6 +46608,60 @@
       "id": "contract-set:security-master-contracts",
       "kind": "contract-set",
       "label": "security-master-contracts"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.IOpenLotReliefService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.IOpenLotReliefService"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.LotQuantityBasis",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.LotQuantityBasis"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotValidation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotValidation"
     },
     {
       "classification": "dto",
@@ -57080,6 +57290,30 @@
       "label": "Meridian.Contracts.Workstation.CashSyncWindow"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CloseReadinessBlockerDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CloseReadinessBlockerDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CloseReadinessContributionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CloseReadinessContributionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CloseReadinessProjectionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CloseReadinessScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CloseReadinessScopeDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.CloseWorkflow",
       "kind": "contract-type",
@@ -63770,6 +64004,11 @@
       "label": "ledger.ck_tax_lot_policies_wash_sale on ledger.tax_lot_policies"
     },
     {
+      "id": "database:ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots"
+    },
+    {
       "id": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.ck_tax_lots_asset_scope on ledger.tax_lots"
@@ -64184,6 +64423,11 @@
       "kind": "database-table",
       "label": "ledger.tax_lots",
       "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.tax_lots.acquisition_terms",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.acquisition_terms"
     },
     {
       "id": "database:ledger.tax_lots.book_position_id",
@@ -67795,11 +68039,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3070,
-    "contract_set_memberships": 3644,
-    "edges": 7710,
+    "contract_references": 3080,
+    "contract_set_memberships": 3657,
+    "edges": 7736,
     "foreign_keys": 123,
     "logical_references": 6,
-    "nodes": 3700
+    "nodes": 3715
   }
 }

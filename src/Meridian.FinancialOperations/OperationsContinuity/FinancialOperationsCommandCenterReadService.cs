@@ -116,15 +116,6 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
             projection);
     }
 
-    private static OperationsContinuityWorkflowDto? ResolveActiveWorkflow(IReadOnlyList<OperationsContinuityWorkflowDto> workflows)
-        => workflows
-            .OrderBy(static workflow => IsClosedWorkflow(workflow) ? 1 : 0)
-            .ThenByDescending(static workflow => workflow.UpdatedAtUtc)
-            .FirstOrDefault();
-
-    private static bool IsClosedWorkflow(OperationsContinuityWorkflowDto workflow)
-        => workflow.Status is OperationsWorkflowStatusDto.Closed;
-
     private static void AddWorkflowRows(ICollection<FinancialOperationsQueueRowDto> rows, OperationsContinuityWorkflowDto workflow)
     {
         foreach (var breakCase in (workflow.BreakCases ?? Array.Empty<OperationsBreakCaseDto>())

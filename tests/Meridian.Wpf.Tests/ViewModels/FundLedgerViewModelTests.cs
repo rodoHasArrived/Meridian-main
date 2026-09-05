@@ -1530,7 +1530,9 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
                 viewModel.ReportPackReadinessState.Title.Should().Be("Report pack evidence linked");
                 viewModel.ReportPackReadinessState.Detail.Should().Contain("preview is ready for operator handoff");
-                viewModel.ReportPackReadinessState.Detail.Should().Contain("Close readiness remains blocked until shared lifecycle gates, reconciliation decisions, and report-pack evidence align.");
+                viewModel.ReportPackReadinessState.Detail.Should().Contain("Close readiness remains blocked until a scoped shared evaluation is available.");
+                viewModel.PrivateCapitalCloseReadinessState.Kind.Should().Be(WorkstationStateKind.Blocked,
+                    "a ready report preview and cockpit cannot replace the missing shared close projection");
                 viewModel.ReportPackReadinessState.ReadinessTone.Should().Be(WorkstationReadinessTone.EvidenceLinked);
                 viewModel.ReportPackReadinessState.ActionPosture!.Label.Should().Be("Review handoff");
                 viewModel.ReportPackReadinessState.ActionPosture.Target.Should().Be("FundReportPack");

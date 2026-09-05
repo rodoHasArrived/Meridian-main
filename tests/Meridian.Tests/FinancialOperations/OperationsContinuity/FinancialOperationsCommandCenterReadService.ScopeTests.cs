@@ -111,6 +111,38 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
     }
 
     [Fact]
+    public async Task CalendarFromAnotherWorkflowVersion_CannotClearTheClose()
+    {
+        var workflow = CreateWorkflow();
+        var calendar = ReadyCalendar(workflow);
+        calendar = calendar with { Items = [calendar.Items[0] with { Version = workflow.Version + 1 }] };
+        var result = await ReadScoped(CreateService(workflow, calendar, FreshCockpit(workflow)), workflow);
+        result.CloseReadiness!.IsComplete.Should().BeFalse();
+        result.CloseReadiness.Blockers.Should().Contain(b => b.ContributorId == "calendar");
+        result.IsReadyToComplete.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task WorkflowReopenedDuringEvaluation_RequiresRefresh()
+    {
+        var workflow = CreateWorkflow();
+        var original = new StubOperationsContinuityWorkflowService(workflow);
+        var workflows = new Mock<IOperationsContinuityWorkflowService>();
+        workflows.Setup(x => x.ListAsync(workflow.FundAccountId, workflow.PeriodId, null,
+            It.IsAny<CancellationToken>(), BookId)).Returns(original.ListAsync());
+        workflows.SetupSequence(x => x.GetAsync(workflow.WorkflowId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(workflow).ReturnsAsync(workflow with { Version = workflow.Version + 1 });
+        var service = new FinancialOperationsCommandCenterReadService(workflows.Object,
+            new StubCloseCalendarService(ReadyCalendar(workflow)),
+            new StubPrivateCapitalCloseCockpitService(FreshCockpit(workflow)), CreateBookService(),
+            CreateClosePlanService(workflow));
+        var result = await ReadScoped(service, workflow);
+        result.CloseReadiness!.IsComplete.Should().BeFalse();
+        result.CloseReadiness.Blockers.Should().Contain(b => b.ContributorId == "workflow-snapshot" && b.Type == "Stale");
+        result.IsReadyToComplete.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Cancellation_IsPropagated()
     {
         var workflow = CreateWorkflow();

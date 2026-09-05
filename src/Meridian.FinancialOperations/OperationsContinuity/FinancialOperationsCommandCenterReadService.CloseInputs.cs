@@ -36,7 +36,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService
         foreach (var summary in summaries is { Count: 1 } ? summaries : [])
         {
             var item = await ReadAsync(() => _workflowService.GetAsync(summary.WorkflowId, ct), ct);
-            if (item is null || item.WorkflowId != summary.WorkflowId
+            if (item is null || item.WorkflowId != summary.WorkflowId || item.Version != summary.Version
                 || item.FundAccountId != scope.FundAccountId || item.LedgerBookId != scope.LedgerBookId
                 || !string.Equals(item.PeriodId, scope.PeriodId, StringComparison.Ordinal))
             {
@@ -56,7 +56,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService
 
         var calendar = await ReadAsync(() => _closeCalendarService?.GetCalendarAsync(scope.FundAccountId, scope.PeriodId, ct), ct);
         var calendarRows = calendar?.Items.Where(i => i.FundAccountId == scope.FundAccountId
-            && i.PeriodId == scope.PeriodId && workflows.Any(w => w.WorkflowId == i.WorkflowId)).ToArray();
+            && i.PeriodId == scope.PeriodId && workflows.Any(w => w.WorkflowId == i.WorkflowId && w.Version == i.Version)).ToArray();
         // Calendar transport has no book dimension; bind every record through the checked workflow identity.
         var calendarBound = calendar is not null && workflow is not null && calendarRows?.Length == 1;
         projection.Contribute("calendar", "Close calendar", !calendarBound ? "Incomplete"
@@ -92,6 +92,20 @@ public sealed partial class FinancialOperationsCommandCenterReadService
             : cockpit!.IsReadyToClose && cockpit.Blockers.Count == 0 ? "Ready" : "Blocked",
             cockpit?.ProjectedAtUtc, cockpitBound ? [workflow!.WorkflowId.ToString()] : [],
             "Fund accounting must provide current evidence for the exact fund, book, account, entity, period, and workflow.");
+
+        // The workflow can change while its contributors are being read. Never combine an older
+        // plan/calendar with a later approval or reopening into a ready result.
+        if (workflow is not null)
+        {
+            var current = await ReadAsync(() => _workflowService.GetAsync(workflow.WorkflowId, ct), ct);
+            if (current is null || current.WorkflowId != workflow.WorkflowId || current.Version != workflow.Version
+                || current.LedgerBookId != scope.LedgerBookId || current.FundAccountId != scope.FundAccountId
+                || current.PeriodId != scope.PeriodId)
+            {
+                projection.Contribute("workflow-snapshot", "Operations", "Stale", null,
+                    [workflow.WorkflowId.ToString()], "The close workflow changed during evaluation. Refresh the selected close scope.");
+            }
+        }
         return new(workflow, calendar, cockpitBound ? cockpit : null, projection);
     }
 

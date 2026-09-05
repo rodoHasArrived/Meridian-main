@@ -79,8 +79,6 @@ export function buildCloseCommandCenterViewState({
   const incompleteEvidenceCategories = workflow?.accountingRecordSummary?.evidenceCategories.filter((category) => !category.isComplete) ?? [];
   const missingSourceCount = incompleteEvidenceCategories.filter((category) => closeCommandCenterTextMatches(category.key, category.label, "source")).length
     + (workflow?.closeChecklist.filter((task) => !isCloseChecklistDone(task.status) && !task.evidencePointer).length ?? 0);
-  const missingEvidenceCount = incompleteEvidenceCategories.length
-    + (workflow?.closeReadiness?.blockers.filter((blocker) => blocker.category.toLowerCase().includes("evidence")).length ?? 0);
   const pendingApprovalCount = workflow?.approvals.filter((approval) => approval.status !== "Approved").length ?? 0;
   const unapprovedChecklistCount = workflow?.closeChecklist.filter((task) => !isCloseChecklistDone(task.status) && task.requiredApprovalCount > 0).length ?? 0;
   const unapprovedAdjustmentCount = pendingApprovalCount + unapprovedChecklistCount;
@@ -671,27 +669,3 @@ function closeCommandCenterGateRoute(gate: OperationsWorkflowBlocker["gate"]): s
   return null;
 }
 
-function buildCloseCommandCenterSummary(
-  status: CloseCommandCenterStatus,
-  metricRows: CloseCommandCenterMetricViewModel[],
-  workflowError: string | null
-): string {
-  if (workflowError) {
-    return `Close workflow detail could not be refreshed: ${workflowError}`;
-  }
-
-  const activeRows = metricRows.filter((row) => row.tone === "warning" || row.tone === "danger");
-  if (status === "ready") {
-    return "The close is ready: breaks, source evidence, approvals, valuations, providers, report pack, and sign-off are clear.";
-  }
-
-  if (status === "blocked") {
-    return `The close is blocked by ${formatCount(activeRows.length, "active control")}; review the blocker list before sign-off.`;
-  }
-
-  if (status === "loading") {
-    return "Refreshing workflow detail before confirming the close state.";
-  }
-
-  return `The close is at risk with ${formatCount(activeRows.length, "watch item")} across the command center.`;
-}

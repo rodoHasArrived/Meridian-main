@@ -5,12 +5,21 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "5e3d269f1a5ffeb22d6e0bee1e08e6bdd47dcab0a6bc8b2ff79fb0f5cb9a33ea",
+      "fingerprint": "7b51d9a7920742b1637e6e3cb07f9466f2446baac4808841d402c4186194d9f2",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
       ],
       "object_ids": [
+        "Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
+        "Meridian.Contracts.Accounting.Lots.IOpenLotReliefService",
+        "Meridian.Contracts.Accounting.Lots.LotQuantityBasis",
+        "Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+        "Meridian.Contracts.Accounting.Lots.OpenLotDto",
+        "Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod",
+        "Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
+        "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
+        "Meridian.Contracts.Accounting.Lots.OpenLotValidation",
         "Meridian.Contracts.AccountingSystem.AccountingApprovalQueueConfigurationDto",
         "Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactIssueDto",
         "Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactLaneStatusDto",
@@ -1783,6 +1792,10 @@
         "Meridian.Contracts.Workstation.CashSyncSourceAvailability",
         "Meridian.Contracts.Workstation.CashSyncWindow",
         "Meridian.Contracts.Workstation.ClosedLotSummary",
+        "Meridian.Contracts.Workstation.CloseReadinessBlockerDto",
+        "Meridian.Contracts.Workstation.CloseReadinessContributionDto",
+        "Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+        "Meridian.Contracts.Workstation.CloseReadinessScopeDto",
         "Meridian.Contracts.Workstation.CloseWorkflow",
         "Meridian.Contracts.Workstation.CollateralCallDto",
         "Meridian.Contracts.Workstation.CompleteActivationOutcomeRequestDto",
@@ -3806,13 +3819,32 @@
       ]
     }
   ],
-  "fingerprint": "4dac511fb0d4e04908d73ae0f6d9f1c2aa40c2c124034288c63b8578a038d9f1",
+  "fingerprint": "e347c98964e7fcf2a9214d73de34ba8dcacdb38a27797c29d0e8f905afd91d2a",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
     "structural_equivalence_claimed": false
   },
   "namespace_partitions": [
+    {
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "fingerprint": "1d96be3ca6d4a153e568fa551d0036440a1ffda62f4c235b9ca855501cd9aecf",
+      "mapped_schemas": [],
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "object_ids": [
+        "Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
+        "Meridian.Contracts.Accounting.Lots.IOpenLotReliefService",
+        "Meridian.Contracts.Accounting.Lots.LotQuantityBasis",
+        "Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+        "Meridian.Contracts.Accounting.Lots.OpenLotDto",
+        "Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod",
+        "Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
+        "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
+        "Meridian.Contracts.Accounting.Lots.OpenLotValidation"
+      ]
+    },
     {
       "contract_sets": [
         "all-contracts",
@@ -6101,7 +6133,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "9ea08d4f4e3574e149dfb165c6892690218e52b54b9885916c897ad61c322983",
+      "fingerprint": "e4e940e65df570d164f6893274f3b7f7677aa09f9e1b2034853604534936b82a",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -6151,6 +6183,10 @@
         "Meridian.Contracts.Workstation.CashSyncSourceAvailability",
         "Meridian.Contracts.Workstation.CashSyncWindow",
         "Meridian.Contracts.Workstation.ClosedLotSummary",
+        "Meridian.Contracts.Workstation.CloseReadinessBlockerDto",
+        "Meridian.Contracts.Workstation.CloseReadinessContributionDto",
+        "Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+        "Meridian.Contracts.Workstation.CloseReadinessScopeDto",
         "Meridian.Contracts.Workstation.CloseWorkflow",
         "Meridian.Contracts.Workstation.CollateralCallDto",
         "Meridian.Contracts.Workstation.CompleteActivationOutcomeRequestDto",
@@ -7111,6 +7147,852 @@
     }
   ],
   "objects": [
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "c784ce1c37253e519b7a4a237947603d5408ce998b830ad8f91ddb656689ecbc",
+      "full_name": "Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
+      "id": "Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AmortizationMethod",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "BondAmortizationMethod",
+          "source_line": 14,
+          "type": "BondAmortizationMethod"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookedFactor",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 13,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EffectiveYield",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 14,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ParBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 13,
+          "type": "decimal"
+        }
+      ],
+      "name": "FaceValueAcquisitionTermsDto",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
+      "references": [
+        "Meridian.Contracts.FixedIncome.BondAmortizationMethod"
+      ],
+      "source": {
+        "line": 13,
+        "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+      },
+      "sources": [
+        {
+          "line": 13,
+          "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "c30b3116446345408b3bf233ed7b32ef8257babbd4e23d42ce6ba0643cf9bdcd",
+      "full_name": "Meridian.Contracts.Accounting.Lots.IOpenLotReliefService",
+      "id": "Meridian.Contracts.Accounting.Lots.IOpenLotReliefService",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IOpenLotReliefService",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.IOpenLotReliefService",
+      "references": [],
+      "source": {
+        "line": 49,
+        "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+      },
+      "sources": [
+        {
+          "line": 49,
+          "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Face",
+          "source_line": 8,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Units",
+          "source_line": 8,
+          "value": null
+        }
+      ],
+      "fingerprint": "5226eb9ce0c6b24f9b975773c48eb264b5162f3e90cd1e94e2df8aed9ab5e0a4",
+      "full_name": "Meridian.Contracts.Accounting.Lots.LotQuantityBasis",
+      "id": "Meridian.Contracts.Accounting.Lots.LotQuantityBasis",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "LotQuantityBasis",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.LotQuantityBasis",
+      "references": [],
+      "source": {
+        "line": 8,
+        "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+      },
+      "sources": [
+        {
+          "line": 8,
+          "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "6c28166434776d9282cb5bcbd6c5faba0d71beb5db3c348c3b772e4893757b97",
+      "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "id": "Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AcquisitionCurrency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 19,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AcquisitionFxRateToFunctional",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 21,
+          "type": "decimal"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "RetainedEvidenceIdentityDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Evidence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<RetainedEvidenceIdentityDto>",
+          "source_line": 26,
+          "type": "IReadOnlyList<RetainedEvidenceIdentityDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FaceValueTerms",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "FaceValueAcquisitionTermsDto?",
+          "source_line": 25,
+          "type": "FaceValueAcquisitionTermsDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 23,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCurrency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 20,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "HoldingPeriodStartDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 24,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "QuantityBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "LotQuantityBasis",
+          "source_line": 18,
+          "type": "LotQuantityBasis"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TransactionCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 22,
+          "type": "decimal"
+        }
+      ],
+      "name": "OpenLotAcquisitionDto",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "references": [
+        "Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
+        "Meridian.Contracts.Accounting.Lots.LotQuantityBasis",
+        "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+      ],
+      "source": {
+        "line": 17,
+        "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+      },
+      "sources": [
+        {
+          "line": 17,
+          "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "ff7ec8deab847c1f345e02040db2af5d6f7a160e5f049486fb66cd46c103c9ed",
+      "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotDto",
+      "id": "Meridian.Contracts.Accounting.Lots.OpenLotDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AcquiredDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 35,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Acquisition",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "OpenLotAcquisitionDto",
+          "source_line": 41,
+          "type": "OpenLotAcquisitionDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookPositionId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 32,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerBookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 33,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LotId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 34,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpenFunctionalCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 39,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpenQuantity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 37,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpenTransactionCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 38,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OriginalQuantity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 36,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 31,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TaxLotRecordId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 30,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Version",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 40,
+          "type": "long"
+        }
+      ],
+      "name": "OpenLotDto",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotDto",
+      "references": [
+        "Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto"
+      ],
+      "source": {
+        "line": 29,
+        "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+      },
+      "sources": [
+        {
+          "line": 29,
+          "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "AverageCost",
+          "source_line": 11,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Fifo",
+          "source_line": 11,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Hifo",
+          "source_line": 11,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Lifo",
+          "source_line": 11,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "SpecificId",
+          "source_line": 11,
+          "value": null
+        }
+      ],
+      "fingerprint": "b8b2a310fe223053f51a1b129fc43c680767a2bb6208119710151cb3fcad5075",
+      "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod",
+      "id": "Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "OpenLotReliefMethod",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod",
+      "references": [],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "0e6dd1975302d27f48a523d78d76709006851dab90c085bbf404d6a6a058b0b2",
+      "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
+      "id": "Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 47,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Quantity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 47,
+          "type": "decimal"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "OpenLotReliefSelectionDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Selections",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<OpenLotReliefSelectionDto>",
+          "source_line": 46,
+          "type": "IReadOnlyList<OpenLotReliefSelectionDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TransactionCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 47,
+          "type": "decimal"
+        }
+      ],
+      "name": "OpenLotReliefResultDto",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
+      "references": [
+        "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto"
+      ],
+      "source": {
+        "line": 46,
+        "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+      },
+      "sources": [
+        {
+          "line": 46,
+          "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "f573ca8c5cb2cb3e5de088742705ad4a9f363f2a7cfa670a6cc457d064d9c709",
+      "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
+      "id": "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 43,
+          "type": "long"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 44,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LotId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 43,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Quantity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 44,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TaxLotRecordId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 43,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TransactionCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 44,
+          "type": "decimal"
+        }
+      ],
+      "name": "OpenLotReliefSelectionDto",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
+      "references": [],
+      "source": {
+        "line": 43,
+        "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+      },
+      "sources": [
+        {
+          "line": 43,
+          "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "e7836ac0f1df482517ef0118555f6d8cc0e3e1e9e75c2ace7c6191174a26d2e3",
+      "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotValidation",
+      "id": "Meridian.Contracts.Accounting.Lots.OpenLotValidation",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "OpenLotValidation",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotValidation",
+      "references": [],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotValidation.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotValidation.cs"
+        }
+      ],
+      "type_parameters": []
+    },
     {
       "base_types": [],
       "classification": "dto",
@@ -246192,6 +247074,496 @@
     },
     {
       "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "b473fe0c47a3a2c3456d4cd0b54fd43d73ae126a1746feaf028f11a5cf4b92ad",
+      "full_name": "Meridian.Contracts.Workstation.CloseReadinessBlockerDto",
+      "id": "Meridian.Contracts.Workstation.CloseReadinessBlockerDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Code",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 20,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ContributorId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 21,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Count",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 23,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Message",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 26,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Owner",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 25,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordIds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 27,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Severity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 24,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Type",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 22,
+          "type": "string"
+        }
+      ],
+      "name": "CloseReadinessBlockerDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.CloseReadinessBlockerDto",
+      "references": [],
+      "source": {
+        "line": 19,
+        "path": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 19,
+          "path": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "4afe35b63f10a41593f9b34d9d5053b2f8e225b5c8e5ef87eedde5b8ff54e14c",
+      "full_name": "Meridian.Contracts.Workstation.CloseReadinessContributionDto",
+      "id": "Meridian.Contracts.Workstation.CloseReadinessContributionDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ContributorId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 13,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvaluatedAtUtc",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 16,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Owner",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 14,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordIds",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 17,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 15,
+          "type": "string"
+        }
+      ],
+      "name": "CloseReadinessContributionDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.CloseReadinessContributionDto",
+      "references": [],
+      "source": {
+        "line": 12,
+        "path": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 12,
+          "path": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "0d27be9aac65f1764ffa59f6927fd6f4d568e950a79548b6c98279f7ebe58c96",
+      "full_name": "Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "id": "Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "CloseReadinessBlockerDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Blockers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CloseReadinessBlockerDto>",
+          "source_line": 37,
+          "type": "IReadOnlyList<CloseReadinessBlockerDto>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "CloseReadinessContributionDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Contributors",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CloseReadinessContributionDto>",
+          "source_line": 36,
+          "type": "IReadOnlyList<CloseReadinessContributionDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvaluatedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 32,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsComplete",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 34,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsReadyToClose",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 35,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Scope",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "CloseReadinessScopeDto",
+          "source_line": 31,
+          "type": "CloseReadinessScopeDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 33,
+          "type": "string"
+        }
+      ],
+      "name": "CloseReadinessProjectionDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "references": [
+        "Meridian.Contracts.Workstation.CloseReadinessBlockerDto",
+        "Meridian.Contracts.Workstation.CloseReadinessContributionDto",
+        "Meridian.Contracts.Workstation.CloseReadinessScopeDto"
+      ],
+      "source": {
+        "line": 30,
+        "path": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 30,
+          "path": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "f806428c9a160899f8c3e84b75476b0a098b6c2b2005681c745c6f3819936f32",
+      "full_name": "Meridian.Contracts.Workstation.CloseReadinessScopeDto",
+      "id": "Meridian.Contracts.Workstation.CloseReadinessScopeDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntityId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 8,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundAccountId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 7,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundProfileId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 5,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerBookId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 6,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PeriodId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 9,
+          "type": "string?"
+        }
+      ],
+      "name": "CloseReadinessScopeDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.CloseReadinessScopeDto",
+      "references": [],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "record",
       "containing_type": null,
       "contract_sets": [
@@ -259872,7 +261244,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "1f74fcb901d72ccaf852db6ae495692c63899994d9fe8dfe15873e6687754014",
+      "fingerprint": "a2cf7d32c7053f104c7b9d9adc0599f49b741729524ba89e0fc84ae158b45142",
       "full_name": "Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionDto",
       "id": "Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionDto",
       "kind": "record",
@@ -259889,7 +261261,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 23,
+          "source_line": 24,
           "type": "string"
         },
         {
@@ -259903,7 +261275,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<FinancialOperationsCloseSupportDecisionRowDto>",
-          "source_line": 33,
+          "source_line": 34,
           "type": "IReadOnlyList<FinancialOperationsCloseSupportDecisionRowDto>"
         },
         {
@@ -259917,7 +261289,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 25,
+          "source_line": 26,
           "type": "bool"
         },
         {
@@ -259931,7 +261303,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 28,
+          "source_line": 29,
           "type": "string"
         },
         {
@@ -259945,7 +261317,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 29,
+          "source_line": 30,
           "type": "string"
         },
         {
@@ -259959,7 +261331,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 31,
+          "source_line": 32,
           "type": "int"
         },
         {
@@ -259973,7 +261345,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 27,
+          "source_line": 28,
           "type": "string"
         },
         {
@@ -259987,7 +261359,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 32,
+          "source_line": 33,
           "type": "int"
         },
         {
@@ -260001,7 +261373,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 24,
+          "source_line": 25,
           "type": "string"
         },
         {
@@ -260015,7 +261387,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 26,
+          "source_line": 27,
           "type": "string"
         },
         {
@@ -260029,7 +261401,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 30,
+          "source_line": 31,
           "type": "int"
         }
       ],
@@ -260041,12 +261413,12 @@
         "Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionRowDto"
       ],
       "source": {
-        "line": 22,
+        "line": 23,
         "path": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs"
       },
       "sources": [
         {
-          "line": 22,
+          "line": 23,
           "path": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs"
         }
       ],
@@ -260062,7 +261434,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "5c5558c61b0d0dd1e1354b2f8278f93dd451e331af0015be3acb5443353c956d",
+      "fingerprint": "cd94cfa83bddba80b50a189f6420f2f2da6b368f1938b46d56e3dc68bf1533e1",
       "full_name": "Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionRowDto",
       "id": "Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionRowDto",
       "kind": "record",
@@ -260079,7 +261451,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 37,
+          "source_line": 38,
           "type": "string"
         },
         {
@@ -260093,7 +261465,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 36,
+          "source_line": 37,
           "type": "string"
         },
         {
@@ -260107,7 +261479,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 41,
+          "source_line": 42,
           "type": "string"
         },
         {
@@ -260121,7 +261493,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<OperationsEvidenceLinkDto>",
-          "source_line": 46,
+          "source_line": 47,
           "type": "IReadOnlyList<OperationsEvidenceLinkDto>"
         },
         {
@@ -260135,7 +261507,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 40,
+          "source_line": 41,
           "type": "bool"
         },
         {
@@ -260149,7 +261521,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 38,
+          "source_line": 39,
           "type": "string"
         },
         {
@@ -260163,7 +261535,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 42,
+          "source_line": 43,
           "type": "string"
         },
         {
@@ -260177,7 +261549,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 43,
+          "source_line": 44,
           "type": "string?"
         },
         {
@@ -260191,7 +261563,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 39,
+          "source_line": 40,
           "type": "string"
         }
       ],
@@ -260203,12 +261575,12 @@
         "Meridian.Contracts.Workstation.OperationsEvidenceLinkDto"
       ],
       "source": {
-        "line": 35,
+        "line": 36,
         "path": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs"
       },
       "sources": [
         {
-          "line": 35,
+          "line": 36,
           "path": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs"
         }
       ],
@@ -260224,7 +261596,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "d1bad5207d593fb866367693ddef8819013da24d059d265dbd84d6e86b813a43",
+      "fingerprint": "022130caa78b8068455e4e48d6699713ef717e6ca9c31e9da53d6b90239325cc",
       "full_name": "Meridian.Contracts.Workstation.FinancialOperationsCommandCenterDto",
       "id": "Meridian.Contracts.Workstation.FinancialOperationsCommandCenterDto",
       "kind": "record",
@@ -260287,6 +261659,21 @@
           "raw_type": "OperationsCloseCalendarDto?",
           "source_line": 18,
           "type": "OperationsCloseCalendarDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CloseReadiness",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "CloseReadinessProjectionDto?",
+          "source_line": 21,
+          "type": "CloseReadinessProjectionDto?"
         },
         {
           "collection": false,
@@ -260478,6 +261865,7 @@
       "partial": false,
       "qualified_name": "Meridian.Contracts.Workstation.FinancialOperationsCommandCenterDto",
       "references": [
+        "Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
         "Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionDto",
         "Meridian.Contracts.Workstation.FinancialOperationsCommandCenterMetricDto",
         "Meridian.Contracts.Workstation.FinancialOperationsQueueRowDto",
@@ -260507,7 +261895,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "aa0bce09363c300f8613058667c556636bd8310589776f97aa890d20bdd9f552",
+      "fingerprint": "3325d524f59908e6de10818006a16f40f376b7a9a6c1d3e7bf60e541a65075f8",
       "full_name": "Meridian.Contracts.Workstation.FinancialOperationsCommandCenterMetricDto",
       "id": "Meridian.Contracts.Workstation.FinancialOperationsCommandCenterMetricDto",
       "kind": "record",
@@ -260524,7 +261912,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 54,
+          "source_line": 55,
           "type": "string"
         },
         {
@@ -260538,7 +261926,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 52,
+          "source_line": 53,
           "type": "string"
         },
         {
@@ -260552,7 +261940,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 51,
+          "source_line": 52,
           "type": "string"
         },
         {
@@ -260566,7 +261954,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 56,
+          "source_line": 57,
           "type": "string?"
         },
         {
@@ -260580,7 +261968,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 55,
+          "source_line": 56,
           "type": "string"
         },
         {
@@ -260594,7 +261982,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 53,
+          "source_line": 54,
           "type": "string"
         }
       ],
@@ -260604,12 +261992,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.FinancialOperationsCommandCenterMetricDto",
       "references": [],
       "source": {
-        "line": 50,
+        "line": 51,
         "path": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs"
       },
       "sources": [
         {
-          "line": 50,
+          "line": 51,
           "path": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs"
         }
       ],
@@ -260625,7 +262013,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "34213f781706836b4863dcbb56fb4cc36458cd34d8db1d8db3a0ddb52c1e750a",
+      "fingerprint": "9e0fc406f90d096a426e8c3d2ee6f4d0b44d5764bd009497f6d6c0ad339e9c86",
       "full_name": "Meridian.Contracts.Workstation.FinancialOperationsQueueRowDto",
       "id": "Meridian.Contracts.Workstation.FinancialOperationsQueueRowDto",
       "kind": "record",
@@ -260642,7 +262030,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 68,
+          "source_line": 69,
           "type": "string"
         },
         {
@@ -260657,7 +262045,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 76,
+          "source_line": 77,
           "type": "string"
         },
         {
@@ -260672,7 +262060,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 77,
+          "source_line": 78,
           "type": "string"
         },
         {
@@ -260686,7 +262074,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 64,
+          "source_line": 65,
           "type": "string"
         },
         {
@@ -260700,7 +262088,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 66,
+          "source_line": 67,
           "type": "string"
         },
         {
@@ -260714,7 +262102,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 67,
+          "source_line": 68,
           "type": "string"
         },
         {
@@ -260728,7 +262116,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<OperationsEvidenceLinkDto>",
-          "source_line": 79,
+          "source_line": 80,
           "type": "IReadOnlyList<OperationsEvidenceLinkDto>"
         },
         {
@@ -260742,7 +262130,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 70,
+          "source_line": 71,
           "type": "bool"
         },
         {
@@ -260756,7 +262144,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 61,
+          "source_line": 62,
           "type": "string"
         },
         {
@@ -260770,7 +262158,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 65,
+          "source_line": 66,
           "type": "string"
         },
         {
@@ -260784,7 +262172,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 59,
+          "source_line": 60,
           "type": "string"
         },
         {
@@ -260798,7 +262186,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 69,
+          "source_line": 70,
           "type": "string?"
         },
         {
@@ -260813,7 +262201,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 74,
+          "source_line": 75,
           "type": "string"
         },
         {
@@ -260828,7 +262216,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 75,
+          "source_line": 76,
           "type": "string"
         },
         {
@@ -260842,7 +262230,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 71,
+          "source_line": 72,
           "type": "int"
         },
         {
@@ -260856,7 +262244,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 60,
+          "source_line": 61,
           "type": "string"
         },
         {
@@ -260870,7 +262258,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 63,
+          "source_line": 64,
           "type": "string"
         },
         {
@@ -260884,7 +262272,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 62,
+          "source_line": 63,
           "type": "string"
         },
         {
@@ -260899,7 +262287,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 72,
+          "source_line": 73,
           "type": "Guid?"
         }
       ],
@@ -260911,12 +262299,12 @@
         "Meridian.Contracts.Workstation.OperationsEvidenceLinkDto"
       ],
       "source": {
-        "line": 58,
+        "line": 59,
         "path": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs"
       },
       "sources": [
         {
-          "line": 58,
+          "line": 59,
           "path": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs"
         }
       ],
@@ -273773,7 +275161,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "909b2b1fdc2f7a78445733350f62e5848565ef8f19c3738878c817314369eb96",
+      "fingerprint": "eb7786dda376bafa1ca452306f62fb855cf0ccd03c47dc947f7960d6bf3498c6",
       "full_name": "Meridian.Contracts.Workstation.IFinancialOperationsCommandCenterReadService",
       "id": "Meridian.Contracts.Workstation.IFinancialOperationsCommandCenterReadService",
       "kind": "interface",
@@ -273785,12 +275173,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.IFinancialOperationsCommandCenterReadService",
       "references": [],
       "source": {
-        "line": 83,
+        "line": 84,
         "path": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs"
       },
       "sources": [
         {
-          "line": 83,
+          "line": 84,
           "path": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs"
         }
       ],

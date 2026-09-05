@@ -2277,7 +2277,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                     CloseReportImpact: row.CloseReportImpact));
             }
 
-            FinancialOperationsQueueStatusText = _financialOperationsCommandCenter.CloseReadiness?.Status ?? "Blocked";
+            FinancialOperationsQueueStatusText = _financialOperationsCommandCenter.CloseReadiness is { IsComplete: true, IsReadyToClose: true } ? "Ready" : "Blocked";
             FinancialOperationsQueueSummaryText = _financialOperationsCommandCenter.Summary;
             return;
         }
@@ -2587,7 +2587,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 SourceTarget: MapPrivateCapitalCloseRouteTarget(approval.WorkflowRoute)));
         }
 
-        PrivateCapitalCloseStatusText = _financialOperationsCommandCenter?.CloseReadiness?.Status ?? "Blocked";
+        PrivateCapitalCloseStatusText = _financialOperationsCommandCenter?.CloseReadiness is { IsComplete: true, IsReadyToClose: true } ? "Ready" : "Blocked";
         PrivateCapitalCloseSummaryText =
             $"{cockpit.ReadyLaneCount}/{cockpit.Lanes.Count} close lanes ready; {cockpit.BlockedLaneCount} blocked or missing; {cockpit.EvidencePackages.Count} evidence package(s); {cockpit.WorkflowCount} workflow(s), {cockpit.FundEventCount} fund event(s), {cockpit.CapitalAccountCount} capital account(s), {cockpit.ReportOutputCount} report output(s).";
         PrivateCapitalCloseEvidenceText = FormatEvidenceCount(CountCloseEvidenceLinks(cockpit));
@@ -2599,8 +2599,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private WorkstationStateModel BuildPrivateCapitalCloseReadinessState(PrivateCapitalCloseCockpitDto cockpit)
     {
         var projection = _financialOperationsCommandCenter?.CloseReadiness;
-        var statusLabel = projection?.Status ?? "Blocked";
-        var isReady = projection?.IsReadyToClose == true;
+        var isReady = projection is { IsComplete: true, IsReadyToClose: true };
+        var statusLabel = isReady ? "Ready" : "Blocked";
         var kind = isReady ? WorkstationStateKind.Ready : WorkstationStateKind.Blocked;
         var readinessTone = isReady ? WorkstationReadinessTone.EvidenceLinked : WorkstationReadinessTone.Blocked;
         var tone = isReady ? WorkspaceTone.Success : WorkspaceTone.Danger;

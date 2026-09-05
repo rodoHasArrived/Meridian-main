@@ -15,7 +15,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Endpoint coverage | 32.1% |
 | Workstation contract coverage | 3.9% |
 | Endpoints documented | 207 / 645 |
-| Workstation contracts documented | 36 / 917 |
+| Workstation contracts documented | 36 / 921 |
 
 ## Endpoint Coverage
 
@@ -632,8 +632,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/strategies/covered-call/runs/{runId}/cancel` | Gap | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:167` |
 | `GET` | `/api/strategies/covered-call/runs/{runId}/result` | Gap | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:118` |
 | `GET` | `/api/strategies/covered-call/runs/{runId}/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:88` |
-| `GET` | `/api/strategies/runs/compare` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2910` |
-| `GET` | `/api/strategies/{strategyId}/runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2769` |
+| `GET` | `/api/strategies/runs/compare` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2911` |
+| `GET` | `/api/strategies/{strategyId}/runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2770` |
 | `GET` | `/api/subscriptions/active` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:22` |
 | `POST` | `/api/subscriptions/subscribe` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:44` |
 | `POST` | `/api/subscriptions/unsubscribe/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:73` |
@@ -716,6 +716,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `CashLadderBucketDto` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:942` |
 | `CashSyncSourceAvailability` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:2` |
 | `CashSyncWindow` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:5` |
+| `CloseReadinessBlockerDto` | Gap | `src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:18` |
+| `CloseReadinessContributionDto` | Gap | `src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:12` |
+| `CloseReadinessProjectionDto` | Gap | `src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:30` |
+| `CloseReadinessScopeDto` | Gap | `src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:4` |
 | `CloseWorkflow` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:31` |
 | `ClosedLotSummary` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1124` |
 | `CollateralCallDto` | Gap | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:26` |
@@ -814,11 +818,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `FeatureCapabilitySettingsResponse` | Gap | `src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:2` |
 | `FeatureCapabilityToggleDto` | Gap | `src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:5` |
 | `FeatureCapabilityToggleRequest` | Gap | `src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:16` |
-| `FinancialOperationsCloseSupportDecisionDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:21` |
-| `FinancialOperationsCloseSupportDecisionRowDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:34` |
+| `FinancialOperationsCloseSupportDecisionDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:22` |
+| `FinancialOperationsCloseSupportDecisionRowDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:35` |
 | `FinancialOperationsCommandCenterDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:2` |
-| `FinancialOperationsCommandCenterMetricDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:49` |
-| `FinancialOperationsQueueRowDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:57` |
+| `FinancialOperationsCommandCenterMetricDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:50` |
+| `FinancialOperationsQueueRowDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:58` |
 | `FinancialRecordExplorerCellDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:71` |
 | `FinancialRecordExplorerColumnDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:64` |
 | `FinancialRecordExplorerDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:14` |
@@ -1592,7 +1596,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 ## Follow-up Queue
 
 - Document or intentionally suppress 438 mapped endpoint gap(s).
-- Document or intentionally suppress 881 workstation contract gap(s).
+- Document or intentionally suppress 885 workstation contract gap(s).
 
 ---
 
