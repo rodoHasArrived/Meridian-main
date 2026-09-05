@@ -43,10 +43,10 @@ Snapshot date: 2026-08-30
 | W9-TRUTH-001 | Loud fail-closed handling of simulated data and in-memory persistence | accepted | green | critical | Data Confidence and Validation |
 | W9-DEMO-002 | One-command seeded demo with durable storage | accepted | green | critical | Workstation Shell and UX |
 | W9-PAPER-003 | Paper-trading realism with limit/stop matching and costs | accepted | green | critical | Execution and Fund Accounts |
-| W9-ALPACA-004 | Alpaca fill streaming into order and ledger state | ready_for_acceptance | green | high | Execution and Fund Accounts |
+| W9-ALPACA-004 | Alpaca fill streaming into order and ledger state | accepted | green | high | Execution and Fund Accounts |
 | W9-REPORT-005 | Client-grade PDF/XLSX exports and partners-capital statement | accepted | green | high | Accounting and Ledger |
 | W9-NAV-006 | Unitized NAV and real fee, waterfall, and capital-call economics | accepted | green | high | Accounting and Ledger |
-| W9-SAFETY-007 | Kill-switch cancel-all and fat-finger, notional, and collar rules | in_progress | green | high | Execution and Fund Accounts |
+| W9-SAFETY-007 | Kill-switch cancel-all and fat-finger, notional, and collar rules | ready_for_acceptance | green | high | Execution and Fund Accounts |
 | W9-GOV-008 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | in_progress | green | high | Platform Security and Governance |
 | W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | in_progress | green | high | Accounting and Ledger |
 | W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | done | green | critical | Accounting and Ledger |
@@ -58,9 +58,9 @@ Snapshot date: 2026-08-30
 | W10-RECON-002 | Break clustering and bulk-resolution activation | planned | green | high | Accounting and Ledger |
 | W10-JRNL-001 | Durable recurring journal schedules and draft runner | planned | green | high | Accounting and Ledger |
 | W10-TAX-001 | Tax character, wash-sale, and lot-relief operator surface | planned | green | high | Accounting and Ledger |
-| W10-SEAM-001 | Unified close-readiness projection behind one shared contract | planned | green | high | Workstation Shell and UX |
+| W10-SEAM-001 | Unified close-readiness projection behind one shared contract | in_progress | green | high | Workstation Shell and UX |
 | W10-RECON-003 | Unified tolerance model and what-if replay workbench | planned | green | medium | Accounting and Ledger |
 | W10-RECON-004 | Operator-taught match rules with promotion gate | planned | green | medium | Accounting and Ledger |
 | W10-PERF-001 | Portfolio and investor return measurement | planned | green | high | Accounting and Ledger |
 | W10-CONSOL-001 | Intercompany elimination on consolidated ledger views | planned | green | medium | Accounting and Ledger |
-| W10-LOT-002 | Security-identified open-lot convergence | planned | green | critical | Accounting and Ledger |
+| W10-LOT-002 | Security-identified open-lot convergence | in_progress | green | critical | Accounting and Ledger |

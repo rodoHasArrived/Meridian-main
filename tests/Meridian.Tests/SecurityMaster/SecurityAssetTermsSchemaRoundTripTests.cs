@@ -521,6 +521,189 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
         AssertRoundTripIsByteStable("Equity", JsonSerializer.Deserialize<object>(canonical.GetRawText())!);
     }
 
+    [Theory]
+    [MemberData(nameof(DeclaredAssetClasses))]
+    public void FullPayload_UsesDeclaredValuesForEveryDiscriminant(string assetClass)
+    {
+        // The vocabularies are only a contract if the canonical payloads honour them. A payload that
+        // drifted off the declared values would still round-trip byte-stably (the codec is what it
+        // is) while proving nothing about the vocabulary the write path now enforces.
+        var payload = JsonSerializer.SerializeToElement(FullPayloads[assetClass]);
+
+        foreach (var field in SecurityAssetTermsSchema.DiscriminantFields(assetClass))
+        {
+            if (!payload.TryGetProperty(field.Key, out var value) || value.ValueKind != JsonValueKind.String)
+            {
+                continue;
+            }
+
+            field.Allows(value.GetString()).Should().BeTrue(
+                $"the '{assetClass}' payload's '{field.Key}' value '{value.GetString()}' must be one of the " +
+                $"declared vocabulary members ({string.Join(", ", field.AllowedValues)})");
+        }
+    }
+
+    [Fact]
+    public void Bond_UndeclaredCouponType_IsRejectedOnWrite()
+    {
+        // The coupon default used to be open: any unrecognized couponType fell through to Fixed, so a
+        // typo persisted as a fixed-rate bond and silently dropped the structure the operator named
+        // (here the floating index and spread). couponType has no escape — the label is not preserved
+        // anywhere — so the write must fail rather than re-type the instrument.
+        FluentActions.Invoking(() => CreateSnapshot("Bond", new
+        {
+            maturity = "2035-06-15",
+            couponType = "Floter",
+            floatingIndex = "SOFR",
+            spreadBps = 185m,
+            isCallable = false,
+            subclass = "Corporate"
+        }))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*'Floter' is not a declared 'couponType' value*")
+            .WithMessage("*Fixed, Floating, ZeroCoupon, Step, InflationLinked*");
+    }
+
+    [Fact]
+    public void Bond_UndeclaredCouponType_StillReadsAsAFixedCoupon()
+    {
+        // The other half of the read-tolerant/write-strict split: a row already carrying an
+        // unrecognized coupon type must stay loadable. Only the WRITE is refused.
+        var legacyTerms = JsonSerializer.SerializeToElement(new
+        {
+            maturity = "2035-06-15",
+            couponType = "Floter",
+            couponRate = 4.25m,
+            dayCount = "30/360",
+            isCallable = false,
+            subclass = "Corporate"
+        });
+
+        var record = SecurityMasterMapping.ToRecord(LegacyProjection("Bond", legacyTerms));
+
+        var canonical = JsonDocument
+            .Parse(new SecurityMasterSnapshotWrapper(record).AssetSpecificTermsJson)
+            .RootElement.Clone();
+        canonical.GetProperty("couponType").GetString().Should().Be("Fixed");
+        canonical.GetProperty("couponRate").GetDecimal().Should().Be(4.25m);
+    }
+
+    [Fact]
+    public void Bond_NonStringCouponType_IsRejectedOnWrite()
+    {
+        // A present token of the wrong KIND reaches the decode sites as if it were absent —
+        // GetOptionalString erases a number to null — so without an explicit kind check the write
+        // persists the missing-value default (Fixed) and discards the floating index and spread the
+        // payload named. Exactly the silent rewrite an undeclared spelling causes, by another route.
+        FluentActions.Invoking(() => CreateSnapshot("Bond", new
+        {
+            maturity = "2035-06-15",
+            couponType = 123,
+            floatingIndex = "SOFR",
+            spreadBps = 185m,
+            isCallable = false,
+            subclass = "Corporate"
+        }))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*'123' is not a declared 'couponType' value*");
+    }
+
+    [Fact]
+    public void Option_NonStringExerciseStyle_IsRejectedOnWrite()
+    {
+        // Same hole on the dropped-value field with no bespoke decode arm: the style would be
+        // erased to null and re-emitted as null, losing it without a word.
+        FluentActions.Invoking(() => CreateSnapshot("Option", new
+        {
+            underlyingId = UnderlyingId,
+            putCall = "Call",
+            strike = 105.5m,
+            expiry = "2027-12-17",
+            multiplier = 100m,
+            exerciseStyle = true,
+            isAdjusted = false
+        }))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*is not a declared 'exerciseStyle' value*");
+    }
+
+    [Fact]
+    public void Bond_ExplicitlyNullCouponType_KeepsTheDocumentedFixedDefault()
+    {
+        // An explicit JSON null is absence, not a wrong-kind token: it carries no discriminant to
+        // lose, so it keeps the documented default rather than being refused.
+        var canonical = SerializeThroughDomain("Bond", new
+        {
+            maturity = "2035-06-15",
+            couponType = (string?)null,
+            couponRate = 4.25m,
+            isCallable = false,
+            subclass = "Corporate"
+        });
+
+        canonical.GetProperty("couponType").GetString().Should().Be("Fixed");
+        canonical.GetProperty("couponRate").GetDecimal().Should().Be(4.25m);
+    }
+
+    [Fact]
+    public void Option_UndeclaredExerciseStyle_IsRejectedOnWrite()
+    {
+        // exerciseStyle has no bespoke decode arm — an unrecognized style just reads as None and the
+        // value disappears. It is the schema-driven backstop in the write-mode mapping, not a
+        // hand-written check, that refuses this write.
+        FluentActions.Invoking(() => CreateSnapshot("Option", new
+        {
+            underlyingId = UnderlyingId,
+            putCall = "Call",
+            strike = 105.5m,
+            expiry = "2027-12-17",
+            multiplier = 100m,
+            exerciseStyle = "Asian",
+            isAdjusted = false
+        }))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*'Asian' is not a declared 'exerciseStyle' value*");
+    }
+
+    [Fact]
+    public void FieldEditValidator_RejectsAnUndeclaredDiscriminantValueAndAcceptsADeclaredOne()
+    {
+        // The operator edit surface stages values that the canonical write path will later have to
+        // accept. Letting an out-of-vocabulary discriminant through would put a draft, a revision,
+        // and a provenance row behind a value the codec refuses.
+        SecurityAssetTermsFieldEditValidator
+            .TryValidate("Bond", "assetSpecificTerms.couponType", "Floter", out _, out var error)
+            .Should().BeFalse();
+        error.Should().Contain("Fixed, Floating, ZeroCoupon, Step, InflationLinked");
+
+        SecurityAssetTermsFieldEditValidator
+            .TryValidate("Bond", "assetSpecificTerms.couponType", "Step", out var canonicalPath, out error)
+            .Should().BeTrue(error);
+        canonicalPath.Should().Be("assetSpecificTerms.couponType");
+    }
+
+    [Fact]
+    public void FieldEditValidator_RejectsADiscriminantSpeltInTheWrongCase()
+    {
+        // The codecs switch on exact spellings, so a case variant is exactly as undecodable as a
+        // typo — "floating" would fall through to the Fixed arm just like "Floter".
+        SecurityAssetTermsFieldEditValidator
+            .TryValidate("Bond", "assetSpecificTerms.couponType", "floating", out _, out var error)
+            .Should().BeFalse();
+        error.Should().Contain("'floating' is not a declared 'couponType' value");
+    }
+
+    [Fact]
+    public void FieldEditValidator_PointsAnUndeclaredEquityClassificationAtTheEscape()
+    {
+        // classification is the one vocabulary with an escape, so its rejection has to name it —
+        // "Other" plus otherClassification is the supported way to carry a label outside the list.
+        SecurityAssetTermsFieldEditValidator
+            .TryValidate("Equity", "assetSpecificTerms.classification", "TrackingStock", out _, out var error)
+            .Should().BeFalse();
+        error.Should().Contain("Use 'Other' with 'otherClassification'");
+    }
+
     [Fact]
     public void CustomAsset_ProfileEnvelope_SurvivesTheDomainAsAFirstClassKind()
     {
@@ -537,6 +720,36 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
         document.RootElement.GetProperty("profileApproval").GetProperty("approvedBy").GetString()
             .Should().Be("governance@meridian");
         document.RootElement.GetProperty("category").GetString().Should().Be("StructuredCredit");
+    }
+
+    /// <summary>
+    /// A stored row as a node that did not write it sees it: the projection goes straight into the
+    /// READ mapping, with no create command and therefore no write-mode validation in the way.
+    /// </summary>
+    private static SecurityProjectionRecord LegacyProjection(string assetClass, JsonElement assetSpecificTerms)
+    {
+        var asOf = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        return new SecurityProjectionRecord(
+            Guid.NewGuid(),
+            assetClass,
+            SecurityStatusDto.Active,
+            $"Legacy {assetClass}",
+            "USD",
+            "InternalCode",
+            $"LEGACY-{assetClass}-1",
+            JsonSerializer.SerializeToElement(new { displayName = $"Legacy {assetClass}", currency = "USD" }),
+            assetSpecificTerms,
+            JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "schema-round-trip-tests",
+                asOf = "2026-01-01T00:00:00+00:00",
+                updatedBy = "schema-round-trip-tests"
+            }),
+            1,
+            asOf,
+            null,
+            [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, $"LEGACY-{assetClass}-1", true, asOf)],
+            []);
     }
 
     private static HashSet<string> PayloadKeys(string assetClass)
