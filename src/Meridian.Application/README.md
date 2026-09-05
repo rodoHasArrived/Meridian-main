@@ -239,7 +239,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   invoke `Meridian.FinancialOperations.Reconciliation` services for statement intake, validation,
   matching, decision journals, and statement-run persistence. Reconciliation workflow state, match
   rules, break classification, repository implementations, and durable case materialization are
-  owned by the Financial Operations design module rather than the application layer. The
+  owned by the Financial Operations design module rather than the application layer. Statement
+  validation and import commands report missing, inaccessible, or unreadable local source files as
+  structured CLI failures before connector parsing. The
   Security Master-enriched portfolio-vs-ledger reconciliation engine also lives in Financial
   Operations and consumes the contracts-owned Security Master query interface. Retained internal
   transaction population reads posted journals by accounting effective date and projects only the
