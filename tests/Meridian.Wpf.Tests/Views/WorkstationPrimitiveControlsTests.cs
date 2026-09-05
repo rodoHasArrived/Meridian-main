@@ -2,7 +2,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Workstation.Controls;
@@ -330,6 +332,82 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("WorkstationDockStripStyle");
         xaml.Should().Contain("<Setter Property=\"CornerRadius\" Value=\"4\" />");
         xaml.Should().Contain("<Setter Property=\"BorderThickness\" Value=\"0,1,0,0\" />");
+    }
+
+    [Fact]
+    public void DataConfidenceIndicator_CommandParameterDefaultsToTheModelsExplanationRoute()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var indicator = new Meridian.Wpf.Controls.DataConfidenceIndicator
+            {
+                Model = DataConfidenceIndicatorModel.Unknown() with { ExplanationRoute = "meridian://providers/polygon" }
+            };
+            var window = Show(indicator);
+            try
+            {
+                // The model's advertised click-through route must reach the command without
+                // the caller redundantly copying it into ExplanationCommandParameter.
+                indicator.EffectiveExplanationCommandParameter.Should().Be("meridian://providers/polygon");
+                var button = indicator.FindName("ExplanationButton").Should().BeAssignableTo<Button>().Which;
+                button.CommandParameter.Should().Be("meridian://providers/polygon");
+
+                indicator.ExplanationCommandParameter = "explicit-parameter";
+                indicator.EffectiveExplanationCommandParameter.Should().Be(
+                    "explicit-parameter", "an explicit parameter overrides the model's route");
+
+                indicator.ExplanationCommandParameter = null;
+                indicator.EffectiveExplanationCommandParameter.Should().Be(
+                    "meridian://providers/polygon", "clearing the explicit parameter restores the route default");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DataConfidenceIndicator_WithoutACommand_DoesNotOfferClickAffordance()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var indicator = new Meridian.Wpf.Controls.DataConfidenceIndicator();
+            var window = Show(indicator);
+            try
+            {
+                // A read-only badge with no bound command must not advertise a click.
+                var button = indicator.FindName("ExplanationButton").Should().BeAssignableTo<Button>().Which;
+                button.Cursor.Should().Be(Cursors.Arrow);
+                button.Focusable.Should().BeFalse();
+
+                // Assistive technology must not see an interactive Button/Invoke role either.
+                var peer = UIElementAutomationPeer.CreatePeerForElement(button);
+                peer.GetPattern(PatternInterface.Invoke).Should().BeNull(
+                    "a read-only badge must not advertise an Invoke action to screen readers");
+                peer.GetAutomationControlType().Should().Be(AutomationControlType.Text);
+
+                indicator.ExplanationCommand = new RoutedCommand();
+                button.Cursor.Should().Be(Cursors.Hand, "binding a command restores the click affordance");
+                button.Focusable.Should().BeTrue();
+                peer.GetPattern(PatternInterface.Invoke).Should().NotBeNull(
+                    "binding a command restores the invokable button role");
+                peer.GetAutomationControlType().Should().Be(AutomationControlType.Button);
+
+                // WPF suppresses tooltips on disabled controls; the explanation must stay
+                // readable while a bound command reports CanExecute = false.
+                ToolTipService.GetShowOnDisabled(button).Should().BeTrue(
+                    "the explanation tooltip must remain visible while the command cannot execute");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
     }
 
     private static Window Show(FrameworkElement element)

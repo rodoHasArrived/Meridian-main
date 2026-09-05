@@ -1,0 +1,115 @@
+<UserControl x:Class="Meridian.Wpf.Controls.DataConfidenceIndicator"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
+             x:Name="Root"
+             mc:Ignorable="d"
+             MinHeight="34"
+             d:DesignHeight="52" d:DesignWidth="320"
+             AutomationProperties.AutomationId="{Binding ElementName=Root, Path=IndicatorAutomationId}"
+             AutomationProperties.Name="{Binding ElementName=Root, Path=Model.AccessibleExplanation}">
+    <!-- The derived button's automation peer drops the Button/Invoke role while no command
+         is bound, so a read-only badge does not read as a false action to screen readers. -->
+    <controls:DataConfidenceExplanationButton x:Name="ExplanationButton"
+            DataContext="{Binding ElementName=Root}"
+            CommandParameter="{Binding EffectiveExplanationCommandParameter}"
+            ToolTip="{Binding Model.Explanation}"
+            ToolTipService.ShowOnDisabled="True"
+            Padding="0"
+            BorderThickness="0"
+            Background="Transparent"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            AutomationProperties.AutomationId="{Binding IndicatorAutomationId}"
+            AutomationProperties.Name="{Binding Model.AccessibleExplanation}">
+        <Button.Style>
+            <!-- Command lives in the style (not as a local attribute) so the click-through
+                 trigger can actually null it out: a local value would win over the trigger
+                 and the disabled indicator would still invoke the explanation command. -->
+            <Style TargetType="Button">
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Focusable" Value="True" />
+                <Setter Property="Command" Value="{Binding ExplanationCommand}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsClickThroughEnabled}" Value="False">
+                        <Setter Property="Cursor" Value="Arrow" />
+                        <Setter Property="Focusable" Value="False" />
+                        <Setter Property="Command" Value="{x:Null}" />
+                    </DataTrigger>
+                    <!-- A read-only badge with no bound command must not advertise a click:
+                         a hand cursor and keyboard focus on an inert button is a broken
+                         affordance, not an action. -->
+                    <DataTrigger Binding="{Binding ExplanationCommand}" Value="{x:Null}">
+                        <Setter Property="Cursor" Value="Arrow" />
+                        <Setter Property="Focusable" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Button.Style>
+        <Border Style="{StaticResource WorkspaceToneBadgeStyle}"
+                Padding="8,5">
+            <!-- Auto icon column plus a star text column: a horizontal StackPanel would
+                 measure the text stack with unbounded width, so ellipsis and wrapping below
+                 would never engage and a long source or note would stretch the badge. -->
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Model.IconGlyph}"
+                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                           Margin="0,0,7,0"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource WorkspaceToneBadgeTextStyle}"
+                           AutomationProperties.AutomationId="{Binding IconAutomationId}" />
+                <StackPanel Grid.Column="1">
+                    <WrapPanel>
+                        <TextBlock Text="{Binding Model.ConfidenceLabel}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Style="{StaticResource WorkspaceToneBadgeTextStyle}"
+                                   AutomationProperties.AutomationId="{Binding ConfidenceAutomationId}" />
+                        <TextBlock Text=" · " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding Model.ReconciliationLabel}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Style="{StaticResource WorkspaceToneBadgeTextStyle}"
+                                   AutomationProperties.AutomationId="{Binding ReconciliationAutomationId}" />
+                    </WrapPanel>
+                    <TextBlock Text="{Binding Model.ProviderLabel, StringFormat=Source: {0}}"
+                               Margin="0,2,0,0"
+                               FontSize="10"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               TextTrimming="CharacterEllipsis"
+                               AutomationProperties.AutomationId="{Binding SourceAutomationId}" />
+                    <TextBlock Text="{Binding Model.FreshnessLabel}"
+                               Margin="0,1,0,0"
+                               FontSize="10"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               AutomationProperties.AutomationId="{Binding FreshnessAutomationId}" />
+                    <TextBlock Text="{Binding Model.Notes}"
+                               Margin="0,1,0,0"
+                               FontSize="10"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="{Binding NotesAutomationId}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Model.Notes}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Model.Notes}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </controls:DataConfidenceExplanationButton>
+</UserControl>
