@@ -514,19 +514,34 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     public void CancelRequest(int requestId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        if (!_requests.TryGetValue(requestId, out var request))
-            throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
-        _transport.CancelDataRequest(requestId, request.Capability);
-        CancelRequest(requestId);
+        // The wire cancel and the terminal transition share the request's transition gate with
+        // the submission in Issue: a cancel racing the pre-send window would otherwise spend its
+        // transport cancel on a subscription that does not exist yet, and the late send would
+        // then leak a live vendor stream behind a read model already frozen at Cancelled.
+        var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
+        lock (gate)
+        {
+            if (!_requests.TryGetValue(requestId, out var request))
+                throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
+            _transport.CancelDataRequest(requestId, request.Capability);
+            CancelRequest(requestId);
+        }
     }
 
     /// <summary>Fails closed on a local timeout and stops a cancellable vendor stream.</summary>
     public void TimeoutRequest(int requestId)
     {
-        if (!_requests.TryGetValue(requestId, out var request))
-            throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
-        _transport.CancelDataRequest(requestId, request.Capability);
-        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.TimedOut, ErrorCode = "timeout", ErrorMessage = "The provider callback did not complete before the request timeout." });
+        // Serialized with Issue's submission for the same reason as CancelRequest: a timeout
+        // firing inside the pre-send window must not spend its wire cancel before the
+        // subscription exists and then let the late send leak an unreleasable stream.
+        var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
+        lock (gate)
+        {
+            if (!_requests.TryGetValue(requestId, out var request))
+                throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
+            _transport.CancelDataRequest(requestId, request.Capability);
+            UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.TimedOut, ErrorCode = "timeout", ErrorMessage = "The provider callback did not complete before the request timeout." });
+        }
     }
 
     public void RejectRequest(int requestId, string code, string message)
@@ -746,7 +761,19 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
         try
         {
-            send(requestId);
+            // Submission shares the request's transition gate with cancel and timeout: a watcher
+            // reacting to the Requested publication above can cancel inside the pre-send window,
+            // and an ungated send would then create the very subscription that cancel already
+            // tried to stop at the wire — a live vendor stream no terminal transition will ever
+            // release. Under the gate the send either wins, so the cancel that follows targets a
+            // real subscription, or the terminal transition wins and the send is skipped with the
+            // read model already frozen.
+            var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
+            lock (gate)
+            {
+                if (_requests.TryGetValue(requestId, out var preSend) && IsActiveStatus(preSend.Status))
+                    send(requestId);
+            }
         }
         catch (Exception transportException)
         {

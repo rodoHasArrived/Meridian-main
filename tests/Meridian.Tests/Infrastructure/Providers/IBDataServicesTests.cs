@@ -569,6 +569,30 @@ public sealed class IBDataServicesTests
         request.TickByTickObservations.Should().BeNullOrEmpty();
     }
 
+    [Fact]
+    public void Cancellation_LandingBetweenRequestedPublicationAndSend_SkipsTheTransportSubmission()
+    {
+        var transport = new RecordingTransport();
+        var services = new IBDataServices(transport);
+
+        // A watcher reacting to the Requested publication reproduces the cancel-before-send
+        // race deterministically: it runs inside Issue, after the read model is public but
+        // before the transport submission.
+        services.ReadModelUpdated += model =>
+        {
+            if (model.Status == ProviderDataRequestStatus.Requested)
+                services.CancelRequest(model.RequestId, CancellationToken.None);
+        };
+
+        var requestId = services.SubscribePnl("DU123", "model-a");
+
+        // The cancel won the pre-send window, so the submission must be skipped entirely:
+        // its wire cancel already ran against a subscription that did not exist, so sending
+        // anyway would leak a live vendor stream no terminal transition will ever release.
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        transport.Calls.Should().Equal($"cancel:{requestId}:pnl");
+    }
+
     /// <summary>
     /// The vendor delivers a bounded historical-tick result as batches whose done flag describes
     /// the batch, so the transport may mark only the final batch's last element as completing —
