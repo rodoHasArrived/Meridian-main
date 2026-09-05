@@ -668,4 +668,3 @@ function closeCommandCenterGateRoute(gate: OperationsWorkflowBlocker["gate"]): s
   if (gate === "BrokerIngest") return WORKSTATION_ROUTE_CATALOG.accountingLedger;
   return null;
 }
-
