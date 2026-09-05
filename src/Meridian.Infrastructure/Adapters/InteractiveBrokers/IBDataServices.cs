@@ -67,6 +67,12 @@ public interface IIBDataCallbackSource
     event EventHandler<(int RequestId, ProviderDividendEarnings Payload)>? DividendEarningsReceived;
     event EventHandler<(int RequestId, ProviderOptionContract Contract)>? OptionContractReceived;
     event EventHandler<(int RequestId, ProviderScannerResult Result)>? ScannerResultReceived;
+    /// <summary>
+    /// Non-terminal batch delimiter for a live scanner subscription (IB's scannerDataEnd): the
+    /// vendor re-sends the full current ranked list each refresh cycle, so the rows after this
+    /// delimiter REPLACE the request's accumulated results rather than extending them.
+    /// </summary>
+    event EventHandler<int>? ScannerBatchCompleted;
     event EventHandler<(int RequestId, ProviderRealTimeBar Bar)>? RealTimeBarReceived;
     event EventHandler<(int RequestId, ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
     event EventHandler<(int RequestId, ProviderAccountPnl Pnl)>? PnlReceived;
@@ -94,6 +100,15 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     private readonly ConcurrentDictionary<int, ProviderDataRequestReadModel> _requests = new();
     private readonly ConcurrentDictionary<int, IBDataRequestOwnership> _ownership = new();
     private readonly ConcurrentDictionary<int, string> _requestCorrelationIds = new();
+    // Scanner ids whose current result batch was delimited by the vendor (scannerDataEnd): the
+    // next scanner row for that id begins a fresh batch and replaces the accumulated results.
+    // Entries for terminal requests are inert — request ids are process-monotonic, never reused.
+    private readonly ConcurrentDictionary<int, bool> _scannerBatchClosed = new();
+    // Serializes each request's read-model transition WITH its publication: without the gate, a
+    // callback that paused between AddOrUpdate and Publish could publish its stale active model
+    // after another thread published the terminal one, resurrecting the request for watchers and
+    // letting the last-write-wins durable projector overwrite the terminal record.
+    private readonly ConcurrentDictionary<int, object> _readModelGates = new();
     private readonly TenantScopedProviderDataUpdateHub _updates = new();
     private int _nextRequestId = 90_000;
 
@@ -120,6 +135,7 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             callbacks.DividendEarningsReceived += OnDividendEarningsReceived;
             callbacks.OptionContractReceived += OnOptionContractReceived;
             callbacks.ScannerResultReceived += OnScannerResultReceived;
+            callbacks.ScannerBatchCompleted += OnScannerBatchCompleted;
             callbacks.RealTimeBarReceived += OnRealTimeBarReceived;
             callbacks.HistoricalTickReceived += OnHistoricalTickReceived;
             callbacks.PnlReceived += OnPnlReceived;
@@ -448,7 +464,19 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     public void RecordScannerResult(int requestId, ProviderScannerResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
-        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, ScannerResults = Append(current.ScannerResults, result with { Provenance = CreateObservationProvenance(current, result.ProviderContractId ?? $"{result.Symbol}:{result.Rank}", result.Provenance.SourceTimestamp) }) });
+        // The vendor re-sends the full current ranked list every refresh cycle; the first row
+        // after a batch delimiter therefore REPLACES the accumulated results, so the read model
+        // reports the current scan instead of an ever-growing union of every cycle.
+        var startsNewBatch = _scannerBatchClosed.TryRemove(requestId, out _);
+        UpdateReadModel(requestId, current =>
+        {
+            var enriched = result with { Provenance = CreateObservationProvenance(current, result.ProviderContractId ?? $"{result.Symbol}:{result.Rank}", result.Provenance.SourceTimestamp) };
+            return current with
+            {
+                Status = ProviderDataRequestStatus.Streaming,
+                ScannerResults = startsNewBatch ? new[] { enriched } : Append(current.ScannerResults, enriched),
+            };
+        });
     }
 
     public void RecordRealTimeBar(int requestId, ProviderRealTimeBar bar)
@@ -486,19 +514,34 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     public void CancelRequest(int requestId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        if (!_requests.TryGetValue(requestId, out var request))
-            throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
-        _transport.CancelDataRequest(requestId, request.Capability);
-        CancelRequest(requestId);
+        // The wire cancel and the terminal transition share the request's transition gate with
+        // the submission in Issue: a cancel racing the pre-send window would otherwise spend its
+        // transport cancel on a subscription that does not exist yet, and the late send would
+        // then leak a live vendor stream behind a read model already frozen at Cancelled.
+        var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
+        lock (gate)
+        {
+            if (!_requests.TryGetValue(requestId, out var request))
+                throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
+            _transport.CancelDataRequest(requestId, request.Capability);
+            CancelRequest(requestId);
+        }
     }
 
     /// <summary>Fails closed on a local timeout and stops a cancellable vendor stream.</summary>
     public void TimeoutRequest(int requestId)
     {
-        if (!_requests.TryGetValue(requestId, out var request))
-            throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
-        _transport.CancelDataRequest(requestId, request.Capability);
-        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.TimedOut, ErrorCode = "timeout", ErrorMessage = "The provider callback did not complete before the request timeout." });
+        // Serialized with Issue's submission for the same reason as CancelRequest: a timeout
+        // firing inside the pre-send window must not spend its wire cancel before the
+        // subscription exists and then let the late send leak an unreleasable stream.
+        var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
+        lock (gate)
+        {
+            if (!_requests.TryGetValue(requestId, out var request))
+                throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
+            _transport.CancelDataRequest(requestId, request.Capability);
+            UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.TimedOut, ErrorCode = "timeout", ErrorMessage = "The provider callback did not complete before the request timeout." });
+        }
     }
 
     public void RejectRequest(int requestId, string code, string message)
@@ -506,26 +549,145 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
     private void OnMarketDataTypeReceived(object? sender, IBMarketDataTypeUpdate update)
     {
-        if (_lineage.ContainsKey(update.RequestId))
+        // Routability, not lineage presence: lineage evidence outlives terminal requests, so a
+        // late availability callback after cancellation, timeout, or rejection would otherwise
+        // mutate the retained lineage while the frozen read model keeps its terminal snapshot,
+        // leaving the two surfaces reporting different availability.
+        if (IsRoutable(update.RequestId))
             RecordMarketDataType(update.RequestId, update.MarketDataType);
     }
 
-    private void OnContractDetailsReceived(object? sender, (int RequestId, ProviderContractDetails Details) value) => RecordContractDetails(value.RequestId, value.Details);
-    private void OnOptionChainDefinitionReceived(object? sender, (int RequestId, ProviderOptionChainDefinition Definition) value) => RecordOptionChainDefinition(value.RequestId, value.Definition);
-    private void OnHistoricalNewsReceived(object? sender, (int RequestId, ProviderNewsHeadline Headline) value) => RecordNewsHeadline(value.RequestId, value.Headline);
-    private void OnNewsArticleReceived(object? sender, (int RequestId, ProviderNewsArticlePayload Article) value) => RecordNewsArticle(value.RequestId, value.Article);
-    private void OnFundamentalReportReceived(object? sender, (int RequestId, ProviderFundamentalReport Report) value) => RecordFundamentalReport(value.RequestId, value.Report);
-    private void OnTickByTickReceived(object? sender, (int RequestId, ProviderTickByTickObservation Observation) value) => RecordTickByTick(value.RequestId, value.Observation);
-    private void OnDepthExchangesReceived(object? sender, (int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges) value) => RecordDepthExchanges(value.RequestId, value.Exchanges);
-    private void OnDividendEarningsReceived(object? sender, (int RequestId, ProviderDividendEarnings Payload) value) => RecordDividendEarnings(value.RequestId, value.Payload);
-    private void OnOptionContractReceived(object? sender, (int RequestId, ProviderOptionContract Contract) value) => RecordOptionContract(value.RequestId, value.Contract);
-    private void OnScannerResultReceived(object? sender, (int RequestId, ProviderScannerResult Result) value) => RecordScannerResult(value.RequestId, value.Result);
-    private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value) => RecordRealTimeBar(value.RequestId, value.Bar);
-    private void OnHistoricalTickReceived(object? sender, (int RequestId, ProviderHistoricalTick Tick, bool Completed) value) => RecordHistoricalTick(value.RequestId, value.Tick, value.Completed);
-    private void OnPnlReceived(object? sender, (int RequestId, ProviderAccountPnl Pnl) value) => RecordPnl(value.RequestId, value.Pnl);
-    private void OnMarketRuleReceived(object? sender, (int RequestId, IReadOnlyList<ProviderMarketRuleIncrement> Increments) value) => RecordMarketRule(value.RequestId, value.Increments);
-    private void OnRequestCompleted(object? sender, int requestId) => CompleteRequest(requestId);
-    private void OnRequestRejected(object? sender, (int RequestId, string Code, string Message) value) => RejectRequest(value.RequestId, value.Code, value.Message);
+    private static bool IsActiveStatus(ProviderDataRequestStatus status)
+        => status is ProviderDataRequestStatus.Requested or ProviderDataRequestStatus.Streaming;
+
+    /// <summary>
+    /// True only for a tracked request that has not reached a terminal status. This is the
+    /// allocation-free pre-check on the reader loop; the race it cannot close (a terminal
+    /// transition landing between this check and the recorder) is closed atomically inside
+    /// <see cref="UpdateReadModel"/>.
+    /// </summary>
+    private bool IsRoutable(int requestId)
+        => _requests.TryGetValue(requestId, out var request) && IsActiveStatus(request.Status);
+
+    // Ownership guards are inline rather than a shared delegate-taking wrapper: these run on
+    // the IB reader loop at market-data rates, and a capturing lambda per callback would
+    // allocate a closure for every vendor tick, tracked or not.
+    private void OnContractDetailsReceived(object? sender, (int RequestId, ProviderContractDetails Details) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordContractDetails(value.RequestId, value.Details);
+    }
+
+    private void OnOptionChainDefinitionReceived(object? sender, (int RequestId, ProviderOptionChainDefinition Definition) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordOptionChainDefinition(value.RequestId, value.Definition);
+    }
+
+    private void OnHistoricalNewsReceived(object? sender, (int RequestId, ProviderNewsHeadline Headline) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordNewsHeadline(value.RequestId, value.Headline);
+    }
+
+    private void OnNewsArticleReceived(object? sender, (int RequestId, ProviderNewsArticlePayload Article) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordNewsArticle(value.RequestId, value.Article);
+    }
+
+    private void OnFundamentalReportReceived(object? sender, (int RequestId, ProviderFundamentalReport Report) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordFundamentalReport(value.RequestId, value.Report);
+    }
+
+    private void OnTickByTickReceived(object? sender, (int RequestId, ProviderTickByTickObservation Observation) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordTickByTick(value.RequestId, value.Observation);
+    }
+
+    private void OnDepthExchangesReceived(object? sender, (int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordDepthExchanges(value.RequestId, value.Exchanges);
+    }
+
+    private void OnDividendEarningsReceived(object? sender, (int RequestId, ProviderDividendEarnings Payload) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordDividendEarnings(value.RequestId, value.Payload);
+    }
+
+    private void OnOptionContractReceived(object? sender, (int RequestId, ProviderOptionContract Contract) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordOptionContract(value.RequestId, value.Contract);
+    }
+
+    private void OnScannerResultReceived(object? sender, (int RequestId, ProviderScannerResult Result) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordScannerResult(value.RequestId, value.Result);
+    }
+
+    private void OnScannerBatchCompleted(object? sender, int requestId)
+    {
+        if (!IsRoutable(requestId))
+            return;
+
+        // A cycle that delivered no rows never reaches the replacement in RecordScannerResult,
+        // so its empty current scan is represented at the delimiter itself. A repeat delimiter
+        // (marker still set) means the closed cycle was empty; a first delimiter closing a scan
+        // that never delivered a row is the same case, recognizable by the still-absent result
+        // set. Either way the still-set marker keeps a later cycle's first row starting fresh.
+        if (!_scannerBatchClosed.TryAdd(requestId, true)
+            || (_requests.TryGetValue(requestId, out var snapshot) && snapshot.ScannerResults is not { Count: > 0 }))
+        {
+            UpdateReadModel(requestId, static current => current with
+            {
+                Status = ProviderDataRequestStatus.Streaming,
+                ScannerResults = Array.Empty<ProviderScannerResult>(),
+            });
+        }
+    }
+
+    private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordRealTimeBar(value.RequestId, value.Bar);
+    }
+
+    private void OnHistoricalTickReceived(object? sender, (int RequestId, ProviderHistoricalTick Tick, bool Completed) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordHistoricalTick(value.RequestId, value.Tick, value.Completed);
+    }
+
+    private void OnPnlReceived(object? sender, (int RequestId, ProviderAccountPnl Pnl) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordPnl(value.RequestId, value.Pnl);
+    }
+
+    private void OnMarketRuleReceived(object? sender, (int RequestId, IReadOnlyList<ProviderMarketRuleIncrement> Increments) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RecordMarketRule(value.RequestId, value.Increments);
+    }
+
+    private void OnRequestCompleted(object? sender, int requestId)
+    {
+        if (IsRoutable(requestId))
+            CompleteRequest(requestId);
+    }
+
+    private void OnRequestRejected(object? sender, (int RequestId, string Code, string Message) value)
+    {
+        if (IsRoutable(value.RequestId))
+            RejectRequest(value.RequestId, value.Code, value.Message);
+    }
 
     private int Issue(
         string service,
@@ -599,7 +761,19 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
         try
         {
-            send(requestId);
+            // Submission shares the request's transition gate with cancel and timeout: a watcher
+            // reacting to the Requested publication above can cancel inside the pre-send window,
+            // and an ungated send would then create the very subscription that cancel already
+            // tried to stop at the wire — a live vendor stream no terminal transition will ever
+            // release. Under the gate the send either wins, so the cancel that follows targets a
+            // real subscription, or the terminal transition wins and the send is skipped with the
+            // read model already frozen.
+            var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
+            lock (gate)
+            {
+                if (_requests.TryGetValue(requestId, out var preSend) && IsActiveStatus(preSend.Status))
+                    send(requestId);
+            }
         }
         catch (Exception transportException)
         {
@@ -636,9 +810,36 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
     private void UpdateReadModel(int requestId, Func<ProviderDataRequestReadModel, ProviderDataRequestReadModel> update)
     {
-        var lineage = _lineage.TryGetValue(requestId, out var currentLineage) ? currentLineage : null;
-        var updated = _requests.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current) with { UpdatedAt = DateTimeOffset.UtcNow, Lineage = lineage });
-        Publish(updated);
+        // The transition and its publication are serialized per request: the map alone would
+        // stay consistent (terminal outcomes are frozen in the atomic update below), but a
+        // publication escaping the transition's ordering could deliver a stale active model
+        // after the terminal one to watchers and the durable projector.
+        var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
+        lock (gate)
+        {
+            var lineage = _lineage.TryGetValue(requestId, out var currentLineage) ? currentLineage : null;
+            var applied = true;
+            var updated = _requests.AddOrUpdate(
+                requestId,
+                _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."),
+                (_, current) =>
+                {
+                    // Terminal outcomes are frozen inside the atomic update, not only at the
+                    // routability pre-checks: a queued payload or completion racing cancellation,
+                    // timeout, or rejection on another thread must not resurrect the read model,
+                    // and the first terminal status recorded is the one the operator keeps seeing.
+                    if (!IsActiveStatus(current.Status))
+                    {
+                        applied = false;
+                        return current;
+                    }
+
+                    applied = true;
+                    return update(current) with { UpdatedAt = DateTimeOffset.UtcNow, Lineage = lineage };
+                });
+            if (applied)
+                Publish(updated);
+        }
     }
 
     private ProviderDataProvenance CreateRequestProvenance(IBDataLineage lineage)
@@ -730,6 +931,7 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             callbacks.DividendEarningsReceived -= OnDividendEarningsReceived;
             callbacks.OptionContractReceived -= OnOptionContractReceived;
             callbacks.ScannerResultReceived -= OnScannerResultReceived;
+            callbacks.ScannerBatchCompleted -= OnScannerBatchCompleted;
             callbacks.RealTimeBarReceived -= OnRealTimeBarReceived;
             callbacks.HistoricalTickReceived -= OnHistoricalTickReceived;
             callbacks.PnlReceived -= OnPnlReceived;

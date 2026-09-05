@@ -414,6 +414,70 @@ public sealed class IBDataServicesTests
     }
 
     [Fact]
+    public void CallbackBridge_ScannerRefreshCycles_ReplaceTheBatchInsteadOfAccumulating()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport, "ignored-because-transport-supplies-identity");
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        transport.RaiseScannerResult(requestId, Scanner(0, "AAPL"));
+        transport.RaiseScannerResult(requestId, Scanner(1, "MSFT"));
+        transport.RaiseScannerBatchEnd(requestId);
+        // The vendor re-sends the full current ranked list each cycle; MSFT left the scan, so
+        // the read model must report the current batch, not the union of every cycle.
+        transport.RaiseScannerResult(requestId, Scanner(0, "NVDA"));
+        transport.RaiseScannerResult(requestId, Scanner(1, "AAPL"));
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Streaming);
+        request.ScannerResults.Should().HaveCount(2);
+        request.ScannerResults!.Select(result => result.Symbol).Should().Equal("NVDA", "AAPL");
+
+        static ProviderScannerResult Scanner(int rank, string symbol)
+            => new(rank, symbol, "NASDAQ", null, null, null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
+    public void CallbackBridge_FirstScannerCycleWithNoRows_PublishesTheEmptyScan()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport, "ignored-because-transport-supplies-identity");
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        // The very first cycle matched nothing: the delimiter arrives before any row, and the
+        // request must report the live empty scan instead of staying Requested with no results.
+        transport.RaiseScannerBatchEnd(requestId);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Streaming);
+        request.ScannerResults.Should().NotBeNull().And.BeEmpty();
+    }
+
+    [Fact]
+    public void CallbackBridge_EmptyScannerRefreshCycle_ClearsTheCurrentBatch()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport, "ignored-because-transport-supplies-identity");
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        transport.RaiseScannerResult(requestId, Scanner(0, "AAPL"));
+        transport.RaiseScannerBatchEnd(requestId);
+        // A refresh matching nothing emits the next delimiter with no intervening rows; the
+        // read model must report the empty current scan, not keep exposing the prior batch.
+        transport.RaiseScannerBatchEnd(requestId);
+
+        services.GetRequests().Single().ScannerResults.Should().BeEmpty();
+
+        // A later cycle's first row still starts a fresh batch after the empty one.
+        transport.RaiseScannerResult(requestId, Scanner(0, "NVDA"));
+        services.GetRequests().Single().ScannerResults.Should().ContainSingle()
+            .Which.Symbol.Should().Be("NVDA");
+
+        static ProviderScannerResult Scanner(int rank, string symbol)
+            => new(rank, symbol, "NASDAQ", null, null, null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
     public void Cancellation_MarksOnlyTheRequestedStreamAndCallsTransportCancellation()
     {
         var transport = new RecordingTransport();
@@ -425,6 +489,134 @@ public sealed class IBDataServicesTests
         services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Cancelled);
         transport.Calls.Should().Contain($"cancel:{requestId}:pnl");
     }
+
+    [Fact]
+    public void Cancellation_QueuedCallbacksArrivingAfterCancel_DoNotResurrectTheStream()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+        transport.RaiseTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
+
+        services.CancelRequest(requestId, CancellationToken.None);
+
+        // The IB reader loop can still hold queued events for the cancelled id; neither a
+        // payload nor a completion may flip the operator-visible outcome back to a live status.
+        transport.RaiseTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 201m, 5m));
+        transport.RaiseCompleted(requestId);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.TickByTickObservations.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Cancellation_MarketDataTypeArrivingAfterCancel_LeavesLineageAndReadModelFrozenTogether()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+        transport.RaiseMarketDataType(requestId, 1);
+
+        services.CancelRequest(requestId, CancellationToken.None);
+
+        // Lineage evidence outlives the request, so a queued availability callback for the
+        // cancelled id must not mutate it: the retained lineage and the frozen read model
+        // must keep reporting the same availability the request had when it went terminal.
+        transport.RaiseMarketDataType(requestId, 3);
+
+        services.GetLineage().Single().Availability.Should().Be(IBMarketDataAvailability.Live);
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.Lineage!.Availability.Should().Be(IBMarketDataAvailability.Live);
+    }
+
+    [Fact]
+    public void Cancellation_TransportCancelFailure_LeavesTheRequestRoutableForRejection()
+    {
+        var transport = new CallbackTransport { CancelFailure = new InvalidOperationException("socket write failed") };
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+
+        var act = () => services.CancelRequest(requestId, CancellationToken.None);
+
+        // The vendor stream may still be live, so the request must not be reported cancelled
+        // and the request-scoped error that follows must still reach the read model.
+        act.Should().Throw<InvalidOperationException>();
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Requested);
+
+        transport.RaiseRejected(requestId, "10197", "No market data during competing live session.");
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Rejected);
+    }
+
+    /// <summary>
+    /// The routability pre-checks on the reader loop cannot close the race where a terminal
+    /// transition lands between the check and the recorder, so the freeze is enforced inside
+    /// the atomic read-model update itself: even a direct record call on a terminal request
+    /// is dropped rather than resurrecting it.
+    /// </summary>
+    [Fact]
+    public void Cancellation_DirectRecordAfterCancel_DoesNotResurrectTheReadModel()
+    {
+        var services = new IBDataServices(new RecordingTransport());
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+
+        services.CancelRequest(requestId, CancellationToken.None);
+        services.RecordTickByTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.TickByTickObservations.Should().BeNullOrEmpty();
+    }
+
+    [Fact]
+    public void Cancellation_LandingBetweenRequestedPublicationAndSend_SkipsTheTransportSubmission()
+    {
+        var transport = new RecordingTransport();
+        var services = new IBDataServices(transport);
+
+        // A watcher reacting to the Requested publication reproduces the cancel-before-send
+        // race deterministically: it runs inside Issue, after the read model is public but
+        // before the transport submission.
+        services.ReadModelUpdated += model =>
+        {
+            if (model.Status == ProviderDataRequestStatus.Requested)
+                services.CancelRequest(model.RequestId, CancellationToken.None);
+        };
+
+        var requestId = services.SubscribePnl("DU123", "model-a");
+
+        // The cancel won the pre-send window, so the submission must be skipped entirely:
+        // its wire cancel already ran against a subscription that did not exist, so sending
+        // anyway would leak a live vendor stream no terminal transition will ever release.
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        transport.Calls.Should().Equal($"cancel:{requestId}:pnl");
+    }
+
+    /// <summary>
+    /// The vendor delivers a bounded historical-tick result as batches whose done flag describes
+    /// the batch, so the transport may mark only the final batch's last element as completing —
+    /// completing on the first element would drop the rest of the batch at the active-status guard.
+    /// </summary>
+    [Fact]
+    public void HistoricalTicks_TerminalBatchWithMultipleTicks_RetainsEveryTick()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.RequestHistoricalTicks(
+            new IBHistoricalTickRequest(new SymbolConfig("AAPL"), null, DateTimeOffset.UtcNow, 3));
+
+        transport.RaiseHistoricalTick(requestId, HistoricalTick(200.10m), completed: false);
+        transport.RaiseHistoricalTick(requestId, HistoricalTick(200.15m), completed: false);
+        transport.RaiseHistoricalTick(requestId, HistoricalTick(200.20m), completed: true);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Completed);
+        request.HistoricalTicks.Should().HaveCount(3);
+    }
+
+    private static ProviderHistoricalTick HistoricalTick(decimal price)
+        => new(DateTimeOffset.UtcNow, price, 10m, "TRADES", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
 
     [Fact]
     public void PnlCallbacks_RetainAccountAndModelIsolation()
@@ -512,6 +704,20 @@ public sealed class IBDataServicesTests
         services.GetRequests().Single(x => x.RequestId == rules).MarketRuleIncrements.Should().ContainSingle();
     }
 
+    [Fact]
+    public void CallbackSource_UnrelatedProviderRequestRejected_IsIgnoredWithoutAffectingTrackedRequests()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        var action = () => transport.RaiseRejected(12345, "354", "Requested market data is not subscribed.");
+
+        action.Should().NotThrow();
+        services.GetRequests().Single().Should().Match<ProviderDataRequestReadModel>(request =>
+            request.RequestId == requestId && request.Status == ProviderDataRequestStatus.Requested);
+    }
+
     private class RecordingTransport : IIBDataServiceTransport
     {
         public List<string> Calls { get; } = [];
@@ -535,6 +741,7 @@ public sealed class IBDataServicesTests
     {
         public string ProviderConnectionId => "ib-gateway:live:7";
         public ProviderScannerResult? ScannerResultDuringRequest { get; init; }
+        public Exception? CancelFailure { get; init; }
         public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
         public event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
         public event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
@@ -546,6 +753,7 @@ public sealed class IBDataServicesTests
         public event EventHandler<(int RequestId, ProviderDividendEarnings Payload)>? DividendEarningsReceived;
         public event EventHandler<(int RequestId, ProviderOptionContract Contract)>? OptionContractReceived;
         public event EventHandler<(int RequestId, ProviderScannerResult Result)>? ScannerResultReceived;
+        public event EventHandler<int>? ScannerBatchCompleted;
         public event EventHandler<(int RequestId, ProviderRealTimeBar Bar)>? RealTimeBarReceived;
         public event EventHandler<(int RequestId, ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
         public event EventHandler<(int RequestId, ProviderAccountPnl Pnl)>? PnlReceived;
@@ -568,12 +776,19 @@ public sealed class IBDataServicesTests
         public void RequestPnl(int requestId, string account, string? modelCode) { }
         public void RequestMarketRule(int requestId, int marketRuleId) { }
         public void RequestDepthExchanges(int requestId) { }
+        public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request) { }
+        public void CancelDataRequest(int requestId, string capability)
+        {
+            if (CancelFailure is { } failure)
+                throw failure;
+        }
         public void RaiseContract(int id, ProviderContractDetails value) => ContractDetailsReceived?.Invoke(this, (id, value));
         public void RaiseChain(int id, ProviderOptionChainDefinition value) => OptionChainDefinitionReceived?.Invoke(this, (id, value));
         public void RaiseHeadline(int id, ProviderNewsHeadline value) => HistoricalNewsReceived?.Invoke(this, (id, value));
         public void RaiseArticle(int id, ProviderNewsArticlePayload value) => NewsArticleReceived?.Invoke(this, (id, value));
         public void RaiseFundamental(int id, ProviderFundamentalReport value) => FundamentalReportReceived?.Invoke(this, (id, value));
         public void RaiseTick(int id, ProviderTickByTickObservation value) => TickByTickReceived?.Invoke(this, (id, value));
+        public void RaiseHistoricalTick(int id, ProviderHistoricalTick value, bool completed) => HistoricalTickReceived?.Invoke(this, (id, value, completed));
         public void RaiseDepth(int id, IReadOnlyList<ProviderDepthExchangeDescription> value) => DepthExchangesReceived?.Invoke(this, (id, value));
         public void RaiseDividend(int id, ProviderDividendEarnings value) => DividendEarningsReceived?.Invoke(this, (id, value));
         public void RaiseScanner(int id, ProviderScannerResult value) => ScannerResultReceived?.Invoke(this, (id, value));
@@ -582,6 +797,7 @@ public sealed class IBDataServicesTests
         public void RaiseCompleted(int id) => RequestCompleted?.Invoke(this, id);
         public void RaiseRejected(int id, string code, string message) => RequestRejected?.Invoke(this, (id, code, message));
         public void RaiseScannerResult(int requestId, ProviderScannerResult result) => ScannerResultReceived?.Invoke(this, (requestId, result));
+        public void RaiseScannerBatchEnd(int id) => ScannerBatchCompleted?.Invoke(this, id);
         public void RaiseMarketDataType(int requestId, int marketDataType) => MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(requestId, marketDataType));
     }
 }

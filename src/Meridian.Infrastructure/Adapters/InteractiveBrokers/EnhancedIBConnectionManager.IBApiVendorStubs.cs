@@ -69,8 +69,11 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void scannerDataEnd(int reqId)
     {
+        // A batch delimiter for a live subscription, not completion — see the IBAPI partial's
+        // scannerDataEnd: cancellation is the scanner's only terminal transition. Forwarded so
+        // the next refresh cycle's rows replace the accumulated batch.
         RecordMessageReceived();
-        RequestCompleted?.Invoke(this, reqId);
+        ScannerBatchCompleted?.Invoke(this, reqId);
     }
 
     public void receiveFA(int faDataType, string faXmlData)
@@ -127,6 +130,9 @@ public sealed partial class EnhancedIBConnectionManager
     public void securityDefinitionOptionParameterEnd(int reqId)
     {
         RecordMessageReceived();
+        // Completion is terminal downstream, so the id's rejection-routing ownership ends here —
+        // the IBAPI-build callback releases it the same way.
+        _dataServiceRequestIds.TryRemove(reqId, out _);
         RequestCompleted?.Invoke(this, reqId);
     }
 
@@ -140,6 +146,16 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void mktDepthExchanges(DepthMktDataDescription[] depthMktDataDescriptions)
     {
+        // The official SDK delivers the depth-exchange directory through this callback, not the
+        // smoke-build-shaped reqMktDepthExchanges; correlation, ownership release, and
+        // forwarding mirror that callback so a production request completes instead of staying
+        // Requested with its rejection routing retained.
+        RecordMessageReceived();
+        if (!_depthExchangeRequests.TryDequeue(out var requestId)) return;
+        _dataServiceRequestIds.TryRemove(requestId, out _);
+        var values = depthMktDataDescriptions.Select(static value => new ProviderDepthExchangeDescription(
+            value.Exchange, value.SecType, value.ListingExch, value.ServiceDataType, value.AggGroup != 0)).ToArray();
+        DepthExchangesReceived?.Invoke(this, (requestId, values));
     }
 
     public void tickNews(int tickerId, long timeStamp, string providerCode, string articleId, string headline, string extraData)
@@ -165,7 +181,16 @@ public sealed partial class EnhancedIBConnectionManager
     public void marketRule(int marketRuleId, PriceIncrement[] priceIncrements)
     {
         RecordMessageReceived();
-        var requestId = _marketRuleRequests.TryRemove(marketRuleId, out var correlatedRequestId) ? correlatedRequestId : marketRuleId;
+        var correlated = _marketRuleRequests.TryRemove(marketRuleId, out var correlatedRequestId);
+        var requestId = correlated ? correlatedRequestId : marketRuleId;
+        if (correlated)
+        {
+            // The payload completes the request downstream, so the correlated id's
+            // rejection-routing ownership ends with it. The uncorrelated fallback id is left
+            // alone: it may belong to an unrelated in-flight data request.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+        }
+
         MarketRuleReceived?.Invoke(this, (requestId, priceIncrements.Select(static x => new ProviderMarketRuleIncrement((decimal)x.LowEdge, (decimal)x.Increment, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))).ToArray()));
     }
 
@@ -181,12 +206,28 @@ public sealed partial class EnhancedIBConnectionManager
         PnlReceived?.Invoke(this, (reqId, new ProviderAccountPnl(string.Empty, null, (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL, pos, (decimal)value, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))));
     }
 
+    // IB routes reqHistoricalTicks results by WhatToShow: MIDPOINT arrives through
+    // historicalTicks, TRADES (the request record's default) through historicalTicksLast, and
+    // BID_ASK through historicalTicksBidAsk. Downstream, Completed is a per-request terminal
+    // flag: the read model completes on the first element carrying it and stops routing the
+    // rest, so only the final batch's last element may carry the vendor's done flag forward —
+    // and the completion must release the rejection-routing ownership, because bounded requests
+    // terminate here rather than through CancelDataRequest.
+
     public void historicalTicks(int reqId, HistoricalTick[] ticks, bool done)
     {
         RecordMessageReceived();
-        foreach (var tick in ticks)
-            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)tick.Price, tick.Size, "TRADES", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))), done));
-        if (done) RequestCompleted?.Invoke(this, reqId);
+        for (var index = 0; index < ticks.Length; index++)
+        {
+            var tick = ticks[index];
+            var completesRequest = done && index == ticks.Length - 1;
+            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)tick.Price, tick.Size, "MIDPOINT", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))), completesRequest));
+        }
+        if (done)
+        {
+            _dataServiceRequestIds.TryRemove(reqId, out _);
+            RequestCompleted?.Invoke(this, reqId);
+        }
     }
 
     public void historicalTicksBidAsk(int reqId, HistoricalTickBidAsk[] ticks, bool done)
@@ -195,6 +236,18 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void historicalTicksLast(int reqId, HistoricalTickLast[] ticks, bool done)
     {
+        RecordMessageReceived();
+        for (var index = 0; index < ticks.Length; index++)
+        {
+            var tick = ticks[index];
+            var completesRequest = done && index == ticks.Length - 1;
+            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)tick.Price, tick.Size, "TRADES", null, null, string.IsNullOrEmpty(tick.Exchange) ? null : tick.Exchange, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))), completesRequest));
+        }
+        if (done)
+        {
+            _dataServiceRequestIds.TryRemove(reqId, out _);
+            RequestCompleted?.Invoke(this, reqId);
+        }
     }
 
     public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, decimal bidSize, decimal askSize, TickAttribBidAsk tickAttribBidAsk)
