@@ -7,6 +7,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services.Accounting;
