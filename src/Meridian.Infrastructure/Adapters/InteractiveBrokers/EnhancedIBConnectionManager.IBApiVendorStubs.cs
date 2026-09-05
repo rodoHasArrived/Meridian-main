@@ -146,6 +146,16 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void mktDepthExchanges(DepthMktDataDescription[] depthMktDataDescriptions)
     {
+        // The official SDK delivers the depth-exchange directory through this callback, not the
+        // smoke-build-shaped reqMktDepthExchanges; correlation, ownership release, and
+        // forwarding mirror that callback so a production request completes instead of staying
+        // Requested with its rejection routing retained.
+        RecordMessageReceived();
+        if (!_depthExchangeRequests.TryDequeue(out var requestId)) return;
+        _dataServiceRequestIds.TryRemove(requestId, out _);
+        var values = depthMktDataDescriptions.Select(static value => new ProviderDepthExchangeDescription(
+            value.Exchange, value.SecType, value.ListingExch, value.ServiceDataType, value.AggGroup != 0)).ToArray();
+        DepthExchangesReceived?.Invoke(this, (requestId, values));
     }
 
     public void tickNews(int tickerId, long timeStamp, string providerCode, string articleId, string headline, string extraData)
