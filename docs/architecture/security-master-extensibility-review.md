@@ -3178,9 +3178,20 @@ the event stream, fails the projection insert with `23505`, and on the ingest pa
 the operator as `Skipped` by the classifier's unique-violation arm
 (`SecurityMasterIngestFailureClassifier.cs:45`) — the orphaned-stream outcome both items describe,
 now reachable through punctuation variants that previously inserted as a second golden record. The
-detection-key remedy, the alias half, and the `ProviderSymbol` provider rule remain open as
-written. This note records the merge so the index is not later read as A2's closure; verifying 032
-against A2's requirements is the next pass's work.
+detection-key remedy and the alias half remain open as written. The `ProviderSymbol` provider rule
+is not merely open — 032 enforces the wrong rule for that kind (added 2026-09-05, after review; the
+first version of this note said only that the rule remained open): the index is unfiltered
+(`032_security_master_normalized_primary_identifier_uniqueness.sql:40-41`), `securities` carries no
+provider column to scope it with (`001_security_master.sql:31-32`), and this document's own
+statement of the constraint required it scoped to the canonical kinds precisely because two
+providers may legitimately issue the same symbol text for different securities (P1's rule above,
+and priority 3 of the 2026-08-31 pass). As landed, the second such security cannot be created —
+its stream is appended, its projection insert fails with `23505`, and ingest reports it `Skipped` —
+and the preflight (`:4-35`) blocks the migration outright on any install that already holds such a
+pair. The fix is the one already specified: a partial index over the canonical kinds (`where
+primary_identifier_kind <> 'ProviderSymbol'`), or a projected normalized provider column included
+for that kind. This note records the merge so the index is not later read as A2's closure;
+verifying 032 against A2's requirements — and this over-constraint — is the next pass's work.
 
 ### B1 — The accounting lane verifies what it loads and trusts what it is told
 
