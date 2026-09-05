@@ -338,6 +338,8 @@ public sealed class UiServer : IAsyncDisposable
                 MaxRetainedOrders = configuredOrderManagement.MaxRetainedOrders,
                 ExecutionChannelCapacity = configuredOrderManagement.ExecutionChannelCapacity,
                 CancelAllMaxConcurrency = configuredOrderManagement.CancelAllMaxConcurrency,
+                CancelAllInFlightSettleTimeout = configuredOrderManagement.CancelAllInFlightSettleTimeout,
+                ExecutionSubscriberDrainTimeout = configuredOrderManagement.ExecutionSubscriberDrainTimeout,
                 RequireProductionSafetyDependencies =
                     ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)
             });

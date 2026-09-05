@@ -4,6 +4,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
@@ -1139,6 +1140,25 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     ?? throw new InvalidOperationException("Acquisition lot posting requires retained Security Master identity."),
                 BookPositionId: request.Candidate.BookPositionId
                     ?? throw new InvalidOperationException("Acquisition lot posting requires retained book-position identity."));
+            if (acquisition.HasFaceValueTerms)
+            {
+                // Face-denominated lots record their par conventions on the lot of record through
+                // the canonical aggregate, so the face, the factor it was booked at, and the basis
+                // its price was struck in are retained facts rather than conventions each consumer
+                // re-derives against a hardcoded 100. Constructing the aggregate also revalidates
+                // those economics, and WithFaceValueTerms proves the par and unit statements of the
+                // same acquisition tie before either is retained.
+                acquisitionLot = acquisitionLot.WithFaceValueTerms(new FaceValueLot(
+                    acquisitionLot.LotId,
+                    acquisitionLot.SecurityId,
+                    acquisition.AcquiredDate,
+                    acquisition.OriginalFace!.Value,
+                    pricePercentOfPar: acquisition.UnitCost * acquisition.ParBasis!.Value
+                        / LedgerTaxLotFaceValueTerms.LedgerLotParBasis,
+                    acquisition.BookedFactor!.Value,
+                    acquisition.ParBasis!.Value));
+            }
+
             mutationKind = AtomicTaxLotMutationKind.Acquisition;
         }
         else if (instruction.Intent == AssetLotMutationIntentDto.Dispose)
