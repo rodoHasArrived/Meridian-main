@@ -3057,7 +3057,9 @@ specified, and PR #2882 landed a new corporate-action accounting lane — servic
 migration 031, and three workstation routes. This pass therefore had three jobs: verify the P5
 closure against the property the finding requires rather than the artefact the fix produced, retire
 the "not re-verified" debt the 2026-08-29 status section explicitly left on P4's cancellation half,
-and review the new accounting lane end to end. One new finding (B1) comes out of the third job. The
+and review the new accounting lane end to end. One new finding (B1) came out of the third job at
+the pass; review of the pass's pull request then filed four more from it (B2–B5, each dated in
+place). The
 2026-08-31 findings are untouched by the range — no commit between `eaa83032` and `5b901dda`
 touches any of their anchor files (`git log` over each path returns empty) — so A1–A4 re-verify as
 open without re-argument. No code was changed by this pass and no tests were run — every claim is a
