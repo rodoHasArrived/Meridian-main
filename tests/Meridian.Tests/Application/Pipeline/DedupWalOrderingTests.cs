@@ -159,7 +159,8 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         var ledgerPath = Path.Combine(ledgerDir, "dedup_ledger.jsonl");
         if (File.Exists(ledgerPath))
         {
-            (await File.ReadAllTextAsync(ledgerPath)).Should().NotContain("\"v\":2");
+            using var ledgerReader = OpenLiveLedgerReader(ledgerPath);
+            (await ledgerReader.ReadToEndAsync()).Should().NotContain("\"v\":2");
         }
 
         (await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None))
@@ -342,7 +343,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         await wal.InitializeAsync();
 
         var ledgerDir = Path.Combine(_rootDir, "ledger_flushfail");
-        var innerLedger = await CreateLedgerAsync("ledger_flushfail");
+        await using var innerLedger = await CreateLedgerAsync("ledger_flushfail");
         var sink = new FaultSink { FlushFailuresRemaining = 1 };
         var dedupStore = new ObservingDedupStore(innerLedger)
         {
@@ -367,10 +368,12 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
                     "the dedup commit must only ever run after the sink flush succeeded");
         }
 
-        var ledgerLines = await File.ReadAllLinesAsync(Path.Combine(ledgerDir, "dedup_ledger.jsonl"));
+        using var ledgerReader = OpenLiveLedgerReader(Path.Combine(ledgerDir, "dedup_ledger.jsonl"));
+        var ledgerLines = new List<string>();
+        while (await ledgerReader.ReadLineAsync() is { } ledgerLine)
+            ledgerLines.Add(ledgerLine);
         ledgerLines.Where(line => line.Contains("\"v\":2")).Should().HaveCount(2,
             "both identities must end durability-confirmed exactly once");
-        await innerLedger.DisposeAsync();
     }
 
     [Fact]
@@ -848,7 +851,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         await wal1.FlushAsync();
         await wal1.DisposeAsync();
 
-        var ledger = await CreateLedgerAsync("ledger_external_claim");
+        await using var ledger = await CreateLedgerAsync("ledger_external_claim");
 
         // An external (live-ingress) holder claims the "OTH" identity before recovery runs.
         var externalClaim = await ledger.TryReserveAsync(other, DedupLookupScope.LiveIngress, CancellationToken.None);
@@ -1375,6 +1378,10 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
     #endregion
 
     #region Helpers and fakes
+
+    // Read before disposal can flush the writer, sharing its existing write handle on Windows.
+    private static StreamReader OpenLiveLedgerReader(string path) =>
+        new(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, useAsync: true));
 
     private async Task<PersistentDedupLedger> CreateLedgerAsync(string subDirectory)
     {

@@ -829,10 +829,13 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         {
             if (SetProperty(ref _selectedPortfolioPosition, value))
             {
+                OnPropertyChanged(nameof(SelectedPortfolioMark));
                 OpenSelectedPortfolioSecurityCommand.NotifyCanExecuteChanged();
             }
         }
     }
+
+    public MarkFreshnessPresentation SelectedPortfolioMark => new(SelectedPortfolioPosition?.MarkFreshness);
 
     public CashFlowEntryDto? SelectedCashFlowEntry
     {
@@ -2374,7 +2377,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                     IsBlocked: lane.Status is OperationsReconciliationLaneStatusDto.Blocked or OperationsReconciliationLaneStatusDto.Missing));
             }
 
-            foreach (var package in lifecycle.EvidencePackages.Where(static item => !item.IsReady))
+            foreach (var package in lifecycle.EvidencePackages.Where(static item => item.RequiredForClose && !item.IsReady))
             {
                 FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
                     QueueId: $"evidence-package:{package.PackageId}",
@@ -2410,7 +2413,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                     IsBlocked: IsEvidenceStatusBlocked(lane.Status)));
             }
 
-            foreach (var package in cockpit.EvidencePackages.Where(static item => !item.IsReady))
+            foreach (var package in cockpit.EvidencePackages.Where(static item => item.RequiredForClose && !item.IsReady))
             {
                 FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
                     QueueId: $"private-capital-package:{package.PackageId}",
@@ -2443,7 +2446,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             }
 
             foreach (var approval in cockpit.ApprovalHistory
-                .Where(static item => item.Status is not OperationsApprovalStateDto.Approved)
+                .Where(static item => item.IsCurrentDecision && item.Status is not OperationsApprovalStateDto.Approved)
                 .OrderByDescending(static item => item.DecidedAtUtc ?? item.SubmittedAtUtc ?? DateTimeOffset.MinValue))
             {
                 FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(

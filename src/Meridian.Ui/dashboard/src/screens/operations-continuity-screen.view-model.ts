@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import {
   getOperationsCloseCalendar,
+  getFinancialOperationsCommandCenter,
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
@@ -17,6 +18,7 @@ import {
   evidenceStatusTone
 } from "@/screens/operations-continuity-reviewed-automation.view-model";
 import type {
+  FinancialOperationsCommandCenter,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsAccountingRecordEvidenceCategory,
@@ -652,6 +654,7 @@ export interface OperationsContinuityScreenViewModel {
 }
 
 export interface OperationsContinuityScreenServices {
+  getCommandCenter?: (query?: PrivateCapitalCloseCockpitQuery, options?: ApiRequestOptions) => Promise<FinancialOperationsCommandCenter>;
   listWorkflows: (
     filters?: { fundAccountId?: string; periodId?: string; status?: string },
     options?: ApiRequestOptions
@@ -668,6 +671,8 @@ export interface OperationsContinuityScreenServices {
 }
 
 export interface BuildOperationsContinuityScreenViewModelOptions {
+  commandCenter?: FinancialOperationsCommandCenter | null;
+  expectedCloseScope?: PrivateCapitalCloseCockpitQuery;
   workflows: OperationsContinuityWorkflowSummary[];
   selectedWorkflowId: string | null;
   detail: OperationsContinuityWorkflow | null;
@@ -686,14 +691,18 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
 }
 
 const defaultServices: OperationsContinuityScreenServices = {
+  getCommandCenter: (query = {}, options = {}) => getFinancialOperationsCommandCenter(query, options),
   listWorkflows: (filters = {}, options = {}) => getOperationsContinuityWorkflows(filters, options),
   getWorkflow: (workflowId: string, options = {}) => getOperationsContinuityWorkflow(workflowId, options),
   getCloseCalendar: (filters = {}, options = {}) => getOperationsCloseCalendar(filters, options),
   getCloseCockpit: (query = {}, options = {}) => getPrivateCapitalCloseCockpit(query, options)
 };
 
+const emptyCloseScope: PrivateCapitalCloseCockpitQuery = {};
+
 export function useOperationsContinuityScreenViewModel(
-  services: OperationsContinuityScreenServices = defaultServices
+  services: OperationsContinuityScreenServices = defaultServices,
+  closeScope: PrivateCapitalCloseCockpitQuery = emptyCloseScope
 ): OperationsContinuityScreenViewModel {
   const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
@@ -704,6 +713,7 @@ export function useOperationsContinuityScreenViewModel(
   const [closeCalendarLoading, setCloseCalendarLoading] = useState(false);
   const [closeCalendarError, setCloseCalendarError] = useState<string | null>(null);
   const [closeCockpit, setCloseCockpit] = useState<PrivateCapitalCloseCockpit | null>(null);
+  const [commandCenter, setCommandCenter] = useState<FinancialOperationsCommandCenter | null>(null);
   const [closeCockpitLoading, setCloseCockpitLoading] = useState(false);
   const [closeCockpitError, setCloseCockpitError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -751,6 +761,7 @@ export function useOperationsContinuityScreenViewModel(
     const controller = new AbortController();
     listAbortRef.current = controller;
     setLoading(true);
+    setCommandCenter(null);
     setError(null);
     setDetailError(null);
 
@@ -890,18 +901,23 @@ export function useOperationsContinuityScreenViewModel(
     const controller = new AbortController();
     closeCockpitAbortRef.current = controller;
     setCloseCockpitLoading(true);
+    setCommandCenter(null);
     setCloseCockpitError(null);
 
     const query = closeCockpitScope ? buildCloseCockpitQuery(closeCockpitScope) : {};
     const getCloseCockpit = services.getCloseCockpit ?? defaultServices.getCloseCockpit!;
 
-    getCloseCockpit(query, { signal: controller.signal })
-      .then((cockpit) => {
+    Promise.all([
+      getCloseCockpit(query, { signal: controller.signal }),
+      services.getCommandCenter?.(closeScope, { signal: controller.signal }) ?? Promise.resolve(null)
+    ])
+      .then(([cockpit, sharedDecision]) => {
         if (!mountedRef.current || closeCockpitRevisionRef.current !== revision) {
           return;
         }
 
         setCloseCockpit(cockpit);
+        setCommandCenter(sharedDecision);
       })
       .catch((err) => {
         if (!isAbortError(err) && mountedRef.current && closeCockpitRevisionRef.current === revision) {
@@ -918,13 +934,15 @@ export function useOperationsContinuityScreenViewModel(
           closeCockpitAbortRef.current = null;
         }
       });
-  }, [closeCockpitScope, loading, services]);
+  }, [closeCockpitScope, closeScope, loading, services]);
 
   const selectWorkflow = useCallback((workflowId: string) => {
     setSelectedWorkflowId(workflowId);
   }, []);
 
   return useMemo(() => buildOperationsContinuityScreenViewModel({
+    commandCenter,
+    expectedCloseScope: closeScope,
     workflows,
     selectedWorkflowId,
     detail,
@@ -940,10 +958,12 @@ export function useOperationsContinuityScreenViewModel(
     detailError,
     refresh,
     selectWorkflow
-  }), [closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
+  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
 }
 
 export function buildOperationsContinuityScreenViewModel({
+  commandCenter = null,
+  expectedCloseScope = emptyCloseScope,
   workflows,
   selectedWorkflowId,
   detail,
@@ -980,6 +1000,22 @@ export function buildOperationsContinuityScreenViewModel({
   const workflowApprovalHistory = buildWorkflowApprovalHistoryRows(effectiveDetail);
   const dashboard = buildOperationsDashboardViewModel(effectiveDetail?.dashboardSummary ?? null, detailLoading);
   const commandSpine = buildFinancialOperationsCommandSpineViewModel(dashboard, effectiveDetail, detailLoading);
+  const decisionScope = commandCenter?.closeReadiness?.scope;
+  const scopeMatches = (["fundProfileId", "ledgerBookId", "fundAccountId", "entityId", "periodId"] as const)
+    .every((key) => typeof expectedCloseScope[key] === "string" && expectedCloseScope[key]!.trim().length > 0
+      && decisionScope?.[key] === expectedCloseScope[key]);
+  const sharedCloseReady = commandCenter?.closeReadiness?.isComplete === true
+    && scopeMatches
+    && commandCenter.closeReadiness.isReadyToClose
+    && commandCenter.activeWorkflow?.workflowId === effectiveDetail?.workflowId
+    && commandCenter.activeWorkflow?.version === effectiveDetail?.version
+    && !loading && !detailLoading && !closeCockpitLoading && !detailError && !closeCockpitError;
+  const sharedCloseBlocker = commandCenter?.closeReadiness?.blockers[0]?.message
+    ?? "Select the complete close scope and refresh shared close readiness before publishing a close package.";
+  commandSpine.rows = commandSpine.rows.map((row) => row.id !== "produce-evidence" || sharedCloseReady ? row : ({
+    ...row, canCloseWorkflow: false, closeWorkflowDisabledReason: sharedCloseBlocker,
+    guardLabel: sharedCloseBlocker
+  }));
   const reviewedAutomation = buildReviewedAutomationViewModel(effectiveDetail?.reviewedAutomation ?? null, detailLoading);
   const accountingRecordSummary = buildAccountingRecordSummaryViewModel(
     effectiveDetail?.accountingRecordSummary ?? null,
@@ -1004,6 +1040,9 @@ export function buildOperationsContinuityScreenViewModel({
     closeCockpitError,
     selectedSummary
   );
+  closeCockpitPanel.statusLabel = sharedCloseReady ? "Ready" : "Blocked";
+  closeCockpitPanel.statusTone = sharedCloseReady ? "ready" : "blocked";
+  closeCockpitPanel.readinessLabel = sharedCloseReady ? "Shared close readiness confirmed" : sharedCloseBlocker;
   const financialOperationsQueue = buildFinancialOperationsOperatorQueueViewModel({
     breakCases,
     reconciliationLanes,

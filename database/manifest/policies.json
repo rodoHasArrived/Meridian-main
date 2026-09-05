@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 231,
-    "warning": 231
+    "total": 240,
+    "warning": 240
   },
   "failed": false,
   "findings": [
@@ -564,6 +564,46 @@
       },
       "message": "Business table ledger.ledger_books does not have a table comment.",
       "object": "ledger.ledger_books",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "open_lot_backfill_evidence"
+      },
+      "message": "Business table ledger.open_lot_backfill_evidence does not have a table comment.",
+      "object": "ledger.open_lot_backfill_evidence",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "open_lot_backfill_exceptions"
+      },
+      "message": "Business table ledger.open_lot_backfill_exceptions does not have a table comment.",
+      "object": "ledger.open_lot_backfill_exceptions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "open_lot_backfill_receipts"
+      },
+      "message": "Business table ledger.open_lot_backfill_receipts does not have a table comment.",
+      "object": "ledger.open_lot_backfill_receipts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "open_lot_backfill_reviews"
+      },
+      "message": "Business table ledger.open_lot_backfill_reviews does not have a table comment.",
+      "object": "ledger.open_lot_backfill_reviews",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1739,6 +1779,76 @@
     {
       "details": {
         "columns": [
+          "ledger_book_id"
+        ],
+        "constraint": "open_lot_backfill_evidence_ledger_book_id_fkey",
+        "schema": "ledger",
+        "table": "open_lot_backfill_evidence"
+      },
+      "message": "Foreign key ledger.open_lot_backfill_evidence.open_lot_backfill_evidence_ledger_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.open_lot_backfill_evidence.open_lot_backfill_evidence_ledger_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "tax_lot_record_id"
+        ],
+        "constraint": "open_lot_backfill_evidence_tax_lot_record_id_fkey",
+        "schema": "ledger",
+        "table": "open_lot_backfill_evidence"
+      },
+      "message": "Foreign key ledger.open_lot_backfill_evidence.open_lot_backfill_evidence_tax_lot_record_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.open_lot_backfill_evidence.open_lot_backfill_evidence_tax_lot_record_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "ledger_book_id"
+        ],
+        "constraint": "open_lot_backfill_exceptions_ledger_book_id_fkey",
+        "schema": "ledger",
+        "table": "open_lot_backfill_exceptions"
+      },
+      "message": "Foreign key ledger.open_lot_backfill_exceptions.open_lot_backfill_exceptions_ledger_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.open_lot_backfill_exceptions.open_lot_backfill_exceptions_ledger_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "resolution_receipt_id"
+        ],
+        "constraint": "open_lot_backfill_exceptions_resolution_receipt_id_fkey",
+        "schema": "ledger",
+        "table": "open_lot_backfill_exceptions"
+      },
+      "message": "Foreign key ledger.open_lot_backfill_exceptions.open_lot_backfill_exceptions_resolution_receipt_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.open_lot_backfill_exceptions.open_lot_backfill_exceptions_resolution_receipt_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "evidence_record_id"
+        ],
+        "constraint": "open_lot_backfill_receipts_evidence_record_id_fkey",
+        "schema": "ledger",
+        "table": "open_lot_backfill_receipts"
+      },
+      "message": "Foreign key ledger.open_lot_backfill_receipts.open_lot_backfill_receipts_evidence_record_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.open_lot_backfill_receipts.open_lot_backfill_receipts_evidence_record_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "corrects_mutation_batch_id"
         ],
         "constraint": "tax_lot_mutations_corrects_mutation_batch_id_fkey",
@@ -2515,5 +2625,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "c79fb25586edf54bedce79d7c7a439cd4720b141301bd38311339f95e5c124b5"
+  "fingerprint": "c56ab176cae549bb952b0b133170ef2f91f83f6bc4f94df8c04e28f95194e037"
 }

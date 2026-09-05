@@ -597,13 +597,13 @@ classDiagram
         +string ClosePlanId
         +ClosePostingGateDto? ClosingEntriesGate
         +ClosePeriodPlanConfigurationDto? Configuration
+        +DateTimeOffset? EvaluatedAtUtc
         +IReadOnlyList~CloseEvidenceReviewDto~ EvidenceReviews
+        +string? EvidenceVersion
+        +Guid? FundAccountId
         +string FundProfileId
         +bool IsPeriodLocked
         +IReadOnlyList~LateAdjustmentRequestDto~ LateAdjustments
-        +Guid? LedgerBookId
-        +MaterialityPolicyDto MaterialityPolicy
-        +IReadOnlyList~CloseOperatingCoverageItemDto~ OperatingCoverage
     }
     class Meridian_Contracts_Ledger_ClosePeriodReopenResultDto["ClosePeriodReopenResultDto"] {
         +ClosePostingGateDto? ClosingEntriesGate

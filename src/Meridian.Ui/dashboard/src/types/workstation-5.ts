@@ -394,6 +394,7 @@ export interface NetSymbolPosition {
 }
 
 export interface PortfolioPositionSummary {
+  markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   symbol: string;
   quantity: number;
   averageCostBasis: number;

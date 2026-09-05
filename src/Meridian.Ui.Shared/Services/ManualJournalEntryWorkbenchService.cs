@@ -248,9 +248,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         return currency;
     }
 
-    public async Task<ManualJournalEntryDraftDto> SaveDraftAsync(
-        SaveManualJournalEntryDraftRequest request,
-        CancellationToken ct = default)
+    public Task<ManualJournalEntryDraftDto> SaveDraftAsync(
+        SaveManualJournalEntryDraftRequest request, CancellationToken ct = default)
+        => SaveDraftCoreAsync(request, trustedAutomatedIntake: false, ct);
+
+    internal Task<ManualJournalEntryDraftDto> SaveAutomatedDraftAsync(
+        SaveManualJournalEntryDraftRequest request, CancellationToken ct)
+        => SaveDraftCoreAsync(request, trustedAutomatedIntake: true, ct);
+
+    private async Task<ManualJournalEntryDraftDto> SaveDraftCoreAsync(
+        SaveManualJournalEntryDraftRequest request, bool trustedAutomatedIntake, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
@@ -271,7 +278,25 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             // WPF resave may edit the draft, but cannot clear, replace, or upgrade the retained grade.
             AutomationEvidenceAssessment = existing is null
                 ? request.Draft.AutomationEvidenceAssessment
-                : existing.AutomationEvidenceAssessment
+                : existing.AutomationEvidenceAssessment,
+            TreasuryContext = existing is not null &&
+                (existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
+                 ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey))
+                ? (request.Draft.TreasuryContext ?? existing.TreasuryContext) is { } valuationContext
+                    ? valuationContext with { IdempotencyKey = existing.TreasuryContext?.IdempotencyKey }
+                    : existing.TreasuryContext
+                : request.Draft.TreasuryContext,
+            ValuationMarkEvidenceJson = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.ValuationMarkEvidenceJson : null)
+                : existing.ValuationMarkEvidenceJson,
+            ValuationMarkEvidenceDigest = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.ValuationMarkEvidenceDigest : null)
+                : existing.ValuationMarkEvidenceDigest,
+            RequiresValuationMarkEvidence = existing?.RequiresValuationMarkEvidence == true ||
+                ValuationMarkEvidenceGuard.IsValuation(existing?.TreasuryContext?.IdempotencyKey) ||
+                existing?.ValuationMarkEvidenceJson is not null || request.Draft.RequiresValuationMarkEvidence ||
+                ValuationMarkEvidenceGuard.IsValuation(request.Draft.TreasuryContext?.IdempotencyKey) ||
+                request.Draft.ValuationMarkEvidenceJson is not null
         }, allowIncomplete: true, ct).ConfigureAwait(false);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, normalizedDraft);
         if (existing is not null)
@@ -333,18 +358,30 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             or ManualJournalEntryStatusDto.NeedsFix
             or ManualJournalEntryStatusDto.Rejected;
 
-    public Task<ManualJournalEntryDraftDto> ValidateDraftAsync(
+    public async Task<ManualJournalEntryDraftDto> ValidateDraftAsync(
         ValidateManualJournalEntryDraftRequest request,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, request.Draft);
-        return NormalizeAndValidateAsync(request.Draft with
+        var tenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId);
+        var existing = await _draftStore.GetAsync(request.Draft.FundProfileId, request.Draft.JournalEntryId,
+            ct, tenantId, companyId).ConfigureAwait(false);
+        return await NormalizeAndValidateAsync(request.Draft with
         {
-            TenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId),
-            CompanyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId)
-        }, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked);
+            TenantId = tenantId,
+            CompanyId = companyId,
+            // A read-only validation request is not authority to invent a policy or source receipt.
+            ValuationMarkEvidenceJson = existing?.ValuationMarkEvidenceJson,
+            ValuationMarkEvidenceDigest = existing?.ValuationMarkEvidenceDigest,
+            RequiresValuationMarkEvidence = existing?.RequiresValuationMarkEvidence == true ||
+                ValuationMarkEvidenceGuard.IsValuation(existing?.TreasuryContext?.IdempotencyKey) ||
+                existing?.ValuationMarkEvidenceJson is not null || request.Draft.RequiresValuationMarkEvidence ||
+                ValuationMarkEvidenceGuard.IsValuation(request.Draft.TreasuryContext?.IdempotencyKey) ||
+                request.Draft.ValuationMarkEvidenceJson is not null
+        }, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked).ConfigureAwait(false);
     }
 
     public async Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
@@ -898,6 +935,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ManualJournalSecurityMasterLineage? securityLineage)
     {
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        AddMetadataTag(tags, ValuationMarkEvidenceGuard.EvidenceTag, draft.ValuationMarkEvidenceJson);
+        AddMetadataTag(tags, ValuationMarkEvidenceGuard.DigestTag, draft.ValuationMarkEvidenceDigest);
         AddMetadataTag(tags, "manualJournalEntryId", draft.JournalEntryId.ToString("D"));
         AddMetadataTag(tags, "manualJournalEntryStatus", draft.Status.ToString());
         AddMetadataTag(tags, "manualJournalEntryType", draft.EntryType.ToString());
