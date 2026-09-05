@@ -24,6 +24,7 @@ using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Reporting;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -83,6 +84,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // session actor; the in-process IAccountingConfigurationService below remains for
         // background workers that have not yet migrated.
         services.AddSingleton<IWorkstationAccountingApiClient, WorkstationAccountingApiClient>();
+        services.AddSingleton<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>();
         // Passport Workbench governed-write editor (Phase 4 desktop parity).
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityPassportEditorViewModel>();
         services.AddTransient<Meridian.Wpf.Views.SecurityPassportEditorPage>();
@@ -231,7 +233,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetRequiredService<IOperationsStatusDerivationService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>(),
-                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>()));
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                closeReadinessGuard: sp.GetService<IClosePublicationReadinessGuard>()));
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
         services.TryAddSingleton<IPrivateCapitalCloseCockpitService>(sp =>
@@ -240,13 +243,19 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
                 sp.GetService<IAutomatedJournalScheduleStatusSource>()));
+        services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
+        services.TryAddSingleton<IWorkstationTenantContextAccessor, DesktopWorkstationTenantContextAccessor>();
+        services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
+            () => sp.GetService<IFinancialOperationsCommandCenterReadService>(),
+            sp.GetService<IWorkstationTenantContextAccessor>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IOperationsCloseCalendarService>(),
                 sp.GetService<IPrivateCapitalCloseCockpitService>(),
                 sp.GetService<ILedgerBookService>(),
-                sp.GetService<IAccountingCloseManagementService>()));
+                sp.GetService<IAccountingCloseManagementService>(),
+                sp.GetService<ICloseReadinessSubjectSource>()));
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
@@ -310,7 +319,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.AddTransient<AccountingConfigureViewModel>();
         services.AddTransient<AccountingConfigurePage>();
-        services.AddTransient<AccountingCloseViewModel>();
+        services.AddTransient(sp => new AccountingCloseViewModel(
+            sp.GetRequiredService<IAccountingProjectionQueryService>(),
+            sp.GetRequiredService<IWorkstationAccountingCloseApiClient>(),
+            sp.GetService<DesktopAuthenticationSession>()));
         services.AddTransient<AccountingClosePage>();
         services.AddTransient<FundStructureSetupViewModel>();
         services.AddTransient<FundAccountsViewModel>();
