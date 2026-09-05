@@ -1082,7 +1082,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
         OperationsContinuityWorkflow workflow,
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
     {
-        if (workflow.IsClosed || workflow.ClosePackage is not null)
+        if (workflow.IsClosed)
         {
             var retainedEvidence = (workflow.ClosePackage?.EvidenceLinks ?? evidenceLinks)
                 .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
@@ -1171,6 +1171,23 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                     "Complete reviewer approval before close evidence can be released.",
                     "Retain approval rationale and evidence links before publishing reports or closing the period."
                 ]);
+        }
+
+        var review = workflow.Approvals.LastOrDefault();
+        if (workflow.ApprovalState == OperationsApprovalStateDto.Approved &&
+            workflow.Gates.All(static gate => gate.Status == OperationsGateStatusDto.Passed) &&
+            workflow.ReportPackReadiness.IsReady && !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId) &&
+            review is { Status: OperationsApprovalStateDto.Approved, DecidedAtUtc: not null } &&
+            !string.IsNullOrWhiteSpace(review.Reviewer) && !string.IsNullOrWhiteSpace(review.Rationale) &&
+            review.EvidenceLinks.Any(link => string.Equals(link.EvidenceId, workflow.ReportPackReadiness.ReportPackId, StringComparison.Ordinal)))
+        {
+            return ReviewedAutomationSummary(
+                stage: "Approved evidence ready for publication",
+                status: EvidenceStatusDto.Ready,
+                requiresHumanReview: false,
+                summary: "The current reviewer decision and report-pack evidence are retained; publication remains a governed operator action.",
+                evidenceLinks: review.EvidenceLinks.Concat(evidenceLinks).DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase).ToArray(),
+                requiredActions: []);
         }
 
         return ReviewedAutomationSummary(
@@ -1359,6 +1376,18 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                     "Cannot approve its own work or release evidence packages.",
                     linkedEvidence,
                     reviewChecklist)
+            ];
+        }
+
+        if (stage.Equals("Approved evidence ready for publication", StringComparison.OrdinalIgnoreCase))
+        {
+            return
+            [
+                ReviewedAutomationArtifact(
+                    "approved-review-record", "Retained review", "Human review retained", status, requiresHumanReview, null,
+                    "The current reviewer decision binds the report-pack support for this workflow.",
+                    "Use the governed close command after all shared evidence checks pass.",
+                    "Automation cannot approve, publish, or release evidence packages.", linkedEvidence, reviewChecklist)
             ];
         }
 

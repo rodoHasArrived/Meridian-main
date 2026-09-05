@@ -1129,7 +1129,7 @@ describe("Operations Continuity view model", () => {
       ownerLabel: "Evidence operations",
       dueLabel: "Evidence package pending",
       evidenceLabel: "No retained evidence",
-      actionLabel: "Publish and retain the evidence package before period close.",
+      actionLabel: "Select the complete close scope and refresh shared close readiness before publishing a close package.",
       routeHref: "/reporting/report-packs"
     });
     expect(vm.evidencePackages).toHaveLength(5);
@@ -1871,6 +1871,7 @@ describe("Operations Continuity view model", () => {
       selectedWorkflowId: workflowId,
       detail: closeReadyDetail,
       commandCenter: sharedCloseDecision(closeReadyDetail),
+      expectedCloseScope: sharedCloseDecision(closeReadyDetail).closeReadiness!.scope,
       loading: false,
       detailLoading: false,
       error: null,
@@ -1902,6 +1903,31 @@ describe("Operations Continuity view model", () => {
       closeWorkflowDisabledReason: null,
       closeWorkflowAriaLabel: "Publish close package for 2026-05"
     });
+    for (const type of ["Missing", "Stale", "ScopeMismatch"]) {
+      const readyDecision = sharedCloseDecision(closeReadyDetail);
+      const input = { workflows: [summary], selectedWorkflowId: workflowId, detail: closeReadyDetail,
+        expectedCloseScope: readyDecision.closeReadiness!.scope,
+        loading: false, detailLoading: false, error: null, detailError: null, refresh: vi.fn(), selectWorkflow: vi.fn() };
+      const blocked = buildOperationsContinuityScreenViewModel({ ...input, commandCenter: {
+        ...readyDecision, closeReadiness: { ...readyDecision.closeReadiness!, status: "Blocked",
+          isComplete: false, isReadyToClose: false, blockers: [{ code: `close.evidence.${type}`,
+            contributorId: "close-plan", type, count: 1, severity: "Critical", owner: "Controller",
+            message: `Repair ${type} evidence.`, recordIds: ["source-record"] }] }
+      } });
+      expect(blocked.commandSpine.rows[4]).toMatchObject({ canCloseWorkflow: false,
+        closeWorkflowDisabledReason: `Repair ${type} evidence.` });
+      expect(blocked.closeCockpit.statusLabel).toBe("Blocked");
+      const recovered = buildOperationsContinuityScreenViewModel({ ...input, commandCenter: readyDecision });
+      expect(recovered.commandSpine.rows[4]?.canCloseWorkflow).toBe(true);
+      expect(recovered.closeCockpit.statusLabel).toBe("Ready");
+      expect(buildOperationsContinuityScreenViewModel(input).commandSpine.rows[4]?.canCloseWorkflow).toBe(false);
+      for (const key of ["fundProfileId", "ledgerBookId", "fundAccountId", "entityId", "periodId"] as const) {
+        const changedScope = { ...input.expectedCloseScope, [key]: `different-${key}` };
+        const oldResponse = buildOperationsContinuityScreenViewModel({ ...input, expectedCloseScope: changedScope, commandCenter: readyDecision });
+        expect(oldResponse.commandSpine.rows[4]?.canCloseWorkflow).toBe(false);
+        expect(oldResponse.closeCockpit.statusLabel).toBe("Blocked");
+      }
+    }
   });
 
   it("fails closed when reconciliation lane evidence has no local route", () => {
@@ -2149,11 +2175,11 @@ describe("Operations Continuity view model", () => {
     });
 
     expect(vm.closeCockpit).toMatchObject({
-      statusLabel: "Review Required",
+      statusLabel: "Blocked",
       statusTone: "blocked",
       summaryLabel: "2/5 lanes ready across 1 close workflow.",
       scopeLabel: `Fund profile fund-alpha / Ledger book ledger-main / Fund account ${fundAccountId} / Period 2026-05 / Entity entity-master`,
-      readinessLabel: "72% readiness",
+      readinessLabel: "Select the complete close scope and refresh shared close readiness before publishing a close package.",
       laneCountLabel: "2 ready / 1 blocked lanes",
       proofLaneSummaryLabel: "2/5 proof lanes ready; review NAV support, evidence package, period lock",
       blockerCountLabel: "1 close blocker",
@@ -2455,10 +2481,10 @@ describe("Operations Continuity view model", () => {
     });
 
     expect(vm.closeCockpit).toMatchObject({
-      statusLabel: "Unavailable",
+      statusLabel: "Blocked",
       statusTone: "blocked",
       scopeLabel: `Selected ${summary.periodId} / ${fundAccountId}`,
-      readinessLabel: "Readiness unavailable",
+      readinessLabel: "Select the complete close scope and refresh shared close readiness before publishing a close package.",
       nextActionDisabled: true,
       lanes: [],
       workflows: []

@@ -1123,7 +1123,7 @@ Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine la
 
 ### Current Summary
 
-Close acceptance now binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios. Browser and WPF close commands are being aligned to the shared decision. Hosted acceptance and integration proof remain required before certification.
+Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. Browser and WPF selections invalidate old decisions and delayed responses. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit. Hosted acceptance and integration proof remain required before certification.
 
 ### Exit Criteria
 

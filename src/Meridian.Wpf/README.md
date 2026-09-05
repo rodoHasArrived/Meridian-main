@@ -21,6 +21,8 @@ Fund Ledger carries its explicitly selected book/account/entity/period context t
 
 Account, aggregate, strategy-run, and trading position presentations use `MarkFreshnessPresentation` over the shared assessment. Observation date, age, and review reason remain visible in rows and inspectors. An absent mark date is unknown evidence, even when the enclosing position snapshot is recent. Close acceptance exercises recovery using the shared decision and authoritative subject scope.
 
+Operations Continuity and Accounting Close require explicit fund, book, account, entity, and period selections for close evaluation. Preparation remains available without close scope. The desktop shared publication guard reads the current authenticated session; missing tenancy, sign-out, or unavailable authoritative evidence blocks publication. Changing the selected subject or workflow invalidates prior readiness and pending results.
+
 ## Purpose
 
 WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside

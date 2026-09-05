@@ -210,9 +210,10 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             // The close-plan contributor validates current retained checklist sign-offs.
             // These three lanes describe the copies/results produced by publication, which
             // cannot themselves be prerequisites for that same publication.
-            BuildCloseControlsLane(workflows) with { RequiredForClose = false },
-            BuildClosePackageLane(workflows) with { RequiredForClose = false },
-            BuildPeriodLockLane(workflows) with { RequiredForClose = false }
+            BuildCloseControlsLane(workflows) with { RequiredForClose = RequiresCloseControlLane(workflows) },
+            BuildClosePackageLane(workflows) with { RequiredForClose = RequiresPublishedCloseEvidence(workflows) },
+            BuildPeriodLockLane(workflows) with { RequiredForClose = RequiresPublishedCloseEvidence(workflows)
+                || PeriodLockReopenPackages(workflows).Any(static package => package.RequiredForClose) }
         };
 
         if (dailyValuationStatus is not null)
@@ -573,8 +574,9 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         var navSupportActions = navSupportPackages
             .SelectMany(static package => package.RequiredActions)
             .ToArray();
-        var approvalHistoryReady = approvalHistory.Count > 0 &&
-                                   approvalHistory.All(static approval => approval.Status == OperationsApprovalStateDto.Approved);
+        var approvalHistoryReady = approvalHistory.Any(static approval => approval.IsCurrentDecision) &&
+                                   approvalHistory.Where(static approval => approval.IsCurrentDecision)
+                                       .All(static approval => approval.Status == OperationsApprovalStateDto.Approved);
         var navPackageReady = navSupportPackages.Any(static package => package.IsReady);
 
         OperationsEvidencePackageSummaryDto[] packages =
@@ -615,7 +617,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
                 ["close-controls", "close-package", "period-lock"],
                 approvalEvidence,
                 approvalHistoryReady,
-                "Retain approved close approval history before audit package release.") with { RequiredForClose = false }
+                "Retain approved close approval history before audit package release.") with
+                { RequiredForClose = lanes.Any(static lane => lane.RequiredForClose && lane.LaneId is "close-controls" or "close-package" or "period-lock") }
         ];
 
         return packages

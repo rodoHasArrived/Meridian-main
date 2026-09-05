@@ -707,15 +707,29 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_OperationsContinuityCommandRoutes_ShouldAdvanceToClosed()
     {
-        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var scope = new CloseReadinessScopeDto("test-fund-profile", Guid.NewGuid(), Guid.NewGuid(),
+            Guid.NewGuid().ToString("D"), "2026-05");
+        var closeAuthority = new HttpTransitionCloseAuthority(scope);
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterOperationsContinuityServices(services);
+            services.AddHttpContextAccessor();
+            services.AddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
+            services.AddSingleton<IFundProfileTenantGuard, RegistryFundProfileTenantGuard>();
+            services.AddSingleton<IFinancialOperationsCommandCenterReadService>(closeAuthority);
+            services.AddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
+                () => sp.GetRequiredService<IFinancialOperationsCommandCenterReadService>(),
+                sp.GetRequiredService<IWorkstationTenantContextAccessor>()));
+        });
         var client = app.GetTestClient();
 
         var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
-            Guid.NewGuid(),
-            "2026-05",
+            scope.FundAccountId!.Value,
+            scope.PeriodId!,
             null,
             "custodian",
-            "spoofed-user"));
+            "spoofed-user",
+            LedgerBookId: scope.LedgerBookId));
         var workflowId = start.Workflow!.WorkflowId;
 
         var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
@@ -756,13 +770,28 @@ public sealed partial class WorkstationEndpointsTests
                 "Approve close",
                 "report-pack-1",
                 ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
-        var closed = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/close",
-            new OperationsCloseWorkflowRequestDto(
-                approved.Workflow!.Version,
-                "spoofed-user",
-                "Close period",
-                "report-pack-1",
-                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
+        closeAuthority.Workflow = approved.Workflow;
+        var closeRoute = $"/api/workstation/operations/continuity/{workflowId}/close";
+        var closeRequest = new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user",
+            "Close period", "report-pack-1", ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(), CloseScope: scope);
+        using var missingScope = await client.PostAsJsonAsync(closeRoute, closeRequest with { CloseScope = null }, ServerJsonOptions);
+        missingScope.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var refusal = await missingScope.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        refusal!.Success.Should().BeFalse();
+        refusal.Blockers.Should().Contain(blocker => blocker.Code == "CLOSE_READINESS_REQUIRED");
+        closeAuthority.Requests.Should().BeEmpty("missing scope must stop before evaluating or mutating a close");
+        var unchanged = await app.Services.GetRequiredService<IOperationsContinuityWorkflowService>().GetAsync(workflowId);
+        unchanged!.Version.Should().Be(approved.Workflow.Version);
+        unchanged.Status.Should().NotBe(OperationsWorkflowStatusDto.Closed);
+
+        using var wrongScope = await client.PostAsJsonAsync(closeRoute,
+            closeRequest with { CloseScope = scope with { EntityId = "another-entity" } }, ServerJsonOptions);
+        wrongScope.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await wrongScope.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions))!.Success.Should().BeFalse();
+
+        var closed = await PostTransitionAsync(client, closeRoute, closeRequest);
+        closeAuthority.Requests.Last().Scope.Should().Be(scope);
+        closeAuthority.Requests.Should().OnlyContain(request => request.TenantId == "tenant-test" && request.CompanyId == "tenant-test");
 
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
         closed.Workflow.Timeline.Should().Contain(entry => entry.EventType == "workflow-closed" && entry.Actor == "ops-user");

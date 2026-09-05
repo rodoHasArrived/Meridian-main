@@ -3486,8 +3486,8 @@ describe("AccountingScreen", () => {
       ledgerBookId: undefined,
       periodId: "2026-05",
       status: undefined
-    });
-    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+    }, expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1", expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
   });
 
   it("scopes the close command center workflow lookup to route ledger book", async () => {
@@ -3510,8 +3510,8 @@ describe("AccountingScreen", () => {
       ledgerBookId: "book-alpha",
       periodId: "2026-05",
       status: undefined
-    });
-    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+    }, expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1", expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
   });
 
   it("renders the close cockpit landing with focused accounting task modes", async () => {

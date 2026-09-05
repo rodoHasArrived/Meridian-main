@@ -672,6 +672,7 @@ export interface OperationsContinuityScreenServices {
 
 export interface BuildOperationsContinuityScreenViewModelOptions {
   commandCenter?: FinancialOperationsCommandCenter | null;
+  expectedCloseScope?: PrivateCapitalCloseCockpitQuery;
   workflows: OperationsContinuityWorkflowSummary[];
   selectedWorkflowId: string | null;
   detail: OperationsContinuityWorkflow | null;
@@ -941,6 +942,7 @@ export function useOperationsContinuityScreenViewModel(
 
   return useMemo(() => buildOperationsContinuityScreenViewModel({
     commandCenter,
+    expectedCloseScope: closeScope,
     workflows,
     selectedWorkflowId,
     detail,
@@ -956,11 +958,12 @@ export function useOperationsContinuityScreenViewModel(
     detailError,
     refresh,
     selectWorkflow
-  }), [commandCenter, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
+  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
 }
 
 export function buildOperationsContinuityScreenViewModel({
   commandCenter = null,
+  expectedCloseScope = emptyCloseScope,
   workflows,
   selectedWorkflowId,
   detail,
@@ -997,7 +1000,12 @@ export function buildOperationsContinuityScreenViewModel({
   const workflowApprovalHistory = buildWorkflowApprovalHistoryRows(effectiveDetail);
   const dashboard = buildOperationsDashboardViewModel(effectiveDetail?.dashboardSummary ?? null, detailLoading);
   const commandSpine = buildFinancialOperationsCommandSpineViewModel(dashboard, effectiveDetail, detailLoading);
+  const decisionScope = commandCenter?.closeReadiness?.scope;
+  const scopeMatches = (["fundProfileId", "ledgerBookId", "fundAccountId", "entityId", "periodId"] as const)
+    .every((key) => typeof expectedCloseScope[key] === "string" && expectedCloseScope[key]!.trim().length > 0
+      && decisionScope?.[key] === expectedCloseScope[key]);
   const sharedCloseReady = commandCenter?.closeReadiness?.isComplete === true
+    && scopeMatches
     && commandCenter.closeReadiness.isReadyToClose
     && commandCenter.activeWorkflow?.workflowId === effectiveDetail?.workflowId
     && commandCenter.activeWorkflow?.version === effectiveDetail?.version

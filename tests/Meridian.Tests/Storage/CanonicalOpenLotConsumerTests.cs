@@ -120,8 +120,8 @@ public sealed class CanonicalOpenLotConsumerTests
         var time = new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero);
         var dimensions = new LedgerLineDimensionSet(InstrumentId: lot.SecurityId) { PositionId = lot.BookPositionId };
         return new JournalEntry(id, time, "Canonical disposal", [
-            new LedgerEntry(Guid.NewGuid(), id, time, LedgerAccounts.Cash, 350m, 0m, "Proceeds", dimensions),
-            new LedgerEntry(Guid.NewGuid(), id, time, lot.Account, 0m, 300m, "Functional acquisition basis", dimensions),
-            new LedgerEntry(Guid.NewGuid(), id, time, LedgerAccounts.RealizedGain, 0m, 50m, "Realized gain", dimensions)]);
+            new LedgerEntry(Guid.NewGuid(), id, time, LedgerAccounts.Cash, 350m, 0m, "Canonical disposal", dimensions),
+            new LedgerEntry(Guid.NewGuid(), id, time, lot.Account, 0m, 300m, "Canonical disposal", dimensions),
+            new LedgerEntry(Guid.NewGuid(), id, time, LedgerAccounts.RealizedGain, 0m, 50m, "Canonical disposal", dimensions)]);
     }
 }

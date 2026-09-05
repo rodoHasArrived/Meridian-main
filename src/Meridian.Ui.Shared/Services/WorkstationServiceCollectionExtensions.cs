@@ -127,7 +127,9 @@ public static class WorkstationServiceCollectionExtensions
             .BindConfiguration(Meridian.Storage.Services.DataReplacementCostOptions.SectionName);
         services.AddOptions<Meridian.Storage.Query.DataQueryOptions>()
             .BindConfiguration(Meridian.Storage.Query.DataQueryOptions.SectionName);
-        services.TryAddScoped<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
+        // This accessor retains only singleton IHttpContextAccessor and rereads its AsyncLocal
+        // request each time, so singleton accounting guards can consume it without capturing a scope.
+        services.TryAddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
         // SEC-005 slice 4c-ii: ambient caller-tenant accessor consumed by the singleton Postgres ledger
         // store for tenant read predicates. Singleton + IHttpContextAccessor-backed (no captive scope).
         services.TryAddSingleton<IFundScopeTenantAccessor, WorkstationFundScopeTenantAccessor>();

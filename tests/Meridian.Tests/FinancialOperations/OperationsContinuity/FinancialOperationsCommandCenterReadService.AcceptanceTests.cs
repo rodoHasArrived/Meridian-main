@@ -147,6 +147,26 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
     }
 
     [Fact]
+    public async Task FirstPublicationOutputs_RemainVisibleWithoutBecomingPrerequisites_AndPublishedEvidenceIsRequired()
+    {
+        var categories = new[] { "exports", "restatement-lineage" }.Select(key =>
+            new OperationsAccountingRecordEvidenceCategoryDto(key, key, false, "Pending publication", null, [], [])).ToArray();
+        var workflow = CreateWorkflow(accountingRecordSummary: new OperationsAccountingRecordSummaryDto(
+            "accounting-record", false, 0, 2, "Publication outputs pending", categories, []));
+        var firstPublication = await ReadScoped(CreateService(workflow, ReadyCalendar(workflow), FreshCockpit(workflow)), workflow);
+        firstPublication.IsReadyToComplete.Should().BeTrue();
+        firstPublication.Metrics.Should().Contain(metric => metric.MetricId == "evidence" && metric.Value == "2" && metric.Status == "Review");
+        firstPublication.CloseSupportDecision!.RetainedEvidenceGapCount.Should().Be(2);
+        firstPublication.CloseReadiness!.Blockers.Should().BeEmpty();
+
+        var published = workflow with { Status = OperationsWorkflowStatusDto.Closed };
+        var missingRetainedOutput = await ReadScoped(CreateService(published, ReadyCalendar(published), FreshCockpit(published)), published);
+        missingRetainedOutput.IsReadyToComplete.Should().BeFalse();
+        missingRetainedOutput.QueueRows.Should().Contain(row => row.QueueId.EndsWith(":exports") && row.IsBlocked);
+        missingRetainedOutput.QueueRows.Should().Contain(row => row.QueueId.EndsWith(":restatement-lineage") && row.IsBlocked);
+    }
+
+    [Fact]
     public async Task CockpitForEarlierWorkflowRevision_CannotClearCurrentClose()
     {
         var workflow = CreateWorkflow();

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
@@ -15,11 +16,12 @@ namespace Meridian.Tests.Ui;
 public sealed partial class WorkstationEndpointsTests
 {
     [Theory]
-    [InlineData("other-tenant", "fund-alpha", HttpStatusCode.Forbidden)]
-    [InlineData("tenant-test", "other-fund", HttpStatusCode.Conflict)]
-    [InlineData("tenant-test", "fund-alpha", HttpStatusCode.Conflict)]
-    public async Task DailyMarkPreview_RejectsForeignScopeAndMissingSnapshotEvidence_WithoutWrites(
-        string scheduleTenant, string requestedFund, HttpStatusCode expectedStatus)
+    [InlineData("other-tenant", "fund-alpha", HttpStatusCode.Forbidden, false)]
+    [InlineData("tenant-test", "other-fund", HttpStatusCode.Conflict, false)]
+    [InlineData("tenant-test", "fund-alpha", HttpStatusCode.Conflict, false)]
+    [InlineData("tenant-test", "fund-alpha", HttpStatusCode.BadRequest, true)]
+    public async Task DailyMarkPreview_RejectsInvalidConfidenceForeignScopeAndMissingSnapshotEvidence_WithoutWrites(
+        string scheduleTenant, string requestedFund, HttpStatusCode expectedStatus, bool invalidConfidence)
     {
         var asOf = new DateTimeOffset(2026, 7, 3, 21, 0, 0, TimeSpan.Zero);
         var source = new InMemoryDailyValuationPortfolioSource();
@@ -46,12 +48,20 @@ public sealed partial class WorkstationEndpointsTests
             schedule.LedgerBookId, schedule.PeriodId, asOf, [], schedule.PolicyId, schedule.PolicyName,
             schedule.ValuationMethod, schedule.PolicyApprovedBy, schedule.PolicyApprovedAtUtc, schedule.Reason,
             EntityId: schedule.EntityId, ScheduleId: schedule.ScheduleId);
+        var payload = JsonSerializer.SerializeToNode(request, ServerJsonOptions)!;
+        payload["minimumConfidence"]!.GetValue<string>().Should().Be("Medium",
+            "preview must accept the same string confidence contract emitted for browser schedules");
+        if (invalidConfidence)
+            payload["minimumConfidence"] = "UnknownConfidence";
         var response = await app.GetTestClient().PostAsJsonAsync(
-            UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketPreview, request, ServerJsonOptions);
+            UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketPreview, payload, ServerJsonOptions);
 
-        response.StatusCode.Should().Be(expectedStatus);
-        if (scheduleTenant == "tenant-test")
-            (await response.Content.ReadAsStringAsync()).Should().Contain(requestedFund == "fund-alpha"
+        var responseBody = await response.Content.ReadAsStringAsync();
+        response.StatusCode.Should().Be(expectedStatus, "response body was {0}", responseBody);
+        if (invalidConfidence)
+            responseBody.Should().Contain("invalid JSON or confidence");
+        else if (scheduleTenant == "tenant-test")
+            responseBody.Should().Contain(requestedFund == "fund-alpha"
                 ? "position snapshot store is unavailable" : "Preview scope does not match");
         (await drafts.ListAsync("fund-alpha", schedule.LedgerBookId)).Should().BeEmpty();
         (await source.GetAsync(schedule.ScheduleId)).Should().BeEquivalentTo(schedule);

@@ -122,7 +122,7 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
                 for (var count = requirement.ApprovedCount; count < requirement.RequiredApprovalCount; count++)
                 {
                     var actor = $"independent-{task.TaskId}-{count}";
-                    var evidence = $"/evidence/signoff/{workflow.WorkflowId:D}/{workflow.LedgerBookId:D}/{task.TaskId}/{requirement.Role}";
+                    var evidence = $"/evidence/signoff/{workflow.WorkflowId:D}/ledger-book/{workflow.LedgerBookId:D}/{task.TaskId}/{requirement.Role}";
                     await plans.SignOffCloseTaskAsync(new(workflow.WorkflowId, task.TaskId, requirement.Role,
                         ManualJournalEntryStatusDto.Approved, actor, "Retained independent close-control review", [evidence]), actor);
                 }

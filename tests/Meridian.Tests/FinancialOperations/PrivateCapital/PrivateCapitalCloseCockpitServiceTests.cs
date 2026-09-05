@@ -511,9 +511,10 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity();
         var workflow = BuildClosedWorkflow(periodLockPackageReady: false);
+        var workflows = new List<OperationsContinuityWorkflowDto> { workflow };
         var service = new PrivateCapitalCloseCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
-            new StubOperationsContinuityWorkflowService([workflow]));
+            new StubOperationsContinuityWorkflowService(workflows));
 
         var cockpit = await service.GetCockpitAsync(
             FundProfileId,
@@ -544,6 +545,12 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             package.Status == EvidenceStatusDto.ReviewRequired &&
             !package.IsReady &&
             package.RequiredActions.Contains("Complete reopened incident remediation and close the period again with retained evidence."));
+        cockpit.Lanes.Should().Contain(lane => lane.LaneId == "period-lock" && lane.RequiredForClose);
+
+        workflows[0] = BuildClosedWorkflow();
+        var repaired = await service.GetCockpitAsync(FundProfileId, activity.LedgerBookId, FundAccountId, PeriodId, EntityId);
+        repaired.IsReadyToClose.Should().BeTrue();
+        repaired.Lanes.Should().Contain(lane => lane.LaneId == "period-lock" && lane.IsReady);
     }
 
     [Fact]
@@ -551,9 +558,10 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity();
         var workflow = BuildClosedWorkflow(includeCloseControlEvidence: false);
+        var workflows = new List<OperationsContinuityWorkflowDto> { workflow };
         var service = new PrivateCapitalCloseCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
-            new StubOperationsContinuityWorkflowService([workflow]));
+            new StubOperationsContinuityWorkflowService(workflows));
 
         var cockpit = await service.GetCockpitAsync(
             FundProfileId,
@@ -579,6 +587,35 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             package.CompleteCategoryCount == 3 &&
             package.RequiredCategoryCount == 4 &&
             package.RequiredActions.Contains("Retain approved reversal support before close sign-off."));
+        cockpit.Lanes.Should().Contain(lane => lane.LaneId == "close-controls" && lane.RequiredForClose);
+
+        workflows[0] = BuildClosedWorkflow();
+        var repaired = await service.GetCockpitAsync(FundProfileId, activity.LedgerBookId, FundAccountId, PeriodId, EntityId);
+        repaired.IsReadyToClose.Should().BeTrue();
+        repaired.Lanes.Should().Contain(lane => lane.LaneId == "close-controls" && lane.IsReady);
+    }
+
+    [Fact]
+    public async Task GetCockpitAsync_BeforeFirstPublication_MissingDeclaredControlInputStillBlocks()
+    {
+        var activity = BuildActivity();
+        var workflow = BuildClosedWorkflow(includeCloseControlEvidence: false) with
+        {
+            Status = OperationsWorkflowStatusDto.ReadyForClose,
+            ClosePackage = null,
+            EvidencePackages = []
+        };
+        var workflows = new List<OperationsContinuityWorkflowDto> { workflow };
+        var service = new PrivateCapitalCloseCockpitService(new StubManualJournalEntryWorkbenchService(activity),
+            new StubOperationsContinuityWorkflowService(workflows));
+        var blocked = await service.GetCockpitAsync(FundProfileId, activity.LedgerBookId, FundAccountId, PeriodId, EntityId);
+        blocked.IsReadyToClose.Should().BeFalse();
+        blocked.Lanes.Should().Contain(lane => lane.LaneId == "close-controls" && lane.RequiredForClose && !lane.IsReady);
+
+        workflows[0] = workflow with { CloseChecklist = BuildClosedWorkflow().CloseChecklist };
+        var repaired = await service.GetCockpitAsync(FundProfileId, activity.LedgerBookId, FundAccountId, PeriodId, EntityId);
+        repaired.IsReadyToClose.Should().BeTrue();
+        repaired.Lanes.Should().Contain(lane => lane.LaneId == "close-package" && !lane.RequiredForClose && !lane.IsReady);
     }
 
     [Fact]

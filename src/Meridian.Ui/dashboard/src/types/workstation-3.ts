@@ -334,6 +334,7 @@ export interface UpsertClosePeriodPlanConfigurationRequest {
 }
 
 export interface LockClosePeriodRequest {
+  closeScope?: { fundProfileId: string | null; ledgerBookId: string | null; fundAccountId: string | null; entityId: string | null; periodId: string | null } | null;
   workflowId: string;
   expectedWorkflowVersion: number;
   actor: string;

@@ -124,6 +124,7 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         {
             if (SetProperty(ref _closeWorkflowIdText, value ?? string.Empty))
             {
+                InvalidateCloseWorkflowSelection();
                 LoadClosePlanCommand.NotifyCanExecuteChanged();
             }
         }
@@ -793,76 +794,6 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             $"{projection.EvidencePackage.PackageId} retains {sourceEventCount} source event{(sourceEventCount == 1 ? string.Empty : "s")} and {approvalCount} approval{(approvalCount == 1 ? string.Empty : "s")}.";
     }
 
-    public void ApplyClosePlan(ClosePeriodPlanDto closePlan)
-    {
-        ApplyClosePlan(
-            closePlan.Configuration?.WorkflowId ?? Guid.Empty,
-            closePlan.WorkflowVersion,
-            closePlan);
-    }
-
-    public void ApplyClosePlan(Guid workflowId, ClosePeriodPlanDto closePlan)
-        => ApplyClosePlan(workflowId, closePlan.WorkflowVersion, closePlan);
-
-    public void ApplyClosePlan(Guid workflowId, long workflowVersion, ClosePeriodPlanDto closePlan)
-    {
-        ArgumentNullException.ThrowIfNull(closePlan);
-        _closeWorkflowId = workflowId;
-        _closeWorkflowVersion = closePlan.WorkflowVersion > 0
-            ? closePlan.WorkflowVersion
-            : Math.Max(0, workflowVersion);
-        _closePlan = closePlan;
-        ApplyClosingEntriesGate(closePlan);
-        ApplyCloseSetupDraft(closePlan);
-        ApplyCloseReviewRows(closePlan);
-        ClosePlanSetupStatusText = workflowId == Guid.Empty
-            ? $"Close plan {closePlan.PeriodId} loaded without workflow context; setup retention is disabled."
-            : closePlan.IsPeriodLocked
-            ? $"Close plan {closePlan.PeriodId} is locked; setup changes require a governed reopen workflow."
-            : $"Close plan {closePlan.PeriodId} loaded for governed setup retention.";
-        ClosePeriodLockStatusText = workflowId == Guid.Empty
-            ? $"Close plan {closePlan.PeriodId} loaded without workflow context; period lock is disabled."
-            : closePlan.IsPeriodLocked
-            ? $"Close plan {closePlan.PeriodId} is already locked."
-            : ResolveClosePeriodLockStatus(closePlan);
-        CloseTaskSignOffStatusText = workflowId == Guid.Empty
-            ? $"Close plan {closePlan.PeriodId} loaded without workflow context; task sign-off is disabled."
-            : closePlan.IsPeriodLocked
-            ? $"Close plan {closePlan.PeriodId} is locked; task sign-off requires a governed reopen workflow."
-            : ApplyCloseTaskSignOffDraft(closePlan) is { } signOffTask
-                ? $"Close task {signOffTask.TaskId} is ready for WPF sign-off evidence retention."
-                : $"Close plan {closePlan.PeriodId} has no open task sign-off requirement.";
-        LateAdjustmentCurrency = closePlan.MaterialityPolicy.Currency;
-        LateAdjustmentRequestStatusText = workflowId == Guid.Empty
-            ? $"Close plan {closePlan.PeriodId} loaded without workflow context; late-adjustment requests are disabled."
-            : closePlan.IsPeriodLocked
-            ? $"Close plan {closePlan.PeriodId} is locked; late-adjustment requests require a governed reopen workflow."
-            : ValidateLateAdjustmentDraft(closePlan) ?? $"Close plan {closePlan.PeriodId} is ready for retained late-adjustment requests.";
-        LateAdjustmentReviewStatusText = workflowId == Guid.Empty
-            ? $"Close plan {closePlan.PeriodId} loaded without workflow context; late-adjustment review is disabled."
-            : closePlan.IsPeriodLocked
-            ? $"Close plan {closePlan.PeriodId} is locked; late-adjustment review requires a governed reopen workflow."
-            : ApplyLateAdjustmentReviewDraft(closePlan) is { } adjustment
-                ? $"Late adjustment {adjustment.RequestId} is ready for WPF review."
-                : $"Close plan {closePlan.PeriodId} has no submitted late adjustment to review.";
-        CloseEvidenceReviewStatusText = workflowId == Guid.Empty
-            ? $"Close plan {closePlan.PeriodId} loaded without workflow context; blocker/evidence review is disabled."
-            : closePlan.IsPeriodLocked
-            ? $"Close plan {closePlan.PeriodId} is locked; blocker/evidence review requires a governed reopen workflow."
-            : ApplyCloseEvidenceReviewDraft(closePlan) is { } issue
-                ? $"Close blocker {issue.Code} is ready for WPF evidence review."
-                : $"Close plan {closePlan.PeriodId} has no unreviewed active blockers.";
-        ApplyClosePeriodLockIssues(closePlan.ValidationIssues);
-        ConfigureClosePlanCommand.NotifyCanExecuteChanged();
-        SignOffCloseTaskCommand.NotifyCanExecuteChanged();
-        RequestLateAdjustmentCommand.NotifyCanExecuteChanged();
-        ReviewLateAdjustmentCommand.NotifyCanExecuteChanged();
-        ReviewCloseEvidenceCommand.NotifyCanExecuteChanged();
-        QueueClosingEntriesCommand.NotifyCanExecuteChanged();
-        LockClosePeriodCommand.NotifyCanExecuteChanged();
-        RefreshCloseWorkflowSteps();
-    }
-
     public void SetCloseState(ClosePeriodState state)
     {
         CloseState = state;
@@ -1125,6 +1056,8 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             { IsReadyForLock: true, State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired }
                 when !TryGetCloseMutationScope(out _, out _) =>
                 "Locking the close period requires authenticated tenant and company scope.",
+            { IsReadyForLock: true, State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired }
+                when !TryGetDeclaredCloseScope(out _, out _) => CloseScopeStatusText,
             { IsReadyForLock: true, State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired } =>
                 $"Close plan {closePlan.PeriodId} is ready for governed period-lock review.",
             { } gate =>
@@ -1137,37 +1070,12 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
            _closePlan is { IsPeriodLocked: false } &&
            TryGetCloseControllerAuthority(out _, out _) &&
            TryGetCloseMutationScope(out _, out _) &&
+           TryGetDeclaredCloseScope(out _, out _) &&
            ClosingEntriesGate is
            {
                IsReadyForLock: true,
                State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired
            };
-
-    private async Task LoadClosePlanAsync()
-    {
-        if (_closeManagementService is null)
-        {
-            ClosePlanSetupStatusText = "Close management service is not registered for this desktop session.";
-            return;
-        }
-
-        if (!Guid.TryParse(CloseWorkflowIdText, out var workflowId) || workflowId == Guid.Empty)
-        {
-            ClosePlanSetupStatusText = "Enter a close workflow id before loading governed close setup.";
-            return;
-        }
-
-        var closePlan = await _closeManagementService.GetPeriodPlanAsync(workflowId).ConfigureAwait(true);
-        if (closePlan is null)
-        {
-            ClosePlanSetupStatusText = $"Close workflow {workflowId:D} was not found.";
-            return;
-        }
-
-        ApplyClosePlan(workflowId, closePlan);
-        CloseWorkflowIdText = workflowId.ToString("D");
-        ClosePlanSetupStatusText = $"Loaded close plan {closePlan.PeriodId} for governed setup retention.";
-    }
 
     private async Task ConfigureClosePlanAsync()
     {
@@ -1202,12 +1110,19 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
+        var selectionRevision = _closeWorkflowSelectionRevision;
+        var selectedWorkflowId = _closeWorkflowId;
         try
         {
             var request = BuildClosePlanConfigurationRequest(_closeWorkflowId, _closePlan, actor);
             var updated = await _closeManagementService
                 .ConfigurePeriodPlanAsync(request, actor)
                 .ConfigureAwait(true);
+
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
 
             if (updated is null)
             {
@@ -1270,6 +1185,8 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
+        var selectionRevision = _closeWorkflowSelectionRevision;
+        var selectedWorkflowId = _closeWorkflowId;
         try
         {
             var request = BuildCloseTaskSignOffRequest(
@@ -1283,6 +1200,11 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             var updated = await _closeManagementService
                 .SignOffCloseTaskAsync(request, actor)
                 .ConfigureAwait(true);
+
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
 
             if (updated is null)
             {
@@ -1340,12 +1262,19 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
+        var selectionRevision = _closeWorkflowSelectionRevision;
+        var selectedWorkflowId = _closeWorkflowId;
         try
         {
             var request = BuildCreateLateAdjustmentRequest(_closeWorkflowId, _closePlan, actor);
             var updated = await _closeManagementService
                 .RequestLateAdjustmentAsync(request, actor)
                 .ConfigureAwait(true);
+
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
 
             if (updated is null)
             {
@@ -1401,12 +1330,19 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
+        var selectionRevision = _closeWorkflowSelectionRevision;
+        var selectedWorkflowId = _closeWorkflowId;
         try
         {
             var request = BuildReviewLateAdjustmentRequest(_closeWorkflowId, _closePlan, adjustment, actor);
             var updated = await _closeManagementService
                 .ReviewLateAdjustmentAsync(request, actor)
                 .ConfigureAwait(true);
+
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
 
             if (updated is null)
             {
@@ -1462,12 +1398,19 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
+        var selectionRevision = _closeWorkflowSelectionRevision;
+        var selectedWorkflowId = _closeWorkflowId;
         try
         {
             var request = BuildReviewCloseEvidenceRequest(_closeWorkflowId, _closePlan, issue, actor);
             var updated = await _closeManagementService
                 .ReviewCloseEvidenceAsync(request, actor)
                 .ConfigureAwait(true);
+
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
 
             if (updated is null)
             {
@@ -1525,6 +1468,8 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
+        var selectionRevision = _closeWorkflowSelectionRevision;
+        var selectedWorkflowId = _closeWorkflowId;
         try
         {
             var request = BuildClosePeriodLockRequest(
@@ -1536,6 +1481,11 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             var result = await _closeManagementService
                 .LockClosePeriodScopedAsync(request, actor, tenantId, companyId)
                 .ConfigureAwait(true);
+
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
 
             if (result is null)
             {
@@ -1605,6 +1555,12 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
+        if (!TryGetDeclaredCloseScope(out var closeScope, out var scopeReason))
+        {
+            ClosePeriodLockStatusText = scopeReason;
+            return;
+        }
+
         if (!CanLockClosePeriod())
         {
             ClosePeriodLockStatusText = ClosingEntriesGate is null
@@ -1613,6 +1569,8 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
+        var selectionRevision = _closeWorkflowSelectionRevision;
+        var selectedWorkflowId = _closeWorkflowId;
         try
         {
             var request = BuildClosePeriodLockRequest(
@@ -1621,10 +1579,16 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
                 _closePlan,
                 actor,
                 prepareClosingEntriesOnly: false,
-                controllerRole: controllerRole);
+                controllerRole: controllerRole,
+                closeScope: closeScope);
             var result = await _closeManagementService
                 .LockClosePeriodScopedAsync(request, actor, tenantId, companyId)
                 .ConfigureAwait(true);
+
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
 
             if (result is null)
             {

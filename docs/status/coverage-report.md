@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1381 / 9087** items documented (**15.2%**) &mdash; Grade: **F**
+**1382 / 9111** items documented (**15.2%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 15.2%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1281 | 8616 | 14.9% | F |
+| Public Classes / Interfaces | 1282 | 8640 | 14.8% | F |
 | API Endpoints | 88 | 328 | 26.8% | F |
 | Configuration Options | 1 | 132 | 0.8% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,22 +23,22 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7335 undocumented)
+### Public Classes / Interfaces (7358 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
-| `MarkToMarketPosition` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:12` |
-| `MarkPriceQuote` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:31` |
-| `MarkPriceQualityPolicy` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:68` |
-| `MarkPriceRejection` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:101` |
-| `IMarkPriceSource` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:113` |
-| `MarkToMarketCarryingValueKey` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:123` |
-| `MarkToMarketCarryingValue` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:157` |
-| `MarkToMarketCarryingValueRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:186` |
-| `IMarkToMarketCarryingValueSource` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:198` |
-| `DailyMarkToMarketRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:208` |
-| `DailyMarkToMarketRun` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:224` |
-| `DailyMarkToMarketService` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:261` |
+| `MarkToMarketPosition` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:13` |
+| `MarkPriceQuote` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:32` |
+| `MarkPriceQualityPolicy` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:69` |
+| `MarkPriceRejection` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:102` |
+| `IMarkPriceSource` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:114` |
+| `MarkToMarketCarryingValueKey` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:124` |
+| `MarkToMarketCarryingValue` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:158` |
+| `MarkToMarketCarryingValueRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:187` |
+| `IMarkToMarketCarryingValueSource` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:199` |
+| `DailyMarkToMarketRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:209` |
+| `DailyMarkToMarketRun` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:225` |
+| `DailyMarkToMarketService` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:260` |
 | `HistoricalCloseMarkPriceSource` | `src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:15` |
 | `RegisteredHistoricalCloseMarkPriceSource` | `src/Meridian.Application/Accounting/RegisteredHistoricalCloseMarkPriceSource.cs:10` |
 | `PriceSourceTier` | `src/Meridian.Application/Accounting/WaterfallMarkPriceSource.cs:16` |
@@ -77,7 +77,7 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7285 more | |
+| ... and 7308 more | |
 
 ### API Endpoints (240 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7335 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+1. **Public Classes / Interfaces**: 7358 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
 2. **API Endpoints**: 240 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 131 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 

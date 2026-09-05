@@ -17,6 +17,8 @@ The Financial Operations command center owns the shared close decision. It requi
 
 Close acceptance additionally proves account/entity/book subject ownership independently of workflow selection. The real close-plan reader stamps workflow, account, and retained evidence versions from one state snapshot; final projection rechecks those stamps so concurrent sign-off or configuration changes block instead of mixing snapshots. The closing-entry gate is mandatory. Repairing the underlying scope/evidence issue allows a fresh assessment to restore readiness.
 
+Hard close and workflow publication re-evaluate shared readiness before mutation, including callers outside the workstation HTTP route. Complete subject scope, authenticated tenant/company, exact workflow revision, and current retained prerequisites are required. Close packages, locks, and published exports are outputs of that transition; they do not create circular prerequisites. Historical approval decisions stay visible while the current decision controls readiness. The retained close plan proves each task's required sign-offs; calendar reviewer totals describe a different approval dimension.
+
 ## Purpose
 
 Physical bounded-context module project for reconciliation, accounting records, payment approvals,

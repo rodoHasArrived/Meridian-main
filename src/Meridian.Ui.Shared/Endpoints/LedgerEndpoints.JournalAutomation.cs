@@ -438,7 +438,7 @@ public static partial class LedgerEndpoints
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        app.MapPost(UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketPreview, async (RunDailyMarkToMarketDraftIntakeRequest request, HttpContext context) =>
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketPreview, async (HttpContext context) =>
         {
             if (!HasLedgerMutationPermission(context))
             {
@@ -453,6 +453,12 @@ public static partial class LedgerEndpoints
 
             try
             {
+                // Schedule previews round-trip the workstation's string-valued confidence enum.
+                // Use the same JSON contract as the schedule response, not the host's numeric-enum defaults.
+                var request = await context.Request.ReadFromJsonAsync<RunDailyMarkToMarketDraftIntakeRequest>(
+                    jsonOptions, context.RequestAborted).ConfigureAwait(false);
+                if (request is null)
+                    return Results.BadRequest(new { error = "A daily valuation preview request is required." });
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 if (!string.IsNullOrWhiteSpace(request.ScheduleId))
                 {
@@ -483,6 +489,10 @@ public static partial class LedgerEndpoints
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
+            catch (JsonException)
+            {
+                return Results.BadRequest(new { error = "The daily valuation preview request contains invalid JSON or confidence." });
+            }
             catch (ArgumentException ex)
             {
                 return Results.BadRequest(new { error = ex.Message });
@@ -493,6 +503,7 @@ public static partial class LedgerEndpoints
             }
         })
         .WithName("RunLedgerJournalAutomationDailyMarkToMarketPreview").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .Accepts<RunDailyMarkToMarketDraftIntakeRequest>("application/json")
         .Produces<ValuationFreshnessPreviewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)

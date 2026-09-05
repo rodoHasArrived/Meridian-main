@@ -495,9 +495,9 @@
                                   FrozenColumnCount="2">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="*" />
-                                <DataGridTextColumn Header="Mark readiness" Binding="{Binding MarkFreshness.Status, TargetNullValue=Review required}" Width="125" />
-                                <DataGridTextColumn Header="Observed on" Binding="{Binding MarkFreshness.ObservedOn, TargetNullValue=Unknown}" Width="110" />
-                                <DataGridTextColumn Header="Mark age (days)" Binding="{Binding MarkFreshness.AgeDays, TargetNullValue=Unknown}" Width="100" />
+                                <DataGridTextColumn Header="Mark readiness" Binding="{Binding MarkFreshness.Status, TargetNullValue='Review required', FallbackValue='Review required'}" Width="125" />
+                                <DataGridTextColumn Header="Observed on" Binding="{Binding MarkFreshness.ObservedOn, TargetNullValue=Unknown, FallbackValue=Unknown}" Width="110" />
+                                <DataGridTextColumn Header="Mark age (days)" Binding="{Binding MarkFreshness.AgeDays, TargetNullValue=Unknown, FallbackValue=Unknown}" Width="100" />
                                 <DataGridTextColumn Header="Security" Binding="{Binding SecurityDisplayName}" Width="200" />
                                 <DataGridTextColumn Header="Asset Class" Binding="{Binding AssetClass}" Width="120" />
                                 <DataGridTextColumn Header="Coverage" Binding="{Binding CoverageLabel}" Width="100" />
@@ -512,10 +512,10 @@
                         <StackPanel Margin="0,12,0,0" AutomationProperties.Name="Selected portfolio mark evidence">
                             <TextBlock Text="{Binding SelectedPortfolioMark.Label}" Style="{StaticResource CardHeaderStyle}" />
                             <TextBlock Text="{Binding SelectedPortfolioMark.Reason}" TextWrapping="Wrap" />
-                            <TextBlock Text="{Binding SelectedPortfolioMark.ObservedOn, StringFormat=Observed on: {0}}" />
-                            <TextBlock Text="{Binding SelectedPortfolioMark.Age, StringFormat=Mark age: {0}}" />
-                            <TextBlock Text="{Binding SelectedPortfolioMark.ValuationDate, StringFormat=Valuation date: {0}}" />
-                            <TextBlock Text="{Binding SelectedPortfolioMark.PolicyVersion, StringFormat=Policy: {0}}" />
+                            <TextBlock Text="{Binding SelectedPortfolioMark.ObservedOn, StringFormat='Observed on: {0}'}" />
+                            <TextBlock Text="{Binding SelectedPortfolioMark.Age, StringFormat='Mark age: {0}'}" />
+                            <TextBlock Text="{Binding SelectedPortfolioMark.ValuationDate, StringFormat='Valuation date: {0}'}" />
+                            <TextBlock Text="{Binding SelectedPortfolioMark.PolicyVersion, StringFormat='Policy: {0}'}" />
                         </StackPanel>
                     </StackPanel>
                 </TabItem>

@@ -435,6 +435,7 @@ export interface PrivateCapitalCloseCockpitWorkflow {
 }
 
 export interface PrivateCapitalCloseCockpitApproval {
+  isCurrentDecision?: boolean;
   approvalId: string;
   workflowId: string;
   fundAccountId: string;
@@ -476,6 +477,7 @@ export interface PrivateCapitalNavSupportPackage {
 }
 
 export interface PrivateCapitalCloseCockpitLane {
+  requiredForClose?: boolean;
   laneId: string;
   label: string;
   status: EvidenceStatus;

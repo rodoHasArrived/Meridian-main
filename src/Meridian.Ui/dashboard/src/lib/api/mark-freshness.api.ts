@@ -4,5 +4,5 @@ import type { DailyValuationScheduleWorkItem, ValuationFreshnessPreviewDto } fro
 
 export function previewValuationMarks(schedule: DailyValuationScheduleWorkItem, options: ApiRequestOptions = {}) {
   return apiPostJson<ValuationFreshnessPreviewDto>(UI_API_ROUTES.LedgerJournalAutomationDailyMarkToMarketPreview,
-    { ...schedule, asOf: schedule.nextRunAtUtc }, options);
+    { ...schedule, asOf: schedule.nextRunAtUtc }, { ...options, allowDevelopmentFallback: false });
 }

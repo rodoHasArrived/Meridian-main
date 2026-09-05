@@ -22,7 +22,7 @@ public sealed class MarkFreshnessPresentationTests
             inspector.Detail.Should().Be(reason);
             inspector.Badge!.Value.Should().Be("Review required");
             inspector.Facts.Should().Contain(fact => fact.Label == "Mark observed on" && fact.Value == (observed ?? "Unknown"));
-            inspector.Facts.Should().Contain(fact => fact.Label == "Mark age" && fact.Value == (age is null ? "Unknown" : $"{age} day(s)"));
+            inspector.Facts.Should().Contain(fact => fact.Label == "Mark age" && fact.Value == (age == null ? "Unknown" : $"{age} day(s)"));
         }
 
         var current = Assessment("2026-09-04", 0, "Current", null);
