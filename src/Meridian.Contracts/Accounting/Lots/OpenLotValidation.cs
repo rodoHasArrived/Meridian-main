@@ -21,8 +21,9 @@ public static class OpenLotValidation
             || acquisition.TransactionCostBasis < 0 || acquisition.FunctionalCostBasis < 0
             || acquisition.HoldingPeriodStartDate > lot.AcquiredDate)
             throw new ArgumentException("Open lots require explicit valid acquisition currency, FX, basis, and holding-period facts.");
-        if (acquisition.AcquisitionCurrency == acquisition.FunctionalCurrency && acquisition.AcquisitionFxRateToFunctional != 1m)
-            throw new ArgumentException("Same-currency acquisition FX must equal one.");
+        if (acquisition.AcquisitionCurrency == acquisition.FunctionalCurrency
+            && (acquisition.AcquisitionFxRateToFunctional != 1m || acquisition.TransactionCostBasis != acquisition.FunctionalCostBasis))
+            throw new ArgumentException("Same-currency acquisition FX must equal one and retained transaction and functional bases must agree exactly.");
         if (Math.Abs(acquisition.FunctionalCostBasis - acquisition.TransactionCostBasis * acquisition.AcquisitionFxRateToFunctional) > 0.01m)
             throw new ArgumentException("Retained acquisition basis does not reconcile to acquisition FX.");
         if (acquisition.Evidence is null || acquisition.Evidence.Count == 0

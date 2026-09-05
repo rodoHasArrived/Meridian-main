@@ -41,6 +41,7 @@ public sealed record AutomatedJournalApproval
         IReadOnlyList<string>? evidenceLinks = null)
     {
         ArgumentNullException.ThrowIfNull(draft);
+        ValuationMarkEvidenceGuard.EnsureValid(draft);
         if (!draft.IsBalanced)
             throw new InvalidOperationException("Only balanced automated journal drafts can be submitted.");
 
@@ -91,6 +92,7 @@ public sealed record AutomatedJournalApproval
 
     public JournalEntry ToJournalEntry()
     {
+        ValuationMarkEvidenceGuard.EnsureValid(Draft);
         if (Status is not AutomatedJournalApprovalStatus.Approved)
             throw new InvalidOperationException("Only approved automated journal drafts can be converted to journal entries.");
 
@@ -154,6 +156,8 @@ public sealed record AutomatedJournalApproval
         IReadOnlyList<string>? evidenceLinks,
         bool requireEvidence)
     {
+        if (toStatus is AutomatedJournalApprovalStatus.Submitted or AutomatedJournalApprovalStatus.Approved or AutomatedJournalApprovalStatus.Posted)
+            ValuationMarkEvidenceGuard.EnsureValid(Draft);
         var (normalizedActor, normalizedReason, normalizedEvidence) = LedgerGovernedLifecycle.PrepareTransition(
             actor,
             reason,

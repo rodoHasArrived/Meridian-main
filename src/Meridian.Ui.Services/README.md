@@ -6,7 +6,7 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-27
+last_reviewed: 2026-09-05
 ---
 
 # src/Meridian.Ui.Services
@@ -19,6 +19,15 @@ UI services contains workstation endpoints, UI projections, and operator workflo
 
 
 `Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, dimension-scoped roll-forward, source-linked audit rows, and close-state evidence gates.
+
+`Services/Accounting/WorkstationAccountingCloseApiClient.cs` implements the
+`IWorkstationAccountingCloseApiClient` marker over `IAccountingCloseManagementService`.
+The WPF Accounting Close feature resolves this HTTP client for retained plans, configuration,
+sign-offs, evidence review, late adjustments, locks, and reopens. Requests reach the governed
+server close endpoints, where authenticated middleware resolves tenant, company, actor, and
+controller authority. Hard-lock requests carry the selected close scope and workflow version;
+the backend re-evaluates shared readiness before mutation. An unavailable or refused response
+does not produce local success, and a plan for another workflow is rejected.
 
 ## Layer responsibility
 
@@ -95,7 +104,14 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~WorkstationAccountingCloseApiClientTests" --logger "console;verbosity=normal"
 ```
+
+`WorkstationAccountingCloseApiClientTests` covers transport and server refusal handling;
+`tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.cs` exercises
+actual feature registration and selected-workflow recovery after missing, foreign, stale,
+unavailable, or blocked close evidence. These are focused acceptance scenarios; W10-SEAM-001
+remains in progress until the required hosted integration evidence is complete.
 
 ## Change rules
 

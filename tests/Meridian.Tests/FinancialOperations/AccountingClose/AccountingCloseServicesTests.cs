@@ -15,7 +15,7 @@ namespace Meridian.Tests.FinancialOperations.AccountingClose;
 /// Guards month-end accounting close scenarios where FX rates, posting balance, source-event lineage,
 /// period locks, and evidence gates must remain deterministic for operator replay.
 /// </summary>
-public sealed class AccountingCloseServicesTests
+public sealed partial class AccountingCloseServicesTests
 {
     [Fact]
     public async Task Scenario_ClosePlan_DependencyWaitsUntilPredecessorIsSignedOff()
@@ -1068,7 +1068,7 @@ public sealed class AccountingCloseServicesTests
                 closeSequence.Add("ledger-finalize");
                 finalizationCommands.Add(call.ArgAt<AccountingClosePostingCommand>(1));
             });
-        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench, CreateApprovedCloseReadinessGuard());
         await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
 
         LockClosePeriodRequestDto Request(long version) => new(
@@ -1355,7 +1355,7 @@ public sealed class AccountingCloseServicesTests
                     "both hard-close finalization passes must run under the coordinator-held fence");
                 closeSequence.Add("ledger-finalize");
             });
-        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench, CreateApprovedCloseReadinessGuard());
         var reconciliationEvidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
         await service.SignOffCloseTaskAsync(
             new SignOffCloseTaskRequestDto(
@@ -1533,7 +1533,7 @@ public sealed class AccountingCloseServicesTests
                     : Task.FromResult(hardClosed);
             });
 
-        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench, CreateApprovedCloseReadinessGuard());
         await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
         var request = new LockClosePeriodRequestDto(
             workflowId,

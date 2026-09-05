@@ -159,7 +159,8 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         var ledgerPath = Path.Combine(ledgerDir, "dedup_ledger.jsonl");
         if (File.Exists(ledgerPath))
         {
-            (await ReadOpenLedgerAsync(ledgerPath)).Should().NotContain("\"v\":2");
+            using var ledgerReader = OpenLiveLedgerReader(ledgerPath);
+            (await ledgerReader.ReadToEndAsync()).Should().NotContain("\"v\":2");
         }
 
         (await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None))
@@ -367,8 +368,10 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
                     "the dedup commit must only ever run after the sink flush succeeded");
         }
 
-        var ledgerLines = (await ReadOpenLedgerAsync(Path.Combine(ledgerDir, "dedup_ledger.jsonl")))
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        using var ledgerReader = OpenLiveLedgerReader(Path.Combine(ledgerDir, "dedup_ledger.jsonl"));
+        var ledgerLines = new List<string>();
+        while (await ledgerReader.ReadLineAsync() is { } ledgerLine)
+            ledgerLines.Add(ledgerLine);
         ledgerLines.Where(line => line.Contains("\"v\":2")).Should().HaveCount(2,
             "both identities must end durability-confirmed exactly once");
     }
@@ -397,7 +400,8 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             var ledgerPath = Path.Combine(Path.Combine(_rootDir, "ledger_dedupfail"), "dedup_ledger.jsonl");
             if (File.Exists(ledgerPath))
             {
-                (await ReadOpenLedgerAsync(ledgerPath)).Should().NotContain("\"v\":2",
+                using var ledgerReader = OpenLiveLedgerReader(ledgerPath);
+                (await ledgerReader.ReadToEndAsync()).Should().NotContain("\"v\":2",
                     "a failed dedup commit must not have persisted any durability confirmation");
             }
 
@@ -1375,6 +1379,10 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
 
     #region Helpers and fakes
 
+    // Read before disposal can flush the writer, sharing its existing write handle on Windows.
+    private static StreamReader OpenLiveLedgerReader(string path) =>
+        new(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, useAsync: true));
+
     private async Task<PersistentDedupLedger> CreateLedgerAsync(string subDirectory)
     {
         var dir = Path.Combine(_rootDir, subDirectory);
@@ -1609,14 +1617,6 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         public Task FlushAsync(CancellationToken ct = default) => Task.CompletedTask;
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-    }
-
-    private static async Task<string> ReadOpenLedgerAsync(string path)
-    {
-        // The live ledger owns a write handle. Readers must allow that handle on Windows.
-        await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        using var reader = new StreamReader(stream);
-        return await reader.ReadToEndAsync();
     }
 
     /// <summary>
