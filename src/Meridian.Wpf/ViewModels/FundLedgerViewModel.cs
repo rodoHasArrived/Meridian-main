@@ -2257,6 +2257,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
         if (_financialOperationsCommandCenter is not null)
         {
+            AddSharedCloseBlockers(_financialOperationsCommandCenter);
             foreach (var row in _financialOperationsCommandCenter.QueueRows)
             {
                 FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(

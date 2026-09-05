@@ -1691,7 +1691,7 @@ public sealed class FundLedgerViewModelTests
                 closeCockpitService.RequestedPeriodId.Should().Be("2026-06");
                 closeCockpitService.RequestedEntityId.Should().Be("entity-alpha");
                 closeCockpitService.RequestCount.Should().Be(1);
-                viewModel.PrivateCapitalCloseStatusText.Should().Be("Review Required");
+                viewModel.PrivateCapitalCloseStatusText.Should().Be("Blocked");
                 viewModel.PrivateCapitalCloseSummaryText.Should().Contain("1/2 close lanes ready");
                 viewModel.PrivateCapitalCloseSummaryText.Should().Contain("2 evidence package(s)");
                 viewModel.PrivateCapitalCloseEvidenceText.Should().Contain("7 evidence links");

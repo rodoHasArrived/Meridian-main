@@ -1080,8 +1080,6 @@ Meridian-main
 │   │   └── __init__.py
 │   ├── rules
 │   │   └── doc-rules.yaml
-│   ├── schema-control
-│   │   └── migrations.json
 │   └── scripts
 │       ├── ai
 │       │   ├── tests
@@ -7877,6 +7875,7 @@ Meridian-main
 │   │   │   ├── FinancialRecordExplorerViewModel.cs
 │   │   │   ├── FundAccountProviderPanelModels.cs
 │   │   │   ├── FundAccountsViewModel.cs
+│   │   │   ├── FundLedgerViewModel.CloseReadiness.cs
 │   │   │   ├── FundLedgerViewModel.cs
 │   │   │   ├── FundLedgerViewModel.PrivateCapitalCloseScope.cs
 │   │   │   ├── FundLedgerViewModel.Reconciliation.cs
