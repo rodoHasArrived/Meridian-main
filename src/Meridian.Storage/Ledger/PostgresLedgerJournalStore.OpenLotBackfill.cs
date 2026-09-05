@@ -31,12 +31,14 @@ public sealed partial class PostgresLedgerJournalStore
             query.CommandText = $"select {BackfillLotColumns} from {Qualified("tax_lots")} where ledger_book_id = @book order by tax_lot_record_id for update";
             query.Parameters.AddWithValue("book", ledgerBookId);
             await using var reader = await query.ExecuteReaderAsync(ct).ConfigureAwait(false);
-            while (await reader.ReadAsync(ct).ConfigureAwait(false)) lots.Add(ReadTaxLot(reader));
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                lots.Add(ReadTaxLot(reader));
         }
         foreach (var lot in lots)
         {
             var issues = OpenLotBackfillRules.Issues(lot);
-            if (issues.Count == 0) continue;
+            if (issues.Count == 0)
+                continue;
             await using var insert = connection.CreateCommand();
             insert.Transaction = transaction;
             insert.CommandText = $"""
@@ -82,8 +84,14 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Retained source content must bind the requested exact ledger book and lot.");
         var fingerprint = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
-            request.EvidenceRecordId, request.LedgerBookId, request.TaxLotRecordId,
-            SourceSystem = source, SourceReference = reference, request.SourceUri, request.ContentHashSha256, Actor = actor
+            request.EvidenceRecordId,
+            request.LedgerBookId,
+            request.TaxLotRecordId,
+            SourceSystem = source,
+            SourceReference = reference,
+            request.SourceUri,
+            request.ContentHashSha256,
+            Actor = actor
         }));
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
@@ -149,8 +157,14 @@ public sealed partial class PostgresLedgerJournalStore
         if (string.Equals(actor, evidence.RetainedBy, StringComparison.OrdinalIgnoreCase))
             throw new LedgerValidationException("Acquisition evidence requires a reviewer independent from the retaining actor.");
         var now = DateTimeOffset.UtcNow;
-        var reviewed = evidence with { ReviewStatus = request.Accepted ? "Accepted" : "Rejected", Version = 2,
-            ReviewedBy = actor, ReviewedAtUtc = now, ReviewRationale = rationale };
+        var reviewed = evidence with
+        {
+            ReviewStatus = request.Accepted ? "Accepted" : "Rejected",
+            Version = 2,
+            ReviewedBy = actor,
+            ReviewedAtUtc = now,
+            ReviewRationale = rationale
+        };
         if (request.Accepted)
         {
             await ValidateBackfillAuthorityAsync(reviewed.Facts, currency, ct).ConfigureAwait(false);
@@ -193,7 +207,8 @@ public sealed partial class PostgresLedgerJournalStore
             await using var reader = await replay.ExecuteReaderAsync(ct).ConfigureAwait(false);
             if (await reader.ReadAsync(ct).ConfigureAwait(false))
             {
-                if (reader.GetString(0) != fingerprint) throw new LedgerValidationException("Backfill idempotency key collides with a different command.");
+                if (reader.GetString(0) != fingerprint)
+                    throw new LedgerValidationException("Backfill idempotency key collides with a different command.");
                 return JsonSerializer.Deserialize<OpenLotBackfillReceiptDto>(reader.GetString(1))!;
             }
         }
@@ -275,13 +290,15 @@ public sealed partial class PostgresLedgerJournalStore
     private async Task<string> RequireBackfillBookAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction,
         Guid ledgerBookId, CancellationToken ct)
     {
-        if (ledgerBookId == Guid.Empty) throw new LedgerValidationException("An exact ledger book is required for backfill.");
+        if (ledgerBookId == Guid.Empty)
+            throw new LedgerValidationException("An exact ledger book is required for backfill.");
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = $"select base_currency from {Qualified("ledger_books")} where ledger_book_id = @book";
         command.Parameters.AddWithValue("book", ledgerBookId);
         ApplyTenantReadFilter(command, "tenant_id", ResolveCallerTenant());
-        if (transaction is not null) command.CommandText += " for update";
+        if (transaction is not null)
+            command.CommandText += " for update";
         return await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string
             ?? throw new LedgerValidationException("The ledger book is unavailable in the current tenant scope.");
     }
@@ -338,7 +355,8 @@ public sealed partial class PostgresLedgerJournalStore
         command.Parameters.AddWithValue("book", ledgerBookId);
         command.Parameters.AddWithValue("id", evidenceRecordId);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await reader.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         var hash = reader.GetString(4);
         var facts = OpenLotBackfillRules.ReadFacts(reader.GetFieldValue<byte[]>(3), hash);
         if (facts.LedgerBookId != reader.GetGuid(1) || facts.TaxLotRecordId != reader.GetGuid(2))
@@ -360,10 +378,15 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Authoritative Security Master and book-position stores are required to review or apply legacy backfill.");
         var security = await securityMaster.GetProjectionAsync(facts.SecurityId, ct).ConfigureAwait(false);
         var position = await positions.GetBookPositionAsync(facts.BookPositionId, ct).ConfigureAwait(false);
+        var book = await GetLedgerBookAsync(facts.LedgerBookId, ct).ConfigureAwait(false);
         if (security is null || security.SecurityId != facts.SecurityId || security.Version != facts.SecurityMasterVersion)
             throw new LedgerValidationException("Retained backfill Security Master identity or version is missing or stale.");
-        if (position is null || position.SecurityId != facts.SecurityId || position.PositionId != facts.BookPositionId
+        if (position is null || book is null || position.SecurityId != facts.SecurityId || position.PositionId != facts.BookPositionId
             || position.BookContext.LedgerBookId != facts.LedgerBookId || position.Version != facts.BookPositionVersion
+            || !string.Equals(position.BookContext.FundProfileId?.Trim(), book.FundProfileId?.Trim(), StringComparison.OrdinalIgnoreCase)
+            || position.BookContext.FundStructureNodeId != book.FundStructureNodeId
+            || position.BookContext.FundStructureNodeKind != book.FundStructureNodeKind
+            || position.BookContext.BaseCurrency != book.BaseCurrency
             || position.EffectiveFrom > facts.AcquiredDate || (position.EffectiveTo is { } end && end < facts.AcquiredDate))
             throw new LedgerValidationException("Retained backfill book-position mapping, version or acquisition scope is missing or stale.");
         if (functionalCurrency != facts.FunctionalCurrency)

@@ -358,18 +358,30 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             or ManualJournalEntryStatusDto.NeedsFix
             or ManualJournalEntryStatusDto.Rejected;
 
-    public Task<ManualJournalEntryDraftDto> ValidateDraftAsync(
+    public async Task<ManualJournalEntryDraftDto> ValidateDraftAsync(
         ValidateManualJournalEntryDraftRequest request,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, request.Draft);
-        return NormalizeAndValidateAsync(request.Draft with
+        var tenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId);
+        var existing = await _draftStore.GetAsync(request.Draft.FundProfileId, request.Draft.JournalEntryId,
+            ct, tenantId, companyId).ConfigureAwait(false);
+        return await NormalizeAndValidateAsync(request.Draft with
         {
-            TenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId),
-            CompanyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId)
-        }, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked);
+            TenantId = tenantId,
+            CompanyId = companyId,
+            // A read-only validation request is not authority to invent a policy or source receipt.
+            ValuationMarkEvidenceJson = existing?.ValuationMarkEvidenceJson,
+            ValuationMarkEvidenceDigest = existing?.ValuationMarkEvidenceDigest,
+            RequiresValuationMarkEvidence = existing?.RequiresValuationMarkEvidence == true ||
+                ValuationMarkEvidenceGuard.IsValuation(existing?.TreasuryContext?.IdempotencyKey) ||
+                existing?.ValuationMarkEvidenceJson is not null || request.Draft.RequiresValuationMarkEvidence ||
+                ValuationMarkEvidenceGuard.IsValuation(request.Draft.TreasuryContext?.IdempotencyKey) ||
+                request.Draft.ValuationMarkEvidenceJson is not null
+        }, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked).ConfigureAwait(false);
     }
 
     public async Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(

@@ -53,11 +53,14 @@ public sealed class CanonicalOpenLotConsumerTests
     public void DurableRelief_FaceQuantityConservesFunctionalAndTransactionBasis()
     {
         var lot = DurableLot(1) with { OriginalFace = 1000m, BookedFactor = 0.9m, ParBasis = 100m };
-        lot = lot with { Acquisition = lot.Acquisition! with
+        lot = lot with
         {
-            QuantityBasis = LotQuantityBasis.Face,
-            FaceValueTerms = new(100m, 0.9m, BondAmortizationMethod.ConstantYield, 0.05m)
-        } };
+            Acquisition = lot.Acquisition! with
+            {
+                QuantityBasis = LotQuantityBasis.Face,
+                FaceValueTerms = new(100m, 0.9m, BondAmortizationMethod.ConstantYield, 0.05m)
+            }
+        };
         var result = CanonicalOpenLotDisposalGuard.Validate([lot], [Selection(lot, 2.5m)], LedgerTaxLotReliefMethod.Fifo, "USD");
         result.Quantity.Should().Be(250m);
         result.TransactionCostBasis.Should().Be(250m);

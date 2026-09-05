@@ -90,8 +90,10 @@ public static class OpenLotBackfillRules
     public static IReadOnlyList<string> Issues(LedgerTaxLotRecord lot)
     {
         var issues = new List<string>();
-        if (lot.SecurityId == Guid.Empty) issues.Add("MissingSecurityIdentity");
-        if (lot.BookPositionId == Guid.Empty) issues.Add("MissingBookPositionIdentity");
+        if (lot.SecurityId == Guid.Empty)
+            issues.Add("MissingSecurityIdentity");
+        if (lot.BookPositionId == Guid.Empty)
+            issues.Add("MissingBookPositionIdentity");
         if (lot.Acquisition is null)
         {
             issues.Add("MissingAcquisitionQuantityBasis");
@@ -99,7 +101,8 @@ public static class OpenLotBackfillRules
         }
         else
         {
-            try { _ = lot.ToOpenLot(); }
+            try
+            { _ = lot.ToOpenLot(); }
             catch (Exception ex) when (ex is ArgumentException or LedgerValidationException)
             { issues.Add("UnreconciledAcquisitionEvidence"); }
         }

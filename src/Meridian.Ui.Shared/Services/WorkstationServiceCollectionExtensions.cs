@@ -844,7 +844,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IOperationsStatusDerivationService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>(),
-                sp.GetService<ContractSecurityMasterQueryService>()));
+                sp.GetService<ContractSecurityMasterQueryService>(),
+                closeReadinessGuard: sp.GetService<IClosePublicationReadinessGuard>()));
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
@@ -1024,6 +1025,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
                 sp.GetService<IAutomatedJournalScheduleStatusSource>()));
         services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
+        services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
+            () => sp.GetService<IFinancialOperationsCommandCenterReadService>(),
+            sp.GetService<IWorkstationTenantContextAccessor>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),

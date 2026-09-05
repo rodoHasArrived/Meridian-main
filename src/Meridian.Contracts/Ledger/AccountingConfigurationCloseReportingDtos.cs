@@ -404,7 +404,8 @@ public sealed record LockClosePeriodRequestDto(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     bool PrepareClosingEntriesOnly = false,
     [property: JsonIgnore]
-    string? ControllerRole = null)
+    string? ControllerRole = null,
+    CloseReadinessScopeDto? CloseScope = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];

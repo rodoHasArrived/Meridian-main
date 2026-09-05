@@ -638,7 +638,8 @@ public sealed class AtomicTaxLotJournalStoreTests
         var acquiredLot = acquisition.AcquisitionLot!;
         var canonicalEvidence = BuildEvidence("canonical-acquisition", 'e') with
         {
-            SubjectType = "OpenLotAcquisition", SubjectId = acquiredLot.TaxLotRecordId.ToString("D"),
+            SubjectType = "OpenLotAcquisition",
+            SubjectId = acquiredLot.TaxLotRecordId.ToString("D"),
             EffectiveDate = acquiredLot.AcquiredDate
         };
         acquisition = (acquisition with

@@ -119,8 +119,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         var approvalStatus = ResolveApprovalHistoryStatus(approvalHistory);
         var overallStatus = ResolveOverallStatus(lanes, approvalStatus);
         var readinessScore = ResolveReadinessScore(workflows, lanes, approvalStatus);
-        var isReadyToClose = lanes.Count > 0 &&
-                             lanes.All(static lane => lane.IsReady) &&
+        var isReadyToClose = lanes.Any(static lane => lane.RequiredForClose) &&
+                             lanes.Where(static lane => lane.RequiredForClose).All(static lane => lane.IsReady) &&
                              approvalStatus == EvidenceStatusDto.Ready;
 
         return new PrivateCapitalCloseCockpitDto(
@@ -207,9 +207,12 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             BuildValuationEvidenceLane(workflows, records),
             BuildReportingLane(workflows, reportOutputs),
             BuildDeliveryLane(reportOutputs),
-            BuildCloseControlsLane(workflows),
-            BuildClosePackageLane(workflows),
-            BuildPeriodLockLane(workflows)
+            // The close-plan contributor validates current retained checklist sign-offs.
+            // These three lanes describe the copies/results produced by publication, which
+            // cannot themselves be prerequisites for that same publication.
+            BuildCloseControlsLane(workflows) with { RequiredForClose = false },
+            BuildClosePackageLane(workflows) with { RequiredForClose = false },
+            BuildPeriodLockLane(workflows) with { RequiredForClose = false }
         };
 
         if (dailyValuationStatus is not null)
@@ -612,7 +615,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
                 ["close-controls", "close-package", "period-lock"],
                 approvalEvidence,
                 approvalHistoryReady,
-                "Retain approved close approval history before audit package release.")
+                "Retain approved close approval history before audit package release.") with { RequiredForClose = false }
         ];
 
         return packages
@@ -1531,13 +1534,14 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
     private static EvidenceStatusDto ResolveApprovalHistoryStatus(
         IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto> approvalHistory)
     {
-        if (approvalHistory.Count == 0 ||
-            approvalHistory.All(static approval => approval.Status == OperationsApprovalStateDto.Approved))
+        var currentDecisions = approvalHistory.Where(static approval => approval.IsCurrentDecision).ToArray();
+        if (currentDecisions.Length == 0 ||
+            currentDecisions.All(static approval => approval.Status == OperationsApprovalStateDto.Approved))
         {
             return EvidenceStatusDto.Ready;
         }
 
-        return approvalHistory.Any(static approval => approval.Status == OperationsApprovalStateDto.Rejected)
+        return currentDecisions.Any(static approval => approval.Status == OperationsApprovalStateDto.Rejected)
             ? EvidenceStatusDto.Blocked
             : EvidenceStatusDto.ReviewRequired;
     }

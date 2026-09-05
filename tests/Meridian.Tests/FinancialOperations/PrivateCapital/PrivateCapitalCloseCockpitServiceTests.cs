@@ -1049,7 +1049,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             new("close-control-period-lock", "controller", now.AddMinutes(-1))
         ];
 
-    private static PrivateCapitalActivityProjectionDto BuildActivity(
+    internal static PrivateCapitalActivityProjectionDto BuildActivity(
         bool includeExpenseFeeAllocationEvidence = true,
         decimal? partnerTieOutEndingNetActivity = null,
         bool includeAdministratorNavEvidence = true,

@@ -65,8 +65,13 @@ public sealed class OpenLotBackfillReconciliationTests
     public void FunctionalCurrencyDurableRows_KeepLegacyFunctionalCostAndProjectTransactionBasisSeparately()
     {
         var legacy = Legacy() with { Currency = "USD", UnitCost = 110m, OpenQuantity = 5m };
-        var facts = Facts(legacy) with { AcquisitionCurrency = "EUR", TransactionCostBasis = 1000m,
-            FunctionalCostBasis = 1100m, AcquisitionFxRateToFunctional = 1.1m };
+        var facts = Facts(legacy) with
+        {
+            AcquisitionCurrency = "EUR",
+            TransactionCostBasis = 1000m,
+            FunctionalCostBasis = 1100m,
+            AcquisitionFxRateToFunctional = 1.1m
+        };
         var canonical = OpenLotBackfillRules.Enrich(legacy, Evidence(facts)).ToOpenLot();
         canonical.OpenTransactionCostBasis.Should().Be(500m);
         canonical.OpenFunctionalCostBasis.Should().Be(550m);
@@ -78,8 +83,14 @@ public sealed class OpenLotBackfillReconciliationTests
     public void SameCurrencyFacts_RequireExplicitUnitFxAndExactBasisAgreement()
     {
         var legacy = Legacy() with { Currency = "USD" };
-        var facts = Facts(legacy) with { AcquisitionCurrency = "USD", FunctionalCurrency = "USD",
-            AcquisitionFxRateToFunctional = 1m, TransactionCostBasis = 1000m, FunctionalCostBasis = 1000m };
+        var facts = Facts(legacy) with
+        {
+            AcquisitionCurrency = "USD",
+            FunctionalCurrency = "USD",
+            AcquisitionFxRateToFunctional = 1m,
+            TransactionCostBasis = 1000m,
+            FunctionalCostBasis = 1000m
+        };
         OpenLotBackfillRules.Enrich(legacy, Evidence(facts)).ToOpenLot().OpenFunctionalCostBasis.Should().Be(1000m);
         var drift = () => OpenLotBackfillRules.Enrich(legacy, Evidence(facts with { FunctionalCostBasis = 1000.001m }));
         drift.Should().Throw<ArgumentException>().WithMessage("*agree exactly*");
@@ -117,8 +128,12 @@ public sealed class OpenLotBackfillReconciliationTests
     public void FaceBackfill_RequiresRetainedFactorAndParConventionAndConservesBasis()
     {
         var legacy = Legacy();
-        var facts = Facts(legacy) with { QuantityBasis = LotQuantityBasis.Face,
-            OriginalFace = 1000m, FaceValueTerms = new(100m, 0.8m, BondAmortizationMethod.ConstantYield, 0.04m) };
+        var facts = Facts(legacy) with
+        {
+            QuantityBasis = LotQuantityBasis.Face,
+            OriginalFace = 1000m,
+            FaceValueTerms = new(100m, 0.8m, BondAmortizationMethod.ConstantYield, 0.04m)
+        };
         var canonical = OpenLotBackfillRules.Enrich(legacy, Evidence(facts)).ToOpenLot();
         canonical.OriginalQuantity.Should().Be(1000m);
         canonical.OpenTransactionCostBasis.Should().Be(1000m);

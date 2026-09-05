@@ -80,6 +80,73 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
     }
 
     [Fact]
+    public async Task RetainedConfigurationMutation_ChangesPlanToken_AndRequiresConsistentRefresh()
+    {
+        var workflow = CreateWorkflow();
+        var plans = new AccountingCloseManagementService(new StubOperationsContinuityWorkflowService(workflow), ReadyPostingWorkbench());
+        var initial = (await plans.GetPeriodPlanAsync(workflow.WorkflowId))!;
+        var reader = new Mock<IAccountingCloseManagementService>();
+        var reads = 0;
+        reader.Setup(x => x.GetPeriodPlanScopedAsync(workflow.WorkflowId, It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                var captured = await plans.GetPeriodPlanAsync(workflow.WorkflowId);
+                if (++reads == 1)
+                {
+                    await plans.ConfigurePeriodPlanAsync(new UpsertClosePeriodPlanConfigurationRequestDto(
+                        workflow.WorkflowId,
+                        MaterialityPolicy: initial.MaterialityPolicy with { AmountThreshold = initial.MaterialityPolicy.AmountThreshold + 1m },
+                        Actor: "controller",
+                        EvidenceLinks: [$"evidence:close-plan:{workflow.WorkflowId:D}:configuration:book:{workflow.LedgerBookId:D}"]), "controller");
+                }
+                return captured;
+            });
+        var service = AcceptanceService(workflow, reader.Object);
+
+        var mixed = await ReadScoped(service, workflow);
+        mixed.IsReadyToComplete.Should().BeFalse();
+        mixed.CloseReadiness!.Blockers.Should().Contain(blocker => blocker.ContributorId == "close-plan-snapshot" && blocker.Type == "Stale");
+        var retained = (await plans.GetPeriodPlanAsync(workflow.WorkflowId))!;
+        retained.WorkflowVersion.Should().Be(initial.WorkflowVersion);
+        retained.EvidenceVersion.Should().NotBe(initial.EvidenceVersion);
+        retained.MaterialityPolicy.AmountThreshold.Should().Be(initial.MaterialityPolicy.AmountThreshold + 1m);
+        var repaired = await ReadScoped(service, workflow);
+        repaired.IsReadyToComplete.Should().BeTrue();
+        repaired.CloseReadiness!.IsComplete.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CalendarReviewerCount_DoesNotReplaceRequiredTaskSignOffAuthority()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var workflow = CreateWorkflow(
+            approvals:
+            [
+                new("submission", OperationsApprovalStateDto.Submitted, "operator", null, "Submitted", now.AddMinutes(-1), null, []),
+                new("decision", OperationsApprovalStateDto.Approved, "operator", "controller", "Approved", now.AddMinutes(-1), now, [])
+            ],
+            closeChecklist: Enumerable.Range(1, 6).Select(index => new OperationsCloseChecklistTaskDto(
+                $"task-{index}", OperationsGateKeyDto.Approval, $"Control {index}", "Controller", "Retained task evidence", 1,
+                null, null, "Done", null, $"evidence:task-{index}", null, false, now, "controller")).ToArray());
+        var workflows = new StubOperationsContinuityWorkflowService(workflow);
+        var calendars = new OperationsCloseCalendarService(workflows);
+        var calendar = await calendars.GetCalendarAsync(workflow.FundAccountId, workflow.PeriodId);
+        calendar.Items.Should().ContainSingle().Which.IsReadyToClose.Should().BeTrue();
+        calendar.Items[0].RequiredApprovalCount.Should().Be(6);
+        calendar.Items[0].CompletedApprovalCount.Should().Be(1);
+        var service = new FinancialOperationsCommandCenterReadService(workflows, calendars,
+            new StubPrivateCapitalCloseCockpitService(FreshCockpit(workflow)), CreateBookService(), CreateClosePlanService(workflow), CreateSubjectSource());
+        var ready = await ReadScoped(service, workflow);
+        ready.CloseReadiness!.IsReadyToClose.Should().BeTrue();
+        ready.CloseReadiness.Contributors.Should().Contain(contributor => contributor.ContributorId == "close-plan" && contributor.Status == "Ready");
+
+        calendar = calendar with { Items = [calendar.Items[0] with { OpenChecklistCount = 1 }] };
+        var unfinished = await ReadScoped(CreateService(workflow, calendar, FreshCockpit(workflow)), workflow);
+        unfinished.CloseReadiness!.IsReadyToClose.Should().BeFalse();
+        unfinished.CloseReadiness.Blockers.Should().Contain(blocker => blocker.ContributorId == "calendar");
+    }
+
+    [Fact]
     public async Task CockpitForEarlierWorkflowRevision_CannotClearCurrentClose()
     {
         var workflow = CreateWorkflow();

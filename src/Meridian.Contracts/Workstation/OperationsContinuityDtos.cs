@@ -1126,7 +1126,8 @@ public sealed record OperationsEvidencePackageSummaryDto(
     int RequiredCategoryCount,
     int EvidenceLinkCount,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
-    IReadOnlyList<string>? RequiredActions = null)
+    IReadOnlyList<string>? RequiredActions = null,
+    bool RequiredForClose = true)
 {
     public IReadOnlyList<string> RequiredActions { get; init; } =
         RequiredActions ?? [];
@@ -1399,7 +1400,8 @@ public sealed record PrivateCapitalCloseCockpitLaneDto(
     string? Route,
     int EvidenceLinkCount,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
-    IReadOnlyList<string>? RequiredActions = null)
+    IReadOnlyList<string>? RequiredActions = null,
+    bool RequiredForClose = true)
 {
     public IReadOnlyList<string> RequiredActions { get; init; } =
         RequiredActions ?? [];
@@ -1418,7 +1420,8 @@ public sealed record PrivateCapitalCloseCockpitApprovalDto(
     DateTimeOffset? DecidedAtUtc,
     string WorkflowRoute,
     int EvidenceLinkCount,
-    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    bool IsCurrentDecision = true);
 
 public sealed record PrivateCapitalNavSupportComponentDto(
     string ComponentId,

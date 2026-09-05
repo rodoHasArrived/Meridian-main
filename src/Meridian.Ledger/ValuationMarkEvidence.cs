@@ -39,7 +39,8 @@ public static class ValuationMarkEvidenceGuard
             !Sha256Digest.FixedEquals(expectedDigest, Sha256Digest.ComputeUtf8(json)))
             return "Valuation mark evidence or policy differs from the retained server assessment; rerun valuation.";
         ValuationMarkEvidence[]? evidence;
-        try { evidence = JsonSerializer.Deserialize<ValuationMarkEvidence[]>(json); }
+        try
+        { evidence = JsonSerializer.Deserialize<ValuationMarkEvidence[]>(json); }
         catch (JsonException) { return "Valuation mark evidence is invalid; rerun valuation."; }
         if (evidence is null || evidence.Length == 0)
             return "Valuation mark evidence is empty; rerun valuation.";

@@ -71,10 +71,11 @@ public sealed partial class FinancialOperationsCommandCenterReadService
         var calendarRows = calendar?.Items.Where(i => i.FundAccountId == scope.FundAccountId
             && i.PeriodId == scope.PeriodId && workflows.Any(w => w.WorkflowId == i.WorkflowId && w.Version == i.Version)).ToArray();
         // Calendar transport has no book dimension; bind every record through the checked workflow identity.
+        // Its completed approval total counts workflow reviewers, while its required total counts
+        // task approvals. The close-plan contributor validates retained sign-offs for each task.
         var calendarBound = calendar is not null && workflow is not null && calendarRows?.Length == 1;
         projection.Contribute("calendar", "Close calendar", !calendarBound ? "Incomplete"
-            : calendarRows!.All(i => i.IsReadyToClose && i.BlockerCount == 0 && i.OpenChecklistCount == 0
-                && i.CompletedApprovalCount >= i.RequiredApprovalCount) ? "Ready" : "Blocked",
+            : calendarRows!.All(i => i.IsReadyToClose && i.BlockerCount == 0 && i.OpenChecklistCount == 0) ? "Ready" : "Blocked",
             calendar?.GeneratedAtUtc, calendarRows?.Select(i => i.WorkflowId.ToString()).ToArray() ?? [],
             "A current calendar evaluation of the selected workflow must clear its checklist, blockers, and approvals.");
         calendar = calendarBound ? calendar! with { Items = calendarRows! } : null;

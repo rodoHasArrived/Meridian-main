@@ -185,6 +185,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
         }
 
         foreach (var approval in (workflow.Approvals ?? Array.Empty<OperationsApprovalDto>())
+            .TakeLast(1)
             .Where(static item => item.Status is not OperationsApprovalStateDto.Approved)
             .OrderByDescending(static item => item.DecidedAtUtc ?? item.SubmittedAtUtc ?? DateTimeOffset.MinValue))
         {
@@ -307,7 +308,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
             AddAccountingRecordRows(rows, workflow, workflow.AccountingRecordSummary);
         }
 
-        foreach (var package in (workflow.EvidencePackages ?? Array.Empty<OperationsEvidencePackageSummaryDto>())
+        foreach (var package in (workflow.EvidencePackages ?? Array.Empty<OperationsEvidencePackageSummaryDto>()).Where(static package => package.RequiredForClose)
             .Where(static item => !item.IsReady))
         {
             var capabilityLabel = BuildEvidencePackageCapabilityLabel(package.PackageId, package.Label);
@@ -399,7 +400,10 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
         OperationsContinuityWorkflowDto workflow,
         OperationsAccountingRecordSummaryDto accountingRecord)
     {
-        foreach (var category in accountingRecord.EvidenceCategories.Where(static item => !item.IsComplete))
+        // Published exports and the resulting restatement baseline are close outputs. The
+        // retained source, reconciliation, ledger, approval, and report inputs remain required.
+        foreach (var category in accountingRecord.EvidenceCategories.Where(static item =>
+            item.Key is not ("exports" or "restatement-lineage") && !item.IsComplete))
         {
             rows.Add(new FinancialOperationsQueueRowDto(
                 $"accounting-record:{accountingRecord.RecordId}:{category.Key}",
@@ -426,7 +430,9 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
         }
 
         var auditPack = accountingRecord.AuditPackReadiness;
-        if (auditPack is { IsComplete: false })
+        if (auditPack is { IsComplete: false } && (auditPack.MissingEvidenceCategories.Count == 0 ||
+            auditPack.MissingEvidenceCategories.Any(static key =>
+                key is not (FundAuditEvidenceCategoryKeyDto.Exports or FundAuditEvidenceCategoryKeyDto.RestatementLineage))))
         {
             rows.Add(new FinancialOperationsQueueRowDto(
                 $"accounting-record:{accountingRecord.RecordId}:audit-pack",
@@ -460,7 +466,8 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
         OperationsContinuityWorkflowDto workflow,
         OperationsDashboardSummaryDto dashboard)
     {
-        foreach (var metric in dashboard.Metrics.Where(static item => item.Status is not EvidenceStatusDto.Ready))
+        var inputMetrics = dashboard.Metrics.Where(static metric => metric.MetricId != "produce-evidence").ToArray();
+        foreach (var metric in inputMetrics.Where(static item => item.Status is not EvidenceStatusDto.Ready))
         {
             rows.Add(new FinancialOperationsQueueRowDto(
                 $"dashboard:{dashboard.DashboardId}:{metric.MetricId}",
@@ -484,7 +491,11 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
                 CloseReportImpact: FormatRequiredActions(metric.RequiredActions)));
         }
 
+        var inputActions = inputMetrics.SelectMany(static metric => metric.RequiredActions).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var outputActions = dashboard.Metrics.Where(static metric => metric.MetricId == "produce-evidence")
+            .SelectMany(static metric => metric.RequiredActions).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var action in dashboard.RequiredActions
+            .Where(action => !outputActions.Contains(action) || inputActions.Contains(action))
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -541,7 +552,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
 
     private static void AddPrivateCapitalRows(ICollection<FinancialOperationsQueueRowDto> rows, PrivateCapitalCloseCockpitDto cockpit)
     {
-        foreach (var lane in cockpit.Lanes.Where(static item => !item.IsReady))
+        foreach (var lane in cockpit.Lanes.Where(static item => item.RequiredForClose && !item.IsReady))
         {
             var capabilityLabel = BuildPrivateCapitalCapabilityLabel(lane.LaneId, lane.Label);
             var requiredActions = FormatRequiredActions(lane.RequiredActions);
@@ -566,7 +577,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
                 CloseReportImpact: BuildPrivateCapitalCloseReportImpact(lane.LaneId, requiredActions)));
         }
 
-        foreach (var package in cockpit.EvidencePackages.Where(static item => !item.IsReady))
+        foreach (var package in cockpit.EvidencePackages.Where(static item => item.RequiredForClose && !item.IsReady))
         {
             var capabilityLabel = BuildPrivateCapitalCapabilityLabel(package.PackageId, package.Label);
             var requiredActions = FormatRequiredActions(package.RequiredActions);
@@ -615,7 +626,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
         }
 
         foreach (var approval in cockpit.ApprovalHistory
-            .Where(static item => item.Status is not OperationsApprovalStateDto.Approved)
+            .Where(static item => item.IsCurrentDecision && item.Status is not OperationsApprovalStateDto.Approved)
             .OrderByDescending(static item => item.DecidedAtUtc ?? item.SubmittedAtUtc ?? DateTimeOffset.MinValue))
         {
             rows.Add(new FinancialOperationsQueueRowDto(

@@ -20,6 +20,7 @@ namespace Meridian.Tests.Storage;
 [Trait("Category", "Integration")]
 public sealed class OpenLotBackfillPostgresTests
 {
+    private static readonly Guid BookOwnerNode = Guid.Parse("77777777-7777-7777-7777-777777777777");
     [LedgerDatabaseFact]
     public async Task SurveyRetainReviewApply_RestoresReadinessAndRetainsRestartSafeEvidenceAndIdempotency()
     {
@@ -40,7 +41,11 @@ public sealed class OpenLotBackfillPostgresTests
         await automation.Should().ThrowAsync<HumanOperatorRequiredException>();
 
         await store.ReviewEvidenceAsync(Review(retained));
-        var receipt = await store.ApplyAsync(apply);
+        var mismatchedOwner = Store(database, facts, positionOwner: "other-entity");
+        var wrongOwnerApply = () => mismatchedOwner.ApplyAsync(apply);
+        await wrongOwnerApply.Should().ThrowAsync<LedgerValidationException>().WithMessage("*book-position mapping*scope*");
+        var normalizedOwner = Store(database, facts, positionOwner: " FUND-ALPHA ");
+        var receipt = await normalizedOwner.ApplyAsync(apply);
         var restarted = Store(database, facts);
         (await restarted.ListExceptionsAsync(legacy.LedgerBookId)).Should().BeEmpty();
         (await restarted.GetEvidenceAsync(legacy.LedgerBookId, retained.EvidenceRecordId))!
@@ -162,11 +167,12 @@ public sealed class OpenLotBackfillPostgresTests
     {
         var legacy = OpenLotBackfillReconciliationTests.Legacy();
         await database.JournalStore.SaveLedgerBookAsync(new LedgerBookRecord(legacy.LedgerBookId,
-            "fund-alpha", Guid.NewGuid(), FundStructureNodeKindDto.Fund, "Backfill book", "USD", legacy.CreatedAt, legacy.UpdatedAt));
+            "fund-alpha", BookOwnerNode, FundStructureNodeKindDto.Fund, "Backfill book", "USD", legacy.CreatedAt, legacy.UpdatedAt));
         return await database.JournalStore.SaveTaxLotAsync(closed ? legacy with { OpenQuantity = 0m } : legacy);
     }
 
-    private static PostgresLedgerJournalStore Store(LedgerPostgresTestDatabase database, OpenLotBackfillFactsDto facts)
+    private static PostgresLedgerJournalStore Store(LedgerPostgresTestDatabase database, OpenLotBackfillFactsDto facts,
+        string positionOwner = "fund-alpha")
     {
         var json = JsonSerializer.SerializeToElement(new { });
         var security = new Mock<ISecurityMasterStore>();
@@ -177,7 +183,7 @@ public sealed class OpenLotBackfillPostgresTests
         var positions = new Mock<IInstrumentPositionProjectionStore>();
         positions.Setup(p => p.GetBookPositionAsync(facts.BookPositionId, It.IsAny<CancellationToken>())).ReturnsAsync(
             new BookPositionDto(facts.BookPositionId, facts.SecurityId, Guid.NewGuid(),
-                new AccountingBookContextDto(facts.LedgerBookId, "fund-alpha", Guid.NewGuid(),
+                new AccountingBookContextDto(facts.LedgerBookId, positionOwner, BookOwnerNode,
                     FundStructureNodeKindDto.Fund, "Book", "USD", AccountingBasisKindDto.Primary, "policy", "1"),
                 "Long", "Active", facts.AcquiredDate, Version: facts.BookPositionVersion));
         return new(database.Options, backfillSecurityMaster: () => security.Object, backfillPositions: () => positions.Object);

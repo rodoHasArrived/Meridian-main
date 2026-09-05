@@ -50,8 +50,11 @@ public sealed class ValuationFreshnessAcceptanceTests
     {
         var service = new DailyMarkToMarketService(new MutableSource(new MarkPriceQuote(160m,
             "official-close", "evidence:aapl", PriceAsOf: Date.AddDays(-4))));
-        var request = Request() with { Positions = [Request().Positions[0],
-            new MarkToMarketPosition("AAPL", 5m, 150m, "broker-2", SecurityId: Security)] };
+        var request = Request() with
+        {
+            Positions = [Request().Positions[0],
+            new MarkToMarketPosition("AAPL", 5m, 150m, "broker-2", SecurityId: Security)]
+        };
 
         var preview = await service.PreviewAsync(request);
         preview.AssessedPositionCount.Should().Be(2);
@@ -77,6 +80,26 @@ public sealed class ValuationFreshnessAcceptanceTests
         var service = new DailyMarkToMarketService(new MutableSource(new MarkPriceQuote(160m,
             "official-close", "evidence:aapl", PriceAsOf: Date.AddDays(-4))));
         (await service.PrepareAsync(request)).IsBlocked.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(-2, DailyPortfolioPriceConfidence.High)]
+    [InlineData(0, DailyPortfolioPriceConfidence.Medium)]
+    public async Task ConsolidationPreservesTheStricterLegacyAgeAndConfidenceGates(
+        int dateOffset, DailyPortfolioPriceConfidence confidence)
+    {
+        var request = Request() with
+        {
+            QualityPolicy = new MarkPriceQualityPolicy(TimeSpan.FromDays(1), DailyPortfolioPriceConfidence.High,
+                RequireCompleteCoverage: false, RequireObservedDate: false)
+        };
+        var source = new MutableSource(new MarkPriceQuote(160m, "official-close", "evidence:aapl",
+            PriceAsOf: Date.AddDays(dateOffset), Confidence: confidence));
+        var service = new DailyMarkToMarketService(source);
+
+        (await service.PrepareAsync(request)).IsBlocked.Should().BeTrue();
+        source.Quote = source.Quote! with { PriceAsOf = Date, Confidence = DailyPortfolioPriceConfidence.High };
+        (await service.PrepareAsync(request)).HasDraft.Should().BeTrue();
     }
 
     [Fact]
@@ -126,8 +149,10 @@ public sealed class ValuationFreshnessAcceptanceTests
         var retained = JsonSerializer.Deserialize<ValuationMarkEvidence[]>(tags[ValuationMarkEvidenceGuard.EvidenceTag])!;
         var manipulated = JsonSerializer.Serialize(retained.Select(mark => mark with
         {
-            ObservedOn = Date.AddDays(-90), MaximumAgeDays = 999999,
-            MinimumConfidence = DailyPortfolioPriceConfidence.Low, PolicyVersion = "invented-policy"
+            ObservedOn = Date.AddDays(-90),
+            MaximumAgeDays = 999999,
+            MinimumConfidence = DailyPortfolioPriceConfidence.Low,
+            PolicyVersion = "invented-policy"
         }).ToArray());
         ValuationMarkEvidenceGuard.Validate(manipulated, "fund-alpha", Date, Security, "broker-1", "AAPL",
                 tags[ValuationMarkEvidenceGuard.DigestTag])

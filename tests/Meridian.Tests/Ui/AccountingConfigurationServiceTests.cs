@@ -1677,9 +1677,12 @@ public sealed class AccountingConfigurationServiceTests
             new NavAttributionRequest("fund-alpha", correctionAsOf, restartedFundBook));
         nav.Consolidated.TotalNav.Should().Be(26_600m);
 
+        var forgedDraft = originalValuation with { JournalEntryId = Guid.NewGuid(), Version = 0 };
+        var forgedValidation = await workbench.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(
+            forgedDraft, "untrusted-preparer", LedgerBookId: ManualJournalLedgerBookId));
+        forgedValidation.ValidationIssues.Should().Contain(issue => issue.Code == "manual-je.valuation-mark-review-required");
         var forgedCreation = await workbench.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
-            originalValuation with { JournalEntryId = Guid.NewGuid(), Version = 0 },
-            "untrusted-preparer", LedgerBookId: ManualJournalLedgerBookId));
+            forgedDraft, "untrusted-preparer", LedgerBookId: ManualJournalLedgerBookId));
         forgedCreation.ValuationMarkEvidenceJson.Should().BeNull("public save cannot introduce a server assessment");
         forgedCreation.ValuationMarkEvidenceDigest.Should().BeNull();
         forgedCreation.RequiresValuationMarkEvidence.Should().BeTrue();

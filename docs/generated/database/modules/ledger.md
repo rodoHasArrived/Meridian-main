@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 27
-- Functions/procedures: 12
-- Triggers: 16
+- Relations: 31
+- Functions/procedures: 15
+- Triggers: 21
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -260,6 +260,51 @@ erDiagram
         text checksum
         timestamp_with_time_zone applied_at
     }
+    ledger_open_lot_backfill_evidence {
+        uuid evidence_record_id PK
+        uuid ledger_book_id FK
+        uuid tax_lot_record_id FK
+        text source_system
+        text source_reference
+        text source_uri
+        bytea content
+        text content_hash_sha256
+        text retention_fingerprint
+        text retained_by
+        timestamp_with_time_zone retained_at
+    }
+    ledger_open_lot_backfill_exceptions {
+        uuid tax_lot_record_id PK,FK
+        uuid ledger_book_id FK
+        text lot_id
+        bigint lot_version
+        jsonb issues
+        bigint version
+        timestamp_with_time_zone first_observed_at
+        timestamp_with_time_zone last_observed_at
+        uuid resolution_receipt_id FK
+    }
+    ledger_open_lot_backfill_receipts {
+        uuid receipt_id PK
+        uuid ledger_book_id FK
+        uuid tax_lot_record_id FK
+        uuid evidence_record_id FK
+        text idempotency_key
+        text request_fingerprint
+        bigint expected_lot_version
+        bigint resulting_lot_version
+        jsonb snapshot_before
+        jsonb snapshot_after
+        jsonb receipt
+        bigint transaction_id
+    }
+    ledger_open_lot_backfill_reviews {
+        uuid evidence_record_id PK,FK
+        boolean accepted
+        text reviewed_by
+        timestamp_with_time_zone reviewed_at
+        text rationale
+    }
     ledger_operations_continuity_audit {
         uuid audit_id PK
         timestamp_with_time_zone occurred_at_utc
@@ -419,10 +464,19 @@ erDiagram
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_journal_leg_currency_affirmations : "journal_leg_currency_affirmations_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_open_lot_backfill_evidence : "open_lot_backfill_evidence_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lot_policies : "tax_lot_policies_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lots : "tax_lots_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_ledger_book_id_fkey"
+    ledger_open_lot_backfill_evidence ||--o{ ledger_open_lot_backfill_reviews : "open_lot_backfill_reviews_evidence_record_id_fkey"
+    ledger_open_lot_backfill_receipts ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_resolution_receipt_id_fkey"
+    ledger_open_lot_backfill_reviews ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_evidence_record_id_fkey"
     ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
+    ledger_tax_lots ||--o{ ledger_open_lot_backfill_evidence : "open_lot_backfill_evidence_tax_lot_record_id_fkey"
+    ledger_tax_lots ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_tax_lot_record_id_fkey"
+    ledger_tax_lots ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_tax_lot_record_id_fkey"
     ledger_tax_lots ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_tax_lot_record_id_fkey"
     ledger_tax_lots ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_replacement_tax_lot_record_id_fkey"
 ```
@@ -449,6 +503,10 @@ erDiagram
 | `journal_legs` | table | 30 | `entry_id` | 1 | 9 | - |
 | `ledger_books` | table | 13 | `ledger_book_id` | 0 | 6 | - |
 | `ledger_journal_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
+| `open_lot_backfill_evidence` | table | 11 | `evidence_record_id` | 2 | 1 | - |
+| `open_lot_backfill_exceptions` | table | 9 | `tax_lot_record_id` | 3 | 2 | - |
+| `open_lot_backfill_receipts` | table | 12 | `receipt_id` | 3 | 3 | - |
+| `open_lot_backfill_reviews` | table | 5 | `evidence_record_id` | 1 | 1 | - |
 | `operations_continuity_audit` | table | 19 | `audit_id` | 1 | 5 | - |
 | `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 6 | - |
 | `period_close_events` | table | 8 | `event_id` | 1 | 2 | - |

@@ -197,7 +197,7 @@ public static partial class LedgerEndpoints
 
         var owner = await registry.ResolveAsync(book.FundProfileId, context.RequestAborted).ConfigureAwait(false);
         return owner is not null &&
-            string.Equals(owner.FundProfileId, book.FundProfileId, StringComparison.Ordinal) &&
+            string.Equals(owner.FundProfileId?.Trim(), book.FundProfileId.Trim(), StringComparison.OrdinalIgnoreCase) &&
             string.Equals(owner.TenantId, tenant.TenantId, StringComparison.Ordinal) &&
             string.Equals(owner.CompanyId, tenant.CompanyId, StringComparison.Ordinal)
                 ? null : EndpointHelpers.Forbidden();

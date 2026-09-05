@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
@@ -13,9 +14,8 @@ namespace Meridian.Ui.Shared.Endpoints;
 public static partial class WorkstationEndpoints
 {
     private static async Task<IResult?> ValidateClosePublicationReadinessAsync(HttpContext context,
-        Guid workflowId, OperationsCloseWorkflowRequestDto request, JsonSerializerOptions jsonOptions)
+        Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope, JsonSerializerOptions jsonOptions)
     {
-        var scope = request.CloseScope;
         var authority = context.RequestServices.GetService<IFinancialOperationsCommandCenterReadService>();
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         if (scope?.FundProfileId is { Length: > 0 } fundProfileId)
@@ -39,7 +39,7 @@ public static partial class WorkstationEndpoints
         if (decision?.CloseReadiness is { IsComplete: true, IsReadyToClose: true }
             && decision.CloseReadiness.Scope == scope
             && decision.ActiveWorkflow?.WorkflowId == workflowId
-            && decision.ActiveWorkflow.Version == request.ExpectedVersion)
+            && decision.ActiveWorkflow.Version == expectedVersion)
             return null;
 
         var blockers = decision?.CloseReadiness?.Blockers.Select(blocker => new OperationsWorkflowBlockerDto(
