@@ -3605,10 +3605,12 @@ maker-checker outcome. B1's intro sentence about the adoption path is corrected 
 **Remedy.** Two halves, and together they are the precondition for B1 and B2. First, a
 server-side corporate-action drafting orchestrator: load the case, the accepted source proposal,
 the lot snapshot, the policy decision, the election, and the position from their stores; build the
-projection request and the role-bearing manifest from those reads. Two of those reads name
+projection request and the role-bearing manifest from those reads. Four of those reads name
 authorities that do not exist yet, and the list is honest only with that said (corrected
-2026-09-05, after review; the previous version sent the orchestrator to reload a numeric source
-version from the proposal, and listed the election as if a store held it). The source-event
+2026-09-05, after review, twice: the previous version sent the orchestrator to reload a numeric
+source version from the proposal and listed the election as if a store held it; the version after
+that counted two missing authorities when the lot snapshot and policy decision are missing in the
+same way). The source-event
 version: the projector requires a numeric `SourceEventVersion`, the case snapshot retains only the
 provider identity, whose source version is an opaque string
 (`CorporateActionOperationsContracts.cs:305-312`), and the proposal's `Version` (`:401-409`) is
@@ -3624,10 +3626,34 @@ an `ElectionInstruction` evidence kind (`:233`) on evidence rows that carry an i
 case version at which they were recorded (`CorporateActionEvidenceDto`, `:505-515`), not a
 versioned election. Either a durable election record is defined, or the binding is declared to be
 that evidence row — its `EvidenceId` as the election id, its `CaseVersion` as the version, which
-B2's digest then commits; until one is chosen the read has nothing to read. Then project
-(`ICorporateActionAccountingProjectionService`),
-map (`ICorporateActionAssetAccountingEventMapper`), and draft into the spine in process — the path
-the projector and mapper were written for and that nothing exercises. The position deserves its
+B2's digest then commits; until one is chosen the read has nothing to read. The lot snapshot and
+the policy decision: `LotSnapshotId`/`LotSnapshotVersion` and `PolicyDecisionId`/
+`PolicyDecisionVersion` exist only in the projection request and output, the attach binding, and
+its persistence (the contracts, the projector, the mapper,
+`CorporateActionCaseAccountingService.cs`, `PostgresCorporateActionOperationsStore.Accounting.cs`);
+the projector binds each from a manifest row of the matching role
+(`CorporateActionAccountingProjectionService.cs:1871-1874, :1902-1914`), rows the drafting request
+supplies. No lot-snapshot or policy-decision record or store exists.
+The lot has the election's option — the case's `TaxLotSnapshot` evidence row
+(`CorporateActionOperationsContracts.cs:232`). The policy decision has no case evidence kind at
+all; the nearest versioned authority is `IAccountingPolicyService.ResolvePolicyAsync`
+(`AccountingPolicyService.cs:100`), whose policy carries an id, a version, and the rule pack, and
+whose backing store this pass has not verified. Until each is defined, B1's lot and policy
+comparisons would check request-invented identities against themselves. Then project
+(`ICorporateActionAccountingProjectionService`), resolve the promoted rule pack and generate the
+effect, attest it, map (`ICorporateActionAssetAccountingEventMapper`), and draft into the spine in
+process. The middle step is not optional and does not exist (added 2026-09-05, after review; the
+previous version went straight from project to map): the mapper's request requires a
+`CorporateActionMappedAccountingEffectDto` already produced by the promoted rule pack
+(`CorporateActionAssetAccountingEventMapper.cs:14-23, :38-41`); the only producer is
+`CorporateActionMappedAccountingEffectAttestor.Create`
+(`CorporateActionMappedAccountingEffectAttestor.cs:19-24`), which needs the generated effect
+lines, the rule-pack reference, and the component-to-line mappings, has one caller — a test
+(`CorporateActionAssetAccountingEventMapperTests.cs:380`) — and nothing under `src/` constructs
+the `ProjectedAccountingEffectDto` it takes. Without a server-side rule-resolution step that
+produces those three from the projection and the resolved policy, the orchestrator either cannot
+run or takes the mapped accounts from its caller — the boundary B3 exists to close. The position
+deserves its
 own sentence (added 2026-09-02, after review; the first version of this list omitted it): the
 projector requires a `PositionSnapshotId` (`CorporateActionAccountingProjectionService.cs:259`)
 bound by a PositionSnapshot-role manifest row at `PositionVersion` (`:1890-1895`), and at the pin
@@ -3877,4 +3903,6 @@ was required (032's predicate), or named an authority that does not exist or is 
 (B3's election, and the proposal's workflow counter offered as a source-event version); the same
 round then caught B3's posting-side alternative validating after the immutable append — a remedy
 wrong in kind, of the sort this document's method section warns about — and moved the check to
-the posting route.
+the posting route; a ninth counted B3's missing authorities honestly (four, not two — the lot
+snapshot and policy decision have no record either) and put the rule-pack step back between
+project and map, since the mapper consumes an attested effect nothing in production produces.
