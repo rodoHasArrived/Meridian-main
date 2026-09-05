@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.CertificatesOfDeposit;
 using Meridian.Contracts.Commodities;
@@ -99,6 +100,24 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(CryptoReferenceDto))]
 [JsonSerializable(typeof(CryptoReferenceDto[]))]
 [JsonSerializable(typeof(List<CryptoReferenceDto>))]
+// Asset Operations reference contracts. HighPerformanceOptions below uses this context as its SOLE
+// TypeInfoResolver, so a DTO missing here throws NotSupportedException the first time it is
+// serialized through the source-generated path.
+[JsonSerializable(typeof(DirectLoanReferenceDto))]
+[JsonSerializable(typeof(DirectLoanReferenceDto[]))]
+[JsonSerializable(typeof(List<DirectLoanReferenceDto>))]
+[JsonSerializable(typeof(DirectLoanCovenantDto))]
+[JsonSerializable(typeof(DirectLoanCovenantDto[]))]
+[JsonSerializable(typeof(List<DirectLoanCovenantDto>))]
+[JsonSerializable(typeof(DirectLoanPrincipalPaymentDto))]
+[JsonSerializable(typeof(DirectLoanPrincipalPaymentDto[]))]
+[JsonSerializable(typeof(List<DirectLoanPrincipalPaymentDto>))]
+[JsonSerializable(typeof(StructuredCreditReferenceDto))]
+[JsonSerializable(typeof(StructuredCreditReferenceDto[]))]
+[JsonSerializable(typeof(List<StructuredCreditReferenceDto>))]
+[JsonSerializable(typeof(StructuredCreditFactorPointDto))]
+[JsonSerializable(typeof(StructuredCreditFactorPointDto[]))]
+[JsonSerializable(typeof(List<StructuredCreditFactorPointDto>))]
 [JsonSerializable(typeof(DepositReferenceDto))]
 [JsonSerializable(typeof(DepositReferenceDto[]))]
 [JsonSerializable(typeof(List<DepositReferenceDto>))]

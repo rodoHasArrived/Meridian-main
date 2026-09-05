@@ -2511,7 +2511,7 @@ describe("accounting-screen close-cockpit view model", () => {
     expect(state.updatedAtUtc).toBe(closeWorkflow.updatedAtUtc);
   });
 
-  it("marks the controller close command center ready only when all close signals clear", () => {
+  it("blocks locally clear close signals when the shared readiness authority is unavailable", () => {
     const readyWorkflow: OperationsContinuityWorkflow = {
       ...closeWorkflow,
       status: "ReadyForClose",
@@ -2616,10 +2616,10 @@ describe("accounting-screen close-cockpit view model", () => {
     });
 
     expect(state).toMatchObject({
-      status: "ready",
-      statusLabel: "Ready",
-      statusTone: "success",
-      summary: "The close is ready: breaks, source evidence, approvals, valuations, providers, report pack, and sign-off are clear."
+      status: "blocked",
+      statusLabel: "Blocked",
+      statusTone: "danger",
+      summary: "Shared close readiness is unavailable. Select the full close scope and refresh before sign-off."
     });
     expect(state.metricRows).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "breaks", value: "0", tone: "success" }),
@@ -3019,4 +3019,24 @@ describe("accounting-screen close-cockpit view model", () => {
       href: "/accounting/reconciliation"
     });
   });
+  it("uses the complete shared decision and refuses an incomplete ready headline", () => {
+    const commandCenter: FinancialOperationsCommandCenter = {
+      generatedAtUtc: new Date().toISOString(), fundProfileId: "fund-alpha", ledgerBookId: "book",
+      fundAccountId: "account", periodId: "period", status: "Ready", isReadyToComplete: true,
+      summary: "Shared evaluation ready.", activeItemCount: 0, blockedItemCount: 0, reviewItemCount: 0,
+      metrics: [], queueRows: [], closeReadiness: {
+        scope: { fundProfileId: "fund-alpha", ledgerBookId: "book", fundAccountId: "account", entityId: "entity", periodId: "period" },
+        evaluatedAtUtc: new Date().toISOString(), status: "Ready", isComplete: true, isReadyToClose: true,
+        contributors: [], blockers: []
+      }
+    };
+    const input = { data: accountingWorkspace, commandCenter, workflow: closeWorkflow,
+      workflowLoading: false, workflowError: null, accountingSystemProviders: [], accountingSystemImport: null,
+      accountingSystemReconciliation: null, multiAssetCoverage: null };
+    expect(buildCloseCommandCenterViewState(input).status).toBe("ready");
+    expect(buildCloseCommandCenterViewState({ ...input, commandCenter: {
+      ...commandCenter, closeReadiness: { ...commandCenter.closeReadiness!, isComplete: false }
+    } }).status).toBe("blocked");
+  });
+
 });

@@ -33,23 +33,117 @@ public enum SecurityAssetTermFieldType
 }
 
 /// <summary>
-/// One declarative field in the per-asset-class asset-specific-terms contract: the canonical JSON
-/// key, its value type, whether the serialize side always emits it, and any legacy flat key aliases
-/// a tolerant reader should also accept.
+/// The designated vocabulary member that absorbs a value outside the declared vocabulary:
+/// <c>classification = "Other"</c> pairs with a <see cref="LabelKey"/> (<c>otherClassification</c>)
+/// carrying the raw label verbatim, so an unrecognized value survives the codec loop under a
+/// canonical discriminant instead of vanishing.
+/// <para>The escape is lossless only while the record carries none of the
+/// <see cref="DependentKeys"/>. Those are payload the IN-vocabulary cases own — an equity's
+/// <c>preferredTerms</c> hangs off <c>classification = "Preferred"</c> — and the escape decode has
+/// nowhere to reattach them, so it would silently delete them.</para>
 /// </summary>
+public sealed record SecurityAssetTermVocabularyEscape(
+    string Value,
+    string LabelKey,
+    IReadOnlyList<string> DependentKeys);
+
+/// <summary>
+/// One declarative field in the per-asset-class asset-specific-terms contract: the canonical JSON
+/// key, its value type, whether the serialize side always emits it, any legacy flat key aliases
+/// a tolerant reader should also accept, and — for discriminant strings — the closed vocabulary its
+/// value must come from.
+/// </summary>
+/// <remarks>
+/// What the codec does with a value OUTSIDE the vocabulary decides whether an already-stored odd
+/// value can be re-serialized safely, which is a different question from whether a write may assert
+/// one. A discriminant is exactly one of three things, and every guard that re-serializes a record
+/// has to tell them apart:
+/// <list type="number">
+/// <item><see cref="CarriesUndeclaredValueVerbatim"/> — the domain holds the value as a plain string
+/// and writes it straight back (an option's <c>putCall</c>). The vocabulary constrains what a write
+/// may assert; re-serializing an odd value already in the row loses nothing.</item>
+/// <item><see cref="Escape"/> — the value is routed through a canonical escape member that preserves
+/// the raw label in a companion key, lossless unless the escape's dependent blocks are present.</item>
+/// <item>Neither — the value is DROPPED. An unknown <c>exerciseStyle</c> reads as None; an unknown
+/// <c>couponType</c> collapses to <c>Fixed</c> and takes the structure-specific fields with it.
+/// Re-serializing is always destructive.</item>
+/// </list>
+/// </remarks>
 public sealed record SecurityAssetTermField(
     string Key,
     SecurityAssetTermFieldType Type,
     bool Required,
-    IReadOnlyList<string> Aliases)
+    IReadOnlyList<string> Aliases,
+    IReadOnlyList<string> AllowedValues,
+    SecurityAssetTermVocabularyEscape? Escape = null,
+    bool CarriesUndeclaredValueVerbatim = false)
 {
+    /// <summary>
+    /// True when the field carries a CLOSED vocabulary: its value selects a domain case, and a value
+    /// outside <see cref="AllowedValues"/> cannot be decoded back into the one it names. Fields whose
+    /// domain type has an open "other" case (a bond <c>subclass</c>, a <c>paymentFrequency</c>) are
+    /// deliberately not discriminants — they round-trip any label losslessly, so constraining them
+    /// would reject values the domain accepts today.
+    /// </summary>
+    public bool IsDiscriminant => AllowedValues.Count > 0;
+
+    /// <summary>
+    /// True when <paramref name="value"/> is one of the declared vocabulary members, or the field
+    /// declares no vocabulary at all. The comparison is ORDINAL and case-sensitive because the
+    /// codecs are: the serializer emits one exact spelling per case and the deserializer switches on
+    /// it, so <c>"fixed"</c> is as undecodable as <c>"Variable"</c>.
+    /// </summary>
+    public bool Allows(string? value)
+        => !IsDiscriminant
+           || (value is not null && AllowedValues.Contains(value, StringComparer.Ordinal));
+
+    /// <summary>
+    /// The shared rejection reason for a value outside this field's vocabulary, naming the declared
+    /// members and the escape when one exists. Both the operator edit surface and the write-mode
+    /// codec reject through this text so a rejected value reads the same wherever it is caught.
+    /// </summary>
+    public string DescribeUndeclaredValue(string assetClass, string? value)
+    {
+        var reason =
+            $"Value '{value}' is not a declared '{Key}' value for asset class '{assetClass}'. " +
+            $"Declared values: {string.Join(", ", AllowedValues)}.";
+
+        return Escape is null
+            ? reason
+            : reason + $" Use '{Escape.Value}' with '{Escape.LabelKey}' to carry a value outside the vocabulary.";
+    }
+
     /// <summary>A field the serialize side always emits (a non-optional domain field).</summary>
     public static SecurityAssetTermField Req(string key, SecurityAssetTermFieldType type, params string[] aliases)
-        => new(key, type, Required: true, aliases);
+        => new(key, type, Required: true, aliases, AllowedValues: []);
 
     /// <summary>A field emitted only when its optional domain value is present.</summary>
     public static SecurityAssetTermField Opt(string key, SecurityAssetTermFieldType type, params string[] aliases)
-        => new(key, type, Required: false, aliases);
+        => new(key, type, Required: false, aliases, AllowedValues: []);
+
+    /// <summary>A required discriminant string constrained to a closed vocabulary.</summary>
+    public static SecurityAssetTermField ReqOneOf(string key, params string[] allowedValues)
+        => new(key, SecurityAssetTermFieldType.String, Required: true, Aliases: [], AllowedValues: allowedValues);
+
+    /// <summary>An optional discriminant string constrained to a closed vocabulary.</summary>
+    public static SecurityAssetTermField OptOneOf(string key, params string[] allowedValues)
+        => new(key, SecurityAssetTermFieldType.String, Required: false, Aliases: [], AllowedValues: allowedValues);
+
+    /// <summary>
+    /// Declares the vocabulary member that absorbs an out-of-vocabulary label, the key carrying that
+    /// raw label, and the keys the escape decode cannot reattach. See
+    /// <see cref="SecurityAssetTermVocabularyEscape"/>.
+    /// </summary>
+    public SecurityAssetTermField WithEscape(string value, string labelKey, params string[] dependentKeys)
+        => this with { Escape = new SecurityAssetTermVocabularyEscape(value, labelKey, dependentKeys) };
+
+    /// <summary>
+    /// Declares that the codec carries an out-of-vocabulary value VERBATIM in this same key, so the
+    /// vocabulary is a write-time constraint only and never a reason to refuse re-serializing a
+    /// record that already holds one. See <see cref="CarriesUndeclaredValueVerbatim"/>.
+    /// </summary>
+    public SecurityAssetTermField WithVerbatimUndeclaredValue()
+        => this with { CarriesUndeclaredValueVerbatim = true };
 }
 
 /// <summary>
@@ -66,6 +160,16 @@ public sealed record SecurityAssetTermField(
 /// Keys and types are taken from the authoritative serialize contract (the F# <c>SecurityKind</c>
 /// term records). Fields carrying nested/collection shapes are typed <see cref="SecurityAssetTermFieldType.Array"/>
 /// or <see cref="SecurityAssetTermFieldType.Object"/>; their inner shapes are not enumerated here.
+/// <para>A field declared with <c>ReqOneOf</c>/<c>OptOneOf</c> carries a CLOSED vocabulary that the
+/// write-mode codec and the operator edit surface enforce. Only the string fields whose domain type
+/// genuinely cannot round-trip an unlisted value get one: <c>classification</c>, <c>putCall</c>,
+/// <c>exerciseStyle</c>, and <c>couponType</c>. Deliberately NOT vocabularies are the labels whose
+/// domain type has an open "other" case that preserves the raw string — <c>votingRightsCat</c>
+/// (<c>OtherVotingRights</c>), <c>subclass</c> (<c>BondSubclass.Other</c>), <c>paymentFrequency</c>
+/// (<c>OtherFrequency</c>), and <c>distributionPolicy</c> (<c>OtherDistribution</c>) — plus the
+/// free-text labels the domain carries verbatim (<c>dayCount</c>, <c>settlementType</c>,
+/// <c>seniority</c>, <c>depositType</c>, and the rest). Constraining those would reject values that
+/// persist and read back losslessly today.</para>
 /// </remarks>
 public static class SecurityAssetTermsSchema
 {
@@ -75,6 +179,12 @@ public static class SecurityAssetTermsSchema
     private static SecurityAssetTermField Opt(string key, SecurityAssetTermFieldType type, params string[] aliases)
         => SecurityAssetTermField.Opt(key, type, aliases);
 
+    private static SecurityAssetTermField ReqOneOf(string key, params string[] allowedValues)
+        => SecurityAssetTermField.ReqOneOf(key, allowedValues);
+
+    private static SecurityAssetTermField OptOneOf(string key, params string[] allowedValues)
+        => SecurityAssetTermField.OptOneOf(key, allowedValues);
+
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<SecurityAssetTermField>> FieldsByAssetClass =
         new Dictionary<string, IReadOnlyList<SecurityAssetTermField>>(StringComparer.OrdinalIgnoreCase)
         {
@@ -82,7 +192,8 @@ public static class SecurityAssetTermsSchema
             [
                 Opt("shareClass", SecurityAssetTermFieldType.String),
                 Opt("votingRightsCat", SecurityAssetTermFieldType.String),
-                Opt("classification", SecurityAssetTermFieldType.String),
+                OptOneOf("classification", "Common", "Preferred", "Convertible", "ConvertiblePreferred", "Other")
+                    .WithEscape("Other", "otherClassification", "preferredTerms", "convertibleTerms"),
                 // Raw label carried alongside classification="Other"; the discriminant stays a
                 // closed vocabulary while free-text classifications round-trip losslessly.
                 Opt("otherClassification", SecurityAssetTermFieldType.String),
@@ -92,12 +203,18 @@ public static class SecurityAssetTermsSchema
             ["Option"] =
             [
                 Req("underlyingId", SecurityAssetTermFieldType.Guid),
-                Req("putCall", SecurityAssetTermFieldType.String),
+                // The F# option command rejects anything but Put/Call; declaring the vocabulary moves
+                // the same rejection onto the edit surface and the write-mode codec. OptionTerms
+                // holds it as a plain string, so an odd value already in a row re-serializes intact
+                // — the vocabulary constrains new writes, it does not make old rows unwritable.
+                ReqOneOf("putCall", "Put", "Call").WithVerbatimUndeclaredValue(),
                 Req("strike", SecurityAssetTermFieldType.Decimal),
                 Req("expiry", SecurityAssetTermFieldType.Date),
                 Req("multiplier", SecurityAssetTermFieldType.Decimal),
                 Opt("optChainId", SecurityAssetTermFieldType.String),
-                Opt("exerciseStyle", SecurityAssetTermFieldType.String),
+                // ExerciseStyle has no "other" case: an unrecognized style decodes to None, so the
+                // value would be silently dropped rather than preserved.
+                OptOneOf("exerciseStyle", "American", "European", "Bermudan"),
                 Opt("settlementType", SecurityAssetTermFieldType.String),
                 Req("isAdjusted", SecurityAssetTermFieldType.Boolean),
                 Opt("lastTradingDt", SecurityAssetTermFieldType.Date)
@@ -122,7 +239,10 @@ public static class SecurityAssetTermsSchema
                 Opt("issueDate", SecurityAssetTermFieldType.Date),
                 // couponType/couponRate/floatingIndex/spreadBps/dayCount are emitted flat by the
                 // serializer; the legacy nested "coupon" object shape is read as a fallback.
-                Opt("couponType", SecurityAssetTermFieldType.String),
+                // couponType selects the BondCouponStructure case and has no escape: an
+                // unrecognized value collapses to Fixed, dropping the label AND every field the
+                // named structure owns (floatingIndex, the step schedule, the inflation block).
+                OptOneOf("couponType", "Fixed", "Floating", "ZeroCoupon", "Step", "InflationLinked"),
                 Opt("couponRate", SecurityAssetTermFieldType.Decimal),
                 Opt("floatingIndex", SecurityAssetTermFieldType.String),
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
@@ -355,6 +475,14 @@ public static class SecurityAssetTermsSchema
     /// <summary>The declared fields for <paramref name="assetClass"/>, or an empty list when none is declared.</summary>
     public static IReadOnlyList<SecurityAssetTermField> Fields(string assetClass)
         => FieldsByAssetClass.TryGetValue(assetClass, out var fields) ? fields : [];
+
+    /// <summary>
+    /// The declared CLOSED-vocabulary fields for <paramref name="assetClass"/> — the discriminants
+    /// whose value selects a domain case. Callers that must enforce or audit the vocabularies walk
+    /// this instead of hard-coding a field list per asset class.
+    /// </summary>
+    public static IEnumerable<SecurityAssetTermField> DiscriminantFields(string assetClass)
+        => Fields(assetClass).Where(static field => field.IsDiscriminant);
 
     /// <summary>Tries to resolve the declared fields for <paramref name="assetClass"/>.</summary>
     public static bool TryGetFields(string assetClass, out IReadOnlyList<SecurityAssetTermField> fields)

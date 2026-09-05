@@ -1,10 +1,12 @@
 using System.Globalization;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Ledger;
+using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
-public sealed class FinancialOperationsCommandCenterReadService : IFinancialOperationsCommandCenterReadService
+public sealed partial class FinancialOperationsCommandCenterReadService : IFinancialOperationsCommandCenterReadService
 {
     private static readonly IReadOnlyList<OperationsGateKeyDto> CoreFlowGateOrder =
     [
@@ -18,15 +20,21 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
     private readonly IOperationsContinuityWorkflowService _workflowService;
     private readonly IOperationsCloseCalendarService? _closeCalendarService;
     private readonly IPrivateCapitalCloseCockpitService? _privateCapitalCloseCockpitService;
+    private readonly ILedgerBookService? _ledgerBookService;
+    private readonly IAccountingCloseManagementService? _closeManagementService;
 
     public FinancialOperationsCommandCenterReadService(
         IOperationsContinuityWorkflowService workflowService,
         IOperationsCloseCalendarService? closeCalendarService = null,
-        IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null)
+        IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null,
+        ILedgerBookService? ledgerBookService = null,
+        IAccountingCloseManagementService? closeManagementService = null)
     {
         _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
         _closeCalendarService = closeCalendarService;
         _privateCapitalCloseCockpitService = privateCapitalCloseCockpitService;
+        _ledgerBookService = ledgerBookService;
+        _closeManagementService = closeManagementService;
     }
 
     public async Task<FinancialOperationsCommandCenterDto> GetCommandCenterAsync(
@@ -35,37 +43,17 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
         Guid? fundAccountId = null,
         string? periodId = null,
         string? entityId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
 
-        var summaries = await _workflowService
-            .ListAsync(fundAccountId, periodId, status: null, ct, ledgerBookId: ledgerBookId)
-            .ConfigureAwait(false);
-        var workflows = new List<OperationsContinuityWorkflowDto>(summaries.Count);
-        foreach (var summary in summaries)
-        {
-            ct.ThrowIfCancellationRequested();
-            var workflow = await _workflowService.GetAsync(summary.WorkflowId, ct).ConfigureAwait(false);
-            if (workflow is not null)
-            {
-                workflows.Add(workflow);
-            }
-        }
-
-        var activeWorkflow = ResolveActiveWorkflow(workflows);
-        var effectiveFundAccountId = fundAccountId ?? activeWorkflow?.FundAccountId;
-        var effectivePeriodId = periodId ?? activeWorkflow?.PeriodId;
-        var closeCalendar = _closeCalendarService is null
-            ? null
-            : await _closeCalendarService
-                .GetCalendarAsync(effectiveFundAccountId, effectivePeriodId, ct)
-                .ConfigureAwait(false);
-        var privateCapitalCloseCockpit = _privateCapitalCloseCockpitService is null
-            ? null
-            : await _privateCapitalCloseCockpitService
-                .GetCockpitAsync(fundProfileId, ledgerBookId, effectiveFundAccountId, effectivePeriodId, entityId, ct)
-                .ConfigureAwait(false);
+        var inputs = await LoadCloseInputsAsync(new(fundProfileId, ledgerBookId, fundAccountId, entityId, periodId),
+            tenantId, companyId, ct).ConfigureAwait(false);
+        var activeWorkflow = inputs.Workflow;
+        var closeCalendar = inputs.Calendar;
+        var privateCapitalCloseCockpit = inputs.Cockpit;
 
         var rows = new List<FinancialOperationsQueueRowDto>();
         if (activeWorkflow is not null)
@@ -91,27 +79,31 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             .ToArray();
         var blockedCount = orderedRows.Count(static row => row.IsBlocked);
         var reviewCount = orderedRows.Length - blockedCount;
-        var isReady = activeWorkflow is not null
-            && (activeWorkflow.CloseReadiness?.IsReadyToClose == true || activeWorkflow.Status is OperationsWorkflowStatusDto.ReadyForClose or OperationsWorkflowStatusDto.Closed)
-            && orderedRows.Length == 0
-            && (privateCapitalCloseCockpit?.IsReadyToClose ?? true);
-        var status = activeWorkflow is null && privateCapitalCloseCockpit is null
-            ? "Unavailable"
-            : blockedCount > 0
-                ? "Blocked"
-                : isReady
-                    ? "Ready"
-                    : "AtRisk";
+        var projection = inputs.Projection.Build(orderedRows);
+        var isReady = projection.IsReadyToClose;
+        var status = projection.Status;
+        var summary = isReady ? "All required contributors are ready for the selected close scope."
+            : $"{projection.Blockers.Count} requirement(s) block close. " + projection.Blockers.FirstOrDefault()?.Message;
+        var decision = BuildCloseSupportDecision(activeWorkflow, closeCalendar, privateCapitalCloseCockpit, orderedRows)
+            with
+        { Status = status, IsReady = isReady, Summary = summary };
+        decision = decision with
+        {
+            Decisions = projection.Blockers.Where(b => !orderedRows.Any(r => r.QueueId == b.Code))
+                .Select(b => new FinancialOperationsCloseSupportDecisionRowDto(b.Code, b.Owner, b.Type,
+                    "Blocked", true, b.Message, "Resolve this requirement and refresh close readiness.", null))
+                .Concat(decision.Decisions).ToArray()
+        };
 
         return new FinancialOperationsCommandCenterDto(
             DateTimeOffset.UtcNow,
             fundProfileId,
-            ledgerBookId ?? activeWorkflow?.LedgerBookId ?? privateCapitalCloseCockpit?.LedgerBookId,
-            effectiveFundAccountId ?? privateCapitalCloseCockpit?.FundAccountId,
-            effectivePeriodId ?? privateCapitalCloseCockpit?.PeriodId,
+            ledgerBookId,
+            fundAccountId,
+            periodId,
             status,
             isReady,
-            BuildSummary(status, orderedRows.Length, blockedCount, reviewCount),
+            summary,
             orderedRows.Length,
             blockedCount,
             reviewCount,
@@ -120,17 +112,9 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             activeWorkflow,
             closeCalendar,
             privateCapitalCloseCockpit,
-            BuildCloseSupportDecision(activeWorkflow, closeCalendar, privateCapitalCloseCockpit, orderedRows));
+            decision,
+            projection);
     }
-
-    private static OperationsContinuityWorkflowDto? ResolveActiveWorkflow(IReadOnlyList<OperationsContinuityWorkflowDto> workflows)
-        => workflows
-            .OrderBy(static workflow => IsClosedWorkflow(workflow) ? 1 : 0)
-            .ThenByDescending(static workflow => workflow.UpdatedAtUtc)
-            .FirstOrDefault();
-
-    private static bool IsClosedWorkflow(OperationsContinuityWorkflowDto workflow)
-        => workflow.Status is OperationsWorkflowStatusDto.Closed;
 
     private static void AddWorkflowRows(ICollection<FinancialOperationsQueueRowDto> rows, OperationsContinuityWorkflowDto workflow)
     {
