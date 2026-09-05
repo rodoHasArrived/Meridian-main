@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `48e66d65d079`
+- Source fingerprint: `ca59adff5123`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `98`
 - Open automated tasks: `6`
@@ -224,7 +224,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as AccountPortfolio (AccountPortfolioPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-account-portfolio.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +9 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more.
 
 #### Aggregate portfolio (`AggregatePortfolio`)
 
@@ -232,7 +232,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as AggregatePortfolio (AggregatePortfolioPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-aggregate-portfolio.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AggregatePortfolioViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AggregatePortfolioViewModelTests.cs, +2 more.
 
 #### Run portfolio (`RunPortfolio`)
 
@@ -370,7 +370,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundAccountingClose (AccountingClosePage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-accounting-close.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountingCloseViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.ResponseIsolation.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, +3 more.
 
 #### Fund trial balance (`FundTrialBalance`)
 

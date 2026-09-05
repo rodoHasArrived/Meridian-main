@@ -9,6 +9,7 @@ using Meridian.Ledger;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
+using Meridian.Tests.Storage;
 using NSubstitute;
 using Xunit;
 
@@ -304,6 +305,47 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(0);
     }
 
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("scope")]
+    [InlineData("basis")]
+    public async Task CaptureAsync_CanonicalDisposalEvidenceBlocksAndRestoringItProducesSignedLotEvidence(string fault)
+    {
+        var fixture = CreateFixture();
+        fixture.Parameters = fixture.Parameters with { OutputFormat = ReportingOutputFormatDto.Pdf };
+        var lot = CanonicalOpenLotConsumerTests.DurableLot(1) with { LedgerBookId = fixture.Book.LedgerBookId };
+        var sourceRecord = Record(fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 11);
+        var disposal = CanonicalOpenLotConsumerTests.DisposalJournal(lot);
+        var dimensions = sourceRecord.Entry.Lines[0].Dimensions! with
+        {
+            InstrumentId = lot.SecurityId,
+            PositionId = lot.BookPositionId
+        };
+        var entry = new JournalEntry(disposal.JournalEntryId, disposal.Timestamp, disposal.Description,
+            disposal.Lines.Select(line => new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp,
+                line.Account, line.Debit, line.Credit, line.Description, dimensions)).ToArray());
+        fixture.JournalStore.Records.Add(sourceRecord with { Entry = entry });
+        var history = CanonicalOpenLotConsumerTests.History(lot, entry, lot.ToOpenLot());
+        fixture.JournalStore.Disposals.Add(fault switch
+        {
+            "missing" => history with { CanonicalLots = null },
+            "scope" => history with { CanonicalLots = [history.CanonicalLots![0] with { BookPositionId = Guid.NewGuid() }] },
+            _ => history with { Lots = [history.Lots[0] with { CostBasis = 301m }] }
+        });
+        var intent = new ReportingAuthoritativeSourceCaptureIntent("capital-account-statement");
+        var capture = () => fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access, intent).AsTask();
+        await capture.Should().ThrowAsync<ReportingAuthoritativeSourceUnavailableException>().WithMessage("*blocks canonical reporting*");
+
+        fixture.JournalStore.Disposals[0] = history;
+        var restored = await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access, intent);
+        var artifact = restored.CertifiedLedgerPresentation!.ReportPack.Artifacts
+            .Single(item => item.Name == "canonical-open-lot-evidence.json");
+        artifact.Content.Should().Contain(lot.SecurityId.ToString("D"))
+            .And.Contain("AcquisitionFxRateToFunctional").And.Contain("1.2")
+            .And.Contain("FunctionalCostBasis");
+        restored.Checkpoint.EvidenceIds.Should().Contain(reference => reference.StartsWith("ledger-report-pack:", StringComparison.Ordinal));
+    }
+
     private static Fixture CreateFixture(string periodStatus = "HardClosed")
     {
         const string tenantId = "tenant-reporting";
@@ -514,9 +556,13 @@ public sealed class LedgerReportingAuthoritativeSourceTests
 
     private sealed class QueryFilteringJournalStore(
         LedgerBookRecord book,
-        LedgerAccountingPeriod period) : ILedgerJournalStore
+        LedgerAccountingPeriod period) : ILedgerJournalStore, ILedgerTaxLotDisposalHistory
     {
         public List<LedgerJournalEntryRecord> Records { get; } = [];
+        public List<LedgerTaxLotDisposalHistoryRecord> Disposals { get; } = [];
+        public Task<IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>> GetTaxLotDisposalHistoryAsync(
+            Guid ledgerBookId, IReadOnlyList<Guid> journalEntryIds, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>>(Disposals);
         public bool ApplyQueryFilters { get; set; } = true;
         public bool RejectCompleteHistoryQueries { get; set; }
         public int QueryCount { get; private set; }

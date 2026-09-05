@@ -121,6 +121,7 @@ export interface OperationsResolveBreakCaseRequest {
 }
 
 export interface OperationsCloseWorkflowRequest {
+  closeScope?: CloseReadinessProjection["scope"] | null;
   expectedVersion: number;
   actor: string;
   rationale: string;
@@ -420,6 +421,7 @@ export interface FinancialOperationsCommandCenter {
   closeCalendar?: OperationsCloseCalendar | null;
   privateCapitalCloseCockpit?: PrivateCapitalCloseCockpit | null;
   closeSupportDecision?: FinancialOperationsCloseSupportDecision | null;
+  closeReadiness?: CloseReadinessProjection | null;
 }
 
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";
@@ -1393,4 +1395,15 @@ export interface DimensionMappingProfile {
   externalDimensions: LedgerDimensionSet;
   certificationState: AccountingCertificationState;
   validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+/** Server-owned close decision. Missing or incomplete contributors always block. */
+export interface CloseReadinessProjection {
+  scope: { fundProfileId: string | null; ledgerBookId: string | null; fundAccountId: string | null; entityId: string | null; periodId: string | null };
+  evaluatedAtUtc: string;
+  status: string;
+  isComplete: boolean;
+  isReadyToClose: boolean;
+  contributors: { contributorId: string; owner: string; status: string; evaluatedAtUtc: string | null; recordIds: string[] }[];
+  blockers: { code: string; contributorId: string; type: string; count: number; severity: string; owner: string; message: string; recordIds: string[] }[];
 }

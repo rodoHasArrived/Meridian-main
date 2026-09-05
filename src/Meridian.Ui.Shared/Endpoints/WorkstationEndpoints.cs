@@ -121,6 +121,7 @@ public static partial class WorkstationEndpoints
         MapStrategyEngineEndpoints(group, jsonOptions);
         MapFeatureCapabilityEndpoints(group, jsonOptions);
         MapExtensibilityEndpoints(group, jsonOptions);
+        MapCloseReadinessEndpoints(group, jsonOptions);
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
@@ -1321,6 +1322,9 @@ public static partial class WorkstationEndpoints
             }
 
             var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
+            var readinessRefusal = await ValidateClosePublicationReadinessAsync(context, workflowId, trustedRequest.ExpectedVersion, trustedRequest.CloseScope, jsonOptions).ConfigureAwait(false);
+            if (readinessRefusal is not null)
+                return readinessRefusal;
             var result = await service.CloseWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -3397,7 +3401,8 @@ public static partial class WorkstationEndpoints
         {
             positions = portfolio.Positions.Values.Select(pos =>
             {
-                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var retainedMark = ResolveLiveMarkWithObservation(pos.Symbol, quoteCollector, tradeCollector);
+                var mark = retainedMark.Price;
                 var hasMark = mark.HasValue && mark.Value > 0m;
                 var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
                 var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
@@ -3865,25 +3870,28 @@ public static partial class WorkstationEndpoints
     /// price → null (caller falls back to cost basis).
     /// </summary>
     internal static decimal? ResolveLiveMark(string symbol, QuoteCollector? quotes, TradeDataCollector? trades)
+        => ResolveLiveMarkWithObservation(symbol, quotes, trades).Price;
+
+    private static (decimal? Price, DateOnly? ObservedOn) ResolveLiveMarkWithObservation(string symbol, QuoteCollector? quotes, TradeDataCollector? trades)
     {
         if (string.IsNullOrWhiteSpace(symbol))
         {
-            return null;
+            return (null, null);
         }
 
         if (quotes is not null && quotes.TryGet(symbol, out var bbo) && bbo is not null)
         {
             if (bbo.MidPrice is { } mid && mid > 0m)
             {
-                return mid;
+                return (mid, DateOnly.FromDateTime(bbo.Timestamp.UtcDateTime));
             }
             if (bbo.AskPrice > 0m)
             {
-                return bbo.AskPrice;
+                return (bbo.AskPrice, DateOnly.FromDateTime(bbo.Timestamp.UtcDateTime));
             }
             if (bbo.BidPrice > 0m)
             {
-                return bbo.BidPrice;
+                return (bbo.BidPrice, DateOnly.FromDateTime(bbo.Timestamp.UtcDateTime));
             }
         }
 
@@ -3892,11 +3900,11 @@ public static partial class WorkstationEndpoints
             var recent = trades.GetRecentTrades(symbol, 1);
             if (recent.Count > 0 && recent[0].Price > 0m)
             {
-                return recent[0].Price;
+                return (recent[0].Price, DateOnly.FromDateTime(recent[0].Timestamp.UtcDateTime));
             }
         }
 
-        return null;
+        return (null, null);
     }
 
     private static string FormatPercent(decimal value)
