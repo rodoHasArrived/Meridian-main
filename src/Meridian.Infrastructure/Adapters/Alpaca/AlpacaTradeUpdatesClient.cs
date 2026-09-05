@@ -46,6 +46,10 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
     private DateTimeOffset? _watermark;
     private DateTimeOffset? _lastUpdateAt;
     private string? _failure;
+    private string? _transportFailure;
+    private volatile bool _streamReady;
+    private volatile bool _authorized;
+    private volatile bool _subscribed;
     private string? _stateIdentityScope;
     private AlpacaCredentialSnapshot? _scopedCredentials;
     private bool _stateInitialized;
@@ -72,11 +76,29 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
         _usesDefaultCursorStore = cursorStore is null;
     }
 
+    /// <summary>
+    /// Whether the stream is an execution source of record right now: the socket is open, the
+    /// subscription was authenticated and the post-connect REST reconciliation completed, and no
+    /// durable-state failure is outstanding.
+    /// <para>
+    /// Deliberately not a function of how recently a trade update arrived. An idle or order-free
+    /// account legitimately produces no updates for hours, and reading that silence as a dead
+    /// stream blocked every new submission on such an account once the stale window lapsed.
+    /// Transport liveness is instead established by the WebSocket keep-alive: the socket pings
+    /// on <see cref="_staleAfter"/>'s cadence and is aborted when the peer stops answering, which
+    /// takes <see cref="WebSocketState.Open"/> away from this check.
+    /// </para>
+    /// </summary>
     public bool IsHealthy =>
         _socket?.State == WebSocketState.Open &&
-        _lastUpdateAt is { } at &&
-        _clock.GetUtcNow() - at <= _staleAfter &&
+        _streamReady &&
         _failure is null;
+
+    /// <summary>When any frame -- control acknowledgement or trade update -- last arrived.</summary>
+    public DateTimeOffset? LastActivityAt => _lastUpdateAt;
+
+    /// <summary>Whether Alpaca has acknowledged both the authorization and the trade_updates subscription.</summary>
+    internal bool HandshakeAcknowledged => _authorized && _subscribed;
 
     public DateTimeOffset? Watermark
     {
@@ -89,7 +111,9 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
 
     public string? UnhealthyReason => IsHealthy
         ? null
-        : _failure ?? "Trade-update stream is delayed, disconnected, or has not produced an update.";
+        : _failure
+          ?? _transportFailure
+          ?? "Trade-update stream is not connected, or its post-connect reconciliation has not completed.";
 
     public IAsyncEnumerable<ExecutionReport> Reports => ReadReportsAsync();
 
@@ -163,11 +187,54 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
     {
         using var doc = JsonDocument.Parse(message);
         var root = doc.RootElement;
-        if (!root.TryGetProperty("stream", out var stream) ||
-            !string.Equals(stream.GetString(), "trade_updates", StringComparison.Ordinal))
+        if (!root.TryGetProperty("stream", out var stream))
+            return;
+
+        if (string.Equals(stream.GetString(), "authorization", StringComparison.Ordinal))
         {
+            // A refused subscription keeps the socket open and silent, which is exactly the
+            // shape an idle account has. Name it, so health reports the refusal rather than
+            // waiting on updates that will never come.
+            var authorizationStatus = root.TryGetProperty("data", out var authorization)
+                ? ReadString(authorization, "status")
+                : null;
+            if (string.Equals(authorizationStatus, "authorized", StringComparison.OrdinalIgnoreCase))
+            {
+                _authorized = true;
+            }
+            else
+            {
+                _transportFailure = "Alpaca refused the trade-update stream authorization.";
+                _streamReady = false;
+            }
+
             return;
         }
+
+        if (string.Equals(stream.GetString(), "listening", StringComparison.Ordinal))
+        {
+            // The listen acknowledgement names the streams actually subscribed. One that omits
+            // trade_updates is a live socket that will never carry a fill.
+            var subscribed = root.TryGetProperty("data", out var listening)
+                && listening.TryGetProperty("streams", out var streams)
+                && streams.ValueKind == JsonValueKind.Array
+                && streams.EnumerateArray().Any(static item =>
+                    string.Equals(item.GetString(), "trade_updates", StringComparison.Ordinal));
+            if (subscribed)
+            {
+                _subscribed = true;
+            }
+            else
+            {
+                _transportFailure = "Alpaca did not confirm the trade_updates subscription.";
+                _streamReady = false;
+            }
+
+            return;
+        }
+
+        if (!string.Equals(stream.GetString(), "trade_updates", StringComparison.Ordinal))
+            return;
 
         if (!root.TryGetProperty("data", out var data))
             return;
@@ -196,6 +263,12 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             OrderQuantity = ReadDecimal(order, "qty"),
             FilledQuantity = ReadDecimal(order, "filled_qty"),
             FillPrice = ReadNullableDecimal(data, "price") ?? ReadNullableDecimal(order, "filled_avg_price"),
+            // The event's own executed quantity, distinct from the order's cumulative filled_qty:
+            // the OMS needs it to book a fill for an order it no longer tracks after a restart.
+            LastFillQuantity = mapped.type is ExecutionReportType.Fill or ExecutionReportType.PartialFill
+                ? ReadNullableDecimal(data, "qty")
+                : null,
+            AssetClass = ReadString(order, "asset_class"),
             Timestamp = timestamp,
             RejectReason = ReadString(data, "reason"),
             Diagnostics = new ExecutionDiagnostics
@@ -318,12 +391,16 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             {
                 var credentials = _scopedCredentials ?? AlpacaCredentialEnvironment.Resolve(_options);
                 _socket = new ClientWebSocket();
+                ConfigureTransportLiveness(_socket);
                 await _socket.ConnectAsync(
                         new Uri(credentials.UseSandbox
                             ? "wss://paper-api.alpaca.markets/stream"
                             : "wss://api.alpaca.markets/stream"),
                         ct)
                     .ConfigureAwait(false);
+                // The transport is alive again; the previous connection's failure is history.
+                // Left in place it would fail the handshake below on its first valid frame.
+                _transportFailure = null;
                 await SendAsync(new { action = "auth", key = credentials.KeyId, secret = credentials.SecretKey }, ct)
                     .ConfigureAwait(false);
                 await SendAsync(
@@ -331,39 +408,36 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
                         ct)
                     .ConfigureAwait(false);
 
-                await ReconcileAfterConnectAsync(ct).ConfigureAwait(false);
-
-                delay = TimeSpan.FromSeconds(1);
                 var buffer = new byte[64 * 1024];
                 using var messageBuffer = new MemoryStream();
+
+                // Both acknowledgements are consumed before the stream can be a source of record.
+                // Marking it ready on the strength of having sent auth and listen would let a
+                // refusal, or a listening ack that omits trade_updates, sit unread in the socket
+                // while the submission gate admitted a live order on the promise of fills.
+                _authorized = false;
+                _subscribed = false;
+                await AwaitHandshakeAsync(buffer, messageBuffer, ct).ConfigureAwait(false);
+
+                await ReconcileAfterConnectAsync(ct).ConfigureAwait(false);
+
+                // Source of record from here: authenticated, subscribed, and reconciled against
+                // the REST snapshot. A transport failure from the previous connection is over.
+                _transportFailure = null;
+                _lastUpdateAt = _clock.GetUtcNow();
+                _streamReady = true;
+
+                delay = TimeSpan.FromSeconds(1);
                 while (_socket.State == WebSocketState.Open && !ct.IsCancellationRequested)
                 {
-                    var result = await _socket.ReceiveAsync(buffer, ct).ConfigureAwait(false);
-                    if (result.MessageType == WebSocketMessageType.Close)
+                    var message = await ReceiveMessageAsync(buffer, messageBuffer, ct).ConfigureAwait(false);
+                    if (message is null)
                         break;
 
-                    // Frames can be fragmented or exceed the receive buffer; accumulate until the
-                    // final fragment and decode once. The cap also bounds a peer that never marks
-                    // EndOfMessage.
-                    if (messageBuffer.Length + result.Count > MaxTradeUpdateMessageBytes)
-                    {
-                        throw new InvalidOperationException(
-                            $"Alpaca trade-update message exceeded {MaxTradeUpdateMessageBytes} bytes without completing.");
-                    }
-
-                    messageBuffer.Write(buffer, 0, result.Count);
-                    if (!result.EndOfMessage)
-                        continue;
-
-                    var message = Encoding.UTF8.GetString(
-                        messageBuffer.GetBuffer(),
-                        0,
-                        checked((int)messageBuffer.Length));
-                    messageBuffer.SetLength(0);
                     await ProcessMessageAsync(message, ct).ConfigureAwait(false);
                 }
 
-                _failure = "Alpaca trade-update socket closed.";
+                _transportFailure = "Alpaca trade-update socket closed.";
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -371,11 +445,12 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                _failure = ex.Message;
+                _transportFailure = ex.Message;
                 _logger.LogWarning(ex, "Alpaca trade-update stream failed; reconnecting");
             }
             finally
             {
+                _streamReady = false;
                 _socket?.Dispose();
                 _socket = null;
             }
@@ -391,6 +466,94 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
 
             delay = TimeSpan.FromSeconds(Math.Min(30, delay.TotalSeconds * 2));
         }
+    }
+
+    /// <summary>Bound on how long the auth and listen acknowledgements may take to arrive.</summary>
+    private static readonly TimeSpan HandshakeTimeout = TimeSpan.FromSeconds(15);
+
+    /// <summary>
+    /// Reads frames until Alpaca has both authorized the connection and confirmed the
+    /// trade_updates subscription, failing closed on a refusal, a subscription that omits the
+    /// stream, a closed socket, or the handshake timeout. Trade updates that arrive in between
+    /// are processed normally.
+    /// </summary>
+    private async Task AwaitHandshakeAsync(byte[] buffer, MemoryStream messageBuffer, CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(HandshakeTimeout);
+        try
+        {
+            while (!(_authorized && _subscribed))
+            {
+                var message = await ReceiveMessageAsync(buffer, messageBuffer, timeout.Token).ConfigureAwait(false);
+                if (message is null)
+                {
+                    throw new InvalidOperationException(
+                        "Alpaca closed the trade-update socket before acknowledging authorization and subscription.");
+                }
+
+                await ProcessMessageAsync(message, timeout.Token).ConfigureAwait(false);
+                if (_transportFailure is { } refused)
+                {
+                    throw new InvalidOperationException(refused);
+                }
+            }
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            throw new TimeoutException(
+                $"Alpaca did not acknowledge the trade-update authorization and subscription within {HandshakeTimeout}.");
+        }
+    }
+
+    /// <summary>
+    /// Receives one complete text message, reassembling fragments, or returns null when the
+    /// peer sends a close frame.
+    /// </summary>
+    private async Task<string?> ReceiveMessageAsync(byte[] buffer, MemoryStream messageBuffer, CancellationToken ct)
+    {
+        while (true)
+        {
+            var result = await _socket!.ReceiveAsync(buffer, ct).ConfigureAwait(false);
+            if (result.MessageType == WebSocketMessageType.Close)
+                return null;
+
+            // Frames can be fragmented or exceed the receive buffer; accumulate until the
+            // final fragment and decode once. The cap also bounds a peer that never marks
+            // EndOfMessage.
+            if (messageBuffer.Length + result.Count > MaxTradeUpdateMessageBytes)
+            {
+                throw new InvalidOperationException(
+                    $"Alpaca trade-update message exceeded {MaxTradeUpdateMessageBytes} bytes without completing.");
+            }
+
+            messageBuffer.Write(buffer, 0, result.Count);
+            if (!result.EndOfMessage)
+                continue;
+
+            var message = Encoding.UTF8.GetString(
+                messageBuffer.GetBuffer(),
+                0,
+                checked((int)messageBuffer.Length));
+            messageBuffer.SetLength(0);
+            _lastUpdateAt = _clock.GetUtcNow();
+            return message;
+        }
+    }
+
+    /// <summary>
+    /// Makes the socket's own state a liveness signal. The client pings on half the stale window
+    /// and the runtime aborts the connection when a pong does not arrive within the window, so a
+    /// transport that died without a close frame stops reporting <see cref="WebSocketState.Open"/>
+    /// instead of sitting open and silent -- the same silence an idle account produces, which is
+    /// why message recency cannot be the signal.
+    /// </summary>
+    private void ConfigureTransportLiveness(ClientWebSocket socket)
+    {
+        var timeout = _staleAfter > TimeSpan.Zero ? _staleAfter : TimeSpan.FromSeconds(30);
+        var interval = TimeSpan.FromTicks(Math.Max(TimeSpan.TicksPerSecond, timeout.Ticks / 2));
+        socket.Options.KeepAliveInterval = interval;
+        socket.Options.KeepAliveTimeout = timeout;
     }
 
     private async Task SendAsync<T>(T value, CancellationToken ct) =>
@@ -1062,8 +1225,12 @@ internal static class AlpacaTradeUpdateStateCodec
     internal static string ComputeContentHash(ExecutionReport report, DateTimeOffset timestamp)
     {
         ArgumentNullException.ThrowIfNull(report);
+        // The per-event quantity is derived from the same broker event as everything else here,
+        // so it adds nothing to identity -- and keeping it out means an envelope persisted before
+        // the field existed still matches a redelivery of the same event rather than failing
+        // closed as conflicting content.
         var content = JsonSerializer.SerializeToUtf8Bytes(
-            new AlpacaTradeUpdateHashMaterial(report, timestamp),
+            new AlpacaTradeUpdateHashMaterial(report with { LastFillQuantity = null, AssetClass = null }, timestamp),
             AlpacaTradeUpdateStateJsonContext.Default.AlpacaTradeUpdateHashMaterial);
         return Convert.ToHexString(SHA256.HashData(content));
     }

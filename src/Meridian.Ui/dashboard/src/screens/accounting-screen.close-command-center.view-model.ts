@@ -79,8 +79,6 @@ export function buildCloseCommandCenterViewState({
   const incompleteEvidenceCategories = workflow?.accountingRecordSummary?.evidenceCategories.filter((category) => !category.isComplete) ?? [];
   const missingSourceCount = incompleteEvidenceCategories.filter((category) => closeCommandCenterTextMatches(category.key, category.label, "source")).length
     + (workflow?.closeChecklist.filter((task) => !isCloseChecklistDone(task.status) && !task.evidencePointer).length ?? 0);
-  const missingEvidenceCount = incompleteEvidenceCategories.length
-    + (workflow?.closeReadiness?.blockers.filter((blocker) => blocker.category.toLowerCase().includes("evidence")).length ?? 0);
   const pendingApprovalCount = workflow?.approvals.filter((approval) => approval.status !== "Approved").length ?? 0;
   const unapprovedChecklistCount = workflow?.closeChecklist.filter((task) => !isCloseChecklistDone(task.status) && task.requiredApprovalCount > 0).length ?? 0;
   const unapprovedAdjustmentCount = pendingApprovalCount + unapprovedChecklistCount;
@@ -93,24 +91,8 @@ export function buildCloseCommandCenterViewState({
       : "Not ready"
     : "Detail pending";
   const signOffStatus = resolveCloseCommandCenterSignOffStatus(workflow);
-  const hasCriticalBlocker = closeBlockers.some((blocker) => closeCommandCenterSeverityTone(blocker.severity) === "danger");
-  const hasFailedRequiredGate = workflow?.gates.some((gate) => gate.isRequired && gate.status === "Blocked") ?? false;
-  const isReadyToClose = workflow?.closeReadiness?.isReadyToClose === true || workflow?.status === "ReadyForClose" || workflow?.status === "Closed";
-  const status: CloseCommandCenterStatus = workflowLoading && !workflow
-    ? "loading"
-    : hasCriticalBlocker || hasFailedRequiredGate || workflow?.status === "Blocked"
-      ? "blocked"
-      : isReadyToClose
-        && openBreakCount === 0
-        && workflowOpenBreakCount === 0
-        && missingEvidenceCount === 0
-        && unapprovedAdjustmentCount === 0
-        && staleValuationCount === 0
-        && providerWarningCount === 0
-        && reportPackReady
-        && signOffStatus.tone === "success"
-          ? "ready"
-          : "at-risk";
+  // Legacy lane metrics are diagnostic only; readiness requires the shared server projection.
+  const status: CloseCommandCenterStatus = workflowLoading && !workflow ? "loading" : "blocked";
   const statusTone = closeCommandCenterStatusTone(status);
   const readinessLabel = workflow?.closeReadiness?.severity
     ?? workflow?.status
@@ -233,11 +215,11 @@ export function buildCloseCommandCenterViewState({
     description: "Controller-facing period readiness, close blockers, evidence gaps, provider warnings, report-pack readiness, and sign-off status from shared Accounting read models.",
     ariaLabel: "CFO and controller close command center",
     status,
-    statusLabel: status === "ready" ? "Ready" : status === "blocked" ? "Blocked" : status === "loading" ? "Loading" : "At risk",
+    statusLabel: status === "loading" ? "Loading" : "Blocked",
     statusTone,
     periodLabel: workflow?.periodId ?? "Current period",
     fundAccountLabel: workflow?.fundAccountId ?? multiAssetCoverage?.fundAccountId ?? "All accounts",
-    summary: buildCloseCommandCenterSummary(status, metricRows, workflowError),
+    summary: "Shared close readiness is unavailable. Select the full close scope and refresh before sign-off.",
     updatedLabel,
     updatedAtUtc: workflow?.updatedAtUtc ?? accountingSystemReconciliation?.generatedAtUtc ?? multiAssetCoverage?.asOfUtc ?? null,
     metricRows,
@@ -277,7 +259,8 @@ function buildSharedFinancialOperationsCommandCenterViewState(
   errorText: string | null,
   currentDailyValuationSchedule: DailyValuationScheduleWorkItem | null
 ): CloseCommandCenterViewState {
-  const status = mapCommandCenterStatus(commandCenter.status, loading);
+  const projection = commandCenter.closeReadiness;
+  const status = mapCommandCenterStatus(projection?.isComplete && projection.isReadyToClose ? projection.status : "Blocked", loading);
   const statusTone = closeCommandCenterStatusTone(status);
   const closeSupportDecision = commandCenter.closeSupportDecision ?? null;
   const closeSupportMetrics: CloseCommandCenterMetricViewModel[] = closeSupportDecision
@@ -684,29 +667,4 @@ function closeCommandCenterGateRoute(gate: OperationsWorkflowBlocker["gate"]): s
   if (gate === "SecurityMaster") return WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster;
   if (gate === "BrokerIngest") return WORKSTATION_ROUTE_CATALOG.accountingLedger;
   return null;
-}
-
-function buildCloseCommandCenterSummary(
-  status: CloseCommandCenterStatus,
-  metricRows: CloseCommandCenterMetricViewModel[],
-  workflowError: string | null
-): string {
-  if (workflowError) {
-    return `Close workflow detail could not be refreshed: ${workflowError}`;
-  }
-
-  const activeRows = metricRows.filter((row) => row.tone === "warning" || row.tone === "danger");
-  if (status === "ready") {
-    return "The close is ready: breaks, source evidence, approvals, valuations, providers, report pack, and sign-off are clear.";
-  }
-
-  if (status === "blocked") {
-    return `The close is blocked by ${formatCount(activeRows.length, "active control")}; review the blocker list before sign-off.`;
-  }
-
-  if (status === "loading") {
-    return "Refreshing workflow detail before confirming the close state.";
-  }
-
-  return `The close is at risk with ${formatCount(activeRows.length, "watch item")} across the command center.`;
 }

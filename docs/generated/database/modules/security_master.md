@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 83
+- Relations: 88
 - Functions/procedures: 1
 - Triggers: 1
 - Row-level security policies: 0
@@ -403,6 +403,33 @@ erDiagram
         text filename PK
         text checksum
         timestamp_with_time_zone applied_at
+    }
+    security_master_direct_loan_covenant_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        text covenant_type
+        text threshold
+        text notes
+    }
+    security_master_direct_loan_principal_schedule_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        date payment_date
+        numeric_28_10_ amount
+    }
+    security_master_direct_loan_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text borrower
+        date maturity_date
+        text reference_index
+        numeric_18_8_ spread_bps
+        numeric_12_6_ current_coupon_rate
+        text reset_frequency
+        text pricing_source
+        text primary_identifier_value
+        bigint version
     }
     security_master_drawdown_lot_projection {
         uuid lot_id PK
@@ -1096,6 +1123,27 @@ erDiagram
         uuid servicer_report_batch_id PK,FK
         text report_type
     }
+    security_master_structured_credit_factor_schedule_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        date as_of_date
+        numeric_18_10_ factor
+    }
+    security_master_structured_credit_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text tranche
+        text pool_id
+        text collateral_type
+        numeric_28_10_ original_face
+        numeric_18_10_ current_factor
+        text coupon_or_index
+        text factor_schedule_reference
+        date maturity_date
+        text primary_identifier_value
+        bigint version
+    }
     security_master_swap_projection {
         uuid security_id PK
         text display_name
@@ -1129,6 +1177,8 @@ erDiagram
     security_master_corporate_actions ||--o{ security_master_corporate_action_restatement_obligations : "corporate_action_restatement_obligations_corp_act_id_fkey"
     security_master_corporate_actions ||--o{ security_master_corporate_action_source_proposals : "corporate_action_source_proposals_accepted_corp_act_id_fkey"
     security_master_corporate_actions ||--o{ security_master_corporate_actions : "fk_corporate_actions_superseded_action"
+    security_master_direct_loan_projection ||--o{ security_master_direct_loan_covenant_projection : "direct_loan_covenant_projection_security_id_fkey"
+    security_master_direct_loan_projection ||--o{ security_master_direct_loan_principal_schedule_projection : "direct_loan_principal_schedule_projection_security_id_fkey"
     security_master_journal_entry ||--o{ security_master_journal_line : "journal_line_journal_entry_id_fkey"
     security_master_loan_contract ||--o{ security_master_cash_transaction : "cash_transaction_loan_id_fkey"
     security_master_loan_contract ||--o{ security_master_fee_balance : "fee_balance_loan_id_fkey"
@@ -1179,6 +1229,7 @@ erDiagram
     security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_apply_audit : "servicer_statement_apply_audit_servicer_statement_batch_id_fkey"
     security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_import_row : "servicer_statement_import_row_servicer_statement_batch_id_fkey"
     security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_validation_issue : "servicer_statement_validation__servicer_statement_batch_id_fkey"
+    security_master_structured_credit_projection ||--o{ security_master_structured_credit_factor_schedule_projection : "structured_credit_factor_schedule_projection_security_id_fkey"
 ```
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
@@ -1209,6 +1260,9 @@ erDiagram
 | `data_vendor_entitlements` | table | 21 | `entitlement_id` | 0 | 4 | - |
 | `deposit_projection` | table | 11 | `security_id` | 0 | 3 | - |
 | `direct_lending_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
+| `direct_loan_covenant_projection` | table | 5 | `security_id`, `ordinal` | 1 | 1 | Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose ("4.5x"), not a number. |
+| `direct_loan_principal_schedule_projection` | table | 4 | `security_id`, `ordinal` | 1 | 2 | Contractual principal instalments of a projected direct loan, in terms-document order (ordinal). Makes instalments-due-in-a-window answerable without parsing every security document. |
+| `direct_loan_projection` | table | 12 | `security_id` | 0 | 4 | Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from the loan_contract family in this same schema, which keys on loan_id and belongs to the direct-lending servicing aggregate. |
 | `drawdown_lot_projection` | table | 7 | `lot_id` | 0 | 2 | - |
 | `equity_projection` | table | 11 | `security_id` | 1 | 3 | - |
 | `fee_balance` | table | 9 | `fee_balance_id` | 2 | 2 | - |
@@ -1240,7 +1294,7 @@ erDiagram
 | `reconciliation_result` | table | 15 | `reconciliation_result_id` | 4 | 2 | - |
 | `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
-| `securities` | table | 21 | `security_id` | 0 | 5 | - |
+| `securities` | table | 21 | `security_id` | 0 | 4 | - |
 | `security_aliases` | table | 14 | `alias_id` | 1 | 3 | - |
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |
 | `security_events` | table | 10 | `global_sequence` | 0 | 3 | - |
@@ -1265,4 +1319,6 @@ erDiagram
 | `servicing_revision_processing` | table | 7 | `loan_id`, `servicing_revision`, `processing_stage` | 0 | 1 | - |
 | `servicing_revision_projection` | table | 6 | `loan_id`, `revision_number` | 0 | 2 | - |
 | `servicing_revision_source` | table | 4 | `loan_id`, `servicing_revision`, `servicer_report_batch_id` | 1 | 1 | - |
+| `structured_credit_factor_schedule_projection` | table | 4 | `security_id`, `ordinal` | 1 | 2 | Dated pool-factor points of a projected structured-credit tranche, in terms-document order (ordinal). Serves the factor-as-of lookup used by amortization. |
+| `structured_credit_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data. |
 | `swap_projection` | table | 9 | `security_id` | 0 | 3 | - |

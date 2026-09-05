@@ -9,33 +9,33 @@
     "endpoint_count": 645,
     "documented_endpoint_count": 207,
     "undocumented_endpoint_count": 438,
-    "workstation_contract_count": 917,
+    "workstation_contract_count": 921,
     "documented_workstation_contract_count": 36,
-    "undocumented_workstation_contract_count": 881
+    "undocumented_workstation_contract_count": 885
   },
   "endpoints": [
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:669",
+      "source": "src/Meridian/UiServer.cs:671",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:703",
+      "source": "src/Meridian/UiServer.cs:705",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/{operationId}",
-      "source": "src/Meridian/UiServer.cs:757",
+      "source": "src/Meridian/UiServer.cs:759",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/receipts/latest",
-      "source": "src/Meridian/UiServer.cs:778",
+      "source": "src/Meridian/UiServer.cs:780",
       "documented": true
     },
     {
@@ -3875,13 +3875,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2769",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2770",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2910",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2911",
       "documented": false
     }
   ],
@@ -4229,6 +4229,26 @@
     {
       "name": "StpStateTransition",
       "source": "src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:37",
+      "documented": false
+    },
+    {
+      "name": "CloseReadinessScopeDto",
+      "source": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:4",
+      "documented": false
+    },
+    {
+      "name": "CloseReadinessContributionDto",
+      "source": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:12",
+      "documented": false
+    },
+    {
+      "name": "CloseReadinessBlockerDto",
+      "source": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:18",
+      "documented": false
+    },
+    {
+      "name": "CloseReadinessProjectionDto",
+      "source": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:30",
       "documented": false
     },
     {
@@ -4788,22 +4808,22 @@
     },
     {
       "name": "FinancialOperationsCloseSupportDecisionDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:21",
+      "source": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:22",
       "documented": false
     },
     {
       "name": "FinancialOperationsCloseSupportDecisionRowDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:34",
+      "source": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:35",
       "documented": false
     },
     {
       "name": "FinancialOperationsCommandCenterMetricDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:49",
+      "source": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:50",
       "documented": false
     },
     {
       "name": "FinancialOperationsQueueRowDto",
-      "source": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:57",
+      "source": "src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:58",
       "documented": false
     },
     {

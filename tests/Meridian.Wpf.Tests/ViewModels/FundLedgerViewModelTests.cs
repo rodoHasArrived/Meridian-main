@@ -1530,7 +1530,9 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
                 viewModel.ReportPackReadinessState.Title.Should().Be("Report pack evidence linked");
                 viewModel.ReportPackReadinessState.Detail.Should().Contain("preview is ready for operator handoff");
-                viewModel.ReportPackReadinessState.Detail.Should().Contain("Close readiness remains blocked until shared lifecycle gates, reconciliation decisions, and report-pack evidence align.");
+                viewModel.ReportPackReadinessState.Detail.Should().Contain("Close readiness remains blocked until a scoped shared evaluation is available.");
+                viewModel.PrivateCapitalCloseReadinessState.Kind.Should().Be(WorkstationStateKind.Blocked,
+                    "a ready report preview and cockpit cannot replace the missing shared close projection");
                 viewModel.ReportPackReadinessState.ReadinessTone.Should().Be(WorkstationReadinessTone.EvidenceLinked);
                 viewModel.ReportPackReadinessState.ActionPosture!.Label.Should().Be("Review handoff");
                 viewModel.ReportPackReadinessState.ActionPosture.Target.Should().Be("FundReportPack");
@@ -1689,7 +1691,7 @@ public sealed class FundLedgerViewModelTests
                 closeCockpitService.RequestedPeriodId.Should().Be("2026-06");
                 closeCockpitService.RequestedEntityId.Should().Be("entity-alpha");
                 closeCockpitService.RequestCount.Should().Be(1);
-                viewModel.PrivateCapitalCloseStatusText.Should().Be("Review Required");
+                viewModel.PrivateCapitalCloseStatusText.Should().Be("Blocked");
                 viewModel.PrivateCapitalCloseSummaryText.Should().Contain("1/2 close lanes ready");
                 viewModel.PrivateCapitalCloseSummaryText.Should().Contain("2 evidence package(s)");
                 viewModel.PrivateCapitalCloseEvidenceText.Should().Contain("7 evidence links");
@@ -1721,7 +1723,7 @@ public sealed class FundLedgerViewModelTests
                     row.StatusLabel == "ReviewerAssigned" &&
                     row.ReviewerLabel == "controller" &&
                     row.EvidenceLabel == "1 evidence link");
-                viewModel.PrivateCapitalCloseReadinessState.Title.Should().Be("Private-capital close review required");
+                viewModel.PrivateCapitalCloseReadinessState.Title.Should().Be("Private-capital close blocked");
                 viewModel.PrivateCapitalCloseReadinessState.ActionPosture!.Target.Should().Be("OperationsClose");
                 viewModel.PrivateCapitalCloseReadinessState.VisibleEvidenceLinks.Should().Contain(link =>
                     link.Label == "Partner capital tie-out evidence package" &&
