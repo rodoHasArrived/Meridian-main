@@ -1572,7 +1572,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         RecordCorpActionCommand = new AsyncRelayCommand(OnRecordCorpAction);
         BackfillTradingParamsCommand = new AsyncRelayCommand(
             OnBackfillTradingParams,
-            () => !IsBackfillingTradingParams && CanModifySecurityMaster && CanTriggerSecurityMasterBackfill());
+            () => !IsBackfillingTradingParams && CanTriggerSecurityMasterBackfill());
         ImportFromFileCommand = new AsyncRelayCommand(
             OnImportFromFile,
             () => !IsImporting && CanModifySecurityMaster);
@@ -2217,10 +2217,12 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private async Task OnBackfillTradingParams()
     {
-        // The largest single mutation on this lane: one invocation amends up to 1,000 securities,
-        // so it is gated exactly like the per-record commands, and additionally requires the
-        // backfill trigger grant below.
-        if (!EnsureCanModifySecurityMaster())
+        // The largest single mutation on this lane: one invocation amends up to 1,000 securities.
+        // Its authority is TriggerBackfill, matching the shared HTTP boundary where backfill
+        // routes require that grant alone — a profile delegated backfill without broader Security
+        // Master edit rights may run it — enforced on both the host posture below and the
+        // signed-in operator that follows.
+        if (!EnsureCanTriggerSecurityMasterBackfill())
             return;
 
         if (_authenticationSession is null ||

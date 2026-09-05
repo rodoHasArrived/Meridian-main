@@ -16,8 +16,8 @@ public sealed partial class SecurityMasterViewModel
     /// <summary>
     /// Whether this desktop session may mutate the Security Master golden record. Every HTTP route
     /// that mutates it requires <see cref="UserPermission.ModifySecurityMaster"/>; the desktop
-    /// create, edit, deactivate, import, and trading-parameter backfill commands reach the same
-    /// services in-process, so they are held to the same grant. Both halves of the gate must agree:
+    /// create, edit, deactivate, and file-import commands reach the same services in-process, so
+    /// they are held to the same grant. Both halves of the gate must agree:
     /// the host posture must grant the permission (so a credential-free host whose
     /// MDC_ANONYMOUS_ROLE names a read-only role refuses) and the active desktop session must name
     /// an authorized operator to record the write against. Gates command enablement and is
@@ -52,9 +52,37 @@ public sealed partial class SecurityMasterViewModel
         return false;
     }
 
+    /// <summary>
+    /// Backfill authority mirrors the shared HTTP boundary, where backfill routes require
+    /// <see cref="UserPermission.TriggerBackfill"/> alone rather than broader Security Master edit
+    /// rights, so a profile delegated only that grant can still run the backfill. The gate keeps
+    /// the same two-legged shape as <see cref="CanModifySecurityMaster"/> — host posture and a
+    /// signed-in operator to record the trigger against — but both legs check TriggerBackfill.
+    /// </summary>
     private bool CanTriggerSecurityMasterBackfill()
-        => _authenticationSession is not null &&
+        => _mutationAuthorization.IsGranted(UserPermission.TriggerBackfill) &&
+           _authenticationSession is not null &&
            _authenticationSession.TryAuthorize(UserPermission.TriggerBackfill, out _);
+
+    /// <summary>
+    /// Enforcement half of the backfill posture gate, mirroring
+    /// <see cref="EnsureCanModifySecurityMaster"/>: the handler re-checks the host posture before
+    /// reaching the backfill service, then resolves the operator against the session.
+    /// </summary>
+    private bool EnsureCanTriggerSecurityMasterBackfill()
+    {
+        if (_mutationAuthorization.IsGranted(UserPermission.TriggerBackfill))
+        {
+            return true;
+        }
+
+        _loggingService.LogWarning("Security Master trading-parameter backfill refused: this desktop session does not hold the TriggerBackfill permission.");
+        _notificationService.ShowNotification(
+            "Security Master",
+            "This operator is not permitted to trigger the trading-parameter backfill.",
+            NotificationType.Error);
+        return false;
+    }
 
     private bool TryAuthorizeSecurityMasterMutation(string operation, out string actor)
     {

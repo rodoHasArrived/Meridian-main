@@ -129,27 +129,26 @@ public sealed class SecurityMasterDeactivateViewModelTests
         });
     }
 
+    /// <summary>
+    /// A granted host posture is not an operator: a dialog composed with only the posture seam
+    /// has no one to record the governed write against, so it refuses instead of fabricating
+    /// attribution the audit trail would carry as fact.
+    /// </summary>
     [Fact]
-    public void ConfirmAsync_WhenGranted_DeactivatesThroughTheService()
+    public void ConfirmAsync_WhenComposedWithoutOperatorSeam_RefusesInsteadOfFabricatingAttribution()
     {
         WpfTestThread.Run(async () =>
         {
-            DeactivateSecurityRequest? capturedRequest = null;
+            // Strict with no setup: any call to the service fails the test.
             var service = new Mock<ISecurityMasterService>(MockBehavior.Strict);
-            service
-                .Setup(mock => mock.DeactivateAsync(It.IsAny<DeactivateSecurityRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<DeactivateSecurityRequest, CancellationToken>((request, _) => capturedRequest = request)
-                .Returns(Task.CompletedTask);
 
             var viewModel = CreateViewModel(service, new StubMutationAuthorization(granted: true));
 
+            viewModel.ConfirmCommand.CanExecute(null).Should().BeFalse();
             await viewModel.ConfirmCommand.ExecuteAsync(null);
 
-            capturedRequest.Should().NotBeNull();
-            capturedRequest!.SecurityId.Should().Be(viewModel.SecurityId);
-            capturedRequest.ExpectedVersion.Should().Be(viewModel.Version);
-            viewModel.StatusText.Should().Contain("deactivated successfully");
-            service.VerifyAll();
+            viewModel.StatusText.Should().Contain("Sign in");
+            service.VerifyNoOtherCalls();
         });
     }
 

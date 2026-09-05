@@ -8,6 +8,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Wpf.Services;
@@ -109,6 +110,52 @@ public sealed class SecurityMasterViewModelTests
                 Times.Never);
         });
     }
+
+    [Fact]
+    public void BackfillCommand_WithTriggerBackfillOnlyOperator_RunsWhileModifyCommandsStayDisabled()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", BackfillOnlyUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null)
+            .Set("MDC_ANONYMOUS_ROLE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("backfill-operator", "pw").Succeeded.Should().BeTrue();
+
+        WpfTestThread.Run(async () =>
+        {
+            var backfillService = new Mock<ITradingParametersBackfillService>(MockBehavior.Strict);
+            backfillService
+                .Setup(service => service.BackfillAllAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            using var viewModel = CreateViewModel(
+                CreateNavigationService(),
+                new StubWorkstationSecurityMasterApiClient(),
+                backfillService: backfillService.Object,
+                authenticationSession: session);
+            viewModel.SelectedSecurity = CreateTrustSnapshot(
+                Guid.Parse("5f0f7c9e-4a83-45cf-a6ce-2f0d0f5a7b31")).Security;
+
+            // The backfill authority is TriggerBackfill alone, matching the shared HTTP boundary,
+            // so a profile delegated only that grant runs the backfill while every command that
+            // requires ModifySecurityMaster stays disabled.
+            viewModel.CreateNewCommand.CanExecute(null).Should().BeFalse();
+            viewModel.EditSelectedCommand.CanExecute(null).Should().BeFalse();
+            viewModel.DeactivateSelectedCommand.CanExecute(null).Should().BeFalse();
+            viewModel.ImportFromFileCommand.CanExecute(null).Should().BeFalse();
+            viewModel.BackfillTradingParamsCommand.CanExecute(null).Should().BeTrue();
+
+            await viewModel.BackfillTradingParamsCommand.ExecuteAsync(null);
+
+            backfillService.Verify(
+                service => service.BackfillAllAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
+        });
+    }
+
+    private static string BackfillOnlyUsersJson()
+        => $$"""[{"username":"backfill-operator","passwordHash":"{{PasswordHashing.HashPassword("pw")}}","role":"ReadOnly","permissions":["ViewSecurityMaster","TriggerBackfill"]}]""";
 
     [Fact]
     public void RefreshWorkflowCommand_LoadsIngestStatus_AndResolvesConflictQueue()

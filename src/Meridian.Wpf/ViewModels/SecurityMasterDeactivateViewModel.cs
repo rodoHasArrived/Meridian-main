@@ -132,26 +132,16 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
     }
 
     /// <summary>
-    /// Resolves the operator to record the deactivation against. When an operator seam is composed
-    /// the write must be attributable to an authorized operator; a dialog composed with only the
-    /// posture seam keeps the pre-existing shell attribution for that composition.
+    /// Resolves the operator to record the deactivation against. A deactivation is a governed
+    /// write to the golden record, so it must always be attributable to an authorized operator:
+    /// a dialog composed without the operator seam has nobody to record the write against and
+    /// refuses rather than fabricating attribution the audit trail would then carry as fact.
     /// </summary>
     private bool TryAuthorizeMutation(out string actor)
     {
-        if (_operatorContext is not null)
+        if (_operatorContext is not null &&
+            _operatorContext.TryAuthorize(UserPermission.ModifySecurityMaster, out actor))
         {
-            if (_operatorContext.TryAuthorize(UserPermission.ModifySecurityMaster, out actor))
-            {
-                return true;
-            }
-
-            actor = string.Empty;
-            return false;
-        }
-
-        if (_mutationAuthorization is not null)
-        {
-            actor = "User";
             return true;
         }
 
