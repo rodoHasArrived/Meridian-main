@@ -11,12 +11,14 @@ namespace Meridian.Contracts.SecurityMaster;
 public static class SecurityIdentifierNormalizer
 {
     /// <summary>
-    /// Identifiers whose value is meaningful only inside the supplied provider or venue namespace.
-    /// Canonical identifiers such as ISIN, CUSIP, and FIGI remain provider-independent even when
-    /// their source provider is retained as provenance.
+    /// Identifiers whose value is meaningful only inside the supplied provider namespace.
+    /// Provider distinguishes only ProviderSymbol identities, matching validation's duplicate
+    /// rules: on every other kind - tickers included, whose Provider carries the ingest feed
+    /// rather than a listing venue - Provider is provenance, so the same value claimed by
+    /// different feeds still collides.
     /// </summary>
     public static bool IsProviderScoped(SecurityIdentifierKind kind)
-        => kind is SecurityIdentifierKind.ProviderSymbol or SecurityIdentifierKind.Ticker;
+        => kind is SecurityIdentifierKind.ProviderSymbol;
 
     /// <summary>
     /// Returns the normalized namespace that participates in identifier identity. Provider data on

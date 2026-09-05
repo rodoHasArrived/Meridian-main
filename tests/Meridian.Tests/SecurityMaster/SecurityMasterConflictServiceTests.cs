@@ -268,6 +268,27 @@ public sealed class SecurityMasterConflictServiceTests
     }
 
     [Fact]
+    public async Task GetOpenConflictsAsync_SameTickerFromDifferentFeeds_Conflicts()
+    {
+        // Ticker Provider values carry the ingest feed (polygon, edgar), not a listing venue,
+        // so feed provenance must not partition the identity: two securities claiming the same
+        // ticker from different feeds is exactly the ambiguity conflict review exists for.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeProjection(Guid.NewGuid(), "Ticker", "AAPL", "polygon"),
+            MakeProjection(Guid.NewGuid(), "Ticker", "AAPL", "edgar")
+        });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        var conflict = conflicts.Should().ContainSingle().Subject;
+        conflict.FieldPath.Should().Be("Identifiers.Ticker");
+        new[] { conflict.ProviderA, conflict.ProviderB }.Should().BeEquivalentTo(["polygon", "edgar"]);
+    }
+
+    [Fact]
     public async Task GetOpenConflictsAsync_ThreeClaimants_EmitsEveryPair()
     {
         var store = Substitute.For<ISecurityMasterStore>();
