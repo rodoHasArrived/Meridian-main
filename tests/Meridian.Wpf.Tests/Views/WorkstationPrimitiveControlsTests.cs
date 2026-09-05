@@ -538,7 +538,7 @@ public sealed class WorkstationPrimitiveControlsTests
             {
                 Table = new WorkstationTableModel<IndexedRowFixture>(
                     tableRows,
-                    [new("Notional", nameof(IndexedRowFixture.Notional), 120, "N2"), new("Fund", "Cells[fund]", 100)],
+                    [new("Notional", nameof(IndexedRowFixture.Notional), 120, "N2"), new("=Fund", "Cells[fund]", 100)],
                     "Indexed table")
             };
 
@@ -550,9 +550,11 @@ public sealed class WorkstationPrimitiveControlsTests
 
                 // A string cell that would execute as a spreadsheet formula is prefixed even
                 // behind leading spaces, which spreadsheet imports trim before interpreting;
-                // a negative numeric cell keeps its leading minus untouched.
+                // a negative numeric cell keeps its leading minus untouched. Headers ride the
+                // same clipboard payload and dynamic tables source them from responses, so a
+                // formula-like header is neutralized exactly like a formula-like cell.
                 var expectedNotional = string.Format(denseGrid.Language.GetSpecificCulture(), "{0:N2}", -1234.5m);
-                denseGrid.FormatSelectedRowsForClipboard().Should().Be($"Notional\tFund\n{expectedNotional}\t' =SUM(A1:A9)");
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be($"Notional\t'=Fund\n{expectedNotional}\t' =SUM(A1:A9)");
             }
             finally
             {

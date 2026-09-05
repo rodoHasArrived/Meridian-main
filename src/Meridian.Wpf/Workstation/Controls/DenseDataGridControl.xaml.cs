@@ -580,7 +580,10 @@ public partial class DenseDataGridControl : UserControl
         var lines = new List<string>();
         if (columns.Count > 0)
         {
-            lines.Add(string.Join("\t", columns.Select(column => EscapeTsvCell(column.Header))));
+            // Headers are copied alongside the guarded row values, and dynamic tables (the
+            // Financial Record Explorer) source them from responses — a formula-like header must
+            // not paste as an executable cell any more than a value may.
+            lines.Add(string.Join("\t", columns.Select(column => EscapeTsvCell(GuardFormulaPrefix(column.Header, column.Header)))));
         }
 
         foreach (var selectedItem in RowsList.SelectedItems.Cast<object>())
