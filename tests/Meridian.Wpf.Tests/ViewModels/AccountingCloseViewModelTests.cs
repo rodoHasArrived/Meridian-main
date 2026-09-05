@@ -1071,6 +1071,7 @@ public sealed class AccountingCloseViewModelTests
         };
 
         await viewModel.LoadClosePlanCommand.ExecuteAsync(null);
+        viewModel.ApplyCloseScope(BuildDeclaredCloseScope());
         await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
 
         service.LockRequest.Should().NotBeNull();
@@ -1079,6 +1080,123 @@ public sealed class AccountingCloseViewModelTests
         service.LockRequest.ControllerRole.Should().Be("Controller");
         service.LockTenantId.Should().Be("company-alpha");
         service.LockCompanyId.Should().Be("company-alpha");
+    }
+
+    [Fact]
+    public async Task WorkflowInputChange_RefusesOldLock_AndRecoversOnlyForLoadedCurrentWorkflow()
+    {
+        using var authentication = CreateControllerAuthentication();
+        var oldWorkflow = Guid.NewGuid();
+        var selectedWorkflow = Guid.NewGuid();
+        var scope = BuildDeclaredCloseScope();
+        var readyPlan = WithClosingEntriesGate(BuildClosePlan(scope.LedgerBookId!.Value),
+            ClosePostingGateStateDto.Posted, isReadyForLock: true) with
+        { WorkflowVersion = 12 };
+        var service = new CapturingCloseManagementService(readyPlan);
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(),
+            service, authentication.Session);
+        viewModel.ApplyClosePlan(oldWorkflow, readyPlan);
+        viewModel.ApplyCloseScope(scope);
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeTrue();
+
+        viewModel.CloseWorkflowIdText = "invalid";
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
+        viewModel.ClosingEntriesGate.Should().BeNull();
+        viewModel.CloseTaskRows.Should().BeEmpty();
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+        service.LockRequest.Should().BeNull();
+
+        viewModel.CloseWorkflowIdText = selectedWorkflow.ToString("D");
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+        service.LockRequest.Should().BeNull();
+        await viewModel.LoadClosePlanCommand.ExecuteAsync(null);
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeTrue();
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+        service.LockRequest.Should().NotBeNull();
+        service.LockRequest!.WorkflowId.Should().Be(selectedWorkflow);
+        service.LockRequest.ExpectedWorkflowVersion.Should().Be(12);
+        service.LockRequest.CloseScope.Should().Be(scope);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LatePlanResponse_CannotRestorePreviousSelection_AndCurrentLoadRecovers(bool oldWorkflowMissing)
+    {
+        using var authentication = CreateControllerAuthentication();
+        var oldWorkflow = Guid.NewGuid();
+        var selectedWorkflow = Guid.NewGuid();
+        var scope = BuildDeclaredCloseScope();
+        var readyPlan = WithClosingEntriesGate(BuildClosePlan(scope.LedgerBookId!.Value),
+            ClosePostingGateStateDto.Posted, isReadyForLock: true);
+        var delayed = new TaskCompletionSource<ClosePeriodPlanDto?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var service = new CapturingCloseManagementService(readyPlan)
+        {
+            PlanLoader = workflow => workflow == oldWorkflow ? delayed.Task : Task.FromResult<ClosePeriodPlanDto?>(readyPlan)
+        };
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(),
+            service, authentication.Session);
+        viewModel.ApplyClosePlan(oldWorkflow, readyPlan);
+        viewModel.ApplyCloseScope(scope);
+        var loading = viewModel.LoadClosePlanCommand.ExecuteAsync(null);
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse("a refresh must retire its previous plan before awaiting evidence");
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+        service.LockRequest.Should().BeNull();
+
+        viewModel.CloseWorkflowIdText = selectedWorkflow.ToString("D");
+        delayed.SetResult(oldWorkflowMissing ? null : readyPlan);
+        await loading;
+
+        viewModel.CloseWorkflowIdText.Should().Be(selectedWorkflow.ToString("D"));
+        viewModel.ClosePlanSetupStatusText.Should().Contain("Load the selected workflow");
+        viewModel.ClosingEntriesGate.Should().BeNull();
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+        service.LockRequest.Should().BeNull();
+
+        await viewModel.LoadClosePlanCommand.ExecuteAsync(null);
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+        service.LockRequest.Should().NotBeNull();
+        service.LockRequest!.WorkflowId.Should().Be(selectedWorkflow);
+    }
+
+    [Fact]
+    public async Task LateClosingEntryPreparation_CannotReplaceNewWorkflowPlanBeforeLock()
+    {
+        using var authentication = CreateControllerAuthentication();
+        var oldWorkflow = Guid.NewGuid();
+        var selectedWorkflow = Guid.NewGuid();
+        var scope = BuildDeclaredCloseScope();
+        var oldPlan = WithClosingEntriesGate(BuildClosePlan(scope.LedgerBookId!.Value),
+            ClosePostingGateStateDto.Required, isReadyForLock: false) with
+        { WorkflowVersion = 7 };
+        var currentPlan = WithClosingEntriesGate(oldPlan,
+            ClosePostingGateStateDto.Posted, isReadyForLock: true) with
+        { WorkflowVersion = 12 };
+        var delayed = new TaskCompletionSource<ClosePeriodLockResultDto?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var service = new CapturingCloseManagementService(currentPlan)
+        {
+            LockResponder = request => request.PrepareClosingEntriesOnly ? delayed.Task
+                : Task.FromResult<ClosePeriodLockResultDto?>(new(false, currentPlan, null))
+        };
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(),
+            service, authentication.Session);
+        viewModel.ApplyClosePlan(oldWorkflow, oldPlan);
+        viewModel.ApplyCloseScope(scope);
+        var preparing = viewModel.QueueClosingEntriesCommand.ExecuteAsync(null);
+        service.LockRequest!.WorkflowId.Should().Be(oldWorkflow);
+
+        viewModel.CloseWorkflowIdText = selectedWorkflow.ToString("D");
+        await viewModel.LoadClosePlanCommand.ExecuteAsync(null);
+        delayed.SetResult(new(false, oldPlan with { WorkflowVersion = 99 }, null));
+        await preparing;
+
+        viewModel.CloseWorkflowIdText.Should().Be(selectedWorkflow.ToString("D"));
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeTrue();
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+        service.LockRequest!.WorkflowId.Should().Be(selectedWorkflow);
+        service.LockRequest.ExpectedWorkflowVersion.Should().Be(12);
+        service.LockRequest.PrepareClosingEntriesOnly.Should().BeFalse();
     }
 
     [Theory]
@@ -1107,6 +1225,7 @@ public sealed class AccountingCloseViewModelTests
 
         viewModel.ApplyClosePlan(workflowId, 7, closePlan);
 
+        viewModel.ApplyCloseScope(BuildDeclaredCloseScope());
         viewModel.QueueClosingEntriesCommand.CanExecute(null).Should().Be(queueEnabled);
         viewModel.LockClosePeriodCommand.CanExecute(null).Should().Be(hardLockEnabled);
     }
@@ -1129,6 +1248,7 @@ public sealed class AccountingCloseViewModelTests
             new CapturingCloseManagementService(requiredPlan),
             authentication.Session);
         viewModel.ApplyClosePlan(workflowId, 7, requiredPlan);
+        viewModel.ApplyCloseScope(BuildDeclaredCloseScope());
         var queueNotifications = 0;
         var lockNotifications = 0;
         viewModel.QueueClosingEntriesCommand.CanExecuteChanged += (_, _) => queueNotifications++;
@@ -1270,6 +1390,7 @@ public sealed class AccountingCloseViewModelTests
 
         viewModel.ApplyClosePlan(workflowId, 7, closePlan);
 
+        viewModel.ApplyCloseScope(BuildDeclaredCloseScope());
         viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeTrue();
 
         await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
@@ -1279,6 +1400,7 @@ public sealed class AccountingCloseViewModelTests
         service.LockRequest!.WorkflowId.Should().Be(workflowId);
         service.LockRequest.ExpectedWorkflowVersion.Should().Be(7);
         service.LockRequest.Actor.Should().Be("desktop-controller");
+        service.LockRequest.CloseScope.Should().Be(BuildDeclaredCloseScope());
         service.LockRequest.ActionOrigin.Should().Be(OperationsActionOriginDto.HumanOperator);
         service.LockRequest.PrepareClosingEntriesOnly.Should().BeFalse();
         service.LockRequest.ControllerRole.Should().Be("Controller");
@@ -1332,6 +1454,7 @@ public sealed class AccountingCloseViewModelTests
 
         viewModel.ApplyClosePlan(workflowId, 7, closePlan);
 
+        viewModel.ApplyCloseScope(BuildDeclaredCloseScope());
         await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
 
         service.LockRequest.Should().NotBeNull();
@@ -1345,6 +1468,58 @@ public sealed class AccountingCloseViewModelTests
         viewModel.ClosePlanSetupStatusText.Should().Be("Close plan 2026-05 is locked; setup changes require a governed reopen workflow.");
         viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
         viewModel.ClosePeriodLockIssueRows.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task LockClosePeriodCommand_RequiresCompleteMatchingDeclaredScope_ThenForwardsItOnRecovery()
+    {
+        using var authentication = CreateControllerAuthentication();
+        var subject = BuildDeclaredCloseScope();
+        var closePlan = WithClosingEntriesGate(
+            BuildClosePlan(subject.LedgerBookId!.Value, signedOff: true),
+            ClosePostingGateStateDto.Posted,
+            isReadyForLock: true) with
+        { FundProfileId = subject.FundAccountId!.Value.ToString("D") };
+        var service = new CapturingCloseManagementService(closePlan)
+        {
+            LockResult = new ClosePeriodLockResultDto(true, closePlan with { IsPeriodLocked = true }, null)
+        };
+        var viewModel = new AccountingCloseViewModel(
+            Substitute.For<IAccountingProjectionQueryService>(), service, authentication.Session);
+        viewModel.ApplyClosePlan(Guid.NewGuid(), 7, closePlan);
+
+        viewModel.CloseScopeFundProfileId.Should().BeEmpty("a legacy account identifier cannot establish the fund profile");
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+        service.LockRequest.Should().BeNull();
+        viewModel.ClosePeriodLockStatusText.Should().Contain("Declare the fund profile");
+
+        viewModel.ApplyCloseScope(subject with { FundAccountId = null });
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+        service.LockRequest.Should().BeNull();
+
+        viewModel.CloseScopeFundAccountIdText = "invalid";
+        viewModel.CloseScopeStatusText.Should().Contain("valid ledger book and fund account");
+        viewModel.CloseScopeFundAccountIdText = subject.FundAccountId.Value.ToString("D");
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeTrue();
+
+        viewModel.CloseScopePeriodId = "2026-06";
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
+        viewModel.ClosePeriodLockStatusText.Should().Contain("declared period does not match");
+        viewModel.CloseScopePeriodId = subject.PeriodId!;
+        viewModel.CloseScopeLedgerBookIdText = Guid.NewGuid().ToString("D");
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
+        viewModel.CloseScopeStatusText.Should().Contain("declared ledger book does not match");
+        viewModel.CloseScopeLedgerBookIdText = subject.LedgerBookId.Value.ToString("D");
+
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeTrue();
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+
+        service.LockRequest.Should().NotBeNull();
+        service.LockRequest!.CloseScope.Should().Be(subject);
+        service.LockRequest.PrepareClosingEntriesOnly.Should().BeFalse();
+        viewModel.ClosePeriodLockStatusText.Should().Contain("Locked close period 2026-05");
     }
 
     [Theory]
@@ -1448,6 +1623,10 @@ public sealed class AccountingCloseViewModelTests
         };
         status.Should().Be(expectedStatus);
     }
+
+    private static CloseReadinessScopeDto BuildDeclaredCloseScope()
+        => new("fund-alpha", Guid.Parse("11111111-2222-3333-4444-555555555555"),
+            Guid.Parse("12345678-1234-1234-1234-123456789abc"), "entity-alpha", "2026-05");
 
     private static ClosePeriodPlanDto BuildClosePlan(
         Guid ledgerBookId,
@@ -1737,9 +1916,11 @@ public sealed class AccountingCloseViewModelTests
         public ClosePeriodPlanDto? ReviewResult { get; init; }
         public ClosePeriodPlanDto? EvidenceReviewResult { get; init; }
         public ClosePeriodLockResultDto? LockResult { get; init; }
+        public Func<Guid, Task<ClosePeriodPlanDto?>>? PlanLoader { get; init; }
+        public Func<LockClosePeriodRequestDto, Task<ClosePeriodLockResultDto?>>? LockResponder { get; init; }
 
         public Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default)
-            => Task.FromResult<ClosePeriodPlanDto?>(closePlan);
+            => PlanLoader?.Invoke(workflowId) ?? Task.FromResult<ClosePeriodPlanDto?>(closePlan);
 
         public Task<ClosePeriodPlanDto?> RequestLateAdjustmentAsync(
             CreateLateAdjustmentRequestDto request,
@@ -1802,7 +1983,8 @@ public sealed class AccountingCloseViewModelTests
             LockActor = actor;
             LockTenantId = tenantId;
             LockCompanyId = companyId;
-            return Task.FromResult<ClosePeriodLockResultDto?>(LockResult ?? new ClosePeriodLockResultDto(false, closePlan, null));
+            return LockResponder?.Invoke(request)
+                ?? Task.FromResult<ClosePeriodLockResultDto?>(LockResult ?? new ClosePeriodLockResultDto(false, closePlan, null));
         }
 
         public Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(

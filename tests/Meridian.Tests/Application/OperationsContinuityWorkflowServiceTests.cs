@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Application;
 
-public sealed class OperationsContinuityWorkflowServiceTests
+public sealed partial class OperationsContinuityWorkflowServiceTests
 {
     [Fact]
     public void OperationsContinuityContractMatrix_ShouldContainAllRequiredStatusesAndCodes_AndBeSerializable()
@@ -732,7 +732,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             package.Label == "Approval history evidence" &&
             package.Status == EvidenceStatusDto.Missing &&
             package.CompleteCategoryCount == 0 &&
-            package.RequiredCategoryCount == 3 &&
+            package.RequiredCategoryCount == 2 &&
             package.RequiredActions.Contains("Submit workflow approval with reviewer, rationale, and report-pack evidence."));
         posture.Workflow.EvidencePackages.Should().Contain(package =>
             package.Label == "Period lock and reopen evidence" &&
@@ -770,7 +770,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             Rationale: "Close accounting period",
             ReportPackId: "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            CloseScope: await StateMachineCloseScopeAsync(service, workflowId)));
 
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
@@ -1551,7 +1552,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "Assistant attempted close-package publication",
             "report-pack-1",
             ChecklistControlApprovals: RequiredChecklistControlApprovals(),
-            ActionOrigin: OperationsActionOriginDto.AutomationSuggestion));
+            ActionOrigin: OperationsActionOriginDto.AutomationSuggestion,
+            CloseScope: await StateMachineCloseScopeAsync(service, approvalReady.WorkflowId)));
 
         AssertAutomationMaterialActionRejected(close, OperationsGateKeyDto.Approval);
 
@@ -3212,7 +3214,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             approved.Workflow!.Version,
             "ops-user",
             "Close without close-checklist control approvals",
-            "report-pack-1"));
+            "report-pack-1",
+            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeFalse();
         close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
@@ -3243,7 +3246,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "Close workflow with caller-supplied hash",
             "report-pack-1",
             ChecklistControlApprovals: RequiredChecklistControlApprovals(),
-            ClosePackageEvidenceHash: callerSuppliedHash));
+            ClosePackageEvidenceHash: callerSuppliedHash,
+            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeTrue();
         close.Workflow!.ClosePackage.Should().NotBeNull();
@@ -3277,7 +3281,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "report-pack-1",
             ChecklistControlApprovals: RequiredChecklistControlApprovals(),
             DocumentSnapshots: [closeDocument],
-            ManifestSnapshot: manifestSnapshot));
+            ManifestSnapshot: manifestSnapshot,
+            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeTrue();
         close.Workflow!.ClosePackage.Should().NotBeNull();
@@ -3391,7 +3396,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         var denied = await service.ReopenWorkflowAsync(workflow.WorkflowId, new OperationsReopenWorkflowRequestDto(
             closed.Workflow!.Version,
@@ -3482,7 +3488,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             reconciliation.Workflow!.Version,
             "ops-user",
             "Close with open critical break",
-            "report-pack-1"));
+            "report-pack-1",
+            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeFalse();
         close.CloseReadiness.Should().NotBeNull();
@@ -3514,7 +3521,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close using a mismatched report pack",
             "report-pack-different",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeFalse();
         close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
@@ -3554,7 +3562,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeFalse();
         close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
@@ -3958,7 +3967,9 @@ public sealed class OperationsContinuityWorkflowServiceTests
         out InMemoryOperationsWorkflowAuditStore auditStore,
         RecordingLedgerJournalStore? ledgerJournalStore = null,
         bool registerLedgerJournalStore = true,
-        IReadOnlyDictionary<Guid, SecurityStatusDto>? securityStatuses = null)
+        IReadOnlyDictionary<Guid, SecurityStatusDto>? securityStatuses = null,
+        IClosePublicationReadinessGuard? closeReadinessGuard = null,
+        bool registerCloseReadinessGuard = true)
     {
         var derivation = new OperationsStatusDerivationService();
         repository = new InMemoryOperationsContinuityRepository(derivation);
@@ -3968,7 +3979,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             auditStore,
             derivation,
             registerLedgerJournalStore ? ledgerJournalStore ?? new RecordingLedgerJournalStore() : null,
-            securityMasterQueryService: new StaticSecurityMasterQueryService(securityStatuses ?? DefaultAuthoritativeSecurityStatuses()));
+            securityMasterQueryService: new StaticSecurityMasterQueryService(securityStatuses ?? DefaultAuthoritativeSecurityStatuses()),
+            closeReadinessGuard: registerCloseReadinessGuard ? closeReadinessGuard ?? new StateMachineCloseReadinessFixture() : null);
     }
 
     private static IReadOnlyDictionary<Guid, SecurityStatusDto> DefaultAuthoritativeSecurityStatuses() =>
@@ -3977,7 +3989,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             [Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1")] = SecurityStatusDto.Active
         };
 
-    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
+    internal static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
     [
         new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
         new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
@@ -4100,7 +4112,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "report-pack-1",
             ChecklistControlApprovals: RequiredChecklistControlApprovals(),
             ClosePackageEvidenceHash: new string('a', 64),
-            DocumentSnapshots: [closeDocument]));
+            DocumentSnapshots: [closeDocument],
+            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeTrue();
         return close.Workflow!.ClosePackage!.EvidenceHash;
@@ -4132,7 +4145,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             ChecklistControlApprovals: RequiredChecklistControlApprovals(),
             ClosePackageEvidenceHash: new string('a', 64),
             DocumentSnapshots: [closeDocument],
-            ManifestSnapshot: manifestSnapshot));
+            ManifestSnapshot: manifestSnapshot,
+            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeTrue();
         return close.Workflow!.ClosePackage!.EvidenceHash;
@@ -4177,14 +4191,14 @@ public sealed class OperationsContinuityWorkflowServiceTests
             BlockedOutputs: blockedOutputs);
 
     private static async Task<OperationsContinuityWorkflowDto> CreateLedgerValidatedWorkflowAsync(
-        OperationsContinuityWorkflowService service)
+        OperationsContinuityWorkflowService service, Guid? ledgerBookId = null, string periodId = "2026-05")
     {
         var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
             Guid.NewGuid(),
-            "2026-05",
+            periodId,
             null,
             "custodian",
-            "ops-user"));
+            "ops-user", LedgerBookId: ledgerBookId));
         var import = await service.ImportBrokerDataAsync(start.Workflow!.WorkflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
         var normalized = await service.NormalizeBrokerTransactionsAsync(start.Workflow.WorkflowId, new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user"));
         var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "ops-user"));
@@ -4235,10 +4249,10 @@ public sealed class OperationsContinuityWorkflowServiceTests
         return validated.Workflow!;
     }
 
-    private static async Task<OperationsContinuityWorkflowDto> CreateApprovalSubmittedWorkflowAsync(
-        OperationsContinuityWorkflowService service)
+    internal static async Task<OperationsContinuityWorkflowDto> CreateApprovalSubmittedWorkflowAsync(
+        OperationsContinuityWorkflowService service, Guid? ledgerBookId = null, string periodId = "2026-05")
     {
-        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service, ledgerBookId, periodId);
         var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(workflow.Version, "ops-user", BreakCases: []));
         var posture = await service.RefreshGatePostureAsync(workflow.WorkflowId, new OperationsGatePostureRequestDto(
             reconciled.Workflow!.Version,
@@ -4271,14 +4285,15 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
         return closed.Workflow!;
     }
 
     private static async Task<OperationsContinuityWorkflowDto> CreateLedgerPostedWorkflowAsync(
-        OperationsContinuityWorkflowService service)
+        OperationsContinuityWorkflowService service, Guid? ledgerBookId = null, string periodId = "2026-05")
     {
-        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service, ledgerBookId, periodId);
         var posted = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
             workflow.Version,
             "ops-user",

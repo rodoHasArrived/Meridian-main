@@ -1483,6 +1483,318 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "f1f00f9505d893a5c219e3cabd4434ad74ebb8ba5bf27ec2beb53ee1eae8bc11",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_evidence_content_check on ledger.open_lot_backfill_evidence",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_evidence.content",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_evidence",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "b28c9c5415192bc968ff4ff5014cbabc97e2f01193ed1ed7faf1c9d6812d969b",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_evidence_content_hash_sha256_check on ledger.open_lot_backfill_evidence",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_evidence.content_hash_sha256",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_evidence",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "1dcd6695f8d0d4efb13b95790471a90019a67f5786898c18c917b91826fd26ad",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_evidence_ledger_book_id_fkey on ledger.open_lot_backfill_evidence",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books.ledger_book_id",
+      "target_kind": "table column",
+      "target_name": "ledger_books",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "14dddc6def6aecf7ae3f92707a5974c7d53f0a4e786b9897f401f00240a41bf5",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_evidence_ledger_book_id_fkey on ledger.open_lot_backfill_evidence",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books_pkey",
+      "target_kind": "index",
+      "target_name": "ledger_books_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "bca71969eb51bc358be466d18218c9db3e90295d0db0726d9fb98fdd9d578638",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_evidence_retained_by_check on ledger.open_lot_backfill_evidence",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_evidence.retained_by",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_evidence",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "bbbebbf9eea201ecbe1fac1c53f966bbe421d7a0412aae950d13ae9e131a6ee9",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_evidence_tax_lot_record_id_fkey on ledger.open_lot_backfill_evidence",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.tax_lot_record_id",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ff3ef767b2d463550cfdc6417ae2d9dadd4c7ee10e7ccfb514cc4ba355187efe",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_evidence_tax_lot_record_id_fkey on ledger.open_lot_backfill_evidence",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots_pkey",
+      "target_kind": "index",
+      "target_name": "tax_lots_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "58118f7615d0edc0951f7813d625c63cc211da4169f343c78c52278f071b0614",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_exceptions_ledger_book_id_fkey on ledger.open_lot_backfill_exceptions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books.ledger_book_id",
+      "target_kind": "table column",
+      "target_name": "ledger_books",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "4632e34d8219217a5890cd1d3939fa7428af09d03ca5e6db6036a6a29cf92772",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_exceptions_ledger_book_id_fkey on ledger.open_lot_backfill_exceptions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books_pkey",
+      "target_kind": "index",
+      "target_name": "ledger_books_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "3e8de52ad8592f269a8c638e881c16bcdcf477d26d51bfd6fb5c1912631423d0",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_exceptions_resolution_receipt_id_fkey on ledger.open_lot_backfill_exceptions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_receipts.receipt_id",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_receipts",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "a1cf0b0211b5e4a1be3f96b5debb8f42e52acd2dabea48ee6e72f28e332ef5d3",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_exceptions_resolution_receipt_id_fkey on ledger.open_lot_backfill_exceptions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_receipts_pkey",
+      "target_kind": "index",
+      "target_name": "open_lot_backfill_receipts_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "f1ec44980a4836484d9c0351e472ce31565e8ef0207054260db40267a815789d",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_exceptions_tax_lot_record_id_fkey on ledger.open_lot_backfill_exceptions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.tax_lot_record_id",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "7e4e5c8922ddf20cac06bde6707a233b6e4184c0853bbe90ffc506f0ad8f24a8",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_exceptions_tax_lot_record_id_fkey on ledger.open_lot_backfill_exceptions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots_pkey",
+      "target_kind": "index",
+      "target_name": "tax_lots_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "9b843a81d0e8f2ab8695f7e3cf63b42cc18302309d078989557a5f7cdc0d61a2",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_exceptions_version_check on ledger.open_lot_backfill_exceptions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_exceptions.version",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_exceptions",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "02a012a4830b20bceb3513bf0da7620c20d874c5bb1ae24372e0150fcf1b8913",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_receipts_check on ledger.open_lot_backfill_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_receipts.expected_lot_version",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_receipts",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "f07d999b363b5188cead4263e28f8a9f025fafeb4c9ea0bce03fccc1ae03bbc5",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_receipts_check on ledger.open_lot_backfill_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_receipts.resulting_lot_version",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_receipts",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "6c9e0aafc10967e17db04747169679777755218b441f6cc17771693f846a30bc",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_receipts_evidence_record_id_fkey on ledger.open_lot_backfill_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_reviews.evidence_record_id",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_reviews",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "1e3f87ece07d869bcf17b58f98681c3a9981266ed0873449c0a726ade6014a23",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_receipts_evidence_record_id_fkey on ledger.open_lot_backfill_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_reviews_pkey",
+      "target_kind": "index",
+      "target_name": "open_lot_backfill_reviews_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "b5a485173efc0d2859aafc038d52496b9d8903921a9f6c71352ff5945ae0ab73",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_receipts_ledger_book_id_fkey on ledger.open_lot_backfill_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books.ledger_book_id",
+      "target_kind": "table column",
+      "target_name": "ledger_books",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "1386b233294953a0d8cda51f80efa09f259f5f1a122db9a65755a44ced8d6457",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_receipts_ledger_book_id_fkey on ledger.open_lot_backfill_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books_pkey",
+      "target_kind": "index",
+      "target_name": "ledger_books_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "f82c010851bbb3bd77c142469c95184e6322fd4eda3695618124595cf766be5d",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_receipts_tax_lot_record_id_fkey on ledger.open_lot_backfill_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.tax_lot_record_id",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "921bbc49c9e94f95689dcb42e19babee86058d53bd81e2054ccd85789ec2b90d",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_receipts_tax_lot_record_id_fkey on ledger.open_lot_backfill_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots_pkey",
+      "target_kind": "index",
+      "target_name": "tax_lots_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "062c6f4d6f6be5782f79468d11f4e7ca4fe6de1fc93ff9f60e3ba4d30ddf3aeb",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_reviews_evidence_record_id_fkey on ledger.open_lot_backfill_reviews",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_evidence.evidence_record_id",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_evidence",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "0aff49a77acc4bdb7a2436caf554a651b9dd6b766f2206b935a5123ad7064cf3",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_reviews_evidence_record_id_fkey on ledger.open_lot_backfill_reviews",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_evidence_pkey",
+      "target_kind": "index",
+      "target_name": "open_lot_backfill_evidence_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ed838bf3050b95856e7b1a5b57b77aa86cdf4a726888eb40b17b350740369635",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_reviews_rationale_check on ledger.open_lot_backfill_reviews",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_reviews.rationale",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_reviews",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ee087f816c803d33c0540247a9613584d7e6ee17d1ddaefa61b33cf57a0d1354",
+      "kind": "normal",
+      "source": "ledger.open_lot_backfill_reviews_reviewed_by_check on ledger.open_lot_backfill_reviews",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.open_lot_backfill_reviews.reviewed_by",
+      "target_kind": "table column",
+      "target_name": "open_lot_backfill_reviews",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "0f5b0d19329dbae395f279bb191ae7c4e15712b9b94e23472a96160ac4b43d77",
       "kind": "normal",
       "source": "ledger.operations_continuity_audit_workflow_id_fkey on ledger.operations_continuity_audit",
@@ -1823,7 +2135,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "f055a04b5138c43e3265f420bf8ee9b409b73692e5b94139151f05b35998b219",
+  "fingerprint": "151bad37c3aef0dde4364c294100ef52a8cca80c3a89c59144d9d6172a35ab51",
   "foreign_tables": [],
   "functions": [
     {
@@ -1935,6 +2247,68 @@
         }
       ],
       "comment": null,
+      "definition_hash": "a690167862382c377c59f77e26ad6193c2c0b00ae8f8108c12f0e536ff451835",
+      "fingerprint": "f21c362adc7b27cf18df5ad481c00db4fae833cf1c10851fb2cb908b68bbc0bf",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "guard_open_lot_backfill_exception",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "guard_open_lot_backfill_exception()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "2746e8ab185e2c99040173b3cece084b0866259fa4acfb876bf8112cccf8bc9a",
+      "fingerprint": "71c8bfe1b96a8ad734c5ed0bafb240ef34d78bdc9194f2d6419a389b85f63039",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "guard_open_lot_backfill_review",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "guard_open_lot_backfill_review()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
       "definition_hash": "9c685307602f78fb2e1058453e3eb59eb1d9f9d154df41e47b112a26adab7cf1",
       "fingerprint": "0d63474ac8d0c885688bc58a5b517f697af11a080ac7c625acc3bcfe2b50c9b7",
       "kind": "function",
@@ -1997,8 +2371,8 @@
         }
       ],
       "comment": null,
-      "definition_hash": "8984ad48dc8f072dac7253987d83e27d33c63d82cbda0bb6ad02d3e29e99f5b8",
-      "fingerprint": "7395052f56be1b37f3a5a84a882fb042012615c058ddbea1bf5cda0195db8b8b",
+      "definition_hash": "9b92f5c4d9d2057a808b4ce7645961e45b91a7efb9b5edeec413dae45db7de84",
+      "fingerprint": "2cbaa4c60195a28b0c34275ef603b462bfa28b044f8a28015bac125be7d5e426",
       "kind": "function",
       "language": "plpgsql",
       "name": "protect_open_lot_acquisition",
@@ -2009,6 +2383,37 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "protect_open_lot_acquisition()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "6551208201a314ab271d1e9c6c5b15fbb0d32118407730880ebd9116af9ab924",
+      "fingerprint": "bbf9862bfbd3863b93cfed544a442ee91429dd14f5f96a83e325ab5967234167",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "protect_open_lot_backfill_evidence",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "protect_open_lot_backfill_evidence()",
       "strict": false,
       "volatility": "volatile"
     },
@@ -10141,6 +10546,1595 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "d3e09337617e2368b776eef43801dc6467c0bed8e01d402e7b4ecab459c20c60",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "evidence_record_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "980fa77a6a43226e0deb9497d3a91d4cd214b65731cc0bb3a2b0cfe40966682d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tax_lot_record_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "400d54068bc8e190d104aefbe8d7478f0996a5958bb6ed43851778c3b3c107f3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "source_system",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "cbb62c919ab56fa0f3201388258e573332e1d8e8fbcf0980e1515b7eef0a0f2c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "source_reference",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "8368f872a7b4c263eb096db26f0e14dc82a91277332a51b2816fc8d3be6e4189",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "source_uri",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bytea",
+          "default": null,
+          "fingerprint": "0cf76d63582dcef33e301c897bf4a181212d1091313b55370e57e88df3eb7eed",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "content",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "bytea",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "c651ac4c81cf232b087d7a2764abc1bfc9f8eb4582391240b17350a5254bf2f2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "content_hash_sha256",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f3f57ee4221119dd2e0de229237bd3a592bb2b0ad6fc251ee76a4cdb29edc7f9",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "retention_fingerprint",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b6d29b49e9af771af36f2dfd4538270981c78244ee17e1ebaef115ebfbca8b29",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "retained_by",
+          "nullable": false,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "46a59bf5d950a7f2a4c67d9b45bc83486b81bfb88b2c2158af3639db676975d0",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "retained_at",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "content"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (octet_length(content) >= 1 AND octet_length(content) <= 262144)",
+          "delete_action": null,
+          "fingerprint": "72f5edc7dfde5b54994b00c11096f986d5fb250fcdde2ca754945f359a97cf75",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_evidence_content_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "content_hash_sha256"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (content_hash_sha256 ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "68496cc3253c9932558a10d26530ffc3ffc4ea5e2514dc1730c51522affef8c3",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_evidence_content_hash_sha256_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "retained_by"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM retained_by)) > 0)",
+          "delete_action": null,
+          "fingerprint": "ec9303cb2d35fce52208b58b2a99b7679918258d40ceeba9e4037c1dedeb2e27",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_evidence_retained_by_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "ledger_book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+          "delete_action": "no_action",
+          "fingerprint": "892acd16d02bf03032f884daf6dabcd694768c87bc8a33279cec07e063283479",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_evidence_ledger_book_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "ledger_book_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "ledger_books",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "tax_lot_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (tax_lot_record_id) REFERENCES ledger.tax_lots(tax_lot_record_id)",
+          "delete_action": "no_action",
+          "fingerprint": "50b58aff9266aba5324711ff2542035851ef3ce4d22d9c689d77988fd422a060",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_evidence_tax_lot_record_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "tax_lot_record_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "tax_lots",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "evidence_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (evidence_record_id)",
+          "delete_action": null,
+          "fingerprint": "5bfeeef7321a185d0995eb61272231ed91db23ddbbc170bab54357552a56acbb",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_evidence_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "279e310224994460391108ae6b06a120cd913ae95196a000e9d8c86f60c538e5",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_evidence_pkey ON ledger.open_lot_backfill_evidence USING btree (evidence_record_id)",
+          "expression": null,
+          "fingerprint": "8cda86d1d130f6ce817f31ac7b5204aba347cf88a0d258f27cedfb9db9928fda",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "evidence_record_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_evidence_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "open_lot_backfill_evidence",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_open_lot_backfill_evidence BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_evidence FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_backfill_evidence()",
+          "definition_hash": "3107b536f229fb501a70f62cce77d29f6a979bb7bbbe33e617459e3f3feec7c6",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "29e09d29d7eba5d21ad9e80b36d622b5fd90bc24bb1262c66915be5b282601f9",
+          "function_schema": "ledger",
+          "function_signature": "protect_open_lot_backfill_evidence()",
+          "level": "row",
+          "name": "protect_open_lot_backfill_evidence",
+          "relation": "open_lot_backfill_evidence",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "61a3ee26ad17488dfcfd20c45ae42a94f53cc1d30b0bf11b6f02d69074bd4e2d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tax_lot_record_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "6eb30800f25e985d98fd5f25cb9d2963da216c71e82e7179406018677d406572",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "lot_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "8b4afef01ea50a719541a08bdc2bad724e1a734a63853ff042052644ad1086c1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "lot_version",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "d68862751b20ba5b413daa60beb261c2a61f8672693c460a7281c3f32a8d086e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "issues",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "1",
+          "fingerprint": "b18b7a05105cdff403a8a7e46f81a4f43a6829ddf77916217e9183b97fd75541",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "f1f9eea9049b831b1e0950a5e4b0498e2933003a01735658f65512e150fefb4d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "first_observed_at",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "c8412d7835178a8f4d9bb9d158b20cf8e91d07532a3576afaf3241af713d6046",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "last_observed_at",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "872a4cafebb22e1cfc257c135db918c5eca9548e046444efef9c4a31e9738fff",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resolution_receipt_id",
+          "nullable": true,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version > 0)",
+          "delete_action": null,
+          "fingerprint": "02fea85cf040ea31a3874d43cbe73c76f403e028ec8099283c8df04dc5ecb16b",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_exceptions_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "ledger_book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+          "delete_action": "no_action",
+          "fingerprint": "3d1f3eb1f845912b7bee429867a2bb3b0bf7d37890e091e86c9a458d1d0b98e4",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_exceptions_ledger_book_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "ledger_book_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "ledger_books",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "resolution_receipt_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (resolution_receipt_id) REFERENCES ledger.open_lot_backfill_receipts(receipt_id)",
+          "delete_action": "no_action",
+          "fingerprint": "4be3dc02caf5ed6d8586c088475bcb053d770642267f59220f034151abebaa49",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_exceptions_resolution_receipt_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "receipt_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "open_lot_backfill_receipts",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "tax_lot_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (tax_lot_record_id) REFERENCES ledger.tax_lots(tax_lot_record_id)",
+          "delete_action": "no_action",
+          "fingerprint": "bf90a247fc8e39c034de73a7770a0ae122cad87960998697e8f060b4b5369f05",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_exceptions_tax_lot_record_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "tax_lot_record_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "tax_lots",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "tax_lot_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tax_lot_record_id)",
+          "delete_action": null,
+          "fingerprint": "c3421824223853a75040cc8619e0797ae95b53a501b231bbd4a5529b7312c6bf",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_exceptions_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "5f6f71e08045a7b16a059eac2e809b974a9e6eee0abd0725b4f9182ae44c4b42",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_open_lot_backfill_exceptions_open ON ledger.open_lot_backfill_exceptions USING btree (ledger_book_id, first_observed_at) WHERE (resolution_receipt_id IS NULL)",
+          "expression": null,
+          "fingerprint": "b9e46c4e4dab9ae481c8e41a8c81fa7ced70f95deb23594e8335ca6bcde8c6a3",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "ledger_book_id",
+            "first_observed_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_open_lot_backfill_exceptions_open",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "resolution_receipt_id IS NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_exceptions_pkey ON ledger.open_lot_backfill_exceptions USING btree (tax_lot_record_id)",
+          "expression": null,
+          "fingerprint": "460bbb69c2878aafef9e888c56e11dad8f0a8c8c52c51f99f70b3c78600ead97",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tax_lot_record_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_exceptions_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "open_lot_backfill_exceptions",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER guard_open_lot_backfill_exception BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_exceptions FOR EACH ROW EXECUTE FUNCTION ledger.guard_open_lot_backfill_exception()",
+          "definition_hash": "b39832f9b3dff3adc857a01c4d2a74b09ec548cd58969d7eebaf2473b87b8ab9",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "5bbf704664f460746115977c17d5db37e0164004032271616a87324e70a1ab25",
+          "function_schema": "ledger",
+          "function_signature": "guard_open_lot_backfill_exception()",
+          "level": "row",
+          "name": "guard_open_lot_backfill_exception",
+          "relation": "open_lot_backfill_exceptions",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "3aba477ac8e07704aaf9377b8f033cbd510922ab13621faed1006697d3417f5c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "receipt_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "980fa77a6a43226e0deb9497d3a91d4cd214b65731cc0bb3a2b0cfe40966682d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tax_lot_record_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "90366c1dd3afcd1b45b92750f19e0db4839be39d6f8de066dd5bdc9a6042e22a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "evidence_record_id",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "9cde66bf5d5610373d43b52780de17eb00c45b35934812dba90cf188e3137bc7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "idempotency_key",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "1f3aefa6aae84e349cf875eb5c6889839d7ea8afa0bde384480a6e2e84f09ea1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "request_fingerprint",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "d7404aab23bffdcad2309c7c7420cc48c18963ae460dcc2122a5d3928635ea25",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "expected_lot_version",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "ab667f2c27370984a763175e147a7e80ab8193cd365cad6a175ec16d5eb9b41f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resulting_lot_version",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "f0e03539418f13c510a359a6bb21a144c5cda826314f365494f97bd2a7288771",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "snapshot_before",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "14ef5d8d3541556b4a07ebb3f06e059badaeffb606346c2de223b0f4812a0314",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "snapshot_after",
+          "nullable": false,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "dbe4b09abfc22567f2033801ba9a30a045169b8a4d1e362d2fd867eab05469ff",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "receipt",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "txid_current()",
+          "fingerprint": "c30b8fdf4abb04fe1bf16c8edc337ccde0d3d2ec528c5cc2816542510624824a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "transaction_id",
+          "nullable": false,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "resulting_lot_version",
+            "expected_lot_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (resulting_lot_version = (expected_lot_version + 1))",
+          "delete_action": null,
+          "fingerprint": "c864faf5323b5294baa288ecf7c60c6d4e5b74e755c69aeb20a6bf2d685917d4",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_receipts_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "evidence_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (evidence_record_id) REFERENCES ledger.open_lot_backfill_reviews(evidence_record_id)",
+          "delete_action": "no_action",
+          "fingerprint": "105cbc2fb96a41acd33825c4010bef51f65cf9f0efa10b50c470c9a903702437",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_receipts_evidence_record_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "evidence_record_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "open_lot_backfill_reviews",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "ledger_book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+          "delete_action": "no_action",
+          "fingerprint": "1bca9f369fd87bad5388b6fcc91541abc2929d0f4a1ce9c2880719268e70cc15",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_receipts_ledger_book_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "ledger_book_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "ledger_books",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "tax_lot_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (tax_lot_record_id) REFERENCES ledger.tax_lots(tax_lot_record_id)",
+          "delete_action": "no_action",
+          "fingerprint": "aa688bd3210a566fa7d706371b2880e9a28d44e48ff9ec4e3c8c66b6f4fcc227",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_receipts_tax_lot_record_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "tax_lot_record_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "tax_lots",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "receipt_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (receipt_id)",
+          "delete_action": null,
+          "fingerprint": "86ccf90e9836278acd2ac4eccc0c1d83a0d355583ebf225c8f2903b4e8831e54",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_receipts_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "ledger_book_id",
+            "idempotency_key"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (ledger_book_id, idempotency_key)",
+          "delete_action": null,
+          "fingerprint": "5674af7017e29747023587d7444ccd55431f27dec99c13688ce7828bcbb4277f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_receipts_ledger_book_id_idempotency_key_key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tax_lot_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (tax_lot_record_id)",
+          "delete_action": null,
+          "fingerprint": "3b45fdccc0f204bfc3d9b7c23ed11fefa4796fa8d4c688173eaceeb121d81290",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_receipts_tax_lot_record_id_key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "14c4a49f4d586a6d572577f5a3edb530637f8e508a4da5b69d94c4db53cd1004",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_receipts_ledger_book_id_idempotency_key_key ON ledger.open_lot_backfill_receipts USING btree (ledger_book_id, idempotency_key)",
+          "expression": null,
+          "fingerprint": "caa25f756b947959b8f3a74d6f7dc7e1b4603a3c8af08ed5885318beb4a10ccf",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "ledger_book_id",
+            "idempotency_key"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_receipts_ledger_book_id_idempotency_key_key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_receipts_pkey ON ledger.open_lot_backfill_receipts USING btree (receipt_id)",
+          "expression": null,
+          "fingerprint": "a69067d898e2bfdccbb1720267a264d02b19d48f8112a03e51f25a795c9c3fa1",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "receipt_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_receipts_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_receipts_tax_lot_record_id_key ON ledger.open_lot_backfill_receipts USING btree (tax_lot_record_id)",
+          "expression": null,
+          "fingerprint": "1afdcc7c95cce2e3428670466774de2be141138744b22e8793da6312587dbd6e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tax_lot_record_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_receipts_tax_lot_record_id_key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "open_lot_backfill_receipts",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_open_lot_backfill_evidence BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_receipts FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_backfill_evidence()",
+          "definition_hash": "98b873048e8539e73d48122f2f5db774e2b89037d0d69ed0b81452d53c2a33ce",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "09e0ebaa2f642268b4c0bb5f816294e17d10b8556118d41b3565ffbc4399f1a3",
+          "function_schema": "ledger",
+          "function_signature": "protect_open_lot_backfill_evidence()",
+          "level": "row",
+          "name": "protect_open_lot_backfill_evidence",
+          "relation": "open_lot_backfill_receipts",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "d3e09337617e2368b776eef43801dc6467c0bed8e01d402e7b4ecab459c20c60",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "evidence_record_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": null,
+          "fingerprint": "f4a378725bdb67002553b1d3d29a61253ee95ba07997837d60eff4f978b8b9bc",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "accepted",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "11a9a76c2b02999c24185ac96a8d5aee1fb1b64c72c4448ae03ac3d7b7d386ff",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reviewed_by",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "8c41ff4a302837d61208d3e7062211a50cc52831149aabc8337900b5cfa312ac",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reviewed_at",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "27b70b8c9d8e4c76f276070d52ee753be300d8854f4cbac6ebb5dd509f1333ce",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "rationale",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "rationale"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM rationale)) > 0)",
+          "delete_action": null,
+          "fingerprint": "61e1351d34b29cd766b0081c7a255df76f5aa38a2f0b882bb7cc8d76e1063252",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_reviews_rationale_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "reviewed_by"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM reviewed_by)) > 0)",
+          "delete_action": null,
+          "fingerprint": "ee3d4f8fb5412805043cd966211d38ba111c8a5d9fa3428c4143407094bb7e6b",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_reviews_reviewed_by_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "evidence_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (evidence_record_id) REFERENCES ledger.open_lot_backfill_evidence(evidence_record_id)",
+          "delete_action": "no_action",
+          "fingerprint": "074430008fc327ee0f2c9ccce7133f47a895cd21e85ca51147385e6faac95970",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_reviews_evidence_record_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "evidence_record_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "open_lot_backfill_evidence",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "evidence_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (evidence_record_id)",
+          "delete_action": null,
+          "fingerprint": "28fa458d864ea53d52160b669c6e762528281b172fadf872baffe0901d37a2ee",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_reviews_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "b0519aa777a524195f81ff05b72b576ea4bad6a99adb52675e65f762939192bd",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_reviews_pkey ON ledger.open_lot_backfill_reviews USING btree (evidence_record_id)",
+          "expression": null,
+          "fingerprint": "d2d0784b50421867da3c54f1226c1aa8f3a31a908cce4a0c0f4bf0cfbf5b938e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "evidence_record_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_reviews_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "open_lot_backfill_reviews",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER guard_open_lot_backfill_review BEFORE INSERT ON ledger.open_lot_backfill_reviews FOR EACH ROW EXECUTE FUNCTION ledger.guard_open_lot_backfill_review()",
+          "definition_hash": "bb3d83cb168a89711286a571f662fb835060037f51de08adc23afa3df4eff729",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "65f9178ee2067abbe9d0a820df56d5b8279df6fe81a47c5438ce224e5b5fac0d",
+          "function_schema": "ledger",
+          "function_signature": "guard_open_lot_backfill_review()",
+          "level": "row",
+          "name": "guard_open_lot_backfill_review",
+          "relation": "open_lot_backfill_reviews",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_open_lot_backfill_evidence BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_reviews FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_backfill_evidence()",
+          "definition_hash": "f5ac54913d99af05bac7ee5a5bea4ede96c9921263d0c8943b42a630c1955d5e",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "a4d70ce81f9ae40021746acd809fee5555586cefcf3ecf2787fdac2374eb79b9",
+          "function_schema": "ledger",
+          "function_signature": "protect_open_lot_backfill_evidence()",
+          "level": "row",
+          "name": "protect_open_lot_backfill_evidence",
+          "relation": "open_lot_backfill_reviews",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "364f8675869d57bf1fbe69fe56271501072528e19029b54635bb86e0cb3126f0",
           "generated": null,
           "generated_expression": null,
@@ -14511,6 +16505,38 @@
       "forced": false,
       "policies": [],
       "relation": "ledger_journal_schema_migrations",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "97710034034014ff01ede035996a91512c7566a41ce95a46120d557ee2332e32",
+      "forced": false,
+      "policies": [],
+      "relation": "open_lot_backfill_evidence",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "8e78428593f90dbbc3366783a8983fadcc4867fa51232536be8aa80d2be4d974",
+      "forced": false,
+      "policies": [],
+      "relation": "open_lot_backfill_exceptions",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "f048568b022f906562d3a3bdd0b7e98f78f954dea9b1134365803ea6a67a94a3",
+      "forced": false,
+      "policies": [],
+      "relation": "open_lot_backfill_receipts",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "0920369b5146f6b864fbfb08fe2a7fa7ba5a366f22c435e366ceb1e064e8a6c3",
+      "forced": false,
+      "policies": [],
+      "relation": "open_lot_backfill_reviews",
       "schema": "ledger"
     },
     {
@@ -22308,6 +24334,1595 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "d3e09337617e2368b776eef43801dc6467c0bed8e01d402e7b4ecab459c20c60",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "evidence_record_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "980fa77a6a43226e0deb9497d3a91d4cd214b65731cc0bb3a2b0cfe40966682d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tax_lot_record_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "400d54068bc8e190d104aefbe8d7478f0996a5958bb6ed43851778c3b3c107f3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "source_system",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "cbb62c919ab56fa0f3201388258e573332e1d8e8fbcf0980e1515b7eef0a0f2c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "source_reference",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "8368f872a7b4c263eb096db26f0e14dc82a91277332a51b2816fc8d3be6e4189",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "source_uri",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bytea",
+          "default": null,
+          "fingerprint": "0cf76d63582dcef33e301c897bf4a181212d1091313b55370e57e88df3eb7eed",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "content",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "bytea",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "c651ac4c81cf232b087d7a2764abc1bfc9f8eb4582391240b17350a5254bf2f2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "content_hash_sha256",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f3f57ee4221119dd2e0de229237bd3a592bb2b0ad6fc251ee76a4cdb29edc7f9",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "retention_fingerprint",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b6d29b49e9af771af36f2dfd4538270981c78244ee17e1ebaef115ebfbca8b29",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "retained_by",
+          "nullable": false,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "46a59bf5d950a7f2a4c67d9b45bc83486b81bfb88b2c2158af3639db676975d0",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "retained_at",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "content"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (octet_length(content) >= 1 AND octet_length(content) <= 262144)",
+          "delete_action": null,
+          "fingerprint": "72f5edc7dfde5b54994b00c11096f986d5fb250fcdde2ca754945f359a97cf75",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_evidence_content_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "content_hash_sha256"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (content_hash_sha256 ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "68496cc3253c9932558a10d26530ffc3ffc4ea5e2514dc1730c51522affef8c3",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_evidence_content_hash_sha256_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "retained_by"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM retained_by)) > 0)",
+          "delete_action": null,
+          "fingerprint": "ec9303cb2d35fce52208b58b2a99b7679918258d40ceeba9e4037c1dedeb2e27",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_evidence_retained_by_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "ledger_book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+          "delete_action": "no_action",
+          "fingerprint": "892acd16d02bf03032f884daf6dabcd694768c87bc8a33279cec07e063283479",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_evidence_ledger_book_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "ledger_book_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "ledger_books",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "tax_lot_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (tax_lot_record_id) REFERENCES ledger.tax_lots(tax_lot_record_id)",
+          "delete_action": "no_action",
+          "fingerprint": "50b58aff9266aba5324711ff2542035851ef3ce4d22d9c689d77988fd422a060",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_evidence_tax_lot_record_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "tax_lot_record_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "tax_lots",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "evidence_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (evidence_record_id)",
+          "delete_action": null,
+          "fingerprint": "5bfeeef7321a185d0995eb61272231ed91db23ddbbc170bab54357552a56acbb",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_evidence_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "279e310224994460391108ae6b06a120cd913ae95196a000e9d8c86f60c538e5",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_evidence_pkey ON ledger.open_lot_backfill_evidence USING btree (evidence_record_id)",
+          "expression": null,
+          "fingerprint": "8cda86d1d130f6ce817f31ac7b5204aba347cf88a0d258f27cedfb9db9928fda",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "evidence_record_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_evidence_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "open_lot_backfill_evidence",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_open_lot_backfill_evidence BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_evidence FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_backfill_evidence()",
+          "definition_hash": "3107b536f229fb501a70f62cce77d29f6a979bb7bbbe33e617459e3f3feec7c6",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "29e09d29d7eba5d21ad9e80b36d622b5fd90bc24bb1262c66915be5b282601f9",
+          "function_schema": "ledger",
+          "function_signature": "protect_open_lot_backfill_evidence()",
+          "level": "row",
+          "name": "protect_open_lot_backfill_evidence",
+          "relation": "open_lot_backfill_evidence",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "61a3ee26ad17488dfcfd20c45ae42a94f53cc1d30b0bf11b6f02d69074bd4e2d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tax_lot_record_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "6eb30800f25e985d98fd5f25cb9d2963da216c71e82e7179406018677d406572",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "lot_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "8b4afef01ea50a719541a08bdc2bad724e1a734a63853ff042052644ad1086c1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "lot_version",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "d68862751b20ba5b413daa60beb261c2a61f8672693c460a7281c3f32a8d086e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "issues",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "1",
+          "fingerprint": "b18b7a05105cdff403a8a7e46f81a4f43a6829ddf77916217e9183b97fd75541",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "f1f9eea9049b831b1e0950a5e4b0498e2933003a01735658f65512e150fefb4d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "first_observed_at",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "c8412d7835178a8f4d9bb9d158b20cf8e91d07532a3576afaf3241af713d6046",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "last_observed_at",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "872a4cafebb22e1cfc257c135db918c5eca9548e046444efef9c4a31e9738fff",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resolution_receipt_id",
+          "nullable": true,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version > 0)",
+          "delete_action": null,
+          "fingerprint": "02fea85cf040ea31a3874d43cbe73c76f403e028ec8099283c8df04dc5ecb16b",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_exceptions_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "ledger_book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+          "delete_action": "no_action",
+          "fingerprint": "3d1f3eb1f845912b7bee429867a2bb3b0bf7d37890e091e86c9a458d1d0b98e4",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_exceptions_ledger_book_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "ledger_book_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "ledger_books",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "resolution_receipt_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (resolution_receipt_id) REFERENCES ledger.open_lot_backfill_receipts(receipt_id)",
+          "delete_action": "no_action",
+          "fingerprint": "4be3dc02caf5ed6d8586c088475bcb053d770642267f59220f034151abebaa49",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_exceptions_resolution_receipt_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "receipt_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "open_lot_backfill_receipts",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "tax_lot_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (tax_lot_record_id) REFERENCES ledger.tax_lots(tax_lot_record_id)",
+          "delete_action": "no_action",
+          "fingerprint": "bf90a247fc8e39c034de73a7770a0ae122cad87960998697e8f060b4b5369f05",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_exceptions_tax_lot_record_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "tax_lot_record_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "tax_lots",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "tax_lot_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tax_lot_record_id)",
+          "delete_action": null,
+          "fingerprint": "c3421824223853a75040cc8619e0797ae95b53a501b231bbd4a5529b7312c6bf",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_exceptions_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "5f6f71e08045a7b16a059eac2e809b974a9e6eee0abd0725b4f9182ae44c4b42",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_open_lot_backfill_exceptions_open ON ledger.open_lot_backfill_exceptions USING btree (ledger_book_id, first_observed_at) WHERE (resolution_receipt_id IS NULL)",
+          "expression": null,
+          "fingerprint": "b9e46c4e4dab9ae481c8e41a8c81fa7ced70f95deb23594e8335ca6bcde8c6a3",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "ledger_book_id",
+            "first_observed_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_open_lot_backfill_exceptions_open",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "resolution_receipt_id IS NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_exceptions_pkey ON ledger.open_lot_backfill_exceptions USING btree (tax_lot_record_id)",
+          "expression": null,
+          "fingerprint": "460bbb69c2878aafef9e888c56e11dad8f0a8c8c52c51f99f70b3c78600ead97",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tax_lot_record_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_exceptions_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "open_lot_backfill_exceptions",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER guard_open_lot_backfill_exception BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_exceptions FOR EACH ROW EXECUTE FUNCTION ledger.guard_open_lot_backfill_exception()",
+          "definition_hash": "b39832f9b3dff3adc857a01c4d2a74b09ec548cd58969d7eebaf2473b87b8ab9",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "5bbf704664f460746115977c17d5db37e0164004032271616a87324e70a1ab25",
+          "function_schema": "ledger",
+          "function_signature": "guard_open_lot_backfill_exception()",
+          "level": "row",
+          "name": "guard_open_lot_backfill_exception",
+          "relation": "open_lot_backfill_exceptions",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "3aba477ac8e07704aaf9377b8f033cbd510922ab13621faed1006697d3417f5c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "receipt_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "980fa77a6a43226e0deb9497d3a91d4cd214b65731cc0bb3a2b0cfe40966682d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tax_lot_record_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "90366c1dd3afcd1b45b92750f19e0db4839be39d6f8de066dd5bdc9a6042e22a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "evidence_record_id",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "9cde66bf5d5610373d43b52780de17eb00c45b35934812dba90cf188e3137bc7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "idempotency_key",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "1f3aefa6aae84e349cf875eb5c6889839d7ea8afa0bde384480a6e2e84f09ea1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "request_fingerprint",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "d7404aab23bffdcad2309c7c7420cc48c18963ae460dcc2122a5d3928635ea25",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "expected_lot_version",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "ab667f2c27370984a763175e147a7e80ab8193cd365cad6a175ec16d5eb9b41f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resulting_lot_version",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "f0e03539418f13c510a359a6bb21a144c5cda826314f365494f97bd2a7288771",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "snapshot_before",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "14ef5d8d3541556b4a07ebb3f06e059badaeffb606346c2de223b0f4812a0314",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "snapshot_after",
+          "nullable": false,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "dbe4b09abfc22567f2033801ba9a30a045169b8a4d1e362d2fd867eab05469ff",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "receipt",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "txid_current()",
+          "fingerprint": "c30b8fdf4abb04fe1bf16c8edc337ccde0d3d2ec528c5cc2816542510624824a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "transaction_id",
+          "nullable": false,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "resulting_lot_version",
+            "expected_lot_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (resulting_lot_version = (expected_lot_version + 1))",
+          "delete_action": null,
+          "fingerprint": "c864faf5323b5294baa288ecf7c60c6d4e5b74e755c69aeb20a6bf2d685917d4",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_receipts_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "evidence_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (evidence_record_id) REFERENCES ledger.open_lot_backfill_reviews(evidence_record_id)",
+          "delete_action": "no_action",
+          "fingerprint": "105cbc2fb96a41acd33825c4010bef51f65cf9f0efa10b50c470c9a903702437",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_receipts_evidence_record_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "evidence_record_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "open_lot_backfill_reviews",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "ledger_book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+          "delete_action": "no_action",
+          "fingerprint": "1bca9f369fd87bad5388b6fcc91541abc2929d0f4a1ce9c2880719268e70cc15",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_receipts_ledger_book_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "ledger_book_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "ledger_books",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "tax_lot_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (tax_lot_record_id) REFERENCES ledger.tax_lots(tax_lot_record_id)",
+          "delete_action": "no_action",
+          "fingerprint": "aa688bd3210a566fa7d706371b2880e9a28d44e48ff9ec4e3c8c66b6f4fcc227",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_receipts_tax_lot_record_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "tax_lot_record_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "tax_lots",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "receipt_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (receipt_id)",
+          "delete_action": null,
+          "fingerprint": "86ccf90e9836278acd2ac4eccc0c1d83a0d355583ebf225c8f2903b4e8831e54",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_receipts_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "ledger_book_id",
+            "idempotency_key"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (ledger_book_id, idempotency_key)",
+          "delete_action": null,
+          "fingerprint": "5674af7017e29747023587d7444ccd55431f27dec99c13688ce7828bcbb4277f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_receipts_ledger_book_id_idempotency_key_key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tax_lot_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (tax_lot_record_id)",
+          "delete_action": null,
+          "fingerprint": "3b45fdccc0f204bfc3d9b7c23ed11fefa4796fa8d4c688173eaceeb121d81290",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_receipts_tax_lot_record_id_key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "14c4a49f4d586a6d572577f5a3edb530637f8e508a4da5b69d94c4db53cd1004",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_receipts_ledger_book_id_idempotency_key_key ON ledger.open_lot_backfill_receipts USING btree (ledger_book_id, idempotency_key)",
+          "expression": null,
+          "fingerprint": "caa25f756b947959b8f3a74d6f7dc7e1b4603a3c8af08ed5885318beb4a10ccf",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "ledger_book_id",
+            "idempotency_key"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_receipts_ledger_book_id_idempotency_key_key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_receipts_pkey ON ledger.open_lot_backfill_receipts USING btree (receipt_id)",
+          "expression": null,
+          "fingerprint": "a69067d898e2bfdccbb1720267a264d02b19d48f8112a03e51f25a795c9c3fa1",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "receipt_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_receipts_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_receipts_tax_lot_record_id_key ON ledger.open_lot_backfill_receipts USING btree (tax_lot_record_id)",
+          "expression": null,
+          "fingerprint": "1afdcc7c95cce2e3428670466774de2be141138744b22e8793da6312587dbd6e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tax_lot_record_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_receipts_tax_lot_record_id_key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "open_lot_backfill_receipts",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_open_lot_backfill_evidence BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_receipts FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_backfill_evidence()",
+          "definition_hash": "98b873048e8539e73d48122f2f5db774e2b89037d0d69ed0b81452d53c2a33ce",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "09e0ebaa2f642268b4c0bb5f816294e17d10b8556118d41b3565ffbc4399f1a3",
+          "function_schema": "ledger",
+          "function_signature": "protect_open_lot_backfill_evidence()",
+          "level": "row",
+          "name": "protect_open_lot_backfill_evidence",
+          "relation": "open_lot_backfill_receipts",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "d3e09337617e2368b776eef43801dc6467c0bed8e01d402e7b4ecab459c20c60",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "evidence_record_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": null,
+          "fingerprint": "f4a378725bdb67002553b1d3d29a61253ee95ba07997837d60eff4f978b8b9bc",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "accepted",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "11a9a76c2b02999c24185ac96a8d5aee1fb1b64c72c4448ae03ac3d7b7d386ff",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reviewed_by",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "8c41ff4a302837d61208d3e7062211a50cc52831149aabc8337900b5cfa312ac",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reviewed_at",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "27b70b8c9d8e4c76f276070d52ee753be300d8854f4cbac6ebb5dd509f1333ce",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "rationale",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "rationale"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM rationale)) > 0)",
+          "delete_action": null,
+          "fingerprint": "61e1351d34b29cd766b0081c7a255df76f5aa38a2f0b882bb7cc8d76e1063252",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_reviews_rationale_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "reviewed_by"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM reviewed_by)) > 0)",
+          "delete_action": null,
+          "fingerprint": "ee3d4f8fb5412805043cd966211d38ba111c8a5d9fa3428c4143407094bb7e6b",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_reviews_reviewed_by_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "evidence_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (evidence_record_id) REFERENCES ledger.open_lot_backfill_evidence(evidence_record_id)",
+          "delete_action": "no_action",
+          "fingerprint": "074430008fc327ee0f2c9ccce7133f47a895cd21e85ca51147385e6faac95970",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "open_lot_backfill_reviews_evidence_record_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "evidence_record_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "open_lot_backfill_evidence",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "evidence_record_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (evidence_record_id)",
+          "delete_action": null,
+          "fingerprint": "28fa458d864ea53d52160b669c6e762528281b172fadf872baffe0901d37a2ee",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "open_lot_backfill_reviews_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "b0519aa777a524195f81ff05b72b576ea4bad6a99adb52675e65f762939192bd",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX open_lot_backfill_reviews_pkey ON ledger.open_lot_backfill_reviews USING btree (evidence_record_id)",
+          "expression": null,
+          "fingerprint": "d2d0784b50421867da3c54f1226c1aa8f3a31a908cce4a0c0f4bf0cfbf5b938e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "evidence_record_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "open_lot_backfill_reviews_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "open_lot_backfill_reviews",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER guard_open_lot_backfill_review BEFORE INSERT ON ledger.open_lot_backfill_reviews FOR EACH ROW EXECUTE FUNCTION ledger.guard_open_lot_backfill_review()",
+          "definition_hash": "bb3d83cb168a89711286a571f662fb835060037f51de08adc23afa3df4eff729",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "65f9178ee2067abbe9d0a820df56d5b8279df6fe81a47c5438ce224e5b5fac0d",
+          "function_schema": "ledger",
+          "function_signature": "guard_open_lot_backfill_review()",
+          "level": "row",
+          "name": "guard_open_lot_backfill_review",
+          "relation": "open_lot_backfill_reviews",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_open_lot_backfill_evidence BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_reviews FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_backfill_evidence()",
+          "definition_hash": "f5ac54913d99af05bac7ee5a5bea4ede96c9921263d0c8943b42a630c1955d5e",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "a4d70ce81f9ae40021746acd809fee5555586cefcf3ecf2787fdac2374eb79b9",
+          "function_schema": "ledger",
+          "function_signature": "protect_open_lot_backfill_evidence()",
+          "level": "row",
+          "name": "protect_open_lot_backfill_evidence",
+          "relation": "open_lot_backfill_reviews",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "364f8675869d57bf1fbe69fe56271501072528e19029b54635bb86e0cb3126f0",
           "generated": null,
           "generated_expression": null,
@@ -26777,6 +30392,95 @@
       "level": "statement",
       "name": "trg_journal_legs_truncate_guard",
       "relation": "journal_legs",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER protect_open_lot_backfill_evidence BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_evidence FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_backfill_evidence()",
+      "definition_hash": "3107b536f229fb501a70f62cce77d29f6a979bb7bbbe33e617459e3f3feec7c6",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "29e09d29d7eba5d21ad9e80b36d622b5fd90bc24bb1262c66915be5b282601f9",
+      "function_schema": "ledger",
+      "function_signature": "protect_open_lot_backfill_evidence()",
+      "level": "row",
+      "name": "protect_open_lot_backfill_evidence",
+      "relation": "open_lot_backfill_evidence",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER guard_open_lot_backfill_exception BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_exceptions FOR EACH ROW EXECUTE FUNCTION ledger.guard_open_lot_backfill_exception()",
+      "definition_hash": "b39832f9b3dff3adc857a01c4d2a74b09ec548cd58969d7eebaf2473b87b8ab9",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "5bbf704664f460746115977c17d5db37e0164004032271616a87324e70a1ab25",
+      "function_schema": "ledger",
+      "function_signature": "guard_open_lot_backfill_exception()",
+      "level": "row",
+      "name": "guard_open_lot_backfill_exception",
+      "relation": "open_lot_backfill_exceptions",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER protect_open_lot_backfill_evidence BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_receipts FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_backfill_evidence()",
+      "definition_hash": "98b873048e8539e73d48122f2f5db774e2b89037d0d69ed0b81452d53c2a33ce",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "09e0ebaa2f642268b4c0bb5f816294e17d10b8556118d41b3565ffbc4399f1a3",
+      "function_schema": "ledger",
+      "function_signature": "protect_open_lot_backfill_evidence()",
+      "level": "row",
+      "name": "protect_open_lot_backfill_evidence",
+      "relation": "open_lot_backfill_receipts",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER guard_open_lot_backfill_review BEFORE INSERT ON ledger.open_lot_backfill_reviews FOR EACH ROW EXECUTE FUNCTION ledger.guard_open_lot_backfill_review()",
+      "definition_hash": "bb3d83cb168a89711286a571f662fb835060037f51de08adc23afa3df4eff729",
+      "enabled": "origin",
+      "events": [
+        "insert"
+      ],
+      "fingerprint": "65f9178ee2067abbe9d0a820df56d5b8279df6fe81a47c5438ce224e5b5fac0d",
+      "function_schema": "ledger",
+      "function_signature": "guard_open_lot_backfill_review()",
+      "level": "row",
+      "name": "guard_open_lot_backfill_review",
+      "relation": "open_lot_backfill_reviews",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER protect_open_lot_backfill_evidence BEFORE DELETE OR UPDATE ON ledger.open_lot_backfill_reviews FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_backfill_evidence()",
+      "definition_hash": "f5ac54913d99af05bac7ee5a5bea4ede96c9921263d0c8943b42a630c1955d5e",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "a4d70ce81f9ae40021746acd809fee5555586cefcf3ecf2787fdac2374eb79b9",
+      "function_schema": "ledger",
+      "function_signature": "protect_open_lot_backfill_evidence()",
+      "level": "row",
+      "name": "protect_open_lot_backfill_evidence",
+      "relation": "open_lot_backfill_reviews",
       "schema": "ledger",
       "timing": "before"
     },
