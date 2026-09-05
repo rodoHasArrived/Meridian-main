@@ -3641,11 +3641,19 @@ position and version if no retained snapshot exists — or B2's retained positio
 request-invented while the rest are server-read. Second, close both generic routes to this kind:
 refuse `EventKind == CorporateAction` on `LedgerAssetAccountingEventProjections`, or require on it
 an attestation only the in-process projector can produce, so a corporate-action spine has exactly
-one origin; and refuse corporate-action candidates on the generic posting route (`:474`), or make
-the case lane's adoption branch compare the Approved stage's `AttestedBy` and evidence identity
-to the stored case approval before adopting, so a corporate-action journal has exactly one posting
-authority. With both, the values B1 and B2 retain and compare are authorities; with neither, they
-are the drafting caller's word, retained — and the posting caller's, adopted.
+one origin; and on the generic posting route (`:474`), refuse corporate-action candidates, or load
+the stored case approval by the caller's `ApprovalId` and compare its attestor and evidence
+identity *before* the append — where `EnsureAssetProjectionApprovedAsync` already runs
+(`AccountingPostingCandidatePostService.cs:342-347`), ahead of `journalStore.AppendAsync`
+(`:350`) — so a corporate-action journal has exactly one posting authority. That comparison
+belongs on the posting route, not in the case lane's adoption branch (corrected 2026-09-05, after
+review; the first version offered the adoption check as the alternative): the branch runs only
+once `spine.PostedJournalImpact` exists (`CorporateActionCaseAccountingService.cs:233-243`), after
+the journal (`:350`) and the Posted spine version (`:612-618`) are appended, both immutable, so
+refusing adoption leaves the unauthorised journal posted and only stops the case from recording
+it as its own. Keep the adoption comparison as defense in depth, no more. With both, the values
+B1 and B2 retain and compare are authorities; with neither, they are the drafting caller's word,
+retained — and the posting caller's, adopted.
 
 ### B4 — A restated case re-binds without correction lineage
 
@@ -3866,4 +3874,7 @@ the one fingerprint the resolver actually recomputes; a seventh and eighth (2026
 where they had overstated the live path (the spine bullet, against the production store's
 append-time validator and read-time fingerprint check), written an exclusion where an allowlist
 was required (032's predicate), or named an authority that does not exist or is something else
-(B3's election, and the proposal's workflow counter offered as a source-event version).
+(B3's election, and the proposal's workflow counter offered as a source-event version); the same
+round then caught B3's posting-side alternative validating after the immutable append — a remedy
+wrong in kind, of the sort this document's method section warns about — and moved the check to
+the posting route.
