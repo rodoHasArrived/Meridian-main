@@ -3196,9 +3196,16 @@ providers may legitimately issue the same symbol text for different securities (
 and priority 3 of the 2026-08-31 pass). As landed, the second such security cannot be created —
 its stream is appended, its projection insert fails with `23505`, and ingest reports it `Skipped` —
 and the preflight (`:4-35`) blocks the migration outright on any install that already holds such a
-pair. The fix is the one already specified: a partial index over the canonical kinds (`where
-primary_identifier_kind <> 'ProviderSymbol'`), or a projected normalized provider column included
-for that kind. This note records the merge so the index is not later read as A2's closure;
+pair. The fix is the one already specified: a partial index over the canonical kinds, or a projected
+normalized provider column included for that kind. The canonical kinds are an allowlist, not an
+exclusion (corrected 2026-09-05, after review; the first version of this note wrote `where
+primary_identifier_kind <> 'ProviderSymbol'`): the set `SecurityValidationService` already uses
+for duplicate detection (`SecurityValidationService.cs:21-35` — Cusip, Isin, Sedol, Figi,
+OccOptionSymbol, InternalCode, PermId, Bbgid, Wkn, Valoren, PermTicker, Ric), so the predicate is
+`where primary_identifier_kind in (...)` over those twelve. The exclusion form would have kept
+Ticker, Lei, Cik, and Unknown under the unique rule (`SecurityIdentifiers.cs:8-39`), which the
+constraint never claimed for them — the over-constraint this note records, one kind narrower.
+This note records the merge so the index is not later read as A2's closure;
 verifying 032 against A2's requirements — and this over-constraint — is the next pass's work.
 
 ### B1 — The accounting lane verifies what it loads and trusts what it is told
@@ -3230,11 +3237,22 @@ re-verifies the bindings it loads, and shape-checks the bindings it is told.** W
   (added 2026-09-05, after review; an earlier version said "the snapshot's integrity"): the
   record's own `CanonicalFingerprint` comes back from the store and is discarded
   (`IAssetAccountingEventProjectionStore.cs:12-14`), `AssetAccountingEventSpineValidator` is never
-  run, so the candidate *result's* fingerprint (`AssetAccountingEventDtos.cs:657-662`) and the lot
-  mutation's (`:664-668`) go unchecked — and `BuildProjectionBinding` then takes the result's
-  totals and selected rule on trust (`CorporateActionCaseAccountingService.cs:341-396`). A tampered
-  result attaches and approves as balanced and policy-covered; only the posting authority's own
-  validation refuses it later. What is not checked is what the snapshot *is*: neither the resolver
+  run there, so the candidate *result's* fingerprint (`AssetAccountingEventDtos.cs:657-662`) and
+  the lot mutation's (`:664-668`) go unchecked by the resolver — and `BuildProjectionBinding` then
+  takes the result's totals and selected rule on trust
+  (`CorporateActionCaseAccountingService.cs:341-396`). That is a layering gap, not a live
+  corruption path (corrected 2026-09-05, after review; the previous version said a tampered result
+  "attaches and approves as balanced and policy-covered"):
+  the production store runs the spine validator — candidate, result, and lot fingerprints against
+  their payloads (`AssetAccountingEventDtos.cs:650-669`) — on every append
+  (`IAssetAccountingEventProjectionStore.cs:49-60`), and recomputes the record's fingerprint over
+  the stored payload on every read, throwing on mismatch
+  (`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:310-320`), so an inconsistent
+  result cannot be appended and an altered one cannot be loaded. What the resolver leaves to the
+  store is a guarantee the store interface does not state — the record type carries the
+  fingerprint as data (`IAssetAccountingEventProjectionStore.cs:12-14`) and a store that skipped
+  the recompute would satisfy it — and that is the defect's actual size. What is not checked is
+  what the snapshot *is*: neither the resolver
   nor `BuildProjectionBinding` (`:320-409`)
   nor the posting-time re-check (`ValidateSpineStillDrafted`, `:437-451`) reads `spine.EventKind`
   (the DTO carries it, `AssetAccountingEventDtos.cs:179`; the mapper sets `CorporateAction` on
@@ -3528,8 +3546,9 @@ checks only that `CaseVersion` is positive (`CorporateActionAccountingProjection
 a request-supplied number, retained and compared to `ExpectedVersion`, is two caller assertions
 agreeing with each other. The drafting orchestrator — which does not yet exist, see B3 — must load
 the case and bind its version into the projection request; the same holds for the election and
-position-snapshot inputs (the latter has no dereferencing service at the pin; B3's remedy names
-the read), and for B1's lot and policy identities. This belongs with B1's priority
+position-snapshot inputs (neither has an authority to read at the pin — no election record exists
+and the position snapshot has no dereferencing service; B3's remedy says what each read must
+be), and for B1's lot and policy identities. This belongs with B1's priority
 entry, not after it: it is the same defect — attach trusting instead of verifying — at the field
 the rest of the lane's correctness is gated on.
 
@@ -3585,13 +3604,26 @@ maker-checker outcome. B1's intro sentence about the adoption path is corrected 
 **Remedy.** Two halves, and together they are the precondition for B1 and B2. First, a
 server-side corporate-action drafting orchestrator: load the case, the accepted source proposal,
 the lot snapshot, the policy decision, the election, and the position from their stores; build the
-projection request and the role-bearing manifest from those reads. The proposal is on the list
-because the case does not carry what the projector needs (added 2026-09-05, after review): the
-projector requires a numeric `SourceEventVersion`, the case snapshot retains only the provider
-identity, whose source version is an opaque string
-(`CorporateActionOperationsContracts.cs:305-312`), and the numeric `Version` lives on
-`CorporateActionSourceProposalDto` (`:401-409`), reachable by `processingCase.ProposalId` —
-reload it there rather than parse or invent one. Then project
+projection request and the role-bearing manifest from those reads. Two of those reads name
+authorities that do not exist yet, and the list is honest only with that said (corrected
+2026-09-05, after review; the previous version sent the orchestrator to reload a numeric source
+version from the proposal, and listed the election as if a store held it). The source-event
+version: the projector requires a numeric `SourceEventVersion`, the case snapshot retains only the
+provider identity, whose source version is an opaque string
+(`CorporateActionOperationsContracts.cs:305-312`), and the proposal's `Version` (`:401-409`) is
+the proposal row's own concurrency counter — it is incremented when the proposal is accepted
+(`PostgresCorporateActionOperationsStore.cs:508-518`) — so binding it would retain a workflow
+number that says nothing about the provider's event. The proposal stays on the list for the
+provider identity and terms it retains; the version has to be defined and persisted first, as a
+numeric conversion of `ProviderIdentity.SourceEventVersion` fixed at acceptance or a new field on
+the accepted proposal, and read from there. The election: no election store or election record
+exists at the pin — `ElectionId` and `ElectionVersion` appear only in the projector, mapper, and
+contracts, and the case holds election *states* (`CorporateActionOperationsContracts.cs:39-40`) and
+an `ElectionInstruction` evidence kind (`:233`) on evidence rows that carry an id, a hash, and the
+case version at which they were recorded (`CorporateActionEvidenceDto`, `:505-515`), not a
+versioned election. Either a durable election record is defined, or the binding is declared to be
+that evidence row — its `EvidenceId` as the election id, its `CaseVersion` as the version, which
+B2's digest then commits; until one is chosen the read has nothing to read. Then project
 (`ICorporateActionAccountingProjectionService`),
 map (`ICorporateActionAssetAccountingEventMapper`), and draft into the spine in process — the path
 the projector and mapper were written for and that nothing exercises. The position deserves its
@@ -3828,4 +3860,9 @@ remedy's precondition to its origin, added B3 — the drafting boundary is a cli
 bounds what B1 and B2 can prove until a server-authored drafting path exists; a sixth (2026-09-05)
 added B4 (a restated case re-binds without correction lineage) and B5 (approval evidence minted as
 retained at posting), extended B3 to the generic posting route, and narrowed the spine bullet to
-the one fingerprint the resolver actually recomputes.
+the one fingerprint the resolver actually recomputes; a seventh and eighth (2026-09-05) recorded
+032's over-constraint and scoped the P4 header, then corrected three of this pass's own statements
+where they had overstated the live path (the spine bullet, against the production store's
+append-time validator and read-time fingerprint check), written an exclusion where an allowlist
+was required (032's predicate), or named an authority that does not exist or is something else
+(B3's election, and the proposal's workflow counter offered as a source-event version).
