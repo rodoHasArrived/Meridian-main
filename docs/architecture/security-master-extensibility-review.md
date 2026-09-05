@@ -37,20 +37,26 @@ risks that compound as new asset classes land.
 > that are correctness and access-control problems rather than extensibility ones: the desktop lane
 > mutates the golden record with no authorization check (P5), the legacy preferred-terms PATCH route
 > bypasses the governed-amendment gate (P1), editing an alias erases it from earlier recorded-as-of
-> views (P3b), and invalid import rows are reported to the operator as harmless skips while a cancelled
-> Polygon ingest imports a partial set and reports success (P4). The architectural assessment below is
-> unaffected.
+> views (P3b), and invalid import rows are reported to the operator as harmless skips while a
+> Polygon ingest whose page fetch fails imports the pages it got and reports success (P4; an
+> earlier wording said "a cancelled Polygon ingest" — cancellation imports nothing; see the
+> 2026-09-01 pass's P4 row). The architectural assessment below is unaffected.
 >
 > **Update 2026-09-01, mapped onto the four.** P5 is closed and verified — a
 > `RolePermissions`-backed mutation gate now covers all five in-process golden-record commands. The
 > legacy PATCH bypass (P1) was closed on 2026-08-29. P3b is narrowed, not resolved: the creation
-> fields are frozen, the history problem stands. P4's clause splits three ways: ordinary
-> validation failures are no longer misreported as skips (the substring classifier is gone, so
-> they count `Failed`); a reused `SecurityId` with different terms still is — the typed classifier
-> treats every version-0 stream conflict and SQLSTATE `23505` as `Skipped` without comparing
-> payloads (the semantic half, open); and a cancelled Polygon ingest still imports a partial set
-> and reports success — `FetchPageAsync` is unchanged. (Narrowed 2026-09-05, after review: the
-> first wording said "invalid rows", which read as all of them.) See the
+> fields are frozen, the history problem stands. P4's clause splits three ways: on the CSV
+> import and Polygon CLI paths, ordinary validation failures are no longer misreported as skips
+> (the substring classifier is gone, so they count `Failed`) — EDGAR still counts every
+> non-duplicate failure as a skip, its result having no failed counter; a reused `SecurityId`
+> with different terms still is — the typed classifier treats every version-0 stream conflict and
+> SQLSTATE `23505` as `Skipped` without comparing payloads (the semantic half, open); and a
+> Polygon ingest whose page fetch fails mid-pagination imports the pages it got and reports
+> success — `FetchPageAsync` is unchanged, while a *cancelled* ingest imports nothing (the CLI
+> re-checks the token before its first write) and, if cancelled during the first page, reports
+> "no tickers" as success. (Narrowed 2026-09-05, after review, twice: the first wording said
+> "invalid rows", which read as all of them, and "a cancelled Polygon ingest imports a partial
+> set", which it cannot.) See the
 > [2026-09-01 pass](#scheduled-institutional-requirements-pass--2026-09-01).
 
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
@@ -3155,7 +3161,7 @@ still live, per the table below.
 | P4 (semantic) | Classifier has no content-equivalence check | `SecurityMasterIngestFailureClassifier.cs:38-51`, re-read this pass — see the closure bullet above for why the cancellation fix does not close this. |
 | P4 (backfill) | Both swallow points, the `break`, and the success count | `TradingParametersBackfillService.cs` unchanged: the `SearchAsync` catch still swallows and `return`s (`:62-70`), the loop still `break`s on `IsCancellationRequested` (`:85-89`), and the per-item `catch (Exception)` (`:98-108`) still counts a swallowed cancellation as `failureCount++` — **including the one `BackfillTickerAsync` correctly rethrows at `:223-227`**, so the inner fix is defeated one frame up and the run completes with a spurious failure count. The inner method misreports the other way as well (added 2026-09-02, after review; the row's first version listed only the cancellation sites): `BackfillTickerAsync` returns normally on a non-success status (`:136-141`), an empty result (`:146-152`), and a missing security (`:194-198`), and its `HttpRequestException` (`:219-222`) and `Exception` (`:228-231`) catches log and return — every one of which the loop then counts as `successCount++` (`:101`). The missing-key return (`:118-122`) is not among them — `BackfillAllAsync` checks the same key and returns before its loop (`:51-55`) — but that early return is a false success of its own: the interface returns `Task` with no outcome (`ITradingParametersBackfillService.cs:12`), so the desktop handler reports "completed successfully" after a run that did nothing, as it does after any normal return (`SecurityMasterViewModel.cs:2237-2241`). (Corrected 2026-09-05, after review: the row's second version listed the missing key among the counted branches.) |
 | P4 (WPF plumbing) | Desktop backfill has nothing to cancel with | `OnBackfillTradingParams()` takes no token and passes none (`SecurityMasterViewModel.cs:2224, :2237`); the sibling import handler plumbs one (`Import.cs:18, :69`), so the pattern exists in the same file. |
-| P4 (Polygon fetch) | Cancellation and HTTP failure read as end-of-pagination | `PolygonSecurityMasterIngestProvider.cs:128-149` unchanged: `catch (Exception)` returns `null`, `FetchAllAsync` `break`s on `null` (`:80-82`) and returns the partial set as a normal result. |
+| P4 (Polygon fetch) | HTTP failure reads as end-of-pagination; cancellation reads as an empty or short fetch | `PolygonSecurityMasterIngestProvider.cs:128-149` unchanged: `catch (Exception)` returns `null` for a non-success status or any exception, `FetchAllAsync` `break`s on `null` (`:80-82`) and returns the pages fetched so far as a normal result — so an HTTP failure mid-pagination imports a partial set that the CLI reports as success. Cancellation takes a different path (corrected 2026-09-05, after review; earlier passes and this one's header said a cancelled ingest imports a partial set): the same catch swallows the `OperationCanceledException`, but `ExecutePolygonIngestAsync` re-checks the token before its first `CreateAsync` (`SecurityMasterCommands.cs:272`) and propagates cancellation having imported nothing — unless cancellation lands during the first page, when the empty result takes the "No tickers returned" branch (`:259-263`) and the run reports success with nothing fetched. The catch is wrong for both reasons; what it produces differs by cause. |
 | P1 (CLI) | `--imported-by` stamps an unvalidated caller string | `SecurityMasterCommands.cs:364-368` unchanged; neither validation against a known identity nor a documented trust exception has appeared. |
 | P1 (alias corrections) | The correcting actor is discarded | `PostgresSecurityMasterStore.Aliases.cs` untouched in the range; the conflict path still omits `created_by` (correctly, per P3b) and still records the corrector nowhere. |
 | P1 (remaining constraints) | `SourceSystem` from trusted metadata; valid-time gates; nested identifier windows; alias source-role decision | `SecurityMasterService.cs` untouched in the range; none of the four has landed. |
@@ -3492,8 +3498,13 @@ projector and mapper that would draft the candidate have no production caller at
 (`LedgerFeatureRegistration.cs:54-59` registers them; nothing resolves them). The three case
 routes are live API (`SecurityMasterEndpoints.CorporateActionOperations.cs:606, :630, :654`), and
 the one production path that drafts a spine event is the generic ledger route (B3, below). So the
-defect is reachable today by an API integration, not by an operator flow; there is no data to
-repair yet, which is the argument for fixing it now rather than a reason to wait.
+defect is reachable today by an API integration, not by an operator flow. Whether any affected
+rows exist is not knowable from source (corrected 2026-09-05, after review; the first version said
+"there is no data to repair yet"): the case routes and the generic drafting route are live, so an
+external integration or a manual caller may already have created spines, bindings, approvals, or
+postings. Remediation therefore starts with a deployment audit — count `CorporateAction`-kind
+spines and the case lane's bindings, approvals, and postings — and the argument for fixing it now
+is that the count can only grow.
 
 **Remedy.** Retain, at drafting time, the projection inputs that can stale — the case version, and
 with it the election id and version and the position snapshot id from the same digest — typed on
@@ -3703,8 +3714,10 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    lane has no shipped consumer — the case routes are live API with no client caller, and the
    drafting pipeline has no production caller at all (an earlier version of this entry said the
    lane's one consumer was the workstation; it has none at the pin — corrected 2026-09-02, after
-   review) — so there is nothing to repair; every month of postings after a consumer lands makes
-   retrofitted verification a data-repair exercise. B4 and B5 ride with it: a reopened case must
+   review) — so a deployment audit decides whether there is anything to repair (the routes are live
+   to external callers; source cannot say no rows exist — corrected 2026-09-05), and every month of
+   postings after a consumer lands makes retrofitted verification a data-repair exercise. B4 and B5
+   ride with it: a reopened case must
    carry correction lineage to its own posting before it can bind again, and approval must
    reference retained evidence rather than mint it at posting.
 2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
