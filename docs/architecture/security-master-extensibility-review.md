@@ -3206,6 +3206,12 @@ OccOptionSymbol, InternalCode, PermId, Bbgid, Wkn, Valoren, PermTicker, Ric), so
 `where primary_identifier_kind in (...)` over those twelve. The exclusion form would have kept
 Ticker, Lei, Cik, and Unknown under the unique rule (`SecurityIdentifiers.cs:8-39`), which the
 constraint never claimed for them — the over-constraint this note records, one kind narrower.
+The same allowlist has to filter the preflight (added 2026-09-05, after review; the previous
+version corrected only the index): the collision query groups every kind (`:18-24`) and raises
+before the old index is dropped (`:26-32`, `:37-38`), so a migration whose index is scoped to the
+canonical kinds but whose preflight is not still refuses to run on exactly the installs the
+scoping is for — those holding a legitimate repeated `ProviderSymbol`. The predicate goes in both
+places, or the fix does not deploy where it matters.
 This note records the merge so the index is not later read as A2's closure;
 verifying 032 against A2's requirements — and this over-constraint — is the next pass's work.
 
@@ -3662,9 +3668,19 @@ and the `IPositionSnapshotStore` that exists is the reconciliation lane's per-ac
 snapshot (`IPositionSnapshotStore.cs`), a different authority. The authority the spine itself
 reloads is the book position at its exact version (`AssetAccountingEventSpineService.cs:219-223`,
 `ValidatePosition`, `:974-978`); the orchestrator must bind the position-snapshot identity, its
-version, and its evidence row from that read — minting the snapshot identity from the book
-position and version if no retained snapshot exists — or B2's retained position input stays
-request-invented while the rest are server-read. Second, close both generic routes to this kind:
+version, and its evidence row from that read, or B2's retained position input stays
+request-invented while the rest are server-read. "From that read" cannot mean minting an
+identifier (corrected 2026-09-05, after review; the previous version offered "minting the snapshot
+identity from the book position and version if no retained snapshot exists"): the projector
+requires a PositionSnapshot-role dependency whose subject is that exact id at `PositionVersion`
+(`CorporateActionAccountingProjectionService.cs:1890-1897`), and the mapper requires every manifest
+dependency to be matched by a complete, accepted retained evidence identity — id, URI, version,
+subject, and content hash (`CorporateActionAssetAccountingEventMapper.cs:307-324`). A minted id has
+no retained row behind it, so the draft the orchestrator produced would be refused at map. Either a
+retained position-snapshot record with its evidence identity is defined and persisted first, or
+the contract is changed so the PositionSnapshot dependency binds the authoritative book-position
+id and version with a retained evidence row for that read; a fresh identifier is neither.
+Second, close both generic routes to this kind:
 refuse `EventKind == CorporateAction` on `LedgerAssetAccountingEventProjections`, or require on it
 an attestation only the in-process projector can produce, so a corporate-action spine has exactly
 one origin; and on the generic posting route (`:474`), refuse corporate-action candidates, or load
@@ -3697,9 +3713,13 @@ per case is permitted by schema. The spine's own correction check, when a candid
 proves that the referenced journal is a posted, internally consistent event in the same book,
 period, and basis (`AssetAccountingEventSpineService.cs`, `ResolveCorrectionAuthorityAsync`) — not
 that it is *this case's* journal. So a reopened case can attach, approve, and post a second
-originating journal, or a correction of some other event in the scope, and the case record shows
-two postings with no lineage between them. The mechanism is certain from source; the restatement
-command surface itself was not read for this pass.
+originating journal, or a correction of some other event in the scope, and the durable history
+then holds two postings for the case with no lineage between them — while the case read shows
+only the later one (corrected 2026-09-05, after review; the previous sentence said the case record
+"shows two postings"): the case query joins a single posting, the newest by `posted_at`
+(`PostgresCorporateActionOperationsStore.Cases.cs:1138-1143`, `order by posted_at desc limit 1`),
+so the earlier journal stays posted in the ledger and invisible from the case. The mechanism is
+certain from source; the restatement command surface itself was not read for this pass.
 
 **Remedy.** For a case with a prior posting, the fresh binding must carry correction lineage that
 resolves to that case's own retained journal and lot impact: require `spine.Correction` to be
@@ -3905,4 +3925,8 @@ round then caught B3's posting-side alternative validating after the immutable a
 wrong in kind, of the sort this document's method section warns about — and moved the check to
 the posting route; a ninth counted B3's missing authorities honestly (four, not two — the lot
 snapshot and policy decision have no record either) and put the rule-pack step back between
-project and map, since the mapper consumes an attested effect nothing in production produces.
+project and map, since the mapper consumes an attested effect nothing in production produces; a
+tenth applied 032's allowlist to the preflight as well as the index, withdrew the "mint a snapshot
+identity" alternative from B3's position read (the mapper refuses a dependency with no retained
+evidence row behind it), and corrected B4's operator-visible consequence — the case read joins
+only the newest posting, so the second journal is hidden, not shown.
