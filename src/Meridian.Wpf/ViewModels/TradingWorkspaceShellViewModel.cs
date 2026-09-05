@@ -410,7 +410,7 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 
     public string SelectedActivePositionDetail => SelectedActivePosition is null
         ? "Select an active position row to inspect strategy, mode, P&L, and next desk actions."
-        : $"{SelectedActivePosition.StrategyName} is open in {SelectedActivePosition.ModeLabel} mode.";
+        : $"{SelectedActivePosition.StrategyName} is open in {SelectedActivePosition.ModeLabel} mode. {SelectedActivePosition.Mark.Label}: {SelectedActivePosition.Mark.Reason} Observed {SelectedActivePosition.Mark.ObservedOn}; age {SelectedActivePosition.Mark.Age}; valuation {SelectedActivePosition.Mark.ValuationDate}; policy {SelectedActivePosition.Mark.PolicyVersion}.";
 
     public string SelectedActivePositionPnlText => SelectedActivePosition is null
         ? "P&L unavailable."
@@ -593,6 +593,9 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
             rows,
             [
                 new("Symbol", nameof(TradingActivePositionItem.Symbol), 86),
+                new("Mark readiness", "Mark.Label", 125),
+                new("Observed on", "Mark.ObservedOn", 110),
+                new("Mark age", "Mark.Age", 90),
                 new("Strategy", nameof(TradingActivePositionItem.StrategyName), 180),
                 new("Qty", nameof(TradingActivePositionItem.QuantityLabel), 86),
                 new("Unrealized", nameof(TradingActivePositionItem.UnrealizedPnlFormatted), 110),

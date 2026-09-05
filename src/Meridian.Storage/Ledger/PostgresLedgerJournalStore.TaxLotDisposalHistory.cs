@@ -1,3 +1,5 @@
+using System.Text.Json;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Ledger;
 using Npgsql;
 
@@ -16,7 +18,8 @@ public sealed record LedgerTaxLotDisposalHistoryRecord(
     LedgerTaxLotReliefMethod ReliefMethod,
     IReadOnlyList<LedgerTaxLotDisposalHistoryLot> Lots,
     IReadOnlyList<WashSaleBasisIncrease> WashSaleBasisIncreases,
-    decimal MatchedReplacementQuantity);
+    decimal MatchedReplacementQuantity,
+    IReadOnlyList<OpenLotDto>? CanonicalLots = null);
 
 /// <summary>
 /// Reads retained tax-lot disposal history so realized-gain reporting can be rebuilt from the
@@ -79,7 +82,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                     batch.Value.ReliefMethod,
                     batch.Value.Lots,
                     hasDeferrals ? retained.Increases : Array.Empty<WashSaleBasisIncrease>(),
-                    hasDeferrals ? retained.MatchedQuantity : 0m);
+                    hasDeferrals ? retained.MatchedQuantity : 0m,
+                    batch.Value.CanonicalLots);
             })
             .OrderBy(static record => record.MutationBatchId)
             .ToArray();
@@ -108,7 +112,16 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                    lot.financial_account_id,
                    (select min(carried.holding_period_carry_date)
                     from {Qualified("wash_sale_deferrals")} carried
-                    where carried.replacement_tax_lot_record_id = mutation.tax_lot_record_id) as holding_period_start
+                    where carried.replacement_tax_lot_record_id = mutation.tax_lot_record_id
+                      and carried.recorded_at <= batch.created_at) as holding_period_start,
+                   mutation.lot_snapshot_before::text,
+                   lot.acquisition_terms::text,
+                   lot.security_id,
+                   lot.book_position_id,
+                   mutation.tax_lot_record_id,
+                   lot.original_face,
+                   lot.booked_factor,
+                   lot.par_basis
             from {Qualified("tax_lot_mutations")} mutation
             join {Qualified("atomic_tax_lot_posting_batches")} batch
               on batch.mutation_batch_id = mutation.mutation_batch_id
@@ -138,6 +151,24 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
             var carriedStart = reader.IsDBNull(12) ? (DateOnly?)null : DateOnly.FromDateTime(reader.GetDateTime(12));
             var holdingPeriodStart = carriedStart is { } carried && carried < acquiredDate ? carried : acquiredDate;
 
+            if (reader.IsDBNull(13))
+                throw new LedgerValidationException("Disposal history lacks its immutable lot snapshot; canonical reporting is blocked.");
+            var before = DeserializeTaxLotSnapshot(reader.GetString(13));
+            if (before.TaxLotRecordId != reader.GetGuid(17) || before.LedgerBookId != ledgerBookId)
+                throw new LedgerValidationException("Retained disposal snapshot does not bind the exact durable lot and ledger book.");
+            // An approved backfill may supply only facts absent in the immutable legacy snapshot.
+            // Quantity, basis, acquisition date, and version always come from that snapshot.
+            before = before with
+            {
+                Acquisition = before.Acquisition ?? (reader.IsDBNull(14) ? null
+                    : JsonSerializer.Deserialize<OpenLotAcquisitionDto>(reader.GetString(14), JsonOptions)),
+                SecurityId = before.SecurityId != Guid.Empty ? before.SecurityId : reader.IsDBNull(15) ? Guid.Empty : reader.GetGuid(15),
+                BookPositionId = before.BookPositionId != Guid.Empty ? before.BookPositionId : reader.IsDBNull(16) ? Guid.Empty : reader.GetGuid(16),
+                OriginalFace = before.OriginalFace ?? (reader.IsDBNull(18) ? null : reader.GetDecimal(18)),
+                BookedFactor = before.BookedFactor ?? (reader.IsDBNull(19) ? null : reader.GetDecimal(19)),
+                ParBasis = before.ParBasis ?? (reader.IsDBNull(20) ? null : reader.GetDecimal(20))
+            };
+            var canonical = before.ToOpenLot();
             var lot = new LedgerTaxLotDisposalHistoryLot(
                 reader.GetString(3),
                 acquiredDate,
@@ -148,22 +179,23 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
 
             if (batches.TryGetValue(batchId, out var accumulator))
             {
+                if (accumulator.Account != before.Account)
+                    throw new LedgerValidationException("Retained disposal snapshots span different authoritative asset accounts.");
                 accumulator.Lots.Add(lot);
+                accumulator.CanonicalLots.Add(canonical);
                 continue;
             }
 
-            // relief_method is nullable on the batch; a disposal without one predates the
-            // authoritative relief-method requirement, so FIFO is assumed for presentation only.
-            var reliefMethod = reader.IsDBNull(2)
-                || !Enum.TryParse<LedgerTaxLotReliefMethod>(reader.GetString(2), ignoreCase: true, out var parsed)
-                    ? LedgerTaxLotReliefMethod.Fifo
-                    : parsed;
+            if (reader.IsDBNull(2) || !Enum.TryParse<LedgerTaxLotReliefMethod>(reader.GetString(2),
+                    ignoreCase: true, out var reliefMethod) || !Enum.IsDefined(reliefMethod))
+                throw new LedgerValidationException("Disposal history lacks an authoritative relief policy; canonical reporting is blocked.");
 
             batches[batchId] = new DisposalBatchAccumulator(
                 reader.GetGuid(1),
-                ReadLedgerAccount(reader, 8),
+                before.Account,
                 reliefMethod,
-                new List<LedgerTaxLotDisposalHistoryLot> { lot });
+                new List<LedgerTaxLotDisposalHistoryLot> { lot },
+                new List<OpenLotDto> { canonical });
         }
 
         return batches;
@@ -222,5 +254,6 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         Guid JournalEntryId,
         LedgerAccount Account,
         LedgerTaxLotReliefMethod ReliefMethod,
-        List<LedgerTaxLotDisposalHistoryLot> Lots);
+        List<LedgerTaxLotDisposalHistoryLot> Lots,
+        List<OpenLotDto> CanonicalLots);
 }

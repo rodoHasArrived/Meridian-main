@@ -121,6 +121,7 @@ export interface OperationsResolveBreakCaseRequest {
 }
 
 export interface OperationsCloseWorkflowRequest {
+  closeScope?: CloseReadinessProjection["scope"] | null;
   expectedVersion: number;
   actor: string;
   rationale: string;

@@ -438,6 +438,81 @@ public static partial class LedgerEndpoints
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketPreview, async (HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                // Schedule previews round-trip the workstation's string-valued confidence enum.
+                // Use the same JSON contract as the schedule response, not the host's numeric-enum defaults.
+                var request = await context.Request.ReadFromJsonAsync<RunDailyMarkToMarketDraftIntakeRequest>(
+                    jsonOptions, context.RequestAborted).ConfigureAwait(false);
+                if (request is null)
+                    return Results.BadRequest(new { error = "A daily valuation preview request is required." });
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!string.IsNullOrWhiteSpace(request.ScheduleId))
+                {
+                    var source = context.RequestServices.GetService<IDailyValuationPortfolioSource>();
+                    var positions = context.RequestServices.GetService<DailyValuationPositionService>();
+                    if (source is null || positions is null)
+                        return ServiceUnavailable();
+                    var schedule = await source.GetAsync(request.ScheduleId, context.RequestAborted).ConfigureAwait(false);
+                    if (schedule is null)
+                        return Results.NotFound();
+                    if (!string.Equals(schedule.TenantId, tenantContext.TenantId, StringComparison.OrdinalIgnoreCase) ||
+                        !string.Equals(schedule.CompanyId, tenantContext.CompanyId, StringComparison.OrdinalIgnoreCase))
+                        return EndpointHelpers.Forbidden();
+                    if (schedule.FundProfileId != request.FundProfileId || schedule.LedgerBookId != request.LedgerBookId ||
+                        schedule.PeriodId != request.PeriodId || schedule.EntityId != request.EntityId ||
+                        !string.Equals(schedule.Currency, request.Currency, StringComparison.OrdinalIgnoreCase))
+                        return ApiProblemDetails.Conflict(context, "Preview scope does not match the retained valuation schedule.");
+                    var resolved = await positions.ResolveConfiguredAsync(schedule, request.AsOf, context.RequestAborted).ConfigureAwait(false);
+                    if (!resolved.IsReady)
+                        return ApiProblemDetails.Conflict(context, string.Join(" ", resolved.Blockers));
+                    request = request with { Positions = resolved.Positions };
+                }
+                var result = await runner.PreviewDailyMarkToMarketAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (JsonException)
+            {
+                return Results.BadRequest(new { error = "The daily valuation preview request contains invalid JSON or confidence." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Conflict(context, ex.Message);
+            }
+        })
+        .WithName("RunLedgerJournalAutomationDailyMarkToMarketPreview").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .Accepts<RunDailyMarkToMarketDraftIntakeRequest>("application/json")
+        .Produces<ValuationFreshnessPreviewDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         app.MapPost(UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketIntake, async (RunDailyMarkToMarketDraftIntakeRequest request, HttpContext context) =>
         {
             if (!HasLedgerMutationPermission(context))

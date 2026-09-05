@@ -851,10 +851,17 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntryEvidence = "/api/ledger/journal-entry-workbench/evidence";
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
+    public const string LedgerOpenLotBackfillExceptions = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/exceptions";
+    public const string LedgerOpenLotBackfillSurvey = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/survey";
+    public const string LedgerOpenLotBackfillEvidence = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence";
+    public const string LedgerOpenLotBackfillEvidenceById = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}";
+    public const string LedgerOpenLotBackfillEvidenceReview = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}/review";
+    public const string LedgerOpenLotBackfillApply = "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/apply";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
     public const string LedgerJournalAutomationCapitalCallIssuanceIntake = "/api/ledger/journal-automation/capital-call-issuance-intake";
     public const string LedgerJournalAutomationCapitalCallFundingIntake = "/api/ledger/journal-automation/capital-call-funding-intake";
     public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketPreview = "/api/ledger/journal-automation/daily-mark-to-market-preview";
     public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
     public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
