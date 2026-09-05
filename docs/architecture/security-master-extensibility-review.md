@@ -44,10 +44,13 @@ risks that compound as new asset classes land.
 > **Update 2026-09-01, mapped onto the four.** P5 is closed and verified — a
 > `RolePermissions`-backed mutation gate now covers all five in-process golden-record commands. The
 > legacy PATCH bypass (P1) was closed on 2026-08-29. P3b is narrowed, not resolved: the creation
-> fields are frozen, the history problem stands. P4's clause splits: invalid import rows are no
-> longer misreported as skips (the substring classifier is gone, so validation failures count
-> `Failed`), but a cancelled Polygon ingest still imports a partial set and reports success —
-> `FetchPageAsync` is unchanged. See the
+> fields are frozen, the history problem stands. P4's clause splits three ways: ordinary
+> validation failures are no longer misreported as skips (the substring classifier is gone, so
+> they count `Failed`); a reused `SecurityId` with different terms still is — the typed classifier
+> treats every version-0 stream conflict and SQLSTATE `23505` as `Skipped` without comparing
+> payloads (the semantic half, open); and a cancelled Polygon ingest still imports a partial set
+> and reports success — `FetchPageAsync` is unchanged. (Narrowed 2026-09-05, after review: the
+> first wording said "invalid rows", which read as all of them.) See the
 > [2026-09-01 pass](#scheduled-institutional-requirements-pass--2026-09-01).
 
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
@@ -3150,7 +3153,7 @@ still live, per the table below.
 | N4/N5 | Pack registry overlap rule cannot fire; shared prose contract schema | `SecurityAssetPackRegistry.cs` untouched in the range. |
 | N6 | Projection fan-out per upsert | Store untouched in the range. |
 | P4 (semantic) | Classifier has no content-equivalence check | `SecurityMasterIngestFailureClassifier.cs:38-51`, re-read this pass — see the closure bullet above for why the cancellation fix does not close this. |
-| P4 (backfill) | Both swallow points, the `break`, and the success count | `TradingParametersBackfillService.cs` unchanged: the `SearchAsync` catch still swallows and `return`s (`:62-70`), the loop still `break`s on `IsCancellationRequested` (`:85-89`), and the per-item `catch (Exception)` (`:98-108`) still counts a swallowed cancellation as `failureCount++` — **including the one `BackfillTickerAsync` correctly rethrows at `:223-227`**, so the inner fix is defeated one frame up and the run completes with a spurious failure count. The inner method misreports the other way as well (added 2026-09-02, after review; the row's first version listed only the cancellation sites): `BackfillTickerAsync` returns normally on a missing API key (`:118-122`), a non-success status (`:136-141`), an empty result (`:146-152`), and a missing security (`:194-198`), and its `HttpRequestException` (`:219-222`) and `Exception` (`:228-231`) catches log and return — every one of which the loop then counts as `successCount++` (`:101`). The interface returns `Task` with no per-ticker outcome (`ITradingParametersBackfillService.cs:12`), and the desktop handler reports "completed successfully" on any normal return (`SecurityMasterViewModel.cs:2237-2241`). |
+| P4 (backfill) | Both swallow points, the `break`, and the success count | `TradingParametersBackfillService.cs` unchanged: the `SearchAsync` catch still swallows and `return`s (`:62-70`), the loop still `break`s on `IsCancellationRequested` (`:85-89`), and the per-item `catch (Exception)` (`:98-108`) still counts a swallowed cancellation as `failureCount++` — **including the one `BackfillTickerAsync` correctly rethrows at `:223-227`**, so the inner fix is defeated one frame up and the run completes with a spurious failure count. The inner method misreports the other way as well (added 2026-09-02, after review; the row's first version listed only the cancellation sites): `BackfillTickerAsync` returns normally on a non-success status (`:136-141`), an empty result (`:146-152`), and a missing security (`:194-198`), and its `HttpRequestException` (`:219-222`) and `Exception` (`:228-231`) catches log and return — every one of which the loop then counts as `successCount++` (`:101`). The missing-key return (`:118-122`) is not among them — `BackfillAllAsync` checks the same key and returns before its loop (`:51-55`) — but that early return is a false success of its own: the interface returns `Task` with no outcome (`ITradingParametersBackfillService.cs:12`), so the desktop handler reports "completed successfully" after a run that did nothing, as it does after any normal return (`SecurityMasterViewModel.cs:2237-2241`). (Corrected 2026-09-05, after review: the row's second version listed the missing key among the counted branches.) |
 | P4 (WPF plumbing) | Desktop backfill has nothing to cancel with | `OnBackfillTradingParams()` takes no token and passes none (`SecurityMasterViewModel.cs:2224, :2237`); the sibling import handler plumbs one (`Import.cs:18, :69`), so the pattern exists in the same file. |
 | P4 (Polygon fetch) | Cancellation and HTTP failure read as end-of-pagination | `PolygonSecurityMasterIngestProvider.cs:128-149` unchanged: `catch (Exception)` returns `null`, `FetchAllAsync` `break`s on `null` (`:80-82`) and returns the partial set as a normal result. |
 | P1 (CLI) | `--imported-by` stamps an unvalidated caller string | `SecurityMasterCommands.cs:364-368` unchanged; neither validation against a known identity nor a documented trust exception has appeared. |
@@ -3306,7 +3309,9 @@ other input is retained on the fingerprint-verified snapshot or is the case's ow
 (`EconomicEvent`, set at `:148, :154`), case id (the case). So attach can recompute
 the identity with the *case's* `CorporateActionId` and compare it to `spine.EventId`: a mismatch
 means the candidate was drafted for a different action — or, because the case id is in the
-identity, for a different case, which closes the cross-case attach with the same check. This is a
+identity, for a different case, which closes the cross-case attach with the same check; a match
+means the id was built for this action *if the drafting path built it* (on the generic route the id
+is the caller's — B3). This is a
 recomputation, but not the kind the remedy below warns against: it is the same function over
 inputs that are all retained, not a reconstruction of a hash whose inputs were discarded. It needs
 one shared helper that performs the *complete* derivation — `DeterministicGuid` over
@@ -3348,9 +3353,13 @@ Two subtleties for the implementer, both about what *not* to do:
   - **Comparable at attach today, and first: the spine's kind.** `spine.EventKind ==
     AssetAccountingEventKindDto.CorporateAction` is one read of a retained field
     (`AssetAccountingEventDtos.cs:179`), refused with `ProjectionStale` in the resolver before any
-    other comparison. The event-identity recomputation below would also reject a non-corporate-action
-    spine — its id was never built from a corporate-action identity — but the kind check is the
-    cheap, explicit refusal and should not be left to a derived one. Added 2026-09-02, after review.
+    other comparison. It is required, not a cheaper duplicate of the event-identity recomputation
+    below (corrected 2026-09-05, after review; the first version said the identity check "would
+    also reject" a non-corporate-action spine): on the generic drafting route (B3) both the kind
+    and the economic event's id are the caller's, and the spine validator requires only that the
+    event *type* match the kind (`AssetAccountingEventDtos.cs:450-451`), so an acquisition-kind
+    spine can carry a corporate-action-derived id and pass the identity check. Only the kind field
+    refuses it. Added 2026-09-02, after review.
   - **Comparable at attach today: `ProjectionInputHash`.** The projection service writes the
     computed input hash into the lineage as `TermsHash`
     (`CorporateActionAccountingProjectionService.cs:161-178`, `TermsHash: projectionInputHash` at
@@ -3613,10 +3622,12 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    defect for ordinary HTTP errors, independent of cancellation. What remains on the reporting half
    is the backfill's success accounting (added 2026-09-02, after review; an earlier version of this
    entry said "exactly" of the cancellation sites and stopped there): every normal return from
-   `BackfillTickerAsync` — missing key, non-success status, empty result, missing security,
-   swallowed HTTP or unexpected exception (`:118-122, :136-141, :146-152, :194-198, :219-222,
-   :228-231`) — is counted as a success (`:101`) and reported to the operator as one
-   (`SecurityMasterViewModel.cs:2237-2241`). The remedy is P4's own prescription one method down: a
+   `BackfillTickerAsync` — non-success status, empty result, missing security, swallowed HTTP or
+   unexpected exception (`:136-141, :146-152, :194-198, :219-222, :228-231`) — is counted as a
+   success (`:101`) and reported to the operator as one (`SecurityMasterViewModel.cs:2237-2241`);
+   a missing key never reaches the count because `BackfillAllAsync` returns first (`:51-55`), and
+   the operator is told that no-op run completed successfully too (corrected 2026-09-05, after
+   review). The remedy is P4's own prescription one method down: a
    typed per-ticker outcome, or a propagated failure, before the count is incremented. Scope by
    method, per the item: the per-item catch fix alone is defeated by the search catch above it,
    and a cancellation fix alone closes P4 with failed tickers still counted as successes.
