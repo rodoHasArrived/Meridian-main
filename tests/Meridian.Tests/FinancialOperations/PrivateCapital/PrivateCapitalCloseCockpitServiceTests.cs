@@ -7,7 +7,7 @@ using Meridian.FinancialOperations.PrivateCapital;
 
 namespace Meridian.Tests.FinancialOperations.PrivateCapital;
 
-public sealed class PrivateCapitalCloseCockpitServiceTests
+public sealed partial class PrivateCapitalCloseCockpitServiceTests
 {
     private const string FundProfileId = "fund-alpha";
     private const string PeriodId = "2026-06";
@@ -1636,14 +1636,14 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
 
     private sealed class StubManualJournalEntryWorkbenchService : IManualJournalEntryWorkbenchService
     {
-        private readonly PrivateCapitalActivityProjectionDto _activity;
+        public PrivateCapitalActivityProjectionDto Activity { get; set; }
         private readonly IReadOnlyList<ManualJournalEntryDraftDto> _drafts;
 
         public StubManualJournalEntryWorkbenchService(
             PrivateCapitalActivityProjectionDto activity,
             IReadOnlyList<ManualJournalEntryDraftDto>? drafts = null)
         {
-            _activity = activity;
+            Activity = activity;
             _drafts = drafts ?? [];
         }
 
@@ -1659,12 +1659,12 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
                 ChartOfAccounts: [],
                 Drafts: _drafts,
                 AuditTrail: [],
-                PrivateCapitalActivity: _activity));
+                PrivateCapitalActivity: Activity));
 
         public Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult(_activity);
+            return Task.FromResult(Activity);
         }
 
         public Task<ManualJournalEntryDraftDto> SaveDraftAsync(SaveManualJournalEntryDraftRequest request, CancellationToken ct = default)

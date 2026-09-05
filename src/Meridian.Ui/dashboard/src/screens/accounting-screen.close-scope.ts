@@ -1,16 +1,16 @@
-import type { FinancialOperationsCommandCenter, OperationsContinuityWorkflow } from "@/types";
-import type { CloseWorkflowQuery } from "./accounting-screen.close-sources";
+import type { CloseReadinessProjection, FinancialOperationsCommandCenter, OperationsContinuityWorkflow } from "@/types";
 
 const scopeFields = ["fundProfileId", "fundAccountId", "ledgerBookId", "entityId", "periodId"] as const;
+type AccountingCloseScope = Partial<CloseReadinessProjection["scope"]>;
 
-export function accountingCloseScopeKey(scope: CloseWorkflowQuery | null) {
+export function accountingCloseScopeKey(scope: AccountingCloseScope | null) {
   return JSON.stringify(scopeFields.map(field => scope?.[field]?.trim() || null));
 }
 
 export function accountingCloseReadinessBlockReason(
   workflow: OperationsContinuityWorkflow | null,
   commandCenter: FinancialOperationsCommandCenter | null,
-  selectedScope: CloseWorkflowQuery | null,
+  selectedScope: AccountingCloseScope | null,
 ): string | null {
   const readiness = commandCenter?.closeReadiness;
   if (!selectedScope || scopeFields.some(field => !selectedScope[field]?.trim())

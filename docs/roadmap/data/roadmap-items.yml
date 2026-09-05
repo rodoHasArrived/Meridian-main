@@ -1591,7 +1591,7 @@ items:
     health: green
     priority: high
     evidence_posture: in_progress
-    current_summary: Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. Browser and WPF selections invalidate old decisions and delayed responses. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit. Hosted acceptance and integration proof remain required before certification.
+    current_summary: Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. WPF Accounting Close uses the governed server HTTP client for retained plans and commands. Browser and WPF selections invalidate old decisions and delayed responses. Private-capital statement and allocation support must belong to selected events and period/entity scope; cumulative balances and foreign evidence remain diagnostic. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit, including mixed-period and mixed-entity subledgers. Hosted acceptance and integration proof remain required before certification.
     exit_criteria:
       - One close-readiness projection is the shared source both workstation lanes consume rather than each lane deriving its own, and the caller or an explicit operator selection establishes the complete close scope - fund profile, ledger book, fund account, entity, and period - rather than the projection inferring any dimension from whichever workflow it happened to select; every contribution answers for that declared scope, and a dimension that is missing, ambiguous, or mismatched blocks the projection rather than being merged into it.
       - Every blocker names its type, count, severity, owner, and the records causing it.
@@ -1602,6 +1602,7 @@ items:
     source_modules:
       - SRC-DESIGN-FINANCIAL-OPERATIONS
       - SRC-UI-SHARED
+      - SRC-UI-SERVICES
       - SRC-CONTRACTS
       - SRC-UI-DASHBOARD
       - SRC-WPF
@@ -1624,7 +1625,15 @@ items:
         path: tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.AcceptanceTests.cs
       - type: test
         path: tests/Meridian.Tests/Ui/CloseReadinessSubjectSourceTests.cs
-    last_reviewed: 2026-09-04
+      - type: source
+        path: src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs
+      - type: test
+        path: tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.cs
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs
+    last_reviewed: 2026-09-05
 
   - id: W10-RECON-003
     title: Unified tolerance model and what-if replay workbench

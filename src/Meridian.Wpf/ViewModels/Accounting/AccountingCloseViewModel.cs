@@ -1135,6 +1135,11 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
+
             ClosePlanSetupStatusText = $"Close-plan setup could not be retained: {ex.Message}";
         }
     }
@@ -1219,6 +1224,11 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
+
             CloseTaskSignOffStatusText = $"Close task sign-off could not be retained: {ex.Message}";
         }
     }
@@ -1287,6 +1297,11 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
+
             LateAdjustmentRequestStatusText = $"Late adjustment request could not be retained: {ex.Message}";
         }
     }
@@ -1355,6 +1370,11 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
+
             LateAdjustmentReviewStatusText = $"Late adjustment review could not be retained: {ex.Message}";
         }
     }
@@ -1423,6 +1443,11 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
+
             CloseEvidenceReviewStatusText = $"Close evidence review could not be retained: {ex.Message}";
         }
     }
@@ -1511,6 +1536,11 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
+
             ClosePeriodLockStatusText = $"Closing entries could not be queued: {ex.Message}";
         }
     }
@@ -1611,6 +1641,11 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
+            if (!IsCurrentCloseWorkflowSelection(selectionRevision, selectedWorkflowId))
+            {
+                return;
+            }
+
             ClosePeriodLockStatusText = $"Close-period lock could not be retained: {ex.Message}";
         }
     }

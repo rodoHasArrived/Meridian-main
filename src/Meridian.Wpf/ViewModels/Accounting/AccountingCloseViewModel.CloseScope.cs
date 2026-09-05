@@ -63,6 +63,7 @@ public sealed partial class AccountingCloseViewModel
             return;
         }
 
+        InvalidatePendingCloseScopeResponses();
         RaisePropertyChanged(nameof(CloseScopeStatusText));
         if (_closePlan is { IsPeriodLocked: false } closePlan)
         {

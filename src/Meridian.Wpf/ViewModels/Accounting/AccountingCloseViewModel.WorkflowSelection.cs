@@ -98,7 +98,20 @@ public sealed partial class AccountingCloseViewModel
         InvalidateCloseWorkflowSelection();
         var selectionRevision = _closeWorkflowSelectionRevision;
         ClosePlanSetupStatusText = $"Loading close workflow {workflowId:D}.";
-        var closePlan = await _closeManagementService.GetPeriodPlanAsync(workflowId).ConfigureAwait(true);
+        ClosePeriodPlanDto? closePlan;
+        try
+        {
+            closePlan = await _closeManagementService.GetPeriodPlanAsync(workflowId).ConfigureAwait(true);
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            if (IsCurrentCloseWorkflowSelection(selectionRevision, workflowId))
+            {
+                ClosePlanSetupStatusText = $"Close plan could not be loaded: {ex.Message}";
+                ClosePeriodLockStatusText = "Refresh the selected workflow after resolving its server evidence or access issue.";
+            }
+            return;
+        }
         if (!IsCurrentCloseWorkflowSelection(selectionRevision, workflowId))
         {
             return;
@@ -146,6 +159,22 @@ public sealed partial class AccountingCloseViewModel
         QueueClosingEntriesCommand.NotifyCanExecuteChanged();
         LockClosePeriodCommand.NotifyCanExecuteChanged();
         RefreshCloseWorkflowSteps();
+    }
+
+    private void InvalidatePendingCloseScopeResponses()
+    {
+        if (LoadClosePlanCommand.IsRunning || ConfigureClosePlanCommand.IsRunning ||
+            SignOffCloseTaskCommand.IsRunning || RequestLateAdjustmentCommand.IsRunning ||
+            ReviewLateAdjustmentCommand.IsRunning || ReviewCloseEvidenceCommand.IsRunning ||
+            QueueClosingEntriesCommand.IsRunning || LockClosePeriodCommand.IsRunning)
+        {
+            // Keep the operator's workflow text and explicit scope for a current reload.
+            InvalidateCloseWorkflowSelection();
+            ClosePlanSetupStatusText = "Close scope changed while a request was running. Reload the selected workflow before retaining another close command.";
+            return;
+        }
+
+        ++_closeWorkflowSelectionRevision;
     }
 
     private bool IsCurrentCloseWorkflowSelection(long revision, Guid workflowId)

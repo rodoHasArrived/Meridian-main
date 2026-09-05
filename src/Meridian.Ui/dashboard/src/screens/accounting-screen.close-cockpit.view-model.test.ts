@@ -1455,6 +1455,7 @@ describe("accounting-screen close-cockpit view model", () => {
       const scope = decision.closeReadiness!.scope;
       expect(accountingCloseReadinessBlockReason(closeWorkflow, decision, scope)).toBeNull();
       expect(accountingCloseReadinessBlockReason(closeWorkflow, decision, { ...scope, [field]: undefined })).toContain("full close scope");
+      expect(accountingCloseReadinessBlockReason(closeWorkflow, decision, { ...scope, [field]: null })).toContain("full close scope");
       expect(accountingCloseReadinessBlockReason(closeWorkflow, decision, { ...scope, [field]: "different-scope" })).toContain("full close scope");
       expect(accountingCloseReadinessBlockReason({ ...closeWorkflow, version: closeWorkflow.version + 1 }, decision, scope)).toContain("selected workflow version");
     },

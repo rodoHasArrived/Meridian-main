@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-27
+last_reviewed: 2026-09-05
 ---
 
 # src/Meridian.FinancialOperations
@@ -18,6 +18,19 @@ The Financial Operations command center owns the shared close decision. It requi
 Close acceptance additionally proves account/entity/book subject ownership independently of workflow selection. The real close-plan reader stamps workflow, account, and retained evidence versions from one state snapshot; final projection rechecks those stamps so concurrent sign-off or configuration changes block instead of mixing snapshots. The closing-entry gate is mandatory. Repairing the underlying scope/evidence issue allows a fresh assessment to restore readiness.
 
 Hard close and workflow publication re-evaluate shared readiness before mutation, including callers outside the workstation HTTP route. Complete subject scope, authenticated tenant/company, exact workflow revision, and current retained prerequisites are required. Close packages, locks, and published exports are outputs of that transition; they do not create circular prerequisites. Historical approval decisions stay visible while the current decision controls readiness. The retained close plan proves each task's required sign-offs; calendar reviewer totals describe a different approval dimension.
+
+Private-capital close evidence is selected by fund event, period, and ledger entity. Partner
+statements must reference a selected event in the same month and match the capital account,
+investor, and currency. Each selected expense or fee event must retain allocation support;
+management-company evidence signals also come from selected event records. Cumulative
+capital-account balances, history, and evidence remain available as diagnostics, but prior-period
+or other-entity statement and allocation evidence cannot satisfy the selected close.
+`PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for
+mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support,
+and restores readiness by repairing that support while preserving cumulative balances and history.
+A separate scenario rejects a foreign-period statement even when it carries the selected event ID.
+These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending
+the required hosted integration evidence.
 
 ## Purpose
 

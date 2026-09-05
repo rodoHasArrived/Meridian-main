@@ -11,7 +11,8 @@ public sealed record OperationsContinuityClosePresentation(bool IsReady, string 
         CloseReadinessScopeDto? selectedScope)
     {
         if (selectedScope is null || string.IsNullOrWhiteSpace(selectedScope.FundProfileId) ||
-            selectedScope.LedgerBookId.GetValueOrDefault() == Guid.Empty || selectedScope.FundAccountId.GetValueOrDefault() == Guid.Empty ||
+            selectedScope.LedgerBookId is not { } bookId || bookId == Guid.Empty ||
+            selectedScope.FundAccountId is not { } accountId || accountId == Guid.Empty ||
             string.IsNullOrWhiteSpace(selectedScope.EntityId) || string.IsNullOrWhiteSpace(selectedScope.PeriodId))
             return Blocked("Select the fund, ledger book, account, entity, and period before evaluating close readiness.");
         if (workflow is null || commandCenter?.ActiveWorkflow is not { } active ||

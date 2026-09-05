@@ -1,7 +1,13 @@
-import type { FinancialOperationsCommandCenter, OperationsContinuityWorkflow } from "@/types";
+import type { CloseReadinessProjection, FinancialOperationsCommandCenter, OperationsContinuityWorkflow } from "@/types";
+
+type CompleteCloseDecision = FinancialOperationsCommandCenter & {
+  closeReadiness: CloseReadinessProjection & {
+    scope: { [Field in keyof CloseReadinessProjection["scope"]]: string };
+  };
+};
 
 /** A server response fixture, supplied separately from locally ready workflow diagnostics. */
-export function sharedCloseDecision(workflow: OperationsContinuityWorkflow): FinancialOperationsCommandCenter {
+export function sharedCloseDecision(workflow: OperationsContinuityWorkflow): CompleteCloseDecision {
   return {
     generatedAtUtc: "2026-09-04T12:00:00Z", fundProfileId: "fund-alpha", ledgerBookId: "book-alpha",
     fundAccountId: workflow.fundAccountId, periodId: workflow.periodId, status: "Ready", isReadyToComplete: true,

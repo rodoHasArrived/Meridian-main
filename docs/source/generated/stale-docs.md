@@ -28,4 +28,4 @@ This report marks registered source modules whose code or README hashes differ f
 | `SRC-PROVIDER-SDK` | `src/Meridian.ProviderSdk` | `src/Meridian.ProviderSdk/README.md` | `source_hash_drift` |
 | `SRC-QUANTSCRIPT` | `src/Meridian.QuantScript` | `src/Meridian.QuantScript/README.md` | `source_hash_drift` |
 | `SRC-RISK` | `src/Meridian.Risk` | `src/Meridian.Risk/README.md` | `source_hash_drift` |
-| `SRC-UI-SERVICES` | `src/Meridian.Ui.Services` | `src/Meridian.Ui.Services/README.md` | `source_hash_drift` |
+| `SRC-UI` | `src/Meridian.Ui` | `src/Meridian.Ui/README.md` | `source_hash_drift` |

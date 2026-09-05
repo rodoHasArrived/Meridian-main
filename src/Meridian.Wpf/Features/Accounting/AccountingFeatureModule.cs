@@ -84,6 +84,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // session actor; the in-process IAccountingConfigurationService below remains for
         // background workers that have not yet migrated.
         services.AddSingleton<IWorkstationAccountingApiClient, WorkstationAccountingApiClient>();
+        services.AddSingleton<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>();
         // Passport Workbench governed-write editor (Phase 4 desktop parity).
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityPassportEditorViewModel>();
         services.AddTransient<Meridian.Wpf.Views.SecurityPassportEditorPage>();
@@ -318,7 +319,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.AddTransient<AccountingConfigureViewModel>();
         services.AddTransient<AccountingConfigurePage>();
-        services.AddTransient<AccountingCloseViewModel>();
+        services.AddTransient(sp => new AccountingCloseViewModel(
+            sp.GetRequiredService<IAccountingProjectionQueryService>(),
+            sp.GetRequiredService<IWorkstationAccountingCloseApiClient>(),
+            sp.GetService<DesktopAuthenticationSession>()));
         services.AddTransient<AccountingClosePage>();
         services.AddTransient<FundStructureSetupViewModel>();
         services.AddTransient<FundAccountsViewModel>();

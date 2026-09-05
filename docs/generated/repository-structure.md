@@ -4584,9 +4584,11 @@ Meridian-main
 │   │   │   ├── LedgerCapitalAccountReconciliationResolver.cs
 │   │   │   ├── PrivateCapitalActivityProjectionBuilder.cs
 │   │   │   ├── PrivateCapitalCapitalAccountSubledgerBuilder.cs
+│   │   │   ├── PrivateCapitalCloseCockpitService.AllocationEvidence.cs
 │   │   │   ├── PrivateCapitalCloseCockpitService.ApprovalHistory.cs
 │   │   │   ├── PrivateCapitalCloseCockpitService.CloseRequirements.cs
 │   │   │   ├── PrivateCapitalCloseCockpitService.cs
+│   │   │   ├── PrivateCapitalCloseCockpitService.EvidenceScope.cs
 │   │   │   ├── PrivateCapitalCloseCockpitService.Routes.cs
 │   │   │   ├── PrivateCapitalEvidenceCategoryBuilder.cs
 │   │   │   ├── PrivateCapitalFundEventLedgerReadinessBuilder.cs
@@ -6956,7 +6958,8 @@ Meridian-main
 │   │   ├── Services
 │   │   │   ├── Accounting
 │   │   │   │   ├── AccountingProjectionQueryService.cs
-│   │   │   │   └── PostedLedgerProjection.cs
+│   │   │   │   ├── PostedLedgerProjection.cs
+│   │   │   │   └── WorkstationAccountingCloseApiClient.cs
 │   │   │   ├── DataQuality
 │   │   │   │   ├── DataQualityApiClient.cs
 │   │   │   │   ├── DataQualityModels.cs
@@ -9468,7 +9471,10 @@ Meridian-main
 │   │   │   │   ├── CapitalCallPlanBuilderTests.cs
 │   │   │   │   ├── CommitmentRollForwardCalculatorTests.cs
 │   │   │   │   ├── DefaultInterestCalculatorTests.cs
+│   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.AllocationEvidenceScope.cs
 │   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.cs
+│   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs
+│   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.ReportEvidenceScope.cs
 │   │   │   │   └── PrivateCapitalFundEventLedgerReadinessBuilderTests.cs
 │   │   │   ├── Reconciliation
 │   │   │   │   └── ReconciliationEngineServiceTests.cs
@@ -10415,7 +10421,8 @@ Meridian-main
 │   │   │   ├── SystemHealthServiceTests.cs
 │   │   │   ├── TimeSeriesAlignmentServiceTests.cs
 │   │   │   ├── WatchlistServiceCollection.cs
-│   │   │   └── WatchlistServiceTests.cs
+│   │   │   ├── WatchlistServiceTests.cs
+│   │   │   └── WorkstationAccountingCloseApiClientTests.cs
 │   │   ├── Meridian.Ui.Tests.csproj
 │   │   └── README.md
 │   ├── Meridian.Wpf.Tests
@@ -10423,6 +10430,8 @@ Meridian-main
 │   │   │   └── WorkspaceCopyCatalogTests.cs
 │   │   ├── Features
 │   │   │   ├── Accounting
+│   │   │   │   ├── AccountingCloseHttpRecoveryTests.cs
+│   │   │   │   ├── AccountingCloseHttpRecoveryTests.ResponseIsolation.cs
 │   │   │   │   ├── AccountingFeatureModuleTests.cs
 │   │   │   │   └── AccountingFeatureServiceRegistrationTests.cs
 │   │   │   ├── Data

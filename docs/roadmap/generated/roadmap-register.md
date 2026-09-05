@@ -1119,11 +1119,11 @@ Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine la
 | Priority | high |
 | Owner lane | Workstation Shell and UX |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-09-04 |
+| Last reviewed | 2026-09-05 |
 
 ### Current Summary
 
-Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. Browser and WPF selections invalidate old decisions and delayed responses. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit. Hosted acceptance and integration proof remain required before certification.
+Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. WPF Accounting Close uses the governed server HTTP client for retained plans and commands. Browser and WPF selections invalidate old decisions and delayed responses. Private-capital statement and allocation support must belong to selected events and period/entity scope; cumulative balances and foreign evidence remain diagnostic. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit, including mixed-period and mixed-entity subledgers. Hosted acceptance and integration proof remain required before certification.
 
 ### Exit Criteria
 
@@ -1138,6 +1138,7 @@ Close acceptance binds declared book/account/entity ownership to authoritative r
 
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
 - `SRC-CONTRACTS`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`

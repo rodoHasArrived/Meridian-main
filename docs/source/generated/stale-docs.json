@@ -194,9 +194,9 @@
       ]
     },
     {
-      "module_id": "SRC-UI-SERVICES",
-      "path": "src/Meridian.Ui.Services",
-      "readme": "src/Meridian.Ui.Services/README.md",
+      "module_id": "SRC-UI",
+      "path": "src/Meridian.Ui",
+      "readme": "src/Meridian.Ui/README.md",
       "reasons": [
         "source_hash_drift"
       ],

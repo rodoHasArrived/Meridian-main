@@ -78,6 +78,7 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingConfigureViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingConfigurePage>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingCloseViewModel>(services, ServiceLifetime.Transient);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingClosePage>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingPostingService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<TrialBalanceProjectionService>(services, ServiceLifetime.Singleton);
