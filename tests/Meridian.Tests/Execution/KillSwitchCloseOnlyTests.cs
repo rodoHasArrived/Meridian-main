@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -269,6 +270,80 @@ public sealed class KillSwitchCloseOnlyTests : IDisposable
             .IsApproved.Should().BeTrue("6 working plus 4 exactly closes the 10-share short");
         controls.EvaluateOrder(Order(OrderSide.Buy, 5m, overrideId) with { FundAccountId = fundShort }, portfolio)
             .IsApproved.Should().BeFalse("6 working plus 5 would leave this fund long 1");
+    }
+
+    /// <summary>
+    /// Through the OMS itself, with its own working-reduction probe wired: the dispatch recheck
+    /// must not count the order being placed as an already-working reduction, or a full close
+    /// evaluates as twice the position and the halted desk cannot flatten.
+    /// </summary>
+    [Fact]
+    public async Task PlaceOrderAsync_FullCloseUnderAnOpenBreakerWithAnOverride_IsAdmittedAtDispatch()
+    {
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(_root, Guid.NewGuid().ToString("N"))),
+            NullLogger<ExecutionOperatorControlService>.Instance);
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.BypassOrderControls,
+            Reason: "Operator approved emergency close",
+            CreatedBy: "ops",
+            Symbol: "AAPL"));
+        await controls.SetCircuitBreakerAsync(isOpen: true, reason: "Operator halt", changedBy: "ops");
+        var gateway = new AcceptingGateway();
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            operatorControls: controls,
+            portfolioState: Portfolio(("AAPL", 10m)));
+
+        var result = await oms.PlaceOrderAsync(Order(OrderSide.Sell, quantity: 10m, manualOverride.OverrideId));
+
+        result.Success.Should().BeTrue(result.ErrorMessage);
+        gateway.Submitted.Should().ContainSingle();
+    }
+
+    private sealed class AcceptingGateway : IExecutionGateway, IExecutionGatewayModeProvider
+    {
+        public List<OrderRequest> Submitted { get; } = new();
+
+        public string GatewayId => "close-only-test-gateway";
+
+        public Meridian.Execution.Sdk.ExecutionMode ExecutionMode => Meridian.Execution.Sdk.ExecutionMode.Paper;
+
+        public bool IsConnected => true;
+
+        public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
+        {
+            Submitted.Add(request);
+            return Task.FromResult(new ExecutionReport
+            {
+                OrderId = request.ClientOrderId ?? Guid.NewGuid().ToString("N"),
+                ClientOrderId = request.ClientOrderId,
+                ReportType = ExecutionReportType.New,
+                Symbol = request.Symbol,
+                Side = request.Side,
+                OrderStatus = Meridian.Execution.Sdk.OrderStatus.Accepted,
+                OrderQuantity = request.Quantity,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+        }
+
+        public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public async IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct).ConfigureAwait(false);
+            yield break;
+        }
     }
 
     private async Task<(ExecutionOperatorControlService Controls, string OverrideId)> HaltedDeskWithOverrideAsync(

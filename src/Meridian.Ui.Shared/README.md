@@ -24,6 +24,10 @@ import, and `sample`/`skip` lead with the starter kit's desk. Activation outcome
 reports the completed work to `POST /api/workstation/first-run/outcomes/complete`, so the
 checklist reflects finished work rather than page visits.
 
+## Shared close and lot convergence
+
+The tenant-guarded Financial Operations command-center endpoint now exposes the server-owned close projection to the browser. Its dependency graph includes ledger-book and close-plan authorities. Fund-wide workspace queries cannot attest period close readiness because they lack the complete declared close scope. Focused proof: `WorkstationEndpointsTests.CloseReadiness`.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser
