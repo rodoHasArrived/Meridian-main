@@ -40,7 +40,9 @@ public static class AtomicTaxLotJournalFingerprint
             command.ExpectedPeriodVersion,
             command.MutationKind,
             OrderEvidence(command.RetainedEvidence),
-            command.AcquisitionLot,
+            command.AcquisitionLot?.Acquisition is { } acquisition
+                ? command.AcquisitionLot with { Acquisition = acquisition with { Evidence = OrderEvidence(acquisition.Evidence) } }
+                : command.AcquisitionLot,
             OrderSelections(command.DisposalSelections),
             command.CorrectsMutationBatchId,
             TextPrimitives.NormalizeOptional(command.ReliefMethod),

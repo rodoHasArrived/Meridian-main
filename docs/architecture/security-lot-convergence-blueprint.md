@@ -262,3 +262,10 @@ The roadmap item may close only when all production open-lot writes use mandator
 decimal quantity, explicit quantity basis, acquisition currency/FX, and atomic mutation/journal
 storage; every current consumer has parity evidence; the legacy exception queue is zero or governed;
 and the advance-refunding scenario reconciles from source evidence through report output.
+
+
+## Implementation receipt - 2026-09-04
+
+Contract and persistence foundation in progress: shared decimal `OpenLotDto` and acquisition facts, canonical relief selection, Execution/Backtesting parity adapters, an additive nullable `acquisition_terms` column, immutable acquisition guards, and ledger-to-canonical face/unit projection. Missing identity, FX, or subject-bound acquisition evidence is refused. Legacy null fields remain absent in fingerprints; populated evidence participates in atomic replay identity.
+
+No writer cutover is claimed. Remaining phases include a governed legacy exception/backfill workflow; currency-precision and selector/amortization parity across production consumers; append-only corporate-action successor and adjustment posting; the advance-refunding/reporting acceptance scenario; and shadow-operation evidence before retiring legacy contracts. Changed basis without a governed adjustment projection currently blocks canonical projection. Short positions require the explicit direction decision in section 9.

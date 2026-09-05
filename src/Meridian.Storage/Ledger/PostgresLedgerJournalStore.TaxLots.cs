@@ -46,7 +46,8 @@ public sealed partial class PostgresLedgerJournalStore
                 book_position_id,
                 original_face,
                 booked_factor,
-                par_basis)
+                par_basis,
+                acquisition_terms)
             values (
                 @tax_lot_record_id,
                 @ledger_book_id,
@@ -71,7 +72,8 @@ public sealed partial class PostgresLedgerJournalStore
                 @book_position_id,
                 @original_face,
                 @booked_factor,
-                @par_basis)
+                @par_basis,
+                @acquisition_terms)
             on conflict (tax_lot_record_id) do update
             set ledger_book_id = excluded.ledger_book_id,
                 account_name = excluded.account_name,
@@ -91,6 +93,7 @@ public sealed partial class PostgresLedgerJournalStore
                 original_face = excluded.original_face,
                 booked_factor = excluded.booked_factor,
                 par_basis = excluded.par_basis,
+                acquisition_terms = excluded.acquisition_terms,
                 version = retained.version + 1,
                 updated_at = excluded.updated_at
             where retained.originating_mutation_batch_id is null
@@ -119,7 +122,8 @@ public sealed partial class PostgresLedgerJournalStore
                       book_position_id,
                       original_face,
                       booked_factor,
-                      par_basis;
+                      par_basis,
+                      acquisition_terms;
             """;
         command.Parameters.AddWithValue("tax_lot_record_id", lot.TaxLotRecordId);
         command.Parameters.AddWithValue("ledger_book_id", lot.LedgerBookId);
@@ -145,6 +149,8 @@ public sealed partial class PostgresLedgerJournalStore
         command.Parameters.AddWithValue("original_face", (object?)lot.OriginalFace ?? DBNull.Value);
         command.Parameters.AddWithValue("booked_factor", (object?)lot.BookedFactor ?? DBNull.Value);
         command.Parameters.AddWithValue("par_basis", (object?)lot.ParBasis ?? DBNull.Value);
+        command.Parameters.AddWithValue("acquisition_terms", NpgsqlTypes.NpgsqlDbType.Jsonb,
+            lot.Acquisition is null ? DBNull.Value : System.Text.Json.JsonSerializer.Serialize(lot.Acquisition));
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
@@ -195,7 +201,8 @@ public sealed partial class PostgresLedgerJournalStore
                    book_position_id,
                    original_face,
                    booked_factor,
-                   par_basis
+                   par_basis,
+                   acquisition_terms
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
@@ -264,7 +271,8 @@ public sealed partial class PostgresLedgerJournalStore
                    book_position_id,
                    original_face,
                    booked_factor,
-                   par_basis
+                   par_basis,
+                   acquisition_terms
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and tax_lot_record_id = any(@tax_lot_record_ids)
@@ -328,6 +336,8 @@ public sealed partial class PostgresLedgerJournalStore
         }
 
         ValidateFaceValueTerms(lot);
+        if (lot.Acquisition is not null)
+            _ = lot.ToOpenLot();
 
         if (lot.OriginatingMutationBatchId.HasValue || lot.LastMutationBatchId.HasValue)
         {
@@ -358,7 +368,8 @@ public sealed partial class PostgresLedgerJournalStore
             reader.IsDBNull(20) ? Guid.Empty : reader.GetGuid(20),
             reader.IsDBNull(21) ? null : reader.GetDecimal(21),
             reader.IsDBNull(22) ? null : reader.GetDecimal(22),
-            reader.IsDBNull(23) ? null : reader.GetDecimal(23));
+            reader.IsDBNull(23) ? null : reader.GetDecimal(23),
+            reader.IsDBNull(24) ? null : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto>(reader.GetString(24)));
 
     /// <summary>
     /// Enforces the acquisition-time par conventions the lot of record now carries, mirroring the
@@ -451,7 +462,8 @@ public sealed partial class PostgresLedgerJournalStore
                    book_position_id,
                    original_face,
                    booked_factor,
-                   par_basis
+                   par_basis,
+                   acquisition_terms
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and security_id = @security_id
