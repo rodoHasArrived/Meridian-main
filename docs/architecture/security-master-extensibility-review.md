@@ -3193,18 +3193,30 @@ stage (`PrepareCorporateActionAccounting`, `ApproveCorporateActionAccounting`,
 with advisory locks, fingerprinted receipts and replay (`PostgresCorporateActionOperationsStore.Accounting.cs:81-137`),
 maker-checker independence is enforced in both the service
 (`CorporateActionCaseAccountingService.cs:135`) and the store (`:198`), cancellation
-hygiene is clean, and the crash-retry adoption path refuses a spine posted outside the case's own
-approval (`CorporateActionCaseAccountingService.cs:234-250`).
+hygiene is clean, and the crash-retry adoption path refuses a spine whose Approved stage carries a
+different approval id (`CorporateActionCaseAccountingService.cs:233-243`) — which is narrower than
+"posted outside the case's own approval", the phrase an earlier version of this sentence used: the
+id and the candidate fingerprint are all it compares, and B3 shows a route on which an outsider
+can supply both (corrected 2026-09-05, after review).
 
 Which is what makes the gap it does have worth stating precisely: **the lane dereferences and
 re-verifies the bindings it loads, and shape-checks the bindings it is told.** Within one method,
 `AttachProjectionAsync`:
 
-- The **spine** binding is real verification of the snapshot's integrity and stage — and of nothing
-  else about it. The snapshot is loaded at the exact expected version, required to be Drafted with
-  a retained candidate and no posted impact, and the candidate's canonical fingerprint is
-  **recomputed** and compared (`CorporateActionCaseAccountingService.cs:286-318`). What is not
-  checked is what the snapshot *is*: neither the resolver nor `BuildProjectionBinding` (`:320-409`)
+- The **spine** binding is real verification of the retained *candidate's* integrity and of the
+  snapshot's stage — and of nothing else about it. The snapshot is loaded at the exact expected
+  version, required to be Drafted with a retained candidate and no posted impact, and the
+  candidate's canonical fingerprint is **recomputed** and compared
+  (`CorporateActionCaseAccountingService.cs:286-318`). That is the only fingerprint it recomputes
+  (added 2026-09-05, after review; an earlier version said "the snapshot's integrity"): the
+  record's own `CanonicalFingerprint` comes back from the store and is discarded
+  (`IAssetAccountingEventProjectionStore.cs:12-14`), `AssetAccountingEventSpineValidator` is never
+  run, so the candidate *result's* fingerprint (`AssetAccountingEventDtos.cs:657-662`) and the lot
+  mutation's (`:664-668`) go unchecked — and `BuildProjectionBinding` then takes the result's
+  totals and selected rule on trust (`CorporateActionCaseAccountingService.cs:341-396`). A tampered
+  result attaches and approves as balanced and policy-covered; only the posting authority's own
+  validation refuses it later. What is not checked is what the snapshot *is*: neither the resolver
+  nor `BuildProjectionBinding` (`:320-409`)
   nor the posting-time re-check (`ValidateSpineStillDrafted`, `:437-451`) reads `spine.EventKind`
   (the DTO carries it, `AssetAccountingEventDtos.cs:179`; the mapper sets `CorporateAction` on
   every event it projects, `CorporateActionAssetAccountingEventMapper.cs:175`), and nothing binds
@@ -3285,8 +3297,9 @@ because every gate checks scope and candidate integrity, not provenance. The con
 wrong journal in the ledger — the journal is Y's retained, fingerprint-verified candidate — it is a
 wrong *authority chain*: case X's record claims Y's economics as its accounting, and case Y can
 then no longer attach or post its own event (`spine.PostedJournalImpact is not null` fails its
-attach, the adoption path correctly refuses an approval reference that is not its own, and the
-route left is the restatement lane). The mechanism is certain from source; how often two Drafted
+attach, the adoption path refuses an approval reference that is not its own, and the route left
+is restatement — which B4 shows is not a governed route either). The mechanism is certain from
+source; how often two Drafted
 spines coexist in one scope is not established here, and does not need to be for the gate to be
 worth having. Where the identity to compare against lives is the part this paragraph has now got
 wrong twice (both corrected 2026-09-02, after review). Drafting requires a
@@ -3532,10 +3545,30 @@ resolution keep the *record* honest; nothing keeps the *economics* honest. B1's 
 remedies remain right — they make the binding mean what the drafting request said — but their
 value is bounded by B3 until the drafting request is server-authored.
 
+The same boundary has a posting side (added 2026-09-05, after review). The generic posting route
+`MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts)`
+(`LedgerEndpoints.AccountingConfiguration.cs:474`; ledger-certification and `AdminMaintenance`,
+`:476, :522`) posts any candidate with a caller-supplied `ApprovalId` and `ApprovalEvidence`, which
+the posting service copies into the spine's Approved stage as its reference id and evidence
+(`AccountingPostingCandidatePostService.cs:1380-1389`). The case lane's crash-retry adoption then
+accepts an already-posted spine when that stage's reference id equals the case approval's id and
+the candidate fingerprint matches (`CorporateActionCaseAccountingService.cs:233-243`); it compares
+neither who attested nor what evidence the stage carries against the stored case approval. So a
+holder of the case's approval id and its retained candidate can post through the generic route
+with evidence of their choosing, and the case's own post command adopts the journal as its
+maker-checker outcome. B1's intro sentence about the adoption path is corrected above to match.
+
 **Remedy.** Two halves, and together they are the precondition for B1 and B2. First, a
-server-side corporate-action drafting orchestrator: load the case, the lot snapshot, the policy
-decision, the election, and the position from their stores; build the projection request and the
-role-bearing manifest from those reads; project (`ICorporateActionAccountingProjectionService`),
+server-side corporate-action drafting orchestrator: load the case, the accepted source proposal,
+the lot snapshot, the policy decision, the election, and the position from their stores; build the
+projection request and the role-bearing manifest from those reads. The proposal is on the list
+because the case does not carry what the projector needs (added 2026-09-05, after review): the
+projector requires a numeric `SourceEventVersion`, the case snapshot retains only the provider
+identity, whose source version is an opaque string
+(`CorporateActionOperationsContracts.cs:305-312`), and the numeric `Version` lives on
+`CorporateActionSourceProposalDto` (`:401-409`), reachable by `processingCase.ProposalId` —
+reload it there rather than parse or invent one. Then project
+(`ICorporateActionAccountingProjectionService`),
 map (`ICorporateActionAssetAccountingEventMapper`), and draft into the spine in process — the path
 the projector and mapper were written for and that nothing exercises. The position deserves its
 own sentence (added 2026-09-02, after review; the first version of this list omitted it): the
@@ -3548,11 +3581,60 @@ reloads is the book position at its exact version (`AssetAccountingEventSpineSer
 `ValidatePosition`, `:974-978`); the orchestrator must bind the position-snapshot identity, its
 version, and its evidence row from that read — minting the snapshot identity from the book
 position and version if no retained snapshot exists — or B2's retained position input stays
-request-invented while the rest are server-read. Second, close the generic route
-to this kind: refuse `EventKind == CorporateAction` on `LedgerAssetAccountingEventProjections`, or
-require on it an attestation only the in-process projector can produce, so a corporate-action
-spine has exactly one origin. With both, the values B1 and B2 retain and compare are authorities;
-with neither, they are the drafting caller's word, retained.
+request-invented while the rest are server-read. Second, close both generic routes to this kind:
+refuse `EventKind == CorporateAction` on `LedgerAssetAccountingEventProjections`, or require on it
+an attestation only the in-process projector can produce, so a corporate-action spine has exactly
+one origin; and refuse corporate-action candidates on the generic posting route (`:474`), or make
+the case lane's adoption branch compare the Approved stage's `AttestedBy` and evidence identity
+to the stored case approval before adopting, so a corporate-action journal has exactly one posting
+authority. With both, the values B1 and B2 retain and compare are authorities; with neither, they
+are the drafting caller's word, retained — and the posting caller's, adopted.
+
+### B4 — A restated case re-binds without correction lineage
+
+Filed 2026-09-05 from review of B1 (the reviewer's point that B1 names "the restatement lane" as
+the governed continuation without its being one). The case state machine allows
+`Posted → RestatementRequired → AccountingReview` (`CorporateActionOperationsContracts.cs:123-128`;
+the comment at `:121-122` says a posted case's journals stay immutable and restatement is the only
+continuation). Once back in `AccountingReview`, attach asks only for that state
+(`EnsureProjectionAttachable`, `CorporateActionCaseAccountingContracts.cs`). Nothing in
+`CorporateActionCaseAccountingService` reads `spine.Correction`, requires a correction reference,
+or consults the case's prior posting — the service contains no reference to a correction, a
+restatement, or the postings table — and migration 031 keys posting uniqueness on the projection,
+not the case (`031_security_master_corporate_action_accounting_lane.sql:127`), so a second posting
+per case is permitted by schema. The spine's own correction check, when a candidate carries one,
+proves that the referenced journal is a posted, internally consistent event in the same book,
+period, and basis (`AssetAccountingEventSpineService.cs`, `ResolveCorrectionAuthorityAsync`) — not
+that it is *this case's* journal. So a reopened case can attach, approve, and post a second
+originating journal, or a correction of some other event in the scope, and the case record shows
+two postings with no lineage between them. The mechanism is certain from source; the restatement
+command surface itself was not read for this pass.
+
+**Remedy.** For a case with a prior posting, the fresh binding must carry correction lineage that
+resolves to that case's own retained journal and lot impact: require `spine.Correction` to be
+present, require its posted journal id and lot batch to equal the case's last posting, and refuse
+an originating candidate outright. Until then, "the route left is restatement" names a door, not a
+gate.
+
+### B5 — Approval evidence is asserted at approval and minted as retained at posting
+
+Filed 2026-09-05 from review of B1. The maker-checker approval the lane is built around accepts
+its evidence as two strings: `ApproveAsync` requires the hash to be canonical SHA-256 and the
+reference to use an allowed URI scheme (`CorporateActionCaseAccountingService.cs:117-122`) and
+stores both; no artifact is loaded, hashed, or retained. At posting, `ExecuteSpinePostingAsync`
+builds a `RetainedEvidenceIdentityDto` from those two strings and fills in the rest itself —
+`ReviewStatus = Accepted`, reviewer and retainer set to the approver, review and retention time set
+to the approval time, `EvidenceVersion = 1` (`:476-499`) — and hands it to the posting authority as
+the approval's retained evidence. The posting authority's completeness check
+(`RetainedEvidenceIdentityValidator`) passes it, because every field was stamped to pass. The
+contract the spine was written to — "evidence whose bytes, source, review, retention, and subject
+scope have all been retained" (`RetainedEvidenceIdentityDto.cs:6-9`) — is met in form by a record
+that retains none of them.
+
+**Remedy.** Approval must reference an *existing* retained evidence identity, one whose bytes and
+hash were retained and whose review state was recorded by the evidence lane, and posting must load
+and compare it rather than construct it. Until then the lane's gaps are not confined to
+attach-time bindings; the approval boundary is a format check dressed as retention.
 
 ### Smaller notes, not filed as findings
 
@@ -3611,7 +3693,9 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    drafting pipeline has no production caller at all (an earlier version of this entry said the
    lane's one consumer was the workstation; it has none at the pin — corrected 2026-09-02, after
    review) — so there is nothing to repair; every month of postings after a consumer lands makes
-   retrofitted verification a data-repair exercise.
+   retrofitted verification a data-repair exercise. B4 and B5 ride with it: a reopened case must
+   carry correction lineage to its own posting before it can bind again, and approval must
+   reference retained evidence rather than mint it at posting.
 2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
    both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
    side", which an earlier version of this entry said while the same list it introduces names an
@@ -3715,4 +3799,7 @@ accounting, restored the desktop deactivation actor to P1's open table, and — 
 added the spine-kind check the attach path lacks, the posting idempotency key that posting never
 reads, and the desktop backfill's actor to P1's inventory; a fifth round, following the B2
 remedy's precondition to its origin, added B3 — the drafting boundary is a client request — which
-bounds what B1 and B2 can prove until a server-authored drafting path exists.
+bounds what B1 and B2 can prove until a server-authored drafting path exists; a sixth (2026-09-05)
+added B4 (a restated case re-binds without correction lineage) and B5 (approval evidence minted as
+retained at posting), extended B3 to the generic posting route, and narrowed the spine bullet to
+the one fingerprint the resolver actually recomputes.
