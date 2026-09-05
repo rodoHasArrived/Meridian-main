@@ -926,11 +926,11 @@ Adopts the burn-down targets proposed in docs/development/god-file-burn-down-pla
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-09-04 |
+| Last reviewed | 2026-09-05 |
 
 ### Current Summary
 
-Implemented one shared valuation freshness policy with default blocking, required observation dates, complete coverage, minimum confidence and future-mark rejection. Position assessments expose observation date, age, policy version and review reason in browser and WPF. Read-only preview reports affected positions before draft intake; retained mark evidence remains bound through journal submission, approval and posting. Unknown historical mark observation dates remain review required. Hosted acceptance and the full integration gate remain pending; no standing override is admitted.
+Implemented one shared valuation freshness policy with default blocking, required observation dates, complete coverage, minimum confidence and future-mark rejection. Position assessments expose observation date, age, policy version and review reason in browser and WPF. Read-only preview reports affected positions before draft intake; retained mark evidence remains bound through journal submission, approval and posting. Unknown historical mark observation dates remain review required. Hosted CI and Windows automated acceptance passed at d49fbc8e7; broader Production Certification remains failed. Live WPF rendering and population-wide preview are not certified; no standing override is admitted.
 
 ### Exit Criteria
 
@@ -1123,7 +1123,7 @@ Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine la
 
 ### Current Summary
 
-Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. WPF Accounting Close uses the governed server HTTP client for retained plans and commands. Browser and WPF selections invalidate old decisions and delayed responses. Private-capital statement and allocation support must belong to selected events and period/entity scope; cumulative balances and foreign evidence remain diagnostic. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit, including mixed-period and mixed-entity subledgers. Hosted acceptance and integration proof remain required before certification.
+Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. WPF Accounting Close uses the governed server HTTP client for retained plans and commands. Browser and WPF selections invalidate old decisions and delayed responses. Private-capital statement and allocation support must belong to selected events and period/entity scope; cumulative balances and foreign evidence remain diagnostic. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit, including mixed-period and mixed-entity subledgers. Hosted CI and Windows automated acceptance passed at d49fbc8e7; live operator certification remains open and broader Production Certification remains failed.
 
 ### Exit Criteria
 
@@ -1288,7 +1288,7 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 
 ### Current Summary
 
-Governed legacy backfill now retains hashed acquisition facts, requires independent review plus authoritative security/book-position validation, and resolves durable exceptions only through atomic versioned receipts. Both open and fully disposed legacy rows can be repaired without invented identity, quantity basis or acquisition FX. Production durable disposal and Reporting consume canonical lot evidence and fail closed on unresolved facts. Acquisition writer convergence, AverageCost basis redistribution, amortization, corporate-action successors, advance refunding and shadow-operation acceptance remain open; hosted validation is pending.
+Governed legacy backfill now retains hashed acquisition facts, requires independent review plus authoritative security/book-position validation, and resolves durable exceptions only through atomic versioned receipts. Both open and fully disposed legacy rows can be repaired without invented identity, quantity basis or acquisition FX. Production durable disposal and Reporting consume canonical lot evidence and fail closed on unresolved facts. Acquisition writer convergence, AverageCost basis redistribution, amortization, corporate-action successors, advance refunding and shadow-operation acceptance remain open. Hosted CI passed at d49fbc8e7, and six PostgreSQL lot cases passed without skips in Production Certification run 33956884001; that broader run still failed six other tests and its dependency gate.
 
 ### Exit Criteria
 
