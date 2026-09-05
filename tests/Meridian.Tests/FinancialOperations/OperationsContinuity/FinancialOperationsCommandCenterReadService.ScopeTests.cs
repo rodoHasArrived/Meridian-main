@@ -17,7 +17,7 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
         var result = await ReadScoped(service, workflow);
         result.CloseReadiness!.IsComplete.Should().BeTrue();
         result.CloseReadiness.IsReadyToClose.Should().BeTrue();
-        result.CloseReadiness.Contributors.Should().HaveCount(5);
+        result.CloseReadiness.Contributors.Should().HaveCount(6);
         result.CloseReadiness.Blockers.Should().BeEmpty();
         result.IsReadyToComplete.Should().BeTrue();
         result.CloseSupportDecision!.IsReady.Should().BeTrue();
@@ -93,7 +93,8 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
         calendar.Setup(x => x.GetCalendarAsync(workflow.FundAccountId, workflow.PeriodId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new IOException("private connection details"));
         var service = new FinancialOperationsCommandCenterReadService(new StubOperationsContinuityWorkflowService(workflow),
-            calendar.Object, new StubPrivateCapitalCloseCockpitService(FreshCockpit(workflow)), CreateBookService());
+            calendar.Object, new StubPrivateCapitalCloseCockpitService(FreshCockpit(workflow)), CreateBookService(),
+            closeSubjectSource: CreateSubjectSource());
         var result = await ReadScoped(service, workflow);
         result.CloseReadiness!.IsComplete.Should().BeFalse();
         result.CloseReadiness.Blockers.Should().Contain(b => b.ContributorId == "calendar");
@@ -135,7 +136,7 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
         var service = new FinancialOperationsCommandCenterReadService(workflows.Object,
             new StubCloseCalendarService(ReadyCalendar(workflow)),
             new StubPrivateCapitalCloseCockpitService(FreshCockpit(workflow)), CreateBookService(),
-            CreateClosePlanService(workflow));
+            CreateClosePlanService(workflow), CreateSubjectSource());
         var result = await ReadScoped(service, workflow);
         result.CloseReadiness!.IsComplete.Should().BeFalse();
         result.CloseReadiness.Blockers.Should().Contain(b => b.ContributorId == "workflow-snapshot" && b.Type == "Stale");
@@ -158,8 +159,20 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
         mock.Setup(x => x.GetPeriodPlanScopedAsync(workflow.WorkflowId, It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ClosePeriodPlanDto("plan", "fund-alpha", BookId, workflow.PeriodId,
                 default, default, default, false, [], [], new MaterialityPolicyDto("policy", 0, 0, "USD", "Controller", true),
-                WorkflowVersion: workflow.Version));
+                ClosingEntriesGate: new("closing-entries", "Closing entries", ClosePostingGateStateDto.NotRequired, true, 0, 0, "Temporary balances clear."),
+                WorkflowVersion: workflow.Version, WorkflowId: workflow.WorkflowId, FundAccountId: workflow.FundAccountId,
+                EvidenceVersion: "retained-plan-v1", EvaluatedAtUtc: DateTimeOffset.UtcNow));
         return mock.Object;
+    }
+
+    private static ICloseReadinessSubjectSource CreateSubjectSource()
+    {
+        var source = new Mock<ICloseReadinessSubjectSource>();
+        source.Setup(x => x.GetSubjectAsync(It.IsAny<CloseReadinessScopeDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((CloseReadinessScopeDto scope, CancellationToken _) =>
+                new CloseReadinessSubjectDto(scope, "Ready", DateTimeOffset.UtcNow, "membership-v1",
+                    [scope.FundAccountId!.Value.ToString("D"), scope.EntityId!]));
+        return source.Object;
     }
 
     private static Task<FinancialOperationsCommandCenterDto> ReadScoped(

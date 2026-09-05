@@ -1,4 +1,5 @@
 using System.Windows.Media;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Wpf.Models;
 
@@ -55,6 +56,8 @@ public sealed class ActiveRunContext
 /// </summary>
 public sealed class TradingActivePositionItem
 {
+    public MarkFreshnessAssessmentDto? MarkFreshness { get; set; }
+    public MarkFreshnessPresentation Mark => new(MarkFreshness);
     public string Symbol { get; set; } = string.Empty;
     public string StrategyName { get; set; } = string.Empty;
     public string QuantityLabel { get; set; } = string.Empty;

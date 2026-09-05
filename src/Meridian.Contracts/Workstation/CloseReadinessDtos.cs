@@ -8,6 +8,19 @@ public sealed record CloseReadinessScopeDto(
     string? EntityId,
     string? PeriodId);
 
+/// <summary>Authoritative book/account/entity membership, including a token for the retained source snapshot.</summary>
+public sealed record CloseReadinessSubjectDto(
+    CloseReadinessScopeDto Scope,
+    string Status,
+    DateTimeOffset EvaluatedAtUtc,
+    string EvidenceVersion,
+    IReadOnlyList<string> RecordIds);
+
+public interface ICloseReadinessSubjectSource
+{
+    Task<CloseReadinessSubjectDto?> GetSubjectAsync(CloseReadinessScopeDto scope, CancellationToken ct = default);
+}
+
 /// <summary>A contributor's retained records and evaluation posture for the selected close scope.</summary>
 public sealed record CloseReadinessContributionDto(
     string ContributorId,

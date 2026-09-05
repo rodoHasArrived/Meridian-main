@@ -52,7 +52,7 @@ Snapshot date: 2026-08-30
 | W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | done | green | critical | Accounting and Ledger |
 | W9-CORPACT-011 | Durable corporate action case processing and accounting projection | in_progress | red | high | Accounting and Ledger |
 | W10-DEBT-001 | God-file burn-down against the file-size ratchet | planned | green | medium | Workstation Shell and UX |
-| W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | planned | green | high | Accounting and Ledger |
+| W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | in_progress | green | high | Accounting and Ledger |
 | W10-RECON-001 | Durable break lineage identity and run-over-run break diff | planned | green | high | Accounting and Ledger |
 | W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | planned | green | high | Workstation Shell and UX |
 | W10-RECON-002 | Break clustering and bulk-resolution activation | planned | green | high | Accounting and Ledger |
