@@ -1114,16 +1114,16 @@ Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine la
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Workstation Shell and UX |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-31 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-09-04 |
 
 ### Current Summary
 
-Rank 7 of the 2026-07 W10 depth slate. Close readiness has several independent owners encoding it incompatible ways, and the cross-lane operator console aggregates them in the browser client, so a controller can get different answers from different screens and the desktop lane is scheduled to reimplement the same aggregation rather than consume it. This row makes one readiness projection the shared source both workstation lanes consume. Known source constraints, including which services own which encoding today, are recorded in docs/product/w10-depth-slate-2026-07.md.
+Shared server close projection implemented as a closure candidate on 2026-09-04. Explicit fund/book/account/entity/period scope, book binding, workflow/calendar/close-plan/private-capital contributors, fail-closed incomplete and stale posture, browser endpoint and entity forwarding, and shared browser/WPF close headlines are present. Full subject-ownership, concurrent-snapshot, recovery-journey and hosted acceptance proof remain open; not certified.
 
 ### Exit Criteria
 
@@ -1278,16 +1278,16 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | critical |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-08-28 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-09-04 |
 
 ### Current Summary
 
-Converge Execution TaxLot, Security Master FaceValueLot, and the already-more-complete durable LedgerTaxLotRecord onto one SecurityId-keyed decimal open-lot contract. The target extends the existing atomic ledger lot rather than creating a parallel store and adds explicit units-versus-face basis, acquisition currency and immutable FX, face-value acquisition terms, shared relief and amortization, and append-only corporate-action continuity.
+Contract and additive persistence foundation implemented on 2026-09-04 over LedgerTaxLotRecord. Canonical decimal identity/quantity-basis/currency/FX contracts, relief selection, legacy parity adapters, acquisition evidence persistence and immutable guards are present. Missing retained facts refuse projection. Governed backfill and exception queue, production consumer cutover, amortization and corporate-action successor posting, advance-refunding/reporting proof and shadow-operation acceptance remain open.
 
 ### Exit Criteria
 

@@ -380,7 +380,9 @@ public sealed record LedgerTaxLotRecord(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     decimal? BookedFactor = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    decimal? ParBasis = null)
+    decimal? ParBasis = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto? Acquisition = null)
 {
     /// <summary>
     /// True when the lot recorded the acquisition-time par conventions

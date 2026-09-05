@@ -1087,6 +1087,42 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "be2429af865a749c45fdbc0f3f7ce02691c326b09b8062da9fb1cebf08a92fcf",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.acquisition_terms",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "aecf0db6b47ca44e52852b143168d18be6acafedf89d501540fcf4d329b5602e",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.book_position_id",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "c15700f889ab4e644331864b378c67b1b30d1210fa8c81af8629a443b4b9bde3",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.security_id",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "68d814b7d512d9f2980ecdbd585987b1ec2dd28c6c6902efb28f2939b3aceb2a",
       "kind": "normal",
       "source": "ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
@@ -1787,7 +1823,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "a12446d85c57a739c3af589b758178f3129a4fb8cb4606b90a2ea993159ab2d7",
+  "fingerprint": "f055a04b5138c43e3265f420bf8ee9b409b73692e5b94139151f05b35998b219",
   "foreign_tables": [],
   "functions": [
     {
@@ -1942,6 +1978,37 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "mark_new_journal_entry_open()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "8984ad48dc8f072dac7253987d83e27d33c63d82cbda0bb6ad02d3e29e99f5b8",
+      "fingerprint": "7395052f56be1b37f3a5a84a882fb042012615c058ddbea1bf5cda0195db8b8b",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "protect_open_lot_acquisition",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "protect_open_lot_acquisition()",
       "strict": false,
       "volatility": "volatile"
     },
@@ -13112,10 +13179,48 @@
           "security_labels": [],
           "type_name": "numeric",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "fb67772d9ae2ffcacf8624f55256349c67770cdde3b0c701ff624c933bbece8a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "acquisition_terms",
+          "nullable": true,
+          "ordinal_position": 25,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "acquisition_terms",
+            "security_id",
+            "book_position_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (acquisition_terms IS NULL OR jsonb_typeof(acquisition_terms) = 'object'::text AND security_id IS NOT NULL AND security_id <> '00000000-0000-0000-0000-000000000000'::uuid AND book_position_id IS NOT NULL AND book_position_id <> '00000000-0000-0000-0000-000000000000'::uuid)",
+          "delete_action": null,
+          "fingerprint": "61a1751a13f4e890cc130ac25b616387ecda13b6765b45db12da3e2d8c433d42",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_tax_lots_acquisition_identity",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "security_id",
@@ -13373,7 +13478,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "7ea420c279b6df078d0299cdfaa88587b0495b7b83bb7bd69887f9724a669428",
+      "fingerprint": "17d480a64f99e318cc2cd41c5eb3e9e97869c4940270d6b0e908deecdafdef06",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -13585,7 +13690,25 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_open_lot_acquisition BEFORE UPDATE ON ledger.tax_lots FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_acquisition()",
+          "definition_hash": "079a5327756fde0f4087f58e2915e8cd2a9b27ced29bffb9d7e6b202aad4fcc8",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "fbfafaa96630a37cf1e437048fbdd5171aea2c73d424d1419279c90bec778138",
+          "function_schema": "ledger",
+          "function_signature": "protect_open_lot_acquisition()",
+          "level": "row",
+          "name": "protect_open_lot_acquisition",
+          "relation": "tax_lots",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -25223,10 +25346,48 @@
           "security_labels": [],
           "type_name": "numeric",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "fb67772d9ae2ffcacf8624f55256349c67770cdde3b0c701ff624c933bbece8a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "acquisition_terms",
+          "nullable": true,
+          "ordinal_position": 25,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "acquisition_terms",
+            "security_id",
+            "book_position_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (acquisition_terms IS NULL OR jsonb_typeof(acquisition_terms) = 'object'::text AND security_id IS NOT NULL AND security_id <> '00000000-0000-0000-0000-000000000000'::uuid AND book_position_id IS NOT NULL AND book_position_id <> '00000000-0000-0000-0000-000000000000'::uuid)",
+          "delete_action": null,
+          "fingerprint": "61a1751a13f4e890cc130ac25b616387ecda13b6765b45db12da3e2d8c433d42",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_tax_lots_acquisition_identity",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "security_id",
@@ -25484,7 +25645,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "7ea420c279b6df078d0299cdfaa88587b0495b7b83bb7bd69887f9724a669428",
+      "fingerprint": "17d480a64f99e318cc2cd41c5eb3e9e97869c4940270d6b0e908deecdafdef06",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -25696,7 +25857,25 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_open_lot_acquisition BEFORE UPDATE ON ledger.tax_lots FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_acquisition()",
+          "definition_hash": "079a5327756fde0f4087f58e2915e8cd2a9b27ced29bffb9d7e6b202aad4fcc8",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "fbfafaa96630a37cf1e437048fbdd5171aea2c73d424d1419279c90bec778138",
+          "function_schema": "ledger",
+          "function_signature": "protect_open_lot_acquisition()",
+          "level": "row",
+          "name": "protect_open_lot_acquisition",
+          "relation": "tax_lots",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -26616,6 +26795,23 @@
       "level": "row",
       "name": "trg_tax_lot_mutations_immutable",
       "relation": "tax_lot_mutations",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER protect_open_lot_acquisition BEFORE UPDATE ON ledger.tax_lots FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_acquisition()",
+      "definition_hash": "079a5327756fde0f4087f58e2915e8cd2a9b27ced29bffb9d7e6b202aad4fcc8",
+      "enabled": "origin",
+      "events": [
+        "update"
+      ],
+      "fingerprint": "fbfafaa96630a37cf1e437048fbdd5171aea2c73d424d1419279c90bec778138",
+      "function_schema": "ledger",
+      "function_signature": "protect_open_lot_acquisition()",
+      "level": "row",
+      "name": "protect_open_lot_acquisition",
+      "relation": "tax_lots",
       "schema": "ledger",
       "timing": "before"
     }

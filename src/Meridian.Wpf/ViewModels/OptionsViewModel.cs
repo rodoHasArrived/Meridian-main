@@ -296,7 +296,8 @@ public sealed class OptionsViewModel : BindableBase, IAsyncDisposable
             _chainLoadCancellation = null;
             _expirationSymbol = symbol;
             _chainKey = null;
-            checked { _chainRevision++; }
+            checked
+            { _chainRevision++; }
             _selectedUnderlying = symbol;
         }
 
@@ -469,7 +470,8 @@ public sealed class OptionsViewModel : BindableBase, IAsyncDisposable
         {
             ThrowIfDisposed();
             run = _loadRun;
-            checked { run.ActiveOperations++; }
+            checked
+            { run.ActiveOperations++; }
         }
 
         using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(

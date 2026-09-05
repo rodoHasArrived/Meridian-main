@@ -381,6 +381,8 @@ public sealed partial class PostgresLedgerJournalStore
         }
 
         ValidateFaceValueTerms(lot);
+        if (lot.Acquisition is not null)
+            _ = lot.ToOpenLot();
         if (lot.HasFaceValueTerms &&
             lot.OriginalQuantity * LedgerTaxLotFaceValueTerms.LedgerLotParBasis != lot.OriginalFace!.Value)
         {
@@ -763,7 +765,8 @@ public sealed partial class PostgresLedgerJournalStore
                    book_position_id,
                    original_face,
                    booked_factor,
-                   par_basis
+                   par_basis,
+                   acquisition_terms
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and tax_lot_record_id = any(@tax_lot_record_ids)
@@ -870,7 +873,8 @@ public sealed partial class PostgresLedgerJournalStore
                    book_position_id,
                    original_face,
                    booked_factor,
-                   par_basis
+                   par_basis,
+                   acquisition_terms
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
@@ -1014,7 +1018,8 @@ public sealed partial class PostgresLedgerJournalStore
                 book_position_id,
                 original_face,
                 booked_factor,
-                par_basis)
+                par_basis,
+                acquisition_terms)
             values (
                 @tax_lot_record_id,
                 @ledger_book_id,
@@ -1039,7 +1044,8 @@ public sealed partial class PostgresLedgerJournalStore
                 @book_position_id,
                 @original_face,
                 @booked_factor,
-                @par_basis)
+                @par_basis,
+                @acquisition_terms)
             returning tax_lot_record_id,
                       ledger_book_id,
                       account_name,
@@ -1063,7 +1069,8 @@ public sealed partial class PostgresLedgerJournalStore
                       book_position_id,
                       original_face,
                       booked_factor,
-                      par_basis;
+                      par_basis,
+                      acquisition_terms;
             """;
         AddAtomicTaxLotParameters(insert, acquired);
 
@@ -1149,7 +1156,8 @@ public sealed partial class PostgresLedgerJournalStore
                       book_position_id,
                       original_face,
                       booked_factor,
-                      par_basis;
+                      par_basis,
+                      acquisition_terms;
             """;
         update.Parameters.AddWithValue("tax_lot_record_id", selection.TaxLotRecordId);
         update.Parameters.AddWithValue("ledger_book_id", command.LedgerBookId);
@@ -1409,7 +1417,8 @@ public sealed partial class PostgresLedgerJournalStore
                    book_position_id,
                    original_face,
                    booked_factor,
-                   par_basis
+                   par_basis,
+                   acquisition_terms
             from {Qualified("tax_lots")}
             where tax_lot_record_id = @tax_lot_record_id
               and ledger_book_id = @ledger_book_id
@@ -1656,6 +1665,8 @@ public sealed partial class PostgresLedgerJournalStore
         databaseCommand.Parameters.AddWithValue("original_face", (object?)lot.OriginalFace ?? DBNull.Value);
         databaseCommand.Parameters.AddWithValue("booked_factor", (object?)lot.BookedFactor ?? DBNull.Value);
         databaseCommand.Parameters.AddWithValue("par_basis", (object?)lot.ParBasis ?? DBNull.Value);
+        databaseCommand.Parameters.AddWithValue("acquisition_terms", NpgsqlTypes.NpgsqlDbType.Jsonb,
+            lot.Acquisition is null ? DBNull.Value : System.Text.Json.JsonSerializer.Serialize(lot.Acquisition));
     }
 
     private static (Guid SecurityId, Guid BookPositionId) ResolveAtomicAssetScope(
