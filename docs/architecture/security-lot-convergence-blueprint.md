@@ -13,6 +13,22 @@
 
 ## 1. Scope
 
+### Implemented migration increment (2026-09-04)
+
+`IOpenLotBackfillStore` and migration `V_ledger_035` provide the legacy repair path. Survey covers
+open and fully disposed legacy rows so retained reporting history can recover. Operators retain
+hashed acquisition facts, an independent reviewer checks them against authoritative security and
+book-position versions, and application consumes only that approved packet. Lot and queue versions,
+idempotency, immutable before/after receipts, and SQL guards keep enrichment atomic. Unresolved
+identity, quantity-basis, or acquisition-FX facts remain visible exceptions with no dismissal path.
+
+The durable disposal transaction now selects through the canonical decimal relief contract, and
+authoritative Reporting validates retained disposal snapshots and includes canonical acquisition
+evidence in its signed pack. This increment does not certify the entire convergence roadmap:
+acquisition writer migration, atomic AverageCost basis redistribution, amortization, corporate-action
+successors, advance refunding, and shadow-operation acceptance remain open. Simulated Backtesting
+lots retain their declared simulation boundary rather than receiving invented evidence.
+
 **In scope:** one open-lot contract for unit- and face-denominated instruments; acquisition
 currency/FX; relief; premium/discount amortization; pool factors; and corporate-action continuity.
 
@@ -121,6 +137,14 @@ Additive ledger columns precede any cutover:
   `acquisition_fx_rate_to_functional`;
 - `functional_cost_basis`;
 - `par_basis`, `booked_factor`, `amortization_method`, and `effective_yield` for face lots.
+
+`original_face`, `booked_factor`, and `par_basis` **landed** in
+`V_ledger_033__tax_lot_face_terms.sql`, nullable and constrained all-three-or-none so a lot either
+states its acquisition-time par conventions or states nothing; legacy rows are not backfilled with
+synthetic defaults. `LedgerTaxLotFaceValueTerms` (`src/Meridian.Storage/Ledger/`) is the seam that
+writes those terms from, and restates them back into, the canonical `FaceValueLot` aggregate, and
+`AccountingPostingCandidateService` now derives factor-paydown held face from the lots of record
+through it. `amortization_method` and `effective_yield` remain proposed.
 
 `security_id` and `book_position_id` become non-null only after the legacy-row exception queue is
 empty. Mutation rows retain before/after snapshots and the Security Master version used.
@@ -254,3 +278,10 @@ The roadmap item may close only when all production open-lot writes use mandator
 decimal quantity, explicit quantity basis, acquisition currency/FX, and atomic mutation/journal
 storage; every current consumer has parity evidence; the legacy exception queue is zero or governed;
 and the advance-refunding scenario reconciles from source evidence through report output.
+
+
+## Implementation receipt - 2026-09-04
+
+Contract and persistence foundation in progress: shared decimal `OpenLotDto` and acquisition facts, canonical relief selection, Execution/Backtesting parity adapters, an additive nullable `acquisition_terms` column, immutable acquisition guards, and ledger-to-canonical face/unit projection. Missing identity, FX, or subject-bound acquisition evidence is refused. Legacy null fields remain absent in fingerprints; populated evidence participates in atomic replay identity.
+
+No writer cutover is claimed. Remaining phases include a governed legacy exception/backfill workflow; currency-precision and selector/amortization parity across production consumers; append-only corporate-action successor and adjustment posting; the advance-refunding/reporting acceptance scenario; and shadow-operation evidence before retiring legacy contracts. Changed basis without a governed adjustment projection currently blocks canonical projection. Short positions require the explicit direction decision in section 9.

@@ -1,3 +1,5 @@
+import { accountingCloseReadinessBlockReason } from "./accounting-screen.close-scope";
+import { sharedCloseDecision } from "./operations-continuity-screen.close-test-fixtures";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -914,7 +916,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence: vi.fn(async () => closePeriodPlan)
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(listPackages).toHaveBeenCalledWith({
       fundProfileId: "fund-alpha",
@@ -1446,6 +1448,88 @@ describe("accounting-screen close-cockpit view model", () => {
     expect(signOffCloseTask).not.toHaveBeenCalled();
   });
 
+  it.each(["fundProfileId", "fundAccountId", "ledgerBookId", "entityId", "periodId"] as const)(
+    "rejects a retained decision when selected %s is missing or changed",
+    field => {
+      const decision = sharedCloseDecision(closeWorkflow);
+      const scope = decision.closeReadiness!.scope;
+      expect(accountingCloseReadinessBlockReason(closeWorkflow, decision, scope)).toBeNull();
+      expect(accountingCloseReadinessBlockReason(closeWorkflow, decision, { ...scope, [field]: undefined })).toContain("full close scope");
+      expect(accountingCloseReadinessBlockReason(closeWorkflow, decision, { ...scope, [field]: null })).toContain("full close scope");
+      expect(accountingCloseReadinessBlockReason(closeWorkflow, decision, { ...scope, [field]: "different-scope" })).toContain("full close scope");
+      expect(accountingCloseReadinessBlockReason({ ...closeWorkflow, version: closeWorkflow.version + 1 }, decision, scope)).toContain("selected workflow version");
+    },
+  );
+
+  it("ignores a previous workflow plan that completes after the current plan", async () => {
+    let resolvePrevious!: (plan: ClosePeriodPlan) => void;
+    const previous = new Promise<ClosePeriodPlan>(resolve => { resolvePrevious = resolve; });
+    const nextWorkflow = { ...closeWorkflow, workflowId: "workflow-close-2" };
+    const nextPlan = { ...postedClosePeriodPlan, closePlanId: "plan-current", workflowId: nextWorkflow.workflowId,
+      tasks: postedClosePeriodPlan.tasks.map(task => ({ ...task, displayName: "Current scoped NAV review" })) };
+    const getClosePlan = vi.fn().mockReturnValueOnce(previous).mockResolvedValue(nextPlan);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan,
+      createLateAdjustment: vi.fn(async () => nextPlan), reviewLateAdjustment: vi.fn(async () => nextPlan),
+      signOffCloseTask: vi.fn(async () => nextPlan), reviewCloseEvidence: vi.fn(async () => nextPlan),
+      configureClosePlan: vi.fn(async () => nextPlan), lockClosePeriod: vi.fn(async () => closePeriodLockResult(nextPlan)),
+      buildPackage: vi.fn(async () => accountingReportPackage), certifyPackage: vi.fn(async () => accountingReportPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest), listPackages: vi.fn(async () => [accountingReportPackage]),
+    };
+    const { result, rerender } = renderHook(({ workflow }) => {
+      const decision = sharedCloseDecision(workflow);
+      return useAccountingCloseReportPackageViewModel(workflow, services, decision, decision.closeReadiness!.scope);
+    }, { initialProps: { workflow: closeWorkflow } });
+    await waitFor(() => expect(getClosePlan).toHaveBeenCalledOnce());
+    const previousRefresh = result.current.refresh;
+    rerender({ workflow: nextWorkflow });
+    await act(async () => { await previousRefresh(); });
+    expect(getClosePlan).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(result.current.tasks[0]?.displayName).toBe("Current scoped NAV review"));
+    await act(async () => { resolvePrevious(postedClosePeriodPlan); });
+    expect(result.current.tasks[0]?.displayName).toBe("Current scoped NAV review");
+    expect(services.listPackages).toHaveBeenCalledOnce();
+  });
+
+  it("invalidates an armed lock when the route entity changes and requires readiness for the new scope", async () => {
+    const decision = sharedCloseDecision(closeWorkflow);
+    const initialScope = decision.closeReadiness!.scope;
+    const lockClosePeriod = vi.fn(async () => closePeriodLockResult(postedClosePeriodPlan));
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan: vi.fn(async () => postedClosePeriodPlan),
+      createLateAdjustment: vi.fn(async () => postedClosePeriodPlan),
+      reviewLateAdjustment: vi.fn(async () => postedClosePeriodPlan),
+      signOffCloseTask: vi.fn(async () => postedClosePeriodPlan),
+      reviewCloseEvidence: vi.fn(async () => postedClosePeriodPlan),
+      configureClosePlan: vi.fn(async () => postedClosePeriodPlan),
+      lockClosePeriod,
+      buildPackage: vi.fn(async () => accountingReportPackage),
+      certifyPackage: vi.fn(async () => accountingReportPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest),
+      listPackages: vi.fn(async () => [accountingReportPackage]),
+    };
+    const { result, rerender } = renderHook(({ selectedScope, assessment }) =>
+      useAccountingCloseReportPackageViewModel(closeWorkflow, services, assessment, selectedScope), {
+        initialProps: { selectedScope: initialScope, assessment: decision },
+      });
+    await waitFor(() => expect(result.current.lockClosePeriodDisabledReason).toBeNull());
+    await act(async () => { await result.current.lockClosePeriod(); });
+    expect(result.current.lockClosePeriodArmed).toBe(true);
+    const selectedScope = { ...initialScope, entityId: "entity-beta" };
+    rerender({ selectedScope, assessment: decision });
+    await waitFor(() => expect(result.current.lockClosePeriodDisabledReason).toContain("full close scope"));
+    expect(result.current.lockClosePeriodArmed).toBe(false);
+    await act(async () => { await result.current.lockClosePeriod(); });
+    expect(lockClosePeriod).not.toHaveBeenCalled();
+    rerender({ selectedScope, assessment: { ...decision, closeReadiness: { ...decision.closeReadiness!, scope: selectedScope } } });
+    await waitFor(() => expect(result.current.lockClosePeriodDisabledReason).toBeNull());
+    await act(async () => { await result.current.lockClosePeriod(); });
+    expect(lockClosePeriod).not.toHaveBeenCalled();
+    await act(async () => { await result.current.lockClosePeriod(); });
+    expect(lockClosePeriod).toHaveBeenCalledOnce();
+    expect(lockClosePeriod).toHaveBeenCalledWith(expect.objectContaining({ closeScope: selectedScope }));
+  });
+
   it("queues required closing entries with the close-plan workflow version and refreshes the gate", async () => {
     const requiredClosePlan: ClosePeriodPlan = {
       ...closePeriodPlan,
@@ -1488,7 +1572,7 @@ describe("accounting-screen close-cockpit view model", () => {
       listPackages: vi.fn(async () => [accountingReportPackage])
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.closingEntriesGate?.statusLabel).toBe("Required"));
     expect(result.current.queueClosingEntriesDisabledReason).toBeNull();
@@ -1556,7 +1640,7 @@ describe("accounting-screen close-cockpit view model", () => {
         listPackages: vi.fn(async () => [accountingReportPackage])
       };
 
-      const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+      const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
       await waitFor(() => expect(result.current.closingEntriesGate).not.toBeNull());
       expect(result.current.closingEntriesGate?.isReadyForLock).toBe(false);
@@ -1639,7 +1723,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence: vi.fn(async () => multiTaskClosePlan)
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.closeSetupTaskOptions).toHaveLength(3));
 
@@ -1814,7 +1898,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence: vi.fn(async () => closePeriodPlan)
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.closeSetupDraft.taskId).toBe("task-nav"));
 
@@ -1849,7 +1933,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence: vi.fn(async () => closePeriodPlan)
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.closeSetupDraft.taskId).toBe("task-nav"));
 
@@ -1896,7 +1980,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence: vi.fn(async () => closePeriodPlan)
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.closeSetupDraft.taskId).toBe("task-nav"));
 
@@ -2000,7 +2084,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence: vi.fn(async () => closePeriodPlan)
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.packageRows).toHaveLength(1));
 
@@ -2055,7 +2139,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.evidenceReviewRows).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -2155,7 +2239,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence: vi.fn(async () => pendingLateAdjustmentPlan)
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.lateAdjustments).toHaveLength(1));
 
@@ -2275,7 +2359,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence: vi.fn(async () => unsignedClosePlan)
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.tasks).toHaveLength(1));
 
@@ -2388,7 +2472,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence: vi.fn(async () => unsignedClosePlan)
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.closeSignOffDraft.taskId).toBe("task-nav"));
 
@@ -2449,7 +2533,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewCloseEvidence: vi.fn(async () => unsignedClosePlan)
     };
 
-    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services, sharedCloseDecision(closeWorkflow), sharedCloseDecision(closeWorkflow).closeReadiness!.scope));
 
     await waitFor(() => expect(result.current.closeSignOffDraft.taskId).toBe("task-nav"));
 
@@ -2511,7 +2595,7 @@ describe("accounting-screen close-cockpit view model", () => {
     expect(state.updatedAtUtc).toBe(closeWorkflow.updatedAtUtc);
   });
 
-  it("marks the controller close command center ready only when all close signals clear", () => {
+  it("blocks locally clear close signals when the shared readiness authority is unavailable", () => {
     const readyWorkflow: OperationsContinuityWorkflow = {
       ...closeWorkflow,
       status: "ReadyForClose",
@@ -2616,10 +2700,10 @@ describe("accounting-screen close-cockpit view model", () => {
     });
 
     expect(state).toMatchObject({
-      status: "ready",
-      statusLabel: "Ready",
-      statusTone: "success",
-      summary: "The close is ready: breaks, source evidence, approvals, valuations, providers, report pack, and sign-off are clear."
+      status: "blocked",
+      statusLabel: "Blocked",
+      statusTone: "danger",
+      summary: "Shared close readiness is unavailable. Select the full close scope and refresh before sign-off."
     });
     expect(state.metricRows).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "breaks", value: "0", tone: "success" }),
@@ -3019,4 +3103,37 @@ describe("accounting-screen close-cockpit view model", () => {
       href: "/accounting/reconciliation"
     });
   });
+  it("uses the complete shared decision and refuses an incomplete ready headline", () => {
+    const commandCenter: FinancialOperationsCommandCenter = {
+      generatedAtUtc: new Date().toISOString(), fundProfileId: "fund-alpha", ledgerBookId: "book",
+      fundAccountId: "account", periodId: "period", status: "Ready", isReadyToComplete: true,
+      summary: "Shared evaluation ready.", activeItemCount: 0, blockedItemCount: 0, reviewItemCount: 0,
+      metrics: [], queueRows: [], closeReadiness: {
+        scope: { fundProfileId: "fund-alpha", ledgerBookId: "book", fundAccountId: "account", entityId: "entity", periodId: "period" },
+        evaluatedAtUtc: new Date().toISOString(), status: "Ready", isComplete: true, isReadyToClose: true,
+        contributors: [], blockers: []
+      }
+    };
+    const input = { data: accountingWorkspace, commandCenter, workflow: closeWorkflow,
+      workflowLoading: false, workflowError: null, accountingSystemProviders: [], accountingSystemImport: null,
+      accountingSystemReconciliation: null, multiAssetCoverage: null };
+    expect(buildCloseCommandCenterViewState(input).status).toBe("ready");
+    expect(buildCloseCommandCenterViewState({ ...input, commandCenter: {
+      ...commandCenter, closeReadiness: { ...commandCenter.closeReadiness!, isComplete: false }
+    } }).status).toBe("blocked");
+    for (const type of ["Missing", "Stale", "ScopeMismatch"]) {
+      const blocked = { ...commandCenter, closeReadiness: { ...commandCenter.closeReadiness!,
+        status: "Blocked", isComplete: false, isReadyToClose: false,
+        blockers: [{ code: `close.close-plan.${type}`, contributorId: "close-plan", type, count: 2,
+          severity: "Critical", owner: "Controller", message: "Repair the selected close evidence.",
+          recordIds: ["evidence-1", "evidence-2"] }]
+      } };
+      const blockedView = buildCloseCommandCenterViewState({ ...input, commandCenter: blocked });
+      expect(blockedView.status).toBe("blocked");
+      expect(blockedView.blockerRows[0]).toMatchObject({ ownerLabel: "Controller",
+        evidenceLabel: "evidence-1, evidence-2", detail: expect.stringContaining("Count: 2") });
+      expect(buildCloseCommandCenterViewState(input).status).toBe("ready");
+    }
+  });
+
 });

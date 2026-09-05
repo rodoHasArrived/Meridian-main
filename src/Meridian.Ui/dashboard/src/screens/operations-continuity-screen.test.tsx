@@ -8,6 +8,7 @@ import {
   assignOperationsContinuityBreakCase,
   closeOperationsContinuityWorkflow,
   getOperationsCloseCalendar,
+  getFinancialOperationsCommandCenter,
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
@@ -29,6 +30,7 @@ import type {
   PrivateCapitalCloseCockpit
 } from "@/types";
 import { requirePresent } from "@/test/fixtures";
+import { sharedCloseDecision } from "./operations-continuity-screen.close-test-fixtures";
 
 vi.mock("@/lib/api", () => ({
   acknowledgeOperationsContinuityChecklistTask: vi.fn(),
@@ -36,6 +38,7 @@ vi.mock("@/lib/api", () => ({
   assignOperationsContinuityBreakCase: vi.fn(),
   closeOperationsContinuityWorkflow: vi.fn(),
   getOperationsCloseCalendar: vi.fn(),
+  getFinancialOperationsCommandCenter: vi.fn(),
   getPrivateCapitalCloseCockpit: vi.fn(),
   getOperationsContinuityWorkflows: vi.fn(),
   getOperationsContinuityWorkflow: vi.fn(),
@@ -51,6 +54,7 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(detail));
   vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary]);
   vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(detail);
   vi.mocked(getOperationsCloseCalendar).mockResolvedValue(closeCalendar);
@@ -1165,7 +1169,7 @@ describe("OperationsContinuityScreen", () => {
       expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
     const cockpitSummary = screen.getByRole("list", { name: "Private-capital close cockpit summary" });
-    expect(within(cockpitSummary).getByText("72% readiness")).toBeInTheDocument();
+    expect(within(cockpitSummary).getByText("Shared close readiness confirmed")).toBeInTheDocument();
     expect(within(cockpitSummary).getByText("2 ready / 1 blocked lanes")).toBeInTheDocument();
     expect(within(cockpitSummary).getByText("2/5 proof lanes ready; review NAV support, evidence package, period lock")).toBeInTheDocument();
     expect(within(cockpitSummary).getByText("3 fund events")).toBeInTheDocument();
@@ -1857,8 +1861,10 @@ describe("OperationsContinuityScreen", () => {
 });
 
 function renderScreen() {
+  const scope = sharedCloseDecision(detail).closeReadiness!.scope;
+  const query = new URLSearchParams(Object.entries(scope).map(([key, value]) => [key, value ?? ""]));
   return render(
-    <MemoryRouter initialEntries={["/accounting/operations-continuity"]}>
+    <MemoryRouter initialEntries={[`/accounting/operations-continuity?${query.toString()}`]}>
       <Routes>
         <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
       </Routes>

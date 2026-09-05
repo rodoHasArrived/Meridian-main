@@ -4,6 +4,108 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ApplyOpenLotBackfillRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.IOpenLotReliefService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.LotQuantityBasis"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillExceptionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillFactsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotValidation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.RetainOpenLotBackfillEvidenceRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingApprovalQueueConfigurationDto"
     },
     {
@@ -2128,6 +2230,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanCovenantDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
     },
     {
@@ -2315,6 +2435,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto"
     },
     {
       "kind": "contract-set-member",
@@ -9508,6 +9640,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator"
     },
     {
@@ -10589,6 +10727,36 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.CashSyncWindow"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessContributionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessSubjectDto"
     },
     {
       "kind": "contract-set-member",
@@ -11716,6 +11884,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.IClosePublicationReadinessGuard"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ICloseReadinessSubjectSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource"
     },
     {
@@ -12047,6 +12227,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.MarginRequirementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto"
     },
     {
       "kind": "contract-set-member",
@@ -15244,6 +15430,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.VersionedReportTemplateIdDto"
     },
     {
@@ -16342,6 +16534,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanCovenantDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.DirectLoanReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
     },
     {
@@ -16529,6 +16739,18 @@
       "label": "",
       "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto"
     },
     {
       "kind": "contract-set-member",
@@ -21376,6 +21598,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator"
     },
     {
@@ -21791,6 +22019,78 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.ApplyOpenLotBackfillRequest",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAmortizationMethod"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.LotQuantityBasis"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillEvidenceDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillFactsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillFactsDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillFactsDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.LotQuantityBasis"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillReceiptDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
     {
       "kind": "contract-reference",
@@ -29356,6 +29656,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.LockClosePeriodRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LockClosePeriodRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
     {
@@ -31809,6 +32115,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind"
     },
@@ -32434,6 +32746,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.BrokerageHouseholdPositionDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.BrokerageHouseholdPositionDto",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationSecurityReference"
     },
     {
@@ -32483,6 +32801,30 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.CashSyncWindow",
       "target": "contract:Meridian.Contracts.Workstation.CashSyncSourceAvailability"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessContributionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.CloseReadinessSubjectDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -33238,6 +33580,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FinancialOperationsCommandCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FinancialOperationsCommandCenterDto",
       "target": "contract:Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionDto"
     },
     {
@@ -33479,6 +33827,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FirstRunStatusDto",
       "target": "contract:Meridian.Contracts.Workstation.WorkspaceModeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FundAccountBrokeragePositionDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto"
     },
     {
       "kind": "contract-reference",
@@ -33761,6 +34115,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FundOperationsWorkspaceQuery",
       "target": "contract:Meridian.Contracts.Workstation.FundLedgerScope"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FundPortfolioPosition",
+      "target": "contract:Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto"
     },
     {
       "kind": "contract-reference",
@@ -34858,6 +35218,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperationsCloseWorkflowRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.CloseReadinessScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperationsCloseWorkflowRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.EvidenceDocumentDto"
     },
     {
@@ -35627,6 +35993,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.PortfolioLedgerWorkflowStatusSnapshotDto",
       "target": "contract:Meridian.Contracts.Workstation.PortfolioLedgerWorkflowStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PortfolioPositionSummary",
+      "target": "contract:Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto"
     },
     {
       "kind": "contract-reference",
@@ -39177,6 +39549,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkflowActionDto",
       "target": "contract:Meridian.Contracts.Workstation.OperatorWorkItemKindDto"
     },
@@ -40001,6 +40379,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationTradingPayload",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationTradingRiskState"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationTradingPositionRow",
+      "target": "contract:Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto"
     },
     {
       "kind": "contract-reference",
@@ -41297,6 +41681,24 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.acquisition_terms"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.book_position_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
       "target": "database:ledger.tax_lots.book_position_id"
     },
@@ -41311,6 +41713,42 @@
       "label": "",
       "source": "database:ledger.ck_tax_lots_currency on ledger.tax_lots",
       "target": "database:ledger.tax_lots.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.booked_factor"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.original_face"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.par_basis"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.booked_factor"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.original_face"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.par_basis"
     },
     {
       "kind": "normal",
@@ -41465,6 +41903,225 @@
       "label": "journal_entry_id",
       "source": "database:ledger.journal_legs",
       "target": "database:ledger.journal_entries"
+    },
+    {
+      "constraint": "open_lot_backfill_evidence_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.open_lot_backfill_evidence",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "open_lot_backfill_evidence_tax_lot_record_id_fkey",
+      "kind": "foreign-key",
+      "label": "tax_lot_record_id",
+      "source": "database:ledger.open_lot_backfill_evidence",
+      "target": "database:ledger.tax_lots"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_evidence_content_check on ledger.open_lot_backfill_evidence",
+      "target": "database:ledger.open_lot_backfill_evidence.content"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_evidence_content_hash_sha256_check on ledger.open_lot_backfill_evidence",
+      "target": "database:ledger.open_lot_backfill_evidence.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_evidence_ledger_book_id_fkey on ledger.open_lot_backfill_evidence",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_evidence_ledger_book_id_fkey on ledger.open_lot_backfill_evidence",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_evidence_retained_by_check on ledger.open_lot_backfill_evidence",
+      "target": "database:ledger.open_lot_backfill_evidence.retained_by"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_evidence_tax_lot_record_id_fkey on ledger.open_lot_backfill_evidence",
+      "target": "database:ledger.tax_lots.tax_lot_record_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_evidence_tax_lot_record_id_fkey on ledger.open_lot_backfill_evidence",
+      "target": "database:ledger.tax_lots_pkey"
+    },
+    {
+      "constraint": "open_lot_backfill_exceptions_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.open_lot_backfill_exceptions",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "open_lot_backfill_exceptions_resolution_receipt_id_fkey",
+      "kind": "foreign-key",
+      "label": "resolution_receipt_id",
+      "source": "database:ledger.open_lot_backfill_exceptions",
+      "target": "database:ledger.open_lot_backfill_receipts"
+    },
+    {
+      "constraint": "open_lot_backfill_exceptions_tax_lot_record_id_fkey",
+      "kind": "foreign-key",
+      "label": "tax_lot_record_id",
+      "source": "database:ledger.open_lot_backfill_exceptions",
+      "target": "database:ledger.tax_lots"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_exceptions_ledger_book_id_fkey on ledger.open_lot_backfill_exceptions",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_exceptions_ledger_book_id_fkey on ledger.open_lot_backfill_exceptions",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_exceptions_resolution_receipt_id_fkey on ledger.open_lot_backfill_exceptions",
+      "target": "database:ledger.open_lot_backfill_receipts.receipt_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_exceptions_resolution_receipt_id_fkey on ledger.open_lot_backfill_exceptions",
+      "target": "database:ledger.open_lot_backfill_receipts_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_exceptions_tax_lot_record_id_fkey on ledger.open_lot_backfill_exceptions",
+      "target": "database:ledger.tax_lots.tax_lot_record_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_exceptions_tax_lot_record_id_fkey on ledger.open_lot_backfill_exceptions",
+      "target": "database:ledger.tax_lots_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_exceptions_version_check on ledger.open_lot_backfill_exceptions",
+      "target": "database:ledger.open_lot_backfill_exceptions.version"
+    },
+    {
+      "constraint": "open_lot_backfill_receipts_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "open_lot_backfill_receipts_evidence_record_id_fkey",
+      "kind": "foreign-key",
+      "label": "evidence_record_id",
+      "source": "database:ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.open_lot_backfill_reviews"
+    },
+    {
+      "constraint": "open_lot_backfill_receipts_tax_lot_record_id_fkey",
+      "kind": "foreign-key",
+      "label": "tax_lot_record_id",
+      "source": "database:ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.tax_lots"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_receipts_check on ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.open_lot_backfill_receipts.expected_lot_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_receipts_check on ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.open_lot_backfill_receipts.resulting_lot_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_receipts_evidence_record_id_fkey on ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.open_lot_backfill_reviews.evidence_record_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_receipts_evidence_record_id_fkey on ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.open_lot_backfill_reviews_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_receipts_ledger_book_id_fkey on ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_receipts_ledger_book_id_fkey on ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_receipts_tax_lot_record_id_fkey on ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.tax_lots.tax_lot_record_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_receipts_tax_lot_record_id_fkey on ledger.open_lot_backfill_receipts",
+      "target": "database:ledger.tax_lots_pkey"
+    },
+    {
+      "constraint": "open_lot_backfill_reviews_evidence_record_id_fkey",
+      "kind": "foreign-key",
+      "label": "evidence_record_id",
+      "source": "database:ledger.open_lot_backfill_reviews",
+      "target": "database:ledger.open_lot_backfill_evidence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_reviews_evidence_record_id_fkey on ledger.open_lot_backfill_reviews",
+      "target": "database:ledger.open_lot_backfill_evidence.evidence_record_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_reviews_evidence_record_id_fkey on ledger.open_lot_backfill_reviews",
+      "target": "database:ledger.open_lot_backfill_evidence_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_reviews_rationale_check on ledger.open_lot_backfill_reviews",
+      "target": "database:ledger.open_lot_backfill_reviews.rationale"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.open_lot_backfill_reviews_reviewed_by_check on ledger.open_lot_backfill_reviews",
+      "target": "database:ledger.open_lot_backfill_reviews.reviewed_by"
     },
     {
       "constraint": "operations_continuity_audit_workflow_id_fkey",
@@ -44114,6 +44771,44 @@
       "target": "database:security_master.securities_pkey"
     },
     {
+      "constraint": "direct_loan_covenant_projection_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.direct_loan_covenant_projection",
+      "target": "database:security_master.direct_loan_projection"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection",
+      "target": "database:security_master.direct_loan_projection.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection",
+      "target": "database:security_master.direct_loan_projection_pkey"
+    },
+    {
+      "constraint": "direct_loan_principal_schedule_projection_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.direct_loan_principal_schedule_projection",
+      "target": "database:security_master.direct_loan_projection"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.direct_loan_principal_schedule_projection_security_id_fkey on security_master.direct_loan_principal_schedule_projection",
+      "target": "database:security_master.direct_loan_projection.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.direct_loan_principal_schedule_projection_security_id_fkey on security_master.direct_loan_principal_schedule_projection",
+      "target": "database:security_master.direct_loan_projection_pkey"
+    },
+    {
       "constraint": "equity_projection_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -44969,6 +45664,25 @@
       "target": "database:security_master.servicer_report_batch_pkey"
     },
     {
+      "constraint": "structured_credit_factor_schedule_projection_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.structured_credit_factor_schedule_projection",
+      "target": "database:security_master.structured_credit_projection"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.structured_credit_factor_schedule_projection_security_id_fkey on security_master.structured_credit_factor_schedule_projection",
+      "target": "database:security_master.structured_credit_projection.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.structured_credit_factor_schedule_projection_security_id_fkey on security_master.structured_credit_factor_schedule_projection",
+      "target": "database:security_master.structured_credit_projection_pkey"
+    },
+    {
       "kind": "module-contract-map",
       "label": "explicit module mapping",
       "source": "schema:asset_operations",
@@ -45453,6 +46167,30 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.open_lot_backfill_evidence"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.open_lot_backfill_exceptions"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.open_lot_backfill_receipts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.open_lot_backfill_reviews"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.operations_continuity_audit"
     },
     {
@@ -45841,6 +46579,24 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.direct_loan_covenant_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.direct_loan_principal_schedule_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.direct_loan_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.drawdown_lot_projection"
     },
     {
@@ -46177,6 +46933,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.structured_credit_factor_schedule_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.structured_credit_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.swap_projection"
     },
     {
@@ -46199,7 +46967,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "de462e5501f6f97124bc0ee0e71bee09a620877fee1211c72669e54dbe878a5b",
+  "fingerprint": "9d75f98d702650133691d2cc9f8540d337b6043fb6632e74ead490a6d24274af",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -46251,6 +47019,108 @@
       "id": "contract-set:security-master-contracts",
       "kind": "contract-set",
       "label": "security-master-contracts"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.ApplyOpenLotBackfillRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.ApplyOpenLotBackfillRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.IOpenLotReliefService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.IOpenLotReliefService"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.LotQuantityBasis",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.LotQuantityBasis"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotBackfillEvidenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillExceptionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotBackfillExceptionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillFactsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotBackfillFactsDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillReceiptDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotBackfillReceiptDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotReliefMethod"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotReliefResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotReliefSelectionDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotValidation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotValidation"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.RetainOpenLotBackfillEvidenceRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.RetainOpenLotBackfillEvidenceRequest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.ReviewOpenLotBackfillEvidenceRequest"
     },
     {
       "classification": "dto",
@@ -48378,6 +49248,24 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.DirectLoanCovenantDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.DirectLoanCovenantDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.DirectLoanPrincipalPaymentDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.DirectLoanReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.DirectLoanReferenceDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
@@ -48567,6 +49455,18 @@
       "id": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto"
     },
     {
       "classification": "class",
@@ -55757,6 +56657,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator",
       "kind": "contract-type",
@@ -56841,6 +57747,36 @@
       "id": "contract:Meridian.Contracts.Workstation.CashSyncWindow",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.CashSyncWindow"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CloseReadinessBlockerDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CloseReadinessBlockerDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CloseReadinessContributionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CloseReadinessContributionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CloseReadinessProjectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CloseReadinessProjectionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CloseReadinessScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CloseReadinessScopeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.CloseReadinessSubjectDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.CloseReadinessSubjectDto"
     },
     {
       "classification": "record",
@@ -57966,6 +58902,18 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Workstation.IClosePublicationReadinessGuard",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.IClosePublicationReadinessGuard"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Workstation.ICloseReadinessSubjectSource",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ICloseReadinessSubjectSource"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource"
@@ -58299,6 +59247,12 @@
       "id": "contract:Meridian.Contracts.Workstation.MarginRequirementDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.MarginRequirementDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto"
     },
     {
       "classification": "dto",
@@ -61494,6 +62448,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.VersionedReportTemplateIdDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.VersionedReportTemplateIdDto"
@@ -63533,6 +64493,11 @@
       "label": "ledger.ck_tax_lot_policies_wash_sale on ledger.tax_lot_policies"
     },
     {
+      "id": "database:ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_acquisition_identity on ledger.tax_lots"
+    },
+    {
       "id": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.ck_tax_lots_asset_scope on ledger.tax_lots"
@@ -63541,6 +64506,16 @@
       "id": "database:ledger.ck_tax_lots_currency on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.ck_tax_lots_currency on ledger.tax_lots"
+    },
+    {
+      "id": "database:ledger.ck_tax_lots_face_terms on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_face_terms on ledger.tax_lots"
+    },
+    {
+      "id": "database:ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_face_terms_complete on ledger.tax_lots"
     },
     {
       "id": "database:ledger.ck_tax_lots_quantity on ledger.tax_lots",
@@ -63758,6 +64733,180 @@
       "schema": "ledger"
     },
     {
+      "id": "database:ledger.open_lot_backfill_evidence",
+      "kind": "database-table",
+      "label": "ledger.open_lot_backfill_evidence",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_evidence.content",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_evidence.content"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_evidence.content_hash_sha256",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_evidence.content_hash_sha256"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_evidence.evidence_record_id",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_evidence.evidence_record_id"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_evidence.retained_by",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_evidence.retained_by"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_evidence_content_check on ledger.open_lot_backfill_evidence",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_evidence_content_check on ledger.open_lot_backfill_evidence"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_evidence_content_hash_sha256_check on ledger.open_lot_backfill_evidence",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_evidence_content_hash_sha256_check on ledger.open_lot_backfill_evidence"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_evidence_ledger_book_id_fkey on ledger.open_lot_backfill_evidence",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_evidence_ledger_book_id_fkey on ledger.open_lot_backfill_evidence"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_evidence_pkey",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_evidence_pkey"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_evidence_retained_by_check on ledger.open_lot_backfill_evidence",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_evidence_retained_by_check on ledger.open_lot_backfill_evidence"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_evidence_tax_lot_record_id_fkey on ledger.open_lot_backfill_evidence",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_evidence_tax_lot_record_id_fkey on ledger.open_lot_backfill_evidence"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_exceptions",
+      "kind": "database-table",
+      "label": "ledger.open_lot_backfill_exceptions",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_exceptions.version",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_exceptions.version"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_exceptions_ledger_book_id_fkey on ledger.open_lot_backfill_exceptions",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_exceptions_ledger_book_id_fkey on ledger.open_lot_backfill_exceptions"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_exceptions_resolution_receipt_id_fkey on ledger.open_lot_backfill_exceptions",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_exceptions_resolution_receipt_id_fkey on ledger.open_lot_backfill_exceptions"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_exceptions_tax_lot_record_id_fkey on ledger.open_lot_backfill_exceptions",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_exceptions_tax_lot_record_id_fkey on ledger.open_lot_backfill_exceptions"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_exceptions_version_check on ledger.open_lot_backfill_exceptions",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_exceptions_version_check on ledger.open_lot_backfill_exceptions"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_receipts",
+      "kind": "database-table",
+      "label": "ledger.open_lot_backfill_receipts",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_receipts.expected_lot_version",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_receipts.expected_lot_version"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_receipts.receipt_id",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_receipts.receipt_id"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_receipts.resulting_lot_version",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_receipts.resulting_lot_version"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_receipts_check on ledger.open_lot_backfill_receipts",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_receipts_check on ledger.open_lot_backfill_receipts"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_receipts_evidence_record_id_fkey on ledger.open_lot_backfill_receipts",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_receipts_evidence_record_id_fkey on ledger.open_lot_backfill_receipts"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_receipts_ledger_book_id_fkey on ledger.open_lot_backfill_receipts",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_receipts_ledger_book_id_fkey on ledger.open_lot_backfill_receipts"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_receipts_pkey",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_receipts_pkey"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_receipts_tax_lot_record_id_fkey on ledger.open_lot_backfill_receipts",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_receipts_tax_lot_record_id_fkey on ledger.open_lot_backfill_receipts"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_reviews",
+      "kind": "database-table",
+      "label": "ledger.open_lot_backfill_reviews",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_reviews.evidence_record_id",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_reviews.evidence_record_id"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_reviews.rationale",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_reviews.rationale"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_reviews.reviewed_by",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_reviews.reviewed_by"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_reviews_evidence_record_id_fkey on ledger.open_lot_backfill_reviews",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_reviews_evidence_record_id_fkey on ledger.open_lot_backfill_reviews"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_reviews_pkey",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_reviews_pkey"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_reviews_rationale_check on ledger.open_lot_backfill_reviews",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_reviews_rationale_check on ledger.open_lot_backfill_reviews"
+    },
+    {
+      "id": "database:ledger.open_lot_backfill_reviews_reviewed_by_check on ledger.open_lot_backfill_reviews",
+      "kind": "database-object",
+      "label": "ledger.open_lot_backfill_reviews_reviewed_by_check on ledger.open_lot_backfill_reviews"
+    },
+    {
       "id": "database:ledger.operations_continuity_audit",
       "kind": "database-table",
       "label": "ledger.operations_continuity_audit",
@@ -63939,9 +65088,19 @@
       "schema": "ledger"
     },
     {
+      "id": "database:ledger.tax_lots.acquisition_terms",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.acquisition_terms"
+    },
+    {
       "id": "database:ledger.tax_lots.book_position_id",
       "kind": "database-object",
       "label": "ledger.tax_lots.book_position_id"
+    },
+    {
+      "id": "database:ledger.tax_lots.booked_factor",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.booked_factor"
     },
     {
       "id": "database:ledger.tax_lots.currency",
@@ -63954,9 +65113,19 @@
       "label": "ledger.tax_lots.open_quantity"
     },
     {
+      "id": "database:ledger.tax_lots.original_face",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.original_face"
+    },
+    {
       "id": "database:ledger.tax_lots.original_quantity",
       "kind": "database-object",
       "label": "ledger.tax_lots.original_quantity"
+    },
+    {
+      "id": "database:ledger.tax_lots.par_basis",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.par_basis"
     },
     {
       "id": "database:ledger.tax_lots.security_id",
@@ -66685,6 +67854,44 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.direct_loan_covenant_projection",
+      "kind": "database-table",
+      "label": "security_master.direct_loan_covenant_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection",
+      "kind": "database-object",
+      "label": "security_master.direct_loan_covenant_projection_security_id_fkey on security_master.direct_loan_covenant_projection"
+    },
+    {
+      "id": "database:security_master.direct_loan_principal_schedule_projection",
+      "kind": "database-table",
+      "label": "security_master.direct_loan_principal_schedule_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.direct_loan_principal_schedule_projection_security_id_fkey on security_master.direct_loan_principal_schedule_projection",
+      "kind": "database-object",
+      "label": "security_master.direct_loan_principal_schedule_projection_security_id_fkey on security_master.direct_loan_principal_schedule_projection"
+    },
+    {
+      "id": "database:security_master.direct_loan_projection",
+      "kind": "database-table",
+      "label": "security_master.direct_loan_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.direct_loan_projection.security_id",
+      "kind": "database-object",
+      "label": "security_master.direct_loan_projection.security_id"
+    },
+    {
+      "id": "database:security_master.direct_loan_projection_pkey",
+      "kind": "database-object",
+      "label": "security_master.direct_loan_projection_pkey"
+    },
+    {
       "id": "database:security_master.drawdown_lot_projection",
       "kind": "database-table",
       "label": "security_master.drawdown_lot_projection",
@@ -67361,6 +68568,33 @@
       "label": "security_master.servicing_revision_source_servicer_report_batch_id_fkey on security_master.servicing_revision_source"
     },
     {
+      "id": "database:security_master.structured_credit_factor_schedule_projection",
+      "kind": "database-table",
+      "label": "security_master.structured_credit_factor_schedule_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.structured_credit_factor_schedule_projection_security_id_fkey on security_master.structured_credit_factor_schedule_projection",
+      "kind": "database-object",
+      "label": "security_master.structured_credit_factor_schedule_projection_security_id_fkey on security_master.structured_credit_factor_schedule_projection"
+    },
+    {
+      "id": "database:security_master.structured_credit_projection",
+      "kind": "database-table",
+      "label": "security_master.structured_credit_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.structured_credit_projection.security_id",
+      "kind": "database-object",
+      "label": "security_master.structured_credit_projection.security_id"
+    },
+    {
+      "id": "database:security_master.structured_credit_projection_pkey",
+      "kind": "database-object",
+      "label": "security_master.structured_credit_projection_pkey"
+    },
+    {
       "id": "database:security_master.swap_projection",
       "kind": "database-table",
       "label": "security_master.swap_projection",
@@ -67468,11 +68702,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3069,
-    "contract_set_memberships": 3632,
-    "edges": 7677,
-    "foreign_keys": 120,
+    "contract_references": 3095,
+    "contract_set_memberships": 3670,
+    "edges": 7803,
+    "foreign_keys": 132,
     "logical_references": 6,
-    "nodes": 3677
+    "nodes": 3762
   }
 }

@@ -1,3 +1,4 @@
+import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import {
   buildOrderRequirementText,
   buildOrderTicketAcknowledgementState,
@@ -334,6 +335,7 @@ export interface TradingBlotterField {
 }
 
 export interface TradingPositionRow {
+  markFreshness: MarkFreshnessPresentation;
   id: string;
   positionKey: string;
   symbol: string;
@@ -952,6 +954,7 @@ function buildPositionRow(
     quantity: position.quantity,
     averagePrice: position.averagePrice,
     markPrice: position.markPrice,
+    markFreshness: presentMarkFreshness(position.markFreshness),
     dayPnl: position.dayPnl,
     unrealizedPnl: position.unrealizedPnl,
     exposure: position.exposure,
@@ -1044,15 +1047,16 @@ function buildPositionDetail(
     id: "selected-position",
     title: row.symbol,
     subtitle: `${row.side} · ${row.quantity} shares`,
-    statusLabel: risk?.state ?? "Position",
-    statusTone: riskStateTone(risk?.state, row.unrealizedPnlTone),
+    statusLabel: row.markFreshness.reviewRequired ? "Review required" : risk?.state ?? "Position",
+    statusTone: row.markFreshness.reviewRequired ? "warning" : riskStateTone(risk?.state, row.unrealizedPnlTone),
     ariaLabel: `Position detail for ${row.symbol}`,
-    detail: `${row.exposure} exposure with ${row.unrealizedPnl} unrealized P&L. ${riskText}`,
+    detail: `${row.markFreshness.reason} Recorded exposure ${row.exposure}, unrealized P&L ${row.unrealizedPnl}. ${riskText}`,
     fields: [
       { label: "Side", value: row.side, tone: "default" },
       { label: "Quantity", value: row.quantity, tone: "default" },
       { label: "Average price", value: row.averagePrice, tone: "muted" },
-      { label: "Mark price", value: row.markPrice, tone: "muted" },
+      { label: "Recorded mark price", value: row.markPrice, tone: "muted" },
+      ...markFreshnessFields(row.markFreshness),
       { label: "Day P&L", value: row.dayPnl, tone: row.dayPnlTone },
       { label: "Unrealized P&L", value: row.unrealizedPnl, tone: row.unrealizedPnlTone },
       { label: "Exposure", value: row.exposure, tone: "default" },

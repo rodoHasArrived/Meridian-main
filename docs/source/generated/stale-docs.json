@@ -11,66 +11,12 @@
     "version": "1.0.0"
   },
   "source_hash_manifest": "docs/source/generated/source-hash-manifest.json",
-  "stale_count": 24,
+  "stale_count": 16,
   "stale_modules": [
     {
       "module_id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
-      ],
-      "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
-        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
-      ]
-    },
-    {
-      "module_id": "SRC-CONTRACTS",
-      "path": "src/Meridian.Contracts",
-      "readme": "src/Meridian.Contracts/README.md",
-      "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
-      ],
-      "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
-        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
-      ]
-    },
-    {
-      "module_id": "SRC-DESIGN-DOCUMENTS",
-      "path": "src/Meridian.Documents",
-      "readme": "src/Meridian.Documents/README.md",
-      "reasons": [
-        "readme_hash_drift"
-      ],
-      "recommended_actions": [
-        "review README changes and rerender generated blocks if needed",
-        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
-      ]
-    },
-    {
-      "module_id": "SRC-DESIGN-FINANCIAL-OPERATIONS",
-      "path": "src/Meridian.FinancialOperations",
-      "readme": "src/Meridian.FinancialOperations/README.md",
-      "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
-      ],
-      "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
-        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
-      ]
-    },
-    {
-      "module_id": "SRC-DESIGN-IDENTITY",
-      "path": "src/Meridian.Identity",
-      "readme": "src/Meridian.Identity/README.md",
       "reasons": [
         "source_hash_drift"
       ],
@@ -80,23 +26,45 @@
       ]
     },
     {
-      "module_id": "SRC-DESIGN-PLATFORM",
-      "path": "src/Meridian.Platform",
-      "readme": "src/Meridian.Platform/README.md",
+      "module_id": "SRC-BACKTESTING-SDK",
+      "path": "src/Meridian.Backtesting.Sdk",
+      "readme": "src/Meridian.Backtesting.Sdk/README.md",
       "reasons": [
-        "source_hash_drift",
         "readme_hash_drift"
       ],
       "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
         "review README changes and rerender generated blocks if needed",
         "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
       ]
     },
     {
-      "module_id": "SRC-DESIGN-REPORTING",
-      "path": "src/Meridian.Reporting",
-      "readme": "src/Meridian.Reporting/README.md",
+      "module_id": "SRC-CORE",
+      "path": "src/Meridian.Core",
+      "readme": "src/Meridian.Core/README.md",
+      "reasons": [
+        "source_hash_drift"
+      ],
+      "recommended_actions": [
+        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
+        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
+      ]
+    },
+    {
+      "module_id": "SRC-DESIGN-DATA-INTEGRATION",
+      "path": "src/Meridian.DataIntegration",
+      "readme": "src/Meridian.DataIntegration/README.md",
+      "reasons": [
+        "source_hash_drift"
+      ],
+      "recommended_actions": [
+        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
+        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
+      ]
+    },
+    {
+      "module_id": "SRC-DESIGN-INSTRUMENTS",
+      "path": "src/Meridian.Instruments",
+      "readme": "src/Meridian.Instruments/README.md",
       "reasons": [
         "source_hash_drift"
       ],
@@ -122,12 +90,10 @@
       "path": "src/Meridian.Execution",
       "readme": "src/Meridian.Execution/README.md",
       "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
+        "source_hash_drift"
       ],
       "recommended_actions": [
         "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
         "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
       ]
     },
@@ -136,11 +102,9 @@
       "path": "src/Meridian.Execution.Sdk",
       "readme": "src/Meridian.Execution.Sdk/README.md",
       "reasons": [
-        "source_hash_drift",
         "readme_hash_drift"
       ],
       "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
         "review README changes and rerender generated blocks if needed",
         "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
       ]
@@ -162,20 +126,6 @@
       "path": "src/Meridian",
       "readme": "src/Meridian/README.md",
       "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
-      ],
-      "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
-        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
-      ]
-    },
-    {
-      "module_id": "SRC-IBAPI-SMOKESTUB",
-      "path": "src/Meridian.IbApi.SmokeStub",
-      "readme": "src/Meridian.IbApi.SmokeStub/README.md",
-      "reasons": [
         "source_hash_drift"
       ],
       "recommended_actions": [
@@ -187,32 +137,6 @@
       "module_id": "SRC-INFRASTRUCTURE",
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
-      "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
-      ],
-      "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
-        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
-      ]
-    },
-    {
-      "module_id": "SRC-LEDGER",
-      "path": "src/Meridian.Ledger",
-      "readme": "src/Meridian.Ledger/README.md",
-      "reasons": [
-        "source_hash_drift"
-      ],
-      "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
-      ]
-    },
-    {
-      "module_id": "SRC-LIFECYCLE-SUPERVISOR",
-      "path": "src/Meridian.LifecycleSupervisor",
-      "readme": "src/Meridian.LifecycleSupervisor/README.md",
       "reasons": [
         "source_hash_drift"
       ],
@@ -234,23 +158,21 @@
       ]
     },
     {
-      "module_id": "SRC-RISK",
-      "path": "src/Meridian.Risk",
-      "readme": "src/Meridian.Risk/README.md",
+      "module_id": "SRC-QUANTSCRIPT",
+      "path": "src/Meridian.QuantScript",
+      "readme": "src/Meridian.QuantScript/README.md",
       "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
+        "source_hash_drift"
       ],
       "recommended_actions": [
         "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
         "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
       ]
     },
     {
-      "module_id": "SRC-STORAGE",
-      "path": "src/Meridian.Storage",
-      "readme": "src/Meridian.Storage/README.md",
+      "module_id": "SRC-RISK",
+      "path": "src/Meridian.Risk",
+      "readme": "src/Meridian.Risk/README.md",
       "reasons": [
         "source_hash_drift"
       ],
@@ -264,48 +186,6 @@
       "path": "src/Meridian.Strategies",
       "readme": "src/Meridian.Strategies/README.md",
       "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
-      ],
-      "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
-        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
-      ]
-    },
-    {
-      "module_id": "SRC-UI",
-      "path": "src/Meridian.Ui",
-      "readme": "src/Meridian.Ui/README.md",
-      "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
-      ],
-      "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
-        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
-      ]
-    },
-    {
-      "module_id": "SRC-UI-SERVICES",
-      "path": "src/Meridian.Ui.Services",
-      "readme": "src/Meridian.Ui.Services/README.md",
-      "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
-      ],
-      "recommended_actions": [
-        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
-        "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
-      ]
-    },
-    {
-      "module_id": "SRC-UI-SHARED",
-      "path": "src/Meridian.Ui.Shared",
-      "readme": "src/Meridian.Ui.Shared/README.md",
-      "reasons": [
         "source_hash_drift"
       ],
       "recommended_actions": [
@@ -314,16 +194,14 @@
       ]
     },
     {
-      "module_id": "SRC-WPF",
-      "path": "src/Meridian.Wpf",
-      "readme": "src/Meridian.Wpf/README.md",
+      "module_id": "SRC-UI",
+      "path": "src/Meridian.Ui",
+      "readme": "src/Meridian.Ui/README.md",
       "reasons": [
-        "source_hash_drift",
-        "readme_hash_drift"
+        "source_hash_drift"
       ],
       "recommended_actions": [
         "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
-        "review README changes and rerender generated blocks if needed",
         "run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete"
       ]
     }

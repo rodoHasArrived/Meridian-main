@@ -1530,7 +1530,9 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
                 viewModel.ReportPackReadinessState.Title.Should().Be("Report pack evidence linked");
                 viewModel.ReportPackReadinessState.Detail.Should().Contain("preview is ready for operator handoff");
-                viewModel.ReportPackReadinessState.Detail.Should().Contain("Close readiness remains blocked until shared lifecycle gates, reconciliation decisions, and report-pack evidence align.");
+                viewModel.ReportPackReadinessState.Detail.Should().Contain("Close readiness remains blocked until a scoped shared evaluation is available.");
+                viewModel.PrivateCapitalCloseReadinessState.Kind.Should().Be(WorkstationStateKind.Blocked,
+                    "a ready report preview and cockpit cannot replace the missing shared close projection");
                 viewModel.ReportPackReadinessState.ReadinessTone.Should().Be(WorkstationReadinessTone.EvidenceLinked);
                 viewModel.ReportPackReadinessState.ActionPosture!.Label.Should().Be("Review handoff");
                 viewModel.ReportPackReadinessState.ActionPosture.Target.Should().Be("FundReportPack");
@@ -1658,12 +1660,10 @@ public sealed class FundLedgerViewModelTests
                     row.StatusLabel == "Review Required" &&
                     row.TimingLabel == "1 open break" &&
                     row.SourceTarget == "FundReconciliation");
-                viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
+                viewModel.FinancialOperationsQueueItems.Should().NotContain(row =>
                     row.KindLabel == "Evidence package" &&
-                    row.Label == "Period lock and reopen evidence" &&
-                    row.StatusLabel == "Missing" &&
-                    row.SourceTarget == "OperationsContinuity" &&
-                    row.IsBlocked);
+                    row.Label == "Period lock and reopen evidence",
+                    "post-close output evidence remains visible in history but is not required for this open workflow");
                 viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
                     row.KindLabel == "Private-capital close" &&
                     row.Label == "Partner capital tie-out" &&
@@ -1689,7 +1689,7 @@ public sealed class FundLedgerViewModelTests
                 closeCockpitService.RequestedPeriodId.Should().Be("2026-06");
                 closeCockpitService.RequestedEntityId.Should().Be("entity-alpha");
                 closeCockpitService.RequestCount.Should().Be(1);
-                viewModel.PrivateCapitalCloseStatusText.Should().Be("Review Required");
+                viewModel.PrivateCapitalCloseStatusText.Should().Be("Blocked");
                 viewModel.PrivateCapitalCloseSummaryText.Should().Contain("1/2 close lanes ready");
                 viewModel.PrivateCapitalCloseSummaryText.Should().Contain("2 evidence package(s)");
                 viewModel.PrivateCapitalCloseEvidenceText.Should().Contain("7 evidence links");
@@ -1721,7 +1721,7 @@ public sealed class FundLedgerViewModelTests
                     row.StatusLabel == "ReviewerAssigned" &&
                     row.ReviewerLabel == "controller" &&
                     row.EvidenceLabel == "1 evidence link");
-                viewModel.PrivateCapitalCloseReadinessState.Title.Should().Be("Private-capital close review required");
+                viewModel.PrivateCapitalCloseReadinessState.Title.Should().Be("Private-capital close blocked");
                 viewModel.PrivateCapitalCloseReadinessState.ActionPosture!.Target.Should().Be("OperationsClose");
                 viewModel.PrivateCapitalCloseReadinessState.VisibleEvidenceLinks.Should().Contain(link =>
                     link.Label == "Partner capital tie-out evidence package" &&
@@ -1742,6 +1742,29 @@ public sealed class FundLedgerViewModelTests
                 closeCockpitService.RequestedPeriodId.Should().Be("2026-06");
                 closeCockpitService.RequestedEntityId.Should().Be("entity-alpha");
                 viewModel.PrivateCapitalCloseLanes.Should().NotBeEmpty("the exact close cockpit must not disappear on refresh");
+
+                var retainedCockpit = BuildPrivateCapitalCloseCockpit();
+                closeCockpitService.Cockpit = retainedCockpit with
+                {
+                    ApprovalHistory = [.. retainedCockpit.ApprovalHistory,
+                        retainedCockpit.ApprovalHistory[0] with
+                        {
+                            ApprovalId = "historical-rejection", Status = OperationsApprovalStateDto.Rejected,
+                            IsCurrentDecision = false
+                        }],
+                    EvidencePackages = [.. retainedCockpit.EvidencePackages,
+                        retainedCockpit.EvidencePackages[0] with
+                        {
+                            PackageId = "optional-close-output", Status = EvidenceStatusDto.Missing,
+                            IsReady = false, RequiredForClose = false
+                        }]
+                };
+                await viewModel.LoadAsync();
+                viewModel.FinancialOperationsQueueItems.Should().NotContain(row =>
+                    row.QueueId == "private-capital-approval:historical-rejection" ||
+                    row.QueueId == "private-capital-package:optional-close-output");
+                viewModel.PrivateCapitalCloseApprovals.Should().Contain(row => row.ApprovalId == "historical-rejection");
+                viewModel.PrivateCapitalEvidencePackages.Should().Contain(row => row.PackageId == "optional-close-output");
             }
             finally
             {
@@ -2320,11 +2343,11 @@ public sealed class FundLedgerViewModelTests
 
     private sealed class StubPrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
     {
-        private readonly PrivateCapitalCloseCockpitDto _cockpit;
+        public PrivateCapitalCloseCockpitDto Cockpit { get; set; }
 
         public StubPrivateCapitalCloseCockpitService(PrivateCapitalCloseCockpitDto cockpit)
         {
-            _cockpit = cockpit;
+            Cockpit = cockpit;
         }
 
         public string? RequestedFundProfileId { get; private set; }
@@ -2373,7 +2396,7 @@ public sealed class FundLedgerViewModelTests
             RequestedEntityId = entityId;
             RequestedTenantId = tenantId;
             RequestedCompanyId = companyId;
-            return Task.FromResult(_cockpit);
+            return Task.FromResult(Cockpit);
         }
     }
 
