@@ -13,6 +13,8 @@ last_reviewed: 2026-08-03
 
 ## Purpose
 
+Multi-symbol replay protects stream initialization and attempts disposal of every opened enumerator, including after initialization or cleanup failures.
+
 Backtesting contains runtime support for historical strategy simulation and replay-oriented research workflows.
 
 ## Layer responsibility

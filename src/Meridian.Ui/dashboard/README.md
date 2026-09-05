@@ -29,6 +29,8 @@ Accounting forwards the entity along with fund/book/account/period when requesti
 
 ## Purpose
 
+Accounting balances and materiality labels format amounts using the supplied currency code, including signed values, instead of applying a dollar symbol to every currency.
+
 Browser workstation dashboard is the active browser operator workstation.
 
 ## Layer responsibility

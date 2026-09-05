@@ -30,9 +30,11 @@ public sealed class ActivityFeedService : IAsyncDisposable
     private readonly BoundedObservableCollection<ActivityItem> _activities;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly object _stateGate = new();
-    private readonly Channel<ActivityFeedPersistenceRequest> _persistenceRequests;
+    private readonly Channel<bool> _persistenceRequests;
     private readonly Func<string, string, CancellationToken, Task> _persistAsync;
     private readonly Task _persistenceWorker;
+    private bool _persistencePending;
+    private TaskCompletionSource? _pendingCompletion;
     private readonly Task _initialization;
     private Exception? _lastPersistenceError;
     private int _disposeStarted;
@@ -103,8 +105,8 @@ public sealed class ActivityFeedService : IAsyncDisposable
 
         _persistAsync = persistAsync ?? ((path, content, ct) =>
             AtomicFileWriter.WriteAsync(path, content, ct));
-        _persistenceRequests = Channel.CreateUnbounded<ActivityFeedPersistenceRequest>(
-            new UnboundedChannelOptions
+        _persistenceRequests = Channel.CreateBounded<bool>(
+            new BoundedChannelOptions(1)
             {
                 SingleReader = true,
                 SingleWriter = false,
@@ -503,49 +505,48 @@ public sealed class ActivityFeedService : IAsyncDisposable
 
     private Task QueuePersistenceNoLock(bool awaitCompletion)
     {
-        var completion = awaitCompletion
-            ? new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)
-            : null;
-        var json = JsonSerializer.Serialize(_activities.ToList(), _jsonOptions);
-        var request = new ActivityFeedPersistenceRequest(json, completion);
-
-        if (!_persistenceRequests.Writer.TryWrite(request))
+        // One signal represents the latest state; all pending waiters share its commit.
+        if (!_persistencePending)
         {
-            throw new ObjectDisposedException(nameof(ActivityFeedService));
+            if (!_persistenceRequests.Writer.TryWrite(true))
+                throw new ObjectDisposedException(nameof(ActivityFeedService));
+            _persistencePending = true;
         }
-
-        return completion?.Task ?? Task.CompletedTask;
+        if (awaitCompletion)
+            _pendingCompletion ??= new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        return _pendingCompletion?.Task ?? Task.CompletedTask;
     }
 
     private async Task RunPersistenceWorkerAsync()
     {
-        await foreach (var request in _persistenceRequests.Reader.ReadAllAsync().ConfigureAwait(false))
+        await foreach (var signal in _persistenceRequests.Reader.ReadAllAsync().ConfigureAwait(false))
         {
+            TaskCompletionSource? completion = null;
             try
             {
-                await _persistAsync(_activityLogPath, request.Json, CancellationToken.None)
-                    .ConfigureAwait(false);
-
+                string json;
                 lock (_stateGate)
                 {
-                    _lastPersistenceError = null;
+                    _persistencePending = false;
+                    completion = _pendingCompletion;
+                    _pendingCompletion = null;
+                    json = JsonSerializer.Serialize(_activities.ToList(), _jsonOptions);
                 }
-
-                request.Completion?.TrySetResult();
+                await _persistAsync(_activityLogPath, json, CancellationToken.None).ConfigureAwait(false);
+                lock (_stateGate)
+                    _lastPersistenceError = null;
+                completion?.TrySetResult();
             }
             catch (Exception ex)
             {
                 lock (_stateGate)
-                {
                     _lastPersistenceError = ex;
-                }
-
                 System.Diagnostics.Trace.TraceError(
                     "Failed to persist activity feed entries to {0}: {1}",
                     _activityLogPath,
                     ex.Message);
                 RaisePersistenceFailed(ex);
-                request.Completion?.TrySetException(ex);
+                completion?.TrySetException(ex);
             }
         }
     }
@@ -699,10 +700,6 @@ public sealed class ActivityFeedService : IAsyncDisposable
     }
 
     private static string FormatBytes(long bytes) => FormatHelpers.FormatBytes(bytes);
-
-    private sealed record ActivityFeedPersistenceRequest(
-        string Json,
-        TaskCompletionSource? Completion);
 }
 
 /// <summary>

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Ui.Services;
 
@@ -17,8 +18,11 @@ namespace Meridian.Ui.Services;
 public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
 {
     private readonly ConcurrentDictionary<string, ExportJob> _jobs = new();
-    private readonly ConcurrentQueue<ExportJob> _queue = new();
+    private readonly ConcurrentQueue<(ExportJob Job, long Version)> _queue = new();
+    private readonly object _stateGate = new();
+    private readonly SemaphoreSlim _saveGate = new(1, 1);
     private readonly SemaphoreSlim _workerSemaphore;
+    public Exception? LastPersistenceError { get; private set; }
     private readonly CancellationTokenSource _cts = new();
     private readonly List<Task> _workers = new();
     private readonly string _jobStorePath;
@@ -85,7 +89,8 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
     {
         _schedulerTimer?.Dispose();
         _cts.Cancel();
-        await Task.WhenAll(_workers);
+        await Task.WhenAll(_workers).ConfigureAwait(false);
+        await SaveJobsAsync(ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -93,6 +98,8 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
     /// </summary>
     public ExportJob CreateJob(ExportJobRequest request)
     {
+        if (request.Format is not (ExportFormat.Raw or ExportFormat.JsonLines or ExportFormat.Csv))
+            throw new NotSupportedException($"Export format {request.Format} is not supported.");
         var job = new ExportJob
         {
             Id = Guid.NewGuid().ToString("N"),
@@ -110,14 +117,13 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             Status = ExportJobStatus.Pending
         };
 
-        _jobs.TryAdd(job.Id, job);
-        SaveJobsAsync().ConfigureAwait(false);
-
-        if (request.Schedule == null)
+        lock (_stateGate)
         {
-            // Immediate execution
-            _queue.Enqueue(job);
+            _jobs.TryAdd(job.Id, job);
+            if (request.Schedule == null)
+                QueueJobNoLock(job);
         }
+        SaveJobs();
 
         return job;
     }
@@ -127,39 +133,50 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
     /// </summary>
     public bool QueueJob(string jobId)
     {
-        if (_jobs.TryGetValue(jobId, out var job) && job.Status != ExportJobStatus.Running)
+        lock (_stateGate)
         {
-            job.Status = ExportJobStatus.Queued;
-            _queue.Enqueue(job);
-            return true;
+            if (!_jobs.TryGetValue(jobId, out var job) || !QueueJobNoLock(job))
+                return false;
         }
-        return false;
+        SaveJobs();
+        return true;
     }
 
-    /// <summary>
-    /// Cancels a running or queued job.
-    /// </summary>
+    private bool QueueJobNoLock(ExportJob job)
+    {
+        if (job.Status is ExportJobStatus.Running or ExportJobStatus.Queued || job.CancellationSource != null)
+            return false;
+        job.Status = ExportJobStatus.Queued;
+        _queue.Enqueue((job, ++job.QueueVersion));
+        return true;
+    }
+
+    /// <summary>Cancels a running or queued job.</summary>
     public bool CancelJob(string jobId)
     {
-        if (_jobs.TryGetValue(jobId, out var job))
+        lock (_stateGate)
         {
-            if (job.Status == ExportJobStatus.Running)
-            {
-                job.CancellationSource?.Cancel();
-            }
+            if (!_jobs.TryGetValue(jobId, out var job))
+                return false;
+            job.CancellationSource?.Cancel();
             job.Status = ExportJobStatus.Cancelled;
-            return true;
         }
-        return false;
+        SaveJobs();
+        return true;
     }
 
-    /// <summary>
-    /// Removes a job from the system.
-    /// </summary>
+    /// <summary>Removes a job from the system.</summary>
     public bool RemoveJob(string jobId)
     {
-        CancelJob(jobId);
-        return _jobs.TryRemove(jobId, out _);
+        lock (_stateGate)
+        {
+            if (!_jobs.TryRemove(jobId, out var job))
+                return false;
+            job.CancellationSource?.Cancel();
+            job.Status = ExportJobStatus.Cancelled;
+        }
+        SaveJobs();
+        return true;
     }
 
     /// <summary>
@@ -176,11 +193,12 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
     /// </summary>
     public List<ExportJobRun> GetJobHistory(string jobId, int limit = 10)
     {
-        if (_jobs.TryGetValue(jobId, out var job))
+        lock (_stateGate)
         {
-            return job.RunHistory.TakeLast(limit).Reverse().ToList();
+            return _jobs.TryGetValue(jobId, out var job)
+                ? job.RunHistory.TakeLast(limit).Reverse().ToList()
+                : new List<ExportJobRun>();
         }
-        return new List<ExportJobRun>();
     }
 
     private async Task ProcessQueueAsync(CancellationToken ct)
@@ -191,42 +209,55 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             {
                 await _workerSemaphore.WaitAsync(ct);
 
-                if (_queue.TryDequeue(out var job))
+                try
                 {
-                    await ExecuteJobAsync(job, ct);
+                    if (_queue.TryDequeue(out var entry))
+                        await ExecuteJobAsync(entry.Job, entry.Version, ct).ConfigureAwait(false);
+                    else
+                        await Task.Delay(_queuePollIntervalMs, ct).ConfigureAwait(false);
                 }
-                else
+                finally
                 {
                     _workerSemaphore.Release();
-                    await Task.Delay(_queuePollIntervalMs, ct);
                 }
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
                 break;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _workerSemaphore.Release();
+                System.Diagnostics.Trace.TraceWarning("Export worker failed: {0}", ex.Message);
             }
         }
     }
 
-    private async Task ExecuteJobAsync(ExportJob job, CancellationToken ct)
+    private async Task ExecuteJobAsync(ExportJob job, long version, CancellationToken ct)
     {
-        job.CancellationSource = new CancellationTokenSource();
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, job.CancellationSource.Token);
+        CancellationTokenSource linkedCts;
+        lock (_stateGate)
+        {
+            if (job.Status != ExportJobStatus.Queued || job.QueueVersion != version || !_jobs.ContainsKey(job.Id))
+                return;
+            ct.ThrowIfCancellationRequested();
+            linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            job.CancellationSource = linkedCts;
+            job.Status = ExportJobStatus.Running;
+            job.LastRunAt = DateTime.UtcNow;
+        }
+        using var executionCancellation = linkedCts;
 
         var run = new ExportJobRun
         {
-            StartedAt = DateTime.UtcNow
+            StartedAt = job.LastRunAt!.Value
         };
 
         try
         {
-            job.Status = ExportJobStatus.Running;
-            job.LastRunAt = run.StartedAt;
             JobStarted?.Invoke(this, new ExportJobEventArgs(job));
+
+            if (job.Format is not (ExportFormat.Raw or ExportFormat.JsonLines or ExportFormat.Csv))
+                throw new NotSupportedException($"Export format {job.Format} is not supported.");
 
             // Get source files
             var sourceFiles = GetSourceFiles(job);
@@ -250,7 +281,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
                 // Handle format conversion
                 if (job.Format != ExportFormat.Raw)
                 {
-                    await ConvertAndExportAsync(sourceFile, destFile, job.Format, linkedCts.Token);
+                    destFile = await ConvertAndExportAsync(sourceFile, destFile, job.Format, linkedCts.Token);
                 }
                 else
                 {
@@ -276,10 +307,14 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             run.Success = true;
             run.DestinationPath = destPath;
 
-            job.Status = ExportJobStatus.Completed;
-            job.LastSuccessAt = run.CompletedAt;
-            job.TotalFilesExported += processedFiles;
-            job.TotalBytesExported += totalBytes;
+            lock (_stateGate)
+            {
+                linkedCts.Token.ThrowIfCancellationRequested();
+                job.Status = ExportJobStatus.Completed;
+                job.LastSuccessAt = run.CompletedAt;
+                job.TotalFilesExported += processedFiles;
+                job.TotalBytesExported += totalBytes;
+            }
 
             JobCompleted?.Invoke(this, new ExportJobEventArgs(job, run));
         }
@@ -288,22 +323,27 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             run.CompletedAt = DateTime.UtcNow;
             run.Success = false;
             run.ErrorMessage = "Job cancelled";
-            job.Status = ExportJobStatus.Cancelled;
+            lock (_stateGate)
+                job.Status = ExportJobStatus.Cancelled;
         }
         catch (Exception ex)
         {
             run.CompletedAt = DateTime.UtcNow;
             run.Success = false;
             run.ErrorMessage = ex.Message;
-            job.Status = ExportJobStatus.Failed;
+            lock (_stateGate)
+                job.Status = ExportJobStatus.Failed;
 
             JobFailed?.Invoke(this, new ExportJobEventArgs(job, run));
         }
         finally
         {
-            job.RunHistory.Add(run);
-            _workerSemaphore.Release();
-            await SaveJobsAsync();
+            lock (_stateGate)
+            {
+                job.RunHistory.Add(run);
+                job.CancellationSource = null;
+            }
+            await SaveJobsAsync().ConfigureAwait(false);
         }
     }
 
@@ -411,7 +451,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
         return destFile;
     }
 
-    private static async Task ConvertAndExportAsync(
+    private static async Task<string> ConvertAndExportAsync(
         string sourceFile,
         string destFile,
         ExportFormat format,
@@ -423,21 +463,19 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
         {
             case ExportFormat.Csv:
                 await ExportToCsvAsync(lines, destFile, ct);
-                break;
+                return destFile;
 
             case ExportFormat.Parquet:
-                // For now, just copy - would integrate Apache.Arrow or Parquet.Net
-                await File.WriteAllLinesAsync(destFile.Replace(".parquet", ".jsonl"), lines, ct);
-                break;
+                throw new NotSupportedException("Parquet export is not supported.");
 
             case ExportFormat.JsonLines:
-                var decompressedPath = destFile.Replace(".gz", "");
+                var decompressedPath = destFile.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
+                    ? destFile[..^3] : destFile;
                 await File.WriteAllLinesAsync(decompressedPath, lines, ct);
-                break;
+                return decompressedPath;
 
             default:
-                File.Copy(sourceFile, destFile, true);
-                break;
+                throw new NotSupportedException($"Export format {format} is not supported.");
         }
     }
 
@@ -460,60 +498,79 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
 
     private static async Task ExportToCsvAsync(List<string> jsonLines, string destFile, CancellationToken ct)
     {
-        if (jsonLines.Count == 0)
-        {
-            await File.WriteAllTextAsync(destFile, "", ct);
-            return;
-        }
-
-        // Parse first line to get headers
-        using var firstDoc = JsonDocument.Parse(jsonLines[0]);
-        var headers = firstDoc.RootElement.EnumerateObject().Select(p => p.Name).ToList();
-
-        var csvLines = new List<string> { string.Join(",", headers) };
-
-        foreach (var line in jsonLines)
+        var headers = new List<string>();
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        var rejectedRows = new List<int>();
+        // Discover the union schema and validate every row before replacing an artifact.
+        for (var i = 0; i < jsonLines.Count; i++)
         {
             ct.ThrowIfCancellationRequested();
             try
             {
-                using var doc = JsonDocument.Parse(line);
-                var values = headers.Select(h =>
+                using var doc = JsonDocument.Parse(jsonLines[i]);
+                if (doc.RootElement.ValueKind != JsonValueKind.Object)
                 {
-                    if (doc.RootElement.TryGetProperty(h, out var prop))
+                    rejectedRows.Add(i + 1);
+                    continue;
+                }
+                var rowNames = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var property in doc.RootElement.EnumerateObject())
+                {
+                    if (!rowNames.Add(property.Name))
                     {
-                        var val = prop.ValueKind == JsonValueKind.String
-                            ? $"\"{prop.GetString()?.Replace("\"", "\"\"")}\""
-                            : prop.GetRawText();
-                        return val;
+                        rejectedRows.Add(i + 1);
+                        break;
                     }
-                    return "";
-                });
-                csvLines.Add(string.Join(",", values));
+                    if (names.Add(property.Name))
+                        headers.Add(property.Name);
+                }
             }
-            catch
+            catch (JsonException)
             {
-                // Skip malformed lines
+                rejectedRows.Add(i + 1);
             }
         }
+        if (rejectedRows.Count > 0)
+            throw new InvalidDataException($"CSV export rejected {rejectedRows.Count} row(s): {string.Join(", ", rejectedRows.Take(20))}.");
 
-        await File.WriteAllLinesAsync(destFile, csvLines, ct);
+        var csvLines = new List<string>();
+        if (headers.Count > 0)
+            csvLines.Add(string.Join(",", headers.Select(EscapeCsvCell)));
+        foreach (var line in jsonLines)
+        {
+            ct.ThrowIfCancellationRequested();
+            using var doc = JsonDocument.Parse(line);
+            csvLines.Add(string.Join(",", headers.Select(header =>
+                EscapeCsvCell(doc.RootElement.TryGetProperty(header, out var property)
+                    ? property.ValueKind == JsonValueKind.String ? property.GetString() ?? "" : property.GetRawText()
+                    : ""))));
+        }
+        await AtomicFileWriter.WriteAsync(destFile, string.Join(Environment.NewLine, csvLines), ct).ConfigureAwait(false);
     }
+
+    private static string EscapeCsvCell(string value) => "\"" + value.Replace("\"", "\"\"") + "\"";
 
     private void CheckScheduledJobs(object? state)
     {
-        var now = DateTime.UtcNow;
-
-        foreach (var (_, job) in _jobs)
+        try
         {
-            if (job.Schedule != null && job.Status != ExportJobStatus.Running)
+            var changed = false;
+            lock (_stateGate)
             {
-                if (ShouldRunScheduledJob(job, now))
+                if (_cts.IsCancellationRequested)
+                    return;
+                foreach (var job in _jobs.Values)
                 {
-                    job.Status = ExportJobStatus.Queued;
-                    _queue.Enqueue(job);
+                    if (job.Status != ExportJobStatus.Cancelled && ShouldRunScheduledJob(job, DateTime.UtcNow))
+                        changed |= QueueJobNoLock(job);
                 }
             }
+            if (changed)
+                SaveJobs();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceWarning("Export scheduler failed: {0}", ex.Message);
         }
     }
 
@@ -547,14 +604,21 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             if (File.Exists(_jobStorePath))
             {
                 var json = await File.ReadAllTextAsync(_jobStorePath, ct);
-                var jobs = JsonSerializer.Deserialize<List<ExportJob>>(json);
+                var jobs = JsonSerializer.Deserialize<List<ExportJob>>(json, DesktopJsonOptions.PrettyPrint);
                 if (jobs != null)
                 {
                     foreach (var job in jobs)
                     {
                         if (job.Status == ExportJobStatus.Running)
                             job.Status = ExportJobStatus.Pending;
-                        _jobs.TryAdd(job.Id, job);
+                        lock (_stateGate)
+                        {
+                            if (_jobs.TryAdd(job.Id, job) && job.Status == ExportJobStatus.Queued)
+                            {
+                                job.Status = ExportJobStatus.Pending;
+                                QueueJobNoLock(job);
+                            }
+                        }
                     }
                 }
             }
@@ -580,7 +644,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             }
 
             var json = await File.ReadAllTextAsync(_jobStorePath, ct).ConfigureAwait(false);
-            var jobs = JsonSerializer.Deserialize<List<ExportJob>>(json) ?? [];
+            var jobs = JsonSerializer.Deserialize<List<ExportJob>>(json, DesktopJsonOptions.PrettyPrint) ?? [];
 
             foreach (var job in jobs)
             {
@@ -601,20 +665,50 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
         }
     }
 
-    private async Task SaveJobsAsync(CancellationToken ct = default)
+    /// <summary>Persists the latest job state; storage errors propagate to the caller.</summary>
+    public async Task SaveJobsAsync(CancellationToken ct = default)
     {
+        await _saveGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var dir = Path.GetDirectoryName(_jobStorePath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-
-            var json = JsonSerializer.Serialize(_jobs.Values.ToList(), DesktopJsonOptions.PrettyPrint);
-            await File.WriteAllTextAsync(_jobStorePath, json);
+            string json;
+            lock (_stateGate)
+                json = JsonSerializer.Serialize(_jobs.Values.ToList(), DesktopJsonOptions.PrettyPrint);
+            // The synchronous compatibility APIs share this gate; do not let a writer
+            // capture a UI context that may be synchronously waiting for the gate.
+            await Task.Run(() => AtomicFileWriter.Write(_jobStorePath, json, ct), ct).ConfigureAwait(false);
+            LastPersistenceError = null;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Trace.TraceWarning("Failed to persist export jobs to {0}: {1}", _jobStorePath, ex.Message);
+            LastPersistenceError = ex;
+            throw;
+        }
+        finally
+        {
+            _saveGate.Release();
+        }
+    }
+
+    private void SaveJobs()
+    {
+        _saveGate.Wait();
+        try
+        {
+            string json;
+            lock (_stateGate)
+                json = JsonSerializer.Serialize(_jobs.Values.ToList(), DesktopJsonOptions.PrettyPrint);
+            AtomicFileWriter.Write(_jobStorePath, json);
+            LastPersistenceError = null;
+        }
+        catch (Exception ex)
+        {
+            LastPersistenceError = ex;
+            throw;
+        }
+        finally
+        {
+            _saveGate.Release();
         }
     }
 
@@ -665,6 +759,7 @@ public sealed class ExportJob
     public long TotalBytesExported { get; set; }
     public List<ExportJobRun> RunHistory { get; init; } = new();
 
+    internal long QueueVersion { get; set; }
     internal CancellationTokenSource? CancellationSource { get; set; }
 }
 

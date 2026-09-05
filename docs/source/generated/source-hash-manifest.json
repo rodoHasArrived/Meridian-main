@@ -16,8 +16,8 @@
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "012e66ea847e900fc3a6b4200538580d4eda9e3756eb643801b946ad4c246acd",
-      "source_hash": "1aede108c1d9f2fc5bced9e2e588a2e1cf3a9ced7d78e94e1c0f85691d2cc418"
+      "readme_hash": "129197362745a8d2ac33bb173e881a5f854aff26c638499ac7040c27e621d953",
+      "source_hash": "60a79009a6352f37f38cdb2218ed1b3f07972005d33024e19826229ab5bdc3d2"
     },
     {
       "id": "SRC-BACKTESTING-SDK",
@@ -135,8 +135,8 @@
       "id": "SRC-EXECUTION",
       "path": "src/Meridian.Execution",
       "readme": "src/Meridian.Execution/README.md",
-      "readme_hash": "555e8bc041e3720eb24ea662c7e74f1a6d93096bc4c78abd178280859b046ca4",
-      "source_hash": "93d618737fc475154f1e8295e1feac6dce7cffa93dac8d95cfb9f8f169c2967a"
+      "readme_hash": "316d85aab34609619411d0190ada7fd4859f38ae67cba0eda14474cc77d43a95",
+      "source_hash": "a21a8c9a4d6266ac5ba4c90a154e2f3b93909a8a916a36be2ee7d0eb43f306bf"
     },
     {
       "id": "SRC-EXECUTION-SDK",
@@ -268,15 +268,15 @@
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
-      "readme_hash": "81e599b36e26680b276d8e6bef5d484438a3333d02062c91a5779c36c1a79028",
-      "source_hash": "bf730c0dbd5995c43900cdb84647059221a5736d184022bb7ac63ae4c83248ef"
+      "readme_hash": "979b355ba6482a84fa35b15d356b0e271bd38ec5e21d45e6ae9dd25cfb489173",
+      "source_hash": "47b81e23ec139d856a977cf16c0f8dbfb0924fd9763b22167087ee92ab740d43"
     },
     {
       "id": "SRC-UI-SERVICES",
       "path": "src/Meridian.Ui.Services",
       "readme": "src/Meridian.Ui.Services/README.md",
-      "readme_hash": "0733eeb324b33ca67cc0d69c4061fd687d65d6c0338069a75907364261b8ad96",
-      "source_hash": "86bb5f7ff92107b78843fdaf220a48e58debcc32ab3245874c8748df8d2a5c48"
+      "readme_hash": "5af428851e292b32da16b358430ebba642d79792f57144faeac50f4be77fad4c",
+      "source_hash": "a502002b079f0366461777fcd47314baa5193225b13b72f6ba8f993a02dc4368"
     },
     {
       "id": "SRC-UI-SHARED",

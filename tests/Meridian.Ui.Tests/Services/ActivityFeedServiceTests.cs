@@ -576,12 +576,64 @@ public sealed class ActivityFeedServiceTests
             svc.LogActivityAsync(ActivityType.Info, title)));
 
         maximumActiveWriters.Should().Be(1);
-        payloads.Should().HaveCount(titles.Length);
+        payloads.Count.Should().BeInRange(1, titles.Length);
         var latest = JsonSerializer.Deserialize<List<ActivityItem>>(
             payloads.Last(),
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         latest.Should().NotBeNull();
         latest!.Select(activity => activity.Title).Should().Contain(titles);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PersistenceWorker_SlowStorageCoalescesPendingWorkAndCompletesAllWaiters(bool failPending)
+    {
+        using var fixture = new PathFixture("mdc-activity-coalescing");
+        SeedEmptyPrimaryActivityLog(fixture);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var writes = 0;
+        string? latest = null;
+        async Task PersistAsync(string _, string json, CancellationToken ct)
+        {
+            var attempt = Interlocked.Increment(ref writes);
+            if (attempt == 1)
+            {
+                entered.TrySetResult();
+                await release.Task.WaitAsync(ct);
+            }
+            if (attempt == 2 && failPending)
+                throw new IOException("pending snapshot failed");
+            latest = json;
+        }
+        await using var service = new ActivityFeedService(new FixedConfigService(fixture.ConfigPath, null), PersistAsync);
+        await service.Initialization;
+        service.AddActivity(new ActivityItem { Title = "first" });
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        try
+        {
+            for (var i = 0; i < 1000; i++)
+                service.AddActivity(new ActivityItem { Title = $"sync-{i}" });
+            var waiters = Enumerable.Range(0, 20).Select(i => service.LogActivityAsync(ActivityType.Info, $"awaited-{i}")).ToArray();
+            waiters.Should().OnlyContain(task => !task.IsCompleted);
+            release.TrySetResult();
+            if (failPending)
+            {
+                foreach (var waiter in waiters)
+                    await Assert.ThrowsAsync<IOException>(() => waiter.WaitAsync(TimeSpan.FromSeconds(10)));
+            }
+            else
+            {
+                await Task.WhenAll(waiters).WaitAsync(TimeSpan.FromSeconds(10));
+                latest.Should().Contain("sync-999").And.Contain("awaited-19");
+            }
+            writes.Should().Be(2);
+        }
+        finally
+        {
+            release.TrySetResult();
+        }
     }
 
     [Fact]
