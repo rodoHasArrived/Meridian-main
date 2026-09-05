@@ -231,6 +231,11 @@ for operator recovery.
 
 ### Accounting and Security Master evidence
 
+Security Master cache refreshes build a complete candidate map without blocking writers, capture
+every accepted upsert during that build, reconcile those writes by record version, and publish the
+result with one reference swap. Readers therefore see a complete old or new master, while a write
+accepted during `ReplaceAll` materialization is not discarded by the swap.
+
 Ledger journal writes fail closed for instrument-bearing postings. In practice, this means Meridian
 will not save a securities, dividend, accrued-interest, corporate-action, option, futures, short, or
 symbol-scoped accounting line unless the line carries approved Security Master provenance and ledger
