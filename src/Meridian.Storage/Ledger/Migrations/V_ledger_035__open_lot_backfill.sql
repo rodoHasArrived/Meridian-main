@@ -84,8 +84,15 @@ begin
     return new;
 end
 $function$;
-create trigger guard_open_lot_backfill_review before insert on __SCHEMA__.open_lot_backfill_reviews
-    for each row execute function __SCHEMA__.guard_open_lot_backfill_review();
+do $migration$
+begin
+    if not exists (select 1 from pg_trigger where tgrelid = '__SCHEMA__.open_lot_backfill_reviews'::regclass
+        and tgname = 'guard_open_lot_backfill_review') then
+        create trigger guard_open_lot_backfill_review before insert on __SCHEMA__.open_lot_backfill_reviews
+            for each row execute function __SCHEMA__.guard_open_lot_backfill_review();
+    end if;
+end
+$migration$;
 
 create or replace function __SCHEMA__.guard_open_lot_backfill_exception()
 returns trigger language plpgsql as $function$
@@ -108,8 +115,15 @@ begin
     return new;
 end
 $function$;
-create trigger guard_open_lot_backfill_exception before update or delete on __SCHEMA__.open_lot_backfill_exceptions
-    for each row execute function __SCHEMA__.guard_open_lot_backfill_exception();
+do $migration$
+begin
+    if not exists (select 1 from pg_trigger where tgrelid = '__SCHEMA__.open_lot_backfill_exceptions'::regclass
+        and tgname = 'guard_open_lot_backfill_exception') then
+        create trigger guard_open_lot_backfill_exception before update or delete on __SCHEMA__.open_lot_backfill_exceptions
+            for each row execute function __SCHEMA__.guard_open_lot_backfill_exception();
+    end if;
+end
+$migration$;
 
 -- Preserve the prior immutable contract, allowing exactly one approved null-to-known enrichment
 -- whose full old/new SQL snapshots match an immutable receipt in this same transaction.

@@ -74,7 +74,7 @@ public sealed partial class WorkstationEndpointsTests
             .Returns(call =>
             {
                 received = call.ArgAt<ReviewOpenLotBackfillEvidenceRequest>(0);
-                throw new InvalidOperationException("Human review required.");
+                return Task.FromException<OpenLotBackfillEvidenceDto>(new InvalidOperationException("Human review required."));
             });
         await using var app = await CreateAppAsync(services =>
         {

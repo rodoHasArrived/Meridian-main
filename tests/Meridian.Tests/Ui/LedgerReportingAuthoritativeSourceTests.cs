@@ -333,7 +333,7 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             _ => history with { Lots = [history.Lots[0] with { CostBasis = 301m }] }
         });
         var intent = new ReportingAuthoritativeSourceCaptureIntent("capital-account-statement");
-        var capture = () => fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access, intent);
+        var capture = () => fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access, intent).AsTask();
         await capture.Should().ThrowAsync<ReportingAuthoritativeSourceUnavailableException>().WithMessage("*blocks canonical reporting*");
 
         fixture.JournalStore.Disposals[0] = history;
