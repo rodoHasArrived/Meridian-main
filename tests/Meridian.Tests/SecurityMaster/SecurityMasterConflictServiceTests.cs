@@ -123,6 +123,248 @@ public sealed class SecurityMasterConflictServiceTests
     }
 
     [Fact]
+    public async Task GetOpenConflictsAsync_IssuerScopedIdentifiers_DoNotPairDistinctSecurities()
+    {
+        // CIK names an EDGAR filer and LEI names an ISO 17442 legal entity, so distinct tradable
+        // securities of one issuer legitimately share them with overlapping validity — sharing an
+        // issuer-scoped identifier is not an identity ambiguity.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                MakeProjection(Guid.NewGuid(), "Cik", "0000320193", provider: "edgar"),
+                MakeProjection(Guid.NewGuid(), "Cik", "0000320193", provider: "edgar"),
+                MakeProjection(Guid.NewGuid(), "Lei", "HWUPKR0MPOU8FGXBT394", provider: "gleif"),
+                MakeProjection(Guid.NewGuid(), "Lei", "HWUPKR0MPOU8FGXBT394", provider: "gleif")
+            });
+
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        conflicts.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetOpenConflictsAsync_NormalizesPunctuationBeforeComparing()
+    {
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeProjection(Guid.NewGuid(), "Isin", "US-0378331005", "provider-a"),
+            MakeProjection(Guid.NewGuid(), "Isin", "us 0378331005", "provider-b")
+        });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        conflicts.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task GetOpenConflictsAsync_NonOverlappingValidityWindows_DoNotConflict()
+    {
+        var boundary = DateTimeOffset.UtcNow.AddDays(-10);
+        var expired = MakeProjection(Guid.NewGuid(), "Ticker", "RECYCLED", "XNAS");
+        expired = expired with
+        {
+            Identifiers = [expired.Identifiers[0] with { ValidFrom = boundary.AddYears(-1), ValidTo = boundary }]
+        };
+        var current = MakeProjection(Guid.NewGuid(), "Ticker", "RECYCLED", "XNAS");
+        current = current with
+        {
+            Identifiers = [current.Identifiers[0] with { ValidFrom = boundary, ValidTo = null }]
+        };
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { expired, current });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        conflicts.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetOpenConflictsAsync_WhenAClaimExpires_SupersedesPreviouslyOpenConflict()
+    {
+        var boundary = DateTimeOffset.UtcNow;
+        var first = MakeProjection(Guid.NewGuid(), "Ticker", "REUSED", "XNAS");
+        var second = MakeProjection(Guid.NewGuid(), "Ticker", "REUSED", "XNAS");
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(
+            new[] { first, second },
+            new[]
+            {
+                first with
+                {
+                    Identifiers =
+                    [
+                        first.Identifiers[0] with
+                        {
+                            ValidFrom = boundary.AddYears(-1),
+                            ValidTo = boundary
+                        }
+                    ]
+                },
+                second with
+                {
+                    Identifiers =
+                    [
+                        second.Identifiers[0] with
+                        {
+                            ValidFrom = boundary,
+                            ValidTo = null
+                        }
+                    ]
+                }
+            });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        (await service.GetOpenConflictsAsync(CancellationToken.None)).Should().ContainSingle();
+        (await service.GetOpenConflictsAsync(CancellationToken.None)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetOpenConflictsAsync_WhenSupersededClaimsOverlapAgain_ReopensConflict()
+    {
+        var boundary = DateTimeOffset.UtcNow;
+        var first = MakeProjection(Guid.NewGuid(), "Ticker", "REOPEN", "XNAS");
+        var second = MakeProjection(Guid.NewGuid(), "Ticker", "REOPEN", "XNAS");
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(
+            new[] { first, second },
+            new[]
+            {
+                first with { Identifiers = [first.Identifiers[0] with { ValidTo = boundary }] },
+                second with { Identifiers = [second.Identifiers[0] with { ValidFrom = boundary }] }
+            },
+            new[] { first, second });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var original = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single();
+        (await service.GetOpenConflictsAsync(CancellationToken.None)).Should().BeEmpty();
+        var reopened = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single();
+
+        reopened.ConflictId.Should().Be(original.ConflictId);
+        reopened.Status.Should().Be("Open");
+        reopened.ResolvedReason.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetOpenConflictsAsync_ProviderSymbolsInDifferentScopes_DoNotConflict()
+    {
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeProjection(Guid.NewGuid(), "ProviderSymbol", "ABC", "provider-a"),
+            MakeProjection(Guid.NewGuid(), "ProviderSymbol", "ABC", "provider-b")
+        });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        conflicts.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetOpenConflictsAsync_SameTickerFromDifferentFeeds_Conflicts()
+    {
+        // Ticker Provider values carry the ingest feed (polygon, edgar), not a listing venue,
+        // so feed provenance must not partition the identity: two securities claiming the same
+        // ticker from different feeds is exactly the ambiguity conflict review exists for.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeProjection(Guid.NewGuid(), "Ticker", "AAPL", "polygon"),
+            MakeProjection(Guid.NewGuid(), "Ticker", "AAPL", "edgar")
+        });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        var conflict = conflicts.Should().ContainSingle().Subject;
+        conflict.FieldPath.Should().Be("Identifiers.Ticker");
+        new[] { conflict.ProviderA, conflict.ProviderB }.Should().BeEquivalentTo(["polygon", "edgar"]);
+    }
+
+    [Fact]
+    public async Task GetOpenConflictsAsync_ThreeClaimants_EmitsEveryPair()
+    {
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeProjection(Guid.NewGuid(), "Figi", "BBG000B9XRY4", "provider-a"),
+            MakeProjection(Guid.NewGuid(), "Figi", "BBG000B9XRY4", "provider-b"),
+            MakeProjection(Guid.NewGuid(), "Figi", "BBG000B9XRY4", "provider-c")
+        });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        conflicts.Should().HaveCount(3, "three claimants have three distinct claimant pairs");
+        conflicts.Select(conflict => conflict.ConflictId).Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public async Task RecordConflictsForProjectionsAsync_UsesOneCandidateLookupWithoutUniverseLoad()
+    {
+        var incoming = MakeProjection(Guid.NewGuid(), "Cusip", "037833100", "provider-a");
+        var existing = MakeProjection(Guid.NewGuid(), "Cusip", "037-833-100", "provider-b");
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.FindIdentifierCandidatesAsync(
+                Arg.Any<IReadOnlyList<SecurityIdentifierDto>>(),
+                Arg.Any<IReadOnlyCollection<Guid>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new[] { existing });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        await service.RecordConflictsForProjectionsAsync([incoming], CancellationToken.None);
+
+        await store.Received(1).FindIdentifierCandidatesAsync(
+            Arg.Is<IReadOnlyList<SecurityIdentifierDto>>(identifiers => identifiers.Count == 1),
+            Arg.Is<IReadOnlyCollection<Guid>>(ids => ids.SequenceEqual(new[] { incoming.SecurityId })),
+            Arg.Any<CancellationToken>());
+        await store.DidNotReceive().LoadAllAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RecordConflictsForProjections_SupersedesSubjectConflictsTheScanNoLongerDetects()
+    {
+        var securityA = Guid.NewGuid();
+        var securityB = Guid.NewGuid();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                MakeProjection(securityA, "Ticker", "STALE", provider: "XNAS"),
+                MakeProjection(securityB, "Ticker", "STALE", provider: "XNAS")
+            });
+        store.FindIdentifierCandidatesAsync(
+                Arg.Any<IReadOnlyList<SecurityIdentifierDto>>(),
+                Arg.Any<IReadOnlyCollection<Guid>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance);
+        var conflictId = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single().ConflictId;
+
+        // A refresh racing an amendment can retain a conflict the amended claims no longer
+        // produce. The ingest scan is authoritative for every pair touching its subjects, so
+        // scanning the amended projection must supersede the stale pair rather than leaving it
+        // open until the next full refresh.
+        await service.RecordConflictsForProjectionAsync(
+            MakeProjection(securityA, "Ticker", "AMENDED", provider: "XNAS"),
+            CancellationToken.None);
+
+        var superseded = await service.GetConflictAsync(conflictId, CancellationToken.None);
+        superseded.Should().NotBeNull();
+        superseded!.Status.Should().Be("Superseded");
+        superseded.ResolvedReason.Should().Be(SecurityMasterConflictService.IdentifierNoLongerDetectedReason);
+    }
+
+    [Fact]
     public async Task GetOpenConflictsAsync_WhenSameIdentifierSameSecurityDifferentProviders_NoConflict()
     {
         var securityId = Guid.NewGuid();
@@ -336,8 +578,8 @@ public sealed class SecurityMasterConflictServiceTests
         store.LoadAllAsync(Arg.Any<CancellationToken>())
             .Returns(new[]
             {
-                MakeProjection(securityA, "Ticker", "AAPL", provider: "alpaca"),
-                MakeProjection(securityB, "Ticker", "AAPL", provider: "polygon")
+                MakeProjection(securityA, "Ticker", "AAPL", provider: "XNAS"),
+                MakeProjection(securityB, "Ticker", "AAPL", provider: "XNAS")
             });
 
         var service = new SecurityMasterConflictService(

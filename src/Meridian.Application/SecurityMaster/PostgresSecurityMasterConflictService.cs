@@ -17,6 +17,7 @@ namespace Meridian.Application.SecurityMaster;
 public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConflictService
 {
     private const string ConflictsTable = "security_master_conflicts";
+    private const long IdentifierConflictAdvisoryLock = 0x534D_4944_4346;
 
     private readonly ISecurityMasterStore _store;
     private readonly SecurityMasterOptions _options;
@@ -38,23 +39,25 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
 
     public async Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
     {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await AcquireIdentifierConflictLockAsync(connection, transaction, ct).ConfigureAwait(false);
+
+        // Load only after taking the conflict-reconciliation lock. An ingest that has persisted a
+        // projection but not its conflict row is allowed to finish before this snapshot; an ingest
+        // that starts later blocks here and cannot be incorrectly superseded by a stale refresh.
         var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
         var detected = SecurityMasterConflictDetection.DetectAll(all, DateTimeOffset.UtcNow);
 
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-
-        // Record newly detected conflicts in one transaction (one commit instead of one per conflict);
-        // ON CONFLICT DO NOTHING preserves any existing resolution state so a re-detected,
-        // already-resolved conflict is never re-opened.
-        if (detected.Count > 0)
+        foreach (var conflict in detected)
         {
-            await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
-            foreach (var conflict in detected)
-            {
-                await InsertIfAbsentAsync(connection, transaction, conflict, ct).ConfigureAwait(false);
-            }
-
-            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            await ReconcileLegacyIdentifierConflictIdAsync(
+                connection,
+                transaction,
+                conflict,
+                FindLegacyIdentifierConflictIds(conflict, all),
+                ct).ConfigureAwait(false);
+            await UpsertDetectedIdentifierConflictAsync(connection, transaction, conflict, ct).ConfigureAwait(false);
         }
 
         if (detected.Count > 0)
@@ -62,7 +65,36 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             _logger.LogInformation("Detected {Count} identifier conflicts in Security Master", detected.Count);
         }
 
+        // A full refresh is authoritative for identifier ambiguity. Close only still-open
+        // detector-owned rows that disappeared because the claim windows no longer overlap;
+        // operator resolutions and field conflicts are never rewritten here.
+        await using (var supersede = connection.CreateCommand())
+        {
+            supersede.Transaction = transaction;
+            supersede.CommandText =
+                $"""
+                update {Qualified(ConflictsTable)}
+                set status = 'Superseded',
+                    resolved_reason = @resolved_reason,
+                    resolved_at = @resolved_at
+                where status = 'Open'
+                  and conflict_kind = @conflict_kind
+                  and not (conflict_id = any(@detected_ids));
+                """;
+            supersede.Parameters.AddWithValue(
+                "resolved_reason",
+                SecurityMasterConflictService.IdentifierNoLongerDetectedReason);
+            supersede.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
+            supersede.Parameters.AddWithValue("conflict_kind", SecurityMasterConflictKinds.IdentifierAmbiguity);
+            supersede.Parameters.AddWithValue(
+                "detected_ids",
+                NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid,
+                detected.Select(static conflict => conflict.ConflictId).ToArray());
+            await supersede.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             select {ConflictColumns}
@@ -72,12 +104,15 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             """;
 
         var results = new List<SecurityMasterConflict>();
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {
-            results.Add(MapConflict(reader));
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                results.Add(MapConflict(reader));
+            }
         }
 
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
         return results;
     }
 
@@ -487,28 +522,85 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         => SecurityMasterConflictDetection.FieldValuesMatch(fieldPath, persisted, selected, declaredProfileFieldType);
 
     public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+        => await RecordConflictsForProjectionsAsync([projection], ct).ConfigureAwait(false);
+
+    public async Task RecordConflictsForProjectionsAsync(
+        IReadOnlyList<SecurityProjectionRecord> projections,
+        CancellationToken ct)
     {
-        var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
-        var candidates = SecurityMasterConflictDetection.DetectForProjection(projection, all, DateTimeOffset.UtcNow);
-        if (candidates.Count == 0)
+        if (projections.Count == 0)
         {
             return;
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await AcquireIdentifierConflictLockAsync(connection, transaction, ct).ConfigureAwait(false);
+
+        var identifiers = projections.SelectMany(static projection => projection.Identifiers).ToArray();
+        var excludedSecurityIds = projections.Select(static projection => projection.SecurityId).ToArray();
+        var existingCandidates = await _store
+            .FindIdentifierCandidatesAsync(identifiers, excludedSecurityIds, ct)
+            .ConfigureAwait(false);
+        var candidates = SecurityMasterConflictDetection.DetectForProjections(
+            projections,
+            existingCandidates,
+            DateTimeOffset.UtcNow);
+        var candidateUniverse = projections.Concat(existingCandidates).ToArray();
 
         int newConflicts = 0;
         foreach (var conflict in candidates)
         {
-            var inserted = await InsertIfAbsentAsync(connection, transaction, conflict, ct).ConfigureAwait(false);
-            if (inserted)
+            await ReconcileLegacyIdentifierConflictIdAsync(
+                connection,
+                transaction,
+                conflict,
+                FindLegacyIdentifierConflictIds(conflict, candidateUniverse),
+                ct).ConfigureAwait(false);
+            var opened = await UpsertDetectedIdentifierConflictAsync(connection, transaction, conflict, ct).ConfigureAwait(false);
+            if (opened)
             {
                 newConflicts++;
                 _logger.LogWarning(
                     "Ingest-time conflict detected: {FieldPath} already assigned to security {ExistingId} (new: {NewId})",
-                    conflict.FieldPath, conflict.ValueB, projection.SecurityId);
+                    conflict.FieldPath, conflict.ValueB, conflict.SecurityId);
             }
+        }
+
+        // The projection write commits BEFORE this lock is taken, so a full refresh that loaded
+        // the pre-write universe can have upserted or retained a conflict the subjects' amended
+        // claims no longer produce. This scan holds the subjects' current claims and enumerates
+        // every pair touching a subject, so it is authoritative for them: still-open detector
+        // rows referencing a subject that the scan did not re-detect are superseded here rather
+        // than lingering until the next full refresh.
+        await using (var supersede = connection.CreateCommand())
+        {
+            supersede.Transaction = transaction;
+            supersede.CommandText =
+                $"""
+                update {Qualified(ConflictsTable)}
+                set status = 'Superseded',
+                    resolved_reason = @resolved_reason,
+                    resolved_at = @resolved_at
+                where status = 'Open'
+                  and conflict_kind = @conflict_kind
+                  and (value_a = any(@subject_ids) or value_b = any(@subject_ids))
+                  and not (conflict_id = any(@detected_ids));
+                """;
+            supersede.Parameters.AddWithValue(
+                "resolved_reason",
+                SecurityMasterConflictService.IdentifierNoLongerDetectedReason);
+            supersede.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
+            supersede.Parameters.AddWithValue("conflict_kind", SecurityMasterConflictKinds.IdentifierAmbiguity);
+            supersede.Parameters.AddWithValue(
+                "subject_ids",
+                NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Text,
+                excludedSecurityIds.Select(static id => id.ToString()).ToArray());
+            supersede.Parameters.AddWithValue(
+                "detected_ids",
+                NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid,
+                candidates.Select(static conflict => conflict.ConflictId).ToArray());
+            await supersede.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
@@ -516,8 +608,8 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         if (newConflicts > 0)
         {
             _logger.LogInformation(
-                "Recorded {Count} new identifier conflict(s) for security {SecurityId}",
-                newConflicts, projection.SecurityId);
+                "Recorded {Count} new identifier conflict(s) for {SecurityCount} security projection(s)",
+                newConflicts, projections.Count);
         }
     }
 
@@ -710,6 +802,250 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         command.Parameters.AddWithValue("value", persistedValue);
         command.Parameters.AddWithValue("conflict_id", conflict.ConflictId);
         return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) > 0;
+    }
+
+    private static IReadOnlyList<Guid> FindLegacyIdentifierConflictIds(
+        SecurityMasterConflict conflict,
+        IReadOnlyList<SecurityProjectionRecord> universe)
+    {
+        const string prefix = "Identifiers.";
+        if (!conflict.FieldPath.StartsWith(prefix, StringComparison.Ordinal)
+            || !Enum.TryParse<SecurityIdentifierKind>(conflict.FieldPath[prefix.Length..], out var kind)
+            || !Guid.TryParse(conflict.ValueA, out var firstSecurityId)
+            || !Guid.TryParse(conflict.ValueB, out var secondSecurityId))
+        {
+            return Array.Empty<Guid>();
+        }
+
+        var first = universe.FirstOrDefault(record => record.SecurityId == firstSecurityId);
+        var second = universe.FirstOrDefault(record => record.SecurityId == secondSecurityId);
+        if (first is null || second is null)
+        {
+            return Array.Empty<Guid>();
+        }
+
+        // Before normalized conflict IDs, the detector grouped raw values case-insensitively and
+        // hashed whichever raw spelling it encountered first. Enumerate both spellings so upgrade
+        // reconciliation is independent of projection load order; punctuation variants did not
+        // conflict in that detector and therefore have no legacy row to migrate.
+        var legacyIds = new HashSet<Guid>();
+        foreach (var left in first.Identifiers.Where(identifier => identifier.Kind == kind))
+        {
+            foreach (var right in second.Identifiers.Where(identifier => identifier.Kind == kind))
+            {
+                if (!string.Equals(left.Value, right.Value, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                legacyIds.Add(SecurityMasterConflictDetection.DeterministicConflictId(
+                    kind.ToString(), left.Value, firstSecurityId, secondSecurityId));
+                legacyIds.Add(SecurityMasterConflictDetection.DeterministicConflictId(
+                    kind.ToString(), right.Value, firstSecurityId, secondSecurityId));
+            }
+        }
+
+        legacyIds.Remove(conflict.ConflictId);
+        return legacyIds.Order().ToArray();
+    }
+
+    private async Task ReconcileLegacyIdentifierConflictIdAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityMasterConflict detected,
+        IReadOnlyList<Guid> legacyIds,
+        CancellationToken ct)
+    {
+        if (legacyIds.Count == 0)
+        {
+            return;
+        }
+
+        var rows = new List<SecurityMasterConflict>();
+        await using (var select = connection.CreateCommand())
+        {
+            select.Transaction = transaction;
+            select.CommandText =
+                $"""
+                select {ConflictColumns}
+                from {Qualified(ConflictsTable)}
+                where conflict_id = @canonical_id
+                   or conflict_id = any(@legacy_ids)
+                order by conflict_id
+                for update;
+                """;
+            select.Parameters.AddWithValue("canonical_id", detected.ConflictId);
+            select.Parameters.AddWithValue(
+                "legacy_ids",
+                NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid,
+                legacyIds.ToArray());
+            await using var reader = await select.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                rows.Add(MapConflict(reader));
+            }
+        }
+
+        var legacyRows = rows.Where(row => row.ConflictId != detected.ConflictId).ToArray();
+        if (legacyRows.Length == 0)
+        {
+            return;
+        }
+
+        var canonical = rows.FirstOrDefault(row => row.ConflictId == detected.ConflictId);
+        var authoritativeLegacy = legacyRows
+            .OrderByDescending(IsOperatorDecision)
+            .ThenByDescending(row => string.Equals(row.Status, "Open", StringComparison.Ordinal))
+            .ThenByDescending(row => row.ResolvedAt ?? row.DetectedAt)
+            .ThenBy(row => row.ConflictId)
+            .First();
+
+        if (canonical is null)
+        {
+            await using var migrate = connection.CreateCommand();
+            migrate.Transaction = transaction;
+            migrate.CommandText =
+                $"""
+                update {Qualified(ConflictsTable)}
+                set conflict_id = @canonical_id,
+                    security_id = @security_id,
+                    conflict_kind = @conflict_kind,
+                    field_path = @field_path,
+                    provider_a = @provider_a,
+                    value_a = @value_a,
+                    provider_b = @provider_b,
+                    value_b = @value_b
+                where conflict_id = @legacy_id;
+                """;
+            AddConflictIdentityParameters(migrate, detected);
+            migrate.Parameters.AddWithValue("legacy_id", authoritativeLegacy.ConflictId);
+            await migrate.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            canonical = authoritativeLegacy with { ConflictId = detected.ConflictId };
+        }
+        else if (IsOperatorDecision(authoritativeLegacy) && !IsOperatorDecision(canonical))
+        {
+            await using var inherit = connection.CreateCommand();
+            inherit.Transaction = transaction;
+            inherit.CommandText =
+                $"""
+                update {Qualified(ConflictsTable)}
+                set status = @status,
+                    resolved_winner_source = @winner,
+                    resolved_by = @resolved_by,
+                    resolved_reason = @resolved_reason,
+                    resolved_at = @resolved_at
+                where conflict_id = @canonical_id;
+                """;
+            inherit.Parameters.AddWithValue("canonical_id", detected.ConflictId);
+            inherit.Parameters.AddWithValue("status", authoritativeLegacy.Status);
+            inherit.Parameters.AddWithValue("winner", (object?)authoritativeLegacy.ResolvedWinnerSource ?? DBNull.Value);
+            inherit.Parameters.AddWithValue("resolved_by", (object?)authoritativeLegacy.ResolvedBy ?? DBNull.Value);
+            inherit.Parameters.AddWithValue("resolved_reason", (object?)authoritativeLegacy.ResolvedReason ?? DBNull.Value);
+            inherit.Parameters.AddWithValue("resolved_at", (object?)authoritativeLegacy.ResolvedAt?.UtcDateTime ?? DBNull.Value);
+            await inherit.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
+        var remainingLegacyIds = legacyRows
+            .Where(row => row.ConflictId != authoritativeLegacy.ConflictId || rows.Any(existing => existing.ConflictId == detected.ConflictId))
+            .Where(row => string.Equals(row.Status, "Open", StringComparison.Ordinal))
+            .Select(row => row.ConflictId)
+            .ToArray();
+        if (remainingLegacyIds.Length > 0)
+        {
+            await using var supersede = connection.CreateCommand();
+            supersede.Transaction = transaction;
+            supersede.CommandText =
+                $"""
+                update {Qualified(ConflictsTable)}
+                set status = 'Superseded',
+                    resolved_reason = @reason,
+                    resolved_at = @resolved_at
+                where conflict_id = any(@legacy_ids)
+                  and status = 'Open';
+                """;
+            supersede.Parameters.AddWithValue(
+                "reason",
+                $"Reconciled to normalized identifier conflict '{detected.ConflictId:D}'.");
+            supersede.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
+            supersede.Parameters.AddWithValue(
+                "legacy_ids",
+                NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid,
+                remainingLegacyIds);
+            await supersede.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+    }
+
+    private static bool IsOperatorDecision(SecurityMasterConflict conflict)
+        => string.Equals(conflict.Status, "Resolved", StringComparison.Ordinal)
+           || string.Equals(conflict.Status, "Dismissed", StringComparison.Ordinal);
+
+    private async Task AcquireIdentifierConflictLockAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "select pg_advisory_xact_lock(@lock_id);";
+        command.Parameters.AddWithValue("lock_id", IdentifierConflictAdvisoryLock);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<bool> UpsertDetectedIdentifierConflictAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityMasterConflict conflict,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(ConflictsTable)} (
+                conflict_id, security_id, conflict_kind, field_path,
+                provider_a, value_a, provider_b, value_b, detected_at, status,
+                resolved_winner_source, resolved_by, resolved_reason, resolved_at)
+            values (
+                @canonical_id, @security_id, @conflict_kind, @field_path,
+                @provider_a, @value_a, @provider_b, @value_b, @detected_at, 'Open',
+                null, null, null, null)
+            on conflict (conflict_id) do update
+            set security_id = excluded.security_id,
+                field_path = excluded.field_path,
+                provider_a = excluded.provider_a,
+                value_a = excluded.value_a,
+                provider_b = excluded.provider_b,
+                value_b = excluded.value_b,
+                detected_at = excluded.detected_at,
+                status = 'Open',
+                resolved_winner_source = null,
+                resolved_by = null,
+                resolved_reason = null,
+                resolved_at = null
+            where {Qualified(ConflictsTable)}.status = 'Superseded'
+              and {Qualified(ConflictsTable)}.conflict_kind = @conflict_kind
+              and {Qualified(ConflictsTable)}.resolved_reason = @detector_reason
+              and {Qualified(ConflictsTable)}.resolved_by is null
+              and {Qualified(ConflictsTable)}.resolved_winner_source is null;
+            """;
+        AddConflictIdentityParameters(command, conflict);
+        command.Parameters.AddWithValue("detected_at", conflict.DetectedAt.UtcDateTime);
+        command.Parameters.AddWithValue(
+            "detector_reason",
+            SecurityMasterConflictService.IdentifierNoLongerDetectedReason);
+        return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) > 0;
+    }
+
+    private static void AddConflictIdentityParameters(NpgsqlCommand command, SecurityMasterConflict conflict)
+    {
+        command.Parameters.AddWithValue("canonical_id", conflict.ConflictId);
+        command.Parameters.AddWithValue("security_id", conflict.SecurityId);
+        command.Parameters.AddWithValue("conflict_kind", conflict.ConflictKind);
+        command.Parameters.AddWithValue("field_path", conflict.FieldPath);
+        command.Parameters.AddWithValue("provider_a", conflict.ProviderA);
+        command.Parameters.AddWithValue("value_a", conflict.ValueA);
+        command.Parameters.AddWithValue("provider_b", conflict.ProviderB);
+        command.Parameters.AddWithValue("value_b", conflict.ValueB);
     }
 
     private async Task<bool> InsertIfAbsentAsync(

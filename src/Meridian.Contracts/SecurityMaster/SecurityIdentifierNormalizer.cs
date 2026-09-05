@@ -10,6 +10,28 @@ namespace Meridian.Contracts.SecurityMaster;
 /// </summary>
 public static class SecurityIdentifierNormalizer
 {
+    /// <summary>
+    /// Identifiers whose value is meaningful only inside the supplied provider namespace.
+    /// Provider distinguishes only ProviderSymbol identities, matching validation's duplicate
+    /// rules: on every other kind - tickers included, whose Provider carries the ingest feed
+    /// rather than a listing venue - Provider is provenance, so the same value claimed by
+    /// different feeds still collides.
+    /// </summary>
+    public static bool IsProviderScoped(SecurityIdentifierKind kind)
+        => kind is SecurityIdentifierKind.ProviderSymbol;
+
+    /// <summary>
+    /// Returns the normalized namespace that participates in identifier identity. Provider data on
+    /// canonical identifier kinds is provenance, not identity, and therefore returns an empty scope.
+    /// </summary>
+    public static string GetIdentityScope(SecurityIdentifierDto identifier)
+    {
+        ArgumentNullException.ThrowIfNull(identifier);
+        return IsProviderScoped(identifier.Kind)
+            ? GetOrComputeNormalizedProvider(identifier)
+            : string.Empty;
+    }
+
     public static string NormalizeValue(SecurityIdentifierKind kind, string? value)
     {
         var trimmed = NormalizeBasic(value);
