@@ -4,9 +4,9 @@ using Npgsql;
 namespace Meridian.Storage.SecurityMaster;
 
 /// <summary>
-/// Alias write paths. Split out of the main store file so the alias rules -- above all that
-/// created_at/created_by are immutable recording facts -- sit together rather than being read
-/// across a two-thousand-line class.
+/// Alias write paths. Alias rows are immutable recording facts: changing an existing row would
+/// rewrite every recorded-as-of projection that reads that row. Corrections therefore need a new,
+/// append-only alias revision rather than an in-place upsert.
 /// </summary>
 public sealed partial class PostgresSecurityMasterStore
 {
@@ -14,12 +14,10 @@ public sealed partial class PostgresSecurityMasterStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
-        // created_by/created_at are deliberately absent from the conflict update: they record WHEN and
-        // by WHOM the alias was first recorded, and correcting an alias must not restate that. As-of
-        // rebuilds retain aliases with created_at <= the cutoff, so advancing it on every edit would
-        // retroactively remove a corrected identifier from every view older than the correction.
-        // valid_from/valid_to remain mutable — those carry the alias's effective (business) time,
-        // which a correction legitimately restates.
+        // An alias is part of recorded-as-of state, but the current schema has no alias revision
+        // table. Permit an idempotent replay of the same alias ID and reject every material change;
+        // otherwise a correction made today would silently alter what an older as-of view reports.
+        // The no-op update is used only to return the existing creation facts atomically.
         command.CommandText =
             $"""
             insert into {Qualified("security_aliases")} (
@@ -29,17 +27,18 @@ public sealed partial class PostgresSecurityMasterStore
                 @alias_id, @security_id, @alias_kind, @alias_value, @normalized_alias_value, @provider, @normalized_provider, @scope, @reason,
                 @created_by, @created_at, @valid_from, @valid_to, @is_enabled)
             on conflict (alias_id) do update set
-                security_id = excluded.security_id,
-                alias_kind = excluded.alias_kind,
-                alias_value = excluded.alias_value,
-                normalized_alias_value = excluded.normalized_alias_value,
-                provider = excluded.provider,
-                normalized_provider = excluded.normalized_provider,
-                scope = excluded.scope,
-                reason = excluded.reason,
-                valid_from = excluded.valid_from,
-                valid_to = excluded.valid_to,
-                is_enabled = excluded.is_enabled
+                alias_id = excluded.alias_id
+            where security_aliases.security_id = excluded.security_id
+                and security_aliases.alias_kind = excluded.alias_kind
+                and security_aliases.alias_value = excluded.alias_value
+                and security_aliases.normalized_alias_value = excluded.normalized_alias_value
+                and security_aliases.provider is not distinct from excluded.provider
+                and security_aliases.normalized_provider is not distinct from excluded.normalized_provider
+                and security_aliases.scope = excluded.scope
+                and security_aliases.reason is not distinct from excluded.reason
+                and security_aliases.valid_from = excluded.valid_from
+                and security_aliases.valid_to is not distinct from excluded.valid_to
+                and security_aliases.is_enabled = excluded.is_enabled
             returning created_by, created_at;
             """;
 
@@ -61,11 +60,10 @@ public sealed partial class PostgresSecurityMasterStore
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            return null;
+            throw new SecurityAliasHistoryConflictException(alias.AliasId);
         }
 
-        // Echo the stored creation facts, which on an update are the ORIGINAL ones rather than the
-        // values just supplied.
+        // Echo the original creation facts when the write was an idempotent replay.
         return alias with
         {
             CreatedBy = reader.GetString(0),

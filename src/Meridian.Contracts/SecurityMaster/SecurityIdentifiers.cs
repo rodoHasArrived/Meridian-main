@@ -73,3 +73,21 @@ public sealed record SecurityAliasDto(
     DateTimeOffset ValidFrom,
     DateTimeOffset? ValidTo,
     bool IsEnabled);
+
+/// <summary>
+/// Raised when a request would mutate an existing alias row without an append-only alias revision.
+/// The current projection table is consumed by recorded-as-of reads, so an in-place correction
+/// would rewrite history and must be reported as a state conflict.
+/// </summary>
+public sealed class SecurityAliasHistoryConflictException : InvalidOperationException
+{
+    public SecurityAliasHistoryConflictException(Guid aliasId)
+        : base(
+            $"Alias '{aliasId}' already exists with different recorded facts. " +
+            "In-place replacement or retirement is unavailable until append-only alias revisions are implemented.")
+    {
+        AliasId = aliasId;
+    }
+
+    public Guid AliasId { get; }
+}
