@@ -43,10 +43,11 @@ risks that compound as new asset classes land.
 > 2026-09-01 pass's P4 row). The architectural assessment below is unaffected.
 >
 > **Update 2026-09-01, mapped onto the four.** P5 is closed and verified — a
-> `RolePermissions`-backed mutation gate now covers all five in-process golden-record commands. The
-> legacy PATCH bypass (P1) was closed on 2026-08-29. P3b is narrowed, not resolved: the creation
-> fields are frozen, the history problem stands. P4's clause splits three ways: on the CSV
-> import and Polygon CLI paths, ordinary validation failures are no longer misreported as skips
+> `RolePermissions`-backed mutation gate now covers all five in-process golden-record commands. One
+> P1 item — the legacy PATCH bypass — was closed on 2026-08-29; P1 itself stays open on its
+> actor-source rows (the open table in the 2026-09-01 pass). P3b is narrowed, not resolved: the
+> creation fields are frozen, the history problem stands. P4's clause splits three ways: on the
+> CSV import and Polygon CLI paths, ordinary validation failures are no longer misreported as skips
 > (the substring classifier is gone, so they count `Failed`) — EDGAR still counts every
 > non-duplicate failure as a skip, its result having no failed counter; a reused `SecurityId`
 > with different terms still is — the typed classifier treats every version-0 stream conflict and
@@ -3123,11 +3124,11 @@ tracked there.
 catches.** The 2026-08-29 status section listed this half as "not re-verified, and therefore
 unknown". Every site it named is now verified at `5b901dda` (the fixes landed before `eaa83032`;
 no commit in this range touches these files, so the verification is of standing code, not of new
-work) — but only the sites below verified *fixed*. An earlier version of this heading said "ingest
-side — closed", which sweeps in the Polygon page fetch: that path feeds the CLI ingest, and this
-same pass re-verifies it as open in the table below. Scoping a closure by lane rather than by the
-sites actually checked is the over-generalisation this document keeps catching; the closed set is
-exactly these:
+work) — but only the sites below are verified as *fixed*. An earlier version of this heading said
+"ingest side — closed", which sweeps in the Polygon page fetch: that path feeds the CLI ingest,
+and this same pass re-verifies it as open in the table below. Scoping a closure by lane rather
+than by the sites actually checked is the over-generalisation this document keeps catching; the
+closed set is exactly these:
 
 - All three create loops rethrow cancellation **before** classifying:
   `SecurityMasterImportService.cs:183-188`, the Polygon CLI at
