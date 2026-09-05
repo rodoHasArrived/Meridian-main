@@ -304,7 +304,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
-  valuation evidence. The compatibility factor bridge delegates economics to Instruments, requires
+  valuation evidence. `SecurityMasterConflictService` replaces line and control delimiters in
+  human-readable resolver logs with spaces while preserving the stored audit identity.
+  The compatibility factor bridge delegates economics to Instruments, requires
   held face, and posts scaled monetary principal rather than a dimensionless factor delta. It remains
   an in-memory reconciliation bridge; governed production posting still uses the Financial
   Operations candidate, independent approval, and durable journal path. Asset-class mapping,

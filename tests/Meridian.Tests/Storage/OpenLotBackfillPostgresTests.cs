@@ -71,6 +71,44 @@ public sealed class OpenLotBackfillPostgresTests
     }
 
     [LedgerDatabaseFact]
+    public async Task CallerEvidenceVersions_CannotSkipRetainedReviewOrMutateBeforeCurrentVersionIsSupplied()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var legacy = await SeedAsync(database);
+        var facts = OpenLotBackfillReconciliationTests.Facts(legacy);
+        var store = Store(database, facts);
+        var exception = (await store.SurveyAsync(legacy.LedgerBookId)).Single();
+        var evidence = await store.RetainEvidenceAsync(Retention(facts));
+
+        foreach (var version in new[] { 0L, 2L, long.MaxValue })
+        {
+            var review = () => store.ReviewEvidenceAsync(Review(evidence) with { ExpectedVersion = version });
+            await review.Should().ThrowAsync<LedgerValidationException>().WithMessage("*review version is stale*");
+        }
+
+        (await store.GetEvidenceAsync(legacy.LedgerBookId, evidence.EvidenceRecordId)).Should().BeEquivalentTo(evidence);
+        var request = Apply(legacy, exception, evidence);
+        var skipReview = () => store.ApplyAsync(request with { ExpectedEvidenceVersion = evidence.Version });
+        await skipReview.Should().ThrowAsync<LedgerValidationException>().WithMessage("*not been reviewed*");
+
+        await store.ReviewEvidenceAsync(Review(evidence));
+        var reviewed = await store.GetEvidenceAsync(legacy.LedgerBookId, evidence.EvidenceRecordId);
+        foreach (var version in new[] { 0L, 1L, 3L, long.MaxValue })
+        {
+            var apply = () => store.ApplyAsync(request with { ExpectedEvidenceVersion = version });
+            await apply.Should().ThrowAsync<LedgerValidationException>().WithMessage("*evidence version is stale*");
+        }
+
+        (await store.GetEvidenceAsync(legacy.LedgerBookId, evidence.EvidenceRecordId)).Should().BeEquivalentTo(reviewed);
+        (await store.GetTaxLotsByIdsAsync(legacy.LedgerBookId, [legacy.TaxLotRecordId])).Single().Should().BeEquivalentTo(legacy);
+        (await store.ListExceptionsAsync(legacy.LedgerBookId)).Should().ContainSingle().Which.Should().BeEquivalentTo(exception);
+
+        var receipt = await store.ApplyAsync(request);
+        receipt.ResultingLotVersion.Should().Be(legacy.Version + 1);
+        (await store.ListExceptionsAsync(legacy.LedgerBookId)).Should().BeEmpty();
+    }
+
+    [LedgerDatabaseFact]
     public async Task StaleLotAndReferenceVersions_BlockUntilCurrentSourceIsReviewedAndExceptionRefreshed()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();

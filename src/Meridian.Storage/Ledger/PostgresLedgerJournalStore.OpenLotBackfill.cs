@@ -167,7 +167,7 @@ public sealed partial class PostgresLedgerJournalStore
         };
         if (request.Accepted)
         {
-            await ValidateBackfillAuthorityAsync(reviewed.Facts, currency, ct).ConfigureAwait(false);
+            await ValidateBackfillReferenceDataAsync(reviewed.Facts, currency, ct).ConfigureAwait(false);
             var lot = await LoadBackfillLotAsync(connection, transaction, request.LedgerBookId, evidence.TaxLotRecordId, ct).ConfigureAwait(false);
             _ = OpenLotBackfillRules.Enrich(lot, reviewed);
         }
@@ -216,7 +216,7 @@ public sealed partial class PostgresLedgerJournalStore
             ?? throw new LedgerValidationException("Retained acquisition evidence was not found in this ledger book.");
         if (evidence.Version != request.ExpectedEvidenceVersion || request.ExpectedEvidenceVersion != 2)
             throw new LedgerValidationException("Reviewed acquisition evidence version is stale or has not been reviewed.");
-        await ValidateBackfillAuthorityAsync(evidence.Facts, currency, ct).ConfigureAwait(false);
+        await ValidateBackfillReferenceDataAsync(evidence.Facts, currency, ct).ConfigureAwait(false);
         var lot = await LoadBackfillLotAsync(connection, transaction, request.LedgerBookId, request.TaxLotRecordId, ct).ConfigureAwait(false);
         if (request.ExpectedLotVersion <= 0 || lot.Version != request.ExpectedLotVersion)
             throw new LedgerValidationException("Legacy lot version is stale; refresh the exception and review the changed lot.");
@@ -370,7 +370,11 @@ public sealed partial class PostgresLedgerJournalStore
             reviewed ? reader.GetString(13) : null);
     }
 
-    private async Task ValidateBackfillAuthorityAsync(OpenLotBackfillFactsDto facts, string functionalCurrency, CancellationToken ct)
+    /// <summary>
+    /// Reconciles retained instrument and book-position identities, versions, acquisition scope,
+    /// and functional currency against the current Security Master and ledger reference data.
+    /// </summary>
+    private async Task ValidateBackfillReferenceDataAsync(OpenLotBackfillFactsDto facts, string functionalCurrency, CancellationToken ct)
     {
         var securityMaster = _backfillSecurityMaster?.Invoke();
         var positions = _backfillPositions?.Invoke();
