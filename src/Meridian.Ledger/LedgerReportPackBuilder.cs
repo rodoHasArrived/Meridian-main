@@ -44,6 +44,26 @@ public static class LedgerReportPackBuilder
         var provenance = BuildLineProvenance(ledger, request, statements, financialAccountId);
         artifacts.Add(CreateLineProvenanceArtifact(provenance));
 
+        var canonicalEvidence = (taxLotReliefProjections ?? [])
+            .Where(static projection => projection.CanonicalOpenLots.Count > 0)
+            .OrderBy(static projection => projection.Input.SaleDate)
+            .ThenBy(static projection => projection.Input.Account.Name, StringComparer.Ordinal)
+            .Select(static projection => new
+            {
+                projection.Input.SaleDate,
+                projection.Input.ReliefMethod,
+                Lots = projection.CanonicalOpenLots.OrderBy(static lot => lot.TaxLotRecordId).ToArray(),
+                projection.Selections,
+                projection.CostBasis,
+                projection.RecognizedGainOrLoss
+            }).ToArray();
+        if (canonicalEvidence.Length > 0)
+        {
+            var content = JsonSerializer.Serialize(canonicalEvidence);
+            artifacts.Add(new LedgerReportPackArtifact("canonical-open-lot-evidence.json", "application/json",
+                content, Sha256Digest.ComputeUtf8(content)));
+        }
+
         artifacts.Add(CreateManifestArtifact(request, statements, artifacts));
 
         var payload = string.Join(

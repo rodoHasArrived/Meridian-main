@@ -1,5 +1,6 @@
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React from "react";
+import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -166,6 +167,7 @@ const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; descript
 
 function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
   return [
+    { id: "mark-readiness", label: "Mark readiness", render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
     {
       id: "symbol",
       label: "Symbol",
@@ -194,7 +196,7 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
     },
     {
       id: "mark",
-      label: "Mark",
+      label: "Recorded mark",
       align: "right",
       className: "font-mono text-muted-foreground",
       render: (position) => position.markPrice

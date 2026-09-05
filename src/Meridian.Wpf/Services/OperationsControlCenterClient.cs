@@ -22,6 +22,9 @@ public interface IOperationsControlCenterClient
     /// not exist or the workstation API call failed.
     /// </summary>
     Task<OperationsContinuityWorkflowDto?> GetWorkflowAsync(Guid workflowId, CancellationToken ct = default);
+
+    Task<FinancialOperationsCommandCenterDto?> GetCloseReadinessAsync(CloseReadinessScopeDto scope, CancellationToken ct = default)
+        => Task.FromResult<FinancialOperationsCommandCenterDto?>(null);
 }
 
 public sealed class OperationsControlCenterClient : IOperationsControlCenterClient
@@ -52,4 +55,11 @@ public sealed class OperationsControlCenterClient : IOperationsControlCenterClie
         => (await _apiClient.GetWithResponseAsync<OperationsContinuityWorkflowDto>(
             $"{UiApiRoutes.OperationsContinuity}/{workflowId:D}",
             ct).ConfigureAwait(false)).DataOrLoggedNull("Get operations continuity workflow");
+
+    public async Task<FinancialOperationsCommandCenterDto?> GetCloseReadinessAsync(CloseReadinessScopeDto scope, CancellationToken ct = default)
+    {
+        var query = $"fundProfileId={Uri.EscapeDataString(scope.FundProfileId ?? string.Empty)}&ledgerBookId={scope.LedgerBookId:D}&fundAccountId={scope.FundAccountId:D}&periodId={Uri.EscapeDataString(scope.PeriodId ?? string.Empty)}&entityId={Uri.EscapeDataString(scope.EntityId ?? string.Empty)}";
+        return (await _apiClient.GetWithResponseAsync<FinancialOperationsCommandCenterDto>(
+            $"{UiApiRoutes.FinancialOperationsCommandCenter}?{query}", ct).ConfigureAwait(false)).DataOrLoggedNull("Get shared close readiness");
+    }
 }

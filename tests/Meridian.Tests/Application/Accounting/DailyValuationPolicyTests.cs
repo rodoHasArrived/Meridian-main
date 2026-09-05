@@ -58,13 +58,14 @@ public sealed class DailyValuationPolicyTests
     }
 
     [Fact]
-    public void StalePricePolicy_FuturePrice_IsFreshWithZeroAge()
+    public void StalePricePolicy_FuturePrice_BlocksWithoutClampingAge()
     {
         var policy = StalePricePolicy.Of(3, StalePriceHandling.Block);
         var assessment = policy.Assess(new DateOnly(2026, 7, 10), AsOfDate);
 
-        assessment.IsStale.Should().BeFalse();
-        assessment.AgeDays.Should().Be(0);
+        assessment.IsStale.Should().BeTrue();
+        assessment.AgeDays.Should().Be(-7);
+        assessment.Handling.Should().Be(StalePriceHandling.Block);
     }
 
     [Fact]
@@ -138,7 +139,7 @@ public sealed class DailyValuationPolicyTests
     // -------------------------------------------------------------------------
 
     [Fact]
-    public async Task PrepareAsync_BlockPolicy_ExcludesStaleMarkAndReportsIt()
+    public async Task PrepareAsync_BlockPolicy_BlocksCompleteValuationAndReportsOffendingMark()
     {
         var prices = new DatedPriceSource()
             .Add("AAPL", 160m, new DateOnly(2026, 7, 3))  // fresh, moves +1,000
@@ -155,12 +156,13 @@ public sealed class DailyValuationPolicyTests
             "ops", "daily"));
 
         run.StalePricedSymbols.Should().Equal("MSFT");
-        run.Projection!.Lines.Should().ContainSingle(line => line.Symbol == "AAPL");
-        run.Projection.Lines.Should().NotContain(line => line.Symbol == "MSFT");
+        run.IsBlocked.Should().BeTrue();
+        run.Approvals.Should().BeEmpty();
+        run.MarkFreshness.Should().Contain(mark => mark.Symbol == "MSFT" && mark.Status == "ReviewRequired");
     }
 
     [Fact]
-    public async Task PrepareAsync_FlagPolicy_IncludesStaleMarkFlaggedAndReportsIt()
+    public async Task PrepareAsync_LegacyFlagPolicy_CannotAdmitStaleMarks()
     {
         var prices = new DatedPriceSource().Add("MSFT", 190m, new DateOnly(2026, 6, 1));
         var service = new DailyMarkToMarketService(prices);
@@ -172,11 +174,12 @@ public sealed class DailyValuationPolicyTests
             "ops", "daily"));
 
         run.StalePricedSymbols.Should().Equal("MSFT");
-        run.Projection!.Lines.Should().ContainSingle(line => line.Symbol == "MSFT" && line.IsStalePriced);
+        run.IsBlocked.Should().BeTrue();
+        run.Approvals.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task PrepareAsync_AllowPolicy_IncludesStaleMarkSilently()
+    public async Task PrepareAsync_LegacyAllowPolicy_CannotAdmitStaleMarks()
     {
         var prices = new DatedPriceSource().Add("MSFT", 190m, new DateOnly(2026, 6, 1));
         var service = new DailyMarkToMarketService(prices);
@@ -187,8 +190,8 @@ public sealed class DailyValuationPolicyTests
             [new MarkToMarketPosition("MSFT", 50m, 200m)],
             "ops", "daily"));
 
-        run.StalePricedSymbols.Should().BeEmpty();
-        run.Projection!.Lines.Should().ContainSingle(line => line.Symbol == "MSFT" && !line.IsStalePriced);
+        run.StalePricedSymbols.Should().Equal("MSFT");
+        run.IsBlocked.Should().BeTrue();
     }
 
     [Fact]

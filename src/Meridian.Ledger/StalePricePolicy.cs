@@ -18,9 +18,10 @@ public enum StalePriceHandling
 /// <summary>
 /// Freshness policy for daily marks. When enabled, a price whose observation date is more than
 /// <see cref="MaxAgeDays"/> days before the valuation date is considered stale and treated per
-/// <see cref="Handling"/>. Disabled by default so existing valuation runs are unaffected.
+/// <see cref="Handling"/>. This compatibility assessment is normalized by the governed
+/// <see cref="ValuationFreshnessPolicy"/>; allow/flag/disabled modes cannot admit unsupported valuations.
 /// </summary>
-/// <param name="Enabled">When false, no staleness assessment is performed and every mark is fresh.</param>
+/// <param name="Enabled">When false, this compatibility assessment ignores age, but still rejects future observations.</param>
 /// <param name="MaxAgeDays">Maximum permitted age, in days, of a price relative to the valuation date.</param>
 /// <param name="Handling">Action taken when a mark is stale.</param>
 public sealed record StalePricePolicy(bool Enabled, int MaxAgeDays, StalePriceHandling Handling)
@@ -42,14 +43,15 @@ public sealed record StalePricePolicy(bool Enabled, int MaxAgeDays, StalePriceHa
 
     /// <summary>
     /// Assesses a price observed on <paramref name="priceAsOf"/> against a <paramref name="valuationDate"/>.
-    /// Prices dated on or after the valuation date are never stale.
+    /// A future observation always blocks because it was not observable at valuation time.
     /// </summary>
     public StalePriceAssessment Assess(DateOnly priceAsOf, DateOnly valuationDate)
     {
+        var ageDays = valuationDate.DayNumber - priceAsOf.DayNumber;
+        if (ageDays < 0)
+            return new StalePriceAssessment(true, ageDays, StalePriceHandling.Block);
         if (!Enabled)
             return StalePriceAssessment.Fresh;
-
-        var ageDays = valuationDate.DayNumber - priceAsOf.DayNumber;
         if (ageDays <= MaxAgeDays)
             return new StalePriceAssessment(false, Math.Max(0, ageDays), StalePriceHandling.Allow);
 
@@ -59,7 +61,7 @@ public sealed record StalePricePolicy(bool Enabled, int MaxAgeDays, StalePriceHa
 
 /// <summary>Result of assessing a mark's freshness against a <see cref="StalePricePolicy"/>.</summary>
 /// <param name="IsStale">True when the price exceeded the permitted age.</param>
-/// <param name="AgeDays">Age of the price in days (never negative).</param>
+/// <param name="AgeDays">Signed age of the price in days; negative means a future observation.</param>
 /// <param name="Handling">The action to take: <see cref="StalePriceHandling.Allow"/> when fresh.</param>
 public sealed record StalePriceAssessment(bool IsStale, int AgeDays, StalePriceHandling Handling)
 {

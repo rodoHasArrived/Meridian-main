@@ -1660,12 +1660,10 @@ public sealed class FundLedgerViewModelTests
                     row.StatusLabel == "Review Required" &&
                     row.TimingLabel == "1 open break" &&
                     row.SourceTarget == "FundReconciliation");
-                viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
+                viewModel.FinancialOperationsQueueItems.Should().NotContain(row =>
                     row.KindLabel == "Evidence package" &&
-                    row.Label == "Period lock and reopen evidence" &&
-                    row.StatusLabel == "Missing" &&
-                    row.SourceTarget == "OperationsContinuity" &&
-                    row.IsBlocked);
+                    row.Label == "Period lock and reopen evidence",
+                    "post-close output evidence remains visible in history but is not required for this open workflow");
                 viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
                     row.KindLabel == "Private-capital close" &&
                     row.Label == "Partner capital tie-out" &&
@@ -1744,6 +1742,29 @@ public sealed class FundLedgerViewModelTests
                 closeCockpitService.RequestedPeriodId.Should().Be("2026-06");
                 closeCockpitService.RequestedEntityId.Should().Be("entity-alpha");
                 viewModel.PrivateCapitalCloseLanes.Should().NotBeEmpty("the exact close cockpit must not disappear on refresh");
+
+                var retainedCockpit = BuildPrivateCapitalCloseCockpit();
+                closeCockpitService.Cockpit = retainedCockpit with
+                {
+                    ApprovalHistory = [.. retainedCockpit.ApprovalHistory,
+                        retainedCockpit.ApprovalHistory[0] with
+                        {
+                            ApprovalId = "historical-rejection", Status = OperationsApprovalStateDto.Rejected,
+                            IsCurrentDecision = false
+                        }],
+                    EvidencePackages = [.. retainedCockpit.EvidencePackages,
+                        retainedCockpit.EvidencePackages[0] with
+                        {
+                            PackageId = "optional-close-output", Status = EvidenceStatusDto.Missing,
+                            IsReady = false, RequiredForClose = false
+                        }]
+                };
+                await viewModel.LoadAsync();
+                viewModel.FinancialOperationsQueueItems.Should().NotContain(row =>
+                    row.QueueId == "private-capital-approval:historical-rejection" ||
+                    row.QueueId == "private-capital-package:optional-close-output");
+                viewModel.PrivateCapitalCloseApprovals.Should().Contain(row => row.ApprovalId == "historical-rejection");
+                viewModel.PrivateCapitalEvidencePackages.Should().Contain(row => row.PackageId == "optional-close-output");
             }
             finally
             {
@@ -2322,11 +2343,11 @@ public sealed class FundLedgerViewModelTests
 
     private sealed class StubPrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
     {
-        private readonly PrivateCapitalCloseCockpitDto _cockpit;
+        public PrivateCapitalCloseCockpitDto Cockpit { get; set; }
 
         public StubPrivateCapitalCloseCockpitService(PrivateCapitalCloseCockpitDto cockpit)
         {
-            _cockpit = cockpit;
+            Cockpit = cockpit;
         }
 
         public string? RequestedFundProfileId { get; private set; }
@@ -2375,7 +2396,7 @@ public sealed class FundLedgerViewModelTests
             RequestedEntityId = entityId;
             RequestedTenantId = tenantId;
             RequestedCompanyId = companyId;
-            return Task.FromResult(_cockpit);
+            return Task.FromResult(Cockpit);
         }
     }
 

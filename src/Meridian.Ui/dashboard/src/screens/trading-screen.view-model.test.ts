@@ -443,7 +443,7 @@ describe("trading blotter view model", () => {
     });
     expect(state.selectedPosition).toEqual(expect.objectContaining({
       title: "TSLA",
-      statusLabel: "Observe",
+      statusLabel: "Review required",
       statusTone: "warning",
       ariaLabel: "Position detail for TSLA"
     }));

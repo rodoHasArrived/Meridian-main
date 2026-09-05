@@ -1466,6 +1466,7 @@ export interface OperationsDashboardSummary {
 }
 
 export interface OperationsEvidencePackageSummary {
+  requiredForClose?: boolean;
   packageId: string;
   label: string;
   status: EvidenceStatus;
