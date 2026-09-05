@@ -6,6 +6,7 @@ import { useLocation } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
+import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
@@ -3406,6 +3407,10 @@ describe("AccountingScreen", () => {
     expect(configureButton).toBeEnabled();
     expect(runDueButton).toBeEnabled();
 
+    vi.spyOn(markFreshnessApi, "previewValuationMarks").mockResolvedValue({ policyVersion: "daily-close-policy", assessedPositionCount: 1, blockedPositionCount: 0, affectedValuationCount: 0, positions: [], evaluatedAtUtc: currentSchedule.nextRunAtUtc });
+    await user.click(screen.getByRole("button", { name: "Preview mark impact" }));
+    await screen.findByText(/0 of 1 positions require review/);
+
     await user.click(configureButton);
 
     expect(await within(commandCenter).findByText(`Configured daily valuation schedule daily-fund-alpha for ${currentSchedule.nextRunAtUtc}.`)).toBeInTheDocument();
@@ -3421,6 +3426,8 @@ describe("AccountingScreen", () => {
       actor: "close-cockpit-operator"
     }));
 
+    await user.click(screen.getByRole("button", { name: "Preview mark impact" }));
+    await screen.findByText(/0 of 1 positions require review/);
     await user.click(within(commandCenter).getByRole("button", {
       name: "Run due daily valuation schedules for the current tenant scope"
     }));
@@ -3479,8 +3486,8 @@ describe("AccountingScreen", () => {
       ledgerBookId: undefined,
       periodId: "2026-05",
       status: undefined
-    });
-    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+    }, expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1", expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
   });
 
   it("scopes the close command center workflow lookup to route ledger book", async () => {
@@ -3503,8 +3510,8 @@ describe("AccountingScreen", () => {
       ledgerBookId: "book-alpha",
       periodId: "2026-05",
       status: undefined
-    });
-    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+    }, expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1", expect.objectContaining({ signal: expect.any(AbortSignal), allowDevelopmentFallback: false }));
   });
 
   it("renders the close cockpit landing with focused accounting task modes", async () => {

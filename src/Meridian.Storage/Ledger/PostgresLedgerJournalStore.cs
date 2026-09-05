@@ -13,6 +13,7 @@ namespace Meridian.Storage.Ledger;
 public sealed partial class PostgresLedgerJournalStore :
     ITransactionalLedgerJournalStore,
     IAtomicTaxLotJournalStore,
+    Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore,
     ILedgerPostingIdentityCollisionLookup
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
@@ -27,16 +28,23 @@ public sealed partial class PostgresLedgerJournalStore :
     // W9-GOV-008 criterion 2: how strictly to enforce that scope. Defaults to the deployment-boundary
     // posture so existing construction sites keep their behaviour; the host injects the configured one.
     private readonly TenantScopeEnforcementOptions _tenantScope;
+    // Deferred because the asset projection store itself consumes the ledger journal interface.
+    private readonly Func<Meridian.Storage.SecurityMaster.ISecurityMasterStore?>? _backfillSecurityMaster;
+    private readonly Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? _backfillPositions;
 
     public PostgresLedgerJournalStore(
         LedgerJournalStoreOptions options,
         IFundScopeTenantAccessor? tenantAccessor = null,
-        TenantScopeEnforcementOptions? tenantScope = null)
+        TenantScopeEnforcementOptions? tenantScope = null,
+        Func<Meridian.Storage.SecurityMaster.ISecurityMasterStore?>? backfillSecurityMaster = null,
+        Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? backfillPositions = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         _options = options;
         _tenantAccessor = tenantAccessor;
         _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
+        _backfillSecurityMaster = backfillSecurityMaster;
+        _backfillPositions = backfillPositions;
     }
 
     // SEC-005 slice 4c-ii: the caller's tenant for the current ambient scope, or null (fail-open).

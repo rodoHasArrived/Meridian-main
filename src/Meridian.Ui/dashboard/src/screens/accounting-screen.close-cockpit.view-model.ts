@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { accountingCloseReadinessBlockReason, accountingCloseScopeKey } from "./accounting-screen.close-scope";
+import type { CloseWorkflowQuery } from "./accounting-screen.close-sources";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   buildLedgerAccountingReportPackage,
   certifyLedgerAccountingReportPackage,
@@ -86,6 +88,7 @@ import type {
   CloseCalendarMilestone,
   ClosePeriodPlan,
   ClosePostingGateState,
+  FinancialOperationsCommandCenter,
   LateAdjustmentRequest,
   LedgerDimensionSet,
   LockClosePeriodRequest,
@@ -112,10 +115,27 @@ const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageS
 
 export function useAccountingCloseReportPackageViewModel(
   workflow: OperationsContinuityWorkflow | null,
-  services: AccountingCloseReportPackageServices = defaultAccountingCloseReportPackageServices
+  services: AccountingCloseReportPackageServices = defaultAccountingCloseReportPackageServices,
+  commandCenter: FinancialOperationsCommandCenter | null = null,
+  selectedScope: CloseWorkflowQuery | null = null
 ): AccountingCloseReportPackageViewModel {
-  const [closePlan, setClosePlan] = useState<ClosePeriodPlan | null>(null);
-  const [packages, setPackages] = useState<AccountingReportPackageBundle[]>([]);
+  const scopeKey = accountingCloseScopeKey(selectedScope);
+  const contextKey = JSON.stringify([scopeKey, workflow?.workflowId, workflow?.version]);
+  const currentContext = useRef(contextKey);
+  currentContext.current = contextKey;
+  const refreshRevision = useRef(0);
+  const sharedCloseBlockReason = accountingCloseReadinessBlockReason(workflow, commandCenter, selectedScope);
+  const [loadedContextKey, setLoadedContextKey] = useState<string | null>(null);
+  const [closePlanState, setClosePlanState] = useState<ClosePeriodPlan | null>(null);
+  const [packagesState, setPackagesState] = useState<AccountingReportPackageBundle[]>([]);
+  const closePlan = loadedContextKey === contextKey ? closePlanState : null;
+  const packages = loadedContextKey === contextKey ? packagesState : [];
+  const setClosePlan: typeof setClosePlanState = useCallback(value => {
+    if (currentContext.current === contextKey) setClosePlanState(value);
+  }, [contextKey]);
+  const setPackages: typeof setPackagesState = useCallback(value => {
+    if (currentContext.current === contextKey) setPackagesState(value);
+  }, [contextKey]);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -156,6 +176,9 @@ export function useAccountingCloseReportPackageViewModel(
   const [exportManifest, setExportManifest] = useState<ReportExportArtifactManifest | null>(null);
 
   const refresh = useCallback(async () => {
+    if (currentContext.current !== contextKey) return;
+    const requestRevision = ++refreshRevision.current;
+    const isCurrent = () => currentContext.current === contextKey && refreshRevision.current === requestRevision;
     if (!workflow) {
       setClosePlan(null);
       setPackages([]);
@@ -164,14 +187,20 @@ export function useAccountingCloseReportPackageViewModel(
     }
 
     setLoading(true);
+    setLoadedContextKey(null);
+    setClosePlan(null);
+    setPackages([]);
     setErrorText(null);
     try {
       const nextClosePlan = await services.getClosePlan(workflow.workflowId);
+      if (!isCurrent()) return;
       const nextPackages = await services.listPackages({
         fundProfileId: nextClosePlan.fundProfileId || workflow.fundAccountId,
         periodId: nextClosePlan.periodId || workflow.periodId,
         ledgerBookId: nextClosePlan.ledgerBookId ?? null
       });
+      if (!isCurrent()) return;
+      setLoadedContextKey(contextKey);
       setClosePlan(nextClosePlan);
       setPackages(nextPackages);
       setSelectedPackageId((current) => {
@@ -184,19 +213,20 @@ export function useAccountingCloseReportPackageViewModel(
       setCloseSetupDraft(createAccountingCloseSetupDraft(nextClosePlan));
       setCloseSignOffDraft(createAccountingCloseSignOffDraft(nextClosePlan));
     } catch (error) {
-      setErrorText(formatAccountingWorkflowError(error, "Close/report package detail could not be loaded."));
+      if (isCurrent()) setErrorText(formatAccountingWorkflowError(error, "Close/report package detail could not be loaded."));
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
-  }, [services, workflow]);
+  }, [contextKey, services, setClosePlan, setPackages, workflow]);
 
   useEffect(() => {
     void refresh();
+    return () => { ++refreshRevision.current; };
   }, [refresh]);
 
   useEffect(() => {
     setLockClosePeriodArmed(false);
-  }, [closePlan?.closePlanId, closePlan?.isPeriodLocked, workflow?.workflowId]);
+  }, [closePlan?.closePlanId, closePlan?.isPeriodLocked, contextKey]);
 
   const buildReportPackage = useCallback(async () => {
     if (!workflow) {
@@ -393,6 +423,13 @@ export function useAccountingCloseReportPackageViewModel(
       return;
     }
 
+    if (sharedCloseBlockReason) {
+      setLockClosePeriodArmed(false);
+      setLockClosePeriodStatusText(sharedCloseBlockReason);
+      setLockClosePeriodStatusTone("danger");
+      return;
+    }
+
     if (!lockClosePeriodArmed) {
       setLockClosePeriodArmed(true);
       setLockClosePeriodStatusText(`Locking close period ${closePlan.periodId} blocks further posting until a governed reopen. Select Confirm lock period to proceed.`);
@@ -407,7 +444,7 @@ export function useAccountingCloseReportPackageViewModel(
     setLockClosePeriodStatusTone("neutral");
     try {
       const result = await services.lockClosePeriod(
-        buildClosePeriodLockRequest(workflow, closePlan, selectedBundle, false)
+        { ...buildClosePeriodLockRequest(workflow, closePlan, selectedBundle, false), closeScope: commandCenter?.closeReadiness?.scope }
       );
       if (result.plan) {
         setClosePlan(result.plan);
@@ -433,7 +470,7 @@ export function useAccountingCloseReportPackageViewModel(
     } finally {
       setLockClosePeriodBusy(false);
     }
-  }, [closePlan, lockClosePeriodArmed, packages, selectedPackageId, services, workflow]);
+  }, [closePlan, commandCenter, lockClosePeriodArmed, packages, selectedPackageId, services, sharedCloseBlockReason, workflow]);
 
   const configureClosePlan = useCallback(async () => {
     if (!workflow || !closePlan) {
@@ -768,6 +805,7 @@ export function useAccountingCloseReportPackageViewModel(
       lockClosePeriodStatusText,
       lockClosePeriodStatusTone,
       lockClosePeriodArmed,
+      sharedCloseBlockReason,
       queueClosingEntriesBusy,
       queueClosingEntriesStatusText,
       queueClosingEntriesStatusTone,
@@ -824,6 +862,7 @@ export function useAccountingCloseReportPackageViewModel(
       closePlan,
       lockClosePeriod,
       lockClosePeriodArmed,
+      sharedCloseBlockReason,
       lockClosePeriodBusy,
       lockClosePeriodStatusText,
       lockClosePeriodStatusTone,
@@ -1123,6 +1162,7 @@ function buildAccountingCloseReportPackageViewState({
   lockClosePeriodStatusText,
   lockClosePeriodStatusTone,
   lockClosePeriodArmed,
+  sharedCloseBlockReason,
   queueClosingEntriesBusy,
   queueClosingEntriesStatusText,
   queueClosingEntriesStatusTone,
@@ -1186,6 +1226,7 @@ function buildAccountingCloseReportPackageViewState({
   lockClosePeriodStatusText: string | null;
   lockClosePeriodStatusTone: "neutral" | "success" | "danger";
   lockClosePeriodArmed: boolean;
+  sharedCloseBlockReason: string | null;
   queueClosingEntriesBusy: boolean;
   queueClosingEntriesStatusText: string | null;
   queueClosingEntriesStatusTone: "neutral" | "success" | "danger";
@@ -1345,6 +1386,8 @@ function buildAccountingCloseReportPackageViewState({
         ? "The close period is already locked."
         : closingEntriesLockDisabledReason
           ? closingEntriesLockDisabledReason
+          : sharedCloseBlockReason
+            ? sharedCloseBlockReason
           : !selectedBundle
             ? "A report package must be built before locking the period."
             : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy

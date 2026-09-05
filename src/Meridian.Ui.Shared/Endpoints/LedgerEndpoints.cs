@@ -1724,6 +1724,7 @@ public static partial class LedgerEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         MapJournalAutomationEndpoints(app, jsonOptions);
+        MapOpenLotBackfillEndpoints(app, jsonOptions);
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryEvidence, async (AttachManualJournalEntryEvidenceRequest request, HttpContext context) =>
         {
