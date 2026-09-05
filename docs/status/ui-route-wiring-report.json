@@ -2764,7 +2764,7 @@
         "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": true

@@ -24,10 +24,10 @@ its reason rather than dropped.
 | Metric | Count |
 | --- | ---: |
 | Mapped backend routes (path + verb) | 1178 |
-| Wired — called by a dashboard module | 504 |
+| Wired — called by a dashboard module | 505 |
 | Registry-only — declared in the endpoint registry, no caller | 96 |
-| Unwired — no dashboard reference at all | 578 |
-| Actionable (unwired or registry-only, not excluded by design) | 622 |
+| Unwired — no dashboard reference at all | 577 |
+| Actionable (unwired or registry-only, not excluded by design) | 621 |
 | Excluded by design (probes, webhooks, tombstones, desktop-only) | 52 |
 
 ## Actionable routes
@@ -356,23 +356,6 @@ its reason rather than dropped.
 | GET | `/api/environment-designer/versions/{versionId:guid}` | unwired | — |
 | POST | `/api/environment-designer/versions/{versionId:guid}/rollback` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` (12)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/execution/accounts` | unwired | — |
-| GET | `/api/execution/accounts/{accountId}` | unwired | called by WPF |
-| GET | `/api/execution/accounts/{accountId}/positions` | unwired | — |
-| GET | `/api/execution/capabilities` | unwired | — |
-| POST | `/api/execution/controls/circuit-breaker` | unwired | called by WPF |
-| GET | `/api/execution/orders` | unwired | — |
-| GET | `/api/execution/orders/{orderId}` | unwired | — |
-| GET | `/api/execution/portfolio` | unwired | — |
-| GET | `/api/execution/portfolio/aggregate` | unwired | — |
-| GET | `/api/execution/positions` | unwired | — |
-| POST | `/api/execution/positions/{symbol}/close` | unwired | — |
-| GET | `/api/execution/sessions/{sessionId}/tca` | unwired | — |
-
 ### `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingGovernance.cs` (12)
 
 | Method | Route | State | Notes |
@@ -423,6 +406,22 @@ its reason rather than dropped.
 | GET | `/api/symbols/{symbol}/status` | unwired | — |
 | GET | `/api/symbols/{symbol}/trades` | unwired | — |
 | POST | `/api/symbols/{symbol}/update` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` (11)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/execution/accounts` | unwired | — |
+| GET | `/api/execution/accounts/{accountId}` | unwired | called by WPF |
+| GET | `/api/execution/accounts/{accountId}/positions` | unwired | — |
+| GET | `/api/execution/capabilities` | unwired | — |
+| GET | `/api/execution/orders` | unwired | — |
+| GET | `/api/execution/orders/{orderId}` | unwired | — |
+| GET | `/api/execution/portfolio` | unwired | — |
+| GET | `/api/execution/portfolio/aggregate` | unwired | — |
+| GET | `/api/execution/positions` | unwired | — |
+| POST | `/api/execution/positions/{symbol}/close` | unwired | — |
+| GET | `/api/execution/sessions/{sessionId}/tca` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs` (11)
 
