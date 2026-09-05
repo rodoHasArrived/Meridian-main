@@ -2305,7 +2305,8 @@ public sealed class LedgerIntegrationTests
                     PriceSource: "NYSE official close",
                     EvidenceReference: "price://nyse/aapl/2026-05-31",
                     FinancialAccountId: "broker-1",
-                    InstrumentType: "ListedEquity"),
+                    InstrumentType: "ListedEquity",
+                    PriceObservedOn: new DateOnly(2026, 5, 31)),
                 new DailyPortfolioPriceMark(
                     "otc-note",
                     Quantity: 5m,
@@ -2314,7 +2315,8 @@ public sealed class LedgerIntegrationTests
                     PriceSource: "Valuation committee model",
                     EvidenceReference: "evidence://valuation/otc-note/2026-05-31",
                     FinancialAccountId: "broker-1",
-                    InstrumentType: "OtcInstrument"),
+                    InstrumentType: "OtcInstrument",
+                    PriceObservedOn: new DateOnly(2026, 5, 31)),
             ]);
 
         var projection = DailyPortfolioPricingProjector.Project(input);

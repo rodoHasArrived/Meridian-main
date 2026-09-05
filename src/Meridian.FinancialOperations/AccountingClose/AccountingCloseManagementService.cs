@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
@@ -138,6 +139,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     private readonly IOperationsContinuityWorkflowService _workflowService;
     private readonly IAccountingClosePostingWorkbench? _postingWorkbench;
     private readonly IAccountingCloseMutationGate? _mutationGate;
+    private readonly IClosePublicationReadinessGuard? _closeReadinessGuard;
     private readonly object _readGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string? _persistencePath;
@@ -147,15 +149,18 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     private readonly ConcurrentDictionary<Guid, ClosePeriodPlanConfigurationDto> _planConfigurations = new();
     private readonly ConcurrentDictionary<Guid, List<WorkflowCloseEvidenceReviewRecord>> _evidenceReviews = new();
 
-    public AccountingCloseManagementService(IOperationsContinuityWorkflowService workflowService)
+    public AccountingCloseManagementService(IOperationsContinuityWorkflowService workflowService,
+        IClosePublicationReadinessGuard? closeReadinessGuard = null)
     {
         _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
+        _closeReadinessGuard = closeReadinessGuard;
     }
 
     public AccountingCloseManagementService(
         IOperationsContinuityWorkflowService workflowService,
-        IAccountingClosePostingWorkbench postingWorkbench)
-        : this(workflowService)
+        IAccountingClosePostingWorkbench postingWorkbench,
+        IClosePublicationReadinessGuard? closeReadinessGuard = null)
+        : this(workflowService, closeReadinessGuard)
     {
         _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
         _mutationGate = postingWorkbench as IAccountingCloseMutationGate;
@@ -163,8 +168,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
 
     public AccountingCloseManagementService(
         IOperationsContinuityWorkflowService workflowService,
-        StorageOptions storageOptions)
-        : this(workflowService)
+        StorageOptions storageOptions,
+        IClosePublicationReadinessGuard? closeReadinessGuard = null)
+        : this(workflowService, closeReadinessGuard)
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
         _persistencePath = Path.Combine(storageOptions.RootPath, "accounting", "close-management-late-adjustments.json");
@@ -174,8 +180,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     public AccountingCloseManagementService(
         IOperationsContinuityWorkflowService workflowService,
         StorageOptions storageOptions,
-        IAccountingClosePostingWorkbench postingWorkbench)
-        : this(workflowService, storageOptions)
+        IAccountingClosePostingWorkbench postingWorkbench,
+        IClosePublicationReadinessGuard? closeReadinessGuard = null)
+        : this(workflowService, storageOptions, closeReadinessGuard)
     {
         _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
         _mutationGate = postingWorkbench as IAccountingCloseMutationGate;
@@ -982,6 +989,12 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             workflow = boundaryWorkflow;
             plan = AttachClosingEntriesGate(boundaryPlan, closingGate);
 
+            var sharedIssues = await ValidateSharedCloseReadinessAsync(request, plan, tenantId, companyId, ct).ConfigureAwait(false);
+            if (sharedIssues.Count > 0)
+            {
+                return new ClosePeriodLockResultDto(false, plan, null, sharedIssues);
+            }
+
             try
             {
                 await _postingWorkbench.FinalizeHardCloseAsync(
@@ -1043,7 +1056,8 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                     ClosePackageManifestId: request.ClosePackageManifestId,
                     ClosePackageEvidenceHash: null,
                     ClosePackageRetainedManifestRoute: request.ClosePackageRetainedManifestRoute,
-                    ActionOrigin: request.ActionOrigin),
+                    ActionOrigin: request.ActionOrigin,
+                    CloseScope: request.CloseScope),
                 ct).ConfigureAwait(false);
 
             var updatedPlan = transition.Workflow is null
@@ -1354,13 +1368,28 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
 
     private ClosePeriodPlanDto BuildPeriodPlan(OperationsContinuityWorkflowDto workflow)
     {
+        // Read the retained collections together: separate file reads can cross an atomic
+        // replacement and combine sign-offs with a different configuration or adjustment set.
+        CloseManagementSnapshot snapshot;
+        lock (_readGate)
+        {
+            snapshot = ReadPersistedSlice<CloseManagementSnapshot>(
+                static value => [value],
+                () => [new(ReadInMemoryLateAdjustments(), ReadInMemoryTaskSignOffs(),
+                    ReadInMemoryPlanConfigurations(), ReadInMemoryEvidenceReviews())])[0];
+        }
+        snapshot = new(
+            snapshot.LateAdjustments!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray(),
+            snapshot.TaskSignOffs!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray(),
+            snapshot.PlanConfigurations!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray(),
+            snapshot.EvidenceReviews!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray());
         var period = ResolvePeriod(workflow.PeriodId);
-        var planConfiguration = GetPlanConfiguration(workflow.WorkflowId);
+        var planConfiguration = snapshot.PlanConfigurations!.FirstOrDefault();
         var materialityPolicy = planConfiguration?.MaterialityPolicy ?? ResolveMaterialityPolicy(workflow);
         var taskConfigurations = planConfiguration?.TaskConfigurations
             .ToDictionary(static configuration => configuration.TaskId, StringComparer.OrdinalIgnoreCase)
             ?? new Dictionary<string, CloseTaskConfigurationDto>(StringComparer.OrdinalIgnoreCase);
-        var retainedSignOffs = GetTaskSignOffs(workflow.WorkflowId);
+        var retainedSignOffs = snapshot.TaskSignOffs!;
         var satisfiedTaskIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var tasks = new List<CloseTaskDto>(workflow.CloseChecklist.Count);
         for (var index = 0; index < workflow.CloseChecklist.Count; index++)
@@ -1374,10 +1403,10 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             }
         }
 
-        var lateAdjustments = GetLateAdjustments(workflow.WorkflowId);
+        var lateAdjustments = snapshot.LateAdjustments!.Select(static row => row.Adjustment).ToArray();
         var validationIssues = BuildValidationIssues(workflow, tasks, lateAdjustments, materialityPolicy);
         var isPeriodLocked = workflow.Status == OperationsWorkflowStatusDto.Closed && workflow.ClosePackage is not null;
-        var evidenceReviews = GetEvidenceReviews(workflow.WorkflowId);
+        var evidenceReviews = snapshot.EvidenceReviews!.Select(static row => row.Review).ToArray();
         var operatingCoverage = BuildOperatingCoverage(
             workflow,
             tasks,
@@ -1405,7 +1434,11 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             planConfiguration,
             evidenceReviews,
             operatingCoverage,
-            WorkflowVersion: workflow.Version);
+            WorkflowVersion: workflow.Version,
+            WorkflowId: workflow.WorkflowId,
+            FundAccountId: workflow.FundAccountId,
+            EvidenceVersion: Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(snapshot, JsonOptions)),
+            EvaluatedAtUtc: DateTimeOffset.UtcNow);
     }
 
     private async Task<ClosePeriodPlanDto> BuildPeriodPlanWithGateAsync(
