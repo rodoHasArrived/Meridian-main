@@ -575,6 +575,34 @@ gate implementation and snapshot persistence.
 Keep W6-BTSTUDIO-001 acceptance criteria in roadmap exit criteria and verify this lane with
 `BacktestStudioRunOrchestratorTests` when changing backtesting evidence behavior.
 
+Security Master amend and deactivate are refused when re-serializing the record would silently
+rewrite it: an asset class, equity classification, CustomAsset envelope, or declared discriminant
+value this node cannot round-trip — including a discriminant the codec cannot see at all, whether
+because it is stored as the wrong JSON kind or under a case-variant key (every read is ordinal, so
+`ExerciseStyle` is not `exerciseStyle`; the variant is refused whether or not the canonical key sits
+beside it, because a readable canonical value only means the record loads while the variant is
+dropped without trace) — and, for bonds, coupon structure the canonical codec does
+not read. `ToBondTerms` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
+`stepSchedule`, the inflation triple, `dayCount`) ONE COUPON ARM AT A TIME, so a populated companion
+is lost whenever the arm the record resolves to does not read it — a `floatingIndex` beside
+`couponType: "Fixed"` as surely as one with no `couponType` at all — and so are legacy nested
+`coupon` members whose flat counterpart is missing or undecodable. The same check runs against the
+SUBMITTED document on an amendment, so a repair cannot drop the economics it was sent to preserve.
+Reads stay tolerant throughout; only the write is refused, so such a record stays readable and
+reportable. **The refusal has one exit, and operators need it:** an amendment whose
+`AssetSpecificTermsPatch` settles the offending field itself — naming a declared value, or, for an
+optional discriminant the codec CLEARS rather than substitutes (`exerciseStyle`, `classification`,
+but never `couponType`, whose absent read is `Fixed`), an explicit `null`. The value it names must
+also OWN any dependent blocks the document still carries: `preferredTerms` under a `classification`
+of `Common` is read by nothing and re-emitted as null, so that repair would delete the block it was
+sent to preserve. The patch replaces the
+kind wholesale, so it must be a COMPLETE asset-terms document — every field it omits is dropped with
+the misread. A deactivation cannot carry a patch, so a frozen record is repaired first and
+deactivated second. Unlike an unrecognized asset class, an undeclared `couponType` names no other
+node that could apply the change, so without that exit the row would be permanently unamendable.
+Verify this lane with `SecurityMasterServiceSnapshotTests` and
+`SecurityAssetTermsSchemaRoundTripTests`.
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase

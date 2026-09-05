@@ -392,6 +392,33 @@ erDiagram
         text checksum
         timestamp_with_time_zone applied_at
     }
+    security_master_direct_loan_covenant_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        text covenant_type
+        text threshold
+        text notes
+    }
+    security_master_direct_loan_principal_schedule_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        date payment_date
+        numeric_28_10_ amount
+    }
+    security_master_direct_loan_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text borrower
+        date maturity_date
+        text reference_index
+        numeric_18_8_ spread_bps
+        numeric_12_6_ current_coupon_rate
+        text reset_frequency
+        text pricing_source
+        text primary_identifier_value
+        bigint version
+    }
     security_master_drawdown_lot_projection {
         uuid lot_id PK
         uuid loan_id
@@ -1084,6 +1111,27 @@ erDiagram
         uuid servicer_report_batch_id PK,FK
         text report_type
     }
+    security_master_structured_credit_factor_schedule_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        date as_of_date
+        numeric_18_10_ factor
+    }
+    security_master_structured_credit_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text tranche
+        text pool_id
+        text collateral_type
+        numeric_28_10_ original_face
+        numeric_18_10_ current_factor
+        text coupon_or_index
+        text factor_schedule_reference
+        date maturity_date
+        text primary_identifier_value
+        bigint version
+    }
     security_master_swap_projection {
         uuid security_id PK
         text display_name
@@ -1117,6 +1165,8 @@ erDiagram
     security_master_corporate_actions ||--o{ security_master_corporate_action_restatement_obligations : "corporate_action_restatement_obligations_corp_act_id_fkey"
     security_master_corporate_actions ||--o{ security_master_corporate_action_source_proposals : "corporate_action_source_proposals_accepted_corp_act_id_fkey"
     security_master_corporate_actions ||--o{ security_master_corporate_actions : "fk_corporate_actions_superseded_action"
+    security_master_direct_loan_projection ||--o{ security_master_direct_loan_covenant_projection : "direct_loan_covenant_projection_security_id_fkey"
+    security_master_direct_loan_projection ||--o{ security_master_direct_loan_principal_schedule_projection : "direct_loan_principal_schedule_projection_security_id_fkey"
     security_master_journal_entry ||--o{ security_master_journal_line : "journal_line_journal_entry_id_fkey"
     security_master_loan_contract ||--o{ security_master_cash_transaction : "cash_transaction_loan_id_fkey"
     security_master_loan_contract ||--o{ security_master_fee_balance : "fee_balance_loan_id_fkey"
@@ -1167,3 +1217,4 @@ erDiagram
     security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_apply_audit : "servicer_statement_apply_audit_servicer_statement_batch_id_fkey"
     security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_import_row : "servicer_statement_import_row_servicer_statement_batch_id_fkey"
     security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_validation_issue : "servicer_statement_validation__servicer_statement_batch_id_fkey"
+    security_master_structured_credit_projection ||--o{ security_master_structured_credit_factor_schedule_projection : "structured_credit_factor_schedule_projection_security_id_fkey"

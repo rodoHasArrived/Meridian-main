@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
@@ -81,6 +82,26 @@ public interface ILedgerJournalStore
         CancellationToken ct = default)
         => Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(
             new NotSupportedException("This ledger journal store does not support authoritative tax-lot identity reads."));
+
+    /// <summary>
+    /// Lists the lots of record open under one (security, book position) scope and acquired on or
+    /// before <paramref name="effectiveDate"/>. Face-denominated economics -- principal paydown
+    /// above all -- must be derived from the lots that actually held the position on the event's
+    /// date rather than from a caller-supplied quantity, and the account a lot sits under is not
+    /// known at that point; this read is the asset-scoped seam that makes the lot of record
+    /// reachable from the projection path. The acquisition bound matters because factors publish
+    /// after the fact: a paydown is always posted with a lag, and a lot bought between the effective
+    /// date and the posting would otherwise be paid down for a period it did not hold.
+    /// Served by <c>ix_tax_lots_asset_scope_open</c>.
+    /// </summary>
+    Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsByAssetScopeAsync(
+        Guid ledgerBookId,
+        Guid securityId,
+        Guid bookPositionId,
+        DateOnly effectiveDate,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(
+            new NotSupportedException("This ledger journal store does not support asset-scoped tax-lot reads."));
 
     /// <summary>
     /// Resolves one immutable atomic tax-lot posting batch together with its journal and mutation
@@ -347,7 +368,31 @@ public sealed record LedgerTaxLotRecord(
     Guid? OriginatingMutationBatchId = null,
     Guid? LastMutationBatchId = null,
     Guid SecurityId = default,
-    Guid BookPositionId = default);
+    Guid BookPositionId = default,
+    // Omitted from serialization when absent. LedgerTaxLotRecord is serialized whole into the
+    // canonical atomic fingerprint and into the retained lot_snapshot_* evidence, so writing these
+    // as explicit nulls would change the digest of every acquisition batch already posted and turn
+    // an idempotent replay into an idempotency collision. Absent means absent; a lot that actually
+    // states its par conventions participates in the digest, as two acquisitions differing only in
+    // the factor their face was booked at must not share an identity.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? OriginalFace = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? BookedFactor = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? ParBasis = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto? Acquisition = null)
+{
+    /// <summary>
+    /// True when the lot recorded the acquisition-time par conventions
+    /// (<see cref="OriginalFace"/>, <see cref="BookedFactor"/>, <see cref="ParBasis"/>). They are
+    /// persisted all-three-or-none, so a lot either states its face terms or states nothing and
+    /// consumers fail closed rather than inheriting a price-per-100, factor-1 default.
+    /// </summary>
+    public bool HasFaceValueTerms
+        => OriginalFace.HasValue && BookedFactor.HasValue && ParBasis.HasValue;
+}
 
 public enum AtomicTaxLotMutationKind
 {
