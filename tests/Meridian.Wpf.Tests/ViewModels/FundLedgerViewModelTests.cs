@@ -1723,7 +1723,7 @@ public sealed class FundLedgerViewModelTests
                     row.StatusLabel == "ReviewerAssigned" &&
                     row.ReviewerLabel == "controller" &&
                     row.EvidenceLabel == "1 evidence link");
-                viewModel.PrivateCapitalCloseReadinessState.Title.Should().Be("Private-capital close review required");
+                viewModel.PrivateCapitalCloseReadinessState.Title.Should().Be("Private-capital close blocked");
                 viewModel.PrivateCapitalCloseReadinessState.ActionPosture!.Target.Should().Be("OperationsClose");
                 viewModel.PrivateCapitalCloseReadinessState.VisibleEvidenceLinks.Should().Contain(link =>
                     link.Label == "Partner capital tie-out evidence package" &&
