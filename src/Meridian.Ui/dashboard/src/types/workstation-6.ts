@@ -420,6 +420,7 @@ export interface PrivateCapitalFundEventCommandCenter {
 
 export interface PrivateCapitalCloseCockpitWorkflow {
   workflowId: string;
+  version?: number;
   fundAccountId: string;
   periodId: string;
   status: OperationsWorkflowStatus;

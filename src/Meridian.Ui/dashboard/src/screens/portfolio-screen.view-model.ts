@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   buildMultiAssetCoverageGroups,
@@ -63,6 +64,7 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  markFreshness: MarkFreshnessPresentation;
   id: string;
   symbol: string;
   side: string;
@@ -666,6 +668,7 @@ export function buildPortfolioScreenViewModel({
       side: p.side,
       quantity: p.quantity,
       avgPrice: p.averagePrice,
+      markFreshness: presentMarkFreshness(p.markFreshness),
       markPrice: p.markPrice,
       dayPnl: p.dayPnl,
       unrealizedPnl: p.unrealizedPnl,
@@ -2296,7 +2299,7 @@ function buildSelectedPositionDetail(
   risk: PortfolioRiskState | null,
   brokerage: PortfolioBrokerageStatus | null
 ): PortfolioPositionDetail {
-  const statusTone = riskTone(risk?.state, position.pnlTone);
+  const statusTone = position.markFreshness.reviewRequired ? "warning" : riskTone(risk?.state, position.pnlTone);
   const guardrailSummary = risk?.activeGuardrails.length
     ? risk.activeGuardrails.join(" · ")
     : "No active guardrails";
@@ -2306,14 +2309,15 @@ function buildSelectedPositionDetail(
     title: position.symbol,
     subtitle: `${position.side} · ${position.quantity} shares`,
     ariaLabel: `${position.symbol} holding detail`,
-    statusTitle: `${position.symbol} selected`,
-    statusDetail: `${position.exposure} exposure with ${position.unrealizedPnl} unrealized P&L. ${risk?.summary ?? "Risk context unavailable."}`,
+    statusTitle: position.markFreshness.reviewRequired ? `${position.symbol} · Review required` : `${position.symbol} selected`,
+    statusDetail: `${position.markFreshness.reason} Recorded: ${position.exposure} exposure with ${position.unrealizedPnl} unrealized P&L. ${risk?.summary ?? "Risk context unavailable."}`,
     statusTone,
     fields: [
       { label: "Side", value: position.side, tone: "default" },
       { label: "Quantity", value: position.quantity, tone: "default" },
       { label: "Average price", value: position.avgPrice, tone: "muted" },
-      { label: "Mark price", value: position.markPrice, tone: "muted" },
+      { label: "Recorded mark price", value: position.markPrice, tone: "muted" },
+      ...markFreshnessFields(position.markFreshness),
       { label: "Exposure", value: position.exposure, tone: "default" },
       { label: "Day P&L", value: position.dayPnl, tone: pnlFieldTone(position.dayPnl) },
       { label: "Unrealized P&L", value: position.unrealizedPnl, tone: pnlFieldTone(position.unrealizedPnl) },

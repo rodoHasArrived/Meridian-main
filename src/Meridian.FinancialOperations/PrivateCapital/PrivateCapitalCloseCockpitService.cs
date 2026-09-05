@@ -2031,7 +2031,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             workflow.ClosePackage?.RetainedManifestRoute,
             workflow.CloseReadiness?.Blockers.Count ?? workflow.Blockers.Count,
             openChecklistCount,
-            workflow.UpdatedAtUtc);
+            workflow.UpdatedAtUtc,
+            workflow.Version);
     }
 
     private static string BuildCockpitRoute(

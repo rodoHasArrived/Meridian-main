@@ -27,6 +27,8 @@ resolution, report run, and analysis export each call `recordActivationOutcome` 
 
 Accounting forwards the entity along with fund/book/account/period when requesting the shared close decision. The close headline requires a complete ready server projection. Legacy metrics remain diagnostic and cannot produce Ready when the shared service is absent. Focused proof: `accounting-screen.close-cockpit.view-model.test.ts`.
 
+Portfolio and Trading positions display the shared mark observation date, age, and assessment. Missing assessments remain review required; recorded amounts do not imply current approved support. The valuation preview shows affected positions before a draft is requested. Both workstations retain the server close decision through blocked-to-ready recovery instead of calculating a separate readiness score.
+
 ## Purpose
 
 Browser workstation dashboard is the active browser operator workstation.

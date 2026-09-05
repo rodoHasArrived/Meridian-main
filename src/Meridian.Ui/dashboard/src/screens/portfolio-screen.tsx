@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -100,6 +101,7 @@ const cashFlowBorderClass = {
 } as const;
 
 const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
+  { id: "mark-readiness", label: "Mark readiness", render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
   {
     id: "symbol",
     label: "Symbol",
@@ -124,7 +126,7 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
   },
   {
     id: "mark",
-    label: "Mark",
+    label: "Recorded mark",
     align: "right",
     render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
   },
@@ -1193,7 +1195,7 @@ export function PortfolioScreen({
                     Open positions
                   </CardTitle>
                   <CardDescription className="mt-2">
-                    Current open positions from the active paper session with exposure and unrealized P&amp;L.
+                    Open positions with recorded exposure and unrealized P&amp;L. Review mark readiness before approving valuation numbers.
                   </CardDescription>
                 </div>
                 <Badge variant="outline" aria-label={vm.positionCountLabel}>

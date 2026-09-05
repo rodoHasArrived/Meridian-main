@@ -240,13 +240,15 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
                 sp.GetService<IAutomatedJournalScheduleStatusSource>()));
+        services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IOperationsCloseCalendarService>(),
                 sp.GetService<IPrivateCapitalCloseCockpitService>(),
                 sp.GetService<ILedgerBookService>(),
-                sp.GetService<IAccountingCloseManagementService>()));
+                sp.GetService<IAccountingCloseManagementService>(),
+                sp.GetService<ICloseReadinessSubjectSource>()));
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();

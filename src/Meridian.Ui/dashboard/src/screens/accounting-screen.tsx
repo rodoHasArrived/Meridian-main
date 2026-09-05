@@ -2,6 +2,7 @@ import { BookCheck, Copy, Landmark, Network, Paperclip, RefreshCcw, Search, Shie
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
+import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -2143,10 +2144,15 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
     [closeWorkflowQuery, dailyValuationSchedules, effectiveDailyValuationStatus]
   );
 
+  const valuationMarkPreview = useValuationMarkPreview(currentDailyValuationSchedule);
   const runCloseCommand = async (
     command: NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]>
   ) => {
     const status = effectiveDailyValuationStatus;
+    if ((command === "configure-daily-valuation-schedule" || command === "run-due-daily-valuation-schedules") && !valuationMarkPreview.isCurrent) {
+      setDailyValuationBatchStatusText("Preview mark impact for this schedule before configuring or running valuation.");
+      return;
+    }
     const hasRetainedBatch = Boolean(status?.batchCorrelationId) && (status?.journalEntryIds.length ?? 0) > 0;
     if (command === "configure-daily-valuation-schedule" && !currentDailyValuationSchedule) {
       setDailyValuationBatchStatusText("No server-retained daily valuation schedule is loaded for this close scope.");
@@ -2348,6 +2354,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   return (
     <div className="space-y-5">
       <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
+      {currentDailyValuationSchedule && (sectionVisibility.showCloseCockpitLanding || sectionVisibility.showWorkflowDetails) ? <ValuationMarkPreviewPanel preview={valuationMarkPreview} /> : null}
 
       <AccountingWorkbenchContext
         workspace={workspace}

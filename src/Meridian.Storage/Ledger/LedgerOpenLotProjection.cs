@@ -11,9 +11,10 @@ public static class LedgerOpenLotProjection
         ArgumentNullException.ThrowIfNull(record);
         var acquisition = record.Acquisition
             ?? throw new LedgerValidationException("Retained acquisition quantity-basis, currency, and FX evidence is required for canonical lot projection.");
-        if (record.Currency != acquisition.AcquisitionCurrency)
-            throw new LedgerValidationException("Lot currency does not match the retained acquisition currency.");
-        if (record.OriginalQuantity * record.UnitCost != acquisition.TransactionCostBasis)
+        var retainedBasis = record.Currency == acquisition.AcquisitionCurrency ? acquisition.TransactionCostBasis
+            : record.Currency == acquisition.FunctionalCurrency ? acquisition.FunctionalCostBasis
+            : throw new LedgerValidationException("Lot currency must identify its retained acquisition or functional basis convention.");
+        if (record.OriginalQuantity * record.UnitCost != retainedBasis)
             throw new LedgerValidationException("Lot basis differs from retained acquisition facts; a governed adjustment projection is required.");
         var face = acquisition.QuantityBasis == LotQuantityBasis.Face;
         if (face != record.HasFaceValueTerms || (face && (record.ParBasis != acquisition.FaceValueTerms?.ParBasis

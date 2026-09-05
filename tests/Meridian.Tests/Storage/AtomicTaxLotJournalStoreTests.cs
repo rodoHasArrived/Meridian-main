@@ -633,6 +633,22 @@ public sealed class AtomicTaxLotJournalStoreTests
             periodId,
             expectedPeriodVersion: period.Version);
         var acquisitionAssetLine = acquisition.Journal.Entry.Lines[0];
+        // This production disposal scenario now supplies the acquisition facts required by the
+        // canonical cutover. Legacy fingerprints remain covered by the unmodified fixture helper.
+        var acquiredLot = acquisition.AcquisitionLot!;
+        var canonicalEvidence = BuildEvidence("canonical-acquisition", 'e') with
+        {
+            SubjectType = "OpenLotAcquisition", SubjectId = acquiredLot.TaxLotRecordId.ToString("D"),
+            EffectiveDate = acquiredLot.AcquiredDate
+        };
+        acquisition = (acquisition with
+        {
+            AcquisitionLot = acquiredLot with
+            {
+                Acquisition = new(Meridian.Contracts.Accounting.Lots.LotQuantityBasis.Units, "USD", "USD", 1m,
+                    10_000m, 10_000m, acquiredLot.AcquiredDate, null, [canonicalEvidence])
+            }
+        }).WithComputedFingerprint();
         var offsettingAcquisition = (acquisition with
         {
             Journal = acquisition.Journal with
@@ -702,7 +718,12 @@ public sealed class AtomicTaxLotJournalStoreTests
         {
             AcquisitionLot = acquisition.AcquisitionLot! with
             {
-                UnitCost = acquisition.AcquisitionLot.UnitCost + 1m
+                UnitCost = acquisition.AcquisitionLot.UnitCost + 1m,
+                Acquisition = acquisition.AcquisitionLot.Acquisition! with
+                {
+                    TransactionCostBasis = 10_100m,
+                    FunctionalCostBasis = 10_100m
+                }
             }
         }).WithComputedFingerprint();
         var changedReplayAct = () => database.JournalStore.AppendAssetPostingAsync(changedReplay);

@@ -659,7 +659,11 @@ public sealed record ClosePeriodPlanDto(
     IReadOnlyList<CloseEvidenceReviewDto>? EvidenceReviews = null,
     IReadOnlyList<CloseOperatingCoverageItemDto>? OperatingCoverage = null,
     ClosePostingGateDto? ClosingEntriesGate = null,
-    long WorkflowVersion = 0)
+    long WorkflowVersion = 0,
+    Guid? WorkflowId = null,
+    Guid? FundAccountId = null,
+    string? EvidenceVersion = null,
+    DateTimeOffset? EvaluatedAtUtc = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];

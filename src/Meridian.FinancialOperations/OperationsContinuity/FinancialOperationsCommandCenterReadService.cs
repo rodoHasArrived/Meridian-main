@@ -22,19 +22,22 @@ public sealed partial class FinancialOperationsCommandCenterReadService : IFinan
     private readonly IPrivateCapitalCloseCockpitService? _privateCapitalCloseCockpitService;
     private readonly ILedgerBookService? _ledgerBookService;
     private readonly IAccountingCloseManagementService? _closeManagementService;
+    private readonly ICloseReadinessSubjectSource? _closeSubjectSource;
 
     public FinancialOperationsCommandCenterReadService(
         IOperationsContinuityWorkflowService workflowService,
         IOperationsCloseCalendarService? closeCalendarService = null,
         IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null,
         ILedgerBookService? ledgerBookService = null,
-        IAccountingCloseManagementService? closeManagementService = null)
+        IAccountingCloseManagementService? closeManagementService = null,
+        ICloseReadinessSubjectSource? closeSubjectSource = null)
     {
         _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
         _closeCalendarService = closeCalendarService;
         _privateCapitalCloseCockpitService = privateCapitalCloseCockpitService;
         _ledgerBookService = ledgerBookService;
         _closeManagementService = closeManagementService;
+        _closeSubjectSource = closeSubjectSource;
     }
 
     public async Task<FinancialOperationsCommandCenterDto> GetCommandCenterAsync(

@@ -15,6 +15,8 @@ last_reviewed: 2026-07-27
 
 The Financial Operations command center owns the shared close decision. It requires an explicit fund profile, ledger book, fund account, entity, and period; validates book/profile binding and exact workflow identity; and includes workflow, calendar, version-matched close-plan, and private-capital contributors. Missing, ambiguous, failing, or older-than-five-minute contributor evaluations block. Asset coverage and fund-wide diagnostic metrics do not establish readiness. Focused proof: `FinancialOperationsCommandCenterReadServiceTests`.
 
+Close acceptance additionally proves account/entity/book subject ownership independently of workflow selection. The real close-plan reader stamps workflow, account, and retained evidence versions from one state snapshot; final projection rechecks those stamps so concurrent sign-off or configuration changes block instead of mixing snapshots. The closing-entry gate is mandatory. Repairing the underlying scope/evidence issue allows a fresh assessment to restore readiness.
+
 ## Purpose
 
 Physical bounded-context module project for reconciliation, accounting records, payment approvals,

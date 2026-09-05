@@ -12,7 +12,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService
         var projection = new CloseReadinessProjection(scope, evaluatedAt);
         if (!projection.HasCompleteScope)
         {
-            foreach (var id in new[] { "book-scope", "workflow", "calendar", "close-plan", "private-capital" })
+            foreach (var id in new[] { "book-scope", "subject-scope", "workflow", "calendar", "close-plan", "private-capital" })
                 projection.Contribute(id, "Controller", "ScopeRequired", null, []);
             return new(null, null, null, projection);
         }
@@ -24,8 +24,21 @@ public sealed partial class FinancialOperationsCommandCenterReadService
             [scope.LedgerBookId!.Value.ToString()], "The selected book must belong to the selected fund profile.");
         if (!bound)
         {
-            foreach (var id in new[] { "workflow", "calendar", "close-plan", "private-capital" })
+            foreach (var id in new[] { "subject-scope", "workflow", "calendar", "close-plan", "private-capital" })
                 projection.Contribute(id, "Controller", "Unavailable", null, [], "Resolve the book/fund scope before loading close evidence.");
+            return new(null, null, null, projection);
+        }
+
+        var subject = await ReadAsync(() => _closeSubjectSource?.GetSubjectAsync(scope, ct), ct);
+        var subjectBound = subject is { Status: "Ready" } && subject.Scope == scope
+            && !string.IsNullOrWhiteSpace(subject.EvidenceVersion);
+        projection.Contribute("subject-scope", "Accounting", subject is null ? "Unavailable"
+            : subjectBound ? "Ready" : "ScopeMismatch", subject?.EvaluatedAtUtc, subject?.RecordIds ?? [],
+            "The account and entity must belong to the selected ledger book's retained ownership scope.");
+        if (!subjectBound)
+        {
+            foreach (var id in new[] { "workflow", "calendar", "close-plan", "private-capital" })
+                projection.Contribute(id, "Controller", "Unavailable", null, [], "Resolve subject ownership before loading close evidence.");
             return new(null, null, null, projection);
         }
 
@@ -68,14 +81,15 @@ public sealed partial class FinancialOperationsCommandCenterReadService
 
         var plan = workflow is null ? null : await ReadAsync(() => _closeManagementService?
             .GetPeriodPlanScopedAsync(workflow.WorkflowId, tenantId, companyId, ct), ct);
-        var planBound = plan is not null && plan.FundProfileId == scope.FundProfileId
+        // FundProfileId on legacy close plans historically contains an account id. Bind the
+        // explicit subject stamps instead; book-scope and subject-scope prove the fund/entity.
+        var planBound = plan is not null && plan.WorkflowId == workflow!.WorkflowId
+            && plan.FundAccountId == scope.FundAccountId && !string.IsNullOrWhiteSpace(plan.EvidenceVersion)
             && plan.LedgerBookId == scope.LedgerBookId && plan.PeriodId == scope.PeriodId
             && plan.WorkflowVersion == workflow!.Version;
-        var planReady = planBound && plan!.ValidationIssues.Count == 0
-            && plan.Tasks.All(t => t.Status == CloseTaskStatusDto.SignedOff && string.IsNullOrWhiteSpace(t.BlockerReason))
-            && plan.LateAdjustments.All(a => a.ApprovalState is ManualJournalEntryStatusDto.Approved or ManualJournalEntryStatusDto.Rejected);
+        var planReady = planBound && IsClosePlanReady(plan!);
         projection.Contribute("close-plan", "Controller", !planBound ? "Incomplete" : planReady ? "Ready" : "Blocked",
-            evaluatedAt, planBound ? [plan!.ClosePlanId] : [],
+            plan?.EvaluatedAtUtc, plan is null ? [] : [plan.ClosePlanId],
             "The version-matched close plan must clear validation, task sign-offs, and late-adjustment review.");
 
         var cockpit = await ReadAsync(() => _privateCapitalCloseCockpitService?.GetCockpitAsync(
@@ -87,7 +101,8 @@ public sealed partial class FinancialOperationsCommandCenterReadService
             && workflow is not null && cockpit.Workflows.Count == 1
             && cockpit.Workflows[0].WorkflowId == workflow.WorkflowId
             && cockpit.Workflows[0].FundAccountId == scope.FundAccountId
-            && cockpit.Workflows[0].PeriodId == scope.PeriodId;
+            && cockpit.Workflows[0].PeriodId == scope.PeriodId
+            && cockpit.Workflows[0].Version == workflow.Version;
         projection.Contribute("private-capital", "Fund accounting", !cockpitBound ? "ScopeMismatch"
             : cockpit!.IsReadyToClose && cockpit.Blockers.Count == 0 ? "Ready" : "Blocked",
             cockpit?.ProjectedAtUtc, cockpitBound ? [workflow!.WorkflowId.ToString()] : [],
@@ -97,6 +112,23 @@ public sealed partial class FinancialOperationsCommandCenterReadService
         // plan/calendar with a later approval or reopening into a ready result.
         if (workflow is not null)
         {
+            var currentPlan = await ReadAsync(() => _closeManagementService?
+                .GetPeriodPlanScopedAsync(workflow.WorkflowId, tenantId, companyId, ct), ct);
+            if (planBound && (currentPlan is null || currentPlan.WorkflowId != plan!.WorkflowId
+                || currentPlan.FundAccountId != plan.FundAccountId || currentPlan.LedgerBookId != plan.LedgerBookId
+                || currentPlan.PeriodId != plan.PeriodId || currentPlan.WorkflowVersion != plan.WorkflowVersion
+                || currentPlan.EvidenceVersion != plan.EvidenceVersion || IsClosePlanReady(currentPlan) != planReady))
+            {
+                projection.Contribute("close-plan-snapshot", "Controller", "Stale", null,
+                    [plan!.ClosePlanId], "Close evidence changed during evaluation. Refresh the selected close scope.");
+            }
+            var currentSubject = await ReadAsync(() => _closeSubjectSource?.GetSubjectAsync(scope, ct), ct);
+            if (currentSubject is null || currentSubject.Status != "Ready" || currentSubject.Scope != scope
+                || currentSubject.EvidenceVersion != subject!.EvidenceVersion)
+            {
+                projection.Contribute("subject-snapshot", "Accounting", "Stale", null,
+                    subject!.RecordIds, "Account or book ownership changed during evaluation. Refresh the selected close scope.");
+            }
             var current = await ReadAsync(() => _workflowService.GetAsync(workflow.WorkflowId, ct), ct);
             if (current is null || current.WorkflowId != workflow.WorkflowId || current.Version != workflow.Version
                 || current.LedgerBookId != scope.LedgerBookId || current.FundAccountId != scope.FundAccountId
@@ -108,6 +140,12 @@ public sealed partial class FinancialOperationsCommandCenterReadService
         }
         return new(workflow, calendar, cockpitBound ? cockpit : null, projection);
     }
+
+    private static bool IsClosePlanReady(ClosePeriodPlanDto plan)
+        => plan.ValidationIssues.Count == 0
+            && plan.ClosingEntriesGate is { IsReadyForLock: true }
+            && plan.Tasks.All(t => t.Status == CloseTaskStatusDto.SignedOff && string.IsNullOrWhiteSpace(t.BlockerReason))
+            && plan.LateAdjustments.All(a => a.ApprovalState is ManualJournalEntryStatusDto.Approved or ManualJournalEntryStatusDto.Rejected);
 
     private static async Task<T?> ReadAsync<T>(Func<Task<T>?> read, CancellationToken ct) where T : class
     {

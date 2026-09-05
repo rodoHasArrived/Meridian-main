@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
@@ -1354,13 +1355,28 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
 
     private ClosePeriodPlanDto BuildPeriodPlan(OperationsContinuityWorkflowDto workflow)
     {
+        // Read the retained collections together: separate file reads can cross an atomic
+        // replacement and combine sign-offs with a different configuration or adjustment set.
+        CloseManagementSnapshot snapshot;
+        lock (_readGate)
+        {
+            snapshot = ReadPersistedSlice<CloseManagementSnapshot>(
+                static value => [value],
+                () => [new(ReadInMemoryLateAdjustments(), ReadInMemoryTaskSignOffs(),
+                    ReadInMemoryPlanConfigurations(), ReadInMemoryEvidenceReviews())])[0];
+        }
+        snapshot = new(
+            snapshot.LateAdjustments!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray(),
+            snapshot.TaskSignOffs!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray(),
+            snapshot.PlanConfigurations!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray(),
+            snapshot.EvidenceReviews!.Where(row => row.WorkflowId == workflow.WorkflowId).ToArray());
         var period = ResolvePeriod(workflow.PeriodId);
-        var planConfiguration = GetPlanConfiguration(workflow.WorkflowId);
+        var planConfiguration = snapshot.PlanConfigurations!.FirstOrDefault();
         var materialityPolicy = planConfiguration?.MaterialityPolicy ?? ResolveMaterialityPolicy(workflow);
         var taskConfigurations = planConfiguration?.TaskConfigurations
             .ToDictionary(static configuration => configuration.TaskId, StringComparer.OrdinalIgnoreCase)
             ?? new Dictionary<string, CloseTaskConfigurationDto>(StringComparer.OrdinalIgnoreCase);
-        var retainedSignOffs = GetTaskSignOffs(workflow.WorkflowId);
+        var retainedSignOffs = snapshot.TaskSignOffs!;
         var satisfiedTaskIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var tasks = new List<CloseTaskDto>(workflow.CloseChecklist.Count);
         for (var index = 0; index < workflow.CloseChecklist.Count; index++)
@@ -1374,10 +1390,10 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             }
         }
 
-        var lateAdjustments = GetLateAdjustments(workflow.WorkflowId);
+        var lateAdjustments = snapshot.LateAdjustments!.Select(static row => row.Adjustment).ToArray();
         var validationIssues = BuildValidationIssues(workflow, tasks, lateAdjustments, materialityPolicy);
         var isPeriodLocked = workflow.Status == OperationsWorkflowStatusDto.Closed && workflow.ClosePackage is not null;
-        var evidenceReviews = GetEvidenceReviews(workflow.WorkflowId);
+        var evidenceReviews = snapshot.EvidenceReviews!.Select(static row => row.Review).ToArray();
         var operatingCoverage = BuildOperatingCoverage(
             workflow,
             tasks,
@@ -1405,7 +1421,11 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             planConfiguration,
             evidenceReviews,
             operatingCoverage,
-            WorkflowVersion: workflow.Version);
+            WorkflowVersion: workflow.Version,
+            WorkflowId: workflow.WorkflowId,
+            FundAccountId: workflow.FundAccountId,
+            EvidenceVersion: Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(snapshot, JsonOptions)),
+            EvaluatedAtUtc: DateTimeOffset.UtcNow);
     }
 
     private async Task<ClosePeriodPlanDto> BuildPeriodPlanWithGateAsync(

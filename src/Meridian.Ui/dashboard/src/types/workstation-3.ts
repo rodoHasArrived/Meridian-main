@@ -408,6 +408,10 @@ export interface ClosePostingGate {
 export interface ClosePeriodPlan {
   closePlanId: string;
   workflowVersion?: number | null;
+  workflowId?: string | null;
+  fundAccountId?: string | null;
+  evidenceVersion?: string | null;
+  evaluatedAtUtc?: string | null;
   fundProfileId: string;
   ledgerBookId: string | null;
   periodId: string;
@@ -1233,6 +1237,7 @@ export type DataOperationsExportRecord = DataExportRecord;
 export type DataOperationsWorkspaceResponse = DataWorkspaceResponse;
 
 export interface TradingPosition {
+  markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   positionKey?: string;
   symbol: string;
   side: "Long" | "Short";

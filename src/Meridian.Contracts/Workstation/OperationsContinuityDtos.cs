@@ -1386,7 +1386,8 @@ public sealed record PrivateCapitalCloseCockpitWorkflowDto(
     string? ClosePackageRoute,
     int BlockerCount,
     int OpenChecklistCount,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    long Version = 0);
 
 public sealed record PrivateCapitalCloseCockpitLaneDto(
     string LaneId,

@@ -11,6 +11,8 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Application
 
+`DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
+
 ## Purpose
 
 Meridian application layer contains use cases, orchestration services, commands, and workflow

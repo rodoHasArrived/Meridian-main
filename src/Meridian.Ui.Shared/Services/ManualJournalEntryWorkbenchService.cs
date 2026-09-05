@@ -248,9 +248,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         return currency;
     }
 
-    public async Task<ManualJournalEntryDraftDto> SaveDraftAsync(
-        SaveManualJournalEntryDraftRequest request,
-        CancellationToken ct = default)
+    public Task<ManualJournalEntryDraftDto> SaveDraftAsync(
+        SaveManualJournalEntryDraftRequest request, CancellationToken ct = default)
+        => SaveDraftCoreAsync(request, trustedAutomatedIntake: false, ct);
+
+    internal Task<ManualJournalEntryDraftDto> SaveAutomatedDraftAsync(
+        SaveManualJournalEntryDraftRequest request, CancellationToken ct)
+        => SaveDraftCoreAsync(request, trustedAutomatedIntake: true, ct);
+
+    private async Task<ManualJournalEntryDraftDto> SaveDraftCoreAsync(
+        SaveManualJournalEntryDraftRequest request, bool trustedAutomatedIntake, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
@@ -271,7 +278,18 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             // WPF resave may edit the draft, but cannot clear, replace, or upgrade the retained grade.
             AutomationEvidenceAssessment = existing is null
                 ? request.Draft.AutomationEvidenceAssessment
-                : existing.AutomationEvidenceAssessment
+                : existing.AutomationEvidenceAssessment,
+            ValuationMarkEvidenceJson = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.ValuationMarkEvidenceJson : null)
+                : existing.ValuationMarkEvidenceJson,
+            ValuationMarkEvidenceDigest = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.ValuationMarkEvidenceDigest : null)
+                : existing.ValuationMarkEvidenceDigest,
+            RequiresValuationMarkEvidence = existing?.RequiresValuationMarkEvidence == true ||
+                ValuationMarkEvidenceGuard.IsValuation(existing?.TreasuryContext?.IdempotencyKey) ||
+                existing?.ValuationMarkEvidenceJson is not null || request.Draft.RequiresValuationMarkEvidence ||
+                ValuationMarkEvidenceGuard.IsValuation(request.Draft.TreasuryContext?.IdempotencyKey) ||
+                request.Draft.ValuationMarkEvidenceJson is not null
         }, allowIncomplete: true, ct).ConfigureAwait(false);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, normalizedDraft);
         if (existing is not null)
@@ -898,6 +916,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ManualJournalSecurityMasterLineage? securityLineage)
     {
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        AddMetadataTag(tags, ValuationMarkEvidenceGuard.EvidenceTag, draft.ValuationMarkEvidenceJson);
+        AddMetadataTag(tags, ValuationMarkEvidenceGuard.DigestTag, draft.ValuationMarkEvidenceDigest);
         AddMetadataTag(tags, "manualJournalEntryId", draft.JournalEntryId.ToString("D"));
         AddMetadataTag(tags, "manualJournalEntryStatus", draft.Status.ToString());
         AddMetadataTag(tags, "manualJournalEntryType", draft.EntryType.ToString());
