@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1381 / 9066** items documented (**15.2%**) &mdash; Grade: **F**
+**1381 / 9070** items documented (**15.2%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 15.2%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1281 | 8595 | 14.9% | F |
+| Public Classes / Interfaces | 1281 | 8599 | 14.9% | F |
 | API Endpoints | 88 | 328 | 26.8% | F |
 | Configuration Options | 1 | 132 | 0.8% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7314 undocumented)
+### Public Classes / Interfaces (7318 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7264 more | |
+| ... and 7268 more | |
 
 ### API Endpoints (240 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7314 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+1. **Public Classes / Interfaces**: 7318 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
 2. **API Endpoints**: 240 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 131 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
