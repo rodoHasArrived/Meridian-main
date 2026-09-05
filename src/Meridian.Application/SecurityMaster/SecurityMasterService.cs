@@ -701,7 +701,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 "asset class, so the write is refused. Apply the change from a node that supports this asset class.");
         }
 
-        EnsureEquityClassificationRoundTripsSafely(projection);
+        EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
+        EnsureBondCouponPayloadRoundTripsSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
     }
 
@@ -822,45 +823,691 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     }
 
     /// <summary>
-    /// Same read-tolerance-must-not-become-write-tolerance rule, one level down: an equity whose
-    /// stored classification discriminant this node does not recognize deserializes as
-    /// <c>EquityClassification.Other(raw)</c>, which re-serializes WITHOUT the record's
-    /// <c>preferredTerms</c>/<c>convertibleTerms</c> blocks. When those blocks are present the write
-    /// would silently delete structure this node did not understand, so it is refused; without them
-    /// the Other round-trip is lossless (the raw label survives as <c>otherClassification</c>).
+    /// Same read-tolerance-must-not-become-write-tolerance rule, one level down from the asset class:
+    /// a stored DISCRIMINANT value this node does not recognize still deserializes — that is the
+    /// point of read tolerance — but it deserializes into something else, and re-serializing it on
+    /// amend or deactivate writes that something else back. This walks the vocabularies
+    /// <see cref="SecurityAssetTermsSchema"/> declares for the record's asset class rather than
+    /// hard-coding one check per field, so a vocabulary added to the table is guarded here the day
+    /// it is declared.
+    /// <para>Whether an unrecognized value is actually lossy is the schema's
+    /// <see cref="SecurityAssetTermField.CarriesUndeclaredValueVerbatim"/>/
+    /// <see cref="SecurityAssetTermField.Escape"/> trichotomy:</para>
+    /// <list type="bullet">
+    /// <item>Carried verbatim — an option's <c>putCall</c> re-serializes intact. Never refused here;
+    /// the vocabulary constrains what a write may assert, not what an old row may keep.</item>
+    /// <item>An escape — an unknown equity <c>classification</c> becomes <c>Other(raw)</c> and the
+    /// label survives as <c>otherClassification</c>, so the round-trip is lossless UNLESS the record
+    /// carries the escape's dependent blocks (<c>preferredTerms</c>/<c>convertibleTerms</c>), which
+    /// the escape decode has nowhere to reattach and would silently delete.</item>
+    /// <item>Neither — an unknown <c>couponType</c> collapses to <c>Fixed</c> and the label is gone
+    /// from the row. Always refused.</item>
+    /// </list>
+    /// <para>A stored token of the wrong JSON KIND sits outside that trichotomy and is refused on
+    /// its own terms: the discriminant readers are all <c>GetOptionalString</c>/
+    /// <c>GetRequiredString</c>, so a number or a boolean is not decoded badly, it is not decoded at
+    /// all — neither the verbatim carry nor the escape can re-emit a string the codec never read.
+    /// The one exception is a REQUIRED discriminant, whose reader throws: the record fails loudly on
+    /// read rather than being silently rewritten, and nothing here could repair it anyway.</para>
+    /// <para>Every refusal here has one governed exit, the same one
+    /// <see cref="EnsureCustomAssetEnvelopeRoundTripsSafely"/> instructs: an amendment whose patch
+    /// settles the offending field itself — naming a DECLARED value, or explicitly nulling one the
+    /// codec clears rather than substitutes (see <see cref="ClearingIsARepairFor"/>). The patch
+    /// replaces the kind wholesale (the
+    /// F# amend binds <c>Kind = defaultArg command.Kind current.Kind</c>), so the undecodable stored
+    /// value is never re-serialized and that amendment is what repairs the record. Without the exit
+    /// the refusal is a dead end for the dropped-value fields: "apply the change from a node that
+    /// supports this value" is sound advice for an unrecognized ASSET CLASS, where a newer node
+    /// plausibly has the deserializer, but an undeclared <c>couponType</c> names no node at all —
+    /// it is bad data, so the only node that can fix it is this one, and a row carrying one would
+    /// otherwise be permanently unamendable AND undeactivatable.</para>
     /// </summary>
-    private static void EnsureEquityClassificationRoundTripsSafely(SecurityProjectionRecord projection)
+    private static void EnsureDeclaredVocabulariesRoundTripSafely(
+        SecurityProjectionRecord projection,
+        JsonElement? assetSpecificTermsPatch)
     {
-        if (!string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
-            || projection.AssetSpecificTerms.ValueKind != JsonValueKind.Object
-            || !projection.AssetSpecificTerms.TryGetProperty("classification", out var classification)
-            || classification.ValueKind != JsonValueKind.String)
+        var terms = projection.AssetSpecificTerms;
+        if (terms.ValueKind != JsonValueKind.Object)
         {
             return;
         }
 
-        // The serializer's discriminants are exact-case; anything else round-trips as Other.
-        var raw = classification.GetString();
-        var isKnownDiscriminant = raw is "Common" or "Preferred" or "Convertible" or "ConvertiblePreferred" or "Other";
-        if (isKnownDiscriminant)
+        foreach (var field in SecurityAssetTermsSchema.DiscriminantFields(projection.AssetClass))
         {
-            return;
-        }
+            // Checked for EVERY field, before any exit: a populated case variant is lost whether or
+            // not the canonical key is present. Running it only where the canonical key was absent
+            // missed the record that carries BOTH — the codec reads the canonical spelling, the
+            // variant is invisible to it, and the next write drops that value with no trace.
+            EnsureNoCaseVariantDiscriminant(projection, terms, field, assetSpecificTermsPatch);
 
-        var carriesNestedTerms =
-            (projection.AssetSpecificTerms.TryGetProperty("preferredTerms", out var preferred)
-                && preferred.ValueKind == JsonValueKind.Object)
-            || (projection.AssetSpecificTerms.TryGetProperty("convertibleTerms", out var convertible)
-                && convertible.ValueKind == JsonValueKind.Object);
-        if (carriesNestedTerms)
-        {
-            throw new InvalidOperationException(
-                $"Security '{projection.SecurityId:D}' is an equity with classification '{raw}', which this node does not " +
-                "recognize, and it carries preferred/convertible term blocks tied to that classification. Re-serializing it " +
-                "here would degrade the classification to 'Other' and drop those blocks, so the write is refused. Apply the " +
-                "change from a node that supports this classification.");
+            if (!terms.TryGetProperty(field.Key, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            // A token of the wrong JSON KIND is undeclared in the strongest sense. Every
+            // discriminant reader is GetOptionalString/GetRequiredString, so a number, a boolean or
+            // an object is not a value this codec reads badly — it is one the codec cannot see at
+            // all: an OPTIONAL discriminant decodes to its missing-key result and the token is gone
+            // on the next write, exactly as an undeclared string would be. Neither exemption below
+            // rescues it, because both re-emit a STRING the codec never read. A REQUIRED
+            // discriminant is deliberately left alone — GetRequiredString THROWS, so the record
+            // fails loudly on read instead of being silently rewritten, and no patch could repair
+            // it here anyway: the amendment builds its current record from the STORED terms.
+            var unreadableToken = value.ValueKind != JsonValueKind.String;
+            if (unreadableToken && field.Required)
+            {
+                continue;
+            }
+
+            // The serializer's discriminants are exact-case, so SecurityAssetTermField.Allows is too
+            // — but matched against the value as the DECODER matches it, not as the key stores it.
+            if (!unreadableToken && field.Allows(AsTheDecoderMatchesIt(field, value.GetString())))
+            {
+                continue;
+            }
+
+            // A value the codec carries verbatim re-serializes intact, so the vocabulary constrains
+            // what a WRITE may assert (see the mapping and the field-edit validator) without making
+            // an odd value already in the row a reason to refuse amending or deactivating it.
+            if (!unreadableToken && field.CarriesUndeclaredValueVerbatim)
+            {
+                continue;
+            }
+
+            // The governed exit: this amendment settles the value itself, so the stored one is
+            // replaced rather than re-serialized and nothing is lost. Checked before both throws —
+            // it is the repair route each of their messages points at.
+            if (PatchRepairsValueFor(assetSpecificTermsPatch, field))
+            {
+                continue;
+            }
+
+            var raw = unreadableToken ? value.GetRawText() : value.GetString();
+            var clearHint = ClearingIsARepairFor(field)
+                ? $", or an explicit null {field.Key} to clear it"
+                : string.Empty;
+
+            // Naming a declared value is not sufficient where the vocabulary owns dependent blocks,
+            // so the hint has to say so — otherwise a repair rejected for carrying preferredTerms
+            // under "Common" reads as a refusal of the exact document the hint asked for.
+            var dependentHint = field.Escape is { } hintEscape && hintEscape.DependentKeys.Count > 0
+                ? $" The {field.Key} it names must also own any of " +
+                  $"{string.Join("/", hintEscape.DependentKeys)} the document still carries, or the decode has " +
+                  "nowhere to reattach them and the write drops them."
+                : string.Empty;
+            var repairHint =
+                " To repair the record here, amend it with a COMPLETE asset-terms document naming a declared " +
+                $"{field.Key} ({string.Join(", ", field.AllowedValues)}, matched case-sensitively){clearHint} — the " +
+                "amendment replaces the terms wholesale, so any field the patch omits is dropped with them — and note " +
+                "that a deactivation cannot carry a patch, so repair it first." + dependentHint;
+
+            // An escape absorbs an undeclared STRING by re-emitting the raw label under the
+            // canonical escape member. An unreadable token gives it nothing to absorb — the codec
+            // read no string at all — so it falls through to the unconditional refusal.
+            SecurityAssetTermVocabularyEscape? escape = unreadableToken ? null : field.Escape;
+            if (escape is null)
+            {
+                throw new InvalidOperationException(
+                    $"Security '{projection.SecurityId:D}' has {field.Key} '{raw}', which this node does not recognize and " +
+                    $"cannot carry — the declared values are {string.Join(", ", field.AllowedValues)}. Re-serializing it here " +
+                    "would rewrite it as one of those and drop the terms that depend on it, so the write is refused." +
+                    repairHint);
+            }
+
+            var dependentKeys = escape.DependentKeys
+                .Where(key => CarriesValue(terms, key))
+                .ToArray();
+            if (dependentKeys.Length > 0)
+            {
+                throw new InvalidOperationException(
+                    $"Security '{projection.SecurityId:D}' has {field.Key} '{raw}', which this node does not recognize, and " +
+                    $"it carries {string.Join(" and ", dependentKeys)} tied to that value. Re-serializing it here would " +
+                    $"degrade {field.Key} to '{escape.Value}' and drop those blocks, so the write is refused. Apply the " +
+                    "change from a node that supports this value." + repairHint);
+            }
         }
     }
+
+    /// <summary>
+    /// The record may SAY a discriminant under a spelling the codec never looks at. Every read is
+    /// ordinal (<c>JsonElement.TryGetProperty</c>, and the codec's own <c>GetOptionalString</c>), so
+    /// <c>ExerciseStyle</c> is not <c>exerciseStyle</c>: the variant is invisible to the decode and
+    /// re-serializing writes a fresh document without the stray key, so its value is gone with no
+    /// trace. That holds whether or not the canonical key is also present — with it, the codec reads
+    /// the canonical value and drops the variant; without it, the field decodes to its missing-key
+    /// result and for an escape field the blocks that hung off it go too, since the decode lands on
+    /// <c>None</c> rather than on the case that owns them. Both shapes lose a stated value, so this
+    /// runs for every declared field rather than only where the canonical key is missing.
+    /// <para>Stored documents really do carry case-variant keys:
+    /// <c>ApprovedFieldEditCanonicalMergeHandler.RemoveKeyVariants</c> strips them, matching
+    /// <see cref="StringComparison.OrdinalIgnoreCase"/>, for exactly that reason. The bond coupon
+    /// guard already refuses this shape for <c>couponType</c>; it is a property of every declared
+    /// vocabulary, not of that one field, so it belongs on the schema-driven walk.</para>
+    /// <para>A REQUIRED discriminant is left alone only where the codec's own read of it THROWS.
+    /// <c>GetRequiredString</c> demands a JSON string, so a missing or wrong-kind canonical key
+    /// fails the record loudly on read and no patch could repair it from here. A READABLE canonical
+    /// value is the opposite case and was wrongly swept up with it: the record loads, and the
+    /// variant beside it is dropped on the next write exactly as an optional field's would be.
+    /// <c>putCall: "Put"</c> next to <c>PutCall: "Call"</c> loads as a put and silently loses the
+    /// call, so it is refused here too.</para>
+    /// </summary>
+    private static void EnsureNoCaseVariantDiscriminant(
+        SecurityProjectionRecord projection,
+        JsonElement terms,
+        SecurityAssetTermField field,
+        JsonElement? assetSpecificTermsPatch)
+    {
+        // Mirrors GetRequiredString and nothing more: it throws on anything that is not a JSON
+        // string, and on nothing else — a blank string still loads. Asking whether the record loads,
+        // rather than whether its value is one this node likes, is what keeps the exemption to the
+        // case its justification actually covers.
+        if (field.Required && RequiredReadThrowsFor(terms, field))
+        {
+            return;
+        }
+
+        var variants = CaseVariantKeys(terms, field.Key);
+        if (variants.Length == 0 || PatchRepairsValueFor(assetSpecificTermsPatch, field))
+        {
+            return;
+        }
+
+        var canonicalOutcome = terms.TryGetProperty(field.Key, out var canonical)
+                && canonical.ValueKind == JsonValueKind.String
+            ? $"the record loads with {field.Key} '{canonical.GetString()}' and re-serializing would write a " +
+                "document carrying only that"
+            : $"the record loads with no {field.Key} and re-serializing would write a document without the " +
+                "stray key";
+
+        throw new InvalidOperationException(
+            $"Security '{projection.SecurityId:D}' carries {string.Join(" and ", variants)} where this node reads " +
+            $"only '{field.Key}', matched case-sensitively, so the codec cannot see that value at all: " +
+            $"{canonicalOutcome}, dropping it. The write is refused. To repair the record here, amend it with a " +
+            "COMPLETE asset-terms document " +
+            $"spelling the key '{field.Key}' and naming a declared value " +
+            $"({string.Join(", ", field.AllowedValues)}) — the amendment replaces the terms wholesale, so any field " +
+            "the patch omits is dropped with them — and note that a deactivation cannot carry a patch, so repair it " +
+            "first.");
+    }
+
+    /// <summary>
+    /// True when the codec's REQUIRED read of <paramref name="field"/> would throw, so the record
+    /// never loads and there is no silent rewrite to refuse. Mirrors
+    /// <c>SecurityMasterMapping.GetRequiredString</c>, which accepts any JSON string and rejects
+    /// everything else — blankness is not its question, so it must not be this one's either.
+    /// </summary>
+    private static bool RequiredReadThrowsFor(JsonElement terms, SecurityAssetTermField field)
+        => !terms.TryGetProperty(field.Key, out var value) || value.ValueKind != JsonValueKind.String;
+
+    /// <summary>
+    /// Populated keys in <paramref name="document"/> that differ from <paramref name="key"/> only by
+    /// case, and which every ordinal read therefore misses.
+    /// </summary>
+    private static string[] CaseVariantKeys(JsonElement document, string key)
+        => document
+            .EnumerateObject()
+            .Where(property => !string.Equals(property.Name, key, StringComparison.Ordinal)
+                && string.Equals(property.Name, key, StringComparison.OrdinalIgnoreCase)
+                && CarriesValue(document, property.Name))
+            .Select(property => property.Name)
+            .ToArray();
+
+    /// <summary>
+    /// The vocabulary walk inspects the FLAT discriminant keys the canonical serializer writes. A
+    /// bond carrying the legacy nested <c>coupon</c> object instead has no flat <c>couponType</c>
+    /// for that walk to see, yet it is lossy in exactly the same way: <c>ToBondTerms</c> has no
+    /// nested-coupon fallback, so the record reads as <c>Fixed(couponRate ?? 0)</c> and
+    /// re-serializing flattens it to <c>couponType: "Fixed"</c>, dropping the nested index, spread,
+    /// and day count. Nothing in this repo writes that shape, but the projection store reads it
+    /// deliberately — <c>PostgresSecurityMasterStore.TryBuildBondProjection</c> falls back to
+    /// <c>coupon.kind</c>/<c>rate</c>/<c>index</c> "for externally-authored payloads that still use
+    /// it", with a regression test pinning the behaviour — so such rows are expected to exist.
+    /// <para>The same hole is open one step wider, and a present <c>couponType</c> does not close
+    /// it: the codec reads the flat companions ONE ARM AT A TIME, so a document with no
+    /// <c>couponType</c> and a populated <c>floatingIndex</c> orphans it on the Fixed default, and
+    /// a document declaring <c>couponType: "Fixed"</c> beside that same <c>floatingIndex</c> orphans
+    /// it just as completely — the Fixed arm never reads it and the serializer writes it back null.
+    /// The projection store reads those columns independently of the discriminant, so the value is
+    /// visible to operators right up until the amendment that deletes it. All of these are one
+    /// defect — coupon structure the selected arm does not read — so all of them are refused here.</para>
+    /// <para>What keeps this free of false positives is the serializer's shape rather than any
+    /// gate: <c>Interop.SecurityMaster.assetSpecificTermsJson</c> emits the fields of the arm it is
+    /// writing and <see langword="null"/>/<c>[]</c> for every other arm's, so a canonically written
+    /// row only ever populates keys its own arm reads and none of them can trip this.</para>
+    /// </summary>
+    private static void EnsureBondCouponPayloadRoundTripsSafely(
+        SecurityProjectionRecord projection,
+        JsonElement? assetSpecificTermsPatch)
+    {
+        var terms = projection.AssetSpecificTerms;
+        if (!string.Equals(projection.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
+            || terms.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        var couponType = SecurityAssetTermsSchema.Field("Bond", "couponType");
+        var declared = string.Join(", ", couponType?.AllowedValues ?? Array.Empty<string>());
+
+        // The SUBMITTED document is held to the same standard as the stored one, and INDEPENDENTLY
+        // of it. A patch replaces the terms wholesale, so coupon structure its own discriminant does
+        // not name is dropped on the way in — the operator's spreadBps never reaches the record.
+        // Checking this only while the stored terms were themselves orphaned left the hole open on
+        // every other path, the repair route this guard advertises included: a record refused for an
+        // undeclared couponType would be "repaired" by a patch that quietly lost its nested spread.
+        // The loss is not self-correcting either — by the time the next amendment refuses the new
+        // record the value is already gone.
+        if (assetSpecificTermsPatch is JsonElement patch && patch.ValueKind == JsonValueKind.Object)
+        {
+            var submitted = OrphanedCouponStructure(patch);
+            if (submitted.Length > 0)
+            {
+                throw new InvalidOperationException(
+                    $"The amendment for security '{projection.SecurityId:D}' submits a bond document whose " +
+                    $"{string.Join(" and ", submitted)} the canonical codec does not read for the coupon type the " +
+                    "document declares, so the amendment would persist the record without them. The write is " +
+                    $"refused. Re-submit it with a declared couponType ({declared}) naming the structure and its " +
+                    "values in the flat keys the codec reads.");
+            }
+        }
+
+        var orphaned = OrphanedCouponStructure(terms);
+        if (orphaned.Length == 0)
+        {
+            return;
+        }
+
+        // The governed exit, with the repair document already validated above: naming a declared
+        // couponType is not enough on its own, because the submitted document can carry an orphan of
+        // its own and the amendment would persist it having dropped that value first.
+        if (couponType is not null && PatchRepairsValueFor(assetSpecificTermsPatch, couponType))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Security '{projection.SecurityId:D}' is a bond carrying {string.Join(" and ", orphaned)} that the " +
+            "canonical codec does not read for the coupon structure the record resolves to, so re-serializing it " +
+            "here would drop that structure. The write is refused. To repair the record here, amend it with a " +
+            $"COMPLETE asset-terms document naming a declared couponType ({declared}) and carrying those values in " +
+            "the flat keys — the amendment replaces the terms wholesale, so any field the patch omits is dropped " +
+            "with them — and note that a deactivation cannot carry a patch, so repair it first.");
+    }
+
+    /// <summary>
+    /// Every flat key that belongs to a coupon STRUCTURE rather than to the bond, in the order a
+    /// refusal names them. Which of them survives a round trip is not a property of the key but of
+    /// the arm <c>ToBondTerms</c> selects — see <see cref="CouponArmReads"/> — so the whole set is
+    /// checked and the arm decides.
+    /// </summary>
+    private static readonly string[] FlatCouponStructureKeys =
+    [
+        "couponRate", "floatingIndex", "spreadBps", "capRate", "floorRate",
+        "stepSchedule", "inflationIndex", "inflationBaseIndexValue", "inflationIndexRatio", "dayCount"
+    ];
+
+    /// <summary>
+    /// The arm <c>ToBondTerms</c> selects for this document. Anything the codec cannot read as a
+    /// discriminant — absent, null, a case variant, a non-string token — lands on the same Fixed
+    /// default the reader applies (<c>GetOptionalString(json, "couponType") ?? "Fixed"</c>), and so
+    /// does an undeclared string, which the read-tolerant arm also decodes as Fixed.
+    /// </summary>
+    private static string SelectedCouponArm(JsonElement terms)
+        => CodecCanRead(terms, "couponType") && terms.TryGetProperty("couponType", out var couponType)
+            ? couponType.GetString() ?? "Fixed"
+            : "Fixed";
+
+    /// <summary>
+    /// True when <paramref name="arm"/> reads <paramref name="key"/>, mirroring the arms of
+    /// <c>ToBondTerms</c> exactly. A key the selected arm does not read is not merely ignored: the
+    /// F# serializer emits its OWN arm's fields and nulls the rest
+    /// (<c>Interop.SecurityMaster.assetSpecificTermsJson</c>), so re-serializing deletes it — a
+    /// <c>floatingIndex</c> beside <c>couponType: "Fixed"</c> is as gone as one with no discriminant
+    /// at all, even though the projection store reads and shows it.
+    /// <para>That same emit-per-arm shape is what keeps this free of false positives: a canonically
+    /// written row only ever populates the keys its own arm reads, so no canonical bond can trip it.</para>
+    /// </summary>
+    private static bool CouponArmReads(string arm, string key) => arm switch
+    {
+        "Floating" => key is "floatingIndex" or "spreadBps" or "capRate" or "floorRate" or "dayCount",
+        "ZeroCoupon" => false,
+        "Step" => key is "stepSchedule" or "dayCount",
+        "InflationLinked" =>
+            key is "couponRate" or "inflationIndex" or "inflationBaseIndexValue" or "inflationIndexRatio" or "dayCount",
+        // "Fixed", and the read-tolerant fallback every unreadable or undeclared discriminant lands on.
+        _ => key is "couponRate" or "dayCount",
+    };
+
+    /// <summary>
+    /// The legacy nested <c>coupon</c> members and the flat key each corresponds to, mirroring the
+    /// per-field fallback in <c>PostgresSecurityMasterStore.TryBuildBondProjection</c>. That
+    /// per-field shape is why the nested object cannot be judged present-or-absent: a row can carry
+    /// its discriminant flat and one value only nested.
+    /// </summary>
+    private static readonly (string Nested, string Flat)[] NestedCouponMembers =
+    [
+        ("kind", "couponType"), ("rate", "couponRate"), ("index", "floatingIndex"),
+        ("spreadBps", "spreadBps"), ("dayCountConvention", "dayCount")
+    ];
+
+    /// <summary>
+    /// The coupon structure this record carries that the canonical codec would drop on
+    /// re-serialization, named for the refusal message. Two independent sources:
+    /// <list type="bullet">
+    /// <item>flat companions the arm the codec selects does not read, or reads and cannot decode —
+    /// see <see cref="OrphansFlatCompanion"/>. The arm is the whole question: the same
+    /// <c>spreadBps</c> is economics under <c>couponType: "Floating"</c> and a deleted value under
+    /// <c>"Fixed"</c>.</item>
+    /// <item>nested <c>coupon</c> members whose flat counterpart is missing — the codec reads only
+    /// the flat key, so the nested value is invisible to it and gone on the next write. Judged per
+    /// member rather than by the object's presence, so a vestigial duplicate of the flat payload
+    /// (and an empty <c>coupon: {}</c>) is correctly ignored, while a mixed row that keeps one value
+    /// only nested is correctly refused.</item>
+    /// </list>
+    /// Only a POPULATED value counts in either case: the canonical serializer emits the companions
+    /// its arm does not own as <see langword="null"/>/<c>[]</c>, so a presence-only test would
+    /// refuse every ordinary bond.
+    /// </summary>
+    private static string[] OrphanedCouponStructure(JsonElement terms)
+    {
+        var orphaned = new List<string>();
+        var arm = SelectedCouponArm(terms);
+
+        orphaned.AddRange(FlatCouponStructureKeys.Where(key => OrphansFlatCompanion(terms, arm, key)));
+
+        if (!CodecCanRead(terms, "couponType"))
+        {
+            // A case-variant spelling is not the discriminant, so the record still loads as a fixed
+            // coupon and re-serializing writes a fresh document without the stray key. The same
+            // helper the schema-driven walk uses, so the two cannot drift; the exact key, present
+            // but undecodable, is that walk's business and it refuses it there.
+            orphaned.AddRange(CaseVariantKeys(terms, "couponType"));
+        }
+
+        if (terms.TryGetProperty("coupon", out var nested) && nested.ValueKind == JsonValueKind.Object)
+        {
+            // The flat counterpart only REPRESENTS the nested value if the codec can decode it.
+            // CarriesValue is the wrong question here: the projection store's readers are
+            // type-aware and fall through to the nested value when the flat one does not parse
+            // (spreadBps: "N/A"), so treating any populated flat value as a representation would
+            // discard exactly the nested value the store is reading.
+            orphaned.AddRange(NestedCouponMembers
+                .Where(member => CarriesValue(nested, member.Nested)
+                    && !CodecCanRead(terms, member.Flat)
+                    && !MatchesTheMissingKeyDefault(nested, member, arm))
+                .Select(member => $"coupon.{member.Nested}"));
+        }
+
+        return orphaned.ToArray();
+    }
+
+    /// <summary>
+    /// True when <paramref name="key"/> holds coupon structure this document would lose. Both halves
+    /// of the question matter: <see cref="CouponArmReads"/> decides whether the selected arm reads
+    /// the key at all, and <see cref="CodecCanRead"/> decides whether reading it yields anything —
+    /// <c>spreadBps: "N/A"</c> IS read by the Floating arm and still lands as null.
+    /// <para>A key the arm does not read is lost whatever it holds, zero included. The
+    /// substitution that makes an absent rate read as zero
+    /// (<c>GetOptionalDecimal(json, "couponRate") ?? 0m</c>) belongs to the Fixed and
+    /// InflationLinked arms, and those arms READ the key, so they are judged by
+    /// <see cref="CodecCanRead"/> and never reach this branch at all. The arms that do reach it
+    /// leave <c>BondTerms.couponRate</c> as <c>None</c>, so re-serializing writes
+    /// <c>couponRate: null</c> while <c>TryBuildBondProjection</c> reads the flat key without
+    /// consulting the arm — a stored <c>fixed_coupon_rate</c> of 0 becomes NULL. That is a stated
+    /// value turning into an absence, refused like any other.</para>
+    /// </summary>
+    private static bool OrphansFlatCompanion(JsonElement terms, string arm, string key)
+    {
+        if (!CarriesValue(terms, key))
+        {
+            return false;
+        }
+
+        return !CouponArmReads(arm, key) || !CodecCanRead(terms, key);
+    }
+
+    /// <summary>True when <paramref name="key"/> holds a JSON number the codec would decode as zero.</summary>
+    private static bool IsNumericZero(JsonElement document, string key)
+        => document.TryGetProperty(key, out var value)
+            && value.ValueKind == JsonValueKind.Number
+            && value.TryGetDecimal(out var number)
+            && number == 0m;
+
+    /// <summary>
+    /// True when the nested member says exactly what the codec's documented default for the absent
+    /// flat key already produces, so re-serializing canonicalizes the JSON shape and loses nothing.
+    /// <para>Two members qualify, each against its own type of default. <c>coupon.kind = "Fixed"</c>
+    /// qualifies through <see cref="MissingKeyDefaultFor"/>: <c>ToBondTerms</c> defaults an absent
+    /// <c>couponType</c> to <c>Fixed</c> and the projection store reads the nested kind as
+    /// <c>Fixed</c>, so both codecs already agree. <c>coupon.rate = 0</c> qualifies because an
+    /// absent flat rate reads as <c>0m</c> — but only under an arm that actually performs that
+    /// substitution, which is why <paramref name="arm"/> is part of the question; a nested
+    /// <c>4.25</c> is not the same number and stays refused under every arm. The remaining members
+    /// (index, spread, day count) have no substituted counterpart at all: an absent flat key means
+    /// the value is gone, not written another way.</para>
+    /// </summary>
+    private static bool MatchesTheMissingKeyDefault(
+        JsonElement nested,
+        (string Nested, string Flat) member,
+        string arm)
+    {
+        if (SecurityAssetTermsSchema.Field("Bond", member.Flat) is not { } field)
+        {
+            return false;
+        }
+
+        // The discriminant's substituted default is a declared vocabulary value.
+        if (MissingKeyDefaultFor(field) is { } substituted)
+        {
+            return nested.TryGetProperty(member.Nested, out var value)
+                && value.ValueKind == JsonValueKind.String
+                && string.Equals(value.GetString(), substituted, StringComparison.Ordinal);
+        }
+
+        // The scalar rate's is a NUMBER: GetOptionalDecimal(json, "couponRate") ?? 0m means an
+        // absent flat rate reads as exactly the zero a nested rate of 0 states, so both codecs
+        // already agree and re-serializing only canonicalizes the shape. That substitution is the
+        // Fixed and InflationLinked arms', though, and the arm has to be asked. Under an arm that
+        // reads no rate the round trip writes couponRate: null, so the 0 the projection store was
+        // reading out of coupon.rate becomes NULL — the nested spelling of the same loss a flat
+        // zero suffers there. Any other nested rate IS a different number and stays refused.
+        return string.Equals(member.Flat, "couponRate", StringComparison.Ordinal)
+            && CouponArmReads(arm, member.Flat)
+            && IsNumericZero(nested, member.Nested);
+    }
+
+    /// <summary>
+    /// True when the canonical codec can actually DECODE <paramref name="key"/> — present,
+    /// populated, AND of the JSON kind its declared schema type requires. Presence is not the same
+    /// question as readability, and conflating them loses data twice over: <c>couponType: null</c>
+    /// is a present property that <c>ToBondTerms</c> treats as the missing-value default, and
+    /// <c>spreadBps: "N/A"</c> is a populated value that <c>GetOptionalDecimal</c> cannot parse.
+    /// Both are invisible to the codec, so neither can stand in for the value it would drop.
+    /// </summary>
+    private static bool CodecCanRead(JsonElement document, string key)
+    {
+        if (!CarriesValue(document, key) || !document.TryGetProperty(key, out var value))
+        {
+            return false;
+        }
+
+        // Each arm mirrors the corresponding reader in SecurityMasterMapping, including its PARSE
+        // and not merely its JSON kind. The kind alone is a proxy, and the proxy is wrong in
+        // exactly the cases that matter here: 1e100 is a JSON number that TryGetDecimal rejects,
+        // and "not-a-date" is a JSON string that DateOnly.TryParse rejects. The projection store's
+        // readers parse too, so it falls through to the nested value while a kind-only check would
+        // call the flat one a representation and let the nested one be discarded.
+        return SecurityAssetTermsSchema.Field("Bond", key)?.Type switch
+        {
+            SecurityAssetTermFieldType.Decimal =>
+                value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out _),
+            SecurityAssetTermFieldType.Integer =>
+                value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out _),
+            SecurityAssetTermFieldType.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+            SecurityAssetTermFieldType.Date =>
+                value.ValueKind == JsonValueKind.String && DateOnly.TryParse(value.GetString(), out _),
+            SecurityAssetTermFieldType.Guid =>
+                value.ValueKind == JsonValueKind.String && Guid.TryParse(value.GetString(), out _),
+            SecurityAssetTermFieldType.Array => value.ValueKind == JsonValueKind.Array,
+            SecurityAssetTermFieldType.Object => value.ValueKind == JsonValueKind.Object,
+            // String, and any undeclared key, decode straight from a non-blank JSON string.
+            _ => value.ValueKind == JsonValueKind.String,
+        };
+    }
+
+    /// <summary>True when <paramref name="key"/> holds a value, not null, blank, or an empty array.</summary>
+    private static bool CarriesValue(JsonElement document, string key)
+        => document.TryGetProperty(key, out var value)
+            && value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined)
+            && (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() > 0)
+            && (value.ValueKind != JsonValueKind.String || !string.IsNullOrWhiteSpace(value.GetString()));
+
+    /// <summary>
+    /// True when the amendment's patch settles <paramref name="field"/> itself, so the stored value
+    /// is replaced rather than re-serialized. Two forms qualify, and both are POSITIVE instructions:
+    /// <list type="bullet">
+    /// <item>naming a declared value — the ordinary repair;</item>
+    /// <item>an explicit <see langword="null"/>, where <see cref="ClearingIsARepairFor"/> says the
+    /// codec decodes an absent key as a genuine absence. Clearing is the honest repair for a value
+    /// this node has no declared equivalent for (an <c>exerciseStyle</c> of <c>"Asian"</c>): the
+    /// write mapper reads null as None and the serializer emits null, so the amendment persists
+    /// exactly what the operator asked for. Refusing it would force them to assert a style the
+    /// option does not have, which corrupts the record more than the value it replaces.</item>
+    /// </list>
+    /// A patch that OMITS the key, blanks it, or repeats an undeclared value is deliberately not an
+    /// exit: the write-mode mapping would decode it to the same fallback and complete the very
+    /// rewrite the refusal exists to stop.
+    /// </summary>
+    private static bool PatchRepairsValueFor(JsonElement? assetSpecificTermsPatch, SecurityAssetTermField field)
+    {
+        if (assetSpecificTermsPatch is not JsonElement patch
+            || patch.ValueKind != JsonValueKind.Object
+            || !patch.TryGetProperty(field.Key, out var patched))
+        {
+            return false;
+        }
+
+        // Naming a declared value is necessary but not sufficient: the value has to be able to HOLD
+        // what the document carries. A repair reading classification "Common" beside a populated
+        // preferredTerms decodes to EquityClassification.Common, which owns no preferred block, and
+        // the serializer emits it null — so the exit would let a repair silently delete terms the
+        // operator explicitly submitted. Same rule for a clear, where the cleared field holds none
+        // of them.
+        // The document must also not say the same field twice under two spellings. The codec reads
+        // the canonical key ordinally and never sees the variant, so a patch carrying both
+        // exerciseStyle "American" and ExerciseStyle "European" persists the first and drops the
+        // second without trace — the stored-record rule, applied to the document that replaces it.
+        if (CaseVariantKeys(patch, field.Key).Length > 0)
+        {
+            return false;
+        }
+
+        if (patched.ValueKind == JsonValueKind.String)
+        {
+            var named = patched.GetString();
+            return field.Allows(named) && !CarriesDependentBlocksTheValueCannotHold(patch, field, named);
+        }
+
+        return patched.ValueKind == JsonValueKind.Null
+            && ClearingIsARepairFor(field)
+            && !CarriesDependentBlocksTheValueCannotHold(patch, field, null);
+    }
+
+    /// <summary>
+    /// True when an absent or null <paramref name="field"/> round-trips as a genuine absence, so
+    /// clearing it is lossless rather than a silent re-typing.
+    /// <para>The distinction is the codec's, not the schema's: an optional discriminant whose
+    /// missing-key read is <c>None</c> (<c>ParseExerciseStyle</c>, <c>ToEquityClassificationOption</c>)
+    /// serializes back as null, while one the codec SUBSTITUTES a declared value for is not cleared
+    /// at all — <c>ToBondTerms</c> reads a null <c>couponType</c> as <c>"Fixed"</c>, which is
+    /// precisely the rewrite these guards exist to stop. A required field is never clearable: its
+    /// reader throws.</para>
+    /// </summary>
+    private static bool ClearingIsARepairFor(SecurityAssetTermField field)
+        => !field.Required && MissingKeyDefaultFor(field) is null;
+
+    /// <summary>
+    /// The stored value as the DECODER matches it, which is not always as the record spells it.
+    /// <c>ParseExerciseStyle</c> switches on <c>value?.Trim()</c>, so a stored <c>" American "</c>
+    /// decodes to <c>American</c> and re-serializes as the canonical spelling: a lossless
+    /// canonicalization, and refusing it would freeze a valid record over whitespace. Every other
+    /// discriminant switches on the raw string (<c>ToBondTerms</c>,
+    /// <c>ToEquityClassificationOption</c>), where padding really does fall through to the
+    /// missing-value default and really is lost.
+    /// <para>This is a READ question and deliberately not a write one. <c>EnsureDeclaredVocabularies
+    /// OnWrite</c> compares the untrimmed value, so a write ASSERTING <c>" American "</c> is still
+    /// refused — read tolerance for a value already in a row is not licence to accept a padded one
+    /// on the way in. Same reason <see cref="PatchRepairsValueFor"/> stays strict: a repair document
+    /// is a write.</para>
+    /// </summary>
+    private static string? AsTheDecoderMatchesIt(SecurityAssetTermField field, string? value)
+        => string.Equals(field.Key, "exerciseStyle", StringComparison.Ordinal) ? value?.Trim() : value;
+
+    /// <summary>
+    /// The declared value the canonical codec SUBSTITUTES when a discriminant key is absent or null,
+    /// for the one field that substitutes anything: <c>ToBondTerms</c> reads
+    /// <c>GetOptionalString(json, "couponType") ?? "Fixed"</c>. This mirrors the codec rather than
+    /// the schema — the schema declares what a value may BE, not what the reader invents when the
+    /// key is gone — so it lives beside the guards that have to reason about the missing-key read.
+    /// </summary>
+    private static string? MissingKeyDefaultFor(SecurityAssetTermField field)
+        => string.Equals(field.Key, "couponType", StringComparison.Ordinal) ? "Fixed" : null;
+
+    /// <summary>
+    /// True when <paramref name="document"/> carries a block that hangs off <paramref name="field"/>'s
+    /// vocabulary but that <paramref name="value"/> does not own, so the decode has nowhere to
+    /// reattach it and the write would drop it. <see langword="null"/> as the value asks the same
+    /// question of a cleared field, which owns none of them.
+    /// <para>"Carries" is <see cref="CarriesValue"/>, the same populated test the rest of these
+    /// guards use, and deliberately not "is an object or an array". A block of the wrong JSON kind
+    /// is not carried more safely for being malformed — <c>preferredTerms: "…"</c> beside a
+    /// classification that does not own it is dropped exactly as an object would be, and under one
+    /// that DOES own it <c>GetRequiredObject</c> throws rather than passing it through. Recognizing
+    /// only the well-formed shapes would have made the malformed ones the way around this check.</para>
+    /// </summary>
+    private static bool CarriesDependentBlocksTheValueCannotHold(
+        JsonElement document,
+        SecurityAssetTermField field,
+        string? value)
+    {
+        if (field.Escape is not { } escape)
+        {
+            return false;
+        }
+
+        // The escape's LABEL key is owned by the escape value and nothing else: ToEquityClassification
+        // Option reads otherClassification only on the "Other" arms, and the serializer emits it as
+        // null for every declared classification. A repair naming "Common" while still carrying
+        // otherClassification therefore drops the label — the same silent deletion as a dependent
+        // block, one key over. Checking DependentKeys alone missed it because the label is not one
+        // of them; it is the escape's own third field.
+        if (CarriesValue(document, escape.LabelKey)
+            && !string.Equals(value, escape.Value, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return escape.DependentKeys.Any(key => CarriesValue(document, key)
+            && !DependentBlockBelongsTo(key, value));
+    }
+
+    /// <summary>
+    /// Which vocabulary members own each dependent block, mirroring
+    /// <c>ToEquityClassificationOption</c> — the only decode with dependent blocks.
+    /// <c>preferredTerms</c> is read (via <c>GetRequiredObject</c>) by <c>Preferred</c> and
+    /// <c>ConvertiblePreferred</c>, <c>convertibleTerms</c> by <c>Convertible</c> and
+    /// <c>ConvertiblePreferred</c>; <c>Common</c> and the <c>Other</c> escape read neither, and the
+    /// serializer emits both as <see langword="null"/> for them.
+    /// </summary>
+    private static bool DependentBlockBelongsTo(string dependentKey, string? value) => dependentKey switch
+    {
+        "preferredTerms" => value is "Preferred" or "ConvertiblePreferred",
+        "convertibleTerms" => value is "Convertible" or "ConvertiblePreferred",
+        _ => false,
+    };
+
 
     private static SecurityProjectionRecord CreateProjectionFromResult(
         SecurityMasterCommandResultWrapper result,

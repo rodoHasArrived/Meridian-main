@@ -1031,6 +1031,7 @@ function mergeExternalGlExportPackage(
 }
 
 interface CloseWorkflowQuery {
+  entityId?: string;
   fundProfileId?: string;
   fundAccountId?: string;
   ledgerBookId?: string;
@@ -1042,6 +1043,7 @@ function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
   const params = new URLSearchParams(search);
   return {
     fundProfileId: normalizeOptionalQueryValue(params.get("fundProfileId")),
+    entityId: normalizeOptionalQueryValue(params.get("entityId")),
     fundAccountId: normalizeOptionalQueryValue(params.get("fundAccountId")),
     ledgerBookId: normalizeOptionalQueryValue(params.get("ledgerBookId")),
     periodId: normalizeOptionalQueryValue(params.get("periodId")),

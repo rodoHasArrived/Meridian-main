@@ -56,11 +56,31 @@ public sealed class EventReplayViewModel : BindableBase, IDataErrorInfo
         set => SetProperty(ref _filter, value);
     }
 
-    public bool CanStart => SelectedReplay != null && SelectedReplay.Status != "Running";
+    /// <summary>
+    /// Why the replay controls are disabled on this page. The sessions listed here are sample
+    /// fixtures, and no replay service is composed into this workstation page, so a Start, Pause,
+    /// or Stop that flipped a local status string would be a control that lies: an operator would
+    /// read "Replay stopped" while nothing had been asked of any replay engine. The exit criterion
+    /// for desk safety controls permits exactly two states -- wired to the real service, or
+    /// disabled with an explicit reason -- and this is the second.
+    /// </summary>
+    public const string NotWiredReason =
+        "Replay controls are not wired to the replay service from this page. "
+        + "Start, pause, and stop replay sessions from the browser workstation's Trading replay panel.";
 
-    public bool CanPause => SelectedReplay != null && SelectedReplay.Status == "Running";
+    /// <summary>
+    /// True once this page drives a real replay session through the shared replay API. Until
+    /// then every control below is disabled, and the reason travels with it.
+    /// </summary>
+    public bool IsReplayControlWired => false;
 
-    public bool CanStop => SelectedReplay != null && SelectedReplay.Status != "Stopped";
+    public string ControlDisabledReason => IsReplayControlWired ? string.Empty : NotWiredReason;
+
+    public bool CanStart => IsReplayControlWired && SelectedReplay != null && SelectedReplay.Status != "Running";
+
+    public bool CanPause => IsReplayControlWired && SelectedReplay != null && SelectedReplay.Status == "Running";
+
+    public bool CanStop => IsReplayControlWired && SelectedReplay != null && SelectedReplay.Status != "Stopped";
 
     public string ValidationSummary
     {
@@ -88,12 +108,17 @@ public sealed class EventReplayViewModel : BindableBase, IDataErrorInfo
         }
 
         SelectedReplay ??= Replays.FirstOrDefault();
+        if (!IsReplayControlWired)
+        {
+            StatusMessage = NotWiredReason;
+        }
+
         UpdateStatusFlags();
     }
 
     public void StartReplay()
     {
-        if (SelectedReplay == null)
+        if (!TryEnsureReplayControlWired() || SelectedReplay == null)
         {
             return;
         }
@@ -106,7 +131,7 @@ public sealed class EventReplayViewModel : BindableBase, IDataErrorInfo
 
     public void PauseReplay()
     {
-        if (SelectedReplay == null)
+        if (!TryEnsureReplayControlWired() || SelectedReplay == null)
         {
             return;
         }
@@ -118,7 +143,7 @@ public sealed class EventReplayViewModel : BindableBase, IDataErrorInfo
 
     public void StopReplay()
     {
-        if (SelectedReplay == null)
+        if (!TryEnsureReplayControlWired() || SelectedReplay == null)
         {
             return;
         }
@@ -126,6 +151,22 @@ public sealed class EventReplayViewModel : BindableBase, IDataErrorInfo
         SelectedReplay.Status = "Stopped";
         StatusMessage = $"Replay \"{SelectedReplay.Name}\" stopped.";
         UpdateStatusFlags();
+    }
+
+    /// <summary>
+    /// A command that reaches this method with the controls unwired (a stale binding, a keyboard
+    /// accelerator) must not touch session state or write confirmation copy. It reports the
+    /// not-wired reason instead, so the page never claims an action it did not perform.
+    /// </summary>
+    private bool TryEnsureReplayControlWired()
+    {
+        if (IsReplayControlWired)
+        {
+            return true;
+        }
+
+        StatusMessage = NotWiredReason;
+        return false;
     }
 
     private void UpdateStatusFlags()

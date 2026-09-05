@@ -1027,7 +1027,9 @@ public static class WorkstationServiceCollectionExtensions
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IOperationsCloseCalendarService>(),
-                sp.GetService<IPrivateCapitalCloseCockpitService>()));
+                sp.GetService<IPrivateCapitalCloseCockpitService>(),
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<IAccountingCloseManagementService>()));
         services.TryAddSingleton<SecurityMasterExceptionSlaConfig>();
         services.TryAddSingleton<IReconciliationSlaPolicyProvider>(sp =>
             new SecurityMasterReconciliationSlaPolicyProvider(
