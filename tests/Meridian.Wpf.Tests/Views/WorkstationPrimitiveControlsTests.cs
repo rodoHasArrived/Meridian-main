@@ -3,9 +3,11 @@ using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
+using Meridian.Wpf.Workstation.Controls;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
-using Meridian.Wpf.Workstation.Controls;
 using Meridian.Wpf.Workstation.Models;
 using TableActivityLogGridControl = Meridian.Wpf.Workstation.Tables.ActivityLogGridControl;
 using TableDenseDataGridControl = Meridian.Wpf.Workstation.Tables.DenseDataGridControl;
@@ -258,6 +260,382 @@ public sealed class WorkstationPrimitiveControlsTests
         });
     }
 
+
+    [Fact]
+    public void DenseDataGridControl_ShouldExposeSharedKeyboardCommandsAndCopySelectedRows()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture>
+            {
+                new("Polygon.io", "Healthy"),
+                new("Alpaca", "Degraded")
+            };
+            var opened = false;
+            var closed = false;
+            var cleared = false;
+            var jumped = false;
+            var filterBox = new TextBox();
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                FilterTarget = filterBox,
+                OpenSelectedDetailsCommand = new RelayCommand<object?>(_ => opened = true, parameter => parameter is RowFixture),
+                CloseDetailsCommand = new RelayCommand<object?>(_ => closed = true),
+                ClearFiltersCommand = new RelayCommand(() => cleared = true),
+                JumpToRelatedRecordsCommand = new RelayCommand<object?>(_ => jumped = true, parameter => parameter is RowFixture)
+            };
+
+            var window = Show(new StackPanel { Children = { filterBox, denseGrid } });
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectedItem = tableRows[1];
+
+                var commandBindings = denseGrid.CommandBindings.OfType<CommandBinding>().ToList();
+                commandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.FocusFilter);
+                commandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.OpenSelectedDetails);
+                commandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+                commandBindings.Should().Contain(binding => binding.Command == ApplicationCommands.Copy);
+                commandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                commandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+
+                DenseGridKeyboardCommands.FocusFilter.Execute(null, denseGrid);
+                filterBox.IsKeyboardFocusWithin.Should().BeTrue();
+
+                DenseGridKeyboardCommands.OpenSelectedDetails.Execute(null, denseGrid);
+                DenseGridKeyboardCommands.CloseDetails.Execute(null, denseGrid);
+                DenseGridKeyboardCommands.ClearFilters.Execute(null, denseGrid);
+                DenseGridKeyboardCommands.JumpToRelatedRecords.Execute(null, denseGrid);
+
+                opened.Should().BeTrue();
+                closed.Should().BeTrue();
+                cleared.Should().BeTrue();
+                jumped.Should().BeTrue();
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be("Provider\tStatus\nAlpaca\tDegraded");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldMirrorChromeShortcutsOntoExternalFilterTarget()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var cleared = false;
+            var firstFilterBox = new TextBox();
+            var secondFilterBox = new TextBox();
+            var denseGrid = new DenseDataGridControl
+            {
+                FilterTarget = firstFilterBox,
+                ClearFiltersCommand = new RelayCommand(() => cleared = true)
+            };
+
+            var window = Show(new StackPanel { Children = { firstFilterBox, secondFilterBox, denseGrid } });
+            try
+            {
+                var mirrored = firstFilterBox.InputBindings.OfType<KeyBinding>()
+                    .Where(binding => ReferenceEquals(binding.CommandTarget, denseGrid))
+                    .ToList();
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.FocusFilter);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+                mirrored.Should().NotContain(binding => binding.Command == DenseGridKeyboardCommands.OpenSelectedDetails);
+                mirrored.Should().NotContain(binding => binding.Command == ApplicationCommands.Copy);
+
+                var clearBinding = mirrored.Single(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                ((RoutedCommand)clearBinding.Command).Execute(null, (IInputElement)clearBinding.CommandTarget!);
+                cleared.Should().BeTrue();
+
+                denseGrid.FilterTarget = secondFilterBox;
+                firstFilterBox.InputBindings.OfType<KeyBinding>()
+                    .Should().NotContain(binding => ReferenceEquals(binding.CommandTarget, denseGrid));
+                secondFilterBox.InputBindings.OfType<KeyBinding>()
+                    .Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldMirrorChromeShortcutsOntoTheShortcutScope()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var jumped = false;
+            var firstScope = new StackPanel();
+            var secondScope = new StackPanel();
+            var denseGrid = new DenseDataGridControl
+            {
+                ShortcutScope = firstScope,
+                JumpToRelatedRecordsCommand = new RelayCommand<object?>(_ => jumped = true)
+            };
+            firstScope.Children.Add(denseGrid);
+
+            var window = Show(new StackPanel { Children = { firstScope, secondScope } });
+            try
+            {
+                var mirrored = firstScope.InputBindings.OfType<KeyBinding>()
+                    .Where(binding => ReferenceEquals(binding.CommandTarget, denseGrid))
+                    .ToList();
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.FocusFilter);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+                mirrored.Should().NotContain(binding => binding.Command == DenseGridKeyboardCommands.OpenSelectedDetails);
+                mirrored.Should().NotContain(binding => binding.Command == ApplicationCommands.Copy);
+
+                denseGrid.SelectedItem = new object();
+                var jumpBinding = mirrored.Single(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+                ((RoutedCommand)jumpBinding.Command).Execute(null, (IInputElement)jumpBinding.CommandTarget!);
+                jumped.Should().BeTrue();
+
+                denseGrid.ShortcutScope = secondScope;
+                firstScope.InputBindings.OfType<KeyBinding>()
+                    .Should().NotContain(binding => ReferenceEquals(binding.CommandTarget, denseGrid));
+                secondScope.InputBindings.OfType<KeyBinding>()
+                    .Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void WorkstationTableInspectorControl_KeepsChromeShortcutsLiveThroughoutTheComposition()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture> { new("Polygon.io", "Healthy") };
+            var control = new WorkstationTableInspectorControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                Inspector = new InspectorPanelModel { Title = "Provider details" },
+                HeaderText = "Provider Management"
+            };
+
+            var window = Show(control);
+            try
+            {
+                // The inspector rail and toolbar are siblings of the grid, so key presses inside
+                // them never route through the grid's own bindings; the control root must carry
+                // the mirrored chrome shortcuts for the advertised keys to stay live there.
+                var denseGrid = control.FindName("TableGrid").Should().BeOfType<DenseDataGridControl>().Subject;
+                var mirrored = control.InputBindings.OfType<KeyBinding>()
+                    .Where(binding => ReferenceEquals(binding.CommandTarget, denseGrid))
+                    .ToList();
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.FocusFilter);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ContendedClipboard_FailsTheCopyWithoutThrowing()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var denseGrid = new DenseDataGridControl();
+
+            // Another process holding the clipboard open surfaces as a COMException; the copy must
+            // report failure rather than reach the dispatcher's fatal unhandled-exception path.
+            var failed = denseGrid.TrySetClipboardText(
+                "Fund A\tHealthy",
+                _ => throw new System.Runtime.InteropServices.COMException(
+                    "OpenClipboard failed", unchecked((int)0x800401D0)));
+            failed.Should().BeFalse();
+
+            string? written = null;
+            var succeeded = denseGrid.TrySetClipboardText("Fund A\tHealthy", text => written = text);
+            succeeded.Should().BeTrue();
+            written.Should().Be("Fund A\tHealthy");
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldQuoteClipboardCellsContainingTsvControlCharacters()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture>
+            {
+                new("Fund \"A\"", "Degraded\nrestarting feed"),
+                new("Fund B", "Holds\ttab")
+            };
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                SelectionMode = SelectionMode.Extended
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectAll();
+
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be(
+                    "Provider\tStatus\n" +
+                    "\"Fund \"\"A\"\"\"\t\"Degraded\nrestarting feed\"\n" +
+                    "Fund B\t\"Holds\ttab\"");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldNeutralizeFormulaPrefixesOnStringCellsOnly()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<IndexedRowFixture>
+            {
+                new(-1234.5m, new Dictionary<string, string> { ["fund"] = " =SUM(A1:A9)" })
+            };
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<IndexedRowFixture>(
+                    tableRows,
+                    [new("Notional", nameof(IndexedRowFixture.Notional), 120, "N2"), new("=Fund", "Cells[fund]", 100)],
+                    "Indexed table")
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectedItem = tableRows[0];
+
+                // A string cell that would execute as a spreadsheet formula is prefixed even
+                // behind leading spaces, which spreadsheet imports trim before interpreting;
+                // a negative numeric cell keeps its leading minus untouched. Headers ride the
+                // same clipboard payload and dynamic tables source them from responses, so a
+                // formula-like header is neutralized exactly like a formula-like cell.
+                var expectedNotional = string.Format(denseGrid.Language.GetSpecificCulture(), "{0:N2}", -1234.5m);
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be($"Notional\t'=Fund\n{expectedNotional}\t' =SUM(A1:A9)");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldCopyColumnsInTheDisplayedOrder()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture> { new("Alpaca", "Degraded") };
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table")
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectedItem = tableRows[0];
+
+                // Drag-reordering a header moves the GridView column collection in place;
+                // the clipboard must follow the operator's current left-to-right order.
+                var gridView = rowsList.View.Should().BeOfType<GridView>().Subject;
+                gridView.Columns.Move(0, 1);
+
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be("Status\tProvider\nDegraded\tAlpaca");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldCopyFormattedAndIndexedCellValues()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<IndexedRowFixture>
+            {
+                new(1234.5m, new Dictionary<string, string> { ["fund"] = "Fund A" })
+            };
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<IndexedRowFixture>(
+                    tableRows,
+                    [new("Notional", nameof(IndexedRowFixture.Notional), 120, "N2"), new("Fund", "Cells[fund]", 100)],
+                    "Indexed table")
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectedItem = tableRows[0];
+
+                // The display bindings format with the element's WPF Language, so the
+                // clipboard expectation is computed with that same culture.
+                var expectedNotional = string.Format(denseGrid.Language.GetSpecificCulture(), "{0:N2}", 1234.5m);
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be($"Notional\tFund\n{expectedNotional}\tFund A");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     [Fact]
     public void DenseDataGridSource_ShouldUseCompactInstitutionalTableChrome()
     {
@@ -272,6 +650,11 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("EmptyContentPresenter");
         xaml.Should().Contain("VirtualizingPanel.VirtualizationMode=\"Recycling\"");
         xaml.Should().Contain("VirtualizingPanel.ScrollUnit=\"Item\"");
+        xaml.Should().Contain("DenseGridKeyboardCommands.FocusFilter");
+        xaml.Should().Contain("DenseGridKeyboardCommands.OpenSelectedDetails");
+        xaml.Should().Contain("Command=\"ApplicationCommands.Copy\"");
+        xaml.Should().Contain("DenseGridKeyboardCommands.ClearFilters");
+        xaml.Should().Contain("DenseGridKeyboardCommands.JumpToRelatedRecords");
     }
 
     [Fact]
@@ -315,6 +698,8 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("EmptyContent=\"{Binding ElementName=Root, Path=EmptyContent}\"");
         xaml.Should().Contain("InspectorHeaderContent");
         xaml.Should().Contain("SelectedItems=\"{Binding ElementName=Root, Path=SelectedItems}\"");
+        xaml.Should().Contain("OpenSelectedDetailsCommand=\"{Binding ElementName=Root, Path=OpenSelectedDetailsCommand}\"");
+        xaml.Should().Contain("ClearFiltersCommand=\"{Binding ElementName=Root, Path=ClearFiltersCommand}\"");
     }
 
     [Fact]
@@ -348,4 +733,6 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     private sealed record RowFixture(string Name, string Status);
+
+    private sealed record IndexedRowFixture(decimal Notional, IReadOnlyDictionary<string, string> Cells);
 }
