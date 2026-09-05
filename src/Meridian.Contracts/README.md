@@ -30,6 +30,10 @@ This module owns stable transport payloads, compatibility-safe DTOs, and shared 
 Consumers depend on contracts; contracts should not depend on host, UI, application orchestration,
 or provider implementations.
 
+Reconciliation break-queue statuses serialize as text (`Open`, `InReview`, `Resolved`,
+`Dismissed`, and `SignedOff`) for browser and desktop consumers. The shared enum converter also
+accepts older numeric status payloads; persisted queue records already use text statuses.
+
 ## Key folders and files
 
 - `Integrity/` - the canonical SHA-256 digest contract. `Sha256Digest` is the single required seam

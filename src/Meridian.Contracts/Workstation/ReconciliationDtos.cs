@@ -361,6 +361,7 @@ public sealed record ReconciliationRunDetail(
 /// <summary>
 /// Operator queue state for a reconciliation break.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakQueueStatus>))]
 public enum ReconciliationBreakQueueStatus : byte
 {
     Open = 0,
