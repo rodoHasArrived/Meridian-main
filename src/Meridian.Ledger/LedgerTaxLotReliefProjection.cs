@@ -26,6 +26,9 @@ public sealed record LedgerTaxLotReliefProjection(
     /// <summary>The effective open lots after applying <see cref="AppliedAdjustments"/>.</summary>
     public IReadOnlyList<LedgerTaxLot> EffectiveLots { get; init; } = [];
 
+    /// <summary>Retained pre-disposal identity and acquisition facts for the report evidence artifact.</summary>
+    public IReadOnlyList<Meridian.Contracts.Accounting.Lots.OpenLotDto> CanonicalOpenLots { get; init; } = [];
+
     /// <summary>
     /// Wash-sale deferral outcome when a realized loss was disallowed against replacement
     /// acquisitions. Null when no wash sale applied (a gain, no replacements, or a policy that does

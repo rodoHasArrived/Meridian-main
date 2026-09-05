@@ -714,7 +714,8 @@ public sealed record OperationsCloseWorkflowRequestDto(
     string? ClosePackageRetainedManifestRoute = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     IReadOnlyList<EvidenceDocumentDto>? DocumentSnapshots = null,
-    EvidenceManifestDto? ManifestSnapshot = null)
+    EvidenceManifestDto? ManifestSnapshot = null,
+    CloseReadinessScopeDto? CloseScope = null)
 {
     public IReadOnlyList<EvidenceDocumentDto> DocumentSnapshots { get; init; } =
         DocumentSnapshots ?? [];
@@ -1125,7 +1126,8 @@ public sealed record OperationsEvidencePackageSummaryDto(
     int RequiredCategoryCount,
     int EvidenceLinkCount,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
-    IReadOnlyList<string>? RequiredActions = null)
+    IReadOnlyList<string>? RequiredActions = null,
+    bool RequiredForClose = true)
 {
     public IReadOnlyList<string> RequiredActions { get; init; } =
         RequiredActions ?? [];
@@ -1386,7 +1388,8 @@ public sealed record PrivateCapitalCloseCockpitWorkflowDto(
     string? ClosePackageRoute,
     int BlockerCount,
     int OpenChecklistCount,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    long Version = 0);
 
 public sealed record PrivateCapitalCloseCockpitLaneDto(
     string LaneId,
@@ -1397,7 +1400,8 @@ public sealed record PrivateCapitalCloseCockpitLaneDto(
     string? Route,
     int EvidenceLinkCount,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
-    IReadOnlyList<string>? RequiredActions = null)
+    IReadOnlyList<string>? RequiredActions = null,
+    bool RequiredForClose = true)
 {
     public IReadOnlyList<string> RequiredActions { get; init; } =
         RequiredActions ?? [];
@@ -1416,7 +1420,8 @@ public sealed record PrivateCapitalCloseCockpitApprovalDto(
     DateTimeOffset? DecidedAtUtc,
     string WorkflowRoute,
     int EvidenceLinkCount,
-    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    bool IsCurrentDecision = true);
 
 public sealed record PrivateCapitalNavSupportComponentDto(
     string ComponentId,

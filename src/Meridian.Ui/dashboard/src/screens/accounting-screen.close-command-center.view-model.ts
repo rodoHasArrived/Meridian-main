@@ -313,7 +313,7 @@ function buildSharedFinancialOperationsCommandCenterViewState(
     ...closeSupportMetrics
   ];
   const decisionBlockerRows = (closeSupportDecision?.decisions ?? [])
-    .filter((decision) => decision.isBlocking)
+    .filter((decision) => decision.isBlocking && !projection?.blockers.some((blocker) => blocker.code === decision.decisionId))
     .map((decision) => ({
       id: decision.decisionId,
       label: `${decision.category} - ${decision.label}`,
@@ -349,7 +349,22 @@ function buildSharedFinancialOperationsCommandCenterViewState(
       impactLabel: row.closeReportImpact ?? row.blockerType ?? row.kindLabel
     };
   });
-  const blockerRows = [...decisionBlockerRows, ...queueBlockerRows].slice(0, 10);
+  const projectionBlockerRows = (projection?.blockers ?? [])
+    .filter((blocker) => !commandCenter.queueRows.some((row) => row.queueId === blocker.code))
+    .map((blocker) => ({
+      id: blocker.code,
+      label: `${blocker.contributorId} - ${blocker.type}`,
+      detail: `${blocker.message} Count: ${blocker.count}. Severity: ${blocker.severity}.`,
+      tone: "danger" as AccountingToolingTone,
+      href: localCommandCenterRoute(null, blocker.contributorId),
+      statusLabel: "Blocked",
+      ownerLabel: blocker.owner,
+      dueLabel: "Required before close",
+      evidenceLabel: blocker.recordIds.length ? blocker.recordIds.join(", ") : "No source record supplied",
+      actionLabel: "Resolve this requirement and refresh close readiness.",
+      impactLabel: "Blocks close completion"
+    }));
+  const blockerRows = [...projectionBlockerRows, ...decisionBlockerRows, ...queueBlockerRows].slice(0, 10);
   const routedRows = commandCenter.queueRows
     .filter((row) => localCommandCenterRoute(row.routeHint, row.sourceKind))
     .slice(0, 3);

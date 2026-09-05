@@ -921,16 +921,16 @@ Adopts the burn-down targets proposed in docs/development/god-file-burn-down-pla
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-31 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-09-04 |
 
 ### Current Summary
 
-Rank 1 of the 2026-07 W10 depth slate. Valuation freshness is not enforced by default, so a mark of any age can price a valuation without saying so, and freshness is governed by two overlapping controls rather than one. This row makes the fail-closed posture the default, resolves freshness to a single owner, and makes mark age visible wherever positions appear on both workstation lanes. It discharges RISK-STALE-MARK-001 and follows the same fail-closed truth doctrine as W9-TRUTH-001, which is why it is pulled ahead of the rest of the slate. An aged mark is real data presenting as current rather than simulated data presenting as real, so it is tracked as its own risk instead of counting against the simulation risk. Known source constraints, including how the current assessment treats a mark dated after the valuation, are recorded in docs/product/w10-depth-slate-2026-07.md.
+Implemented one shared valuation freshness policy with default blocking, required observation dates, complete coverage, minimum confidence and future-mark rejection. Position assessments expose observation date, age, policy version and review reason in browser and WPF. Read-only preview reports affected positions before draft intake; retained mark evidence remains bound through journal submission, approval and posting. Unknown historical mark observation dates remain review required. Hosted acceptance and the full integration gate remain pending; no standing override is admitted.
 
 ### Exit Criteria
 
@@ -1119,11 +1119,11 @@ Rank 6 of the 2026-07 W10 depth slate. The wash-sale and tax-character engine la
 | Priority | high |
 | Owner lane | Workstation Shell and UX |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-09-04 |
+| Last reviewed | 2026-09-05 |
 
 ### Current Summary
 
-Shared server close projection implemented as a closure candidate on 2026-09-04. Explicit fund/book/account/entity/period scope, book binding, workflow/calendar/close-plan/private-capital contributors, fail-closed incomplete and stale posture, browser endpoint and entity forwarding, and shared browser/WPF close headlines are present. Full subject-ownership, concurrent-snapshot, recovery-journey and hosted acceptance proof remain open; not certified.
+Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. WPF Accounting Close uses the governed server HTTP client for retained plans and commands. Browser and WPF selections invalidate old decisions and delayed responses. Private-capital statement and allocation support must belong to selected events and period/entity scope; cumulative balances and foreign evidence remain diagnostic. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit, including mixed-period and mixed-entity subledgers. Hosted acceptance and integration proof remain required before certification.
 
 ### Exit Criteria
 
@@ -1138,6 +1138,7 @@ Shared server close projection implemented as a closure candidate on 2026-09-04.
 
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
 - `SRC-CONTRACTS`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
@@ -1287,7 +1288,7 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 
 ### Current Summary
 
-Contract and additive persistence foundation implemented on 2026-09-04 over LedgerTaxLotRecord. Canonical decimal identity/quantity-basis/currency/FX contracts, relief selection, legacy parity adapters, acquisition evidence persistence and immutable guards are present. Missing retained facts refuse projection. Governed backfill and exception queue, production consumer cutover, amortization and corporate-action successor posting, advance-refunding/reporting proof and shadow-operation acceptance remain open.
+Governed legacy backfill now retains hashed acquisition facts, requires independent review plus authoritative security/book-position validation, and resolves durable exceptions only through atomic versioned receipts. Both open and fully disposed legacy rows can be repaired without invented identity, quantity basis or acquisition FX. Production durable disposal and Reporting consume canonical lot evidence and fail closed on unresolved facts. Acquisition writer convergence, AverageCost basis redistribution, amortization, corporate-action successors, advance refunding and shadow-operation acceptance remain open; hosted validation is pending.
 
 ### Exit Criteria
 
