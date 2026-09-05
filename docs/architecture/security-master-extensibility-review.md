@@ -3515,9 +3515,24 @@ the event request (`CorporateActionAssetAccountingEventMapper.cs:174-187`).
 The consequence: a candidate is drafted against case version 3; new evidence or an election moves
 the case to 4; the stale candidate is attached at expected version 4, with its own hashes (so
 B1's field checks pass — they should, the fields are the candidate's); the store bumps to 5 and
-stamps 5; ReadyForApproval, approval, and posting all find the binding current, and version-3
-economics post. The lane's gates are exact-version about the binding and silent about the
-candidate. Reach, stated exactly (corrected 2026-09-02, after review; the first version of this
+stamps 5; and version-3 economics post. The guard sequence after the stamp, stated as it is
+(corrected 2026-09-05, after review; the previous sentence said ReadyForApproval, approval, and
+posting "all find the binding current", which over-describes what the later two check): the
+ReadyForApproval transition is the one gate that compares the stamp — it loads the current
+binding and requires `BoundCaseVersion` to equal the case version
+(`PostgresCorporateActionOperationsStore.Cases.cs:730-746`,
+`CorporateActionCaseAccountingContracts.cs:310`) before the transition itself bumps the case
+(`:646-649`), and the two are equal by construction unless something else has changed the case
+since attach; approval then loads the case at the command's `ExpectedVersion`, requires the
+*current* binding with the requested projection id, and checks balance, policy coverage, lot
+resolution, and preparer independence
+(`PostgresCorporateActionOperationsStore.Accounting.cs:179-222`,
+`CorporateActionCaseAccountingService.cs:128-135`), stamping its own row with the version it just
+created (`:209`); posting loads the case at `ExpectedVersion` again and binds by projection and
+approval identity (`EnsureApprovalAuthorizesPosting`, `:279-340`). Neither approval nor posting
+reads `BoundCaseVersion` again. So the lane's gates are optimistic-concurrency about the case,
+exact-version about the binding at exactly one point, and silent about the candidate throughout.
+Reach, stated exactly (corrected 2026-09-02, after review; the first version of this
 paragraph called it "the workstation's ordinary flow"): no shipped client calls the attach route —
 the browser workstation carries only the generated route constant, unused
 (`ui-api-routes.generated.ts:315`), and the desktop workstation nothing — and the corporate-action
@@ -3929,4 +3944,7 @@ project and map, since the mapper consumes an attested effect nothing in product
 tenth applied 032's allowlist to the preflight as well as the index, withdrew the "mint a snapshot
 identity" alternative from B3's position read (the mapper refuses a dependency with no retained
 evidence row behind it), and corrected B4's operator-visible consequence — the case read joins
-only the newest posting, so the second journal is hidden, not shown.
+only the newest posting, so the second journal is hidden, not shown; an eleventh (a suppressed
+Copilot comment) replaced B2's "all find the binding current" with the actual guard sequence — one
+stamp comparison at ReadyForApproval, then identity and concurrency checks at approval and
+posting — which leaves the stale-draft conclusion where it was.
