@@ -114,6 +114,7 @@ public sealed class PendingOperationsQueueService
         new(() => new PendingOperationsQueueService());
 
     private readonly ConcurrentQueue<PendingOperation> _queue = new();
+    private readonly ConcurrentQueue<PendingOperation> _replayFront = new();
     private readonly ConcurrentDictionary<string, PendingOperationQuarantineRecord> _quarantinedOperations =
         new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, Func<object?, Task>> _handlers = new();
@@ -135,7 +136,7 @@ public sealed class PendingOperationsQueueService
     /// <summary>
     /// Gets the number of pending operations in the queue.
     /// </summary>
-    public int PendingCount => _queue.Count;
+    public int PendingCount => _replayFront.Count + _queue.Count;
 
     /// <summary>
     /// Gets the number of payload-free quarantine records retained for operations that cannot be
@@ -211,6 +212,7 @@ public sealed class PendingOperationsQueueService
         }
 
         _initialized = false;
+        _replayFront.Clear();
         _queue.Clear();
     }
 
@@ -267,7 +269,7 @@ public sealed class PendingOperationsQueueService
     /// <returns>The next operation, or null if the queue is empty.</returns>
     public PendingOperation? Dequeue()
     {
-        return _queue.TryDequeue(out var op) ? op : null;
+        return TryDequeueNext(out var op) ? op : null;
     }
 
     /// <summary>
@@ -276,7 +278,12 @@ public sealed class PendingOperationsQueueService
     /// <returns>The next operation, or null if the queue is empty.</returns>
     public PendingOperation? Peek()
     {
-        return _queue.TryPeek(out var op) ? op : null;
+        if (_replayFront.TryPeek(out var op))
+        {
+            return op;
+        }
+
+        return _queue.TryPeek(out op) ? op : null;
     }
 
     /// <summary>
@@ -284,7 +291,7 @@ public sealed class PendingOperationsQueueService
     /// </summary>
     public IReadOnlyList<PendingOperation> GetAll()
     {
-        return _queue.ToArray();
+        return _replayFront.Concat(_queue).ToArray();
     }
 
     /// <summary>
@@ -314,7 +321,7 @@ public sealed class PendingOperationsQueueService
         var count = _queue.Count;
         for (var i = 0; i < count; i++)
         {
-            if (!_queue.TryDequeue(out var op))
+            if (!TryDequeueNext(out var op))
                 break;
 
             if (IsRetiredOperationType(op.OperationType))
@@ -336,9 +343,9 @@ public sealed class PendingOperationsQueueService
             catch (OperationCanceledException)
             {
                 // Cancellation (for example shutdown mid-replay) is not a failure of the
-                // operation: put it back untouched and persist so the next reconnect or
-                // session replays it, then let the cancellation propagate.
-                _queue.Enqueue(op);
+                // operation: put it back at the front and persist so the next reconnect or
+                // session replays it before dependent operations, then let cancellation propagate.
+                _replayFront.Enqueue(op);
                 await PersistAsync(CancellationToken.None).ConfigureAwait(false);
                 throw;
             }
@@ -377,6 +384,16 @@ public sealed class PendingOperationsQueueService
         }
     }
 
+    private bool TryDequeueNext(out PendingOperation operation)
+    {
+        if (_replayFront.TryDequeue(out operation))
+        {
+            return true;
+        }
+
+        return _queue.TryDequeue(out operation);
+    }
+
     private async Task WriteSnapshotLockedAsync(CancellationToken ct)
     {
         try
@@ -385,7 +402,8 @@ public sealed class PendingOperationsQueueService
             {
                 Version = CurrentEnvelopeVersion,
                 SavedAt = _utcNow(),
-                Operations = _queue
+                Operations = _replayFront
+                    .Concat(_queue)
                     .Select(static op => new PersistedPendingOperation
                     {
                         Id = op.Id,
