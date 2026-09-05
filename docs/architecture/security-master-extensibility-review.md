@@ -3453,7 +3453,8 @@ checks only that `CaseVersion` is positive (`CorporateActionAccountingProjection
 a request-supplied number, retained and compared to `ExpectedVersion`, is two caller assertions
 agreeing with each other. The drafting orchestrator — which does not yet exist, see B3 — must load
 the case and bind its version into the projection request; the same holds for the election and
-position-snapshot inputs, and for B1's lot and policy identities. This belongs with B1's priority
+position-snapshot inputs (the latter has no dereferencing service at the pin; B3's remedy names
+the read), and for B1's lot and policy identities. This belongs with B1's priority
 entry, not after it: it is the same defect — attach trusting instead of verifying — at the field
 the rest of the lane's correctness is gated on.
 
@@ -3495,10 +3496,21 @@ value is bounded by B3 until the drafting request is server-authored.
 
 **Remedy.** Two halves, and together they are the precondition for B1 and B2. First, a
 server-side corporate-action drafting orchestrator: load the case, the lot snapshot, the policy
-decision, and the election from their stores; build the projection request and the role-bearing
-manifest from those reads; project (`ICorporateActionAccountingProjectionService`), map
-(`ICorporateActionAssetAccountingEventMapper`), and draft into the spine in process — the path the
-projector and mapper were written for and that nothing exercises. Second, close the generic route
+decision, the election, and the position from their stores; build the projection request and the
+role-bearing manifest from those reads; project (`ICorporateActionAccountingProjectionService`),
+map (`ICorporateActionAssetAccountingEventMapper`), and draft into the spine in process — the path
+the projector and mapper were written for and that nothing exercises. The position deserves its
+own sentence (added 2026-09-02, after review; the first version of this list omitted it): the
+projector requires a `PositionSnapshotId` (`CorporateActionAccountingProjectionService.cs:259`)
+bound by a PositionSnapshot-role manifest row at `PositionVersion` (`:1890-1895`), and at the pin
+nothing dereferences that id — its only production uses are the projector, mapper, and contracts,
+and the `IPositionSnapshotStore` that exists is the reconciliation lane's per-account portfolio
+snapshot (`IPositionSnapshotStore.cs`), a different authority. The authority the spine itself
+reloads is the book position at its exact version (`AssetAccountingEventSpineService.cs:219-223`,
+`ValidatePosition`, `:974-978`); the orchestrator must bind the position-snapshot identity, its
+version, and its evidence row from that read — minting the snapshot identity from the book
+position and version if no retained snapshot exists — or B2's retained position input stays
+request-invented while the rest are server-read. Second, close the generic route
 to this kind: refuse `EventKind == CorporateAction` on `LedgerAssetAccountingEventProjections`, or
 require on it an attestation only the in-process projector can produce, so a corporate-action
 spine has exactly one origin. With both, the values B1 and B2 retain and compare are authorities;
