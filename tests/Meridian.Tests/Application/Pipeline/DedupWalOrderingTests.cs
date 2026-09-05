@@ -159,7 +159,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         var ledgerPath = Path.Combine(ledgerDir, "dedup_ledger.jsonl");
         if (File.Exists(ledgerPath))
         {
-            (await File.ReadAllTextAsync(ledgerPath)).Should().NotContain("\"v\":2");
+            (await ReadOpenLedgerAsync(ledgerPath)).Should().NotContain("\"v\":2");
         }
 
         (await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None))
@@ -342,7 +342,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         await wal.InitializeAsync();
 
         var ledgerDir = Path.Combine(_rootDir, "ledger_flushfail");
-        var innerLedger = await CreateLedgerAsync("ledger_flushfail");
+        await using var innerLedger = await CreateLedgerAsync("ledger_flushfail");
         var sink = new FaultSink { FlushFailuresRemaining = 1 };
         var dedupStore = new ObservingDedupStore(innerLedger)
         {
@@ -367,10 +367,10 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
                     "the dedup commit must only ever run after the sink flush succeeded");
         }
 
-        var ledgerLines = await File.ReadAllLinesAsync(Path.Combine(ledgerDir, "dedup_ledger.jsonl"));
+        var ledgerLines = (await ReadOpenLedgerAsync(Path.Combine(ledgerDir, "dedup_ledger.jsonl")))
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
         ledgerLines.Where(line => line.Contains("\"v\":2")).Should().HaveCount(2,
             "both identities must end durability-confirmed exactly once");
-        await innerLedger.DisposeAsync();
     }
 
     [Fact]
@@ -381,7 +381,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         var wal = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
         await wal.InitializeAsync();
 
-        var innerLedger = await CreateLedgerAsync("ledger_dedupfail");
+        await using var innerLedger = await CreateLedgerAsync("ledger_dedupfail");
         var sink = new FaultSink();
         var dedupStore = new ObservingDedupStore(innerLedger) { CommitFailuresRemaining = 2 };
 
@@ -397,7 +397,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             var ledgerPath = Path.Combine(Path.Combine(_rootDir, "ledger_dedupfail"), "dedup_ledger.jsonl");
             if (File.Exists(ledgerPath))
             {
-                (await File.ReadAllTextAsync(ledgerPath)).Should().NotContain("\"v\":2",
+                (await ReadOpenLedgerAsync(ledgerPath)).Should().NotContain("\"v\":2",
                     "a failed dedup commit must not have persisted any durability confirmation");
             }
 
@@ -409,7 +409,6 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             dedupStore.CommitAttempts.Should().BeGreaterThanOrEqualTo(3);
         }
 
-        await innerLedger.DisposeAsync();
     }
 
     [Fact]
@@ -848,7 +847,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         await wal1.FlushAsync();
         await wal1.DisposeAsync();
 
-        var ledger = await CreateLedgerAsync("ledger_external_claim");
+        await using var ledger = await CreateLedgerAsync("ledger_external_claim");
 
         // An external (live-ingress) holder claims the "OTH" identity before recovery runs.
         var externalClaim = await ledger.TryReserveAsync(other, DedupLookupScope.LiveIngress, CancellationToken.None);
@@ -1610,6 +1609,14 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         public Task FlushAsync(CancellationToken ct = default) => Task.CompletedTask;
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private static async Task<string> ReadOpenLedgerAsync(string path)
+    {
+        // The live ledger owns a write handle. Readers must allow that handle on Windows.
+        await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var reader = new StreamReader(stream);
+        return await reader.ReadToEndAsync();
     }
 
     /// <summary>
