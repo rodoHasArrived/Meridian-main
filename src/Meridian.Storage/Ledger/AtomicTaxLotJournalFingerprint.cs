@@ -24,6 +24,12 @@ public static class AtomicTaxLotJournalFingerprint
             requirePostingCommand: false,
             requireExpectedVersion: false);
 
+        // Stays at version 1. The acquisition lot's par conventions (original face, booked factor,
+        // par basis) are omitted from serialization when absent, so a lot that never recorded them
+        // hashes exactly as it did before they existed and a retained batch still replays
+        // idempotently. A lot that does state them participates in the digest, which is correct:
+        // two acquisitions differing only in the factor their face was booked at are different
+        // commands and must not share an idempotency identity.
         var payload = new FingerprintPayload(
             FingerprintVersion: 1,
             command.MutationBatchId,
@@ -34,7 +40,9 @@ public static class AtomicTaxLotJournalFingerprint
             command.ExpectedPeriodVersion,
             command.MutationKind,
             OrderEvidence(command.RetainedEvidence),
-            command.AcquisitionLot,
+            command.AcquisitionLot?.Acquisition is { } acquisition
+                ? command.AcquisitionLot with { Acquisition = acquisition with { Evidence = OrderEvidence(acquisition.Evidence) } }
+                : command.AcquisitionLot,
             OrderSelections(command.DisposalSelections),
             command.CorrectsMutationBatchId,
             TextPrimitives.NormalizeOptional(command.ReliefMethod),
