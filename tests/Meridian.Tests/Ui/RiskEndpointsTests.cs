@@ -528,6 +528,131 @@ public sealed class RiskEndpointsTests
         FundAccountId = fundAccountId,
     };
 
+    // ── Cross-fund violation detail is not readable by a scope-limited operator ──────────
+
+    /// <summary>
+    /// Seeds one position-limit rejection whose reason names the symbol and the size, which is the
+    /// disclosure the rules routes leaked: they gate on the global ViewTrades bit only, so an
+    /// operator entitled to part of the book read every account's traded symbols, quantities, and
+    /// entered prices out of RecentViolations.
+    /// </summary>
+    private static async Task<WebApplication> CreateRedactionAppAsync(
+        IScopedAccessAssignmentService? scopedAccess)
+    {
+        var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IPositionTracker, StaticPositionTracker>();
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(Path.GetTempPath(), $"execution-controls-{Guid.NewGuid():N}")));
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(Path.GetTempPath(), $"risk-audit-{Guid.NewGuid():N}")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<RiskRuleRuntimeService>();
+            services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(Path.GetTempPath(), $"risk-rules-{Guid.NewGuid():N}.json")));
+            if (scopedAccess is not null)
+            {
+                services.AddSingleton(scopedAccess);
+            }
+        });
+
+        await app.Services.GetRequiredService<ExecutionAuditTrailService>().RecordAsync(
+            category: "Risk",
+            action: "OrderRejected",
+            outcome: "Rejected",
+            actor: "risk-operator",
+            symbol: RedactionLeakSymbol,
+            reason: $"Position limit breached for {RedactionLeakSymbol}: {RedactionLeakQuantity} at {RedactionLeakPrice}.");
+
+        return app;
+    }
+
+    private const string RedactionLeakSymbol = "AAPL";
+    private const string RedactionLeakQuantity = "4200";
+    private const string RedactionLeakPrice = "187.55";
+
+    private static async Task<string> ReadRulesBodyAsync(WebApplication app, string route, string? permissions = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, route);
+        if (permissions is not null)
+        {
+            request.Headers.Add("X-Test-Permissions", permissions);
+        }
+
+        var response = await app.GetTestClient().SendAsync(request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "{0} must remain readable", route);
+        return await response.Content.ReadAsStringAsync();
+    }
+
+    [Theory]
+    [InlineData("/api/risk/rules")]
+    [InlineData("/api/risk/rules/PositionLimit/status")]
+    public async Task RiskEndpoints_ScopeLimitedOperator_CannotReadViolationDetail(string route)
+    {
+        await using var app = await CreateRedactionAppAsync(
+            new StubScopedAccessAssignmentService(throwOnQuery: false, AccessScopeKindDto.Account));
+
+        var body = await ReadRulesBodyAsync(app, route);
+
+        body.Should().NotContain(RedactionLeakQuantity, "an account-scoped operator must not read another account's order size")
+            .And.NotContain(RedactionLeakPrice, "nor the price it was entered at");
+        body.Should().Contain("violation(s)", "the rule must still read as explained, not as a breach with no cause");
+    }
+
+    [Fact]
+    public async Task RiskEndpoints_ScopeLimitedOperator_StillSeesRuleHealth()
+    {
+        await using var app = await CreateRedactionAppAsync(
+            new StubScopedAccessAssignmentService(throwOnQuery: false, AccessScopeKindDto.Fund));
+
+        var body = await ReadRulesBodyAsync(app, "/api/risk/rules");
+        var rules = JsonSerializer.Deserialize<RiskRuleStatusDto[]>(body, JsonOptions());
+        var positionLimit = rules!.Single(rule => rule.RuleName == "PositionLimit");
+
+        positionLimit.IsBreached.Should().BeTrue("redaction hides the detail, never the fact that a rule is breached");
+        positionLimit.State.Should().Be("Constrained");
+        positionLimit.RecentViolations.Should().ContainSingle()
+            .Which.Should().NotContain(RedactionLeakSymbol);
+    }
+
+    [Fact]
+    public async Task RiskEndpoints_UnrestrictedOperator_ReadsFullViolationDetail()
+    {
+        // A principal holding only global assignments is entitled to the host-wide view, so
+        // redacting it would be pure signal loss rather than a confidentiality gain.
+        await using var globallyScoped = await CreateRedactionAppAsync(
+            new StubScopedAccessAssignmentService(throwOnQuery: false, AccessScopeKindDto.Global));
+        (await ReadRulesBodyAsync(globallyScoped, "/api/risk/rules"))
+            .Should().Contain(RedactionLeakSymbol);
+
+        // Likewise a composition with no scoped-access directory at all: nobody in it is
+        // scope-limited, so there is no narrower view to fall back to.
+        await using var unscoped = await CreateRedactionAppAsync(scopedAccess: null);
+        (await ReadRulesBodyAsync(unscoped, "/api/risk/rules"))
+            .Should().Contain(RedactionLeakSymbol);
+    }
+
+    [Fact]
+    public async Task RiskEndpoints_AdminMaintenance_BypassesRedaction()
+    {
+        await using var app = await CreateRedactionAppAsync(
+            new StubScopedAccessAssignmentService(throwOnQuery: false, AccessScopeKindDto.Account));
+
+        var permissions = $"{nameof(UserPermission.ViewTrades)}, {nameof(UserPermission.AdminMaintenance)}";
+        (await ReadRulesBodyAsync(app, "/api/risk/rules", permissions))
+            .Should().Contain(RedactionLeakSymbol, "the same administrative bypass the sibling routes in this file use");
+    }
+
+    [Fact]
+    public async Task RiskEndpoints_ScopeLookupFailure_FailsClosed()
+    {
+        await using var app = await CreateRedactionAppAsync(
+            new StubScopedAccessAssignmentService(throwOnQuery: true));
+
+        // Being unable to establish that the caller is unrestricted is not a reason to hand them
+        // the whole book.
+        (await ReadRulesBodyAsync(app, "/api/risk/rules"))
+            .Should().NotContain(RedactionLeakQuantity);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         bool includeExecutionEndpoints = false)
@@ -630,6 +755,59 @@ public sealed class RiskEndpointsTests
         public decimal GetUnrealizedPnl() => 0m;
 
         public decimal GetRealizedPnl() => 0m;
+    }
+
+    /// <summary>
+    /// Stands in for the scoped-access directory so a test can say whether the calling operator's
+    /// entitlement is bounded to part of the book. <paramref name="scopeKinds"/> empty means an
+    /// unrestricted principal; a throwing instance covers the fail-closed path.
+    /// </summary>
+    private sealed class StubScopedAccessAssignmentService(
+        bool throwOnQuery,
+        params AccessScopeKindDto[] scopeKinds) : IScopedAccessAssignmentService
+    {
+        public Task<IReadOnlyList<UserAccessAssignmentDto>> QueryAsync(
+            UserAccessAssignmentQueryDto query,
+            CancellationToken ct = default)
+        {
+            if (throwOnQuery)
+            {
+                throw new InvalidOperationException("Scoped access directory unavailable.");
+            }
+
+            IReadOnlyList<UserAccessAssignmentDto> assignments = scopeKinds
+                .Select(kind => new UserAccessAssignmentDto(
+                    AssignmentId: Guid.NewGuid(),
+                    PrincipalId: query.PrincipalId ?? "risk-operator",
+                    PrincipalKind: AccessPrincipalKindDto.User,
+                    ScopeKind: kind,
+                    ScopeId: kind == AccessScopeKindDto.Global ? null : Guid.NewGuid(),
+                    Role: "TradeDesk",
+                    RoleProfileName: null,
+                    PermissionNames: new[] { nameof(UserPermission.ViewTrades) },
+                    PermissionMask: (long)UserPermission.ViewTrades,
+                    EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-1),
+                    EffectiveTo: null,
+                    GrantedBy: "test",
+                    Rationale: "test",
+                    CorrelationId: Guid.NewGuid().ToString("N"),
+                    Version: 1,
+                    CreatedAtUtc: DateTimeOffset.UtcNow.AddDays(-1),
+                    UpdatedAtUtc: DateTimeOffset.UtcNow.AddDays(-1)))
+                .ToArray();
+
+            return Task.FromResult(assignments);
+        }
+
+        public Task<UserAccessAssignmentMutationResultDto> CreateAsync(
+            UserAccessAssignmentCreateRequestDto request,
+            string actor,
+            CancellationToken ct = default) => throw new NotSupportedException();
+
+        public Task<UserAccessAssignmentMutationResultDto> RevokeAsync(
+            UserAccessAssignmentRevokeRequestDto request,
+            string actor,
+            CancellationToken ct = default) => throw new NotSupportedException();
     }
 
     private sealed class AccountScopedAuthorizationService(Guid allowedAccountId) : IScopedAuthorizationService
