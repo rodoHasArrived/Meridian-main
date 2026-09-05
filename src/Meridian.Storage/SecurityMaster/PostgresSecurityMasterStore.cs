@@ -36,11 +36,13 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         Func<PostgresSecurityMasterStore, NpgsqlConnection, NpgsqlTransaction, SecurityProjectionRecord, CancellationToken, Task> WriteAsync);
 
     /// <summary>
-    /// The ordered registry of per-asset-class projection writers. Replaces the previous hard-coded
-    /// fan-out block so adding a projected asset class is a single additive registration here, and the
-    /// projected set is enumerable for the catalog-vs-projection coverage guard.
+    /// The projection writers that predate <see cref="SecurityTermsProjectionRegistry"/>: classes
+    /// whose projection needs real decisions rather than a column list — a derived lifecycle state,
+    /// a swap type scanned out of legs, a concatenated pair code, a legacy nested-coupon fallback.
+    /// They stay hand-written until each is migrated behind its own regression guard; the registry
+    /// is the destination for new classes, not a sweep over the shipped ones.
     /// </summary>
-    private static readonly IReadOnlyList<AssetProjectionWriter> ProjectionWriters =
+    private static readonly IReadOnlyList<AssetProjectionWriter> HandWrittenProjectionWriters =
     [
         new("Bond", static (store, c, t, r, ct) => store.UpsertBondProjectionTablesAsync(c, t, r, ct)),
         new("Option", static (store, c, t, r, ct) => store.UpsertOptionProjectionTablesAsync(c, t, r, ct)),
@@ -53,6 +55,25 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         new("Deposit", static (store, c, t, r, ct) => store.UpsertDepositProjectionAsync(c, t, r, ct)),
         new("MoneyMarketFund", static (store, c, t, r, ct) => store.UpsertMoneyMarketFundProjectionAsync(c, t, r, ct)),
         new("CertificateOfDeposit", static (store, c, t, r, ct) => store.UpsertCertificateOfDepositProjectionAsync(c, t, r, ct)),
+    ];
+
+    /// <summary>
+    /// The ordered registry of per-asset-class projection writers. Replaces the previous hard-coded
+    /// fan-out block so adding a projected asset class is a single additive registration here, and the
+    /// projected set is enumerable for the catalog-vs-projection coverage guard.
+    /// <para>
+    /// Anything a class can state declaratively — a table, its columns, and the declared terms they
+    /// read — is a descriptor in <see cref="SecurityTermsProjectionRegistry"/> instead of another
+    /// copy of the same gate/read/upsert/delete method, and is appended here.
+    /// </para>
+    /// </summary>
+    private static readonly IReadOnlyList<AssetProjectionWriter> ProjectionWriters =
+    [
+        .. HandWrittenProjectionWriters,
+        .. SecurityTermsProjectionRegistry.Descriptors.Select(static descriptor =>
+            new AssetProjectionWriter(
+                descriptor.AssetClass,
+                (store, c, t, r, ct) => store.WriteTermsProjectionAsync(descriptor, c, t, r, ct)))
     ];
 
     /// <summary>The asset classes that have a dedicated relational projection, in fan-out order.</summary>

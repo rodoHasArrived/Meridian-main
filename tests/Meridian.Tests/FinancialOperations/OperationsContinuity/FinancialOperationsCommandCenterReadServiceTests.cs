@@ -1,10 +1,14 @@
 using FluentAssertions;
+using Moq;
+using Meridian.FinancialOperations.AccountingClose;
+using Meridian.Contracts.Ledger;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
 
 namespace Meridian.Tests.FinancialOperations.OperationsContinuity;
 
-public sealed class FinancialOperationsCommandCenterReadServiceTests
+public sealed partial class FinancialOperationsCommandCenterReadServiceTests
 {
     [Fact]
     public async Task GetCommandCenterAsync_WhenEvidencePackageMissing_ShouldBlockCompletion()
@@ -26,7 +30,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var service = CreateService(workflow);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId,
             ct: cts.Token);
@@ -87,7 +91,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             ]);
         var service = CreateService(workflow);
 
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId);
 
@@ -95,10 +99,12 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         commandCenter.QueueRows.Last().QueueId.Should().Be("evidence-package:retained-support");
         commandCenter.QueueRows.Last().IsBlocked.Should().BeTrue();
         commandCenter.CloseSupportDecision.Should().NotBeNull();
-        commandCenter.CloseSupportDecision!.Decisions.Should().HaveCount(12);
+        commandCenter.CloseSupportDecision!.Decisions
+            .Where(d => !d.DecisionId.StartsWith("close.", StringComparison.Ordinal)).Should().HaveCount(12);
         commandCenter.CloseSupportDecision.IsReady.Should().BeFalse();
         commandCenter.CloseSupportDecision.Status.Should().Be("Blocked");
-        commandCenter.CloseSupportDecision.Summary.Should().Be("1 close-support decision(s) block completion.");
+        commandCenter.CloseSupportDecision.Summary.Should().Contain("block close");
+        commandCenter.CloseReadiness!.Blockers.Should().Contain(b => b.Code == "evidence-package:retained-support");
     }
 
     [Fact]
@@ -141,7 +147,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var service = CreateService(workflow);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId,
             ct: cts.Token);
@@ -188,7 +194,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var service = CreateService(workflow);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId,
             ct: cts.Token);
@@ -250,7 +256,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var service = CreateService(workflow);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId,
             ct: cts.Token);
@@ -288,7 +294,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         ]);
         var service = CreateService(workflow);
 
-        var commandCenter = await service.GetCommandCenterAsync(fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha", fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
 
         commandCenter.Metrics.Should().Contain(metric =>
             metric.MetricId == "core-flow" &&
@@ -306,7 +312,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var service = CreateService(workflow);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId,
             ct: cts.Token);
@@ -355,7 +361,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         ]);
         var service = CreateService(workflow);
 
-        var commandCenter = await service.GetCommandCenterAsync(fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha", fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
 
         var row = commandCenter.QueueRows.Should().ContainSingle(item => item.QueueId == "break:cash-break").Subject;
         row.StatusLabel.Should().Be("Open");
@@ -402,7 +408,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var service = CreateService(workflow);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId,
             ct: cts.Token);
@@ -457,7 +463,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var service = CreateService(workflow);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId,
             ct: cts.Token);
@@ -546,7 +552,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var service = CreateService(workflow);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId,
             ct: cts.Token);
@@ -611,12 +617,12 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var service = CreateService(workflow);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId,
             ct: cts.Token);
 
-        commandCenter.Status.Should().Be("AtRisk");
+        commandCenter.Status.Should().Be("Blocked");
         var summary = commandCenter.QueueRows.Should()
             .ContainSingle(row => row.QueueId == "reviewed-automation:reviewed-automation")
             .Subject;
@@ -676,7 +682,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             ["Escalate dashboard blocker to fund operations."]));
         var service = CreateService(workflow);
 
-        var commandCenter = await service.GetCommandCenterAsync(fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha", fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
 
         commandCenter.Status.Should().Be("Blocked");
         commandCenter.IsReadyToComplete.Should().BeFalse();
@@ -727,7 +733,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         ]);
         var service = CreateService(workflow);
 
-        var commandCenter = await service.GetCommandCenterAsync(fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha", fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
 
         commandCenter.Status.Should().Be("Blocked");
         commandCenter.Metrics.Should().Contain(metric =>
@@ -781,7 +787,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             ]);
         var service = CreateService(workflow, calendar);
 
-        var commandCenter = await service.GetCommandCenterAsync(fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha", fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
 
         commandCenter.Status.Should().Be("Blocked");
         var queueRow = commandCenter.QueueRows.Should().ContainSingle(row => row.SourceKind == "close-calendar").Subject;
@@ -806,7 +812,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var cockpit = CreateCockpit(workflow, navReady: false);
         var service = CreateService(workflow, cockpit: cockpit);
 
-        var commandCenter = await service.GetCommandCenterAsync(fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha", fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
 
         commandCenter.Status.Should().Be("Blocked");
         commandCenter.QueueRows.Should().Contain(row =>
@@ -875,7 +881,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var service = CreateService(workflow, cockpit: cockpit);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var commandCenter = await service.GetCommandCenterAsync(
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha",
             fundAccountId: workflow.FundAccountId,
             periodId: workflow.PeriodId,
             ct: cts.Token);
@@ -944,7 +950,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             ]);
         var service = CreateService(workflow, cockpit: cockpit);
 
-        var commandCenter = await service.GetCommandCenterAsync(fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
+        var commandCenter = await service.GetCommandCenterAsync(fundProfileId: "fund-alpha", ledgerBookId: BookId, entityId: "entity-alpha", fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
 
         commandCenter.Status.Should().Be("Blocked");
         commandCenter.Metrics.Should().Contain(metric =>
@@ -966,6 +972,16 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             row.Label == "approval-private-capital-close");
     }
 
+    private static readonly Guid BookId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+
+    private static ILedgerBookService CreateBookService()
+    {
+        var mock = new Mock<ILedgerBookService>();
+        mock.Setup(x => x.GetBookAsync(BookId, It.IsAny<CancellationToken>())).ReturnsAsync(
+            new LedgerBookDto(BookId, "fund-alpha", Guid.NewGuid(), default, "Book", "USD", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow));
+        return mock.Object;
+    }
+
     private static FinancialOperationsCommandCenterReadService CreateService(
         OperationsContinuityWorkflowDto workflow,
         OperationsCloseCalendarDto? calendar = null,
@@ -973,7 +989,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         => new(
             new StubOperationsContinuityWorkflowService(workflow),
             calendar is null ? null : new StubCloseCalendarService(calendar),
-            cockpit is null ? null : new StubPrivateCapitalCloseCockpitService(cockpit));
+            cockpit is null ? null : new StubPrivateCapitalCloseCockpitService(cockpit), CreateBookService(), CreateClosePlanService(workflow));
 
     private static OperationsContinuityWorkflowDto CreateWorkflow(
         IReadOnlyList<OperationsApprovalDto>? approvals = null,
@@ -1020,7 +1036,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             ReconciliationLanes: reconciliationLanes,
             DashboardSummary: dashboardSummary,
             EvidencePackages: evidencePackages,
-            ReviewedAutomation: reviewedAutomation);
+            ReviewedAutomation: reviewedAutomation, LedgerBookId: BookId);
     }
 
     private static OperationsGateDto Gate(OperationsGateKeyDto gate, OperationsGateStatusDto status)
@@ -1085,10 +1101,10 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
 
         return new(
             "fund-alpha",
-            null,
+            BookId,
             workflow.FundAccountId,
             workflow.PeriodId,
-            null,
+            "entity-alpha",
             DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
             "/workstation/accounting/capital-accounts",
             isReadyToClose ? EvidenceStatusDto.Ready : EvidenceStatusDto.Blocked,
@@ -1102,7 +1118,8 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             readyLaneCount,
             blockedLaneCount,
             cockpitLanes,
-            [],
+            [new(workflow.WorkflowId, workflow.FundAccountId, workflow.PeriodId, workflow.Status,
+                100, true, "/workstation/accounting", null, null, 0, 0, workflow.UpdatedAtUtc)],
             [],
             [],
             [],

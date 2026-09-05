@@ -196,6 +196,76 @@ public sealed class OrderManagementSystemGovernanceTests
             entry.Metadata["manualOverrideId"] == manualOverride.OverrideId);
     }
 
+    /// <summary>
+    /// The submission audit must describe the controls that authorized the dispatch, not the
+    /// gate's earlier evaluation: an override consumed at the gate can be gone by the time the
+    /// order reaches the broker, with the breaker since closed, and the evidence must not then
+    /// say an override was applied.
+    /// </summary>
+    [Fact]
+    public async Task PlaceOrderAsync_WhenTheOverrideIsClearedAndTheBreakerClosesBeforeDispatch_AuditsTheDispatchTimeDecision()
+    {
+        var tempRoot = CreateTempRoot();
+
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.BypassOrderControls,
+            Reason: "Operator approved emergency close",
+            CreatedBy: "ops",
+            Symbol: "AAPL",
+            StrategyId: "strategy-1",
+            RunId: "run-dispatch-audit"));
+
+        await controls.SetCircuitBreakerAsync(
+            isOpen: true,
+            reason: "Operator halt",
+            changedBy: "ops");
+
+        using var oms = new OrderManagementSystem(
+            new ExecutionGateway(
+                NullLogger<ExecutionGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: new ControlsChangingRiskValidator(controls, manualOverride.OverrideId),
+            operatorControls: controls,
+            auditTrail: auditTrail,
+            portfolioState: new StaticPortfolioState(new TestPosition("AAPL", 10)));
+
+        // Admitted at the gate by the override; by dispatch the halt is lifted and the override
+        // cleared, so the dispatch-time evaluation approves on its own.
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            StrategyId = "strategy-1",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["actor"] = "ops",
+                ["correlationId"] = "act-003",
+                ["manualOverrideId"] = manualOverride.OverrideId,
+                ["runId"] = "run-dispatch-audit"
+            }
+        });
+
+        result.Success.Should().BeTrue();
+
+        var entries = await auditTrail.GetRecentAsync(20);
+        var submitted = entries.Single(entry => entry.Action == "OrderSubmitted" && entry.OrderId == result.OrderId);
+        submitted.Reason.Should().BeNull("the dispatch that reached the gateway needed no override");
+        (submitted.Metadata is null || !submitted.Metadata.ContainsKey("manualOverrideId")).Should().BeTrue(
+            "the audit must not record an override the dispatch did not use");
+    }
+
     [Fact]
     public async Task PlaceOrderAsync_WithBypassOverrideForDifferentRun_RejectsOrderWhileCircuitBreakerIsOpen()
     {
@@ -384,6 +454,20 @@ public sealed class OrderManagementSystemGovernanceTests
         var path = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    /// <summary>
+    /// Risk validator standing in for a slow validation during which the operator lifts the halt
+    /// and clears the override that admitted the order at the gate.
+    /// </summary>
+    private sealed class ControlsChangingRiskValidator(ExecutionOperatorControlService controls, string overrideId) : IRiskValidator
+    {
+        public async Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
+        {
+            await controls.SetCircuitBreakerAsync(isOpen: false, reason: "Halt lifted during validation", changedBy: "ops", ct: ct);
+            await controls.ClearManualOverrideAsync(overrideId, "ops", "No longer needed", ct: ct);
+            return RiskValidationResult.Approved();
+        }
     }
 
     private sealed class StaticPortfolioState : IPortfolioState

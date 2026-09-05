@@ -3,8 +3,8 @@
 # `ledger` schema
 
 - Relations: 27
-- Functions/procedures: 11
-- Triggers: 15
+- Functions/procedures: 12
+- Triggers: 16
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -373,6 +373,10 @@ erDiagram
         uuid book_position_id
         uuid originating_mutation_batch_id FK
         uuid last_mutation_batch_id FK
+        numeric_38_12_ original_face
+        numeric_38_12_ booked_factor
+        numeric_38_12_ par_basis
+        jsonb acquisition_terms
     }
     ledger_wash_sale_deferrals {
         uuid deferral_id PK
@@ -450,5 +454,5 @@ erDiagram
 | `period_close_events` | table | 8 | `event_id` | 1 | 2 | - |
 | `tax_lot_mutations` | table | 25 | `mutation_record_id` | 4 | 5 | - |
 | `tax_lot_policies` | table | 16 | `policy_record_id` | 1 | 3 | - |
-| `tax_lots` | table | 21 | `tax_lot_record_id` | 4 | 8 | - |
+| `tax_lots` | table | 25 | `tax_lot_record_id` | 4 | 8 | - |
 | `wash_sale_deferrals` | table | 18 | `deferral_id` | 3 | 4 | - |

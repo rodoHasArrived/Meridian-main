@@ -28,10 +28,10 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     `DEC-W9-CLOSEOUT-001`), with the source constraints found while checking each row against
     current code; live status stays in the roadmap registry
   - [2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md) — the operator
-    chronology for the original six-row acceptance and `W9-ALPACA-004` hold, followed by the
-    corrected-evidence reassessment that leaves five rows accepted and reopens `W9-CORPACT-011`
-    (decisions `DEC-W9-ACCEPTANCE-001` and `DEC-W9-ACCEPTANCE-002`); live status stays in the roadmap
-    registry
+    chronology for the original six-row acceptance and `W9-ALPACA-004` hold, the corrected-evidence
+    reassessment that reopens `W9-CORPACT-011`, and the 2026-09-01 closure of the Alpaca hold that
+    leaves six rows accepted (decisions `DEC-W9-ACCEPTANCE-001` through `DEC-W9-ACCEPTANCE-003`);
+    live status stays in the roadmap registry
   - [2026-07 Depth Slate](w10-depth-slate-2026-07.md) — W10 rationale for deepening existing
     functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
@@ -149,8 +149,10 @@ decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011` is reopened as `in_progre
 `evidence_posture: in_progress` and `health: red` under `DEC-W9-ACCEPTANCE-002` pending unchanged
 exit criterion four. Both decisions and their chronology are recorded in the
 [2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md).
-`W9-ALPACA-004` was deliberately held and stays `ready_for_acceptance` pending its three recorded
-fill-path caveats; `W9-SAFETY-007`, `W9-GOV-008`, and `W9-INGEST-009` also remain `in_progress`.
+`W9-ALPACA-004` was deliberately held over three recorded fill-path caveats and moved to
+`accepted` on 2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source;
+`W9-SAFETY-007` reached `ready_for_acceptance` the same day, and `W9-GOV-008` and `W9-INGEST-009`
+remain `in_progress`.
 Those latter three open rows are sequenced by the
 [2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md). Acceptance of a bounded
 row is not a release certification and does not move a row to `done`. Every W10 row still carries

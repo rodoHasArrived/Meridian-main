@@ -494,13 +494,11 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
-    class Meridian_Contracts_SecurityMaster_SecurityAliasHistoryConflictException["SecurityAliasHistoryConflictException"] {
-        +Guid AliasId
-    }
     class Meridian_Contracts_SecurityMaster_SecurityAliasScope["SecurityAliasScope"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassCatalog["SecurityAssetClassCatalog"] {
         +IReadOnlyList~string~ AssetClasses
+        +IReadOnlyList~string~ AssetOperationsCapableAssetClasses
         +IReadOnlyList~string~ IdentifierOnlyImportableAssetClasses
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor["SecurityAssetClassDescriptor"] {
@@ -516,6 +514,20 @@ classDiagram
         +bool SupportsIdentifierOnlyImport
         +bool SupportsProfileBackedTerms
         +bool UsesFaceValueLots
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetPackDescriptor["SecurityAssetPackDescriptor"] {
+        +AssetPackAccountingRules AccountingRules
+        +AssetPackAdmissionPolicy AdmissionPolicy
+        +IReadOnlyList~string~ AssetClasses
+        +AssetPackAutomationDepth AutomationDepth
+        +AssetPackContractSchema ContractSchema
+        +string DisplayName
+        +string LedgerExtensionPolicy
+        +IReadOnlyList~AssetPackLifecycleCoverage~ LifecycleCoverage
+        +IReadOnlyList~string~ LifecycleEvents
+        +string PackId
+        +IReadOnlyList~string~ PlannedAssetClasses
+        +AssetPackReportingTaxonomy ReportingTaxonomy
     }
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalAcceptanceResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto

@@ -197,3 +197,8 @@ python3 build/scripts/docs/validate-docs-structure.py --summary
 - New parity surfaces consume shared contracts, read models, and workstation endpoints; no
   desktop-local product state, DTOs, or readiness rules are introduced.
 - Desktop build and desktop-focused service tests pass on the authoritative CI gate.
+
+
+## W10 shared-close sequencing receipt - 2026-09-04
+
+Fund Ledger close headlines and the queue consume `FinancialOperationsCommandCenterDto.CloseReadiness`. Desktop requests reuse explicitly selected tenant/company/fund/book/account/entity/period context. Browser Accounting forwards the same business scope, including entity. Neither workstation may substitute a local ready calculation when the shared decision is missing. Fund-wide metrics remain diagnostic; scoped selection and recovery journeys require validation before W10-SEAM-001 acceptance.

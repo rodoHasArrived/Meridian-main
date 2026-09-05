@@ -15,6 +15,10 @@ Lifecycle route contracts distinguish sanitized unauthenticated readiness/livene
 authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
 single monitoring transport owner.
 
+## Shared close and lot convergence
+
+`Workstation/CloseReadinessDtos.cs` defines the declared five-dimension close scope, required contributor posture, and owner/record-linked blockers. `Accounting/Lots/` defines security-identified decimal lot views with retained acquisition currency, FX, basis, and evidence; this is an additive migration contract, not a legacy-writer cutover.
+
 ## Purpose
 
 Meridian contracts contains shared DTOs and cross-layer contracts used by host, services,

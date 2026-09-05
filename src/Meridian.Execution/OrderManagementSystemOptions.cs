@@ -11,6 +11,7 @@ public sealed class OrderManagementSystemOptions
     public const int DefaultExecutionChannelCapacity = 1_000;
     public const int DefaultCancelAllMaxConcurrency = 8;
     public static readonly TimeSpan DefaultExecutionSubscriberDrainTimeout = TimeSpan.FromSeconds(5);
+    public static readonly TimeSpan DefaultCancelAllInFlightSettleTimeout = TimeSpan.FromSeconds(5);
 
     /// <summary>
     /// Maximum number of order states retained in memory before completed terminal orders are trimmed.
@@ -35,6 +36,14 @@ public sealed class OrderManagementSystemOptions
     public TimeSpan ExecutionSubscriberDrainTimeout { get; init; } = DefaultExecutionSubscriberDrainTimeout;
 
     /// <summary>
+    /// Maximum time <see cref="IOrderManager.CancelAllAsync"/> waits for submissions already past
+    /// the operator-control gate to be acknowledged by the gateway before it snapshots the book.
+    /// A submission still unacknowledged at the deadline is reported as working rather than
+    /// ignored, so the window bounds the sweep's latency, not its honesty.
+    /// </summary>
+    public TimeSpan CancelAllInFlightSettleTimeout { get; init; } = DefaultCancelAllInFlightSettleTimeout;
+
+    /// <summary>
     /// Requires risk, portfolio-state, and operator-control dependencies during construction.
     /// Supported production composition enables this so order routing cannot silently degrade.
     /// </summary>
@@ -51,6 +60,12 @@ public sealed class OrderManagementSystemOptions
     public int ValidatedCancelAllMaxConcurrency => CancelAllMaxConcurrency > 0
         ? CancelAllMaxConcurrency
         : DefaultCancelAllMaxConcurrency;
+
+    public TimeSpan ValidatedCancelAllInFlightSettleTimeout =>
+        CancelAllInFlightSettleTimeout > TimeSpan.Zero
+        && CancelAllInFlightSettleTimeout != Timeout.InfiniteTimeSpan
+            ? CancelAllInFlightSettleTimeout
+            : DefaultCancelAllInFlightSettleTimeout;
 
     public TimeSpan ValidatedExecutionSubscriberDrainTimeout =>
         ExecutionSubscriberDrainTimeout > TimeSpan.Zero

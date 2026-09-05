@@ -7,20 +7,6 @@ Objects 161-240 of 257. References crossing pages remain available in the depend
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
-    class Meridian_Contracts_SecurityMaster_SecurityAssetPackDescriptor["SecurityAssetPackDescriptor"] {
-        +AssetPackAccountingRules AccountingRules
-        +AssetPackAdmissionPolicy AdmissionPolicy
-        +IReadOnlyList~string~ AssetClasses
-        +AssetPackAutomationDepth AutomationDepth
-        +AssetPackContractSchema ContractSchema
-        +string DisplayName
-        +string LedgerExtensionPolicy
-        +IReadOnlyList~AssetPackLifecycleCoverage~ LifecycleCoverage
-        +IReadOnlyList~string~ LifecycleEvents
-        +string PackId
-        +IReadOnlyList~string~ PlannedAssetClasses
-        +AssetPackReportingTaxonomy ReportingTaxonomy
-    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetPackRegistry["SecurityAssetPackRegistry"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto["SecurityAssetProfileAccountingImpactHintDto"] {
@@ -171,11 +157,19 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermField["SecurityAssetTermField"] {
         +IReadOnlyList~string~ Aliases
+        +IReadOnlyList~string~ AllowedValues
+        +bool CarriesUndeclaredValueVerbatim
+        +SecurityAssetTermVocabularyEscape? Escape
         +string Key
         +bool Required
         +SecurityAssetTermFieldType Type
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType["SecurityAssetTermFieldType"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermVocabularyEscape["SecurityAssetTermVocabularyEscape"] {
+        +IReadOnlyList~string~ DependentKeys
+        +string LabelKey
+        +string Value
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermsFieldEditValidator["SecurityAssetTermsFieldEditValidator"] {
     }
@@ -560,6 +554,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType
+    Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermVocabularyEscape
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
     Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
