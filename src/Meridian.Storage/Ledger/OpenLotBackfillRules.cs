@@ -63,8 +63,10 @@ public static class OpenLotBackfillRules
         if (lot.HasFaceValueTerms && (lot.OriginalFace != facts.OriginalFace
             || lot.BookedFactor != facts.FaceValueTerms?.BookedFactor || lot.ParBasis != facts.FaceValueTerms?.ParBasis))
             throw new LedgerValidationException("Backfill cannot replace retained face acquisition terms.");
-        // The source packet itself is retained, hashed and independently reviewed. Its typed scope
-        // becomes the exact acquisition subject; no request-side evidence URI is promoted by Apply.
+        // Version 2 is the accepted reviewed snapshot, retained by the reviewer at review commit.
+        // The immutable version-1 source's original retaining actor/time remain in the evidence
+        // table and OpenLotBackfillEvidenceDto; they are not overwritten by this accepted identity.
+        // No request-side evidence URI is promoted by Apply.
         var identity = new RetainedEvidenceIdentityDto(evidence.EvidenceRecordId.ToString("D"),
             "evidence://open-lot-backfill/" + evidence.EvidenceRecordId.ToString("D"), evidence.ContentHashSha256,
             evidence.SourceSystem, evidence.SourceReference, evidence.ReviewStatus, evidence.ReviewedBy,

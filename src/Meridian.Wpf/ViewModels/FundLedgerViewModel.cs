@@ -829,10 +829,13 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         {
             if (SetProperty(ref _selectedPortfolioPosition, value))
             {
+                OnPropertyChanged(nameof(SelectedPortfolioMark));
                 OpenSelectedPortfolioSecurityCommand.NotifyCanExecuteChanged();
             }
         }
     }
+
+    public MarkFreshnessPresentation SelectedPortfolioMark => new(SelectedPortfolioPosition?.MarkFreshness);
 
     public CashFlowEntryDto? SelectedCashFlowEntry
     {

@@ -714,7 +714,8 @@ public sealed record OperationsCloseWorkflowRequestDto(
     string? ClosePackageRetainedManifestRoute = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     IReadOnlyList<EvidenceDocumentDto>? DocumentSnapshots = null,
-    EvidenceManifestDto? ManifestSnapshot = null)
+    EvidenceManifestDto? ManifestSnapshot = null,
+    CloseReadinessScopeDto? CloseScope = null)
 {
     public IReadOnlyList<EvidenceDocumentDto> DocumentSnapshots { get; init; } =
         DocumentSnapshots ?? [];

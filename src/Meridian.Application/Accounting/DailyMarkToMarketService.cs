@@ -62,9 +62,9 @@ public sealed record MarkPriceQuote(
 }
 
 /// <summary>
-/// Trust policy applied before provider marks can enter a governed valuation draft. The policy is
-/// explicit so legacy callers can continue to use the fund's <see cref="StalePricePolicy"/> while
-/// production scheduling requires observation dates, freshness, and minimum confidence.
+/// Compatibility input normalized into the ledger-owned <see cref="ValuationFreshnessPolicy"/>.
+/// Legacy settings may tighten age or confidence; they cannot disable required observation dates
+/// or complete coverage for governed valuations.
 /// </summary>
 public sealed record MarkPriceQualityPolicy
 {
@@ -246,11 +246,7 @@ public sealed record DailyMarkToMarketRun(
     public bool IsBlocked => Projection is null && Approval is null && RejectedMarks.Count > 0;
 
     /// <summary>
-    /// Stale-priced symbols surfaced for review: those blocked by a
-    /// <see cref="StalePriceHandling.Block"/> policy (excluded from the draft) and those retained
-    /// under a <see cref="StalePriceHandling.Flag"/> policy (included in the draft but flagged).
-    /// Symbols stale under an <see cref="StalePriceHandling.Allow"/> policy are tolerated silently
-    /// and are not listed here.
+    /// Positions whose mark age or observation date blocked the whole valuation batch.
     /// </summary>
     public IReadOnlyList<string> StalePricedSymbols { get; init; } = [];
 }
@@ -286,8 +282,8 @@ public sealed class DailyMarkToMarketService
 
     /// <summary>
     /// Prices the requested positions and submits a governed fair-value draft.
-    /// Positions without a price are reported in <see cref="DailyMarkToMarketRun.UnpricedSymbols"/>
-    /// and excluded from the draft rather than silently marked at cost.
+    /// Positions without an admissible mark are reported in <see cref="DailyMarkToMarketRun.UnpricedSymbols"/>
+    /// and block the complete batch before a draft can be produced.
     /// </summary>
     public Task<DailyMarkToMarketRun> PrepareAsync(DailyMarkToMarketRequest request, CancellationToken ct = default)
         => PrepareCoreAsync(request, previewOnly: false, ct);
@@ -416,7 +412,10 @@ public sealed class DailyMarkToMarketService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        if (rejected.Count > 0 || previewOnly)
+        if (previewOnly)
+            return new DailyMarkToMarketRun(null, null, unpriced, rejected) { MarkFreshness = assessments };
+
+        if (rejected.Count > 0)
         {
             _log.Warning(
                 "Daily mark-to-market run for fund {FundId} period {PeriodId} blocked because {RejectedCount} marks failed completeness policy",

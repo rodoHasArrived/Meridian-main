@@ -1322,6 +1322,9 @@ public static partial class WorkstationEndpoints
             }
 
             var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
+            var readinessRefusal = await ValidateClosePublicationReadinessAsync(context, workflowId, trustedRequest, jsonOptions).ConfigureAwait(false);
+            if (readinessRefusal is not null)
+                return readinessRefusal;
             var result = await service.CloseWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })

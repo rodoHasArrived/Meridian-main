@@ -117,6 +117,23 @@ public sealed class ValuationFreshnessAcceptanceTests
             .Should().Contain("does not match");
     }
 
+    [Fact]
+    public async Task PolicyTamperingCannotWidenRetainedMarkAcceptance()
+    {
+        var run = await new DailyMarkToMarketService(new MutableSource(new MarkPriceQuote(160m,
+            "official-close", "evidence:aapl", PriceAsOf: Date))).PrepareAsync(Request());
+        var tags = run.Approval!.Draft.Metadata.Tags!;
+        var retained = JsonSerializer.Deserialize<ValuationMarkEvidence[]>(tags[ValuationMarkEvidenceGuard.EvidenceTag])!;
+        var manipulated = JsonSerializer.Serialize(retained.Select(mark => mark with
+        {
+            ObservedOn = Date.AddDays(-90), MaximumAgeDays = 999999,
+            MinimumConfidence = DailyPortfolioPriceConfidence.Low, PolicyVersion = "invented-policy"
+        }).ToArray());
+        ValuationMarkEvidenceGuard.Validate(manipulated, "fund-alpha", Date, Security, "broker-1", "AAPL",
+                tags[ValuationMarkEvidenceGuard.DigestTag])
+            .Should().Contain("differs from the retained server assessment");
+    }
+
     private static DailyMarkToMarketRequest Request() => new(
         new DailyPortfolioPricingPolicy("fund-alpha", "policy-1", "Close", "official-close", "controller", AsOf.AddDays(-20)),
         "2026-07", AsOf, "USD", [new MarkToMarketPosition("AAPL", 10m, 150m, "broker-1", SecurityId: Security)],

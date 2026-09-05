@@ -140,6 +140,7 @@ export interface PortfolioBrokerageAccountRow {
 }
 
 export interface PortfolioBrokeragePositionRow {
+  markFreshness: MarkFreshnessPresentation;
   id: string;
   accountLabel: string;
   accountKind: string;
@@ -1710,6 +1711,7 @@ function toBrokeragePositionRow(
     quantity: formatNumber(position.quantity),
     averagePrice: formatCurrencyPrecise(position.averageEntryPrice),
     markPrice: formatCurrencyPrecise(position.marketPrice),
+    markFreshness: presentMarkFreshness(position.markFreshness),
     marketValue: formatCurrency(position.marketValue),
     unrealizedPnl: pnl,
     pnlTone: pnlTone(pnl),
@@ -1733,6 +1735,7 @@ function buildSelectedBrokeragePositionDetail(
   accounts: BrokerageHouseholdAccount[],
   providerLabel: string
 ): PortfolioBrokeragePositionDetail {
+  const mark = presentMarkFreshness(position.markFreshness);
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
@@ -1749,7 +1752,7 @@ function buildSelectedBrokeragePositionDetail(
     subtitle: `${providerLabel} / ${accountLabel} / ${position.assetClass}`,
     ariaLabel: `${position.symbol} brokerage position detail`,
     statusTitle: "Brokerage position inspector",
-    statusDetail: `${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatCurrency(position.marketValue)} market value and ${pnl} unrealized P&L.`,
+    statusDetail: `${mark.label}: ${mark.reason} Recorded ${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatCurrency(position.marketValue)} market value and ${pnl} unrealized P&L.`,
     statusTone,
     statusBadgeLabel: coverageLabel,
     statusBadgeVariant,
@@ -1758,7 +1761,8 @@ function buildSelectedBrokeragePositionDetail(
       { label: "Account kind", value: accountKind, tone: "muted" },
       { label: "Quantity", value: formatNumber(position.quantity), tone: "default" },
       { label: "Average entry", value: formatCurrencyPrecise(position.averageEntryPrice), tone: "muted" },
-      { label: "Mark price", value: formatCurrencyPrecise(position.marketPrice), tone: "muted" },
+      { label: "Recorded mark price", value: formatCurrencyPrecise(position.marketPrice), tone: "muted" },
+      ...markFreshnessFields(mark),
       { label: "Market value", value: formatCurrency(position.marketValue), tone: "default" },
       { label: "Unrealized P&L", value: pnl, tone: pnlStatusTone },
       { label: "Security coverage", value: coverageLabel, tone: coverageTone },

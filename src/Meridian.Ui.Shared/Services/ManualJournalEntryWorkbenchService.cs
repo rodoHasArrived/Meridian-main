@@ -279,6 +279,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             AutomationEvidenceAssessment = existing is null
                 ? request.Draft.AutomationEvidenceAssessment
                 : existing.AutomationEvidenceAssessment,
+            TreasuryContext = existing is not null &&
+                (existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
+                 ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey))
+                ? (request.Draft.TreasuryContext ?? existing.TreasuryContext) is { } valuationContext
+                    ? valuationContext with { IdempotencyKey = existing.TreasuryContext?.IdempotencyKey }
+                    : existing.TreasuryContext
+                : request.Draft.TreasuryContext,
             ValuationMarkEvidenceJson = existing is null
                 ? (trustedAutomatedIntake ? request.Draft.ValuationMarkEvidenceJson : null)
                 : existing.ValuationMarkEvidenceJson,

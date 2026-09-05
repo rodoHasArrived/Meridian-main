@@ -120,7 +120,9 @@ begin
         if old.acquisition_terms is not null or new.acquisition_terms is null or not exists (
             select 1 from __SCHEMA__.open_lot_backfill_receipts r
             join __SCHEMA__.open_lot_backfill_reviews v on v.evidence_record_id = r.evidence_record_id
+            join __SCHEMA__.open_lot_backfill_evidence e on e.evidence_record_id = v.evidence_record_id
             where r.tax_lot_record_id = old.tax_lot_record_id and r.ledger_book_id = old.ledger_book_id
+              and e.tax_lot_record_id = old.tax_lot_record_id and e.ledger_book_id = old.ledger_book_id
               and r.expected_lot_version = old.version and r.resulting_lot_version = new.version
               and r.snapshot_before = to_jsonb(old) and r.snapshot_after = to_jsonb(new)
               and r.transaction_id = txid_current() and v.accepted) then

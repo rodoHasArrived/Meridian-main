@@ -231,6 +231,7 @@ const brokerageAccountColumns: DenseDataTableColumn<PortfolioBrokerageAccountRow
 ];
 
 const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionRow>[] = [
+  { id: "mark-readiness", label: "Mark readiness", render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
   {
     id: "account",
     label: "Account",

@@ -794,6 +794,7 @@ export interface BrokerageHouseholdAccount {
 }
 
 export interface BrokerageHouseholdPosition {
+  markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   fundAccountId: string;
   providerId: string;
   externalAccountId: string;

@@ -18,9 +18,10 @@ public enum StalePriceHandling
 /// <summary>
 /// Freshness policy for daily marks. When enabled, a price whose observation date is more than
 /// <see cref="MaxAgeDays"/> days before the valuation date is considered stale and treated per
-/// <see cref="Handling"/>. Disabled by default so existing valuation runs are unaffected.
+/// <see cref="Handling"/>. This compatibility assessment is normalized by the governed
+/// <see cref="ValuationFreshnessPolicy"/>; allow/flag/disabled modes cannot admit unsupported valuations.
 /// </summary>
-/// <param name="Enabled">When false, no staleness assessment is performed and every mark is fresh.</param>
+/// <param name="Enabled">When false, this compatibility assessment ignores age, but still rejects future observations.</param>
 /// <param name="MaxAgeDays">Maximum permitted age, in days, of a price relative to the valuation date.</param>
 /// <param name="Handling">Action taken when a mark is stale.</param>
 public sealed record StalePricePolicy(bool Enabled, int MaxAgeDays, StalePriceHandling Handling)

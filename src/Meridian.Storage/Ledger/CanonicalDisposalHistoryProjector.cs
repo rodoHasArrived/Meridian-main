@@ -10,6 +10,8 @@ public static class CanonicalDisposalHistoryProjector
         JournalEntry entry, Guid ledgerBookId, string functionalCurrency)
     {
         var canonical = disposal.CanonicalLots;
+        if (disposal.JournalEntryId != entry.JournalEntryId)
+            throw new LedgerValidationException("Retained disposal belongs to a different journal.");
         if (canonical is null || canonical.Count != disposal.Lots.Count || canonical.Count == 0)
             throw new LedgerValidationException("Disposal history lacks canonical acquisition evidence. Resolve the open-lot backfill exception for this durable lot with reviewed acquisition evidence.");
         var history = new List<LedgerTaxLotDisposalHistoryLot>(canonical.Count);
@@ -31,8 +33,18 @@ public static class CanonicalDisposalHistoryProjector
                 entry.Lines.Any(line => line.Dimensions?.InstrumentId != lot.SecurityId ||
                     line.Dimensions?.PositionId != lot.BookPositionId))
                 throw new LedgerValidationException("Retained disposal quantity, basis, or security/book-position scope differs from canonical lot evidence.");
-            history.Add(retained with { Quantity = quantity, UnitCost = retained.UnitCost / scale });
+            history.Add(retained with
+            {
+                Quantity = quantity,
+                UnitCost = retained.UnitCost / scale,
+                HoldingPeriodStart = retained.HoldingPeriodStart < lot.Acquisition.HoldingPeriodStartDate
+                    ? retained.HoldingPeriodStart : lot.Acquisition.HoldingPeriodStartDate
+            });
         }
+        var assetLines = entry.Lines.Where(line => line.Account == disposal.Account).ToArray();
+        if (assetLines.Length != 1 || assetLines[0].Debit != 0m ||
+            assetLines[0].Credit != disposal.Lots.Sum(static lot => lot.CostBasis))
+            throw new LedgerValidationException("Retained disposal basis does not match the exact asset-account journal movement.");
         var recognized = entry.Lines.Where(line => line.Account.Name == LedgerAccounts.RealizedGain.Name)
             .Sum(static line => line.Credit - line.Debit)
             - entry.Lines.Where(line => line.Account.Name == LedgerAccounts.RealizedLoss.Name)

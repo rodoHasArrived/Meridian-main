@@ -230,6 +230,8 @@ public static class DailyPortfolioPricingDraftBuilder
             .Append(input.Policy.FundId).Append('|')
             .Append(input.Policy.PolicyId).Append('|')
             .Append(input.Policy.FreshnessPolicy.Version).Append('|')
+            .Append(input.Policy.FreshnessPolicy.MaximumAgeDays).Append('|')
+            .Append(input.Policy.FreshnessPolicy.MinimumConfidence).Append('|')
             .Append(input.Policy.ValuationMethod).Append('|')
             .Append(input.PeriodId).Append('|')
             .Append(DateOnly.FromDateTime(input.AsOf.UtcDateTime).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append('|')

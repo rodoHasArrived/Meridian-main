@@ -1,5 +1,6 @@
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { sharedCloseDecision } from "./operations-continuity-screen.close-test-fixtures";
 import {
   buildOperationsContinuityScreenViewModel,
   OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID,
@@ -1869,6 +1870,7 @@ describe("Operations Continuity view model", () => {
       workflows: [summary],
       selectedWorkflowId: workflowId,
       detail: closeReadyDetail,
+      commandCenter: sharedCloseDecision(closeReadyDetail),
       loading: false,
       detailLoading: false,
       error: null,

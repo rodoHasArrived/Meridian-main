@@ -112,7 +112,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                    lot.financial_account_id,
                    (select min(carried.holding_period_carry_date)
                     from {Qualified("wash_sale_deferrals")} carried
-                    where carried.replacement_tax_lot_record_id = mutation.tax_lot_record_id) as holding_period_start,
+                    where carried.replacement_tax_lot_record_id = mutation.tax_lot_record_id
+                      and carried.recorded_at <= batch.created_at) as holding_period_start,
                    mutation.lot_snapshot_before::text,
                    lot.acquisition_terms::text,
                    lot.security_id,
@@ -178,6 +179,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
 
             if (batches.TryGetValue(batchId, out var accumulator))
             {
+                if (accumulator.Account != before.Account)
+                    throw new LedgerValidationException("Retained disposal snapshots span different authoritative asset accounts.");
                 accumulator.Lots.Add(lot);
                 accumulator.CanonicalLots.Add(canonical);
                 continue;
@@ -189,7 +192,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
 
             batches[batchId] = new DisposalBatchAccumulator(
                 reader.GetGuid(1),
-                ReadLedgerAccount(reader, 8),
+                before.Account,
                 reliefMethod,
                 new List<LedgerTaxLotDisposalHistoryLot> { lot },
                 new List<OpenLotDto> { canonical });

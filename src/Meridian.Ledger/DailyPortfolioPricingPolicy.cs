@@ -38,6 +38,10 @@ public sealed record DailyPortfolioPricingPolicy
         var maximumAge = StalePricePolicy.Enabled ? StalePricePolicy.MaxAgeDays : 3;
         FreshnessPolicy = freshnessPolicy ?? new ValuationFreshnessPolicy(maximumAge,
             version: FormattableString.Invariant($"{PolicyId}@{ApprovedAtUtc:O}/mark-freshness-v1/{maximumAge}/Medium"));
+        if (freshnessPolicy is not null && stalePricePolicy is { Enabled: true } legacy &&
+            legacy.MaxAgeDays < freshnessPolicy.MaximumAgeDays)
+            FreshnessPolicy = new ValuationFreshnessPolicy(legacy.MaxAgeDays, freshnessPolicy.MinimumConfidence,
+                $"{freshnessPolicy.Version}/resolved/{legacy.MaxAgeDays}/{freshnessPolicy.MinimumConfidence}");
     }
 
     public string FundId { get; }

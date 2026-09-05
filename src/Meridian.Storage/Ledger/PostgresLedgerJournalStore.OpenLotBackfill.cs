@@ -27,7 +27,8 @@ public sealed partial class PostgresLedgerJournalStore
         await using (var query = connection.CreateCommand())
         {
             query.Transaction = transaction;
-            query.CommandText = $"select {BackfillLotColumns} from {Qualified("tax_lots")} where ledger_book_id = @book and open_quantity > 0 order by tax_lot_record_id for update";
+            // Closed legacy rows also support immutable disposal/reporting history and require proof.
+            query.CommandText = $"select {BackfillLotColumns} from {Qualified("tax_lots")} where ledger_book_id = @book order by tax_lot_record_id for update";
             query.Parameters.AddWithValue("book", ledgerBookId);
             await using var reader = await query.ExecuteReaderAsync(ct).ConfigureAwait(false);
             while (await reader.ReadAsync(ct).ConfigureAwait(false)) lots.Add(ReadTaxLot(reader));

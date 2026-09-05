@@ -8,6 +8,7 @@ import {
   assignOperationsContinuityBreakCase,
   closeOperationsContinuityWorkflow,
   getOperationsCloseCalendar,
+  getFinancialOperationsCommandCenter,
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
@@ -29,6 +30,7 @@ import type {
   PrivateCapitalCloseCockpit
 } from "@/types";
 import { requirePresent } from "@/test/fixtures";
+import { sharedCloseDecision } from "./operations-continuity-screen.close-test-fixtures";
 
 vi.mock("@/lib/api", () => ({
   acknowledgeOperationsContinuityChecklistTask: vi.fn(),
@@ -36,6 +38,7 @@ vi.mock("@/lib/api", () => ({
   assignOperationsContinuityBreakCase: vi.fn(),
   closeOperationsContinuityWorkflow: vi.fn(),
   getOperationsCloseCalendar: vi.fn(),
+  getFinancialOperationsCommandCenter: vi.fn(),
   getPrivateCapitalCloseCockpit: vi.fn(),
   getOperationsContinuityWorkflows: vi.fn(),
   getOperationsContinuityWorkflow: vi.fn(),
@@ -51,6 +54,7 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(detail));
   vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary]);
   vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(detail);
   vi.mocked(getOperationsCloseCalendar).mockResolvedValue(closeCalendar);
