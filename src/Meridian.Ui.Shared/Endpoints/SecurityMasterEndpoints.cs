@@ -840,16 +840,22 @@ public static partial class SecurityMasterEndpoints
                 return Results.Forbid();
             }
 
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var result = await importService.ImportAsync(
                 request.FileContent,
                 request.FileExtension,
-                actor: ResolveActor(context),
+                actor,
                 progress: null,
                 ct: ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("ImportSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<AppSecurityMaster.SecurityMasterImportResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -1191,8 +1197,10 @@ public static partial class SecurityMasterEndpoints
     /// Deliberately narrow. <c>SourceSystem</c> stays caller-supplied because it identifies the
     /// upstream SOURCE for conflict detection and precedence, not the actor — deriving it from the
     /// principal would collapse distinct vendors into one and corrupt the precedence ladder. Likewise
-    /// <c>Reason</c>, <c>SourceRecordId</c> and the valid-time fields stay caller-authored: they
-    /// describe the change and its upstream record, which only the caller knows.
+    /// <c>Reason</c>, <c>SourceRecordId</c> and the valid-time fields stay caller-authored on direct
+    /// mutation routes because they describe the change and its upstream record. Bulk file import
+    /// is the exception: the import service treats the file as untrusted payload and replaces those
+    /// authority-bearing fields with its fixed source, reason, and one server ingest timestamp.
     /// </remarks>
     private static string ResolveActor(HttpContext context)
     {

@@ -308,6 +308,11 @@ Runtime desktop capability toggles are declared by feature modules and surfaced 
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
+Security Master create, edit, deactivate, and file-import commands require an active desktop actor
+with `ModifySecurityMaster`; trading-parameter backfill requires `TriggerBackfill`. WPF resolves
+actor and permission together again at the in-process application-service boundary, and configured
+anonymous roles use the shared `RolePermissions` mapping rather than inheriting unrestricted
+local-development access.
 
 The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
 The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer

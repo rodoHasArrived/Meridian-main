@@ -2,6 +2,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Identity.Auth;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -170,7 +171,7 @@ public sealed class SecurityMasterEditViewModelTests
                 .Callback<AmendSecurityTermsRequest, CancellationToken>((request, _) => capturedRequest = request)
                 .ReturnsAsync(detail);
 
-            var viewModel = CreateViewModel(service, new StubActorSource("jordan.rivera"));
+            var viewModel = CreateViewModel(service, new StubAuthorizationSource("jordan.rivera"));
             viewModel.LoadForEdit(detail);
             viewModel.DisplayName = "Apple Inc. Class A";
 
@@ -198,18 +199,57 @@ public sealed class SecurityMasterEditViewModelTests
             // Strict with no setup: any call to the service fails the test.
             var service = new Mock<ISecurityMasterService>(MockBehavior.Strict);
 
-            var viewModel = CreateViewModel(service, new StubActorSource(actor: null));
+            var viewModel = CreateViewModel(service, new StubAuthorizationSource(actor: null));
             viewModel.LoadForEdit(detail);
             viewModel.DisplayName = "Apple Inc. Class A";
 
+            viewModel.SaveCommand.CanExecute(null).Should().BeFalse();
             await viewModel.SaveCommand.ExecuteAsync(null);
 
-            viewModel.StatusText.Should().Contain("Sign in");
             service.Verify(
                 mock => mock.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         });
     }
+
+    [Fact]
+    public void SaveAsync_WhenOperatorIsViewOnly_RefusesTheWrite()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var detail = CreateEquityDetail();
+            var service = new Mock<ISecurityMasterService>(MockBehavior.Strict);
+            var viewModel = CreateViewModel(
+                service,
+                new StubAuthorizationSource("desktop.viewer", hasModifyPermission: false));
+            viewModel.LoadForEdit(detail);
+
+            viewModel.SaveCommand.CanExecute(null).Should().BeFalse();
+            await viewModel.SaveCommand.ExecuteAsync(null);
+
+            service.Verify(
+                mock => mock.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        });
+    }
+
+    private static SecurityDetailDto CreateEquityDetail()
+        => CreateSecurityDetail(
+            assetClass: "Equity",
+            identifierKind: SecurityIdentifierKind.Ticker,
+            identifierValue: "AAPL",
+            commonTerms: new
+            {
+                displayName = "Apple Inc.",
+                currency = "USD",
+                exchange = "NASDAQ",
+                issuerName = "Apple Inc."
+            },
+            assetSpecificTerms: new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                classification = "Common"
+            });
 
     /// <summary>
     /// The desktop lane reaches ISecurityMasterService in process, so this save is the last point
@@ -239,8 +279,8 @@ public sealed class SecurityMasterEditViewModelTests
     }
 
     /// <summary>
-    /// A dialog composed without an authorization seam has nobody who checked the write is allowed,
-    /// so it refuses rather than defaulting open.
+    /// A dialog composed without any authorization seam has nobody who checked the write is
+    /// allowed, so it refuses rather than defaulting open.
     /// </summary>
     [Fact]
     public void SaveAsync_WhenComposedWithoutAuthorizationSeam_RefusesTheWrite()
@@ -252,8 +292,7 @@ public sealed class SecurityMasterEditViewModelTests
             var viewModel = SecurityMasterEditViewModel.CreateNew(
                 WpfServices.LoggingService.Instance,
                 NotificationService.Instance,
-                service.Object,
-                new StubActorSource("desktop.operator"));
+                service.Object);
             viewModel.LoadForEdit(CreateEquityDetail());
             viewModel.DisplayName = "Apple Inc. Class A";
 
@@ -264,56 +303,35 @@ public sealed class SecurityMasterEditViewModelTests
         });
     }
 
-    private static SecurityDetailDto CreateEquityDetail()
-        => CreateSecurityDetail(
-            assetClass: "Equity",
-            identifierKind: SecurityIdentifierKind.Ticker,
-            identifierValue: "AAPL",
-            commonTerms: new
-            {
-                displayName = "Apple Inc.",
-                currency = "USD",
-                exchange = "NASDAQ",
-                issuerName = "Apple Inc."
-            },
-            assetSpecificTerms: new
-            {
-                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
-                classification = "Common"
-            });
-
     private static SecurityMasterEditViewModel CreateViewModel(
         Mock<ISecurityMasterService>? service = null,
-        WpfServices.IDesktopActorSource? actorSource = null,
+        WpfServices.IDesktopAuthorizationSource? operatorContext = null,
         WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
         => SecurityMasterEditViewModel.CreateNew(
             WpfServices.LoggingService.Instance,
             NotificationService.Instance,
             (service ?? new Mock<ISecurityMasterService>(MockBehavior.Strict)).Object,
-            actorSource ?? new StubActorSource("desktop.operator"),
+            operatorContext ?? new StubAuthorizationSource("desktop.operator"),
             mutationAuthorization ?? new StubMutationAuthorization(granted: true));
 
     /// <summary>
     /// Stands in for the desktop session. <c>actor</c> of <c>null</c> models a process with nobody
     /// signed in, which governed writes must refuse rather than attribute to a placeholder.
     /// </summary>
-    private sealed class StubActorSource(string? actor) : WpfServices.IDesktopActorSource
+    private sealed class StubAuthorizationSource(
+        string? actor,
+        bool hasModifyPermission = true) : WpfServices.IDesktopAuthorizationSource
     {
-        public bool TryGetAuthenticatedActor(out string resolved)
+        public bool TryAuthorize(UserPermission permission, out string resolved)
         {
             resolved = actor ?? string.Empty;
-            return actor is { Length: > 0 };
+            return permission == UserPermission.ModifySecurityMaster
+                   && hasModifyPermission
+                   && actor is { Length: > 0 };
         }
-    }
 
-    /// <summary>
-    /// Stands in for the desktop mutation gate. <c>granted: false</c> models an operator the HTTP
-    /// lane would refuse — for example a signed-in viewer, or a credential-free host whose
-    /// MDC_ANONYMOUS_ROLE names a read-only role.
-    /// </summary>
-    private sealed class StubMutationAuthorization(bool granted) : WpfServices.IDesktopMutationAuthorization
-    {
-        public bool IsGranted(Meridian.Identity.Auth.UserPermission permission) => granted;
+        public bool TryGetAuthenticatedActor(out string resolved)
+            => TryAuthorize(UserPermission.ModifySecurityMaster, out resolved);
     }
 
     private static SecurityDetailDto CreateSecurityDetail(
@@ -359,6 +377,16 @@ public sealed class SecurityMasterEditViewModelTests
 
         throw new DirectoryNotFoundException(
             $"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
+    }
+
+    /// <summary>
+    /// Stands in for the desktop mutation gate. <c>granted: false</c> models an operator the HTTP
+    /// lane would refuse — for example a signed-in viewer, or a credential-free host whose
+    /// MDC_ANONYMOUS_ROLE names a read-only role.
+    /// </summary>
+    private sealed class StubMutationAuthorization(bool granted) : WpfServices.IDesktopMutationAuthorization
+    {
+        public bool IsGranted(UserPermission permission) => granted;
     }
 }
 #endif

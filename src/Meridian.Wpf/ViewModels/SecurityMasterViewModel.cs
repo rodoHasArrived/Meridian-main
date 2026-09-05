@@ -299,6 +299,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isBackfillingTradingParams, value))
             {
                 RaisePropertyChanged(nameof(RuntimeStatusDetail));
+                BackfillTradingParamsCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -1508,35 +1509,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         SelectedConflict is not null &&
         !string.IsNullOrWhiteSpace(ConflictOperatorText);
 
-    /// <summary>
-    /// Whether this desktop session may mutate the Security Master golden record. Every HTTP route
-    /// that mutates it requires <see cref="UserPermission.ModifySecurityMaster"/>; the desktop
-    /// create, edit, deactivate, import, and trading-parameter backfill commands reach the same
-    /// services in-process, so they are held to the same grant. Gates command enablement and is
-    /// re-checked by every handler before the service call.
-    /// </summary>
-    public bool CanModifySecurityMaster => _mutationAuthorization.IsGranted(UserPermission.ModifySecurityMaster);
-
-    /// <summary>
-    /// Enforcement half of the mutation gate: command enablement is advisory (a command can be
-    /// executed programmatically regardless of its predicate), so every mutation handler calls this
-    /// before reaching a service.
-    /// </summary>
-    private bool EnsureCanModifySecurityMaster()
-    {
-        if (CanModifySecurityMaster)
-        {
-            return true;
-        }
-
-        _loggingService.LogWarning("Security Master mutation refused: this desktop session does not hold the ModifySecurityMaster permission.");
-        _notificationService.ShowNotification(
-            "Security Master",
-            "This operator is not permitted to modify the Security Master.",
-            NotificationType.Error);
-        return false;
-    }
-
     private bool SetSectionProperty<T>(
         T currentValue,
         T newValue,
@@ -1598,8 +1570,12 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         ShowRecordCorpActionCommand = new RelayCommand(OnShowRecordCorpAction, () => HasSelectedSecurity);
         CancelRecordCorpActionCommand = new RelayCommand(OnCancelRecordCorpAction);
         RecordCorpActionCommand = new AsyncRelayCommand(OnRecordCorpAction);
-        BackfillTradingParamsCommand = new AsyncRelayCommand(OnBackfillTradingParams, () => CanModifySecurityMaster);
-        ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting && CanModifySecurityMaster);
+        BackfillTradingParamsCommand = new AsyncRelayCommand(
+            OnBackfillTradingParams,
+            () => !IsBackfillingTradingParams && CanTriggerSecurityMasterBackfill());
+        ImportFromFileCommand = new AsyncRelayCommand(
+            OnImportFromFile,
+            () => !IsImporting && CanModifySecurityMaster);
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
         SearchCommand = new AsyncRelayCommand(ct => SearchAsync(ct), CanSearch);
         ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);
@@ -1659,12 +1635,20 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         OpenLotRows.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
         OpenLotProvenanceHistory.CollectionChanged += (_, _) => RaiseScheduleAndOpenLotStateChanged();
 
+        if (_authenticationSession is not null)
+        {
+            _authenticationSession.SignedOut += OnAuthenticationSessionSignedOut;
+        }
+
         StartWorkflowPolling();
     }
 
     private void OnCreateNew()
     {
         if (!EnsureCanModifySecurityMaster())
+            return;
+
+        if (!TryAuthorizeSecurityMasterMutation("create a security", out _))
             return;
 
         EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
@@ -1674,7 +1658,9 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnEditSelected()
     {
-        if (SelectedSecurity is null || !EnsureCanModifySecurityMaster())
+        if (SelectedSecurity is null ||
+            !EnsureCanModifySecurityMaster() ||
+            !TryAuthorizeSecurityMasterMutation("edit a security", out _))
             return;
 
         // Fetch the full detail so we have all the required information
@@ -1716,10 +1702,17 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnDeactivateSelected()
     {
-        if (SelectedSecurity is null || !EnsureCanModifySecurityMaster())
+        if (SelectedSecurity is null ||
+            !EnsureCanModifySecurityMaster() ||
+            !TryAuthorizeSecurityMasterMutation("deactivate a security", out _))
             return;
 
-        DeactivateVm = new SecurityMasterDeactivateViewModel(_loggingService, _notificationService, _service, _mutationAuthorization)
+        DeactivateVm = new SecurityMasterDeactivateViewModel(
+            _loggingService,
+            _notificationService,
+            _service,
+            _authenticationSession,
+            _mutationAuthorization)
         {
             SecurityName = SelectedSecurity.DisplayName,
             SecurityId = SelectedSecurity.SecurityId,
@@ -2224,10 +2217,24 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private async Task OnBackfillTradingParams()
     {
-        // The largest single mutation on this lane: one invocation amends up to 1,000 securities,
-        // so it is gated exactly like the per-record commands.
-        if (!EnsureCanModifySecurityMaster())
+        // The largest single mutation on this lane: one invocation amends up to 1,000 securities.
+        // Its authority is TriggerBackfill, matching the shared HTTP boundary where backfill
+        // routes require that grant alone — a profile delegated backfill without broader Security
+        // Master edit rights may run it — enforced on both the host posture below and the
+        // signed-in operator that follows.
+        if (!EnsureCanTriggerSecurityMasterBackfill())
             return;
+
+        if (_authenticationSession is null ||
+            !_authenticationSession.TryAuthorize(UserPermission.TriggerBackfill, out _))
+        {
+            const string message = "Sign in with backfill permission to backfill trading parameters.";
+            StatusText = message;
+            _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
+            _loggingService.LogWarning(
+                "Security Master trading-parameter backfill refused: the active desktop session does not grant TriggerBackfill or cannot name a valid actor.");
+            return;
+        }
 
         try
         {
@@ -3505,6 +3512,11 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             }
 
             _disposed = true;
+        }
+
+        if (_authenticationSession is not null)
+        {
+            _authenticationSession.SignedOut -= OnAuthenticationSessionSignedOut;
         }
 
         Stop();
