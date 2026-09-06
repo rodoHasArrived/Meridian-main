@@ -488,7 +488,7 @@ public sealed class DirectLendingEndpointsTests
         for (var index = 0; index < 20; index++)
         {
             var request = BuildCreateRequest();
-            acceptedLoanId = request.LoanId;
+            acceptedLoanId = request.LoanId!.Value;
             using var accepted = await client.PostAsJsonAsync("/api/loans", request);
             accepted.StatusCode.Should().Be(HttpStatusCode.Created);
         }
@@ -501,7 +501,7 @@ public sealed class DirectLendingEndpointsTests
         rejected.Headers.RetryAfter.Delta!.Value.Should().BeGreaterThan(TimeSpan.Zero)
             .And.BeLessThanOrEqualTo(TimeSpan.FromMinutes(1));
         var service = app.Services.GetRequiredService<IDirectLendingService>();
-        (await service.GetLoanAsync(rejectedRequest.LoanId)).Should().BeNull(
+        (await service.GetLoanAsync(rejectedRequest.LoanId!.Value)).Should().BeNull(
             "throttling must happen before the loan command is applied");
         using var read = await client.GetAsync($"/api/loans/{acceptedLoanId}");
         read.StatusCode.Should().Be(HttpStatusCode.OK, "mutation exhaustion must not consume the read path");
