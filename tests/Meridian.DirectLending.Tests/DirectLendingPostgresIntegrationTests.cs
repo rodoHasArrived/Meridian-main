@@ -29,7 +29,7 @@ public sealed class DirectLendingPostgresIntegrationTests
         await using var connection = new NpgsqlConnection(db.ConnectionString);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
-        command.CommandText = $"alter table {db.Schema}.projected_cash_flow rename column projected_cash_flow_id to projected_flow_id; alter table {db.Schema}.reconciliation_result rename column projected_cash_flow_id to projected_flow_id;";
+        command.CommandText = $"drop trigger synchronize_cash_flow_identity on {db.Schema}.projected_cash_flow; drop trigger synchronize_cash_flow_identity on {db.Schema}.reconciliation_result; alter table {db.Schema}.projected_cash_flow drop column projected_cash_flow_id; alter table {db.Schema}.reconciliation_result drop column projected_cash_flow_id;";
         await command.ExecuteNonQueryAsync();
         var migration = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,
             "DirectLending", "Migrations", "009_direct_lending_cash_flow_identity.sql"));
