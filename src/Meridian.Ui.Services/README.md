@@ -13,6 +13,11 @@ last_reviewed: 2026-09-05
 
 ## Purpose
 
+Setup wizard credential saves use the authenticated canonical credential API through the shared
+session/CSRF client. They no longer write secrets to application configuration, process environment,
+or user environment. An optional retained connection ID selects scoped persistence. Missing or refused
+API acknowledgements fail the save with fixed error text; there is no local plaintext fallback.
+
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
 
 
