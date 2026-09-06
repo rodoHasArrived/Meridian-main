@@ -10,7 +10,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.Credentials;
 
-public sealed class FileProviderCredentialStore : IProviderCredentialStore
+public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILegacyProviderCredentialImporter, IOAuthTokenVault
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
 
@@ -64,6 +64,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             if (vault.Providers.TryGetValue(descriptor.ProviderId, out var localRecord))
             {
@@ -91,57 +92,11 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             vault.Providers.TryGetValue(descriptor.ProviderId, out var existing);
 
-            var fields = new Dictionary<string, string>(existing?.Fields ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
-            foreach (var (key, value) in normalizedCredentials)
-            {
-                if (string.IsNullOrWhiteSpace(key))
-                {
-                    continue;
-                }
-
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    fields.Remove(key.Trim());
-                    continue;
-                }
-
-                fields[key.Trim()] = value.Trim();
-            }
-
-            var environment = descriptor.NormalizeEnvironment(request.Environment ?? existing?.Environment);
-            var metadata = new Dictionary<string, string>(existing?.Metadata ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
-            if (request.Metadata is not null)
-            {
-                foreach (var (key, value) in request.Metadata)
-                {
-                    if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
-                    {
-                        metadata[key.Trim()] = value.Trim();
-                    }
-                }
-            }
-            metadata["lastRotatedAt"] = now.ToString("O");
-            metadata["rotationDueAt"] = now.AddDays(DefaultRotationWindowDays).ToString("O");
-            metadata["verificationRequired"] = "true";
-            metadata["credentialStore"] = "local-encrypted-vault";
-
-            var updated = new ProviderCredentialVaultRecord
-            {
-                ProviderId = descriptor.ProviderId,
-                Fields = fields,
-                Environment = string.IsNullOrWhiteSpace(environment) ? null : environment,
-                SavedAt = existing?.SavedAt ?? now,
-                UpdatedAt = now,
-                LastVerifiedAt = null,
-                LastSuccessfulAt = existing?.LastSuccessfulAt,
-                LastFailureAt = existing?.LastFailureAt,
-                LastError = null,
-                ExternalAccountId = null,
-                Metadata = metadata
-            };
+            var updated = CreateUpdatedRecord(descriptor, request, normalizedCredentials, existing, now);
 
             vault.Providers[descriptor.ProviderId] = updated;
             await WriteVaultAsync(vault, ct).ConfigureAwait(false);
@@ -150,12 +105,195 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
                 "save",
                 request.Actor,
                 BuildStatus(descriptor, ToReadResult(descriptor, updated, ProviderCredentialSourceDto.LocalEncryptedStore)),
-                fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(),
+                updated.Fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(),
                 ct).ConfigureAwait(false);
         }
         finally
         {
             _gate.Release();
+        }
+    }
+
+    private static ProviderCredentialVaultRecord CreateUpdatedRecord(
+        ProviderCredentialCatalogEntry descriptor,
+        ProviderCredentialSaveRequest request,
+        IReadOnlyDictionary<string, string?> normalizedCredentials,
+        ProviderCredentialVaultRecord? existing,
+        DateTimeOffset now)
+    {
+        var fields = new Dictionary<string, string>(existing?.Fields ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in normalizedCredentials)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                fields.Remove(key.Trim());
+                continue;
+            }
+
+            fields[key.Trim()] = value.Trim();
+        }
+
+        var environment = descriptor.NormalizeEnvironment(request.Environment ?? existing?.Environment);
+        var metadata = new Dictionary<string, string>(existing?.Metadata ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+        if (request.Metadata is not null)
+        {
+            foreach (var (key, value) in request.Metadata)
+            {
+                if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
+                {
+                    metadata[key.Trim()] = value.Trim();
+                }
+            }
+        }
+        metadata["lastRotatedAt"] = now.ToString("O");
+        metadata["rotationDueAt"] = now.AddDays(DefaultRotationWindowDays).ToString("O");
+        metadata["verificationRequired"] = "true";
+        metadata["credentialStore"] = "local-encrypted-vault";
+
+        return new ProviderCredentialVaultRecord
+        {
+            ProviderId = descriptor.ProviderId,
+            Fields = fields,
+            Environment = string.IsNullOrWhiteSpace(environment) ? null : environment,
+            SavedAt = existing?.SavedAt ?? now,
+            UpdatedAt = now,
+            LastVerifiedAt = null,
+            LastSuccessfulAt = existing?.LastSuccessfulAt,
+            LastFailureAt = existing?.LastFailureAt,
+            LastError = null,
+            ExternalAccountId = null,
+            Metadata = metadata
+        };
+    }
+
+    /// <summary>Imports one validated legacy snapshot without replacing retained vault records.</summary>
+    public async Task ImportLegacyAsync(IReadOnlyList<ProviderCredentialSaveRequest> requests, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(requests);
+        // Validate the entire input before any durable mutation, including providers already present.
+        var prepared = requests.Select(request =>
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            var descriptor = RequireDescriptor(request.ProviderId);
+            return (Descriptor: descriptor, Request: request,
+                Fields: NormalizeCredentialFields(descriptor, request.Credentials));
+        }).ToArray();
+        if (prepared.Select(item => item.Descriptor.ProviderId).Distinct(StringComparer.OrdinalIgnoreCase).Count() != prepared.Length)
+            throw new InvalidOperationException("Legacy credential snapshot contains duplicate provider identities.");
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            var imported = new List<(ProviderCredentialCatalogEntry Descriptor, ProviderCredentialVaultRecord Record)>();
+            foreach (var item in prepared)
+            {
+                // A retained vault value is authoritative even after a partial migration or rotation.
+                if (vault.Providers.ContainsKey(item.Descriptor.ProviderId))
+                    continue;
+                var record = CreateUpdatedRecord(item.Descriptor, item.Request, item.Fields, null, DateTimeOffset.UtcNow);
+                vault.Providers.Add(item.Descriptor.ProviderId, record);
+                imported.Add((item.Descriptor, record));
+            }
+
+            if (imported.Count > 0)
+                await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            // Record every attempted provider, including retries after an audit-write failure.
+            // The sidecar is retained until all these audit appends succeed.
+            foreach (var item in prepared)
+            {
+                var record = vault.Providers[item.Descriptor.ProviderId];
+                await AppendAuditAsync(item.Descriptor, "legacy-import-or-preserve", "credential-vault-migration",
+                    BuildStatus(item.Descriptor, ToReadResult(item.Descriptor, record, ProviderCredentialSourceDto.LocalEncryptedStore)),
+                    record.Fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(), ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            return new Dictionary<string, OAuthToken>(vault.OAuthTokens, StringComparer.Ordinal);
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerName);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            if (token is null)
+                vault.OAuthTokens.Remove(providerName);
+            else
+                vault.OAuthTokens[providerName] = token;
+            await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            await AppendOAuthAuditAsync(providerName, token is null ? "oauth-delete" : "oauth-save", ct).ConfigureAwait(false);
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(tokens);
+        foreach (var pair in tokens)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(pair.Key);
+            ArgumentNullException.ThrowIfNull(pair.Value);
+        }
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            var changed = false;
+            foreach (var pair in tokens)
+                changed |= vault.OAuthTokens.TryAdd(pair.Key, pair.Value);
+            if (changed)
+                await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            foreach (var provider in tokens.Keys)
+                await AppendOAuthAuditAsync(provider, "oauth-import-or-preserve", ct).ConfigureAwait(false);
+        }
+        finally { _gate.Release(); }
+    }
+
+    private Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct)
+        => AtomicFileWriter.AppendLinesAsync(_auditPath,
+            [JsonSerializer.Serialize(new { Timestamp = DateTimeOffset.UtcNow, ProviderId = providerName, Action = action }, JsonOptions)], ct);
+
+    private async Task<FileStream> AcquireVaultLockAsync(CancellationToken ct)
+    {
+        EnsureVaultDirectory();
+        var started = System.Diagnostics.Stopwatch.StartNew();
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                // Keep this file in place: unlinking a lock file permits a second lock identity.
+                return new FileStream(VaultPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException ex) when ((ex.HResult & 0xffff) is 11 or 32 or 33 && started.Elapsed < TimeSpan.FromSeconds(30))
+            {
+                await Task.Delay(25, ct).ConfigureAwait(false);
+            }
         }
     }
 
@@ -166,6 +304,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             vault.Providers.Remove(descriptor.ProviderId);
             await WriteVaultAsync(vault, ct).ConfigureAwait(false);
@@ -192,6 +331,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             if (!vault.Providers.TryGetValue(descriptor.ProviderId, out var record))
             {
@@ -830,6 +970,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         public int Version { get; set; } = VaultVersion;
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
         public Dictionary<string, ProviderCredentialVaultRecord> Providers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, OAuthToken> OAuthTokens { get; set; } = new(StringComparer.Ordinal);
     }
 
     private sealed class ProviderCredentialVaultRecord

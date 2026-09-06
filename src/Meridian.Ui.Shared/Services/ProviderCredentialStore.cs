@@ -111,21 +111,19 @@ public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderC
             var legacy = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(
                 json,
                 LegacyJsonOptions) ?? [];
-            foreach (var (providerId, values) in legacy)
-            {
-                RequireKnownProvider(providerId);
-                await _vault.SaveAsync(
-                    new ProviderCredentialSaveRequest(
-                        providerId,
-                        values.ToDictionary(pair => pair.Key, pair => (string?)pair.Value, StringComparer.OrdinalIgnoreCase),
-                        Actor: "credential-vault-migration",
-                        Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            ["migratedFrom"] = "provider-credentials.json",
-                            ["credentialOwner"] = "Meridian.DataIntegration"
-                        }),
-                    ct).ConfigureAwait(false);
-            }
+            if (_vault is not ILegacyProviderCredentialImporter importer)
+                throw new InvalidOperationException("Credential vault does not support atomic legacy migration.");
+
+            var requests = legacy.Select(pair => new ProviderCredentialSaveRequest(
+                pair.Key,
+                pair.Value.ToDictionary(field => field.Key, field => (string?)field.Value, StringComparer.OrdinalIgnoreCase),
+                Actor: "credential-vault-migration",
+                Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["migratedFrom"] = "provider-credentials.json",
+                    ["credentialOwner"] = "Meridian.DataIntegration"
+                })).ToArray();
+            await importer.ImportLegacyAsync(requests, ct).ConfigureAwait(false);
 
             SecurelyRemoveLegacySidecar(_legacyPath);
             _migrationChecked = true;
