@@ -32,6 +32,7 @@ Use the source-module registry and source README workflow before changing code:
 - [Module map](../architecture/module-map.md) *(legacy source material; verify against `source/data/source-modules.yml`)*
 - [Project structure](../architecture/project-structure.md) *(legacy source material)*
 - [Live trading engine](live-trading-engine.md) *(promotion → execution loop: feed tap, strategy sessions, OMS routing)*
+- [ETL execution ownership](etl-execution-ownership.md) *(single-run admission, guarded publication, takeover, and commit ordering)*
 
 Canonical ownership rule:
 
