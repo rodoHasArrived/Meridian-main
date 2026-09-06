@@ -26,12 +26,9 @@ internal static partial class Program
                 "spawn-detached-gated-mutation" => await SpawnGatedMutationAsync(args, detachChildOutput: true).ConfigureAwait(false),
                 "delayed-spawn-gated-mutation" => await DelayedSpawnGatedMutationAsync(args).ConfigureAwait(false),
                 "emit-output" => await EmitOutputAsync(args).ConfigureAwait(false),
-<<<<<<< HEAD
                 "etl-crash-stage" => await RunEtlUntilKilledAsync(args).ConfigureAwait(false),
-=======
                 "audit-append-batch" => await AppendAuditBatchAsync(args).ConfigureAwait(false),
                 "wal-append-and-wait" => await AppendWalAndWaitAsync(args).ConfigureAwait(false),
->>>>>>> origin/main
                 _ => throw new ArgumentOutOfRangeException(nameof(args), args[0], "Unknown helper mode.")
             };
         }
