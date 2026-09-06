@@ -9,7 +9,7 @@ namespace Meridian.Platform.Coordination;
 /// <summary>
 /// Platform-owned lease manager with automatic renewal and operator diagnostics.
 /// </summary>
-public sealed class LeaseManager : ILeaseManager, IAsyncDisposable
+public sealed partial class LeaseManager : ILeaseManager, IAsyncDisposable
 {
     private readonly CoordinationConfig _config;
     private readonly ICoordinationStore _store;
@@ -17,6 +17,8 @@ public sealed class LeaseManager : ILeaseManager, IAsyncDisposable
     private readonly ConcurrentDictionary<string, LeaseRecord> _heldLeases = new(StringComparer.OrdinalIgnoreCase);
     private readonly CancellationTokenSource _cts = new();
     private readonly Task? _renewalTask;
+    private readonly object _disposeSync = new();
+    private Task? _disposeTask;
     private int _conflictCount;
     private int _takeoverCount;
     private int _renewalFailureCount;
@@ -117,10 +119,12 @@ public sealed class LeaseManager : ILeaseManager, IAsyncDisposable
 
     public async Task<CoordinationSnapshot> GetSnapshotAsync(CancellationToken ct = default)
     {
-        var held = _heldLeases.Values.OrderBy(l => l.ResourceId, StringComparer.OrdinalIgnoreCase).ToList();
-        var allLeases = Enabled
+        var executionOwners = _executionLeases.Keys.Select(lease => lease.OwnerId).ToHashSet(StringComparer.Ordinal);
+        var allLeases = Enabled || executionOwners.Count > 0
             ? await _store.GetAllLeasesAsync(ct).ConfigureAwait(false)
             : Array.Empty<LeaseRecord>();
+        var held = _heldLeases.Values.Concat(allLeases.Where(lease => executionOwners.Contains(lease.InstanceId)))
+            .OrderBy(lease => lease.ResourceId, StringComparer.OrdinalIgnoreCase).ToList();
         var corrupted = Enabled
             ? await _store.GetCorruptedLeaseFilesAsync(ct).ConfigureAwait(false)
             : Array.Empty<string>();
@@ -155,9 +159,22 @@ public sealed class LeaseManager : ILeaseManager, IAsyncDisposable
         };
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        _cts.Cancel();
+        lock (_disposeSync)
+            return new ValueTask(_disposeTask ??= DisposeCoreAsync());
+    }
+
+    private async Task DisposeCoreAsync()
+    {
+        try
+        {
+            await _cts.CancelAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _log.LogWarning(ex, "Lease-manager shutdown callback failed; continuing ownership cleanup");
+        }
 
         if (_renewalTask is not null)
         {
@@ -170,6 +187,9 @@ public sealed class LeaseManager : ILeaseManager, IAsyncDisposable
                 // Expected during disposal.
             }
         }
+
+        foreach (var execution in _executionLeases.Keys)
+            await execution.DisposeAsync().ConfigureAwait(false);
 
         foreach (var resourceId in _heldLeases.Keys.ToArray())
         {

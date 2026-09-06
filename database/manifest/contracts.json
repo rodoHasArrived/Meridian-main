@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "74eb29c3614b73f7d8fbc9af603ce928b913069c1538e056bc233800ec7ab23c",
+      "fingerprint": "f2c46579c0a2c8016e28e1963752123de78370d4487b01a8a5a4e2825811937b",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -530,8 +530,11 @@
         "Meridian.Contracts.Configuration.SymbolGroupsConfigDto",
         "Meridian.Contracts.Configuration.SymbolMappingsConfigDto",
         "Meridian.Contracts.Coordination.CoordinationSnapshot",
+        "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+        "Meridian.Contracts.Coordination.ExecutionLeaseLostException",
         "Meridian.Contracts.Coordination.IClusterCoordinator",
         "Meridian.Contracts.Coordination.ICoordinationStore",
+        "Meridian.Contracts.Coordination.IExecutionLease",
         "Meridian.Contracts.Coordination.ILeaseManager",
         "Meridian.Contracts.Coordination.IScheduledWorkOwnershipService",
         "Meridian.Contracts.Coordination.ISubscriptionOwnershipService",
@@ -3832,7 +3835,7 @@
       ]
     }
   ],
-  "fingerprint": "ed493a3584c6a995e0f4ac5b74be81c7d5d09c26d560bfab6c2ce58d2f2c7447",
+  "fingerprint": "e6101c18370ef5c4dc9953710f1a6b4cc1a44d93681ef66718a459d0a5ab143f",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4500,13 +4503,16 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "6c467716dd79181cb03f0038ea1e7962eea13e159166316a369baaa31fd5e77c",
+      "fingerprint": "c5d44f29b7c26f1e17c9847a2c0988f0138fa8bb2d4d3c4d4140103cebd59ae6",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Coordination",
       "object_ids": [
         "Meridian.Contracts.Coordination.CoordinationSnapshot",
+        "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+        "Meridian.Contracts.Coordination.ExecutionLeaseLostException",
         "Meridian.Contracts.Coordination.IClusterCoordinator",
         "Meridian.Contracts.Coordination.ICoordinationStore",
+        "Meridian.Contracts.Coordination.IExecutionLease",
         "Meridian.Contracts.Coordination.ILeaseManager",
         "Meridian.Contracts.Coordination.IScheduledWorkOwnershipService",
         "Meridian.Contracts.Coordination.ISubscriptionOwnershipService",
@@ -79517,6 +79523,105 @@
     },
     {
       "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "a39e69dd2a8e6329e70fe7ca5ea886e030957b45b092cbee15e0dcfd856cfac8",
+      "full_name": "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+      "id": "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CurrentOwner",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 22,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Lease",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IExecutionLease?",
+          "source_line": 22,
+          "type": "IExecutionLease?"
+        }
+      ],
+      "name": "ExecutionLeaseAcquireResult",
+      "namespace": "Meridian.Contracts.Coordination",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+      "references": [
+        "Meridian.Contracts.Coordination.IExecutionLease"
+      ],
+      "source": {
+        "line": 22,
+        "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
+      },
+      "sources": [
+        {
+          "line": 22,
+          "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "InvalidOperationException ($\"Execution ownership of '{resourceId}' was lost; no further side effects are permitted.\")"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "fe26d304ad8e810927bdaa01d5b10d5d0d799878f4d3182bdb4c5ab9c9c2edb6",
+      "full_name": "Meridian.Contracts.Coordination.ExecutionLeaseLostException",
+      "id": "Meridian.Contracts.Coordination.ExecutionLeaseLostException",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ExecutionLeaseLostException",
+      "namespace": "Meridian.Contracts.Coordination",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Coordination.ExecutionLeaseLostException",
+      "references": [],
+      "source": {
+        "line": 27,
+        "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
+      },
+      "sources": [
+        {
+          "line": 27,
+          "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "service_contract",
       "containing_type": null,
       "contract_sets": [
@@ -79577,6 +79682,41 @@
         {
           "line": 3,
           "path": "src/Meridian.Contracts/Coordination/ICoordinationStore.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "IAsyncDisposable"
+      ],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "4ac2c8217055d7e6157dedf5ac99dfa4754ba989b7c97ae6977b53b596e8840c",
+      "full_name": "Meridian.Contracts.Coordination.IExecutionLease",
+      "id": "Meridian.Contracts.Coordination.IExecutionLease",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IExecutionLease",
+      "namespace": "Meridian.Contracts.Coordination",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Coordination.IExecutionLease",
+      "references": [],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
         }
       ],
       "type_parameters": []

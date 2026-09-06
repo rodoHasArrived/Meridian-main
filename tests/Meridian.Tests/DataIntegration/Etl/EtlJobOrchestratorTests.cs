@@ -7,10 +7,13 @@ using Meridian.Contracts.Coordination;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Pipeline;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Canonicalization;
 using Meridian.DataIntegration.Etl;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Etl;
+using Meridian.Platform.Coordination;
+using Meridian.Storage.Coordination;
 using Meridian.Storage.Etl;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Operations;
@@ -50,6 +53,8 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
         export.ExportAsync(Arg.Any<IngestionJob>(), Arg.Any<EtlJobDefinition>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new EtlExportResult { Success = true }));
         var history = new FileOperationalCaseHistoryStore(_root);
+        var coordination = new CoordinationConfig();
+        await using var leaseManager = new LeaseManager(coordination, new SharedStorageCoordinationStore(coordination, _root));
         var orchestrator = new EtlJobOrchestrator(
             ingestion,
             definitionStore,
@@ -61,7 +66,8 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
             audit,
             rejects,
             export,
-            caseHistoryStore: history);
+            caseHistoryStore: history,
+            leaseManager: leaseManager);
 
         var job = await ingestion.CreateJobAsync(IngestionWorkloadType.Historical, ["AAPL"], "partner-a");
         await definitionStore.SaveAsync(new EtlJobDefinition
@@ -540,8 +546,8 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
         Directory.CreateDirectory(_root);
         var sourceReader = new RecordingSourceReader();
         var lease = Substitute.For<ILeaseManager>();
-        lease.TryAcquireAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new LeaseAcquireResult(false, false, null, "runner-a", DateTimeOffset.UtcNow.AddMinutes(1), "held"));
+        lease.TryAcquireExecutionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new ExecutionLeaseAcquireResult(null, "runner-a"));
         await using var fixture = CreateOrchestratorFixture(
             sourceReader,
             new EmptyPartnerFileParser(),
@@ -571,7 +577,8 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
         IEtlExportService export,
         Func<IngestionJobService, IEtlIngestionJobCoordinator>? coordinatorFactory = null,
         IOperationalCaseHistoryStore? caseHistoryStore = null,
-        ILeaseManager? leaseManager = null)
+        ILeaseManager? leaseManager = null,
+        CatalogRebuildResult? catalogResult = null)
     {
         var ingestion = new IngestionJobService(Path.Combine(_root, "jobs"));
         var definitionStore = new EtlJobDefinitionStore(_root);
@@ -584,8 +591,12 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
         var pipeline = new EventPipeline(sink, logger: NullLogger<EventPipeline>.Instance, wal: null, enablePeriodicFlush: false);
         var catalog = Substitute.For<IStorageCatalogService>();
         catalog.RebuildCatalogAsync(Arg.Any<CatalogRebuildOptions>(), Arg.Any<IProgress<CatalogRebuildProgress>>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new CatalogRebuildResult { Success = true }));
+            .Returns(Task.FromResult(catalogResult ?? new CatalogRebuildResult { Success = true }));
         var history = caseHistoryStore ?? new FileOperationalCaseHistoryStore(_root);
+        var coordination = new CoordinationConfig();
+        var ownedManager = leaseManager is null
+            ? new LeaseManager(coordination, new SharedStorageCoordinationStore(coordination, _root))
+            : null;
         var orchestrator = new EtlJobOrchestrator(
             coordinatorFactory?.Invoke(ingestion) ?? ingestion,
             definitionStore,
@@ -598,8 +609,8 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
             rejects,
             export,
             caseHistoryStore: history,
-            leaseManager: leaseManager);
-        return new OrchestratorFixture(orchestrator, ingestion, definitionStore, audit, history, pipeline);
+            leaseManager: leaseManager ?? ownedManager);
+        return new OrchestratorFixture(orchestrator, ingestion, definitionStore, audit, history, pipeline, ownedManager);
     }
 
     private static EtlJobDefinition CreateDefinition(
@@ -653,9 +664,15 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
         EtlJobDefinitionStore DefinitionStore,
         EtlAuditStore Audit,
         IOperationalCaseHistoryStore History,
-        EventPipeline Pipeline) : IAsyncDisposable
+        EventPipeline Pipeline,
+        IAsyncDisposable? OwnedManager) : IAsyncDisposable
     {
-        public ValueTask DisposeAsync() => Pipeline.DisposeAsync();
+        public async ValueTask DisposeAsync()
+        {
+            await Pipeline.DisposeAsync();
+            if (OwnedManager is not null)
+                await OwnedManager.DisposeAsync();
+        }
     }
 
     private sealed class RecordingSourceReader : IEtlSourceReader
