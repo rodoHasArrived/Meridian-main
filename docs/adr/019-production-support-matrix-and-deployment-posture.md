@@ -89,9 +89,13 @@ format are governed by [ADR-020](020-lifecycle-control-plane.md).
 - A **final-graph guard** (`ProductionRegistrationGuardService`) is inserted as the first
   `IHostedService` by the composition root. At host start — after every registration has landed —
   it re-validates the complete collection in production postures: a static pass over descriptor
-  implementation types and instances, plus eager resolution of singleton factory descriptors so
-  factory-hidden implementations are checked by their **actual runtime type**. Any violation
-  aborts startup with the full list of prohibited bindings.
+  implementation types and instances, plus eager resolution of closed factory descriptors of all
+  lifetimes and explicit service keys so factory-hidden implementations are checked by their **actual runtime type**. Any violation
+  aborts startup with the prohibited bindings. Scoped and transient validation resources are disposed
+  asynchronously. Wildcard keyed factories and null factory results refuse startup; explicit keys are
+  required because .NET 10 does not enumerate wildcard registrations through `GetKeyedServices`.
+  Unlabeled local-workstation graphs apply the runtime check to durable-store contracts, while a pinned
+  non-real provenance declaration preserves the documented simulation lane.
 - Prohibited-by-default implementation names in production postures: `InMemory*`, `Null*`,
   `NoOp*`, `Fake*`, `Stub*`, `Sample*`, plus anything carrying
   `[NonProductionOnlyImplementation]` or `INonProductionOnlyService`. A type that is genuinely
