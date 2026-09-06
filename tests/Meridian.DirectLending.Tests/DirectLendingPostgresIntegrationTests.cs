@@ -38,6 +38,28 @@ public sealed class DirectLendingPostgresIntegrationTests
         await command.ExecuteNonQueryAsync();
         (await db.Store.GetProjectedCashFlowsAsync(projection.ProjectionRunId)).Should().BeEquivalentTo(flows);
         (await db.Store.GetReconciliationResultsAsync(reconciliation.ReconciliationRunId)).Should().BeEquivalentTo(results);
+
+        var retained = results.First(result => result.ProjectedCashFlowId is not null);
+        command.Parameters.AddWithValue("result_id", retained.ReconciliationResultId);
+        command.CommandText = $"update {db.Schema}.reconciliation_result set projected_flow_id = null where reconciliation_result_id = @result_id;";
+        await command.ExecuteNonQueryAsync();
+        (await db.Store.GetReconciliationResultsAsync(reconciliation.ReconciliationRunId))
+            .Single(result => result.ReconciliationResultId == retained.ReconciliationResultId)
+            .ProjectedCashFlowId.Should().BeNull("legacy writes must update the current alias");
+        command.Parameters.AddWithValue("flow_id", retained.ProjectedCashFlowId!.Value);
+        command.CommandText = $"update {db.Schema}.reconciliation_result set projected_cash_flow_id = @flow_id where reconciliation_result_id = @result_id;";
+        await command.ExecuteNonQueryAsync();
+        command.CommandText = $"select projected_flow_id from {db.Schema}.reconciliation_result where reconciliation_result_id = @result_id;";
+        (await command.ExecuteScalarAsync()).Should().Be(retained.ProjectedCashFlowId.Value);
+        command.CommandText = $"update {db.Schema}.reconciliation_result set projected_flow_id = @flow_id, projected_cash_flow_id = @conflicting_id where reconciliation_result_id = @result_id;";
+        command.Parameters.AddWithValue("conflicting_id", Guid.NewGuid());
+        // Change both aliases to distinct values so the trigger must reject ambiguity,
+        // rather than interpret a single-alias update from either application version.
+        command.Parameters["flow_id"].Value = Guid.NewGuid();
+        var conflictingWrite = () => command.ExecuteNonQueryAsync();
+        await conflictingWrite.Should().ThrowAsync<PostgresException>()
+            .Where(error => error.SqlState == "P0001");
+        (await db.Store.GetReconciliationResultsAsync(reconciliation.ReconciliationRunId)).Should().BeEquivalentTo(results);
     }
 
     [DirectLendingDatabaseFact]
