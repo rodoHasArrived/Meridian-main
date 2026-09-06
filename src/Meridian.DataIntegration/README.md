@@ -18,6 +18,12 @@ as provider credentials. Mutations update only the named provider token; legacy 
 existing tokens and audit every attempted provider. The service never writes plaintext OAuth JSON.
 The existing non-Windows local key file remains a production-hardening gap; this does not certify PRD-002.
 
+`IScopedOAuthTokenVault` isolates tokens by the same four ownership dimensions as provider secrets.
+Scoped token records retain and validate their provider and ownership context; legacy token enumeration
+cannot return scoped tokens. `OAuthTokenRefreshService` accepts trusted `ownershipScope` for loading,
+saving, refresh rotation and deletion. Scoped services never claim or erase an unassigned legacy OAuth
+sidecar. Host callers must supply authorized scope; the default service remains a legacy compatibility path.
+
 ## Credential migration recovery
 
 Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. All vault reads and mutations share a bounded, cancellable file lock across store instances; audit failure retains the sidecar for retry.

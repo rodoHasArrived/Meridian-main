@@ -22,6 +22,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     private readonly ConcurrentDictionary<string, OAuthProviderConfig> _providerConfigs = new();
     private readonly string _tokenPersistencePath;
     private readonly IOAuthTokenVault _vault;
+    private readonly ProviderCredentialScope? _ownershipScope;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
 
     private CancellationTokenSource? _cts;
@@ -37,10 +38,14 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         CredentialExpirationConfig? config = null,
         HttpClient? httpClient = null,
         ILogger? logger = null,
-        IOAuthTokenVault? vault = null)
+        IOAuthTokenVault? vault = null,
+        ProviderCredentialScope? ownershipScope = null)
     {
         _log = logger ?? LoggingSetup.ForContext<OAuthTokenRefreshService>();
         _vault = vault ?? new FileProviderCredentialStore(dataRoot);
+        _ownershipScope = ownershipScope;
+        if (_ownershipScope is not null && _vault is not IScopedOAuthTokenVault)
+            throw new InvalidOperationException("Configured OAuth vault does not support scoped ownership.");
         _config = config ?? new CredentialExpirationConfig();
         _httpClient = httpClient ?? CreateDefaultHttpClient();
         _tokenPersistencePath = Path.Combine(dataRoot, ".mdc", "oauth_tokens.json");
@@ -115,7 +120,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     public async Task StoreTokenAsync(string providerName, OAuthToken token, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(token);
-        await _vault.SaveOAuthTokenAsync(providerName, token, ct).ConfigureAwait(false);
+        await PersistTokenAsync(providerName, token, ct).ConfigureAwait(false);
         _tokens[providerName] = token;
         _log.Debug("Stored OAuth token for {Provider}, expires at {ExpiresAt}", providerName, token.ExpiresAt);
     }
@@ -162,7 +167,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     /// </summary>
     public async Task RemoveTokenAsync(string providerName, CancellationToken ct = default)
     {
-        await _vault.SaveOAuthTokenAsync(providerName, null, ct).ConfigureAwait(false);
+        await PersistTokenAsync(providerName, null, ct).ConfigureAwait(false);
         _tokens.TryRemove(providerName, out _);
         _log.Information("Removed OAuth token for {Provider}", providerName);
     }
@@ -304,7 +309,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
             // The provider may already have invalidated the old refresh token. Retain the new
             // token in memory even if durable storage fails, but never acknowledge that failure as success.
             _tokens[providerName] = newToken;
-            await _vault.SaveOAuthTokenAsync(providerName, newToken, ct).ConfigureAwait(false);
+            await PersistTokenAsync(providerName, newToken, ct).ConfigureAwait(false);
 
             OnTokenRefreshed?.Invoke(providerName, newToken);
             _log.Information("Successfully refreshed OAuth token for {Provider}, new expiration: {ExpiresAt}",
@@ -374,8 +379,20 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         }
     }
 
+    private Task PersistTokenAsync(string providerName, OAuthToken? token, CancellationToken ct)
+        => _ownershipScope is null
+            ? _vault.SaveOAuthTokenAsync(providerName, token, ct)
+            : ((IScopedOAuthTokenVault)_vault).SaveScopedOAuthTokenAsync(providerName, token, _ownershipScope, ct);
+
     private void LoadPersistedTokens()
     {
+        if (_ownershipScope is not null)
+        {
+            // Legacy tokens have no proven owner. Never claim them for a new connection.
+            foreach (var pair in ((IScopedOAuthTokenVault)_vault).ReadScopedOAuthTokensAsync(_ownershipScope).GetAwaiter().GetResult())
+                _tokens[pair.Key] = pair.Value;
+            return;
+        }
         // Construction fails closed if migration or encrypted persistence fails. Never replace
         // unreadable retained tokens with an empty snapshot on disposal.
         if (File.Exists(_tokenPersistencePath))

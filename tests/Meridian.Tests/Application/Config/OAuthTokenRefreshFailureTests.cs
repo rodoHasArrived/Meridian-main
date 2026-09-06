@@ -40,9 +40,11 @@ public sealed class OAuthTokenRefreshFailureTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RefreshFailure_DoesNotExposeProviderSecrets_AndCanRetry(bool transportFailure)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task RefreshFailure_DoesNotExposeProviderSecrets_AndCanRetry(bool transportFailure, bool scoped)
     {
         const string secret = "provider-echoed-bearer-secret";
         var root = Path.Combine(Path.GetTempPath(), "meridian-oauth-errors", Guid.NewGuid().ToString("N"));
@@ -52,7 +54,11 @@ public sealed class OAuthTokenRefreshFailureTests
         using var client = new HttpClient(handler);
         try
         {
-            await using var service = new OAuthTokenRefreshService(root, httpClient: client, logger: logger);
+            var scope = scoped ? new ProviderCredentialScope("tenant", "connection", "account-a", "paper") : null;
+            var otherScope = new ProviderCredentialScope("tenant", "connection", "account-b", "paper");
+            var vault = new FileProviderCredentialStore(root);
+            await vault.SaveScopedOAuthTokenAsync("alpaca", new OAuthToken("other-access", "Bearer", DateTimeOffset.UtcNow.AddHours(1)), otherScope);
+            await using var service = new OAuthTokenRefreshService(root, httpClient: client, logger: logger, ownershipScope: scope);
             service.RegisterProvider(new OAuthProviderConfig("alpaca", "client",
                 ClientSecret: secret, TokenEndpoint: "https://provider.example/token"));
             var original = new OAuthToken("original-access", "Bearer", DateTimeOffset.UtcNow.AddHours(1),
@@ -78,6 +84,9 @@ public sealed class OAuthTokenRefreshFailureTests
             recovered.Token.RefreshToken.Should().Be("replacement-refresh");
             handler.Calls.Should().Be(2);
             failures.Should().ContainSingle();
+            var persisted = scoped ? await vault.ReadScopedOAuthTokensAsync(scope!) : await vault.ReadOAuthTokensAsync();
+            persisted["alpaca"].RefreshToken.Should().Be("replacement-refresh");
+            (await vault.ReadScopedOAuthTokensAsync(otherScope))["alpaca"].AccessToken.Should().Be("other-access");
         }
         finally
         {

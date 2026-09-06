@@ -27,6 +27,11 @@ The scoped store registration aliases the existing vault instance. Default host 
 legacy setup route still use provider-wide resolution until authorized scope is propagated by callers;
 this constructor alone does not establish end-to-end tenant isolation.
 
+`OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
+only that owner's OAuth tokens, including refresh responses, and leave unassigned legacy sidecars alone.
+Default host registration still needs connection ownership propagation before scoped services replace
+the provider-wide OAuth runtime.
+
 ## Purpose
 
 Meridian application layer contains use cases, orchestration services, commands, and workflow

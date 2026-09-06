@@ -10,7 +10,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.Credentials;
 
-public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore, ILegacyProviderCredentialImporter, IOAuthTokenVault
+public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore, ILegacyProviderCredentialImporter, IScopedOAuthTokenVault
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
 
@@ -251,6 +251,52 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         }
     }
 
+    public async Task<IReadOnlyDictionary<string, OAuthToken>> ReadScopedOAuthTokensAsync(ProviderCredentialScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            var result = new Dictionary<string, OAuthToken>(StringComparer.Ordinal);
+            foreach (var pair in vault.ScopedOAuthTokens)
+            {
+                var record = pair.Value;
+                if (record.Scope is null || string.IsNullOrWhiteSpace(record.ProviderName) || record.Token is null ||
+                    !string.Equals(pair.Key, record.Scope.StorageKey(record.ProviderName), StringComparison.Ordinal))
+                    throw new InvalidDataException("OAuth credential ownership is invalid.");
+                if (record.Scope == scope)
+                    result.Add(record.ProviderName, record.Token);
+            }
+            return result;
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task SaveScopedOAuthTokenAsync(string providerName, OAuthToken? token, ProviderCredentialScope scope, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerName);
+        ArgumentNullException.ThrowIfNull(scope);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            var key = scope.StorageKey(providerName);
+            if (vault.ScopedOAuthTokens.TryGetValue(key, out var existing) &&
+                (existing.Scope != scope || existing.ProviderName != providerName))
+                throw new InvalidDataException("OAuth credential ownership is invalid.");
+            if (token is null)
+                vault.ScopedOAuthTokens.Remove(key);
+            else
+                vault.ScopedOAuthTokens[key] = new ScopedOAuthVaultRecord { ProviderName = providerName, Scope = scope, Token = token };
+            await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            await AppendOAuthAuditAsync(providerName, token is null ? "oauth-delete" : "oauth-save", ct, scope).ConfigureAwait(false);
+        }
+        finally { _gate.Release(); }
+    }
+
     public async Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
     {
         await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -305,9 +351,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         finally { _gate.Release(); }
     }
 
-    private Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct)
+    private Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct, ProviderCredentialScope? scope = null)
         => AtomicFileWriter.AppendLinesAsync(_auditPath,
-            [JsonSerializer.Serialize(new { Timestamp = DateTimeOffset.UtcNow, ProviderId = providerName, Action = action }, JsonOptions)], ct);
+            [JsonSerializer.Serialize(new { Timestamp = DateTimeOffset.UtcNow, ProviderId = providerName, Action = action, Scope = scope }, JsonOptions)], ct);
 
     private async Task<FileStream> AcquireVaultLockAsync(CancellationToken ct)
     {
@@ -1031,6 +1077,14 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
         public Dictionary<string, ProviderCredentialVaultRecord> Providers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, OAuthToken> OAuthTokens { get; set; } = new(StringComparer.Ordinal);
+        public Dictionary<string, ScopedOAuthVaultRecord> ScopedOAuthTokens { get; set; } = new(StringComparer.Ordinal);
+    }
+
+    private sealed class ScopedOAuthVaultRecord
+    {
+        public string ProviderName { get; set; } = string.Empty;
+        public ProviderCredentialScope? Scope { get; set; }
+        public OAuthToken? Token { get; set; }
     }
 
     private sealed class ProviderCredentialVaultRecord
