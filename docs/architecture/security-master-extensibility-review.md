@@ -3626,8 +3626,23 @@ it either: it commits the security id and no version
 none, `CorporateActionAccountingProjectionService.cs:12-44`). So terms amended after Drafted — a
 currency, a status, an effective window, any of the fields the spine itself refuses a stale version
 over — post under the version they were drafted against. Reload the record at the same three gates
-and compare its version to the scope's, or let a Security Master amendment supersede the binding and
-void its approval like the other authorities.
+and compare its version to the scope's,
+or let a Security Master amendment supersede the binding and void its approval like the other
+authorities. And at the posting gate the first alternative has to be stated exactly, because a
+reload is a check and not a fence (corrected 2026-09-06, after review; the previous sentence let
+"reload and compare before the spine append" stand as sufficient at posting): between a reload that
+passes and the appends that follow it, any of these authorities can advance, and the only version
+the appends assert transactionally is the position's — the spine store's append selects the book
+position `for share` inside its own transaction and compares its version, security id, and book id
+(`ValidateAssetAccountingPositionCasAsync`,
+`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:153-186`); the period, the policy
+decision, the election, the lot snapshot, and the Security Master version take part in no
+compare-and-swap that spans the journal mutation. So at attach and at approval the reload is an
+early refusal and enough; at posting the comparison must run inside the transaction that appends —
+the same `for share` read and version assertion the position already gets, extended to the period,
+the security record, and the retained snapshot and decision rows once B3 gives them authorities — or
+the second alternative must carry it: each authority's update supersedes the binding and, while B6's
+reservation stands, is refused, so that nothing can move between the check and the write.
 The case itself is the exception at the
 later gates (narrowed 2026-09-06, after review; the previous sentence listed it with the rest): its
 workflow version advances by design at attach
@@ -3831,8 +3846,24 @@ while the case binding stamps `HasAuthoritativeLotResolution: true` as a literal
 validated (`CorporateActionAccountingDtos.cs:327-328`), not that anything applied it. The
 orchestrator therefore needs an executable corporate-action lot-mutation seam — a typed instruction
 the posting candidate can carry for these kinds, and a lot-store operation that applies it in the
-same transaction as the journal append — or the lane posts accounting for lot changes it never
-makes; defining the lot-snapshot authority above does not change that.
+same transaction as the journal append —
+or the lane posts accounting for lot changes it never makes; defining the lot-snapshot authority
+above does not change that. That seam also needs a target it can lock (added 2026-09-06, after
+review; the previous sentence asked for the instruction and the store operation and named no target
+position). A split, spin-off, merger, or allocation creates or updates a lot under a successor
+security, and the plan names that lot by security and lot id only:
+`CorporateActionLotMutationSetDto` carries the source position and its expected version
+(`CorporateActionAccountingDtos.cs:318-328`), and each `CorporateActionLotMutationDto` carries a
+`TargetSecurityId`, a `TargetLotId`, and an expected target-lot version, but no target position and
+no target-position version (`:289-313`). The store cannot infer one: the book-position projection's
+uniqueness is keyed on the position id together with the security, book, and owner scope
+(`ux_book_position_projection_scope`, `003_instrument_position_projection_guards.sql:155-157`), so a
+security and book may carry more than one position, and the append-time compare-and-swap the spine
+already runs locks only the source position
+(`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:153-186`). Every cross-security
+target instruction must therefore carry its authoritative target position, that position's scope,
+and its expected version, and the lot-store operation must lock and assert the target position as it
+does the source before it writes the journal and the mutations together.
 The position deserves its
 own sentence (added 2026-09-02, after review; the first version of this list omitted it): the
 projector requires a `PositionSnapshotId` (`CorporateActionAccountingProjectionService.cs:259`)
@@ -3957,8 +3988,21 @@ the lot versions it expected (`CorporateActionAccountingDtos.cs:289-313`, the st
 `:302-309`). So the reversal must apply the inverse mutations — each mutated lot returned from its
 retained after-state to its retained before-state, under a version guard on the lot as it stands now
 — and the rebook its replacement mutations, each in the same transaction as its journal append,
-which is the transaction B3's lot-store operation already has to provide; a reversal whose lot half
-fails must fail whole. At the pin the lane applies no corporate-action lot mutation at all (B3), so
+which is the transaction B3's lot-store operation already has to provide;
+a reversal whose lot half fails must fail whole. The retained vocabulary cannot yet express two of
+the inverses (added 2026-09-06, after review; the previous sentence assumed every lot has a
+before-state to return to): a target operation is `Create` or `Update` only
+(`CorporateActionLotTargetOperationDto`, `CorporateActionAccountingDtos.cs:263-268`), the validator
+forbids a `Create` to carry a target-before snapshot or an expected target version (`:494-508`), and
+a full disposal or transfer-out retains no source after-state — the relief is computed against an
+absent `SourceAfter` (`:595-620`). So the inverse of a created successor lot is a delete, and the
+inverse of a fully relieved source lot is a recreation from its retained before-state, and neither
+is a mutation the plan, the validator, or the store operation B3 adds can carry. The seam needs
+typed inverse operations for both — a delete of a created target under the version the lot now
+carries, and a recreation of a relieved source at its retained before-state under the identity the
+original mutation retired — with the same identity and version guards as the rest, or the reversal
+of the two most common lot-moving actions cannot run atomically with its journal.
+At the pin the lane applies no corporate-action lot mutation at all (B3), so
 this half has nothing to reverse until B3 lands; it binds the day it does.
 The reversal also needs a drafting path that can produce it (added 2026-09-06, after review): the
 Drafted step's rule dry run receives only the source event's type, amount, currency, and effective
@@ -4111,8 +4155,23 @@ after review; the previous version counted "the append threw" as a pre-append fa
 still-Drafted spine clear the marker): the journal append can commit while its caller receives an
 exception, and the posting service advances the spine to Posted only after the append and a
 reload of the journal it wrote (`AccountingPostingCandidatePostService.cs:349-364`), so a durable
-journal can exist while the bound spine still reads Drafted, and a spine-stage check would clear
-the only fence with the orphan standing. So once the append has been invoked, the marker stays
+journal can exist while the bound spine still reads Drafted,
+and a spine-stage check would clear the only fence with the orphan standing. And "the append" here
+is the first durable write the posting service makes, not the journal's (corrected 2026-09-06, after
+review; the previous version drew the boundary at the journal append): before it calls the journal
+store the service appends the Approved stage to the spine through a separate store call
+(`EnsureAssetProjectionApprovedAsync`, `AccountingPostingCandidatePostService.cs:339-349`, the
+append at `:522-530`), and only an `InvalidOperationException` from that call is reconciled by a
+reload (`:532-540`) — a transport failure escapes with the stage possibly committed. A failure after
+that call was invoked is therefore ambiguous in the same way, and a rule that cleared the marker on
+it — as a "spine-load failure" or "the append was never reached" — would clear the fence with the
+spine already Approved, which the next attempt then refuses as no longer Drafted
+(`ValidateSpineStillDrafted`, `CorporateActionCaseAccountingService.cs:437-450`). So the boundary is
+the invocation of the Approved-stage append: after it, the marker stays until the next attempt
+reloads the spine and the journal store together — an Approved stage under this approval with no
+journal resumes from that attestation, a journal found completes the record, and neither is inferred
+from the exception.
+So once the append has been invoked, the marker stays
 until the next attempt resolves the outcome from the journal store's own idempotency record —
 the posting it keys by ledger book and source event (`FindExistingPostingAsync`, `:350`) — not
 from the exception and not from the spine stage: a posting found there under this approval
@@ -4135,8 +4194,20 @@ the operator to re-attach — which attach refuses too, since it accepts only a 
 stage is Approved under this same approval — the stage's reference is the approval id
 (`AccountingPostingCandidatePostService.cs:1360-1369`) — with the bound drafted fingerprint and no
 posted impact, and resume posting from that attestation, which the posting service already does when
-it finds the Approved stage present (`:493-497`); the stable negative releases the marker to that
-resumption and to nothing else.
+it finds the Approved stage present (`:493-497`);
+the stable negative releases the marker to that resumption and to nothing else. The journal-found
+branch has a lot half too (added 2026-09-06, after review; the previous version adopted the journal
+and advanced the spine from the journal record alone): when the posting carried a lot batch — the
+atomic path B3's seam joins — the journal store's idempotency record is a `LedgerJournalEntryRecord`
+with no batch identity on it (`ILedgerJournalStore.cs:256-272`), while the path that succeeds takes
+the batch id from `AtomicTaxLotJournalResult` (`:449-460`) and stamps it on the Posted stage and the
+case result (`AccountingPostingCandidatePostService.cs:301-318`, asserted again at `:735`); adopting
+the journal without the batch would advance the spine with a lot lineage it cannot name. The batch
+id is deterministic — a digest of the book, the source event, and the intent (`:1264-1271`) — so the
+recovery can recompute it, but the store exposes no read for a batch by id; one is required,
+returning the batch's canonical fingerprint, and the branch must reload the batch, require that
+fingerprint to match the one the retained Drafted candidate's instruction produces, and only then
+advance the spine with that batch id.
 Recover: not by adopting the
 journal "regardless of
 the case's current state" (corrected 2026-09-06, after review; the first version of this remedy
@@ -4293,8 +4364,10 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    position, accounting period) as typed fields on the candidate; compare the drafting-time case
    version once, at attach, and reload the external dependencies — and the Security Master record,
    whose version the spine scope already retains and compares only through Drafted (added
-   2026-09-06) — from their authorities and compare at attach, at approval, and at posting before
-   the spine append
+   2026-09-06) —
+   from their authorities and compare at attach and at approval, and at posting inside the
+   transaction that appends, since a reload before it is a check and not a fence (corrected
+   2026-09-06)
    — or fence the binding
    so an authority update supersedes it and voids its approval — refusing a stale draft on any
    mismatch, with the case governed at the later gates by its transition chain or a retained
@@ -4318,9 +4391,10 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    to external callers; source cannot say no rows exist — corrected 2026-09-05), and every month of
    postings after a consumer lands makes retrofitted verification a data-repair exercise. B4, B5,
    and B6 ride with it: a reopened case must carry correction lineage to its own posting and a
-   correcting effect that neutralizes it — the journal lines and, once B3 applies lot mutations, the
-   lots, by inverse mutations in the same transaction —
-   under a correction approval recorded before drafting over a deterministic preview of the
+   correcting effect that neutralizes it — the journal lines and, once B3 applies lot mutations,
+   the lots, by inverse mutations in the same transaction, with typed inverses for created targets
+   and fully relieved sources (added 2026-09-06) — under a correction approval
+   recorded before drafting over a deterministic preview of the
    reversal, rather than the request's asserted adjustment metadata — the case's post-attach
    approval cannot supply it, since it exists only after the candidate it would authorize (corrected
    2026-09-06) — before it can bind again (extended 2026-09-06),
@@ -4329,9 +4403,10 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    evidence at posting, and posting must be fenced against a case transition that lands between the
    spine append and the case record,
    with any orphan already made left unauthorized and corrected by an approved reversal or rebook,
-   not adopted and not retroactively approved, and a confirmed append failure resumed from the
-   Approved attestation the spine already holds rather than refused as no longer Drafted (added
-   2026-09-06).
+   not adopted and not retroactively approved,
+   and a confirmed append failure resumed from the Approved attestation the spine already holds
+   rather than refused as no longer Drafted, with the ambiguity boundary drawn at the Approved-stage
+   append and a found journal's lot batch reconciled before it is adopted (added 2026-09-06).
 2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
    both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
    side", which an earlier version of this entry said while the same list it introduces names an
@@ -4539,5 +4614,12 @@ version only through Drafted and the digest commits no security version at all; 
 post-attach approval derivation, which review showed circular — the case approval exists only after
 the Drafted candidate it would have to authorize — with a correction approval recorded before
 drafting over a deterministic preview; and made B6's stable-negative branch resume from the Approved
-attestation the posting service appends before the journal, since the case retry otherwise refuses
-the spine as no longer Drafted and attach refuses it too.
+attestation the posting service appends before the journal,
+since the case retry otherwise refuses the spine as no longer Drafted and attach refuses it too; a
+twenty-ninth (2026-09-06) moved B2's posting-time comparison inside the appending transaction, since
+a reload before it is a check and only the position takes part in the append's compare-and-swap;
+gave B3's lot seam a target position to lock, since the plan names successor lots by security alone
+and a security and book may carry more than one position; added the inverse create and delete
+operations B4's reversal needs, since the plan's vocabulary has neither; drew B6's ambiguity
+boundary at the Approved-stage append the posting service makes first; and required B6's
+journal-found branch to reconcile the lot batch the journal record cannot name.
