@@ -12,6 +12,34 @@ namespace Meridian.Tests.Application.DirectLending;
 public sealed class DirectLendingOutboxFailureTests
 {
     [Theory]
+    [InlineData("unsupported.delivery")]
+    [InlineData("direct-lending.journal.requested")]
+    public async Task UnprocessableDelivery_IsRetainedInsteadOfAcknowledged(string topic)
+    {
+        var loanId = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        var message = new DirectLendingOutboxMessage(Guid.NewGuid(), topic, loanId.ToString("N"),
+            JsonSerializer.Serialize(new { loanId, sourceEventId = Guid.NewGuid() }),
+            null, now, now, null, 0, null);
+        var store = Substitute.For<IDirectLendingOperationsStore>();
+        var query = Substitute.For<IDirectLendingQueryService>();
+        query.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns([]);
+        using var lifetime = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        store.GetPendingOutboxMessagesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<DirectLendingOutboxMessage>>([message]));
+        store.MarkOutboxFailedAsync(message.OutboxMessageId, Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(_ => { lifetime.Cancel(); return Task.CompletedTask; });
+        store.MarkOutboxProcessedAsync(message.OutboxMessageId, Arg.Any<CancellationToken>())
+            .Returns(_ => { lifetime.Cancel(); return Task.CompletedTask; });
+        using var worker = new DirectLendingOutboxDispatcher(store, Substitute.For<IDirectLendingCommandService>(),
+            query, new DirectLendingOptions(), NullLogger<DirectLendingOutboxDispatcher>.Instance);
+        var execute = typeof(DirectLendingOutboxDispatcher).GetMethod("ExecuteAsync", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        await ((Task)execute.Invoke(worker, [lifetime.Token])!).WaitAsync(TimeSpan.FromSeconds(10));
+        await store.Received(1).MarkOutboxFailedAsync(message.OutboxMessageId, Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().MarkOutboxProcessedAsync(message.OutboxMessageId, Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
     [InlineData("direct-lending.projection.requested")]
     [InlineData("direct-lending.reconciliation.requested")]
     public async Task RejectedCommand_RemainsRetryable_AndIsAcknowledgedOnlyAfterSuccess(string topic)

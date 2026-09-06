@@ -11,6 +11,10 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Application
 
+Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
+remain failed and retryable; they are never silently acknowledged as processed.
+
+
 Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
 shared service into committed run identity handling. Repeating a command on the same loan
 returns the retained run; reusing a projection command with a different explicit date returns
