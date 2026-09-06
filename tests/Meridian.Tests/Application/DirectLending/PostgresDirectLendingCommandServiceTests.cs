@@ -16,6 +16,25 @@ namespace Meridian.Tests.Application.DirectLending;
 public sealed class PostgresDirectLendingCommandServiceTests
 {
     [Fact]
+    public async Task ServiceFacade_DerivedRuns_PreserveRetryMetadata()
+    {
+        var loanId = Guid.NewGuid();
+        var metadata = new DirectLendingCommandMetadataDto(CommandId: Guid.NewGuid());
+        var commands = Substitute.For<IDirectLendingCommandService>();
+        commands.RequestProjectionAsync(loanId, null, metadata, Arg.Any<CancellationToken>())
+            .Returns(DirectLendingCommandResult<ProjectionRunDto>.Failure(DirectLendingErrorCode.NotFound, "Missing loan"));
+        commands.ReconcileAsync(loanId, metadata, Arg.Any<CancellationToken>())
+            .Returns(DirectLendingCommandResult<ReconciliationRunDto>.Failure(DirectLendingErrorCode.NotFound, "Missing loan"));
+        var service = new PostgresDirectLendingService(commands, Substitute.For<IDirectLendingQueryService>());
+        var projection = () => service.RequestProjectionAsync(loanId, metadata: metadata);
+        await projection.Should().ThrowAsync<DirectLendingCommandException>();
+        var reconciliation = () => service.ReconcileAsync(loanId, metadata: metadata);
+        await reconciliation.Should().ThrowAsync<DirectLendingCommandException>();
+        await commands.Received(1).RequestProjectionAsync(loanId, null, metadata, Arg.Any<CancellationToken>());
+        await commands.Received(1).ReconcileAsync(loanId, metadata, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task RequestProjectionAsync_RetryAfterPublicationFailure_RetainsCommittedRunAndFlows()
     {
         var loanId = Guid.NewGuid();

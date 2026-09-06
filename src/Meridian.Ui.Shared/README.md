@@ -11,6 +11,13 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Ui.Shared
 
+Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
+shared service into committed run identity handling. Repeating a command on the same loan
+returns the retained run; reusing a projection command with a different explicit date returns
+409. In-memory workflows follow the same retry rule. Calls without a command identity retain
+legacy new-run behavior and must not be treated as safe automatic retries.
+
+
 The shared workstation graph owns first-run state, the curated starter catalog,
 versioned sample provisioning, and outcome-based activation evidence. Browser and WPF
 clients consume these endpoints instead of defining client-only setup policy. Initial

@@ -906,7 +906,7 @@ public static class DirectLendingEndpoints
             var request = JsonSerializer.Deserialize(body.GetRawText(), DirectLendingJsonContext.Default.RequestProjectionRunRequest);
             try
             {
-                var projection = await service.RequestProjectionAsync(loanId, request?.ProjectionAsOf, context.RequestAborted).ConfigureAwait(false);
+                var projection = await service.RequestProjectionAsync(loanId, request?.ProjectionAsOf, context.RequestAborted, MergeMetadata(null, context)).ConfigureAwait(false);
                 return Results.Json(projection, jsonOptions);
             }
             catch (DirectLendingCommandException ex)
@@ -976,7 +976,7 @@ public static class DirectLendingEndpoints
 
             try
             {
-                var run = await service.ReconcileAsync(loanId, context.RequestAborted).ConfigureAwait(false);
+                var run = await service.ReconcileAsync(loanId, context.RequestAborted, MergeMetadata(null, context)).ConfigureAwait(false);
                 return run is null ? Results.NotFound() : Results.Json(run, jsonOptions);
             }
             catch (DirectLendingCommandException ex)

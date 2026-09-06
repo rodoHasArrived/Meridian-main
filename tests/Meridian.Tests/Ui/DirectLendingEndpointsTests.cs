@@ -22,6 +22,35 @@ namespace Meridian.Tests.Ui;
 public sealed class DirectLendingEndpointsTests
 {
     [Fact]
+    public async Task DerivedRuns_RetryWithCommandHeader_RetainsRunsAndRejectsChangedProjectionDate()
+    {
+        var service = new InMemoryDirectLendingService();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IDirectLendingService>(service));
+        var client = app.GetTestClient();
+        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        client.DefaultRequestHeaders.Add("X-Command-Id", Guid.NewGuid().ToString());
+        var route = $"/api/loans/{loan.LoanId}";
+        var request = new RequestProjectionRunRequest(new DateOnly(2026, 6, 30));
+        var first = await client.PostAsJsonAsync($"{route}/projections", request);
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+        var projection = await first.Content.ReadFromJsonAsync<ProjectionRunDto>();
+        var retry = await client.PostAsJsonAsync($"{route}/projections", request);
+        retry.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await retry.Content.ReadFromJsonAsync<ProjectionRunDto>()).Should().Be(projection);
+        (await service.GetProjectionsAsync(loan.LoanId)).Should().ContainSingle();
+        var changed = await client.PostAsJsonAsync($"{route}/projections", new RequestProjectionRunRequest(new DateOnly(2026, 7, 1)));
+        changed.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        var reconciliation = await client.PostAsync($"{route}/reconcile", null);
+        reconciliation.StatusCode.Should().Be(HttpStatusCode.OK);
+        var run = await reconciliation.Content.ReadFromJsonAsync<ReconciliationRunDto>();
+        var reconciliationRetry = await client.PostAsync($"{route}/reconcile", null);
+        reconciliationRetry.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await reconciliationRetry.Content.ReadFromJsonAsync<ReconciliationRunDto>()).Should().Be(run);
+        (await service.GetReconciliationRunsAsync(loan.LoanId)).Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task DirectLendingEndpoints_ShouldCreateAndFetchLoanLifecycle()
     {
         await using var app = await CreateAppAsync(services =>
