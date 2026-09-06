@@ -11,7 +11,7 @@ public sealed partial class PostgresDirectLendingStateStore
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-            select cash_txn_id,
+            select cash_transaction_id,
                    loan_id,
                    transaction_type,
                    effective_date,

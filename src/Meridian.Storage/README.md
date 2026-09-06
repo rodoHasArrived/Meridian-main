@@ -11,6 +11,10 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+The lending cash reader uses `cash_transaction_id`, matching both the authoritative operations
+migration and the transaction writer; reconciliation exercises that persisted read path.
+
+
 Migration 009 reconciles the historical `projected_flow_id` column with the cash-flow
 identity name consumed by the store. It adds and backfills the current column names while retaining legacy IDs and foreign keys.
 A trigger synchronizes writes through either name and rejects conflicting IDs during rollout.
