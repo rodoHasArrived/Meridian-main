@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using Meridian.Application.Composition;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.DirectLending;
@@ -19,6 +21,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
+[Collection("Sequential")]
 public sealed class DirectLendingEndpointsTests
 {
     [Fact]
@@ -456,13 +459,142 @@ public sealed class DirectLendingEndpointsTests
             .OnlyContain(policyName => policyName == UiEndpoints.DirectLendingMutationRateLimitPolicy);
     }
 
+    [Theory]
+    [InlineData("development-enforced")]
+    [InlineData("production")]
+    [InlineData("production-posture")]
+    [InlineData("packaged")]
+    [InlineData("customer")]
+    [InlineData("staging")]
+    public async Task DirectLendingLimiter_ExhaustionReturnsRetryAfterWithoutApplyingRejectedCommand(string mode)
+    {
+        using var quiet = new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
+        using var bypass = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MDC_DISABLE_RATE_LIMIT", mode == "development-enforced" ? "false" : "true");
+        using var packaged = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MDC_PACKAGED_BUILD", mode == "packaged" ? "true" : null);
+        using var customer = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_CUSTOMER_BUILD", mode == "customer" ? "true" : null);
+        var environment = mode == "production" ? Environments.Production
+            : mode == "staging" ? Environments.Staging : Environments.Development;
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
+            if (mode == "production-posture")
+                services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        }, environmentName: environment);
+        using var client = app.GetTestClient();
+        Guid acceptedLoanId = default;
+        for (var index = 0; index < 20; index++)
+        {
+            var request = BuildCreateRequest();
+            acceptedLoanId = request.LoanId;
+            using var accepted = await client.PostAsJsonAsync("/api/loans", request);
+            accepted.StatusCode.Should().Be(HttpStatusCode.Created);
+        }
+
+        var rejectedRequest = BuildCreateRequest();
+        using var rejected = await client.PostAsJsonAsync("/api/loans", rejectedRequest);
+        rejected.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+        rejected.Headers.RetryAfter.Should().NotBeNull();
+        rejected.Headers.RetryAfter!.Delta.Should().NotBeNull();
+        rejected.Headers.RetryAfter.Delta!.Value.Should().BeGreaterThan(TimeSpan.Zero)
+            .And.BeLessThanOrEqualTo(TimeSpan.FromMinutes(1));
+        var service = app.Services.GetRequiredService<IDirectLendingService>();
+        (await service.GetLoanAsync(rejectedRequest.LoanId)).Should().BeNull(
+            "throttling must happen before the loan command is applied");
+        using var read = await client.GetAsync($"/api/loans/{acceptedLoanId}");
+        read.StatusCode.Should().Be(HttpStatusCode.OK, "mutation exhaustion must not consume the read path");
+
+        // Login middleware authenticates the principal before the production limiter. Another
+        // authenticated operator has an independent command budget on the same loopback host.
+        client.DefaultRequestHeaders.Add("X-Test-Actor", "second-operator");
+        using var secondOperator = await client.PostAsJsonAsync("/api/loans", rejectedRequest);
+        secondOperator.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Theory]
+    [InlineData(Environments.Development)]
+    [InlineData("Test")]
+    public async Task DirectLendingLimiter_ExplicitDevelopmentOverrideRetainsTestWorkflow(string environmentName)
+    {
+        using var quiet = new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
+        using var bypass = new Meridian.Tests.Application.Composition.EnvironmentVariableScope("MDC_DISABLE_RATE_LIMIT", "true");
+        using var packaged = new Meridian.Tests.Application.Composition.EnvironmentVariableScope("MDC_PACKAGED_BUILD", null);
+        using var customer = new Meridian.Tests.Application.Composition.EnvironmentVariableScope("MERIDIAN_CUSTOMER_BUILD", null);
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>(),
+            environmentName: environmentName);
+        using var client = app.GetTestClient();
+        for (var index = 0; index < 21; index++)
+        {
+            using var accepted = await client.PostAsJsonAsync("/api/loans", BuildCreateRequest());
+            accepted.StatusCode.Should().Be(HttpStatusCode.Created);
+        }
+    }
+
+    [Theory]
+    [InlineData("production", false)]
+    [InlineData("production-posture", false)]
+    [InlineData("packaged", false)]
+    [InlineData("customer", false)]
+    [InlineData("staging", false)]
+    [InlineData("development", true)]
+    [InlineData("Test", true)]
+    public async Task GlobalApiLimiter_UsesTheSameDeploymentOverridePolicy(string mode, bool shouldBypass)
+    {
+        using var quiet = new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
+        using var bypass = new Meridian.Tests.Application.Composition.EnvironmentVariableScope("MDC_DISABLE_RATE_LIMIT", "true");
+        using var packaged = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MDC_PACKAGED_BUILD", mode == "packaged" ? "true" : null);
+        using var customer = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_CUSTOMER_BUILD", mode == "customer" ? "true" : null);
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = mode == "production" ? Environments.Production
+                : mode == "staging" ? Environments.Staging : mode == "Test" ? "Test" : Environments.Development
+        });
+        builder.WebHost.UseTestServer();
+        builder.Services.AddMeridianApiProblemDetails();
+        builder.Services.AddMutationRateLimiter();
+        // Deliberately declare posture after registering the limiter: late composition must not
+        // preserve a development bypass captured earlier in startup.
+        if (mode == "production-posture")
+            builder.Services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        await using var app = builder.Build();
+        app.UseMiddleware<ApiKeyRateLimitMiddleware>();
+        var handled = 0;
+        app.MapGet("/api/rate-probe", () =>
+        {
+            Interlocked.Increment(ref handled);
+            return Results.Ok();
+        });
+        await app.StartAsync();
+        using var client = app.GetTestClient();
+        for (var index = 0; index < 120; index++)
+        {
+            using var accepted = await client.GetAsync("/api/rate-probe");
+            accepted.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        using var response = await client.GetAsync("/api/rate-probe");
+        response.StatusCode.Should().Be(shouldBypass ? HttpStatusCode.OK : HttpStatusCode.TooManyRequests);
+        handled.Should().Be(shouldBypass ? 121 : 120);
+        if (!shouldBypass)
+        {
+            response.Headers.RetryAfter!.Delta!.Value.Should().BeGreaterThan(TimeSpan.Zero);
+            response.Headers.GetValues("X-RateLimit-Limit").Should().Equal("120");
+            response.Headers.GetValues("X-RateLimit-Remaining").Should().Equal("0");
+        }
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
-        UserPermission permissions = UserPermission.ViewDirectLending | UserPermission.ManageDirectLending)
+        UserPermission permissions = UserPermission.ViewDirectLending | UserPermission.ManageDirectLending,
+        string environmentName = Environments.Development)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
-            EnvironmentName = Environments.Development
+            EnvironmentName = environmentName
         });
         builder.WebHost.UseTestServer();
         configureServices(builder.Services);
@@ -470,7 +602,6 @@ public sealed class DirectLendingEndpointsTests
         builder.Services.AddMutationRateLimiter();
 
         var app = builder.Build();
-        app.UseRateLimiter();
 
         // SEC-001: direct-lending routes now require ViewDirectLending/ManageDirectLending. This
         // standalone host has no LoginSessionMiddleware, so seed the manage permission directly into
@@ -478,13 +609,16 @@ public sealed class DirectLendingEndpointsTests
         // to keep these lifecycle tests exercising the handlers.
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "integration-user";
+            var actor = context.Request.Headers["X-Test-Actor"].FirstOrDefault() ?? "integration-user";
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
+            context.User = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.Name, actor)], "test-session"));
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Admin;
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] =
                 permissions;
             await next();
         });
 
+        app.UseRateLimiter();
         app.MapDirectLendingEndpoints(new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using Meridian.Application.Composition;
@@ -10,6 +11,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using ApplicationStatusEndpointHandlers = Meridian.Application.UI.StatusEndpointHandlers;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -303,33 +306,29 @@ public static class UiEndpoints
     /// Registers a per-IP fixed-window rate limiter for mutation endpoints.
     /// Allows 10 requests per minute per IP with a small queue for bursts.
     /// Set the <c>MDC_DISABLE_RATE_LIMIT=true</c> environment variable to bypass rate
-    /// limiting entirely (intended for test environments where all requests share the
-    /// same loopback address and a 10/min limit would be exhausted immediately).
+    /// limiting only in explicit development/test hosts outside production, packaged and customer
+    /// postures. Rejections expose the fixed-window retry delay through Retry-After.
     /// </summary>
     public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services)
     {
-        // Allow tests (and dev environments) to opt out of rate limiting via env var.
-        // In production this variable is absent, so the guard never triggers.
-        var disableRateLimit = string.Equals(
-            Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT"),
-            "true",
-            StringComparison.OrdinalIgnoreCase);
+        services.TryAddSingleton(new RateLimitBypassPolicy(services));
 
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-            if (disableRateLimit)
+            options.OnRejected = (context, _) =>
             {
-                options.AddPolicy(MutationRateLimitPolicy, _ =>
-                    RateLimitPartition.GetNoLimiter<string>("global"));
-                options.AddPolicy(DirectLendingMutationRateLimitPolicy, _ =>
-                    RateLimitPartition.GetNoLimiter<string>("direct-lending-global"));
-                return;
-            }
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                {
+                    context.HttpContext.Response.Headers["Retry-After"] =
+                        Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds)).ToString(CultureInfo.InvariantCulture);
+                }
+                return ValueTask.CompletedTask;
+            };
 
-            options.AddPolicy(MutationRateLimitPolicy, httpContext =>
-                RateLimitPartition.GetFixedWindowLimiter(
+            options.AddPolicy(MutationRateLimitPolicy, httpContext => CanBypassRateLimiting(httpContext)
+                ? RateLimitPartition.GetNoLimiter<string>("global")
+                : RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
@@ -339,8 +338,9 @@ public static class UiEndpoints
                         QueueLimit = 2
                     }));
 
-            options.AddPolicy(DirectLendingMutationRateLimitPolicy, httpContext =>
-                RateLimitPartition.GetFixedWindowLimiter(
+            options.AddPolicy(DirectLendingMutationRateLimitPolicy, httpContext => CanBypassRateLimiting(httpContext)
+                ? RateLimitPartition.GetNoLimiter<string>("direct-lending-global")
+                : RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: httpContext.User.Identity?.Name ??
                                   httpContext.Connection.RemoteIpAddress?.ToString() ??
                                   "unknown",
@@ -355,6 +355,29 @@ public static class UiEndpoints
         });
 
         return services;
+    }
+
+    internal static bool CanBypassRateLimiting(HttpContext context)
+        => string.Equals(Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT"), "true", StringComparison.OrdinalIgnoreCase)
+            && context.RequestServices.GetService<RateLimitBypassPolicy>()?.CanBypass(context) == true;
+
+    private sealed class RateLimitBypassPolicy(IServiceCollection services)
+    {
+        public bool CanBypass(HttpContext context)
+        {
+            if (ProductionServiceRegistrationPolicy.IsProductionComposition(services)
+                || IsEnabled("MDC_PACKAGED_BUILD") || IsEnabled("MERIDIAN_CUSTOMER_BUILD"))
+            {
+                return false;
+            }
+
+            var environment = context.RequestServices.GetService<IHostEnvironment>();
+            return environment is not null
+                && (environment.IsDevelopment() || environment.IsEnvironment("Test"));
+        }
+
+        private static bool IsEnabled(string name)
+            => Environment.GetEnvironmentVariable(name)?.Trim().ToLowerInvariant() is "true" or "1" or "yes";
     }
 
 }
