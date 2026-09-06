@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Xml.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
@@ -468,6 +470,172 @@ public sealed class IbFlexStatementServiceTests : IDisposable
 
         var import = async () => await _service.ImportAsync(MakeRequest(path));
         await import.Should().ThrowAsync<System.IO.InvalidDataException>();
+    }
+
+    [Theory]
+    [InlineData("currency-missing")]
+    [InlineData("currency-blank")]
+    [InlineData("currency-invalid")]
+    [InlineData("account-missing")]
+    [InlineData("account-blank")]
+    [InlineData("quantity-missing")]
+    [InlineData("price-missing")]
+    [InlineData("trade-cash-missing")]
+    [InlineData("position-missing")]
+    [InlineData("mark-missing")]
+    [InlineData("cash-missing")]
+    [InlineData("decimal-comma")]
+    [InlineData("decimal-invalid")]
+    [InlineData("decimal-overflow")]
+    [InlineData("nested-row")]
+    [InlineData("nested-statement")]
+    public async Task MissingOrMalformedEvidence_IsRejectedByValidationAndImportWithoutPersistence(string defect)
+    {
+        var document = XDocument.Parse(SampleFlexXml);
+        var trade = document.Descendants("Trade").First();
+        switch (defect)
+        {
+            case "currency-missing":
+                trade.Attribute("currency")!.Remove();
+                break;
+            case "currency-blank":
+                trade.SetAttributeValue("currency", " ");
+                break;
+            case "currency-invalid":
+                trade.SetAttributeValue("currency", "???");
+                break;
+            case "account-missing":
+                document.Descendants().Attributes("accountId").Remove();
+                break;
+            case "account-blank":
+                trade.SetAttributeValue("accountId", " ");
+                break;
+            case "quantity-missing":
+                trade.Attribute("quantity")!.Remove();
+                break;
+            case "price-missing":
+                trade.Attribute("tradePrice")!.Remove();
+                break;
+            case "trade-cash-missing":
+                trade.Attribute("netCash")!.Remove();
+                break;
+            case "position-missing":
+                document.Descendants("OpenPosition").First().Attribute("position")!.Remove();
+                break;
+            case "mark-missing":
+                document.Descendants("OpenPosition").First().Attribute("markPrice")!.Remove();
+                break;
+            case "cash-missing":
+                document.Descendants("CashTransaction").First().Attribute("amount")!.Remove();
+                break;
+            case "decimal-comma":
+                trade.SetAttributeValue("quantity", "1,25");
+                break;
+            case "decimal-invalid":
+                trade.SetAttributeValue("quantity", "not-a-number");
+                break;
+            case "decimal-overflow":
+                trade.SetAttributeValue("quantity", new string('9', 100));
+                break;
+            case "nested-row":
+                trade.Add(new XElement("quantity", "100"));
+                break;
+            case "nested-statement":
+                document.Descendants("FlexStatement").First().Add(new XElement("FlexStatement"));
+                break;
+        }
+        var request = MakeRequest(WriteFlexFile(document.ToString()));
+        var validation = await _service.ValidateAsync(request);
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().NotBeEmpty();
+        var import = () => _service.ImportAsync(request);
+        await import.Should().ThrowAsync<InvalidDataException>();
+        (await _store.ListImportsAsync()).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("nodes", "node XML limit")]
+    [InlineData("depth", "nesting limit")]
+    [InlineData("rows", "row limit")]
+    [InlineData("attribute", "oversized XML attribute")]
+    [InlineData("row-nodes", "Flex row exceeds")]
+    public async Task StreamingLimits_RefuseBeforeMalformedTailOrPersistence(string bound, string expectedError)
+    {
+        var payload = bound switch
+        {
+            "nodes" => "<FlexQueryResponse><Metadata>" + string.Concat(Enumerable.Repeat("<Ignored/>", 500_001)),
+            "depth" => "<FlexQueryResponse>" + string.Concat(Enumerable.Repeat("<Nested>", 66)),
+            "rows" => "<FlexQueryResponse><FlexStatements><FlexStatement accountId='U1234567'>"
+                + string.Concat(Enumerable.Repeat("<Trade/>", 100_001)),
+            "attribute" => "<FlexQueryResponse><Metadata value='" + new string('x', 65_537) + "'/>",
+            "row-nodes" => "<FlexQueryResponse><FlexStatements><FlexStatement accountId='U1234567'><Trade>"
+                + string.Concat(Enumerable.Repeat("<!--note-->", 50_001)),
+            _ => throw new ArgumentOutOfRangeException(nameof(bound))
+        };
+        // A whole-document parse would reach this malformed tail before reporting a quota.
+        // Both entrypoints must instead stop while reading the bounded prefix.
+        var request = MakeRequest(WriteFlexFile(payload + "<unterminated"));
+        var validation = await _service.ValidateAsync(request);
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains(expectedError, StringComparison.Ordinal));
+        var import = () => _service.ImportAsync(request);
+        (await import.Should().ThrowAsync<InvalidDataException>()).Which.Message.Should().Contain(expectedError);
+        (await _store.ListImportsAsync()).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task StreamingProjection_PreservesRowHashesWhileDiscardingUnrelatedMetadata()
+    {
+        var document = XDocument.Parse(SampleFlexXml);
+        document.Root!.AddFirst(new XElement("Metadata", Enumerable.Range(0, 1_000)
+            .Select(index => new XElement("Ignored", new XAttribute("id", index)))));
+        document.Descendants("Trade").First().Add(new XComment("retained source-row note"));
+        var expectedHashes = document.Descendants()
+            .Where(element => element.Name.LocalName is "Trade" or "OpenPosition" or "CashTransaction")
+            .Select(element => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(element.ToString(SaveOptions.DisableFormatting)))))
+            .ToArray();
+        var request = MakeRequest(WriteFlexFile(document.ToString()));
+        (await _service.ValidateAsync(request)).IsValid.Should().BeTrue();
+        var imported = await _service.ImportAsync(request);
+        imported.Rows.Select(row => row.RawChecksum).Should().Equal(expectedHashes);
+        imported.Rows.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task ExplicitZerosAndStatementAccountEvidence_AreAcceptedWithoutInventingValues()
+    {
+        var document = XDocument.Parse(SampleFlexXml);
+        foreach (var row in document.Descendants().Where(element => element.Name.LocalName is "Trade" or "OpenPosition" or "CashTransaction"))
+        {
+            row.Attribute("accountId")?.Remove();
+            foreach (var name in new[] { "quantity", "tradePrice", "netCash", "proceeds", "position", "markPrice", "amount" })
+                if (row.Attribute(name) is { } attribute)
+                    attribute.Value = "0";
+        }
+        var request = MakeRequest(WriteFlexFile(document.ToString()));
+        (await _service.ValidateAsync(request)).IsValid.Should().BeTrue();
+        var imported = await _service.ImportAsync(request);
+        imported.Rows.Should().OnlyContain(row => row.Account == "U1234567"
+            && row.Currency == "USD" && row.Quantity == 0m && row.Price == 0m && row.CashAmount == 0m);
+    }
+
+    [Fact]
+    public async Task DecimalMapping_IsInvariantUnderFrenchOperatorLocale()
+    {
+        var previous = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+            var request = MakeRequest(WriteFlexFile(SampleFlexXml));
+            (await _service.ValidateAsync(request)).IsValid.Should().BeTrue();
+            var imported = await _service.ImportAsync(request);
+            imported.Rows[0].Price.Should().Be(201.35m);
+            imported.Rows[0].CashAmount.Should().Be(-20136.00m);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previous;
+        }
     }
 
     [Fact]
