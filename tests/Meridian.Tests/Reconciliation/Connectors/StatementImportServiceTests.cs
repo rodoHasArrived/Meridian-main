@@ -1051,8 +1051,8 @@ public sealed class StatementImportServiceTests : IDisposable
         {
             LastRequest = request;
             const string content =
-                "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
-                "EXT-001,AAPL,5,100,-500,trade,2026-06-20\n";
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\n" +
+                "EXT-001,AAPL,5,100,-500,trade,2026-06-20,,USD\n";
             return Task.FromResult(new StatementSourceDocument("fetched.fake", Encoding.UTF8.GetBytes(content)));
         }
 
