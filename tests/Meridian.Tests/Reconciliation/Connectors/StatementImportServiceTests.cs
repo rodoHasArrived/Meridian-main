@@ -182,6 +182,20 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Commit_MultiStatementOfxAccounts_RefusesBeforeRetainingEvidence()
+    {
+        const string row = "<STMTTRN><TRNTYPE>CREDIT</TRNTYPE><DTPOSTED>20260601</DTPOSTED><TRNAMT>10</TRNAMT></STMTTRN>";
+        var content = "<OFX><STMTRS><BANKACCTFROM><ACCTID>FUND-A</ACCTID></BANKACCTFROM>" + row
+            + "</STMTRS><STMTRS><BANKACCTFROM><ACCTID>FUND-B</ACCTID></BANKACCTFROM>" + row + "</STMTRS></OFX>";
+        var document = new StatementSourceDocument("mixed.ofx", Encoding.UTF8.GetBytes(content), ExternalAccountId: "FUND-A");
+        var commit = () => _service.CommitAsync(CommitRequest(document));
+        await commit.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*parsed account identity*authorized external account*");
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Commit_MixedParsedAccounts_FailsBeforeEvidenceRetentionOrMatching()
     {
         const string source =

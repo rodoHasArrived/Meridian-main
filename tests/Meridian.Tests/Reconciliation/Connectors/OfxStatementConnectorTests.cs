@@ -132,6 +132,55 @@ public sealed class OfxStatementConnectorTests : IDisposable
         parsed.Entries[0]["TRNAMT"].Should().Be("-50");
     }
 
+    [Theory]
+    [InlineData("STMTRS", "BANKACCTFROM", false)]
+    [InlineData("STMTRS", "BANKACCTFROM", true)]
+    [InlineData("CCSTMTRS", "CCACCTFROM", false)]
+    [InlineData("CCSTMTRS", "CCACCTFROM", true)]
+    [InlineData("INVSTMTRS", "INVACCTFROM", false)]
+    [InlineData("INVSTMTRS", "INVACCTFROM", true)]
+    public void AccountIdentity_IsScopedToContainingStatement(string statement, string header, bool sgml)
+    {
+        string Leaf(string tag, string value) => $"<{tag}>{value}" + (sgml ? "\n" : $"</{tag}>");
+        string Entry(string id) => "<STMTTRN>" + Leaf("FITID", id) + "</STMTTRN>";
+        string Scope(string account, string id) => $"<{statement}><{header}>" + Leaf("ACCTID", account)
+            + $"</{header}>" + Entry(id) + $"</{statement}>";
+        var content = "<OFX>" + Scope("ACCOUNT-A", "1") + Scope("ACCOUNT-B", "2")
+            + $"<{statement}>" + Entry("3") + $"</{statement}>" + Entry("4") + "</OFX>";
+        var parsed = OfxDocumentParser.Parse(content);
+        parsed.Entries.Should().HaveCount(4);
+        parsed.Entries[0]["ACCTID"].Should().Be("ACCOUNT-A");
+        parsed.Entries[1]["ACCTID"].Should().Be("ACCOUNT-B");
+        parsed.Entries[2].Should().NotContainKey("ACCTID");
+        parsed.Entries[3].Should().NotContainKey("ACCTID");
+        parsed.AccountId.Should().BeNull("a multi-account file has no single authoritative account");
+    }
+
+    [Theory]
+    [InlineData("ACCOUNT-B")]
+    [InlineData(" ")]
+    public void ConflictingOrBlankStatementHeaders_DoNotSupplyAccountIdentity(string other)
+    {
+        var content = "<OFX><STMTRS><BANKACCTFROM><ACCTID>ACCOUNT-A</ACCTID></BANKACCTFROM>"
+            + "<BANKACCTFROM><ACCTID>" + other + "</ACCTID></BANKACCTFROM>"
+            + "<STMTTRN><FITID>1</FITID></STMTTRN></STMTRS></OFX>";
+        var parsed = OfxDocumentParser.Parse(content);
+        parsed.Entries.Should().ContainSingle().Which.Should().NotContainKey("ACCTID");
+        parsed.AccountId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task MissingAccountInLaterStatement_IsReportedInsteadOfBorrowed()
+    {
+        const string row = "<STMTTRN><TRNTYPE>CREDIT</TRNTYPE><DTPOSTED>20260601</DTPOSTED><TRNAMT>10</TRNAMT></STMTTRN>";
+        var content = "<OFX><STMTRS><BANKACCTFROM><ACCTID>A</ACCTID></BANKACCTFROM>" + row
+            + "</STMTRS><STMTRS>" + row + "</STMTRS></OFX>";
+        var result = await _connector.ParseAsync(new StatementSourceDocument("accounts.ofx", System.Text.Encoding.UTF8.GetBytes(content)));
+        result.HasErrors.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == "ROW_MISSING_ACCOUNT");
+        result.Records.Should().ContainSingle().Which.Account.Should().Be("A");
+    }
+
     public void Dispose()
     {
         try
