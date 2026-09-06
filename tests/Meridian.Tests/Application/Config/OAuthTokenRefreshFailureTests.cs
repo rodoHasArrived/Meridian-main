@@ -24,9 +24,10 @@ public sealed class OAuthTokenRefreshFailureTests
             await File.WriteAllTextAsync(Path.Combine(root, ".mdc", "oauth_tokens.json"),
                 "{\"" + secret + "\":{\"AccessToken\":{}}}");
 
-            await using var service = new OAuthTokenRefreshService(root, logger: logger);
-
-            service.GetAllTokens().Should().BeEmpty();
+            var construct = () => new OAuthTokenRefreshService(root, logger: logger);
+            var failure = construct.Should().Throw<InvalidOperationException>().Which;
+            failure.ToString().Should().NotContain(secret);
+            File.Exists(Path.Combine(root, ".mdc", "oauth_tokens.json")).Should().BeTrue();
             sink.Events.Should().Contain(entry => entry.Level == LogEventLevel.Warning);
             sink.Events.Should().OnlyContain(entry => entry.Exception == null);
             string.Join("\n", sink.Events.Select(entry => entry.RenderMessage())).Should().NotContain(secret);

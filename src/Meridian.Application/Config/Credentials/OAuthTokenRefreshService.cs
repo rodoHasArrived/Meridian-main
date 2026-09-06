@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Core.Logging;
 using Meridian.Infrastructure.Http;
-using Meridian.Storage.Archival;
 using Serilog;
 
 namespace Meridian.Application.Config.Credentials;
@@ -22,6 +21,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     private readonly ConcurrentDictionary<string, OAuthToken> _tokens = new();
     private readonly ConcurrentDictionary<string, OAuthProviderConfig> _providerConfigs = new();
     private readonly string _tokenPersistencePath;
+    private readonly IOAuthTokenVault _vault;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
 
     private CancellationTokenSource? _cts;
@@ -36,13 +36,22 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         string dataRoot,
         CredentialExpirationConfig? config = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        IOAuthTokenVault? vault = null)
     {
         _log = logger ?? LoggingSetup.ForContext<OAuthTokenRefreshService>();
+        _vault = vault ?? new FileProviderCredentialStore(dataRoot);
         _config = config ?? new CredentialExpirationConfig();
         _httpClient = httpClient ?? CreateDefaultHttpClient();
         _tokenPersistencePath = Path.Combine(dataRoot, ".mdc", "oauth_tokens.json");
-        LoadPersistedTokens();
+        try
+        { LoadPersistedTokens(); }
+        catch (Exception ex)
+        {
+            _httpClient.Dispose();
+            _log.Warning("Failed to initialize encrypted OAuth persistence ({ExceptionType})", ex.GetType().Name);
+            throw new InvalidOperationException("Encrypted OAuth persistence could not be initialized.");
+        }
     }
 
     private static HttpClient CreateDefaultHttpClient()
@@ -106,8 +115,8 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     public async Task StoreTokenAsync(string providerName, OAuthToken token, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(token);
+        await _vault.SaveOAuthTokenAsync(providerName, token, ct).ConfigureAwait(false);
         _tokens[providerName] = token;
-        await PersistTokensAsync(ct);
         _log.Debug("Stored OAuth token for {Provider}, expires at {ExpiresAt}", providerName, token.ExpiresAt);
     }
 
@@ -153,8 +162,8 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     /// </summary>
     public async Task RemoveTokenAsync(string providerName, CancellationToken ct = default)
     {
+        await _vault.SaveOAuthTokenAsync(providerName, null, ct).ConfigureAwait(false);
         _tokens.TryRemove(providerName, out _);
-        await PersistTokensAsync(ct);
         _log.Information("Removed OAuth token for {Provider}", providerName);
     }
 
@@ -292,8 +301,10 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
                 IssuedAt: DateTimeOffset.UtcNow
             );
 
+            // The provider may already have invalidated the old refresh token. Retain the new
+            // token in memory even if durable storage fails, but never acknowledge that failure as success.
             _tokens[providerName] = newToken;
-            await PersistTokensAsync();
+            await _vault.SaveOAuthTokenAsync(providerName, newToken, ct).ConfigureAwait(false);
 
             OnTokenRefreshed?.Invoke(providerName, newToken);
             _log.Information("Successfully refreshed OAuth token for {Provider}, new expiration: {ExpiresAt}",
@@ -365,59 +376,35 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
 
     private void LoadPersistedTokens()
     {
-        try
+        // Construction fails closed if migration or encrypted persistence fails. Never replace
+        // unreadable retained tokens with an empty snapshot on disposal.
+        if (File.Exists(_tokenPersistencePath))
         {
-            if (!File.Exists(_tokenPersistencePath))
-                return;
-
             RestrictExistingTokenFile();
-
-            var json = File.ReadAllText(_tokenPersistencePath);
-            var tokens = JsonSerializer.Deserialize<Dictionary<string, OAuthToken>>(json);
-
-            if (tokens != null)
+            var tokens = JsonSerializer.Deserialize<Dictionary<string, OAuthToken>>(File.ReadAllText(_tokenPersistencePath))
+                ?? throw new InvalidOperationException("Legacy OAuth token snapshot is invalid.");
+            _vault.ImportOAuthTokensAsync(tokens).ConfigureAwait(false).GetAwaiter().GetResult();
+            using (var stream = new FileStream(_tokenPersistencePath, FileMode.Open, FileAccess.Write, FileShare.None))
             {
-                foreach (var kvp in tokens)
+                var zeros = new byte[64 * 1024];
+                var remaining = stream.Length;
+                while (remaining > 0)
                 {
-                    _tokens[kvp.Key] = kvp.Value;
+                    var count = (int)Math.Min(remaining, zeros.Length);
+                    stream.Write(zeros, 0, count);
+                    remaining -= count;
                 }
+                stream.Flush(flushToDisk: true);
             }
-
-            _log.Debug("Loaded OAuth tokens for {Count} providers", _tokens.Count);
+            File.Delete(_tokenPersistencePath);
         }
-        catch (Exception ex)
-        {
-            _log.Warning("Failed to load persisted OAuth tokens ({FailureType})", ex.GetType().Name);
-        }
-    }
-
-    private async Task PersistTokensAsync(CancellationToken ct = default)
-    {
-        try
-        {
-            var directory = Path.GetDirectoryName(_tokenPersistencePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-
-            var tokens = _tokens.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-            var json = JsonSerializer.Serialize(tokens, new JsonSerializerOptions { WriteIndented = true });
-
-            // Access and refresh tokens are bearer secrets held in cleartext here, so unlike the
-            // provider vault there is no encryption behind the file mode - the mode is the whole
-            // of the protection. Owner-only from creation, never chmod'ed after the bytes land.
-            await AtomicFileWriter.WriteAsync(_tokenPersistencePath, json, OwnerOnlyFileMode, ct);
-            _log.Debug("Persisted OAuth tokens for {Count} providers", tokens.Count);
-        }
-        catch (Exception ex)
-        {
-            _log.Warning("Failed to persist OAuth tokens ({FailureType})", ex.GetType().Name);
-        }
+        foreach (var pair in _vault.ReadOAuthTokensAsync().ConfigureAwait(false).GetAwaiter().GetResult())
+            _tokens[pair.Key] = pair.Value;
     }
 
     public async ValueTask DisposeAsync()
     {
         await StopAsync();
-        await PersistTokensAsync();
         _refreshLock.Dispose();
         _httpClient.Dispose();
     }

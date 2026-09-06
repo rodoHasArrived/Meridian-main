@@ -54,8 +54,10 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Malformed token JSON can include secrets in exception paths. Provider response bodies, reason phrases,
   and exception messages can contain secrets and must not enter failure events or returned errors.
   Refresh failure retains the prior token so a later retry can recover. The optional logger permits
-  isolated verification of this boundary. Plaintext OAuth token persistence remains an unresolved
-  credential-vault migration requirement; these error controls do not certify PRD-002.
+  isolated verification of this boundary. OAuth tokens now persist through the Data Integration-owned
+  encrypted vault. Startup imports legacy JSON without replacing retained tokens, removes the source
+  only after vault and audit success, and refuses startup on failure. Disposal never rewrites a cached
+  token snapshot. Non-Windows key protection and credential scoping remain open PRD-002 requirements.
   Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one

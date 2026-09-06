@@ -10,7 +10,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.Credentials;
 
-public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILegacyProviderCredentialImporter
+public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILegacyProviderCredentialImporter, IOAuthTokenVault
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
 
@@ -219,6 +219,64 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             _gate.Release();
         }
     }
+
+    public async Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            return new Dictionary<string, OAuthToken>(vault.OAuthTokens, StringComparer.Ordinal);
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerName);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            if (token is null)
+                vault.OAuthTokens.Remove(providerName);
+            else
+                vault.OAuthTokens[providerName] = token;
+            await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            await AppendOAuthAuditAsync(providerName, token is null ? "oauth-delete" : "oauth-save", ct).ConfigureAwait(false);
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(tokens);
+        foreach (var pair in tokens)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(pair.Key);
+            ArgumentNullException.ThrowIfNull(pair.Value);
+        }
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            var changed = false;
+            foreach (var pair in tokens)
+                changed |= vault.OAuthTokens.TryAdd(pair.Key, pair.Value);
+            if (changed)
+                await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            foreach (var provider in tokens.Keys)
+                await AppendOAuthAuditAsync(provider, "oauth-import-or-preserve", ct).ConfigureAwait(false);
+        }
+        finally { _gate.Release(); }
+    }
+
+    private Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct)
+        => AtomicFileWriter.AppendLinesAsync(_auditPath,
+            [JsonSerializer.Serialize(new { Timestamp = DateTimeOffset.UtcNow, ProviderId = providerName, Action = action }, JsonOptions)], ct);
 
     private async Task<FileStream> AcquireVaultLockAsync(CancellationToken ct)
     {
@@ -912,6 +970,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         public int Version { get; set; } = VaultVersion;
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
         public Dictionary<string, ProviderCredentialVaultRecord> Providers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, OAuthToken> OAuthTokens { get; set; } = new(StringComparer.Ordinal);
     }
 
     private sealed class ProviderCredentialVaultRecord
