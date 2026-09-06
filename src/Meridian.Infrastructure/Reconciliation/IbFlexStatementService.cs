@@ -376,6 +376,7 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
         public override string Prefix => inner.Prefix;
         public override ReadState ReadState => inner.ReadState;
         public override string Value => inner.Value;
+        public override Task<string> GetValueAsync() => inner.GetValueAsync();
         public override XmlReaderSettings? Settings => inner.Settings;
         public override string GetAttribute(int i) => inner.GetAttribute(i);
         public override string? GetAttribute(string name) => inner.GetAttribute(name);
