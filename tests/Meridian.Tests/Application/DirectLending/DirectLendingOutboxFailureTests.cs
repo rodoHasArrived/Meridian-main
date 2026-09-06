@@ -42,6 +42,7 @@ public sealed class DirectLendingOutboxFailureTests
     [Theory]
     [InlineData("direct-lending.projection.requested")]
     [InlineData("direct-lending.reconciliation.requested")]
+    [InlineData("direct-lending.asset-operations.requested")]
     public async Task RejectedCommand_RemainsRetryable_AndIsAcknowledgedOnlyAfterSuccess(string topic)
     {
         var loanId = Guid.NewGuid();
@@ -79,6 +80,10 @@ public sealed class DirectLendingOutboxFailureTests
             .Returns(_ => Task.FromResult(++attempts == 1
                 ? DirectLendingCommandResult<ReconciliationRunDto>.Failure(DirectLendingErrorCode.ConcurrencyConflict, "retry reconciliation")
                 : DirectLendingCommandResult<ReconciliationRunDto>.Success(reconciliation)));
+        commands.PublishAssetOperationsAsync(loanId, Arg.Any<DirectLendingCommandMetadataDto>(), Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromResult(++attempts == 1
+                ? DirectLendingCommandResult<bool>.Failure(DirectLendingErrorCode.Validation, "retry publication")
+                : DirectLendingCommandResult<bool>.Success(true)));
         store.MarkOutboxProcessedAsync(message.OutboxMessageId, Arg.Any<CancellationToken>())
             .Returns(_ => { lifetime.Cancel(); return Task.CompletedTask; });
         using var worker = new DirectLendingOutboxDispatcher(store, commands,

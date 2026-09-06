@@ -11,6 +11,13 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Application
 
+Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
+transaction as the run and its details. HTTP requests return the committed run without calling
+the publisher. The outbox worker publishes retained state and retries failures; missing publisher
+configuration for a Security Master-backed loan remains a failed delivery. Identified replays
+retain one message per run. Integration tests cover concurrent retries and enqueue-failure rollback.
+
+
 Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
 remain failed and retryable; they are never silently acknowledged as processed.
 
