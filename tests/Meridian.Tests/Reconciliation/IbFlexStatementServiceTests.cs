@@ -271,7 +271,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
 
         // CSV broker with a CSV file → validates via the CSV parser.
         var csvPath = Path.Combine(_tempDir, "statement.csv");
-        File.WriteAllText(csvPath, "account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA1,SPY,10,500,0,position,2026-06-30\n");
+        File.WriteAllText(csvPath, "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\nA1,SPY,10,500,0,position,2026-06-30,,USD\n");
         var csvRequest = new BrokerStatementImportRequest("samplebroker", csvPath, new DateOnly(2026, 6, 30)) with
         {
             ExternalAccountId = "A1"
