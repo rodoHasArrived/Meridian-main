@@ -11,6 +11,17 @@ last_reviewed: 2026-08-05
 
 # src/Meridian.DataIntegration
 
+## OAuth token ownership
+
+`IOAuthTokenVault` stores refreshable tokens in the same encrypted vault and under the same file lock
+as provider credentials. Mutations update only the named provider token; legacy imports preserve
+existing tokens and audit every attempted provider. The service never writes plaintext OAuth JSON.
+The existing non-Windows local key file remains a production-hardening gap; this does not certify PRD-002.
+
+## Credential migration recovery
+
+Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. All vault reads and mutations share a bounded, cancellable file lock across store instances; audit failure retains the sidecar for retry.
+
 ## Purpose
 
 ETL runs acquire a unique execution lease before admission. Staging, audit/reject writes, and

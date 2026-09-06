@@ -101,3 +101,11 @@ public sealed record OAuthRefreshResult(
     DateTimeOffset? RefreshedAt = null,
     DateTimeOffset? NextRefreshAt = null
 );
+
+/// <summary>Data Integration-owned encrypted persistence for refreshable OAuth tokens.</summary>
+public interface IOAuthTokenVault
+{
+    Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default);
+    Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default);
+    Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default);
+}
