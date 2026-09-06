@@ -21,6 +21,7 @@ public sealed class ProviderConnectionLifecycleService
     private readonly IReadOnlyList<IAccountingSystemProvider> _accountingSystemProviders;
     private readonly IProviderSetupRegistry _setupRegistry;
     private readonly ILogger<ProviderConnectionLifecycleService> _logger;
+    private readonly ProviderCredentialScope? _ownershipScope;
 
     public ProviderConnectionLifecycleService(
         IProviderCredentialStore credentialStore,
@@ -28,14 +29,34 @@ public sealed class ProviderConnectionLifecycleService
         ILogger<ProviderConnectionLifecycleService> logger,
         IHttpClientFactory? httpClientFactory = null,
         IEnumerable<IAccountingSystemProvider>? accountingSystemProviders = null,
-        IProviderSetupRegistry? setupRegistry = null)
+        IProviderSetupRegistry? setupRegistry = null,
+        ProviderCredentialScope? ownershipScope = null)
     {
-        _credentialStore = credentialStore ?? throw new ArgumentNullException(nameof(credentialStore));
+        ArgumentNullException.ThrowIfNull(credentialStore);
+        _ownershipScope = ownershipScope;
+        _credentialStore = ownershipScope is null ? credentialStore : new ScopedCredentialStore(
+            credentialStore as IScopedProviderCredentialStore ?? throw new InvalidOperationException("Credential vault does not support scoped ownership."), ownershipScope);
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _httpClientFactory = httpClientFactory;
         _accountingSystemProviders = accountingSystemProviders?.ToArray() ?? [];
         _setupRegistry = setupRegistry ?? new ProviderSetupRegistry(DefaultProviderSetupHandlers.Create());
+    }
+
+    /// <summary>Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant.</summary>
+    public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        var descriptor = RequireDescriptor(providerId);
+        var connection = (ConfigStore.LoadConfig(_configStore.ConfigPath).ProviderConnections?.Connections ?? [])
+            .FirstOrDefault(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
+        if (connection is null || !string.Equals(connection.TenantId, tenantId, StringComparison.Ordinal) ||
+            !string.Equals(connection.ProviderFamilyId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(connection.ExternalAccountId) || string.IsNullOrWhiteSpace(connection.CredentialEnvironment))
+            throw new UnauthorizedAccessException("Credential connection ownership could not be established.");
+        var scope = new ProviderCredentialScope(connection.TenantId!, connection.ConnectionId, connection.ExternalAccountId, connection.CredentialEnvironment);
+        return new ProviderConnectionLifecycleService(_credentialStore, _configStore, _logger, _httpClientFactory,
+            _accountingSystemProviders, _setupRegistry, scope);
     }
 
     public async Task<IReadOnlyList<ProviderConnectionRowDto>> GetConnectionsAsync(CancellationToken ct = default)
@@ -112,6 +133,15 @@ public sealed class ProviderConnectionLifecycleService
         if (descriptor.ProviderId.Equals("alpaca", StringComparison.OrdinalIgnoreCase))
         {
             return await VerifyAlpacaAsync(read, ct, actor).ConfigureAwait(false);
+        }
+
+        if (_ownershipScope is not null)
+        {
+            // A provider-wide verifier cannot prove which connection its credentials belong to.
+            return new ProviderCredentialVerificationResultDto(descriptor.ProviderId, false,
+                ProviderVerificationStateDto.NotVerified, ProviderContinuityHealthDto.Blocked, null,
+                "Connection-scoped live verification is not available for this provider.", null,
+                ["Use a verifier bound to this retained connection before relying on these credentials."]);
         }
 
         var accountingVerification = _accountingSystemProviders
@@ -449,4 +479,19 @@ public sealed class ProviderConnectionLifecycleService
     private sealed record AlpacaAccountVerificationResponse(
         [property: JsonPropertyName("id")] string? Id,
         [property: JsonPropertyName("account_number")] string? AccountNumber);
+
+    private sealed class ScopedCredentialStore(IScopedProviderCredentialStore store, ProviderCredentialScope scope) : IProviderCredentialStore
+    {
+        public string VaultPath => store.VaultPath;
+        public Task<ProviderCredentialStoreStatus> GetStatusAsync(string providerId, CancellationToken ct = default)
+            => store.GetScopedStatusAsync(providerId, scope, ct);
+        public Task<ProviderCredentialReadResult?> ReadForProviderAsync(string providerId, CancellationToken ct = default)
+            => store.ReadScopedAsync(providerId, scope, ct);
+        public Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
+            => store.SaveScopedAsync(request, scope, ct);
+        public Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default)
+            => store.DeleteScopedAsync(providerId, scope, actor, ct);
+        public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default)
+            => store.RecordScopedVerificationAsync(update, scope, ct);
+    }
 }

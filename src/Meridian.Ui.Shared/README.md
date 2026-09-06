@@ -37,6 +37,14 @@ Journal automation exposes a read-only valuation freshness preview and retains d
 The provider-module compatibility adapter requires atomic legacy-import support from the credential vault. It removes the plaintext sidecar only after the complete import and audit succeed; retries preserve credentials already retained in the vault.
 ## Credential audit identity
 
+Canonical credential save, verify and delete routes accept `connectionId` as a query parameter.
+The shared lifecycle resolves its retained tenant, provider, external account and environment against
+the server session before accessing scoped credentials. Missing, ambiguous, unowned or mismatched
+connections are refused. Scoped Alpaca verification requires the returned account to match retained
+ownership. Other scoped providers remain unverified until a connection-bound live verifier exists;
+provider-wide accounting verifiers are not invoked for scoped requests. Omitting the query retains
+the legacy path during the unfinished workstation/default-runtime cutover.
+
 Canonical and compatibility credential routes require an authenticated actor in addition to tenant
 scope and credential-management permission. Saves replace caller-supplied `RequestedBy` with that
 actor; delete and verification pass the same identity into the vault audit. Accounting-provider

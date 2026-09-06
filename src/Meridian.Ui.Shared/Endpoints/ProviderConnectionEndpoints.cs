@@ -44,12 +44,21 @@ public static class ProviderConnectionEndpoints
 
             try
             {
-                var result = await service.SaveCredentialsAsync(providerId, request with { RequestedBy = actor }, context.RequestAborted).ConfigureAwait(false);
+                var selectedService = ResolveConnectionService(context, providerId, service);
+                var result = await selectedService.SaveCredentialsAsync(providerId, request with { RequestedBy = actor }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ProviderCredentialValidationException ex)
             {
                 return Results.BadRequest(new { error = ex.Message, unknownFields = ex.UnknownFields });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
+            }
+            catch (InvalidDataException)
+            {
+                return Results.BadRequest(new { error = "Credential request does not match retained connection ownership." });
             }
             catch (ArgumentException ex)
             {
@@ -72,8 +81,13 @@ public static class ProviderConnectionEndpoints
 
             try
             {
-                var result = await service.VerifyAsync(providerId, context.RequestAborted, actor).ConfigureAwait(false);
+                var selectedService = ResolveConnectionService(context, providerId, service);
+                var result = await selectedService.VerifyAsync(providerId, context.RequestAborted, actor).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
             }
             catch (ArgumentException ex)
             {
@@ -96,9 +110,14 @@ public static class ProviderConnectionEndpoints
 
             try
             {
-                var result = await service.DeleteCredentialsAsync(providerId, actor, context.RequestAborted)
+                var selectedService = ResolveConnectionService(context, providerId, service);
+                var result = await selectedService.DeleteCredentialsAsync(providerId, actor, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
             }
             catch (ArgumentException ex)
             {
@@ -108,6 +127,16 @@ public static class ProviderConnectionEndpoints
         .WithName("DeleteProviderCredentials").RequirePermission(UserPermission.ManageCredentials)
         .Produces<ProviderCredentialMutationResultDto>(StatusCodes.Status200OK)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+    }
+
+    private static ProviderConnectionLifecycleService ResolveConnectionService(HttpContext context, string providerId, ProviderConnectionLifecycleService service)
+    {
+        if (!context.Request.Query.TryGetValue("connectionId", out var connectionIds))
+            return service;
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        if (connectionIds.Count != 1 || string.IsNullOrWhiteSpace(connectionIds[0]) || !tenant.HasTenantScope)
+            throw new UnauthorizedAccessException("Credential connection ownership could not be established.");
+        return service.ForConnection(connectionIds[0]!, tenant.TenantId!, providerId);
     }
 
     private static bool HasManageCredentialsPermission(HttpContext context)
