@@ -199,3 +199,142 @@ public sealed class StatementImportAndMatchingTests
         imported.Rows[0].ExternalTransactionId.Should().Be("TX,\"1\"");
     }
 }
+
+
+public sealed class StatementStoreDurabilityTests
+{
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task CanceledBeforeWrite_DoesNotCreateAnImportOrTemporaryFile()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-statement-cancel-{Guid.NewGuid():N}");
+        using var canceled = new CancellationTokenSource();
+        canceled.Cancel();
+        var import = new CanonicalStatementImport("canceled", "fixture", new DateOnly(2026, 6, 30),
+            DateTimeOffset.UnixEpoch, "source.csv", "hash", 0, 0);
+        try
+        {
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new JsonCanonicalStatementStore(root)
+                .TrySaveImportAsync(import, [], canceled.Token));
+            Assert.False(Directory.Exists(root));
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
+
+    [Theory]
+    [Trait("Category", "Integration")]
+    [InlineData("mid-write", false)]
+    [InlineData("published", true)]
+    public async Task KilledWriter_ExposesOnlyCompleteImportsAndAllowsSafeRecovery(string stage, bool published)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-statement-crash-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        var ready = Path.Combine(root, "ready");
+        using var child = StartWriter(root, ready, stage);
+        var errors = child.StandardError.ReadToEndAsync();
+        try
+        {
+            await WaitForReadyAsync(ready, child, errors, timeout.Token);
+            var folder = Path.Combine(root, "reconciliation", "statement-imports");
+            if (!published)
+            {
+                var partial = Assert.Single(Directory.GetFiles(folder, "*.tmp"));
+                Assert.True(new FileInfo(partial).Length > 0, "The child must have written bytes before it is killed.");
+                Assert.Empty(Directory.GetFiles(folder, "*.json"));
+            }
+            child.Kill(entireProcessTree: true);
+            await child.WaitForExitAsync(timeout.Token);
+            var store = new JsonCanonicalStatementStore(root);
+            var retained = await store.ListImportsAsync(timeout.Token);
+            Assert.Equal(published ? 1 : 0, retained.Count);
+            if (published)
+                AssertComplete(await store.GetImportAsync("durable-import", timeout.Token));
+
+            using var recovery = StartWriter(root, Path.Combine(root, "recovery"), "race");
+            var recoveryErrors = recovery.StandardError.ReadToEndAsync();
+            try
+            {
+                await File.WriteAllTextAsync(Path.Combine(root, "start"), "go", timeout.Token);
+                await recovery.WaitForExitAsync(timeout.Token);
+                Assert.True(recovery.ExitCode == 0, await recoveryErrors);
+                Assert.Equal(published ? "duplicate" : "created", await File.ReadAllTextAsync(Path.Combine(root, "recovery"), timeout.Token));
+                Assert.Single(await store.ListImportsAsync(timeout.Token));
+                AssertComplete(await store.GetImportAsync("durable-import", timeout.Token));
+            }
+            finally { await StopAsync(recovery); }
+        }
+        finally
+        {
+            await StopAsync(child);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task IndependentWriters_ClaimOneCompleteImport()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-statement-race-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        var children = Enumerable.Range(0, 4).Select(index => StartWriter(root, Path.Combine(root, $"result-{index}"), "race")).ToArray();
+        var errors = children.Select(child => child.StandardError.ReadToEndAsync()).ToArray();
+        try
+        {
+            for (var index = 0; index < children.Length; index++)
+                await WaitForReadyAsync(Path.Combine(root, $"result-{index}.started"), children[index], errors[index], timeout.Token);
+            await File.WriteAllTextAsync(Path.Combine(root, "start"), "go", timeout.Token);
+            await Task.WhenAll(children.Select(child => child.WaitForExitAsync(timeout.Token)));
+            for (var index = 0; index < children.Length; index++)
+                Assert.True(children[index].ExitCode == 0, await errors[index]);
+            var results = await Task.WhenAll(Enumerable.Range(0, 4).Select(index => File.ReadAllTextAsync(Path.Combine(root, $"result-{index}"), timeout.Token)));
+            Assert.Equal(1, results.Count(result => result == "created"));
+            Assert.Equal(3, results.Count(result => result == "duplicate"));
+            var store = new JsonCanonicalStatementStore(root);
+            Assert.Single(await store.ListImportsAsync(timeout.Token));
+            AssertComplete(await store.GetImportAsync("durable-import", timeout.Token));
+            Assert.Empty(Directory.GetFiles(Path.Combine(root, "reconciliation", "statement-imports"), "*.tmp"));
+        }
+        finally
+        {
+            foreach (var child in children)
+            { await StopAsync(child); child.Dispose(); }
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    private static System.Diagnostics.Process StartWriter(string root, string ready, string stage)
+    {
+        var start = new System.Diagnostics.ProcessStartInfo("dotnet") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true };
+        foreach (var argument in new[] { "exec", "--depsfile", Path.Combine(AppContext.BaseDirectory, "Meridian.Tests.deps.json"),
+            "--runtimeconfig", Path.Combine(AppContext.BaseDirectory, "Meridian.Tests.runtimeconfig.json"),
+            typeof(Meridian.ProcessTestHelper.ProcessTestHelperMarker).Assembly.Location, "statement-store-stage", root, ready, stage })
+            start.ArgumentList.Add(argument);
+        return System.Diagnostics.Process.Start(start) ?? throw new InvalidOperationException("Statement child did not start.");
+    }
+
+    private static async Task WaitForReadyAsync(string ready, System.Diagnostics.Process child, Task<string> errors, CancellationToken ct)
+    {
+        while (!File.Exists(ready))
+        {
+            Assert.False(child.HasExited, child.HasExited ? await errors : "");
+            await Task.Delay(20, ct);
+        }
+    }
+
+    private static async Task StopAsync(System.Diagnostics.Process child)
+    {
+        if (!child.HasExited)
+            child.Kill(entireProcessTree: true);
+        await child.WaitForExitAsync();
+    }
+
+    private static void AssertComplete(BrokerStatementImportResult? result)
+    {
+        Assert.NotNull(result);
+        Assert.Equal(256, result.Rows.Count);
+        Assert.Equal(Enumerable.Range(1, 256), result.Rows.Select(row => row.SourceRowNumber));
+        Assert.All(result.Rows, row => Assert.Equal(new string('A', 4096), row.RawChecksum));
+    }
+}

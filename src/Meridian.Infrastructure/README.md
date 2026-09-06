@@ -28,6 +28,13 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Canonical statement imports stream JSON to an exclusive temporary file, force its contents to
+disk, then publish with a no-overwrite rename and the shared directory-sync policy. Caller
+cancellation is checked before publication and is not observed after the rename commits.
+Subprocess tests cover interrupted serialization, restart after acknowledged publication,
+and concurrent writers claiming one complete import. These are process-crash tests; they do
+not certify physical power-loss behavior on every filesystem or storage device.
+
 Use this module for provider implementation, external service integration, and adapter behavior.
 
 Backfill worker shutdown closes intake, cancels and observes every admitted provider attempt,
