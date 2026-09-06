@@ -3920,6 +3920,27 @@ request before calling it (`:166-171`, `:239`), and drafting passes the stored P
 dry-run's generated lines equal that projected effect (`:1161-1167`), so the candidate the lane
 posts is those lines by construction; re-asserting the same comparison at candidate construction is
 belt and braces, not the missing check.
+The neutralization must reach the lots as well (added 2026-09-06, after review; the previous version
+required lineage to the prior lot batch and negation of the journal lines only). A corporate action
+that moved lots — a quantity change, an allocation, a transfer, a carrying-value reduction
+(`CorporateActionLotMutationKindDto`, `CorporateActionAccountingDtos.cs:251-260`) — leaves the
+ledger consistent with the portfolio only while the lot state matches the journal, and reversing the
+journal alone leaves the mutated lots standing against a ledger that no longer carries their effect.
+Nothing checks this today, at any of the three places a correction's lots are examined: the spine's
+correction check compares the reference's lot batch id to the retained one
+(`AssetAccountingEventSpineService.cs:878-879`), its Drafted gate requires a correcting lot
+instruction to name the same corrected journal and batch (`:811-816`), and the store's
+`ValidateCorrectionBatchAsync` requires the corrected batch to exist in the same book, security, and
+position with matching journal lineage (`PostgresLedgerJournalStore.AtomicTaxLots.cs:534-570`) —
+identity at every step, an inverse at none. The mutation plan already retains what an inverse needs:
+each `CorporateActionLotMutationDto` carries the source and target lots' before and after states and
+the lot versions it expected (`CorporateActionAccountingDtos.cs:289-313`, the states and versions at
+`:302-309`). So the reversal must apply the inverse mutations — each mutated lot returned from its
+retained after-state to its retained before-state, under a version guard on the lot as it stands now
+— and the rebook its replacement mutations, each in the same transaction as its journal append,
+which is the transaction B3's lot-store operation already has to provide; a reversal whose lot half
+fails must fail whole. At the pin the lane applies no corporate-action lot mutation at all (B3), so
+this half has nothing to reverse until B3 lands; it binds the day it does.
 The reversal also needs a drafting path that can produce it (added 2026-09-06, after review): the
 Drafted step's rule dry run receives only the source event's type, amount, currency, and effective
 date (`RuleDryRunRequestDto`, `AccountingConfigurationDtos.cs:806-819`;
@@ -3931,6 +3952,27 @@ vocabulary below cannot reach the dry run. Add a typed reversal input to the pro
 dry-run request, or an authoritative reversal builder that derives the negated lines from the
 retained impact and satisfies the Drafted gate in place of the rule dry run; without one the
 requirement blocks every correction instead of governing it.
+The reversal's approval needs an authority too (added 2026-09-06, after review; the previous version
+asked only that an approved adjustment accompany the correction). What the Drafted gate checks is
+`CorrectionApproval` on the posting-candidate request (`AssetAccountingEventDtos.cs:319`), a
+`LedgerAdjustmentApprovalMetadataDto` whose approval id, status, approver, time, and reason are the
+caller's words (`LedgerBookDtos.cs:84-92`): the gate requires the status to read Approved and the
+time to be UTC and no later than the Drafted timestamp
+(`AssetAccountingEventSpineService.cs:807-810`), the candidate carries it forward as the journal's
+adjustment approval (`:494`), the posting service compares the durable record's copy to the
+candidate's (`AccountingPostingCandidatePostService.cs:925`) and, in a soft-closed period, requires
+the status again (`:1401`), and nothing loads an approval from anywhere — no store in the ledger
+lane resolves one by approval id; the metadata is a JSON column on the journal row
+(`V_ledger_007__journal_adjustment_approval_metadata.sql:2-27`), and a durable approval store the
+repository does have, the Audit lane's compliance approvals, is consulted by the workstation
+endpoints, not by the ledger. So the immutable adjustment can record that any actor approved it at
+any time, whatever the case lane later decides about the same correction. The reversal builder must
+therefore not take its approval from the request: derive it from the case's own governed approval —
+the active `CorporateActionCaseAccountingApprovalDto` B5 binds to durable evidence, which is bound
+to this projection and so to the exact correcting candidate by its drafted fingerprint, and to the
+prior journal through the correction lineage above — or load an active correction approval from an
+authority that records those two bindings, and refuse a correction whose approval names any other
+candidate or journal.
 The ledger's general posting path already has the vocabulary (`AccountingPostingIntentDto.Reversal`,
 `Rebook`, and `Restatement`, each requiring source-journal lineage,
 `AccountingPostingCommandValidator.cs:114-120`); the spine's correction reference carries the
@@ -4097,16 +4139,17 @@ the ticker-details response as an array and takes its first element
 (`TradingParametersBackfillService.cs:146-154`), but Polygon's `/v3/reference/tickers/{symbol}`
 returns `results` as a single object — which the repository's own client already models that way
 (`PolygonSymbolSearchProvider.cs:107-115`, `:224-227`) — so every *valid* response takes the "No
-results found" return as well. And a third stands behind those two (added 2026-09-06, after
-review): the amendment the backfill builds cannot be applied. It serialises `CommonTerms` as
-three vendor-named fields — `min_tick_size`, `lot_size`, `market`
+results found" return as well. And a third stands behind those two (added 2026-09-06, after review):
+the amendment the backfill builds cannot be applied. It serialises `CommonTerms` as three
+vendor-named fields — `min_tick_size`, `lot_size`, `market`
 (`TradingParametersBackfillService.cs:185-191`) — and passes that as the security's common terms,
 but the command mapping requires `displayName` and `currency` and reads the canonical `lotSize`,
 `tickSize`, and `exchange` keys (`SecurityMasterMapping.cs:214-226`), strictly, by design
-(`:228-231`); `CommonTerms` is a whole document, not a patch, so `AmendTermsAsync` throws on the
-missing required fields, the inner catch (`:219-222`) returns normally, and the outer loop counts
-another success. Three defects stand between the job and its first amendment, and any one of
-them alone leaves the success count at 100% of nothing.
+(`:228-231`) — and `exchange` is the listing venue, which Polygon's `market` is not (see the
+remedy); `CommonTerms` is a whole document, not a patch, so `AmendTermsAsync` throws on the missing
+required fields, the inner catch (`:219-222`) returns normally, and the outer loop counts another
+success. Three defects stand between the job and its first amendment, and any one of them alone
+leaves the success count at 100% of nothing.
 
 **Remedy.** Three parts, and the first two before P4's outcome typing. Resolve the identifier before
 calling the vendor — on the bulk paths and on the two direct post-create and post-amend calls alike
@@ -4120,23 +4163,33 @@ one as such): duplicate detection covers the canonical kinds and provider symbol
 securities may legitimately share a ticker across listings (`SecurityValidationService.cs:441-445`),
 and the fetcher persists whatever the vendor returns under the `SecurityId` it was handed, so a
 shared bare symbol would file one listing's details or corporate actions under the other.
-Parse the ticker-details response as the object it is, into the backfill's own
-`PolygonTickerData` — which already carries `min_tick_size` and `lot_size`
-(`TradingParametersBackfillService.cs:240-246`) — with its response model's `Results` changed from
-an array to that one object (`:237`); not into the symbol-search provider's `PolygonTickerDetails`,
-which is a private nested type without either field (`PolygonSymbolSearchProvider.cs:233`)
-(corrected 2026-09-06, after review; the first version of this remedy said to reuse it, which
-would have failed to compile or dropped both parameters). Merge the fetched values into the
-security's existing canonical common-terms document — the detail the backfill already loads
-(`:193`) — under the canonical keys, and amend with the merged document, never the three-field
-replacement (added 2026-09-06, after review). Give consumers the primary identifier's
-kind and value as structured fields *additively* — new optional members alongside
-`SecuritySummaryDto.PrimaryIdentifier` and its positional constructor
-(`SecurityDtos.cs:19-26`), or a dedicated internal lookup DTO — because Contracts changes are
-required to stay additive for the browser and WPF clients that construct and read the record
-(`src/Meridian.Contracts/README.md:127-130`, `:1093-1101`); not by replacing the formatted field
-(corrected 2026-09-06, after review). Do the first two before, not after, P4's outcome typing,
-or the typed outcome will faithfully report that nothing works.
+Parse the ticker-details response as the object it is, into the backfill's own `PolygonTickerData` —
+which already carries `min_tick_size` and `lot_size` (`TradingParametersBackfillService.cs:240-246`)
+— with its response model's `Results` changed from an array to that one object (`:237`); not into
+the symbol-search provider's `PolygonTickerDetails`, which is a private nested type without either
+field (`PolygonSymbolSearchProvider.cs:233`) (corrected 2026-09-06, after review; the first version
+of this remedy said to reuse it, which would have failed to compile or dropped both parameters).
+Merge the fetched values into the security's existing canonical common-terms document — the detail
+the backfill already loads (`:193`) — under the canonical keys, and amend with the merged document,
+never the three-field replacement (added 2026-09-06, after review). The keys are `tickSize` for
+`min_tick_size`, `lotSize` for `lot_size`, and `exchange` for `primary_exchange` — not for `market`
+(corrected 2026-09-06, after review; the previous sentence named no keys, and the finding's own list
+left `market` to be read as the exchange). Polygon's ticker payload carries both, and the
+repository's own model keeps them apart: the symbol-search provider declares `market` and
+`primary_exchange` as separate fields on both its ticker types
+(`PolygonSymbolSearchProvider.cs:196-203`, `:244-251`), maps `PrimaryExchange` to the result's
+`Exchange` in search and in details (`:99`, `:120`), and maps `Market` to nothing; the backfill's
+`PolygonTickerData` carries `market` and not `primary_exchange`
+(`TradingParametersBackfillService.cs:251-252`). Add `primary_exchange` to it and write that value
+under `exchange`; `market` — the asset-market category — has no canonical common-terms key and must
+not be written under one, or a category lands where a venue is expected, for exactly the securities
+the backfill touched. Give consumers the primary identifier's kind and value as structured fields
+*additively* — new optional members alongside `SecuritySummaryDto.PrimaryIdentifier` and its
+positional constructor (`SecurityDtos.cs:19-26`), or a dedicated internal lookup DTO — because
+Contracts changes are required to stay additive for the browser and WPF clients that construct and
+read the record (`src/Meridian.Contracts/README.md:127-130`, `:1093-1101`); not by replacing the
+formatted field (corrected 2026-09-06, after review). Do the first two before, not after, P4's
+outcome typing, or the typed outcome will faithfully report that nothing works.
 
 ### Smaller notes, not filed as findings
 
@@ -4210,12 +4263,14 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    to external callers; source cannot say no rows exist — corrected 2026-09-05), and every month of
    postings after a consumer lands makes retrofitted verification a data-repair exercise. B4, B5,
    and B6 ride with it: a reopened case must carry correction lineage to its own posting and a
-   correcting effect that neutralizes it before it can bind again, approval must reference a
-   durable evidence record — one the lane must first define, with a stable identifier on the
-   approval contract — rather than mint retained evidence at posting, and posting must be fenced
-   against a case transition that lands between the spine append and the case record, with any
-   orphan already made left unauthorized and corrected by an approved reversal or rebook, not
-   adopted and not retroactively approved.
+   correcting effect that neutralizes it — the journal lines and, once B3 applies lot mutations, the
+   lots, by inverse mutations in the same transaction — under an approval derived from the case's
+   own governed approval rather than the request's asserted adjustment metadata, before it can bind
+   again (extended 2026-09-06), approval must reference a durable evidence record — one the lane
+   must first define, with a stable identifier on the approval contract — rather than mint retained
+   evidence at posting, and posting must be fenced against a case transition that lands between the
+   spine append and the case record, with any orphan already made left unauthorized and corrected by
+   an approved reversal or rebook, not adopted and not retroactively approved.
 2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
    both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
    side", which an earlier version of this entry said while the same list it introduces names an
@@ -4411,4 +4466,10 @@ approval each advance it by design; added the reversal-aware drafting path B4's 
 since the rule dry run receives no correction input and the Drafted gate requires the generated
 lines to equal the projected effect; and bound B5's retained evidence to the approval-specific
 subject the posting service requires, so posting compares the loaded identity rather than composing
-it.
+it; a twenty-seventh (2026-09-06) extended B4's neutralization to the lots, since every correction
+check compares the lot batch's identity and none applies an inverse, while the mutation plan already
+retains each lot's before and after state; bound the reversal's approval to the case's own governed
+approval, since the correction approval the Drafted gate checks is caller-asserted metadata that no
+authority resolves; and named `primary_exchange`, not `market`, as the source of B7's canonical
+`exchange`, since the repository's own Polygon model keeps the two apart and maps only the former to
+a venue.
