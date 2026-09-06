@@ -15,6 +15,7 @@ namespace Meridian.Tests.Storage;
 public sealed class LedgerJournalStoreTests
 {
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task HardClose_PostgresRechecksBalancesAfterEarlierAppendCommits()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -56,6 +57,7 @@ public sealed class LedgerJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task HardClose_PostgresPeriodLockRejectsConcurrentFabricatedClosingEntry()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
