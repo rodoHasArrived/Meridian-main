@@ -179,6 +179,43 @@ public sealed class ProviderFactoryCredentialContextTests
         finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
     }
 
+    [Theory]
+    [InlineData("production")]
+    [InlineData("packaged")]
+    [InlineData("customer")]
+    public void StoredResolver_ProductionPolicyCannotBeBypassedThroughLegacyFallback(string mode)
+    {
+        using var environment = new AlpacaEnvironmentScope();
+        var names = new[] { "DOTNET_ENVIRONMENT", "ASPNETCORE_ENVIRONMENT", "MDC_PACKAGED_BUILD", "MERIDIAN_CUSTOMER_BUILD", "MDC_PROVIDER_ALLOW_ENV_FALLBACK" };
+        var prior = names.ToDictionary(name => name, Environment.GetEnvironmentVariable);
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "credential-source-policy", Guid.NewGuid().ToString("N"));
+        try
+        {
+            environment.SetProcessAndUser("ALPACA_KEY_ID", "ambient-other-account-key");
+            environment.SetProcessAndUser("ALPACA_SECRET_KEY", "ambient-other-account-secret");
+            Environment.SetEnvironmentVariable("MDC_PROVIDER_ALLOW_ENV_FALLBACK", null);
+            Environment.SetEnvironmentVariable("MDC_PACKAGED_BUILD", mode == "packaged" ? "true" : null);
+            Environment.SetEnvironmentVariable("MERIDIAN_CUSTOMER_BUILD", mode == "customer" ? "true" : null);
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", mode == "production" ? "Production" : "Development");
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", mode == "production" ? "Production" : "Development");
+            var fallback = new TrackingCredentialResolver(new Dictionary<string, string?>
+            { ["ALPACA_KEY_ID"] = "fallback-key", ["ALPACA_SECRET_KEY"] = "fallback-secret" });
+            var resolver = new StoredProviderCredentialResolver(new FileProviderCredentialStore(root), fallback);
+            var context = resolver.CreateContext(typeof(AlpacaHistoricalDataProvider), new Dictionary<string, string?>
+            { ["ALPACA_KEY_ID"] = "config-key", ["ALPACA_SECRET_KEY"] = "config-secret" });
+            context.IsConfigured("ALPACA_KEY_ID").Should().BeFalse();
+            context.IsConfigured("ALPACA_SECRET_KEY").Should().BeFalse();
+            fallback.ContextRequests.Should().BeEmpty();
+        }
+        finally
+        {
+            foreach (var pair in prior)
+                Environment.SetEnvironmentVariable(pair.Key, pair.Value);
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public void StoredResolver_UnmanagedTypeRetainsItsExplicitLegacyResolver()
     {
