@@ -3607,9 +3607,28 @@ position at the Approved and Posted appends inside posting, after the case's app
 re-reads a lot snapshot, policy decision, or election after attach, since none has an authority to
 read. So the reload of the external dependencies — position, lot snapshot, policy decision,
 election, period — must run at attach, at approval, and at posting before the spine append, or each
-authority's update must fence the binding, superseding it and voiding its approval atomically, as
-the case store already voids the approval on `Approved → AccountingReview`
-(`PostgresCorporateActionOperationsStore.Cases.cs:633-640`). The case itself is the exception at the
+authority's update must fence the binding, superseding it and voiding its approval atomically,
+as the case store already voids the approval on `Approved → AccountingReview`
+(`PostgresCorporateActionOperationsStore.Cases.cs:633-640`). The set has one more member, which
+needs no retention because the spine already holds it (added 2026-09-06, after review; the previous
+list stopped at the inputs the digest commits): the Security Master record. The spine's scope
+retains the security id and the version it was projected against
+(`AssetAccountingEventDtos.cs:68-79`), and the spine compares that version with the live record —
+and the record's status, currency, and effective window — when it projects and when it drafts
+(`ResolveAuthoritativeSecurityAsync`, `AssetAccountingEventSpineService.cs:216`, `:383`,
+`:828-849`); after Drafted nothing reads it again. The case gates compare no security version (the
+binding retains none, `CorporateActionCaseAccountingContracts.cs:12-40`), the posting service
+resolves no Security Master record, and the store's append check compares the position version, the
+security id, and the book id — not the security version
+(`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:153-186`). The digest cannot catch
+it either: it commits the security id and no version
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:57`; the projection request carries
+none, `CorporateActionAccountingProjectionService.cs:12-44`). So terms amended after Drafted — a
+currency, a status, an effective window, any of the fields the spine itself refuses a stale version
+over — post under the version they were drafted against. Reload the record at the same three gates
+and compare its version to the scope's, or let a Security Master amendment supersede the binding and
+void its approval like the other authorities.
+The case itself is the exception at the
 later gates (narrowed 2026-09-06, after review; the previous sentence listed it with the rest): its
 workflow version advances by design at attach
 (`PostgresCorporateActionOperationsStore.Accounting.cs:116-123`), at ReadyForApproval
@@ -3966,13 +3985,31 @@ lane resolves one by approval id; the metadata is a JSON column on the journal r
 (`V_ledger_007__journal_adjustment_approval_metadata.sql:2-27`), and a durable approval store the
 repository does have, the Audit lane's compliance approvals, is consulted by the workstation
 endpoints, not by the ledger. So the immutable adjustment can record that any actor approved it at
-any time, whatever the case lane later decides about the same correction. The reversal builder must
-therefore not take its approval from the request: derive it from the case's own governed approval —
-the active `CorporateActionCaseAccountingApprovalDto` B5 binds to durable evidence, which is bound
-to this projection and so to the exact correcting candidate by its drafted fingerprint, and to the
-prior journal through the correction lineage above — or load an active correction approval from an
-authority that records those two bindings, and refuse a correction whose approval names any other
-candidate or journal.
+any time, whatever the case lane later decides about the same correction.
+The reversal builder must therefore not take its approval from the request. It cannot take it from
+the case's post-attach approval either (corrected 2026-09-06, after review; the previous version
+derived it from the active case approval bound to the projection's drafted fingerprint, which is
+circular): the Drafted gate requires the correction approval before the Drafted candidate exists
+(`:807-810`), attach accepts only a spine whose latest stage is Drafted with a retained candidate
+and no posted impact (`CorporateActionCaseAccountingService.cs:298-308`), and the case approval is
+inserted only at approval, bound to the projection attach created and to the case version that
+approval advances (`PostgresCorporateActionOperationsStore.Accounting.cs:179-214`) — so an approval
+bound to the drafted fingerprint exists only after the candidate it would have had to authorize.
+Implemented literally, that either blocks every correction or leaves the caller's assertion in
+place. What the lane needs is a correction approval recorded before drafting, over a deterministic
+preview of the correcting candidate: a reversal is fully determined by the retained posted impact
+and the retained mutation plan — the negated lines and the inverse mutations — so its preview and
+the preview's fingerprint can be computed and approved on the case, as a governed decision with its
+own actor, time, and evidence, before anything is drafted; the server-side builder then derives the
+Drafted step's `CorrectionApproval` from that decision, attach compares the drafted fingerprint
+against the approved preview's, and the post-attach maker-checker approval B5 governs still binds
+the posting. A rebook's replacement lines are not known until Rules Studio generates them, so its
+pre-draft approval covers the reversal half and the intended target economics, and the drafted lines
+bind through the post-attach approval as any originating candidate's do. The alternative is to
+reorder the lifecycle — let the case lane draft a correction without approval metadata and stamp it
+at posting from the case approval — but the spine requires the metadata at Drafted and the candidate
+carries it into the journal from there (`:494`), so the reorder moves a gate the spine was built
+around; the pre-draft approval keeps the gate and gives it an authority.
 The ledger's general posting path already has the vocabulary (`AccountingPostingIntentDto.Reversal`,
 `Rebook`, and `Restatement`, each requiring source-journal lineage,
 `AccountingPostingCommandValidator.cs:114-120`); the spine's correction reference carries the
@@ -4084,8 +4121,23 @@ transition intervened) and advances the spine if the service had not; a posting 
 not clear it (corrected 2026-09-06, after review; the previous version cleared on the first
 miss), because the original commit can still be in flight after the caller lost its connection
 and a single negative read is not proof of rollback — the marker stays until a bounded
-reconciliation establishes a stable negative outcome; and a marker past that bound still
-unresolved goes to reconciliation rather than being cleared. Recover: not by adopting the
+reconciliation establishes a stable negative outcome;
+and a marker past that bound still unresolved goes to reconciliation rather than being cleared. And
+a stable negative does not simply release the marker to a retry as the lane stands, because the
+retry would be refused (added 2026-09-06, after review): the posting service appends the Approved
+stage to the spine — or verifies one already there — before it invokes the journal append
+(`AccountingPostingCandidatePostService.cs:339-349`; the atomic-lot branch orders them the same way,
+`:278-297`), so a confirmed append failure leaves the spine Approved with no posted impact, and the
+case lane's retry, finding no impact, requires the latest stage to be Drafted
+(`ValidateSpineStillDrafted`, `CorporateActionCaseAccountingService.cs:253`, `:437-450`) and tells
+the operator to re-attach — which attach refuses too, since it accepts only a Drafted spine
+(`:298-308`). The approved case is stranded. The retry must therefore admit a spine whose latest
+stage is Approved under this same approval — the stage's reference is the approval id
+(`AccountingPostingCandidatePostService.cs:1360-1369`) — with the bound drafted fingerprint and no
+posted impact, and resume posting from that attestation, which the posting service already does when
+it finds the Approved stage present (`:493-497`); the stable negative releases the marker to that
+resumption and to nothing else.
+Recover: not by adopting the
 journal "regardless of
 the case's current state" (corrected 2026-09-06, after review; the first version of this remedy
 said exactly that): the transition
@@ -4239,8 +4291,11 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    nothing. In the same change retain every independently versioned drafting-time
    input the digest commits (case, election, policy decision, lot snapshot, position snapshot,
    position, accounting period) as typed fields on the candidate; compare the drafting-time case
-   version once, at attach, and reload the external dependencies from their authorities and
-   compare at attach, at approval, and at posting before the spine append — or fence the binding
+   version once, at attach, and reload the external dependencies — and the Security Master record,
+   whose version the spine scope already retains and compares only through Drafted (added
+   2026-09-06) — from their authorities and compare at attach, at approval, and at posting before
+   the spine append
+   — or fence the binding
    so an authority update supersedes it and voids its approval — refusing a stale draft on any
    mismatch, with the case governed at the later gates by its transition chain or a retained
    material-content revision, since its workflow version advances by design at attach,
@@ -4264,13 +4319,19 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    postings after a consumer lands makes retrofitted verification a data-repair exercise. B4, B5,
    and B6 ride with it: a reopened case must carry correction lineage to its own posting and a
    correcting effect that neutralizes it — the journal lines and, once B3 applies lot mutations, the
-   lots, by inverse mutations in the same transaction — under an approval derived from the case's
-   own governed approval rather than the request's asserted adjustment metadata, before it can bind
-   again (extended 2026-09-06), approval must reference a durable evidence record — one the lane
+   lots, by inverse mutations in the same transaction —
+   under a correction approval recorded before drafting over a deterministic preview of the
+   reversal, rather than the request's asserted adjustment metadata — the case's post-attach
+   approval cannot supply it, since it exists only after the candidate it would authorize (corrected
+   2026-09-06) — before it can bind again (extended 2026-09-06),
+   approval must reference a durable evidence record — one the lane
    must first define, with a stable identifier on the approval contract — rather than mint retained
    evidence at posting, and posting must be fenced against a case transition that lands between the
-   spine append and the case record, with any orphan already made left unauthorized and corrected by
-   an approved reversal or rebook, not adopted and not retroactively approved.
+   spine append and the case record,
+   with any orphan already made left unauthorized and corrected by an approved reversal or rebook,
+   not adopted and not retroactively approved, and a confirmed append failure resumed from the
+   Approved attestation the spine already holds rather than refused as no longer Drafted (added
+   2026-09-06).
 2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
    both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
    side", which an earlier version of this entry said while the same list it introduces names an
@@ -4471,5 +4532,12 @@ check compares the lot batch's identity and none applies an inverse, while the m
 retains each lot's before and after state; bound the reversal's approval to the case's own governed
 approval, since the correction approval the Drafted gate checks is caller-asserted metadata that no
 authority resolves; and named `primary_exchange`, not `market`, as the source of B7's canonical
-`exchange`, since the repository's own Polygon model keeps the two apart and maps only the former to
-a venue.
+`exchange`, since the repository's
+own Polygon model keeps the two apart and maps only the former to a venue; a twenty-eighth
+(2026-09-06) added the Security Master record to B2's reload set, since the spine compares its
+version only through Drafted and the digest commits no security version at all; replaced B4's
+post-attach approval derivation, which review showed circular — the case approval exists only after
+the Drafted candidate it would have to authorize — with a correction approval recorded before
+drafting over a deterministic preview; and made B6's stable-negative branch resume from the Approved
+attestation the posting service appends before the journal, since the case retry otherwise refuses
+the spine as no longer Drafted and attach refuses it too.
