@@ -15,6 +15,47 @@ namespace Meridian.Tests.Storage;
 public sealed class LedgerJournalStoreTests
 {
     [LedgerDatabaseFact]
+    public async Task HardClose_PostgresRechecksBalancesAfterEarlierAppendCommits()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var ct = timeout.Token;
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        var period = await database.SavePeriodAsync(Guid.NewGuid(), "SoftClosed", ct);
+        var write = BuildBalancedJournalWrite(period.PeriodId, DateTimeOffset.Parse("2026-05-31T21:00:00Z")) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+        await using var postingConnection = new NpgsqlConnection(database.Options.ConnectionString);
+        await postingConnection.OpenAsync(ct);
+        await using var postingTransaction = await postingConnection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+        await database.JournalStore.AppendAsync(postingConnection, postingTransaction, write, ct);
+
+        var closeApplication = $"close-after-append-{Guid.NewGuid():N}";
+        var closeStore = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions
+        {
+            ConnectionString = new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
+            {
+                ApplicationName = closeApplication
+            }.ConnectionString,
+            SchemaName = database.Options.SchemaName
+        });
+        var closeTask = closeStore.SaveHardClosedPeriodAsync(
+            period with { Status = "HardClosed" }, period.Version,
+            new PeriodCloseEventRecord(Guid.NewGuid(), period.PeriodId, "SoftClosed", "HardClosed",
+                "controller", "Balance refresh after waiting", DateTimeOffset.UtcNow), ct);
+        await WaitForAdvisoryLockWaitAsync(database.Options.ConnectionString, closeApplication, ct, "transactionid");
+        closeTask.IsCompleted.Should().BeFalse("hard close must wait for the earlier append to commit");
+        await postingTransaction.CommitAsync(ct);
+
+        var awaitClose = async () => await closeTask;
+        await awaitClose.Should().ThrowAsync<LedgerValidationException>().WithMessage("*remain non-zero*");
+        var retained = await database.JournalStore.GetPeriodAsync(period.PeriodId, ct);
+        retained!.Status.Should().Be("SoftClosed");
+        retained.Version.Should().Be(period.Version);
+        (await database.JournalStore.GetByPeriodAsync(period.PeriodId, ct)).Should().ContainSingle();
+    }
+
+    [LedgerDatabaseFact]
     public async Task HardClose_PostgresPeriodLockRejectsConcurrentFabricatedClosingEntry()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
