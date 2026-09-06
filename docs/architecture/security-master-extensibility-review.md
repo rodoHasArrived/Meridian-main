@@ -3841,11 +3841,24 @@ an ordinary governed command, so this is a race two operators can run without in
 whether it has happened is, as with B3, not knowable from source.
 
 **Remedy.** Fence, and recover without waving the orphan through. Fence: reserve the posting in
-the case store before the spine append — a posting-in-progress marker or state written under the
-case's optimistic version, which the `Approved → AccountingReview` transition refuses while it
-stands and the record step consumes — so the transition and the posting cannot interleave.
-Recover: not by adopting the journal "regardless of the case's current state" (corrected
-2026-09-06, after review; the first version of this remedy said exactly that): the transition
+the case store before the spine append — a posting-in-progress marker written under the case's
+optimistic version, which the `Approved → AccountingReview` transition refuses while it stands and
+the record step consumes — so the transition and the posting cannot interleave. A marker needs
+its failure and retry semantics stated, or it becomes a lock nobody holds (added 2026-09-06,
+after review): key it as the posting receipt already is — case id, the command's idempotency
+key, and the request fingerprint (`CorporateActionCaseAccountingService.cs:179-185`,
+`PostgresCorporateActionOperationsStore.Accounting.cs:45`) — so a retry with the same key reclaims
+it and a different command finds it held; write it under the command's `ExpectedVersion` and let
+it advance the case version, so the record step consumes the reservation's version rather than
+the client's; clear it in the same transaction that records a confirmed pre-append failure (the
+append threw or cancellation was observed before it was issued); and when the outcome is
+uncertain — crash or cancellation once the append was issued — leave it, and let the next
+attempt resolve it from the bound spine: a posted impact under this approval id completes the record
+(adoption is legitimate here, because the standing marker proves no transition intervened), a
+still-Drafted spine clears it, and a marker past a bounded age with neither goes to
+reconciliation rather than being cleared. Recover: not by adopting the journal "regardless of
+the case's current state" (corrected 2026-09-06, after review; the first version of this remedy
+said exactly that): the transition
 that won the race voided the approval on purpose
 (`PostgresCorporateActionOperationsStore.Cases.cs:633-640`), and adopting through it would
 resurrect a voided authorization and overwrite a governed decision with `Posted` — another
@@ -3883,12 +3896,20 @@ either alone leaves the success count at 100% of nothing.
 **Remedy.** Three parts, and the first two before P4's outcome typing. Resolve the identifier
 before calling the vendor: select an active `Ticker` or a Polygon-scoped `ProviderSymbol` alias
 for the security from the identifier store, and skip — as a typed, counted outcome — a security
-that has neither. Parse the ticker-details response as the object it is, reusing the
-`PolygonTickerDetails` model the symbol-search provider already has rather than a second reading
-of the same endpoint. Carry the primary identifier's kind and value as separate fields on the
-summary rather than a formatted string, so no consumer has to parse a display form. Do the first
-two before, not after, P4's outcome typing, or the typed outcome will faithfully report that
-nothing works.
+that has neither. Parse the ticker-details response as the object it is, into the backfill's own
+`PolygonTickerData` — which already carries `min_tick_size` and `lot_size`
+(`TradingParametersBackfillService.cs:240-246`) — with its response model's `Results` changed from
+an array to that one object (`:237`); not into the symbol-search provider's `PolygonTickerDetails`,
+which is a private nested type without either field (`PolygonSymbolSearchProvider.cs:233`)
+(corrected 2026-09-06, after review; the first version of this remedy said to reuse it, which
+would have failed to compile or dropped both parameters). Give consumers the primary identifier's
+kind and value as structured fields *additively* — new optional members alongside
+`SecuritySummaryDto.PrimaryIdentifier` and its positional constructor
+(`SecurityDtos.cs:19-26`), or a dedicated internal lookup DTO — because Contracts changes are
+required to stay additive for the browser and WPF clients that construct and read the record
+(`src/Meridian.Contracts/README.md:127-130`, `:1093-1101`); not by replacing the formatted field
+(corrected 2026-09-06, after review). Do the first two before, not after, P4's outcome typing,
+or the typed outcome will faithfully report that nothing works.
 
 ### Smaller notes, not filed as findings
 
@@ -4097,4 +4118,7 @@ to the retained event's type, leaving the lineage hashes and the case linkage; t
 filed B7, the kind-prefixed identifier both Polygon jobs send as a ticker, which turns P4's
 success-count misreport into one that would cover every row; a seventeenth added B7's second
 defect — the backfill parses an object-shaped response as an array — so that the remedy is not
-presented as complete one fix early.
+presented as complete one fix early; an eighteenth (Copilot) gave B6's fence its failure and retry
+semantics, and corrected two B7 remedy instructions that were wrong in kind — a private,
+field-less model offered for reuse, and a contract field offered for replacement where the
+contracts are additive-only.
