@@ -3594,8 +3594,22 @@ review): attach keeps the candidate's `ExpectedPeriodVersion` on the binding
 version compared only when the case lane posts (`EnsureOpenPeriodAsync`, `:222`, `:411-433`) and
 again by the posting service (`AccountingPostingCandidatePostService.cs:323-337`) — both after
 approval — so a candidate drafted against a period that has since advanced attaches and is approved
-before anything notices; the same reload at attach, and at approval, closes that. Leave
-`bound_case_version` as it is: the first version
+before anything notices; the same reload at attach, and at approval, closes that. Attach is not the
+last moment the other inputs can move either, and reloading them once is not the remedy (added
+2026-09-06, after review; the previous version placed the reload at attach alone): approval reloads
+only the stored binding and checks its identity and preparer independence
+(`CorporateActionCaseAccountingService.cs:124-135`); posting reloads it and applies its static flags
+— balanced, policy coverage, lot resolution — and then the period (`:196-222`); the position alone
+has a later live check, because the spine store asserts the drafting-time position version against
+the live position on every append
+(`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:157-180`), which catches a moved
+position at the Approved and Posted appends inside posting, after the case's approval; and nothing
+re-reads a lot snapshot, policy decision, or election after attach, since none has an authority to
+read. So the reload must run at attach, at approval, and at posting before the spine append — or
+each authority's update must fence the binding, superseding it and voiding its approval atomically,
+as the case store already voids the approval on `Approved → AccountingReview`
+(`PostgresCorporateActionOperationsStore.Cases.cs:633-640`). Leave `bound_case_version` as it is:
+the first version
 of this paragraph (corrected 2026-09-02, after review) said to stamp it "from the verified value's
 successor" so the column would mean the version prepared against — a remedy that changes nothing,
 because the store verifies `ExpectedVersion` and increments exactly once, so that successor *is*
@@ -3873,9 +3887,17 @@ a different event (`:629-639`), and the Drafted gate only that an approved adjus
 (`:805-819`). So a reopened case could cite its own posting as this remedy requires and still
 append a second full originating effect, doubling the ledger under a lineage that reads as a
 restatement. The correcting candidate must therefore neutralize the retained impact: its projected
-effect must be a reversal of the retained lines, a reversal-and-rebook pair, or a validated delta
-— an effect whose sum with the retained lines equals the restated economics — and the spine must
-verify that where it already holds both sides: in `ResolveCorrectionAuthorityAsync`, comparing the
+effect must be a reversal — the exact negation of the retained lines — or a reversal followed by a
+rebook, a new originating candidate for the restated economics that carries lineage to the reversal
+and whose own lines Rules Studio binds as it binds any originating candidate. A "validated delta" is
+not a third form the spine can check today (withdrawn 2026-09-06, after review; the previous
+sentence offered one whose sum with the retained lines would equal the restated economics):
+validating a delta needs the restated target as a third operand, and neither the projection request
+(`CorporateActionAccountingProjectionService.cs:12-44`) nor the spine's correction reference retains
+one, so treating the correcting effect as both the posting and the target is circular and would let
+a second full effect pass as a delta; the form becomes available only if a re-projection retains the
+restated economics typed, which B3's orchestrator could do. The spine must verify the reversal where
+it already holds both sides: in `ResolveCorrectionAuthorityAsync`, comparing the
 correcting effect it receives on the spine, `source.ProjectedEffect.Lines`, with the corrected
 event's retained `PostedJournalImpact.Lines` it loads, rather than accepting any balanced effect
 that cites the right journal. The operands are named because a review read the method as holding
@@ -4055,8 +4077,15 @@ them alone leaves the success count at 100% of nothing.
 **Remedy.** Three parts, and the first two before P4's outcome typing. Resolve the identifier before
 calling the vendor — on the bulk paths and on the two direct post-create and post-amend calls alike
 (added 2026-09-06, after review), so non-ticker primaries are covered wherever the fetcher is
-entered: select an active `Ticker` or a Polygon-scoped `ProviderSymbol` alias for the security from
-the identifier store, and skip — as a typed, counted outcome — a security that has neither.
+entered: select a Polygon-scoped `ProviderSymbol` alias for the security from the identifier store
+first, admit an active `Ticker` only when it is unambiguous — exactly one active security carries it
+for the venue Polygon serves — and refuse an ambiguous ticker as its own typed outcome, then skip —
+as a typed, counted outcome — a security that has neither. The precedence is stated because any
+active ticker is not authoritative (narrowed 2026-09-06, after review; the previous sentence took
+one as such): duplicate detection covers the canonical kinds and provider symbols only, so two
+securities may legitimately share a ticker across listings (`SecurityValidationService.cs:441-445`),
+and the fetcher persists whatever the vendor returns under the `SecurityId` it was handed, so a
+shared bare symbol would file one listing's details or corporate actions under the other.
 Parse the ticker-details response as the object it is, into the backfill's own
 `PolygonTickerData` — which already carries `min_tick_size` and `lot_size`
 (`TradingParametersBackfillService.cs:240-246`) — with its response model's `Results` changed from
@@ -4122,10 +4151,13 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    compare; and decide whether the key governs posting or is renamed, since today it governs
    nothing. In the same change retain every independently versioned drafting-time
    input the digest commits (case, election, policy decision, lot snapshot, position snapshot,
-   position, accounting period) as typed fields on the candidate, and at attach reload each from
-   its authority and compare, refusing a stale draft on any mismatch — a case-version check alone
-   misses a position or policy decision that moved without touching the case, and the period is
-   verified today only at posting, after approval (corrected 2026-09-06);
+   position, accounting period) as typed fields on the candidate, and reload each from its
+   authority and compare at attach, at approval, and at posting before the spine append — or
+   fence the binding so an authority update supersedes it and voids its approval — refusing a
+   stale draft on any mismatch: a case-version check alone misses a position or policy decision
+   that moved without touching the case, approval and posting re-read only the stored binding,
+   and only the period and the position get a later live check, both after approval (corrected
+   2026-09-06);
    `bound_case_version` stays the post-attach stamp the currency gate needs, and is not
    where the candidate's currency gets tested (B2). This entry has been corrected with its finding:
    the first version said all six fields were comparable at attach, the second said three, the
@@ -4330,4 +4362,10 @@ twenty-fourth (2026-09-06) named the two operands of B4's neutralization check �
 effect the spine carries as `ProjectedEffect` and the corrected event's retained posted lines —
 after a review read the correction-authority method as holding only the prior lines; source shows it
 receives the correcting effect at both call sites and the dry-run equality binds the drafted
-candidate to it, so the check stays where the remedy put it.
+candidate to it,
+so the check stays where the remedy put it; a twenty-fifth (2026-09-06) extended B2's reload past
+attach to approval and posting, since approval and posting re-read only the stored binding and its
+static flags and only the period and the position get a later live check; narrowed B7's identifier
+precedence to Polygon-scoped provider symbols, admitting a ticker only when unambiguous, since
+tickers sit outside duplicate detection; and withdrew B4's "validated delta" form, since no retained
+target exists to validate a delta against.
