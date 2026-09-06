@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from collections import defaultdict
@@ -189,10 +190,19 @@ def obsolete_spans(source: str) -> list[tuple[int, int, str]]:
 ABSOLUTE_MARKER = "\0ABS"
 
 
+def iter_backend_source_files() -> Iterable[Path]:
+    """Scan authored C# sources without entering build outputs or dependency junctions."""
+    for directory, names, files in os.walk(SRC_ROOT, followlinks=False):
+        names[:] = [name for name in names if name not in {"bin", "obj", "node_modules", ".git"}]
+        for name in files:
+            if name.endswith(".cs"):
+                yield Path(directory) / name
+
+
 def load_route_constants() -> dict[str, str]:
     """Map ``Member`` and ``Class.Member`` names to their literal route values."""
     constants: dict[str, str] = {}
-    for file in sorted(SRC_ROOT.rglob("*.cs")):
+    for file in sorted(iter_backend_source_files()):
         source = read_text(file)
         if "const string" not in source:
             continue
@@ -334,7 +344,7 @@ def collect_backend_routes(constants: dict[str, str]) -> tuple[list[dict], list[
     helper's caller can supply its prefix.
     """
     files: list[dict] = []
-    for file in sorted(SRC_ROOT.rglob("*.cs")):
+    for file in sorted(iter_backend_source_files()):
         source = read_text(file)
         if ".Map" not in source:
             continue

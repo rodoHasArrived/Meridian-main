@@ -267,6 +267,23 @@ export function evidenceWorkbenchPath(subjectKind: string, subjectId: string) {
   });
 }
 
+/**
+ * Canonical path into the Market Data desk, which hosts the live-quote, watchlist, and price-alert
+ * panels as tabs on one route. In-app callers resolve through here rather than naming the retired
+ * `/data/watchlist` and `/data/alerts` paths: those stay mounted as redirects for external
+ * bookmarks and for activity-ledger entries already persisted with the old strings, but a fresh
+ * link should land on the desk directly instead of bouncing through a redirect.
+ */
+export function marketDataDeskPath(
+  view: "quotes" | "watchlist" | "alerts",
+  query: Record<string, WorkstationRouteQueryValue> = {}
+): string {
+  return workstationRouteWithQuery("dataQuotes", {
+    ...query,
+    view: view === "quotes" ? null : view
+  });
+}
+
 export function workflowTargetPath(
   targetPageTag: string | null | undefined,
   workspaceId: string | null | undefined

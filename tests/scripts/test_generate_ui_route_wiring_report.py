@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 # Lives in tests/scripts rather than beside the generator: only this directory is
 # discovered by build/scripts/ci/run-script-tests.py, so a suite anywhere else runs
@@ -29,6 +31,24 @@ assert spec is not None and spec.loader is not None
 wiring = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = wiring
 spec.loader.exec_module(wiring)
+
+
+class SourceDiscoveryTests(unittest.TestCase):
+    def test_generated_and_dependency_sources_do_not_enter_the_route_inventory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            authored = root / "App" / "Routes.cs"
+            authored.parent.mkdir()
+            authored.write_text('class Routes { public const string Kept = "/kept"; }', encoding="utf-8")
+            for excluded in ("bin", "obj", "node_modules"):
+                generated = root / "App" / excluded / "Nested" / "Routes.cs"
+                generated.parent.mkdir(parents=True)
+                generated.write_text('class Generated { public const string Ignored = "/ignored"; }', encoding="utf-8")
+            with patch.object(wiring, "SRC_ROOT", root):
+                self.assertEqual([authored], list(wiring.iter_backend_source_files()))
+                constants = wiring.load_route_constants()
+            self.assertEqual("/kept", constants["Routes.Kept"])
+            self.assertNotIn("Ignored", constants)
 
 
 class NormalizeTests(unittest.TestCase):

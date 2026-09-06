@@ -6818,6 +6818,8 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.execution-blotter.tsx
 │   │   │   │   │   ├── trading-screen.execution-blotter.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.execution-blotter.view-model.ts
+│   │   │   │   │   ├── trading-screen.execution-controls-header.tsx
+│   │   │   │   │   ├── trading-screen.execution-controls.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.test.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.ts
 │   │   │   │   │   ├── trading-screen.linked-context.ts

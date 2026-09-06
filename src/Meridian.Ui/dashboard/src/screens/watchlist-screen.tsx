@@ -1,6 +1,7 @@
 import { useMemo, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Activity, AlertCircle, CheckCircle2, EyeOff, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
+import { marketDataDeskPath } from "@/lib/workspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,7 +50,7 @@ export function WatchlistScreen() {
             title: `Added ${symbol} to the watchlist`,
             detail: "Subscribed to the live data pipeline.",
             tone: "success",
-            route: "/data/watchlist",
+            route: marketDataDeskPath("watchlist"),
             routeLabel: "Watchlist",
             undo: {
               run: async () => {
@@ -73,7 +74,7 @@ export function WatchlistScreen() {
             title: `Removed ${symbol} from the watchlist`,
             detail: "Unsubscribed from the live data pipeline.",
             tone: "warning",
-            route: "/data/watchlist",
+            route: marketDataDeskPath("watchlist"),
             routeLabel: "Watchlist",
             undo: {
               run: async () => {
