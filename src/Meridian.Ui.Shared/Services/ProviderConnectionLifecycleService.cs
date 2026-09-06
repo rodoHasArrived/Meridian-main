@@ -46,17 +46,44 @@ public sealed class ProviderConnectionLifecycleService
     /// <summary>Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant.</summary>
     public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         var descriptor = RequireDescriptor(providerId);
+        var connection = RequireOwnedConnection(connectionId, tenantId);
+        if (!string.Equals(connection.ProviderFamilyId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase))
+            throw new UnauthorizedAccessException("Credential connection ownership could not be established.");
+        return BindConnection(connection);
+    }
+
+    private ProviderConnectionLifecycleService BindConnection(ProviderConnectionConfig connection)
+    {
+        var scope = new ProviderCredentialScope(connection.TenantId!, connection.ConnectionId, connection.ExternalAccountId!, connection.CredentialEnvironment!);
+        return new ProviderConnectionLifecycleService(_credentialStore, _configStore, _logger, _httpClientFactory,
+            _accountingSystemProviders, _setupRegistry, scope);
+    }
+
+    /// <summary>Reads one authorized connection without borrowing provider-wide health or credentials.</summary>
+    public async Task<ProviderConnectionRowDto> GetConnectionStatusForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default)
+    {
+        var connection = RequireOwnedConnection(connectionId, tenantId);
+        var descriptor = RequireDescriptor(connection.ProviderFamilyId);
+        var selected = BindConnection(connection);
+        var status = await selected._credentialStore.GetStatusAsync(descriptor.ProviderId, ct).ConfigureAwait(false);
+        return selected.BuildRow(descriptor, status, null) with
+        {
+            DisplayName = connection.DisplayName,
+            ExternalAccountId = connection.ExternalAccountId,
+            Environment = connection.CredentialEnvironment
+        };
+    }
+
+    private ProviderConnectionConfig RequireOwnedConnection(string connectionId, string tenantId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         var connection = (ConfigStore.LoadConfig(_configStore.ConfigPath).ProviderConnections?.Connections ?? [])
             .FirstOrDefault(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
         if (connection is null || !string.Equals(connection.TenantId, tenantId, StringComparison.Ordinal) ||
-            !string.Equals(connection.ProviderFamilyId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase) ||
             string.IsNullOrWhiteSpace(connection.ExternalAccountId) || string.IsNullOrWhiteSpace(connection.CredentialEnvironment))
             throw new UnauthorizedAccessException("Credential connection ownership could not be established.");
-        var scope = new ProviderCredentialScope(connection.TenantId!, connection.ConnectionId, connection.ExternalAccountId, connection.CredentialEnvironment);
-        return new ProviderConnectionLifecycleService(_credentialStore, _configStore, _logger, _httpClientFactory,
-            _accountingSystemProviders, _setupRegistry, scope);
+        return connection;
     }
 
     public async Task<IReadOnlyList<ProviderConnectionRowDto>> GetConnectionsAsync(CancellationToken ct = default)

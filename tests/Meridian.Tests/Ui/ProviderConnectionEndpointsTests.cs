@@ -408,11 +408,19 @@ public sealed class ProviderConnectionEndpointsTests
         }));
         saved.StatusCode.Should().Be(HttpStatusCode.OK);
         (await vault.ReadScopedAsync("alpaca", scope))!.Get("KeyId").Should().Be("scoped-key");
+        var rows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections?connectionId=owned"));
+        rows.Should().ContainSingle();
+        rows[0].ExternalAccountId.Should().Be("account-a");
+        rows[0].CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+        rows[0].FallbackActive.Should().BeFalse();
         var verification = await ReadAsync<ProviderCredentialVerificationResultDto>(await client.PostAsync("/api/providers/alpaca/verify?connectionId=owned", JsonContent(new { })));
         verification.Success.Should().Be(accountMatches);
         (await vault.ReadScopedAsync("alpaca", scope))!.ExternalAccountId.Should().Be("account-a");
         (await client.DeleteAsync("/api/providers/alpaca/credentials?connectionId=owned")).StatusCode.Should().Be(HttpStatusCode.OK);
         (await vault.ReadScopedAsync("alpaca", scope)).Should().BeNull();
+        var deletedRows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections?connectionId=owned"));
+        deletedRows.Single().CredentialState.Should().Be(ProviderCredentialStateDto.Missing);
+        deletedRows.Single().ExternalAccountId.Should().Be("account-a");
         (await vault.ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("legacy-key");
         var audit = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl"));
         audit.Should().Contain("provider-ops").And.NotContain("spoofed-actor").And.NotContain("scoped-secret");
@@ -436,6 +444,8 @@ public sealed class ProviderConnectionEndpointsTests
         (await client.PutAsync(route, JsonContent(new { credentials = new { KeyId = "refused", SecretKey = "refused" } }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
         (await client.DeleteAsync(route)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
         (await client.PostAsync("/api/providers/alpaca/verify?connectionId=" + query, JsonContent(new { }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        if (query != "wrong-provider")
+            (await client.GetAsync("/api/providers/connections?connectionId=" + query)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
         File.Exists(vault.VaultPath).Should().BeFalse();
     }
 

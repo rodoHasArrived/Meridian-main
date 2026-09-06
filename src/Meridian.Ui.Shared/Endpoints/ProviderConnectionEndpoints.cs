@@ -25,8 +25,24 @@ public static class ProviderConnectionEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var rows = await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(rows, jsonOptions);
+            try
+            {
+                var connectionId = ReadConnectionId(context);
+                if (connectionId is not null)
+                {
+                    var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                    if (!tenant.HasTenantScope)
+                        return EndpointHelpers.Forbidden();
+                    var row = await service.GetConnectionStatusForTenantAsync(connectionId, tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
+                    return Results.Json(new[] { row }, jsonOptions);
+                }
+                var rows = await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(rows, jsonOptions);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
+            }
         })
         .WithName("GetProviderConnections").RequirePermission(UserPermission.ManageCredentials)
         .Produces<IReadOnlyList<ProviderConnectionRowDto>>(StatusCodes.Status200OK);
@@ -131,12 +147,22 @@ public static class ProviderConnectionEndpoints
 
     private static ProviderConnectionLifecycleService ResolveConnectionService(HttpContext context, string providerId, ProviderConnectionLifecycleService service)
     {
-        if (!context.Request.Query.TryGetValue("connectionId", out var connectionIds))
+        var connectionId = ReadConnectionId(context);
+        if (connectionId is null)
             return service;
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        if (connectionIds.Count != 1 || string.IsNullOrWhiteSpace(connectionIds[0]) || !tenant.HasTenantScope)
+        if (!tenant.HasTenantScope)
             throw new UnauthorizedAccessException("Credential connection ownership could not be established.");
-        return service.ForConnection(connectionIds[0]!, tenant.TenantId!, providerId);
+        return service.ForConnection(connectionId, tenant.TenantId!, providerId);
+    }
+
+    private static string? ReadConnectionId(HttpContext context)
+    {
+        if (!context.Request.Query.TryGetValue("connectionId", out var connectionIds))
+            return null;
+        if (connectionIds.Count != 1 || string.IsNullOrWhiteSpace(connectionIds[0]))
+            throw new UnauthorizedAccessException("Credential connection ownership could not be established.");
+        return connectionIds[0];
     }
 
     private static bool HasManageCredentialsPermission(HttpContext context)

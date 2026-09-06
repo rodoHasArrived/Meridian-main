@@ -38,6 +38,9 @@ The provider-module compatibility adapter requires atomic legacy-import support 
 ## Credential audit identity
 
 Canonical credential save, verify and delete routes accept `connectionId` as a query parameter.
+The connection-list GET accepts the same query and returns only that connection's status, using
+retained account/environment metadata and scoped credentials. Provider-wide metrics never supply
+health or fallback evidence for that scoped result, including after its credentials are deleted.
 The shared lifecycle resolves its retained tenant, provider, external account and environment against
 the server session before accessing scoped credentials. Missing, ambiguous, unowned or mismatched
 connections are refused. Scoped Alpaca verification requires the returned account to match retained
