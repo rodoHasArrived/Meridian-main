@@ -13,6 +13,13 @@ last_reviewed: 2026-08-30
 
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
 
+## Credential source ownership
+
+`StoredProviderCredentialResolver` uses the credential store as the complete authority for catalog-managed
+providers, including the store's permitted environment fallback. Missing records remain unconfigured;
+partial or deliberately removed fields cannot be filled from legacy configuration or another credential
+source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
+
 ## Purpose
 
 Meridian application layer contains use cases, orchestration services, commands, and workflow
