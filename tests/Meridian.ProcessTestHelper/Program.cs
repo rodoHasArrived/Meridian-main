@@ -26,6 +26,7 @@ internal static partial class Program
                 "spawn-detached-gated-mutation" => await SpawnGatedMutationAsync(args, detachChildOutput: true).ConfigureAwait(false),
                 "delayed-spawn-gated-mutation" => await DelayedSpawnGatedMutationAsync(args).ConfigureAwait(false),
                 "emit-output" => await EmitOutputAsync(args).ConfigureAwait(false),
+                "statement-store-stage" => await RunStatementStoreStageAsync(args).ConfigureAwait(false),
                 "etl-crash-stage" => await RunEtlUntilKilledAsync(args).ConfigureAwait(false),
                 "audit-append-batch" => await AppendAuditBatchAsync(args).ConfigureAwait(false),
                 "wal-append-and-wait" => await AppendWalAndWaitAsync(args).ConfigureAwait(false),
@@ -178,4 +179,52 @@ internal static partial class Program
         if (args.Count != expected)
             throw new ArgumentException($"Expected {expected - 1} argument(s) for the selected helper mode.");
     }
+    private static async Task<int> RunStatementStoreStageAsync(IReadOnlyList<string> args)
+    {
+        RequireArgumentCount(args, 4);
+        var root = args[1];
+        var ready = args[2];
+        var stage = args[3];
+        if (stage == "race")
+        {
+            await File.WriteAllTextAsync(ready + ".started", "ready");
+            await WaitForFileAsync(Path.Combine(root, "start"), TimeSpan.FromSeconds(60));
+        }
+        var import = new Meridian.Domain.Reconciliation.CanonicalStatementImport(
+            "durable-import", "fixture", new DateOnly(2026, 6, 30), DateTimeOffset.UnixEpoch,
+            "source.csv", "source-hash", 256, 256)
+        { DuplicateKey = "durable-import" };
+        var store = new Meridian.Infrastructure.Reconciliation.JsonCanonicalStatementStore(root);
+        var created = await store.TrySaveImportAsync(import, new StatementStageRows(stage == "mid-write" ? ready : null));
+        await File.WriteAllTextAsync(ready, created ? "created" : "duplicate");
+        if (stage != "race")
+            await Task.Delay(Timeout.InfiniteTimeSpan);
+        return 0;
+    }
+
+    private sealed class StatementStageRows(string? ready) : IReadOnlyList<Meridian.Domain.Reconciliation.CanonicalStatementRow>
+    {
+        public int Count => 256;
+        public Meridian.Domain.Reconciliation.CanonicalStatementRow this[int index]
+        {
+            get
+            {
+                if (index == 128 && ready is not null)
+                {
+                    File.WriteAllText(ready, "mid-write");
+                    Thread.Sleep(Timeout.Infinite);
+                }
+                return new("durable-import", index + 1, "ACCOUNT", "AAPL", 1, 100, -100,
+                    "trade", new DateOnly(2026, 6, 30), new string('A', 4096))
+                { Currency = "USD" };
+            }
+        }
+        public IEnumerator<Meridian.Domain.Reconciliation.CanonicalStatementRow> GetEnumerator()
+        {
+            for (var index = 0; index < Count; index++)
+                yield return this[index];
+        }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
 }

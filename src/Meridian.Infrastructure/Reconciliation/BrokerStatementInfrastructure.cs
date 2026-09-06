@@ -190,22 +190,33 @@ public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalSta
         IReadOnlyList<CanonicalStatementRow> rows,
         CancellationToken ct = default)
     {
-        var payload = JsonSerializer.Serialize(new { import, rows });
+        ct.ThrowIfCancellationRequested();
         var fileName = ReconciliationRecordFileName.For(import.ImportId);
         var targetPath = Path.Combine(_folder, $"{fileName}.json");
         Directory.CreateDirectory(_folder);
         var temporaryPath = Path.Combine(_folder, $".{fileName}.{Guid.NewGuid():N}.tmp");
         try
         {
-            await File.WriteAllTextAsync(temporaryPath, payload, Encoding.UTF8, ct).ConfigureAwait(false);
-            // Same-volume rename with overwrite disabled is the atomic uniqueness boundary across
-            // concurrent processes. Exactly one importer can claim this duplicate key.
-            File.Move(temporaryPath, targetPath, overwrite: false);
+            await using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write,
+                FileShare.None, 64 * 1024, FileOptions.Asynchronous | FileOptions.WriteThrough))
+            {
+                await JsonSerializer.SerializeAsync(stream, new { import, rows }, cancellationToken: ct).ConfigureAwait(false);
+                await stream.FlushAsync(ct).ConfigureAwait(false);
+                stream.Flush(flushToDisk: true);
+            }
+            ct.ThrowIfCancellationRequested();
+            // The no-overwrite rename is the cross-process uniqueness and visibility boundary.
+            try
+            {
+                File.Move(temporaryPath, targetPath, overwrite: false);
+            }
+            catch (IOException) when (File.Exists(targetPath))
+            {
+                return false;
+            }
+            // Caller cancellation cannot turn a published import into a cancellation response.
+            await AtomicFileWriter.SyncDirectoryAsync(_folder, CancellationToken.None).ConfigureAwait(false);
             return true;
-        }
-        catch (IOException) when (File.Exists(targetPath))
-        {
-            return false;
         }
         finally
         {
