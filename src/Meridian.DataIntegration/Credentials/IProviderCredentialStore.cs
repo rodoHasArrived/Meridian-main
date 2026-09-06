@@ -113,7 +113,9 @@ public sealed record ProviderCredentialScope
     {
         var payload = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new[]
             { providerId, TenantId, ConnectionId, ExternalAccountId, Environment });
-        return providerId + "@scope:" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(payload));
+        // Preserve the original storage-key encoding so existing scoped OAuth keys remain readable.
+        // This is a vault identity, not a canonical digest field in an evidence contract.
+        return providerId + "@scope:" + Meridian.Contracts.Integrity.Sha256Digest.Compute(payload).ToUpperInvariant();
     }
 
     private static string RequireIdentity(string value, string name)
