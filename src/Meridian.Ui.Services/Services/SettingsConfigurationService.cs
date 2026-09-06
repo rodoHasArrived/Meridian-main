@@ -138,6 +138,49 @@ public sealed class SettingsConfigurationService
         return result;
     }
 
+    /// <summary>Saves credential fields through the authenticated service.</summary>
+    public async Task SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary<string, string?> fields,
+        string? connectionId = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(fields);
+        var route = CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId);
+        var response = await _apiClient.PutWithResponseAsync<ProviderCredentialMutationResultDto>(route,
+            new ProviderCredentialUpsertRequestDto(fields), ct).ConfigureAwait(false);
+        if (!response.Success || response.Data is null ||
+            !string.Equals(response.Data.ProviderId, providerId, StringComparison.OrdinalIgnoreCase) ||
+            response.Data.CredentialState is not (ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified))
+            throw new InvalidOperationException("Credential persistence was not confirmed by the authenticated service.");
+    }
+
+    /// <summary>Removes credentials through the authenticated service.</summary>
+    public async Task RemoveProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default)
+    {
+        var route = CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId);
+        var response = await _apiClient.DeleteWithResponseAsync<ProviderCredentialMutationResultDto>(route, ct).ConfigureAwait(false);
+        if (!response.Success || response.Data is null ||
+            !string.Equals(response.Data.ProviderId, providerId, StringComparison.OrdinalIgnoreCase) ||
+            response.Data.CredentialState != ProviderCredentialStateDto.Missing)
+            throw new InvalidOperationException("Credential removal was not confirmed by the authenticated service.");
+    }
+
+    /// <summary>Requests verification from the authenticated credential service.</summary>
+    public async Task<bool> VerifyProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default)
+    {
+        var route = CredentialRoute(UiApiRoutes.ProviderCredentialVerify, providerId, connectionId);
+        var response = await _apiClient.PostWithResponseAsync<ProviderCredentialVerificationResultDto>(route, null, ct).ConfigureAwait(false);
+        return response.Success && response.Data is { Success: true, VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null } result &&
+            string.Equals(result.ProviderId, providerId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string CredentialRoute(string template, string providerId, string? connectionId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
+        if (connectionId is not null)
+            ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
+        var route = UiApiRoutes.WithParam(template, "providerId", providerId);
+        return connectionId is null ? route : UiApiRoutes.WithQuery(route, "connectionId=" + Uri.EscapeDataString(connectionId));
+    }
+
     /// <summary>Reads server-owned credential status without treating local environment values as authority.</summary>
     public async Task<IReadOnlyList<ProviderCredentialStatus>> GetProviderCredentialStatusesAsync(CancellationToken ct = default)
     {

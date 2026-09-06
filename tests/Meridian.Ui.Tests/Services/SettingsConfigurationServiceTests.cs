@@ -10,6 +10,68 @@ namespace Meridian.Ui.Tests.Services;
 public sealed class SettingsConfigurationServiceTests
 {
     [Theory]
+    [InlineData(200, "alpaca", true, 2, true, true)]
+    [InlineData(403, "alpaca", true, 2, true, false)]
+    [InlineData(200, "polygon", true, 2, true, false)]
+    [InlineData(200, "alpaca", false, 2, true, false)]
+    [InlineData(200, "alpaca", true, 1, true, false)]
+    [InlineData(200, "alpaca", true, 2, false, false)]
+    public async Task CredentialVerification_RequiresMatchingServerEvidence(int status, string provider, bool success, int state, bool dated, bool expected)
+    {
+        var timestamp = dated ? "\"2026-09-06T12:00:00Z\"" : "null";
+        var body = $"{{\"providerId\":\"{provider}\",\"success\":{success.ToString().ToLowerInvariant()},\"verificationState\":{state},\"lastVerifiedAt\":{timestamp}}}";
+        using var handler = new StatusHandler((HttpStatusCode)status, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var verified = await new SettingsConfigurationService(api).VerifyProviderCredentialsAsync("alpaca", "connection A");
+        verified.Should().Be(expected);
+        handler.Method.Should().Be("POST");
+        handler.Path.Should().Be("/api/providers/alpaca/verify");
+        handler.Query.Should().Be("?connectionId=connection%20A");
+    }
+
+    [Theory]
+    [InlineData(false, 3, "PUT")]
+    [InlineData(true, 1, "DELETE")]
+    public async Task CredentialMutation_UsesAuthenticatedCanonicalRoute(bool remove, int state, string method)
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, $"{{\"providerId\":\"alpaca\",\"credentialState\":{state}}}");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+        if (remove)
+            await service.RemoveProviderCredentialsAsync("alpaca", "account / A");
+        else
+            await service.SaveProviderCredentialsAsync("alpaca", new Dictionary<string, string?> { ["KeyId"] = "test-key", ["SecretKey"] = "test-secret" }, "account / A");
+        handler.Path.Should().Be("/api/providers/alpaca/credentials");
+        handler.Method.Should().Be(method);
+        handler.Query.Should().Be("?connectionId=account%20%2F%20A");
+        if (!remove)
+        {
+            handler.RequestBody.Should().Contain("KeyId").And.Contain("SecretKey");
+            handler.RequestBody.Should().NotContain("ALPACA_KEY_ID");
+        }
+    }
+
+    [Theory]
+    [InlineData(false, 403, "{}")]
+    [InlineData(true, 403, "{}")]
+    [InlineData(false, 200, "null")]
+    [InlineData(true, 200, "null")]
+    [InlineData(false, 200, "{\"providerId\":\"polygon\",\"credentialState\":3}")]
+    [InlineData(true, 200, "{\"providerId\":\"polygon\",\"credentialState\":1}")]
+    [InlineData(false, 200, "{\"providerId\":\"alpaca\",\"credentialState\":2}")]
+    [InlineData(true, 200, "{\"providerId\":\"alpaca\",\"credentialState\":3}")]
+    public async Task CredentialMutation_RequiresAcknowledgedMatchingResult(bool remove, int status, string body)
+    {
+        using var handler = new StatusHandler((HttpStatusCode)status, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+        Func<Task> action = () => remove ? service.RemoveProviderCredentialsAsync("alpaca") :
+            service.SaveProviderCredentialsAsync("alpaca", new Dictionary<string, string?> { ["SecretKey"] = "private-test-value" });
+        var error = await action.Should().ThrowAsync<InvalidOperationException>();
+        error.Which.Message.Should().NotContain("private-test-value").And.Contain("not confirmed");
+    }
+
+    [Theory]
     [InlineData(3, CredentialState.Configured)]
     [InlineData(4, CredentialState.Configured)]
     [InlineData(2, CredentialState.Partial)]
@@ -59,10 +121,16 @@ public sealed class SettingsConfigurationServiceTests
     private sealed class StatusHandler(HttpStatusCode status, string body) : HttpMessageHandler
     {
         public string? Path { get; private set; }
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        public string? Query { get; private set; }
+        public string? Method { get; private set; }
+        public string? RequestBody { get; private set; }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             Path = request.RequestUri!.AbsolutePath;
-            return Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
+            Query = request.RequestUri.Query;
+            Method = request.Method.Method;
+            RequestBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(ct);
+            return new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
         }
     }
 

@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services.Services;
-using CredentialFieldInfo = Meridian.Contracts.Api.CredentialFieldInfo;
 using ProviderCatalogEntry = Meridian.Ui.Services.Services.ProviderCatalogEntry;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -52,6 +51,7 @@ public sealed class CredentialFieldViewModel : BindableBase
 
     public string Label { get; init; } = string.Empty;
     public string EnvVarName { get; init; } = string.Empty;
+    public string FieldName { get; init; } = string.Empty;
     public bool IsSecret { get; init; }
 
     public string Value
@@ -68,7 +68,6 @@ public sealed class CredentialFieldViewModel : BindableBase
 /// </summary>
 public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 {
-    private readonly WpfServices.CredentialService _credentialService;
     private readonly WpfServices.NotificationService _notificationService;
 
     private bool _isBusy;
@@ -159,7 +158,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         WpfServices.CredentialService credentialService,
         WpfServices.NotificationService notificationService)
     {
-        _credentialService = credentialService;
+        ArgumentNullException.ThrowIfNull(credentialService);
         _notificationService = notificationService;
 
         EditCredentialCommand = new RelayCommand(BeginEdit, () => SelectedCredential != null);
@@ -249,7 +248,6 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             foreach (var field in provider.CredentialFields)
             {
                 var envVar = field.EnvironmentVariable ?? string.Empty;
-                var existing = GetConfiguredEnvironmentValue(field) ?? string.Empty;
                 var isSecret = field.DisplayName.Contains("secret", StringComparison.OrdinalIgnoreCase)
                     || field.Name.Contains("secret", StringComparison.OrdinalIgnoreCase)
                     || field.Name.Contains("token", StringComparison.OrdinalIgnoreCase)
@@ -259,8 +257,9 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
                 {
                     Label = field.DisplayName,
                     EnvVarName = envVar,
+                    FieldName = field.Name,
                     IsSecret = isSecret,
-                    Value = existing
+                    Value = string.Empty
                 });
             }
         }
@@ -270,84 +269,31 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     private async Task SaveCredentialAsync()
     {
-        if (SelectedCredential is null)
+        var selected = SelectedCredential;
+        if (selected is null || IsBusy)
             return;
-
-        var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
-        var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
-
-        if (provider is null || provider.CredentialFields.Length == 0)
-        {
-            IsEditPanelVisible = false;
+        var fields = EditFields.Where(field => !string.IsNullOrWhiteSpace(field.FieldName))
+            .ToDictionary(field => field.FieldName, field => (string?)field.Value, StringComparer.OrdinalIgnoreCase);
+        if (fields.Count == 0)
             return;
-        }
-
         IsBusy = true;
         try
         {
-            foreach (var field in EditFields)
-            {
-                if (string.IsNullOrEmpty(field.EnvVarName))
-                    continue;
-                Environment.SetEnvironmentVariable(field.EnvVarName, field.Value, EnvironmentVariableTarget.User);
-            }
-
-            PersistToVault(provider.Id);
-
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                IsEditPanelVisible = false;
-            });
+            await SettingsConfigurationService.Instance.SaveProviderCredentialsAsync(selected.ProviderId, fields);
+            IsEditPanelVisible = false;
+            EditFields.Clear();
             await LoadCredentialsAsync();
-
-            _notificationService.ShowNotification(
-                "Credentials Saved",
-                $"Credentials for {SelectedCredential.DisplayName} have been saved.",
-                NotificationType.Success);
+            _notificationService.ShowNotification("Credentials Saved",
+                $"Credentials for {selected.DisplayName} have been saved.", NotificationType.Success);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _notificationService.ShowNotification(
-                "Save Failed",
-                $"Could not save credentials: {ex.Message}",
-                NotificationType.Error);
+            _notificationService.ShowNotification("Save Failed",
+                "Credential persistence was not confirmed by the authenticated service.", NotificationType.Error);
         }
         finally
         {
             IsBusy = false;
-        }
-    }
-
-    private void PersistToVault(string providerId)
-    {
-        switch (providerId)
-        {
-            case "alpaca":
-                {
-                    var keyId = EditFields.FirstOrDefault(f =>
-                        f.EnvVarName.Contains("KEYID", StringComparison.OrdinalIgnoreCase) ||
-                        f.EnvVarName.Contains("KEY_ID", StringComparison.OrdinalIgnoreCase))?.Value;
-                    var secret = EditFields.FirstOrDefault(f =>
-                        f.EnvVarName.Contains("SECRET", StringComparison.OrdinalIgnoreCase))?.Value;
-                    if (!string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secret))
-                        _credentialService.SaveAlpacaCredentials(keyId, secret);
-                    break;
-                }
-            case "nasdaq":
-            case "nasdaqdatalink":
-                {
-                    var key = EditFields.FirstOrDefault()?.Value;
-                    if (!string.IsNullOrWhiteSpace(key))
-                        _credentialService.SaveNasdaqApiKey(key);
-                    break;
-                }
-            default:
-                {
-                    var key = EditFields.FirstOrDefault()?.Value;
-                    if (!string.IsNullOrWhiteSpace(key))
-                        _credentialService.SaveApiKey($"Meridian.{providerId}", key);
-                    break;
-                }
         }
     }
 
@@ -360,44 +306,24 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     private async Task RemoveCredentialAsync()
     {
-        if (SelectedCredential is null)
+        var selected = SelectedCredential;
+        if (selected is null || IsBusy)
             return;
         IsBusy = true;
         try
         {
-            var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
-            var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
-            if (provider is not null)
-            {
-                foreach (var field in provider.CredentialFields)
-                {
-                    foreach (var envVar in field.AllEnvironmentVariables)
-                    {
-                        Environment.SetEnvironmentVariable(envVar, null, EnvironmentVariableTarget.User);
-                    }
-                }
-            }
-
-            RemoveFromVault(SelectedCredential.ProviderId);
-
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                IsEditPanelVisible = false;
-                IsTestResultVisible = false;
-            });
+            await SettingsConfigurationService.Instance.RemoveProviderCredentialsAsync(selected.ProviderId);
+            IsEditPanelVisible = false;
+            IsTestResultVisible = false;
+            EditFields.Clear();
             await LoadCredentialsAsync();
-
-            _notificationService.ShowNotification(
-                "Credentials Removed",
-                $"Credentials for {SelectedCredential.DisplayName} have been removed.",
-                NotificationType.Info);
+            _notificationService.ShowNotification("Credentials Removed",
+                $"Credentials for {selected.DisplayName} have been removed.", NotificationType.Info);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _notificationService.ShowNotification(
-                "Remove Failed",
-                $"Could not remove credentials: {ex.Message}",
-                NotificationType.Error);
+            _notificationService.ShowNotification("Remove Failed",
+                "Credential removal was not confirmed by the authenticated service.", NotificationType.Error);
         }
         finally
         {
@@ -405,80 +331,62 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         }
     }
 
-    private void RemoveFromVault(string providerId)
-    {
-        switch (providerId)
-        {
-            case "alpaca":
-                _credentialService.RemoveAlpacaCredentials();
-                break;
-            default:
-                if (_credentialService.HasCredential($"Meridian.{providerId}"))
-                    _credentialService.RemoveCredential($"Meridian.{providerId}");
-                break;
-        }
-    }
-
     private async Task TestSelectedCredentialAsync()
     {
-        if (SelectedCredential is null)
+        var selected = SelectedCredential;
+        if (selected is null || selected.IsTesting)
             return;
-
-        SelectedCredential.IsTesting = true;
+        selected.IsTesting = true;
         IsTestResultVisible = true;
-        TestResultText = $"Testing {SelectedCredential.DisplayName}…";
+        TestResultText = $"Testing {selected.DisplayName}�";
         TestResultColor = "#AABCCD";
-
-        await Task.Delay(600, CancellationToken.None).ConfigureAwait(false);
-
-        var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
-        var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
-
-        bool success = provider is null || provider.CredentialFields.Length == 0
-            || provider.CredentialFields
-                .Where(field => field.Required)
-                .All(HasConfiguredEnvironmentValue);
-
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        var success = false;
+        try
         {
-            SelectedCredential.IsTesting = false;
-            if (success)
-            {
-                TestResultText = $"✓ {SelectedCredential.DisplayName} credentials are present and ready.";
-                TestResultColor = "#3FB950";
-                SelectedCredential.StatusText = "Configured";
-                SelectedCredential.StatusColor = "#3FB950";
-            }
-            else
-            {
-                TestResultText = $"✗ {SelectedCredential.DisplayName} credentials are missing or incomplete.";
-                TestResultColor = "#F85149";
-                SelectedCredential.StatusText = "Missing";
-                SelectedCredential.StatusColor = "#F85149";
-            }
-        });
+            success = await SettingsConfigurationService.Instance.VerifyProviderCredentialsAsync(selected.ProviderId);
+        }
+        catch (Exception)
+        {
+            // Transport failure cannot establish verification or expose response details.
+        }
+        finally
+        {
+            selected.IsTesting = false;
+        }
+        selected.StatusText = success ? "Verified" : "Not verified";
+        selected.StatusColor = success ? "#3FB950" : "#D29922";
+        if (ReferenceEquals(SelectedCredential, selected))
+        {
+            TestResultText = success
+                ? $"{selected.DisplayName}: verification acknowledged by the service."
+                : $"{selected.DisplayName}: verification was not confirmed by the service.";
+            TestResultColor = selected.StatusColor;
+        }
     }
 
     private async Task TestAllCredentialsAsync()
     {
+        if (IsBusy)
+            return;
         IsBusy = true;
-        StatusMessage = "Testing all credentials…";
+        StatusMessage = "Testing all credentials�";
         StatusMessageColor = "#AABCCD";
-
-        foreach (var cred in Credentials.Where(c => c.RequiresCredentials).ToList())
+        try
         {
-            SelectedCredential = cred;
-            await TestSelectedCredentialAsync().ConfigureAwait(false);
+            var entries = Credentials.Where(c => c.RequiresCredentials).ToList();
+            foreach (var cred in entries)
+            {
+                SelectedCredential = cred;
+                await TestSelectedCredentialAsync();
+            }
+            var ok = entries.Count(c => c.StatusText == "Verified");
+            StatusMessage = $"{ok} of {entries.Count} providers verified by the service";
+            StatusMessageColor = ok == entries.Count ? "#3FB950" : "#D29922";
         }
-
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        finally
         {
-            var ok = Credentials.Count(c => c.StatusText == "Configured");
-            var total = Credentials.Count(c => c.RequiresCredentials);
-            StatusMessage = $"{ok} of {total} providers verified";
-            StatusMessageColor = ok == total ? "#3FB950" : "#D29922";
             IsBusy = false;
-        });
+        }
     }
 
     private static string GetCredentialType(ProviderCatalogEntry provider)
@@ -490,26 +398,6 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             1 => "API Key",
             _ => "Key + Secret",
         };
-    }
-
-    private static bool HasConfiguredEnvironmentValue(CredentialFieldInfo field)
-    {
-        return field.AllEnvironmentVariables
-            .Any(envVar => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(envVar)));
-    }
-
-    private static string? GetConfiguredEnvironmentValue(CredentialFieldInfo field)
-    {
-        foreach (var envVar in field.AllEnvironmentVariables)
-        {
-            var value = Environment.GetEnvironmentVariable(envVar);
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                return value;
-            }
-        }
-
-        return null;
     }
 
     public void Dispose() { }

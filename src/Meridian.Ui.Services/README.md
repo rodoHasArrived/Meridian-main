@@ -13,6 +13,11 @@ last_reviewed: 2026-09-05
 
 ## Purpose
 
+Credential-management save, remove and verification operations use the shared authenticated API
+client. Saves send canonical field names; mutations require a matching provider and an acknowledged
+result state. Verification requires a successful, dated server result. Optional connection IDs route
+to retained scoped ownership. Fixed failure messages do not echo secrets or server response bodies.
+
 `SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
 credential states. Missing, ambiguous or refused responses remain unavailable, even when environment
 variables contain keys. The synchronous environment method remains a legacy diagnostic helper and

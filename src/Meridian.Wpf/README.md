@@ -17,6 +17,11 @@ Menu product.
 
 ## Shared close and lot convergence
 
+Credential management saves, removal and verification use the shared authenticated service. Secret
+editors start blank; this page no longer reads or writes environment secrets or a separate local vault.
+Legacy environment values are not automatically erased or migrated. Server verification capabilities
+and explicit connection selection still bound the assurance available from these operations.
+
 Credential status in the settings shell, settings vault, credential management page and add-provider
 wizard is loaded asynchronously from the shared authenticated API service. Failed reads stay
 unavailable; environment credentials do not establish configured status. View-model refreshes reject
