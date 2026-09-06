@@ -33,6 +33,8 @@ Accounting and Operations Continuity require the shared decision to match all fi
 
 ## Purpose
 
+Accounting balances and materiality labels format amounts using the supplied currency code, including signed values, instead of applying a dollar symbol to every currency.
+
 Browser workstation dashboard is the active browser operator workstation.
 
 ## Layer responsibility

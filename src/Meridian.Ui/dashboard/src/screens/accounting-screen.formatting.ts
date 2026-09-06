@@ -33,9 +33,10 @@ export function formatCurrency(value: number) {
 }
 
 export function formatCurrencyWithCode(value: number, currency: string, signed = false): string {
-  const amount = signed ? formatSignedCurrency(value) : formatCurrency(value);
-  const code = currency.trim();
-  return code ? `${amount} ${code}` : amount;
+  const code = currency.trim().toUpperCase();
+  const amount = formatCurrencyAmount(value, { currency: code || "USD", minimumFractionDigits: signed && value !== 0 ? 2 : 0 });
+  const prefix = signed && value > 0 && Number.isFinite(value) ? "+" : "";
+  return code ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
 }
 
 export function formatCurrencyForCode(value: number, currency: string): string {

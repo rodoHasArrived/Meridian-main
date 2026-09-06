@@ -384,7 +384,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         var wal = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
         await wal.InitializeAsync();
 
-        var innerLedger = await CreateLedgerAsync("ledger_dedupfail");
+        await using var innerLedger = await CreateLedgerAsync("ledger_dedupfail");
         var sink = new FaultSink();
         var dedupStore = new ObservingDedupStore(innerLedger) { CommitFailuresRemaining = 2 };
 
@@ -400,7 +400,8 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             var ledgerPath = Path.Combine(Path.Combine(_rootDir, "ledger_dedupfail"), "dedup_ledger.jsonl");
             if (File.Exists(ledgerPath))
             {
-                (await File.ReadAllTextAsync(ledgerPath)).Should().NotContain("\"v\":2",
+                using var ledgerReader = OpenLiveLedgerReader(ledgerPath);
+                (await ledgerReader.ReadToEndAsync()).Should().NotContain("\"v\":2",
                     "a failed dedup commit must not have persisted any durability confirmation");
             }
 
@@ -412,7 +413,6 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             dedupStore.CommitAttempts.Should().BeGreaterThanOrEqualTo(3);
         }
 
-        await innerLedger.DisposeAsync();
     }
 
     [Fact]

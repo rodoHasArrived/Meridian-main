@@ -9,6 +9,31 @@ namespace Meridian.Ui.Tests.Services;
 /// </summary>
 public sealed class BackfillCheckpointServiceTests
 {
+    [Fact]
+    public async Task ConcurrentSymbolAndFailureUpdates_PreserveAllProgressAndJobError()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "checkpoint-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var service = new BackfillCheckpointService(root);
+            var symbols = Enumerable.Range(0, 40).Select(i => $"SYM{i}").ToArray();
+            await service.CreateCheckpointAsync("job", "test", symbols, DateTime.Today.AddDays(-1), DateTime.Today);
+            var updates = symbols.Select(symbol => service.UpdateSymbolProgressAsync(
+                "job", symbol, SymbolCheckpointStatus.Downloading, 10)).ToList();
+            updates.Add(service.MarkJobFailedAsync("job", "provider offline"));
+            await Task.WhenAll(updates);
+            var checkpoint = await service.LoadCheckpointAsync("job");
+            checkpoint!.SymbolCheckpoints.Should().OnlyContain(symbol => symbol.BarsDownloaded == 10);
+            checkpoint.TotalBarsDownloaded.Should().Be(400);
+            checkpoint.Status.Should().Be(CheckpointStatus.Failed);
+            checkpoint.ErrorMessage.Should().Be("provider offline");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     // ── Singleton ────────────────────────────────────────────────────
 
     [Fact]

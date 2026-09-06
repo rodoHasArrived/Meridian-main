@@ -7,6 +7,51 @@ namespace Meridian.Backtesting.Tests;
 
 public sealed class MultiSymbolMergeEnumeratorTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MergeAsync_InitializationFailure_DisposesEveryOpenedEnumerator(bool failCreation)
+    {
+        var first = new FaultingStream();
+        var failing = new FaultingStream { FailCreation = failCreation, FailRead = !failCreation };
+        await using var merged = MultiSymbolMergeEnumerator.MergeAsync([first, failing]).GetAsyncEnumerator();
+        var act = async () => await merged.MoveNextAsync();
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        first.DisposeCount.Should().Be(1);
+        failing.DisposeCount.Should().Be(failCreation ? 0 : 1);
+    }
+
+    [Fact]
+    public async Task MergeAsync_DisposalFailure_StillDisposesRemainingStreams()
+    {
+        var first = new FaultingStream { FailDispose = true };
+        var second = new FaultingStream { FailDispose = true };
+        await using var merged = MultiSymbolMergeEnumerator.MergeAsync([first, second]).GetAsyncEnumerator();
+        var act = async () => await merged.MoveNextAsync();
+        var failure = await act.Should().ThrowAsync<AggregateException>();
+        failure.Which.InnerExceptions.Should().HaveCount(2);
+        first.DisposeCount.Should().Be(1);
+        second.DisposeCount.Should().Be(1);
+    }
+
+    private sealed class FaultingStream : IAsyncEnumerable<MarketEvent>, IAsyncEnumerator<MarketEvent>
+    {
+        public bool FailCreation { get; init; }
+        public bool FailRead { get; init; }
+        public bool FailDispose { get; init; }
+        public int DisposeCount { get; private set; }
+        public MarketEvent Current => throw new InvalidOperationException();
+        public IAsyncEnumerator<MarketEvent> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+            FailCreation ? throw new InvalidOperationException("creation") : this;
+        public ValueTask<bool> MoveNextAsync() => FailRead
+            ? ValueTask.FromException<bool>(new InvalidOperationException("read")) : ValueTask.FromResult(false);
+        public ValueTask DisposeAsync()
+        {
+            DisposeCount++;
+            return FailDispose ? ValueTask.FromException(new IOException("dispose")) : ValueTask.CompletedTask;
+        }
+    }
+
     [Fact]
     public async Task MergeAsync_SingleStream_ReplaysLargeWindowInSourceOrder()
     {
