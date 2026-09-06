@@ -40,6 +40,10 @@ Default host registration still needs connection ownership propagation before sc
 the provider-wide OAuth runtime.
 ## Provider setup attribution
 
+`ConfigureForConnectionAsync` configures credentials for an already-owned connection. It validates
+the retained tenant, provider and environment before saving scoped secrets, preserves its external
+account, and does not recreate routing or bindings. Credential verification remains a separate step.
+
 Provider setup accepts the initiating actor from its HTTP boundary and retains it in credential
 vault audit records. Operator endpoints reject missing identity; internal callers retain an explicit
 service attribution when no operator initiated the call.

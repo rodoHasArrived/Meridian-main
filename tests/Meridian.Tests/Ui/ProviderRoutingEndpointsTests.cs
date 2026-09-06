@@ -491,6 +491,48 @@ public sealed class ProviderRoutingEndpointsTests
         audit.GetProperty("actor").GetString().Should().Be("provider-routing-test-operator");
     }
 
+    [Theory]
+    [InlineData("tenant-test", "paper", true)]
+    [InlineData("other-tenant", "paper", false)]
+    [InlineData("tenant-test", "live", false)]
+    public async Task ConfigureOwnedConnection_PreservesRoutingAndCannotChangeCredentialOwnership(string owner, string requestedEnvironment, bool allowed)
+    {
+        await using var app = await CreateAppAsync();
+        var configStore = app.Services.GetRequiredService<ApplicationConfigStore>();
+        await app.Services.GetRequiredService<ProviderConnectionService>().UpsertForTenantAsync(
+            new CreateProviderConnectionRequest("existing", "alpaca", "Existing account", ExternalAccountId: "account-a"), owner, "paper");
+        var retainedConfig = await File.ReadAllTextAsync(configStore.ConfigPath);
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderConfigure + "?connectionId=existing", JsonContent(new
+        {
+            kind = "alpaca",
+            displayName = "Must not create another connection",
+            apiKey = "scoped-setup-key",
+            apiSecret = "scoped-setup-secret",
+            environment = requestedEnvironment,
+            capabilities = new[] { "streaming" }
+        }));
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        (await File.ReadAllTextAsync(configStore.ConfigPath)).Should().Be(retainedConfig);
+        if (allowed)
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = Deserialize<ProviderSetupResult>(await response.Content.ReadAsStringAsync());
+            result.ConnectionId.Should().Be("existing");
+            result.BindingIds.Should().BeEmpty();
+            var stored = await vault.ReadScopedAsync("alpaca", new ProviderCredentialScope(owner, "existing", "account-a", "paper"));
+            stored!.Get("KeyId").Should().Be("scoped-setup-key");
+            stored.ExternalAccountId.Should().Be("account-a");
+            stored.LastVerifiedAt.Should().BeNull();
+            var audit = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl"));
+            audit.Should().Contain("provider-routing-test-operator").And.NotContain("scoped-setup-secret");
+        }
+        else
+        {
+            response.StatusCode.Should().Be(owner == "other-tenant" ? HttpStatusCode.Forbidden : HttpStatusCode.BadRequest);
+            File.Exists(vault.VaultPath).Should().BeFalse();
+        }
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         UserPermission? permissions = UserPermission.ManageProviders | UserPermission.ManageCredentials,
         Action<IServiceCollection>? registerServices = null,

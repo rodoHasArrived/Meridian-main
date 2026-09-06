@@ -38,6 +38,8 @@ The provider-module compatibility adapter requires atomic legacy-import support 
 ## Credential audit identity
 
 Canonical credential save, verify and delete routes accept `connectionId` as a query parameter.
+Provider configure accepts the query for an existing owned connection as well; it uses the server
+tenant and actor, refuses environment reassignment, and preserves the retained routing configuration.
 The connection-list GET accepts the same query and returns only that connection's status, using
 retained account/environment metadata and scoped credentials. Provider-wide metrics never supply
 health or fallback evidence for that scoped result, including after its credentials are deleted.

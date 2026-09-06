@@ -25,6 +25,41 @@ public sealed class ProviderSetupService
         _setupRegistry = setupRegistry;
     }
 
+    /// <summary>Configures credentials for an existing connection whose tenant ownership is already retained.</summary>
+    public async Task<ProviderSetupResult> ConfigureForConnectionAsync(ProviderSetupRequest request, string connectionId, string tenantId, string actor, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+        var connection = (_store.Load().ProviderConnections?.Connections ?? [])
+            .FirstOrDefault(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
+        if (connection is null || !string.Equals(connection.TenantId, tenantId, StringComparison.Ordinal) ||
+            string.IsNullOrWhiteSpace(connection.ExternalAccountId) || string.IsNullOrWhiteSpace(connection.CredentialEnvironment))
+            throw new UnauthorizedAccessException("Provider setup connection ownership could not be established.");
+        var handler = _setupRegistry.Find(request.Kind ?? string.Empty);
+        if (handler is null || !string.Equals(handler.Descriptor.ProviderId, connection.ProviderFamilyId, StringComparison.OrdinalIgnoreCase))
+            throw new UnauthorizedAccessException("Provider setup connection ownership could not be established.");
+        var descriptor = ProviderCredentialCatalog.Find(handler.Descriptor.ProviderId)
+            ?? throw new InvalidOperationException("Provider credential catalog entry is unavailable.");
+        if (request.Environment is not null && !string.Equals(descriptor.NormalizeEnvironment(request.Environment), connection.CredentialEnvironment, StringComparison.Ordinal))
+            return Failure(connection.DisplayName, "Provider setup environment does not match retained ownership.");
+        var validation = handler.Validate(new ProviderSetupContext(descriptor.ProviderId, connection.DisplayName,
+            NormalizeCapabilities(request.Capabilities), connection.CredentialEnvironment, request.ApiKey, request.ApiSecret, request.Endpoint));
+        if (!validation.Success)
+            return Failure(connection.DisplayName, validation.Error ?? "Provider setup validation failed.");
+        var scopedStore = _credentialStore as IScopedProviderCredentialStore
+            ?? throw new InvalidOperationException("Credential vault does not support scoped ownership.");
+        var scope = new ProviderCredentialScope(tenantId, connection.ConnectionId, connection.ExternalAccountId, connection.CredentialEnvironment);
+        if (validation.Credentials is { Count: > 0 } && descriptor.RequiresCredentials)
+            await scopedStore.SaveScopedAsync(new ProviderCredentialSaveRequest(descriptor.ProviderId, validation.Credentials,
+                scope.Environment, actor), scope, ct).ConfigureAwait(false);
+        var status = await scopedStore.GetScopedStatusAsync(descriptor.ProviderId, scope, ct).ConfigureAwait(false);
+        return new ProviderSetupResult(true, connection.ConnectionId, connection.DisplayName,
+            "Connection credentials were configured; verify the retained account before use.", null,
+            connection.ConnectionId, [], status.CredentialState, status.CredentialSource, connection.CredentialReference,
+            scope.Environment, validation.Warnings?.ToArray() ?? []);
+    }
+
     public async Task<ProviderSetupResult> ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default, string? actor = null)
     {
         ArgumentNullException.ThrowIfNull(request);
