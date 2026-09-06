@@ -11,6 +11,12 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Ui.Shared
 
+Rejected mutation leases return HTTP 429 with a positive `Retry-After` delay. The lending
+runtime test exhausts the shared projection/reconciliation budget and verifies rejection
+before mutation; `forceEnable` allows this test to exercise the real limiter without changing
+process-wide environment settings.
+
+
 Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
 shared service into committed run identity handling. Repeating a command on the same loan
 returns the retained run; reusing a projection command with a different explicit date returns

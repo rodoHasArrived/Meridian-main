@@ -21,6 +21,31 @@ namespace Meridian.Tests.Ui;
 
 public sealed class DirectLendingEndpointsTests
 {
+    [Fact]
+    public async Task DerivedWrites_ExhaustOwnedLimiter_Return429WithRetryAfterWithoutExtraMutation()
+    {
+        var service = new InMemoryDirectLendingService();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IDirectLendingService>(service),
+            forceRateLimit: true);
+        var client = app.GetTestClient();
+        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        client.DefaultRequestHeaders.Add("X-Command-Id", Guid.NewGuid().ToString());
+        var request = new RequestProjectionRunRequest(new DateOnly(2026, 6, 30), null, null, null);
+        for (var attempt = 0; attempt < 20; attempt++)
+        {
+            using var accepted = await client.PostAsJsonAsync($"/api/loans/{loan.LoanId}/projections", request);
+            accepted.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        // Both write routes share the same owned budget.
+        using var rejected = await client.PostAsync($"/api/loans/{loan.LoanId}/reconcile", null);
+        rejected.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+        rejected.Headers.RetryAfter.Should().NotBeNull();
+        rejected.Headers.RetryAfter!.Delta.Should().NotBeNull();
+        rejected.Headers.RetryAfter.Delta!.Value.Should().BeGreaterThan(TimeSpan.Zero);
+        (await service.GetProjectionsAsync(loan.LoanId)).Should().ContainSingle();
+        (await service.GetReconciliationRunsAsync(loan.LoanId)).Should().BeEmpty();
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("not-a-command-id")]
@@ -507,7 +532,8 @@ public sealed class DirectLendingEndpointsTests
 
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
-        UserPermission permissions = UserPermission.ViewDirectLending | UserPermission.ManageDirectLending)
+        UserPermission permissions = UserPermission.ViewDirectLending | UserPermission.ManageDirectLending,
+        bool forceRateLimit = false)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -516,7 +542,7 @@ public sealed class DirectLendingEndpointsTests
         builder.WebHost.UseTestServer();
         configureServices(builder.Services);
         builder.Services.AddSingleton<DirectLendingOperationsReadService>();
-        builder.Services.AddMutationRateLimiter();
+        builder.Services.AddMutationRateLimiter(forceEnable: forceRateLimit);
 
         var app = builder.Build();
         app.UseRateLimiter();
