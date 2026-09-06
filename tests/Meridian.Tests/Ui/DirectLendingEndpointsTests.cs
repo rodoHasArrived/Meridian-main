@@ -33,7 +33,7 @@ public sealed class DirectLendingEndpointsTests
         var loan = await service.CreateLoanAsync(BuildCreateRequest());
         if (commandId is not null)
             client.DefaultRequestHeaders.Add("X-Command-Id", commandId);
-        var projection = await client.PostAsJsonAsync($"/api/loans/{loan.LoanId}/projections", new RequestProjectionRunRequest(new DateOnly(2026, 6, 30)));
+        var projection = await client.PostAsJsonAsync($"/api/loans/{loan.LoanId}/projections", new RequestProjectionRunRequest(new DateOnly(2026, 6, 30), null, null, null));
         projection.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var reconciliation = await client.PostAsync($"/api/loans/{loan.LoanId}/reconcile", null);
         reconciliation.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -50,7 +50,7 @@ public sealed class DirectLendingEndpointsTests
         var loan = await service.CreateLoanAsync(BuildCreateRequest());
         client.DefaultRequestHeaders.Add("X-Command-Id", Guid.NewGuid().ToString());
         var route = $"/api/loans/{loan.LoanId}";
-        var request = new RequestProjectionRunRequest(new DateOnly(2026, 6, 30));
+        var request = new RequestProjectionRunRequest(new DateOnly(2026, 6, 30), null, null, null);
         var first = await client.PostAsJsonAsync($"{route}/projections", request);
         first.StatusCode.Should().Be(HttpStatusCode.OK);
         var projection = await first.Content.ReadFromJsonAsync<ProjectionRunDto>();
@@ -58,7 +58,7 @@ public sealed class DirectLendingEndpointsTests
         retry.StatusCode.Should().Be(HttpStatusCode.OK);
         (await retry.Content.ReadFromJsonAsync<ProjectionRunDto>()).Should().Be(projection);
         (await service.GetProjectionsAsync(loan.LoanId)).Should().ContainSingle();
-        var changed = await client.PostAsJsonAsync($"{route}/projections", new RequestProjectionRunRequest(new DateOnly(2026, 7, 1)));
+        var changed = await client.PostAsJsonAsync($"{route}/projections", new RequestProjectionRunRequest(new DateOnly(2026, 7, 1), null, null, null));
         changed.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
         var reconciliation = await client.PostAsync($"{route}/reconcile", null);

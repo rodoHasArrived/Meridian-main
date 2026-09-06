@@ -19,7 +19,7 @@ public sealed class PostgresDirectLendingCommandServiceTests
     public async Task ServiceFacade_DerivedRuns_PreserveRetryMetadata()
     {
         var loanId = Guid.NewGuid();
-        var metadata = new DirectLendingCommandMetadataDto(CommandId: Guid.NewGuid());
+        var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "test", false);
         var commands = Substitute.For<IDirectLendingCommandService>();
         commands.RequestProjectionAsync(loanId, null, metadata, Arg.Any<CancellationToken>())
             .Returns(DirectLendingCommandResult<ProjectionRunDto>.Failure(DirectLendingErrorCode.NotFound, "Missing loan"));

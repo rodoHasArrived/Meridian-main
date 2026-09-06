@@ -13,8 +13,8 @@ internal static class DirectLendingServiceSupport
         var identity = metadata?.CommandId ?? (metadata?.ReplayFlag == true ? metadata.CausationId : null);
         if (identity is null)
             return Guid.NewGuid();
-        var bytes = System.Security.Cryptography.SHA256.HashData(
-            Encoding.UTF8.GetBytes($"meridian/direct-lending/{kind}/{loanId:N}/{identity.Value:N}"));
+        var bytes = Sha256Digest.ComputeBytesUtf8(
+            $"meridian/direct-lending/{kind}/{loanId:N}/{identity.Value:N}");
         return new Guid(bytes.AsSpan(0, 16));
     }
 
