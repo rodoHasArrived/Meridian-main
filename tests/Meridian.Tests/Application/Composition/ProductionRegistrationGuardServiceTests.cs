@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Tests.Application.Composition;
 
+// Posture checks mutate process-wide environment variables read by other compositions.
+[Collection("Sequential")]
 public sealed class ProductionRegistrationGuardServiceTests
 {
     [Fact]
@@ -334,6 +336,27 @@ public sealed class ProductionRegistrationGuardServiceTests
             stores.Should().ContainSingle();
             stores[0].DisposeCount.Should().Be(1);
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StartAsync_SingletonRemainsOwnedByHostAfterValidation(bool keyed)
+    {
+        var store = new DurableAsyncTestStore();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.AddProductionRegistrationGuard();
+        AddStoreFactory(services, ServiceLifetime.Singleton, keyed, () => store);
+        await using (var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true }))
+        {
+            await provider.GetRequiredService<ProductionRegistrationGuardService>().StartAsync(CancellationToken.None);
+            store.DisposeCount.Should().Be(0);
+            var resolved = keyed ? provider.GetRequiredKeyedService<ITestStore>("company-a")
+                : provider.GetRequiredService<ITestStore>();
+            resolved.Should().BeSameAs(store);
+        }
+        store.DisposeCount.Should().Be(1);
     }
 
     [Fact]
