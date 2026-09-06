@@ -16,7 +16,7 @@ namespace Meridian.Application.Config.Credentials;
 /// </summary>
 public sealed class OAuthTokenRefreshService : IAsyncDisposable
 {
-    private readonly ILogger _log = LoggingSetup.ForContext<OAuthTokenRefreshService>();
+    private readonly ILogger _log;
     private readonly HttpClient _httpClient;
     private readonly CredentialExpirationConfig _config;
     private readonly ConcurrentDictionary<string, OAuthToken> _tokens = new();
@@ -35,8 +35,10 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     public OAuthTokenRefreshService(
         string dataRoot,
         CredentialExpirationConfig? config = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
+        _log = logger ?? LoggingSetup.ForContext<OAuthTokenRefreshService>();
         _config = config ?? new CredentialExpirationConfig();
         _httpClient = httpClient ?? CreateDefaultHttpClient();
         _tokenPersistencePath = Path.Combine(dataRoot, ".mdc", "oauth_tokens.json");
@@ -267,8 +269,8 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
 
             if (!response.IsSuccessStatusCode)
             {
-                var errorContent = await response.Content.ReadAsStringAsync(ct);
-                var error = $"Token refresh failed: {response.StatusCode} - {errorContent}";
+                // Provider bodies and reason phrases can echo bearer tokens or client secrets.
+                var error = $"Token refresh failed: HTTP {(int)response.StatusCode}.";
                 OnRefreshFailed?.Invoke(providerName, error);
                 return new OAuthRefreshResult(false, Error: error, RefreshedAt: DateTimeOffset.UtcNow);
             }
@@ -306,9 +308,10 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            var error = $"Token refresh exception: {ex.Message}";
+            const string error = "Token refresh failed.";
             OnRefreshFailed?.Invoke(providerName, error);
-            _log.Error(ex, "Exception during OAuth token refresh for {Provider}", providerName);
+            _log.Error("OAuth token refresh failed for {Provider} ({FailureType})",
+                providerName, ex.GetType().Name);
             return new OAuthRefreshResult(false, Error: error, RefreshedAt: DateTimeOffset.UtcNow);
         }
         finally

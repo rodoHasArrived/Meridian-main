@@ -49,7 +49,13 @@ Core workstation host. Do not introduce a second listener or independent monitor
   owning stored market-event schema checks in Application.
 - Provider credential setup, testing, and token-refresh orchestration consumes
   `Meridian.DataIntegration.Credentials`; Application no longer owns generic provider credential
-  store contracts. Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
+  store contracts. OAuth refresh failures expose only numeric HTTP status or a fixed failure message;
+  logs record the exception type without exception details. Provider response bodies, reason phrases,
+  and exception messages can contain secrets and must not enter failure events or returned errors.
+  Refresh failure retains the prior token so a later retry can recover. The optional logger permits
+  isolated verification of this boundary. Plaintext OAuth token persistence remains an unresolved
+  credential-vault migration requirement; these error controls do not certify PRD-002.
+  Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one
   idempotent composition helper so layered workstation composition retains every catalog entry and
