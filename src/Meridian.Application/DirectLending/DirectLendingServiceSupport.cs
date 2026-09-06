@@ -8,6 +8,16 @@ namespace Meridian.Application.DirectLending;
 
 internal static class DirectLendingServiceSupport
 {
+    public static Guid CreateRunIdentity(Guid loanId, string kind, DirectLendingCommandMetadataDto? metadata)
+    {
+        var identity = metadata?.CommandId ?? (metadata?.ReplayFlag == true ? metadata.CausationId : null);
+        if (identity is null)
+            return Guid.NewGuid();
+        var bytes = Sha256Digest.ComputeBytesUtf8(
+            $"meridian/direct-lending/{kind}/{loanId:N}/{identity.Value:N}");
+        return new Guid(bytes.AsSpan(0, 16));
+    }
+
     private static readonly JsonSerializerOptions HashJsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase

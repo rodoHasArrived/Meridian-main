@@ -902,11 +902,15 @@ public static class DirectLendingEndpoints
                 return ServiceUnavailable();
             }
 
+            var metadata = MergeMetadata(null, context);
+            if (metadata.CommandId is null || metadata.CommandId == Guid.Empty)
+                return Results.Problem("A non-empty X-Command-Id UUID is required for a retryable projection command.", statusCode: StatusCodes.Status400BadRequest);
+
             // ADR-014: Use source-generated context to eliminate reflection overhead.
             var request = JsonSerializer.Deserialize(body.GetRawText(), DirectLendingJsonContext.Default.RequestProjectionRunRequest);
             try
             {
-                var projection = await service.RequestProjectionAsync(loanId, request?.ProjectionAsOf, context.RequestAborted).ConfigureAwait(false);
+                var projection = await service.RequestProjectionAsync(loanId, request?.ProjectionAsOf, context.RequestAborted, metadata).ConfigureAwait(false);
                 return Results.Json(projection, jsonOptions);
             }
             catch (DirectLendingCommandException ex)
@@ -974,9 +978,13 @@ public static class DirectLendingEndpoints
                 return ServiceUnavailable();
             }
 
+            var metadata = MergeMetadata(null, context);
+            if (metadata.CommandId is null || metadata.CommandId == Guid.Empty)
+                return Results.Problem("A non-empty X-Command-Id UUID is required for a retryable reconciliation command.", statusCode: StatusCodes.Status400BadRequest);
+
             try
             {
-                var run = await service.ReconcileAsync(loanId, context.RequestAborted).ConfigureAwait(false);
+                var run = await service.ReconcileAsync(loanId, context.RequestAborted, metadata).ConfigureAwait(false);
                 return run is null ? Results.NotFound() : Results.Json(run, jsonOptions);
             }
             catch (DirectLendingCommandException ex)
@@ -1148,7 +1156,7 @@ public static class DirectLendingEndpoints
         => Results.Problem(exception.Message, statusCode: exception.Error.Code switch
         {
             DirectLendingErrorCode.NotFound => StatusCodes.Status404NotFound,
-            DirectLendingErrorCode.ConcurrencyConflict => StatusCodes.Status409Conflict,
+            DirectLendingErrorCode.ConcurrencyConflict or DirectLendingErrorCode.Conflict => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status400BadRequest
         });
 

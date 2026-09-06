@@ -90,8 +90,8 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
     public Task<IReadOnlyList<FeeBalanceDto>> GetFeeBalancesAsync(Guid loanId, CancellationToken ct = default)
         => _queryService.GetFeeBalancesAsync(loanId, ct);
 
-    public async Task<ProjectionRunDto> RequestProjectionAsync(Guid loanId, DateOnly? projectionAsOf = null, CancellationToken ct = default)
-        => DirectLendingServiceSupport.RequireSuccess(await _commandService.RequestProjectionAsync(loanId, projectionAsOf, metadata: null, ct).ConfigureAwait(false));
+    public async Task<ProjectionRunDto> RequestProjectionAsync(Guid loanId, DateOnly? projectionAsOf = null, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.RequestProjectionAsync(loanId, projectionAsOf, metadata, ct).ConfigureAwait(false));
 
     public Task<IReadOnlyList<ProjectionRunDto>> GetProjectionsAsync(Guid loanId, CancellationToken ct = default)
         => _queryService.GetProjectionsAsync(loanId, ct);
@@ -105,8 +105,8 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
     public async Task<JournalEntryDto?> PostJournalAsync(Guid journalEntryId, CancellationToken ct = default)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.PostJournalAsync(journalEntryId, ct).ConfigureAwait(false));
 
-    public async Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, CancellationToken ct = default)
-        => DirectLendingServiceSupport.RequireSuccess(await _commandService.ReconcileAsync(loanId, metadata: null, ct).ConfigureAwait(false));
+    public async Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.ReconcileAsync(loanId, metadata, ct).ConfigureAwait(false));
 
     public Task<IReadOnlyList<ReconciliationRunDto>> GetReconciliationRunsAsync(Guid loanId, CancellationToken ct = default)
         => _queryService.GetReconciliationRunsAsync(loanId, ct);

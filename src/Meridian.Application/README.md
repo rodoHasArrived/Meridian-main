@@ -11,9 +11,36 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Application
 
+Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
+transaction as the run and its details. HTTP requests return the committed run without calling
+the publisher. The outbox worker publishes retained state and retries failures; missing publisher
+configuration for a Security Master-backed loan remains a failed delivery. Identified replays
+retain one message per run. Integration tests cover concurrent retries and enqueue-failure rollback.
+
+
+Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
+remain failed and retryable; they are never silently acknowledged as processed.
+
+
+Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
+shared service into committed run identity handling. Repeating a command on the same loan
+returns the retained run; reusing a projection command with a different explicit date returns
+409. In-memory workflows follow the same retry rule. The two HTTP write routes require a non-empty UUID in `X-Command-Id` and return 400
+before mutation when it is missing or invalid. Internal calls without an identity retain
+legacy new-run behavior and must not be treated as safe automatic retries.
+
+
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
 
 ## Purpose
+
+`DirectLendingOutboxDispatcher` treats rejected projection and reconciliation command results as
+failed deliveries. The durable message is marked failed for retry and is acknowledged only after
+the command succeeds. `DirectLendingOutboxFailureTests` exercises failure followed by success for
+both topics. Projection and reconciliation retries with a command ID reuse a deterministic run
+identity; outbox replay can use its source-event causation ID when the command ID is absent.
+After publication failure, the service reloads committed detail rows rather than rebuilding them.
+Calls without either identity still create a new run and require separate API retry-policy work.
 
 Meridian application layer contains use cases, orchestration services, commands, and workflow
 coordination.

@@ -106,11 +106,13 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         switch (message.Topic)
         {
             case "direct-lending.projection.requested":
-                await _commandService.RequestProjectionAsync(
+                var projection = await _commandService.RequestProjectionAsync(
                     envelope.LoanId,
                     envelope.EffectiveDate,
                     new DirectLendingCommandMetadataDto(envelope.CommandId, envelope.CorrelationId, envelope.SourceEventId, envelope.SourceSystem, ReplayFlag: true),
                     ct).ConfigureAwait(false);
+                if (projection.Error is { } projectionError)
+                    throw new DirectLendingCommandException(projectionError);
                 break;
 
             case "direct-lending.journal.requested":
@@ -118,11 +120,24 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 break;
 
             case "direct-lending.reconciliation.requested":
-                await _commandService.ReconcileAsync(
+                var reconciliation = await _commandService.ReconcileAsync(
                     envelope.LoanId,
                     new DirectLendingCommandMetadataDto(envelope.CommandId, envelope.CorrelationId, envelope.SourceEventId, envelope.SourceSystem, ReplayFlag: true),
                     ct).ConfigureAwait(false);
+                if (reconciliation.Error is { } reconciliationError)
+                    throw new DirectLendingCommandException(reconciliationError);
                 break;
+
+            case "direct-lending.asset-operations.requested":
+                var publication = await _commandService.PublishAssetOperationsAsync(envelope.LoanId,
+                    new DirectLendingCommandMetadataDto(envelope.CommandId, envelope.CorrelationId,
+                        envelope.SourceEventId, envelope.SourceSystem, ReplayFlag: true), ct).ConfigureAwait(false);
+                if (publication.Error is { } publicationError)
+                    throw new DirectLendingCommandException(publicationError);
+                break;
+
+            default:
+                throw new InvalidOperationException($"Unsupported direct lending outbox topic '{message.Topic}'.");
         }
     }
 
@@ -132,7 +147,7 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         var sourceEvent = history.FirstOrDefault(item => item.EventId == envelope.SourceEventId);
         if (sourceEvent is null)
         {
-            return;
+            throw new InvalidOperationException($"Journal source event '{envelope.SourceEventId}' is unavailable; retain the delivery for recovery.");
         }
 
         var existing = await _queryService.GetJournalsAsync(envelope.LoanId, ct).ConfigureAwait(false);
@@ -144,7 +159,7 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         var contract = await _queryService.GetLoanAsync(envelope.LoanId, ct).ConfigureAwait(false);
         if (contract is null)
         {
-            return;
+            throw new InvalidOperationException($"Journal loan '{envelope.LoanId}' is unavailable; retain the delivery for recovery.");
         }
 
         var accountingDate = envelope.EffectiveDate ?? contract.EffectiveDate;

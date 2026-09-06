@@ -10,6 +10,157 @@ public sealed class DirectLendingPostgresIntegrationTests
 {
     private const string WorkflowIdPrefix = "wf-";
 
+    private static async Task AssertPendingPublicationAsync(DirectLendingPostgresTestDatabase db,
+        Guid loanId, string kind, Guid runId)
+    {
+        await using var connection = new NpgsqlConnection(db.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"select count(*) from {db.Schema}.outbox_message where topic = 'direct-lending.asset-operations.requested' and message_key = @key and processed_at is null;";
+        command.Parameters.AddWithValue("key", $"{loanId:N}/{kind}/{runId:N}");
+        (await command.ExecuteScalarAsync()).Should().Be(1L, "the committed run owns one durable publication despite retries");
+    }
+
+    [DirectLendingDatabaseFact]
+    public async Task ProjectionCommit_WhenPublicationEnqueueFails_RollsBackRunAndDetails()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+            return;
+        var loan = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m,
+            new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "enqueue-rollback"));
+        await using var connection = new NpgsqlConnection(db.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            create function {db.Schema}.reject_derived_publication() returns trigger language plpgsql as $test$
+            begin
+                if NEW.topic = 'direct-lending.asset-operations.requested' then
+                    raise exception 'Injected publication enqueue failure';
+                end if;
+                return NEW;
+            end $test$;
+            create trigger reject_derived_publication before insert on {db.Schema}.outbox_message
+                for each row execute function {db.Schema}.reject_derived_publication();
+            """;
+        await command.ExecuteNonQueryAsync();
+        var request = () => db.Service.RequestProjectionAsync(loan.LoanId, new DateOnly(2026, 6, 30));
+        await request.Should().ThrowAsync<PostgresException>().Where(error => error.SqlState == "P0001");
+        (await db.Store.GetProjectionRunsAsync(loan.LoanId)).Should().BeEmpty();
+        command.CommandText = $"select count(*) from {db.Schema}.projected_cash_flow where loan_id = @loan_id;";
+        command.Parameters.AddWithValue("loan_id", loan.LoanId);
+        (await command.ExecuteScalarAsync()).Should().Be(0L);
+    }
+
+    [DirectLendingDatabaseFact]
+    public async Task CashFlowIdentityMigration_PreservesRetainedFlowsAndReconciliationReferences()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+            return;
+        var loan = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m,
+            new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "migration-retention"));
+        var projection = await db.Service.RequestProjectionAsync(loan.LoanId, new DateOnly(2026, 6, 30));
+        var reconciliation = await db.Service.ReconcileAsync(loan.LoanId);
+        var flows = await db.Store.GetProjectedCashFlowsAsync(projection.ProjectionRunId);
+        var results = await db.Store.GetReconciliationResultsAsync(reconciliation!.ReconciliationRunId);
+        flows.Should().NotBeEmpty();
+        results.Should().Contain(result => result.ProjectedCashFlowId != null);
+        await using var connection = new NpgsqlConnection(db.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"drop trigger synchronize_cash_flow_identity on {db.Schema}.projected_cash_flow; drop trigger synchronize_cash_flow_identity on {db.Schema}.reconciliation_result; alter table {db.Schema}.projected_cash_flow drop column projected_cash_flow_id; alter table {db.Schema}.reconciliation_result drop column projected_cash_flow_id;";
+        await command.ExecuteNonQueryAsync();
+        var migration = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,
+            "DirectLending", "Migrations", "009_direct_lending_cash_flow_identity.sql"));
+        command.CommandText = migration.Replace("__SCHEMA__", db.Schema, StringComparison.Ordinal);
+        await command.ExecuteNonQueryAsync();
+        await command.ExecuteNonQueryAsync();
+        (await db.Store.GetProjectedCashFlowsAsync(projection.ProjectionRunId)).Should().BeEquivalentTo(flows);
+        (await db.Store.GetReconciliationResultsAsync(reconciliation.ReconciliationRunId)).Should().BeEquivalentTo(results);
+
+        var retained = results.First(result => result.ProjectedCashFlowId is not null);
+        command.Parameters.AddWithValue("result_id", retained.ReconciliationResultId);
+        command.CommandText = $"update {db.Schema}.reconciliation_result set projected_flow_id = null where reconciliation_result_id = @result_id;";
+        await command.ExecuteNonQueryAsync();
+        (await db.Store.GetReconciliationResultsAsync(reconciliation.ReconciliationRunId))
+            .Single(result => result.ReconciliationResultId == retained.ReconciliationResultId)
+            .ProjectedCashFlowId.Should().BeNull("legacy writes must update the current alias");
+        command.Parameters.AddWithValue("flow_id", retained.ProjectedCashFlowId!.Value);
+        command.CommandText = $"update {db.Schema}.reconciliation_result set projected_cash_flow_id = @flow_id where reconciliation_result_id = @result_id;";
+        await command.ExecuteNonQueryAsync();
+        command.CommandText = $"select projected_flow_id from {db.Schema}.reconciliation_result where reconciliation_result_id = @result_id;";
+        (await command.ExecuteScalarAsync()).Should().Be(retained.ProjectedCashFlowId.Value);
+        command.CommandText = $"update {db.Schema}.reconciliation_result set projected_flow_id = @flow_id, projected_cash_flow_id = @conflicting_id where reconciliation_result_id = @result_id;";
+        command.Parameters.AddWithValue("conflicting_id", Guid.NewGuid());
+        // Change both aliases to distinct values so the trigger must reject ambiguity,
+        // rather than interpret a single-alias update from either application version.
+        command.Parameters["flow_id"].Value = Guid.NewGuid();
+        var conflictingWrite = () => command.ExecuteNonQueryAsync();
+        await conflictingWrite.Should().ThrowAsync<PostgresException>()
+            .Where(error => error.SqlState == "P0001");
+        (await db.Store.GetReconciliationResultsAsync(reconciliation.ReconciliationRunId)).Should().BeEquivalentTo(results);
+    }
+
+    [DirectLendingDatabaseFact]
+    public async Task ProjectionRetry_ConcurrentCommandsRetainOneRunAndOriginalFlowIdentities()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+            return;
+        var loan = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m,
+            new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "retry-flow"));
+        var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "integration-test", true);
+        var asOf = new DateOnly(2026, 6, 30);
+        var results = await Task.WhenAll(Enumerable.Range(0, 8)
+            .Select(_ => db.CommandService.RequestProjectionAsync(loan.LoanId, asOf, metadata)));
+        results.Should().OnlyContain(result => result.IsSuccess);
+        results.Select(result => result.Value!.ProjectionRunId).Distinct().Should().ContainSingle();
+        var retained = (await db.Store.GetProjectionRunsAsync(loan.LoanId)).Should().ContainSingle().Subject;
+        var flows = await db.Store.GetProjectedCashFlowsAsync(retained.ProjectionRunId);
+        flows.Should().NotBeEmpty();
+        var replay = await db.CommandService.RequestProjectionAsync(loan.LoanId, asOf, metadata);
+        replay.Value!.Should().Be(retained);
+        (await db.Store.GetProjectedCashFlowsAsync(retained.ProjectionRunId))
+            .Select(flow => flow.ProjectedCashFlowId).Should().Equal(flows.Select(flow => flow.ProjectedCashFlowId));
+        var conflict = await db.CommandService.RequestProjectionAsync(loan.LoanId, asOf.AddDays(1), metadata);
+        conflict.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
+        (await db.Store.GetProjectionRunsAsync(loan.LoanId)).Should().ContainSingle();
+        await AssertPendingPublicationAsync(db, loan.LoanId, "projection", retained.ProjectionRunId);
+    }
+
+    [DirectLendingDatabaseFact]
+    public async Task ReconciliationRetry_RetainsCommittedResultsUnderConcurrentDelivery()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+            return;
+        var loan = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m,
+            new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "retry-reconciliation"));
+        await db.CommandService.RequestProjectionAsync(loan.LoanId, new DateOnly(2026, 6, 30));
+        var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "integration-test", true);
+        var deliveries = await Task.WhenAll(Enumerable.Range(0, 8)
+            .Select(_ => db.CommandService.ReconcileAsync(loan.LoanId, metadata)));
+        deliveries.Should().OnlyContain(result => result.IsSuccess);
+        deliveries.Select(result => result.Value!.ReconciliationRunId).Distinct().Should().ContainSingle();
+        var retained = (await db.Store.GetReconciliationRunsAsync(loan.LoanId)).Should().ContainSingle().Subject;
+        var details = await db.Store.GetReconciliationResultsAsync(retained.ReconciliationRunId);
+        details.Should().NotBeEmpty();
+        var replay = await db.CommandService.ReconcileAsync(loan.LoanId, metadata);
+        replay.Value!.Should().Be(retained);
+        (await db.Store.GetReconciliationResultsAsync(retained.ReconciliationRunId))
+            .Select(result => result.ReconciliationResultId).Should().Equal(details.Select(result => result.ReconciliationResultId));
+        await AssertPendingPublicationAsync(db, loan.LoanId, "reconciliation", retained.ReconciliationRunId);
+    }
+
     [DirectLendingDatabaseFact]
     public async Task PostgresService_ShouldPersistSchemaVersionedHistoryAndSnapshots()
     {
