@@ -479,7 +479,7 @@ Core workstation host. Do not introduce a second listener or independent monitor
   application down -- so a governance refusal raised as a bare `InvalidOperationException` is
   indistinguishable from it and gets swallowed by the same tolerance. `ProductionRegistrationGuardService`
   and `ProductionServiceRegistrationPolicy` raise this type for every ADR-019 refusal, including the
-  unconstructible-singleton case found during final-graph validation. It derives from
+  unconstructible-factory case found during final-graph validation. It derives from
   `InvalidOperationException`, so existing catches and assertions naming that type keep matching; the
   added type only lets a host that wants to escalate do so. Hosts decide through
   `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`.
@@ -490,8 +490,13 @@ Core workstation host. Do not introduce a second listener or independent monitor
   safe to run twice, because such a host still starts them again as ordinary hosted services, and
   must answer without unbounded work, because they run with nothing on screen.
   `ProductionRegistrationGuardService` is deliberately **not** marked: in a production composition it
-  resolves every factory-registered singleton to prove the graph is constructible, and eager
-  validation of that size belongs behind a visible shell, so it stays an ordinary hosted service
+  resolves closed factory registrations across singleton, scoped and transient lifetimes and explicit
+  service keys. The unlabeled local-workstation posture performs the same runtime check for durable
+  store contracts; an explicitly pinned simulated/seeded provenance retains its labeled development
+  behavior. Validation uses an asynchronous scope so scoped/transient resources are released on
+  success, refusal and cancellation without disposing host-owned singletons. Wildcard keyed factories
+  are refused because their possible runtime keys cannot be exhaustively checked; null factory results
+  also refuse startup. Eager validation of that size belongs behind a visible shell, so it stays an ordinary hosted service
   running first in the chain. Its descriptor-only half is marked, as
   `StaticProductionRegistrationGuardService`, which `AddProductionRegistrationGuard` registers
   alongside it: `ProductionServiceRegistrationPolicy` performs no resolution at all, so that half
