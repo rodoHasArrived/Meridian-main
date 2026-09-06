@@ -3059,7 +3059,7 @@ migration 031, and three workstation routes. This pass therefore had three jobs:
 closure against the property the finding requires rather than the artefact the fix produced, retire
 the "not re-verified" debt the 2026-08-29 status section explicitly left on P4's cancellation half,
 and review the new accounting lane end to end. One new finding (B1) came out of the third job at
-the pass; review of the pass's pull request then filed four more from it (B2–B5, each dated in
+the pass; review of the pass's pull request then filed five more from it (B2–B6, each dated in
 place). The
 2026-08-31 findings are untouched by the range — no commit between `eaa83032` and `5b901dda`
 touches any of their anchor files (`git log` over each path returns empty) — so A1–A4 re-verify as
@@ -3231,7 +3231,10 @@ server-derived capability object rather than trusting the body
 (`SecurityMasterEndpoints.CorporateActionOperations.cs:606-676`), permissions are granular per
 stage (`PrepareCorporateActionAccounting`, `ApproveCorporateActionAccounting`,
 `PostCorporateActionAccounting` — `:623, :647, :671`), the store runs serializable transactions
-with advisory locks, fingerprinted receipts and replay (`PostgresCorporateActionOperationsStore.Accounting.cs:81-137`),
+with advisory locks, fingerprinted receipts and replay
+(`PostgresCorporateActionOperationsStore.Accounting.cs:81-137`) — over the case store, not over
+the spine append that posting performs first; B6 is the window between them (qualified
+2026-09-06, after review) —
 maker-checker independence is enforced in both the service
 (`CorporateActionCaseAccountingService.cs:135`) and the store (`:198`), cancellation
 hygiene is clean, and the crash-retry adoption path refuses a spine whose Approved stage carries a
@@ -3665,9 +3668,16 @@ the projector binds each from a manifest row of the matching role
 supplies. No lot-snapshot or policy-decision record or store exists.
 The lot has the election's option — the case's `TaxLotSnapshot` evidence row
 (`CorporateActionOperationsContracts.cs:232`). The policy decision has no case evidence kind at
-all; the nearest versioned authority is `IAccountingPolicyService.ResolvePolicyAsync`
-(`AccountingPolicyService.cs:100`), whose policy carries an id, a version, and the rule pack, and
-whose backing store this pass has not verified. Until each is defined, B1's lot and policy
+all, and no service to lean on either (corrected 2026-09-06, after review; the previous sentence
+called `IAccountingPolicyService.ResolvePolicyAsync` the nearest versioned authority "whose backing
+store this pass has not verified" — there is none to verify): production binds the interface to
+`AccountingPolicyService` as a singleton (`LedgerFeatureRegistration.cs:40`), whose only state is
+a process-local `ConcurrentDictionary` seeded in its constructor
+(`AccountingPolicyService.cs:50, :64-72`), and whose `PolicyId` and `Version` are strings
+(`LedgerBookDtos.cs:127-130`) where the projection binds a `Guid` decision id and a `long` version
+(`CorporateActionAccountingProjectionService.cs:29, :33`). It can resolve the rule pack for the
+drafting step below; it cannot be the retained policy-decision authority, which has to be a new
+persisted record with its own evidence identity. Until each is defined, B1's lot and policy
 comparisons would check request-invented identities against themselves. Then project
 (`ICorporateActionAccountingProjectionService`), resolve the promoted rule pack and generate the
 effect, attest it, map (`ICorporateActionAssetAccountingEventMapper`), and draft into the spine in
@@ -3770,6 +3780,41 @@ hash were retained and whose review state was recorded by the evidence lane, and
 and compare it rather than construct it. Until then the lane's gaps are not confined to
 attach-time bindings; the approval boundary is a format check dressed as retention.
 
+### B6 — Posting is not fenced against a concurrent case transition
+
+Filed 2026-09-06 from review of B1 (the reviewer's point that the serializable transaction and
+the crash-retry path praised there do not span the store boundary posting crosses). `PostAsync`
+reads the case and requires it postable (`CorporateActionCaseAccountingService.cs:191-193`), loads
+the current binding and the active approval (`:196-219`), and then — when the bound spine carries
+no posted impact — calls `ExecuteSpinePostingAsync` (`:254-260`), which appends the journal and
+the Posted spine version through the ledger and spine stores. Only after that does it ask the
+case store to record the posting (`RecordAccountingPostingAsync`, `:263`), and that transaction
+reloads the case at the command's `ExpectedVersion`, requires it postable, and requires the same
+active approval (`PostgresCorporateActionOperationsStore.Accounting.cs:279-305`). Nothing holds
+the case between the first read and the last write. The state machine allows
+`Approved → AccountingReview` (`CorporateActionOperationsContracts.cs:115-120`), and the durable
+store voids the active approval on that transition
+(`PostgresCorporateActionOperationsStore.Cases.cs:633-640`). So if that transition commits while
+the journal is being appended, the record step fails on the stale version or the voided approval
+— after the journal and the Posted spine are already immutable. The retry does not recover it:
+the receipt-first replay (`:181-188`) finds no receipt, because the record never committed, and
+the case check (`:193`) refuses a case that is no longer `Approved` before the flow reaches the
+adoption branch (`:234-249`) that was written for exactly this "spine posted, case record
+missing" shape. The result is a posted journal with no case record behind it, on a case sitting
+in `AccountingReview` and free to bind another candidate — B4's second-posting shape, reached
+without a restatement. Reach: the window is the length of a ledger append, and the transition is
+an ordinary governed command, so this is a race two operators can run without intending to;
+whether it has happened is, as with B3, not knowable from source.
+
+**Remedy.** Either fence or recover, and say which. Fence: reserve the posting in the case store
+before the spine append — a posting-in-progress marker or state written under the case's
+optimistic version, which the `Approved → AccountingReview` transition refuses while it stands and
+the record step consumes — so the transition and the posting cannot interleave. Recover: make the
+retry path reach the adoption branch whenever the bound spine already carries a posted impact
+under this case's approval id, regardless of the case's current state, and reconcile such a case
+into `Posted` rather than leaving it bindable. The first prevents the orphan; the second admits it
+and closes it. Both are defensible; neither exists at the pin.
+
 ### Smaller notes, not filed as findings
 
 - **The corporate-action CLI verb hardcodes its actor.** `Actor: "meridian-cli"` at
@@ -3828,10 +3873,11 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    lane's one consumer was the workstation; it has none at the pin — corrected 2026-09-02, after
    review) — so a deployment audit decides whether there is anything to repair (the routes are live
    to external callers; source cannot say no rows exist — corrected 2026-09-05), and every month of
-   postings after a consumer lands makes retrofitted verification a data-repair exercise. B4 and B5
-   ride with it: a reopened case must
-   carry correction lineage to its own posting before it can bind again, and approval must
-   reference retained evidence rather than mint it at posting.
+   postings after a consumer lands makes retrofitted verification a data-repair exercise. B4, B5,
+   and B6 ride with it: a reopened case must carry correction lineage to its own posting before
+   it can bind again, approval must reference retained evidence rather than mint it at posting,
+   and posting must be fenced against — or recover from — a case transition that lands between
+   the spine append and the case record.
 2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
    both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
    side", which an earlier version of this entry said while the same list it introduces names an
@@ -3959,4 +4005,7 @@ posting — which leaves the stale-draft conclusion where it was; a twelfth (202
 P5's fail-open boundary to a null session *with no configured anonymous role*, since the named
 role is resolved before the null-session branch — and then, on a further round, stated that
 resolution as role-based evaluation rather than refusal, since an authorised named role is
-granted.
+granted; a fourteenth (2026-09-06) added B6 — posting is not fenced against a concurrent
+`Approved → AccountingReview` transition, the one shape the crash-retry adoption path cannot
+recover — and withdrew the accounting policy service as a candidate policy-decision authority,
+since its state is a process-local dictionary and its identities are strings.
