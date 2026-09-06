@@ -14,7 +14,8 @@ last_reviewed: 2026-08-30
 Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
 shared service into committed run identity handling. Repeating a command on the same loan
 returns the retained run; reusing a projection command with a different explicit date returns
-409. In-memory workflows follow the same retry rule. Calls without a command identity retain
+409. In-memory workflows follow the same retry rule. The two HTTP write routes require a non-empty UUID in `X-Command-Id` and return 400
+before mutation when it is missing or invalid. Internal calls without an identity retain
 legacy new-run behavior and must not be treated as safe automatic retries.
 
 

@@ -21,6 +21,26 @@ namespace Meridian.Tests.Ui;
 
 public sealed class DirectLendingEndpointsTests
 {
+    [Theory]
+    [InlineData(null)]
+    [InlineData("not-a-command-id")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task DerivedRuns_WithoutValidCommandIdentity_RejectBeforeMutation(string? commandId)
+    {
+        var service = new InMemoryDirectLendingService();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IDirectLendingService>(service));
+        var client = app.GetTestClient();
+        var loan = await service.CreateLoanAsync(BuildCreateRequest());
+        if (commandId is not null)
+            client.DefaultRequestHeaders.Add("X-Command-Id", commandId);
+        var projection = await client.PostAsJsonAsync($"/api/loans/{loan.LoanId}/projections", new RequestProjectionRunRequest(new DateOnly(2026, 6, 30)));
+        projection.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var reconciliation = await client.PostAsync($"/api/loans/{loan.LoanId}/reconcile", null);
+        reconciliation.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await service.GetProjectionsAsync(loan.LoanId)).Should().BeEmpty();
+        (await service.GetReconciliationRunsAsync(loan.LoanId)).Should().BeEmpty();
+    }
+
     [Fact]
     public async Task DerivedRuns_RetryWithCommandHeader_RetainsRunsAndRejectsChangedProjectionDate()
     {
