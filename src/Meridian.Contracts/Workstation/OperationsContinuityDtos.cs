@@ -593,7 +593,11 @@ public sealed record OperationsLedgerJournalCandidateDto(
     OperationsJournalEntryMetadataDto? Metadata = null,
     string? IdempotencyKey = null,
     string? SecurityMasterProvenance = null,
-    long? ExpectedLedgerVersion = null);
+    long? ExpectedLedgerVersion = null)
+{
+    /// <summary>Retained origin mark forwarded to the governed ledger append boundary.</summary>
+    public DataProvenance Provenance { get; init; } = DataProvenance.Real;
+}
 
 public sealed record OperationsLedgerJournalLineDto(
     Guid? EntryId,

@@ -110,15 +110,14 @@ public sealed class AuditChainService : IAuditChainService
         try
         {
             await using var crossProcessLock = await AcquireCrossProcessLockAsync(chainLogPath, ct).ConfigureAwait(false);
-            // Read the previous hash from the last entry in the chain
+            // Validate the retained links before extending the chain. A read or parse failure
+            // must never turn an existing chain into a new genesis entry.
             var previousHash = "";
             if (File.Exists(chainLogPath))
             {
                 try
                 {
-                    // Only the last entry's hash is needed to chain the next one; stream the file
-                    // and keep just the final non-empty line so memory stays bounded as the log grows.
-                    string? lastLine = null;
+                    var entriesRead = 0;
                     using (var reader = new StreamReader(chainLogPath))
                     {
                         string? line;
@@ -126,23 +125,21 @@ public sealed class AuditChainService : IAuditChainService
                         {
                             if (!string.IsNullOrWhiteSpace(line))
                             {
-                                lastLine = line;
+                                previousHash = ValidateRetainedLink(line, previousHash);
+                                entriesRead++;
                             }
                         }
                     }
 
-                    if (lastLine is not null)
+                    if (entriesRead == 0)
                     {
-                        using var doc = JsonDocument.Parse(lastLine);
-                        if (doc.RootElement.TryGetProperty("hash"u8, out var hashElement))
-                        {
-                            previousHash = hashElement.GetString() ?? "";
-                        }
+                        throw new InvalidDataException("An existing audit chain contains no retained entries.");
                     }
                 }
                 catch (Exception ex)
                 {
                     _log.Warning(ex, "Failed to read previous hash from chain log at {ChainLogPath}", chainLogPath);
+                    throw;
                 }
             }
 
@@ -178,6 +175,33 @@ public sealed class AuditChainService : IAuditChainService
         {
             _appendLock.Release();
         }
+    }
+
+    private static string ValidateRetainedLink(string line, string previousHash)
+    {
+        using var document = JsonDocument.Parse(line);
+        var entry = document.RootElement;
+        if (entry.ValueKind != JsonValueKind.Object ||
+            !entry.TryGetProperty("path"u8, out var path) || path.ValueKind != JsonValueKind.String ||
+            string.IsNullOrWhiteSpace(path.GetString()) ||
+            !entry.TryGetProperty("fileHash"u8, out var fileHash) || fileHash.ValueKind != JsonValueKind.String ||
+            string.IsNullOrWhiteSpace(fileHash.GetString()) ||
+            !entry.TryGetProperty("hash"u8, out var hash) || hash.ValueKind != JsonValueKind.String ||
+            !entry.TryGetProperty("prev"u8, out var predecessor) || predecessor.ValueKind != JsonValueKind.String)
+        {
+            throw new InvalidDataException("The retained audit chain contains an incomplete entry.");
+        }
+
+        var recordedPredecessor = predecessor.GetString()!;
+        var recordedHash = hash.GetString()!;
+        var expectedHash = Sha256Digest.ComputeUtf8($"{path.GetString()}{fileHash.GetString()}{recordedPredecessor}");
+        if (!string.Equals(recordedPredecessor, previousHash, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(recordedHash, expectedHash, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("The retained audit chain contains a broken hash link.");
+        }
+
+        return recordedHash;
     }
 
     private static async Task<FileStream> AcquireCrossProcessLockAsync(

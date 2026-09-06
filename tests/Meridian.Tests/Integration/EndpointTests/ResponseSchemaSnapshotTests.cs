@@ -88,7 +88,7 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
     [Fact]
     public async Task Health_Schema_ContainsStatusAndChecks()
     {
-        var response = await _client.GetAsync("/health");
+        var response = await _platformReadClient.GetAsync("/health");
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
 
         var json = await DeserializeObjectAsync(response);
@@ -103,7 +103,8 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable, IClassFixture<End
     [Fact]
     public async Task Health_Schema_StatusValueIsKnownString()
     {
-        var response = await _client.GetAsync("/health");
+        var response = await _platformReadClient.GetAsync("/health");
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
         var json = await DeserializeObjectAsync(response);
 
         var status = json["status"].GetString();
