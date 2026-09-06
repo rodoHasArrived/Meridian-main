@@ -3064,7 +3064,9 @@ place). The
 2026-08-31 findings are untouched by the range — no commit between `eaa83032` and `5b901dda`
 touches any of their anchor files (`git log` over each path returns empty) — so A1–A4 re-verify as
 open without re-argument. No code was changed by this pass and no tests were run — every claim is a
-source read at `5b901dda`.
+source read at `5b901dda`, except the two reads marked as post-pin where they occur: migration 032
+(#2855, in the noted-not-verified block below) and the open-lot backfill evidence pattern B5 cites
+as a model (#2910), both read at the merged head `41c8d08c`.
 
 ### Claimed closures, independently re-verified
 
@@ -3264,14 +3266,14 @@ re-verifies the bindings it loads, and shape-checks the bindings it is told.** W
   (added 2026-09-05, after review; an earlier version said "the snapshot's integrity"): the
   record's own `CanonicalFingerprint` comes back from the store and is discarded
   (`IAssetAccountingEventProjectionStore.cs:12-14`), `AssetAccountingEventSpineValidator` is never
-  run there, so the candidate *result's* fingerprint (`AssetAccountingEventDtos.cs:657-662`) and
-  the lot mutation's (`:664-668`) go unchecked by the resolver — and `BuildProjectionBinding` then
+  run there, so the candidate *result's* fingerprint (`AssetAccountingEventDtos.cs:636-641`) and
+  the lot mutation's (`:643-647`) go unchecked by the resolver — and `BuildProjectionBinding` then
   takes the result's totals and selected rule on trust
   (`CorporateActionCaseAccountingService.cs:341-396`). That is a layering gap, not a live
   corruption path (corrected 2026-09-05, after review; the previous version said a tampered result
   "attaches and approves as balanced and policy-covered"):
   the production store runs the spine validator — candidate, result, and lot fingerprints against
-  their payloads (`AssetAccountingEventDtos.cs:650-669`) — on every append
+  their payloads (`AssetAccountingEventDtos.cs:629-648`) — on every append
   (`IAssetAccountingEventProjectionStore.cs:49-60`), and recomputes the record's fingerprint over
   the stored payload on every read, throwing on mismatch
   (`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:310-320`), so an inconsistent
@@ -3434,7 +3436,7 @@ Two subtleties for the implementer, both about what *not* to do:
     below (corrected 2026-09-05, after review; the first version said the identity check "would
     also reject" a non-corporate-action spine): on the generic drafting route (B3) both the kind
     and the economic event's id are the caller's, and the spine validator requires only that the
-    event *type* match the kind (`AssetAccountingEventDtos.cs:450-451`), so an acquisition-kind
+    event *type* match the kind (`AssetAccountingEventDtos.cs:429-430`), so an acquisition-kind
     spine can carry a corporate-action-derived id and pass the identity check. Only the kind field
     refuses it. Added 2026-09-02, after review.
   - **Comparable at attach today: `ProjectionInputHash`.** The projection service writes the
@@ -3637,7 +3639,7 @@ equals the generated lines in account, side, amount, currency, and dimension (`:
 a retained event on the position and its promoted-rule output. Nor is the event *kind* free
 (narrowed again 2026-09-06, after review; the version before this listed the kind among the
 caller-authored fields): the spine validator requires the economic event's `EventType` to equal
-the type name derived from the kind (`AssetAccountingEventDtos.cs:447-452`, `:29`), and that
+the type name derived from the kind (`AssetAccountingEventDtos.cs:426-431`, `:29`), and that
 economic event must be one the position retains — so a `CorporateAction`-kind spine can be
 drafted only over a retained corporate-action-typed event. What the spine takes from the request
 as given (`:149-170`) is therefore the `ProjectionLineage` — `TermsHash` and the projection-input
@@ -3679,7 +3681,7 @@ The same boundary has a posting side (added 2026-09-05, after review). The gener
 (`LedgerEndpoints.AccountingConfiguration.cs:474`; ledger-certification and `AdminMaintenance`,
 `:476, :522`) posts any candidate with a caller-supplied `ApprovalId` and `ApprovalEvidence`, which
 the posting service copies into the spine's Approved stage as its reference id and evidence
-(`AccountingPostingCandidatePostService.cs:1380-1389`). The case lane's crash-retry adoption then
+(`AccountingPostingCandidatePostService.cs:1360-1369`). The case lane's crash-retry adoption then
 accepts an already-posted spine when that stage's reference id equals the case approval's id and
 the candidate fingerprint matches (`CorporateActionCaseAccountingService.cs:233-243`); it compares
 neither who attested nor what evidence the stage carries against the stored case approval. So a
@@ -3772,12 +3774,12 @@ an attestation only the in-process projector can produce, so a corporate-action 
 one origin; and on the generic posting route (`:474`), refuse corporate-action candidates, or load
 the stored case approval by the caller's `ApprovalId` and compare its attestor and evidence
 identity *before* the append — where `EnsureAssetProjectionApprovedAsync` already runs
-(`AccountingPostingCandidatePostService.cs:342-347`), ahead of `journalStore.AppendAsync`
-(`:350`) — so a corporate-action journal has exactly one posting authority. That comparison
+(`AccountingPostingCandidatePostService.cs:341-346`), ahead of `journalStore.AppendAsync`
+(`:349`) — so a corporate-action journal has exactly one posting authority. That comparison
 belongs on the posting route, not in the case lane's adoption branch (corrected 2026-09-05, after
 review; the first version offered the adoption check as the alternative): the branch runs only
 once `spine.PostedJournalImpact` exists (`CorporateActionCaseAccountingService.cs:233-243`), after
-the journal (`:350`) and the Posted spine version (`:612-618`) are appended, both immutable, so
+the journal (`:349`) and the Posted spine version (`:611-617`) are appended, both immutable, so
 refusing adoption leaves the unauthorised journal posted and only stops the case from recording
 it as its own. Keep the adoption comparison as defense in depth, no more. With both, the values
 B1 and B2 retain and compare are authorities; with neither, they are the drafting caller's word,
@@ -3851,24 +3853,24 @@ and compare it rather than construct it. "Load" has nothing to load yet, and the
 what must exist first (added 2026-09-06, after review; the previous version prescribed the
 comparison without the authority): no service or store at the pin resolves a
 `RetainedEvidenceIdentityDto` by evidence id or reference for this lane; the approval contract
-carries only the reference and the hash (`CorporateActionCaseAccountingContracts.cs:54-63`), and
-the store persists only those two columns
+carries only the reference and the hash (`CorporateActionCaseAccountingContracts.cs:54-63`), and the
+store persists only those two columns
 (`PostgresCorporateActionOperationsStore.Accounting.cs:481-494`); and the Evidence Vault cannot
 stand in — its store is UI-owned (`IEvidenceArtifactStore`,
 `src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:14`) and returns
 `EvidenceVaultIdentityDto` (`:63-70`), not the review-and-retention identity the posting validator
-consumes. Two things are therefore required before "load and compare" can be implemented: a
-durable evidence authority below the UI — a persisted record with retain, review, and read
-operations, of the shape the ledger already has once for open-lot backfill evidence
+consumes. Two things are therefore required before "load and compare" can be implemented: a durable
+evidence authority below the UI — a persisted record with retain, review, and read operations, of
+the shape the ledger has since acquired for open-lot backfill evidence — a post-pin read, marked as
+such: #2910 landed it after `5b901dda`, and the lines are the merged head's, `41c8d08c`
 (`IOpenLotBackfillStore.RetainEvidenceAsync`, `GetEvidenceAsync`, `ReviewEvidenceAsync`,
 `OpenLotBackfillDtos.cs:68-70`), where the identity handed to the ledger is built from the loaded
 row and never from the request (`OpenLotBackfillRules.cs:70-74`); and a stable evidence identifier
-on the approval contract, added alongside the reference and hash (the contracts are
-additive-only, see B7), so the approval names a record the store can dereference. With both in
-place, posting loads that record, checks its review state and hash, and builds the identity from
-it; without them a caller keeps supplying the same two assertions. Until then the lane's gaps are
-not confined to attach-time bindings; the approval boundary is a format check dressed as
-retention.
+on the approval contract, added alongside the reference and hash (the contracts are additive-only,
+see B7), so the approval names a record the store can dereference. With both in place, posting loads
+that record, checks its review state and hash, and builds the identity from it; without them a
+caller keeps supplying the same two assertions. Until then the lane's gaps are not confined to
+attach-time bindings; the approval boundary is a format check dressed as retention.
 
 ### B6 — Posting is not fenced against a concurrent case transition
 
@@ -3912,11 +3914,11 @@ observed before the call — and treat nothing after that point as confirmed (co
 after review; the previous version counted "the append threw" as a pre-append failure and let a
 still-Drafted spine clear the marker): the journal append can commit while its caller receives an
 exception, and the posting service advances the spine to Posted only after the append and a
-reload of the journal it wrote (`AccountingPostingCandidatePostService.cs:350-365`), so a durable
+reload of the journal it wrote (`AccountingPostingCandidatePostService.cs:349-364`), so a durable
 journal can exist while the bound spine still reads Drafted, and a spine-stage check would clear
 the only fence with the orphan standing. So once the append has been invoked, the marker stays
 until the next attempt resolves the outcome from the journal store's own idempotency record —
-the posting it keys by ledger book and source event (`FindExistingPostingAsync`, `:351`) — not
+the posting it keys by ledger book and source event (`FindExistingPostingAsync`, `:350`) — not
 from the exception and not from the spine stage: a posting found there under this approval
 completes the record (adoption is legitimate here, because the standing marker proves no
 transition intervened) and advances the spine if the service had not; a posting *not* found does
@@ -3938,7 +3940,7 @@ reconciliation — never an automatic adoption, and not a retroactive approval e
 2026-09-06, after review; the previous version offered "a fresh approval of the already-posted
 economics" as one of the two routes): the spine already retains an Approved stage whose reference
 is the voided approval's id and whose evidence is that approval's
-(`AccountingPostingCandidatePostService.cs:1380-1389`), followed by the Posted stage, and stream
+(`AccountingPostingCandidatePostService.cs:1360-1369`), followed by the Posted stage, and stream
 continuity forbids removing or rewriting any prior attestation or the posted impact
 (`IAssetAccountingEventProjectionStore.cs:272-283, :296-305`). An approval issued after the
 journal exists cannot become the authorization the journal was posted under; the retained chain
@@ -4232,4 +4234,10 @@ requires the correcting effect to neutralize the retained impact; B5's said "loa
 where nothing in the lane can be loaded, and now names the durable evidence authority and the
 approval-contract identifier that must exist first; and B6's recovery offered a fresh approval
 that the immutable spine cannot accept as the journal's authorization, and now keeps the orphan
-unauthorized and corrects it by approved reversal or rebook.
+unauthorized and corrects it by approved reversal or rebook; the same round found that thirteen
+line citations into two files that later `main` merges lengthened — `AssetAccountingEventDtos.cs`
+(twenty-one lines added above the spine validator) and `AccountingPostingCandidatePostService.cs`
+(one `using` and nineteen lines added above the lifecycle-stage builders) — had been given at the
+merged head's numbering rather than the pin's, because the corrections were read in a worktree
+that carried the merges; they are renumbered to `5b901dda`, and the pass's one post-pin model,
+B5's open-lot backfill evidence, is marked as read at `41c8d08c`.
