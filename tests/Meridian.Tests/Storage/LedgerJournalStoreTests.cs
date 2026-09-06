@@ -14,6 +14,142 @@ namespace Meridian.Tests.Storage;
 
 public sealed class LedgerJournalStoreTests
 {
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task HardClose_PostgresRechecksBalancesAfterEarlierAppendCommits()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var ct = timeout.Token;
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        var period = await database.SavePeriodAsync(Guid.NewGuid(), "SoftClosed", ct);
+        var write = BuildBalancedJournalWrite(period.PeriodId, DateTimeOffset.Parse("2026-05-31T21:00:00Z")) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+        await using var postingConnection = new NpgsqlConnection(database.Options.ConnectionString);
+        await postingConnection.OpenAsync(ct);
+        await using var postingTransaction = await postingConnection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+        await database.JournalStore.AppendAsync(postingConnection, postingTransaction, write, ct);
+
+        var closeApplication = $"close-after-append-{Guid.NewGuid():N}";
+        var closeStore = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions
+        {
+            ConnectionString = new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
+            {
+                ApplicationName = closeApplication
+            }.ConnectionString,
+            SchemaName = database.Options.SchemaName
+        });
+        var closeTask = closeStore.SaveHardClosedPeriodAsync(
+            period with { Status = "HardClosed" }, period.Version,
+            new PeriodCloseEventRecord(Guid.NewGuid(), period.PeriodId, "SoftClosed", "HardClosed",
+                "controller", "Balance refresh after waiting", DateTimeOffset.UtcNow), ct);
+        await WaitForAdvisoryLockWaitAsync(database.Options.ConnectionString, closeApplication, ct, "transactionid");
+        closeTask.IsCompleted.Should().BeFalse("hard close must wait for the earlier append to commit");
+        await postingTransaction.CommitAsync(ct);
+
+        var awaitClose = async () => await closeTask;
+        await awaitClose.Should().ThrowAsync<LedgerBookValidationException>().WithMessage("*remain non-zero*");
+        var retained = await database.JournalStore.GetPeriodAsync(period.PeriodId, ct);
+        retained!.Status.Should().Be("SoftClosed");
+        retained.Version.Should().Be(period.Version);
+        (await database.JournalStore.GetByPeriodAsync(period.PeriodId, ct)).Should().ContainSingle();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task HardClose_PostgresPeriodLockRejectsConcurrentFabricatedClosingEntry()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var ct = timeout.Token;
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        var period = await database.SavePeriodAsync(Guid.NewGuid(), "SoftClosed", ct);
+        var write = BuildBalancedJournalWrite(period.PeriodId, DateTimeOffset.Parse("2026-05-31T21:00:00Z")) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+        LedgerPeriodPostingGuard.Validate(write, period);
+
+        var closeApplication = $"hard-close-{Guid.NewGuid():N}";
+        var appendApplication = $"late-close-entry-{Guid.NewGuid():N}";
+        var closeStore = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions
+        {
+            ConnectionString = new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
+            {
+                ApplicationName = closeApplication
+            }.ConnectionString,
+            SchemaName = database.Options.SchemaName
+        });
+        await using var blocker = new NpgsqlConnection(database.Options.ConnectionString);
+        await blocker.OpenAsync(ct);
+        var lockKey = Random.Shared.NextInt64(1, long.MaxValue);
+        await using (var setup = blocker.CreateCommand())
+        {
+            // This test-only trigger pauses the real close transaction after it holds the period row.
+            setup.CommandText = $"""
+                create function {database.Options.SchemaName}.pause_hard_close_for_test()
+                returns trigger language plpgsql as $$
+                begin
+                    if new.status = 'HardClosed' then
+                        perform pg_advisory_xact_lock({lockKey});
+                    end if;
+                    return new;
+                end;
+                $$;
+                create trigger pause_hard_close_for_test before update
+                on {database.Options.SchemaName}.accounting_periods
+                for each row execute function {database.Options.SchemaName}.pause_hard_close_for_test();
+                """;
+            await setup.ExecuteNonQueryAsync(ct);
+        }
+
+        await using var blockingTransaction = await blocker.BeginTransactionAsync(ct);
+        await using (var hold = blocker.CreateCommand())
+        {
+            hold.Transaction = blockingTransaction;
+            hold.CommandText = "select pg_advisory_xact_lock(@key);";
+            hold.Parameters.AddWithValue("key", lockKey);
+            await hold.ExecuteNonQueryAsync(ct);
+        }
+
+        await using var appendConnection = new NpgsqlConnection(
+            new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
+            {
+                ApplicationName = appendApplication
+            }.ConnectionString);
+        await appendConnection.OpenAsync(ct);
+        await using var appendTransaction = await appendConnection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+        var closeTask = closeStore.SaveHardClosedPeriodAsync(
+            period with { Status = "HardClosed" }, period.Version,
+            new PeriodCloseEventRecord(Guid.NewGuid(), period.PeriodId, "SoftClosed", "HardClosed",
+                "controller", "Concurrent close proof", DateTimeOffset.UtcNow), ct);
+        Task? appendTask = null;
+        try
+        {
+            await WaitForAdvisoryLockWaitAsync(database.Options.ConnectionString, closeApplication, ct);
+            appendTask = database.JournalStore.AppendAsync(appendConnection, appendTransaction, write, ct);
+            await WaitForAdvisoryLockWaitAsync(database.Options.ConnectionString, appendApplication, ct, "transactionid");
+            appendTask.IsCompleted.Should().BeFalse("the durable append must wait behind the closing period transaction");
+        }
+        finally
+        {
+            await blockingTransaction.RollbackAsync(CancellationToken.None);
+        }
+
+        var closed = await closeTask;
+        closed.Status.Should().Be("HardClosed");
+        closed.Version.Should().Be(period.Version + 1);
+        var awaitAppend = async () => await appendTask!;
+        await awaitAppend.Should().ThrowAsync<LedgerValidationException>().WithMessage("*hard-closed*");
+        await appendTransaction.RollbackAsync(ct);
+        (await database.JournalStore.GetByPeriodAsync(period.PeriodId, ct)).Should().BeEmpty();
+
+        // A fresh request after close must fail too, even when it claims to be a closing entry.
+        var retry = async () => await database.JournalStore.AppendAsync(write, ct);
+        await retry.Should().ThrowAsync<LedgerValidationException>().WithMessage("*hard-closed*");
+        (await database.JournalStore.GetByPeriodAsync(period.PeriodId, ct)).Should().BeEmpty();
+    }
+
     [Fact]
     public void LedgerJournalStoreOptions_DefaultsToLedgerSchemaAndPeriodLocking()
     {
@@ -2256,7 +2392,8 @@ public sealed class LedgerJournalStoreTests
     private static async Task WaitForAdvisoryLockWaitAsync(
         string connectionString,
         string applicationName,
-        CancellationToken ct)
+        CancellationToken ct,
+        string waitEvent = "advisory")
     {
         await using var observer = new NpgsqlConnection(connectionString);
         await observer.OpenAsync(ct);
@@ -2271,9 +2408,10 @@ public sealed class LedgerJournalStoreTests
                     from pg_catalog.pg_stat_activity
                     where application_name = @application_name
                       and wait_event_type = 'Lock'
-                      and wait_event = 'advisory');
+                      and wait_event = @wait_event);
                 """;
             command.Parameters.AddWithValue("application_name", applicationName);
+            command.Parameters.AddWithValue("wait_event", waitEvent);
             if (await command.ExecuteScalarAsync(ct) is true)
             {
                 return;
