@@ -3568,20 +3568,32 @@ postings. Remediation therefore starts with a deployment audit — count `Corpor
 spines and the case lane's bindings, approvals, and postings — and the argument for fixing it now
 is that the count can only grow.
 
-**Remedy.** Retain, at drafting time, the projection inputs that can stale — the case version, and
-with it the election id and version and the position snapshot id from the same digest — typed on
-the spine candidate (or the drafted spine's scope). At attach, compare the retained case version
-to the case version the caller asserts and the store already checks the row against
-(`request.ExpectedVersion`, `PostgresCorporateActionOperationsStore.Accounting.cs:103-106`), and
-refuse `ProjectionStale` when they differ. Leave `bound_case_version` as it is: the first version
+**Remedy.** Retain, at drafting time, every projection input that can stale independently — the
+digest commits the case version, the election id and version, the policy-decision id and version,
+the lot-snapshot id and version, the position-snapshot id, and the position version
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:48-60`) — typed on the spine
+candidate (or the drafted spine's scope). At attach, reload each of them from its authority and
+compare the current version to the retained one, refusing `ProjectionStale` on any mismatch; for
+the case, that read is the row the store already loads at the caller's `ExpectedVersion`
+(`PostgresCorporateActionOperationsStore.Accounting.cs:103-106`). A case-version comparison alone
+is not the check (corrected 2026-09-06, after review; the previous version compared only the
+retained case version to `ExpectedVersion`): a position, policy decision, lot snapshot, or
+election can advance without touching the processing-case row — the spine validates the book
+position when it drafts (`AssetAccountingEventSpineService.cs:984-1013`), not when the case
+attaches, and attach reads nothing but the case (`CorporateActionCaseAccountingService.cs:62-65`
+checks that the policy and lot identities are present, `:82` requires the loaded case attachable)
+— so a candidate built from an obsolete position or policy state would pass a case-version check
+and post. Retaining the fields is the precondition; reloading them is the check. Leave
+`bound_case_version` as it is: the first version
 of this paragraph (corrected 2026-09-02, after review) said to stamp it "from the verified value's
 successor" so the column would mean the version prepared against — a remedy that changes nothing,
 because the store verifies `ExpectedVersion` and increments exactly once, so that successor *is*
 `updatedCase.Version`; and one that could not mean that anyway, since the prepared-against version
 is one earlier. The post-attach stamp is correct for the currency gate it feeds; the drafting-time
 version is a second, separately retained field, and the new attach check is where it is consumed.
-`BuildProjectionInputHash` already names the right set (`:48-52`); the work is to retain it in the
-clear as well as in the digest. One precondition, without which retention changes nothing (added
+`BuildProjectionInputHash` already names the right set (`:48-60`); the work is to retain it in the
+clear as well as in the digest, and then to read each authority again at attach. One
+precondition, without which retention changes nothing (added
 2026-09-02, after review): the retained value must be what an *authoritative case read* produced
 at drafting, not what the drafting request said. The projector has no case-store dependency and
 checks only that `CaseVersion` is positive (`CorporateActionAccountingProjectionService.cs:250`), so
@@ -3798,7 +3810,24 @@ certain from source; the restatement command surface itself was not read for thi
 **Remedy.** For a case with a prior posting, the fresh binding must carry correction lineage that
 resolves to that case's own retained journal and lot impact: require `spine.Correction` to be
 present, require its posted journal id and lot batch to equal the case's last posting, and refuse
-an originating candidate outright. Until then, "the route left is restatement" names a door, not a
+an originating candidate outright. Lineage is necessary and not sufficient (added 2026-09-06,
+after review; the previous version stopped at the matching reference): the spine's correction
+check loads the corrected event's retained `PostedJournalImpact`, whose `Lines` are retained with
+it (`AssetAccountingEventDtos.cs:147-158`), and compares only its identity — journal, book,
+period, basis, lot batch (`AssetAccountingEventSpineService.cs:866-879`) — never the correcting
+candidate's projected effect against it; the request-side check asks only that the reference name
+a different event (`:629-639`), and the Drafted gate only that an approved adjustment accompany it
+(`:805-819`). So a reopened case could cite its own posting as this remedy requires and still
+append a second full originating effect, doubling the ledger under a lineage that reads as a
+restatement. The correcting candidate must therefore neutralize the retained impact: its projected
+effect must be a reversal of the retained lines, a reversal-and-rebook pair, or a validated delta
+— an effect whose sum with the retained lines equals the restated economics — and the spine must
+verify that where it already holds both sides, in `ResolveCorrectionAuthorityAsync` with the
+retained lines in hand, rather than accept any balanced effect that cites the right journal. The
+ledger's general posting path already has the vocabulary (`AccountingPostingIntentDto.Reversal`,
+`Rebook`, and `Restatement`, each requiring source-journal lineage,
+`AccountingPostingCommandValidator.cs:114-120`); the spine's correction reference carries the
+lineage without the economics. Until then, "the route left is restatement" names a door, not a
 gate.
 
 ### B5 — Approval evidence is asserted at approval and minted as retained at posting
@@ -3818,8 +3847,28 @@ that retains none of them.
 
 **Remedy.** Approval must reference an *existing* retained evidence identity, one whose bytes and
 hash were retained and whose review state was recorded by the evidence lane, and posting must load
-and compare it rather than construct it. Until then the lane's gaps are not confined to
-attach-time bindings; the approval boundary is a format check dressed as retention.
+and compare it rather than construct it. "Load" has nothing to load yet, and the remedy has to say
+what must exist first (added 2026-09-06, after review; the previous version prescribed the
+comparison without the authority): no service or store at the pin resolves a
+`RetainedEvidenceIdentityDto` by evidence id or reference for this lane; the approval contract
+carries only the reference and the hash (`CorporateActionCaseAccountingContracts.cs:54-63`), and
+the store persists only those two columns
+(`PostgresCorporateActionOperationsStore.Accounting.cs:481-494`); and the Evidence Vault cannot
+stand in — its store is UI-owned (`IEvidenceArtifactStore`,
+`src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:14`) and returns
+`EvidenceVaultIdentityDto` (`:63-70`), not the review-and-retention identity the posting validator
+consumes. Two things are therefore required before "load and compare" can be implemented: a
+durable evidence authority below the UI — a persisted record with retain, review, and read
+operations, of the shape the ledger already has once for open-lot backfill evidence
+(`IOpenLotBackfillStore.RetainEvidenceAsync`, `GetEvidenceAsync`, `ReviewEvidenceAsync`,
+`OpenLotBackfillDtos.cs:68-70`), where the identity handed to the ledger is built from the loaded
+row and never from the request (`OpenLotBackfillRules.cs:70-74`); and a stable evidence identifier
+on the approval contract, added alongside the reference and hash (the contracts are
+additive-only, see B7), so the approval names a record the store can dereference. With both in
+place, posting loads that record, checks its review state and hash, and builds the identity from
+it; without them a caller keeps supplying the same two assertions. Until then the lane's gaps are
+not confined to attach-time bindings; the approval boundary is a format check dressed as
+retention.
 
 ### B6 — Posting is not fenced against a concurrent case transition
 
@@ -3885,9 +3934,20 @@ resurrect a voided authorization and overwrite a governed decision with `Posted`
 approval bypass, offered as the fix for one. Recovery has to preserve the newer decision and
 surface the orphan: when the bound spine carries a posted impact under an approval the case no
 longer holds, block the case with that journal attached and route it through an explicit
-reconciliation — a fresh approval of the already-posted economics, or a restatement — never an
-automatic adoption. The fence is the remedy; the recovery is what the lane owes any orphan it has
-already made. Neither exists at the pin.
+reconciliation — never an automatic adoption, and not a retroactive approval either (corrected
+2026-09-06, after review; the previous version offered "a fresh approval of the already-posted
+economics" as one of the two routes): the spine already retains an Approved stage whose reference
+is the voided approval's id and whose evidence is that approval's
+(`AccountingPostingCandidatePostService.cs:1380-1389`), followed by the Posted stage, and stream
+continuity forbids removing or rewriting any prior attestation or the posted impact
+(`IAssetAccountingEventProjectionStore.cs:272-283, :296-305`). An approval issued after the
+journal exists cannot become the authorization the journal was posted under; the retained chain
+says the voided one was, and it stays so. So the orphan stays recorded as unauthorized — the case
+blocked, the journal attached, the voided approval named — and the one continuation is an
+approved correction with lineage to the orphan: a reversal, or a reversal and rebook of the
+economics the case now intends, posted through the correction path B4 requires. The fence is the
+remedy; the recovery is what the lane owes any orphan it has already made. Neither exists at the
+pin.
 
 ### B7 — The Polygon jobs send a kind-prefixed identifier where a ticker is required
 
@@ -3987,10 +4047,12 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    neither carries nor can recompute. Retain those at drafting time — the identities either
    directly or by keeping the role on the evidence rows, the hash and key as values — then
    compare; and decide whether the key governs posting or is renamed, since today it governs
-   nothing. In the same change retain the drafting-time case version
-   (with the election and position-snapshot inputs from the same digest) as its own typed field on
-   the candidate and compare it to the asserted case version at attach, refusing a stale draft
-   there; `bound_case_version` stays the post-attach stamp the currency gate needs, and is not
+   nothing. In the same change retain every independently versioned drafting-time
+   input the digest commits (case, election, policy decision, lot snapshot, position snapshot,
+   position) as typed fields on the candidate, and at attach reload each from its authority and
+   compare, refusing a stale draft on any mismatch — a case-version check alone misses a position
+   or policy decision that moved without touching the case (corrected 2026-09-06);
+   `bound_case_version` stays the post-attach stamp the currency gate needs, and is not
    where the candidate's currency gets tested (B2). This entry has been corrected with its finding:
    the first version said all six fields were comparable at attach, the second said three, the
    third said one; the count is the least important part of it. B3 comes first because without it
@@ -4001,10 +4063,13 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    review) — so a deployment audit decides whether there is anything to repair (the routes are live
    to external callers; source cannot say no rows exist — corrected 2026-09-05), and every month of
    postings after a consumer lands makes retrofitted verification a data-repair exercise. B4, B5,
-   and B6 ride with it: a reopened case must carry correction lineage to its own posting before
-   it can bind again, approval must reference retained evidence rather than mint it at posting,
-   and posting must be fenced against a case transition that lands between the spine append and
-   the case record, with any orphan already made routed through reconciliation, not adopted.
+   and B6 ride with it: a reopened case must carry correction lineage to its own posting and a
+   correcting effect that neutralizes it before it can bind again, approval must reference a
+   durable evidence record — one the lane must first define, with a stable identifier on the
+   approval contract — rather than mint retained evidence at posting, and posting must be fenced
+   against a case transition that lands between the spine append and the case record, with any
+   orphan already made left unauthorized and corrected by an approved reversal or rebook, not
+   adopted and not retroactively approved.
 2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
    both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
    side", which an earlier version of this entry said while the same list it introduces names an
@@ -4159,4 +4224,12 @@ spine stage; a twentieth removed the "another corporate action" reach from B3 (t
 recomputes hashes the case's own action and case ids, so another action's retained event cannot
 match it), stopped the fence clearing on a single negative read, and added B7's third defect —
 the amendment replaces the common terms with three vendor-named fields the strict command mapping
-rejects.
+rejects; a twenty-first (2026-09-06) corrected four remedies that were each one step short of
+implementable: B2's attach check compared only the case version where the digest commits five
+other independently staleable inputs, and now reloads and compares each; B4's required a matching
+correction reference that the spine never compares against the prior journal's lines, and now
+requires the correcting effect to neutralize the retained impact; B5's said "load and compare"
+where nothing in the lane can be loaded, and now names the durable evidence authority and the
+approval-contract identifier that must exist first; and B6's recovery offered a fresh approval
+that the immutable spine cannot accept as the journal's authorization, and now keeps the orphan
+unauthorized and corrects it by approved reversal or rebook.
