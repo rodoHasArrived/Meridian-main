@@ -46997,7 +46997,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "56189ab1f02dfd99a1ef89f55f1ab5e62bbbba0c51873229c56ed01690f057f8",
+  "fingerprint": "e2bc1d4f9448096a5139d204f6a9476bc082369f1ee2e727da4a68821adb16cd",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -68750,7 +68750,7 @@
     }
   ],
   "summary": {
-    "contract_references": 3096,
+    "contract_references": 3097,
     "contract_set_memberships": 3673,
     "edges": 7808,
     "foreign_keys": 132,
