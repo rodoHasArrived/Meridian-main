@@ -269,12 +269,12 @@ public static class ProviderEndpoints
             [FromBody] ProviderSetupRequest req,
             [FromServices] ProviderSetupService setupService) =>
         {
-            if (!HasProviderSetupPermission(context, req))
+            if (!HasProviderSetupPermission(context, req) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await setupService.ConfigureAsync(req, context.RequestAborted).ConfigureAwait(false);
+            var result = await setupService.ConfigureAsync(req, context.RequestAborted, actor).ConfigureAwait(false);
             return result.Success
                 ? Results.Json(result, jsonOptions)
                 : Results.BadRequest(result);
