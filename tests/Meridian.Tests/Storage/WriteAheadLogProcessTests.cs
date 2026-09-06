@@ -62,7 +62,9 @@ public sealed class WriteAheadLogProcessTests
 
             await using var recovered = new WriteAheadLog(root);
             await recovered.InitializeAsync(timeout.Token);
-            var records = await recovered.GetUncommittedRecordsAsync(timeout.Token);
+            var records = new List<WalRecord>();
+            await foreach (var retained in recovered.GetUncommittedRecordsAsync(timeout.Token))
+                records.Add(retained);
             var record = Assert.Single(records);
             Assert.Equal("PROCESS-RECOVERY", record.RecordType);
             Assert.Equal(marker, record.DeserializePayload<string>());
