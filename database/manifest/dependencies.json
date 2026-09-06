@@ -3118,6 +3118,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Coordination.ExecutionLeaseLostException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Coordination.IClusterCoordinator"
     },
     {
@@ -3125,6 +3137,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Coordination.ICoordinationStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Coordination.IExecutionLease"
     },
     {
       "kind": "contract-set-member",
@@ -24977,6 +24995,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Coordination.CoordinationSnapshot",
       "target": "contract:Meridian.Contracts.Coordination.LeaseRecord"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+      "target": "contract:Meridian.Contracts.Coordination.IExecutionLease"
     },
     {
       "kind": "contract-reference",
@@ -46967,7 +46991,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "9d75f98d702650133691d2cc9f8540d337b6043fb6632e74ead490a6d24274af",
+  "fingerprint": "c0391e44b465f0ff427f28ea83c432901fcdcf3457b0b9c7e210476d7c31dcc9",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -50135,6 +50159,18 @@
       "label": "Meridian.Contracts.Coordination.CoordinationSnapshot"
     },
     {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Coordination.ExecutionLeaseLostException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Coordination.ExecutionLeaseLostException"
+    },
+    {
       "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Coordination.IClusterCoordinator",
       "kind": "contract-type",
@@ -50145,6 +50181,12 @@
       "id": "contract:Meridian.Contracts.Coordination.ICoordinationStore",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Coordination.ICoordinationStore"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Coordination.IExecutionLease",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Coordination.IExecutionLease"
     },
     {
       "classification": "service_contract",
@@ -68702,11 +68744,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3095,
-    "contract_set_memberships": 3670,
-    "edges": 7803,
+    "contract_references": 3096,
+    "contract_set_memberships": 3673,
+    "edges": 7807,
     "foreign_keys": 132,
     "logical_references": 6,
-    "nodes": 3762
+    "nodes": 3765
   }
 }
