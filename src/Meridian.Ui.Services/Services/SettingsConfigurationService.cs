@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 
 namespace Meridian.Ui.Services.Services;
 
@@ -23,14 +24,18 @@ public sealed class SettingsConfigurationService
     private readonly Lock _desktopPreferencesGate = new();
     private DesktopShellPreferences _desktopShellPreferences = DesktopShellPreferences.Default;
     private bool _desktopPreferencesLoaded;
+    private readonly ApiClientService _apiClient;
 
     /// <summary>Gets the singleton instance.</summary>
     public static SettingsConfigurationService Instance => LazyInstance.Value;
 
     public event EventHandler<DesktopShellPreferences>? DesktopShellPreferencesChanged;
 
-    private SettingsConfigurationService()
+    private SettingsConfigurationService() : this(ApiClientService.Instance) { }
+
+    internal SettingsConfigurationService(ApiClientService apiClient)
     {
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         // Seed built-in profiles
         _profiles.Add(new ConfigProfile("research", "Strategy", "Balanced for strategy analysis workflows. Gzip compression, BySymbol naming.", IsBuiltIn: true));
         _profiles.Add(new ConfigProfile("low-latency", "Low Latency", "Minimum ingest latency. No compression, hourly partitioning.", IsBuiltIn: true));
@@ -86,7 +91,7 @@ public sealed class SettingsConfigurationService
     }
 
     /// <summary>
-    /// Gets the credential status for each provider by checking environment variables.
+    /// Gets legacy environment diagnostics. Operator workflows use the asynchronous server status method.
     /// </summary>
     public IReadOnlyList<ProviderCredentialStatus> GetProviderCredentialStatuses()
     {
@@ -131,6 +136,46 @@ public sealed class SettingsConfigurationService
         }
 
         return result;
+    }
+
+    /// <summary>Reads server-owned credential status without treating local environment values as authority.</summary>
+    public async Task<IReadOnlyList<ProviderCredentialStatus>> GetProviderCredentialStatusesAsync(CancellationToken ct = default)
+    {
+        IReadOnlyList<ProviderConnectionRowDto> rows = [];
+        try
+        {
+            var response = await _apiClient.GetWithResponseAsync<List<ProviderConnectionRowDto>>(UiApiRoutes.ProviderConnections, ct).ConfigureAwait(false);
+            if (response.Success && response.Data is not null)
+                rows = response.Data;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception) { /* Failed reads never authorize a configured state. */ }
+
+        return GetProviderCatalog().Select(provider =>
+        {
+            var matches = rows.Where(row => string.Equals(row.ProviderId, provider.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (matches.Length != 1)
+                return new ProviderCredentialStatus(provider.Id, provider.DisplayName, CredentialState.Unavailable,
+                    "Credential status is unavailable from the service.", []);
+            var row = matches[0];
+            var state = row.CredentialState switch
+            {
+                ProviderCredentialStateDto.NotRequired => CredentialState.NotRequired,
+                ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified => CredentialState.Configured,
+                ProviderCredentialStateDto.Partial => CredentialState.Partial,
+                ProviderCredentialStateDto.Missing or ProviderCredentialStateDto.Invalid => CredentialState.Missing,
+                _ => CredentialState.Unavailable
+            };
+            var message = state switch
+            {
+                CredentialState.Configured => "Configured in the credential service",
+                CredentialState.NotRequired => "No credentials required",
+                CredentialState.Partial => "Credential setup is incomplete",
+                CredentialState.Missing => "Credentials are missing or require correction",
+                _ => "Credential status is unavailable from the service."
+            };
+            return new ProviderCredentialStatus(provider.Id, provider.DisplayName, state, message, []);
+        }).ToArray();
     }
 
     /// <summary>
@@ -492,6 +537,7 @@ public enum CredentialState : byte
     Configured,
     Partial,
     Missing,
+    Unavailable,
 }
 
 /// <summary>Credential status for a specific provider.</summary>

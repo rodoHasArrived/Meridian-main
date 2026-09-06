@@ -1,11 +1,71 @@
 using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Ui.Services.Services;
+using Meridian.Ui.Services;
+using System.Net;
+using System.Text;
 
 namespace Meridian.Ui.Tests.Services;
 
 public sealed class SettingsConfigurationServiceTests
 {
+    [Theory]
+    [InlineData(3, CredentialState.Configured)]
+    [InlineData(4, CredentialState.Configured)]
+    [InlineData(2, CredentialState.Partial)]
+    [InlineData(1, CredentialState.Missing)]
+    [InlineData(5, CredentialState.Missing)]
+    public async Task ServerCredentialStatus_UsesReturnedState(int serverState, CredentialState expected)
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, $"[{{\"providerId\":\"alpaca\",\"credentialState\":{serverState}}}]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+        var statuses = await service.GetProviderCredentialStatusesAsync();
+        statuses.Single(s => s.ProviderId == "alpaca").State.Should().Be(expected);
+        handler.Path.Should().Be("/api/providers/connections");
+    }
+
+    [Theory]
+    [InlineData(403, "[]")]
+    [InlineData(200, "[]")]
+    [InlineData(200, "[{\"providerId\":\"alpaca\",\"credentialState\":3},{\"providerId\":\"alpaca\",\"credentialState\":3}]")]
+    public async Task ServerCredentialStatus_UnavailableOrAmbiguousNeverFallsBackToEnvironment(int status, string body)
+    {
+        var oldKey = Environment.GetEnvironmentVariable("ALPACA_KEY_ID");
+        var oldSecret = Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY");
+        try
+        {
+            Environment.SetEnvironmentVariable("ALPACA_KEY_ID", "other-account-key");
+            Environment.SetEnvironmentVariable("ALPACA_SECRET_KEY", "other-account-secret");
+            using var handler = new StatusHandler((HttpStatusCode)status, body);
+            using var api = new ApiClientService(new StatusClientFactory(handler));
+            var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync();
+            var alpaca = statuses.Single(s => s.ProviderId == "alpaca");
+            alpaca.State.Should().Be(CredentialState.Unavailable);
+            alpaca.StatusMessage.Should().Contain("unavailable");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ALPACA_KEY_ID", oldKey);
+            Environment.SetEnvironmentVariable("ALPACA_SECRET_KEY", oldSecret);
+        }
+    }
+
+    private sealed class StatusClientFactory(HttpMessageHandler handler) : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
+    }
+
+    private sealed class StatusHandler(HttpStatusCode status, string body) : HttpMessageHandler
+    {
+        public string? Path { get; private set; }
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Path = request.RequestUri!.AbsolutePath;
+            return Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
+        }
+    }
+
     [Fact]
     public void GetProfiles_UsesCanonicalStrategyLabelForRetainedResearchProfile()
     {

@@ -170,16 +170,21 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         CancelEditCommand = new RelayCommand(CancelEdit);
     }
 
-    public void LoadCredentials()
+    private int _credentialLoadVersion;
+
+    public async Task LoadCredentialsAsync()
     {
-        Credentials.Clear();
+        var version = ++_credentialLoadVersion;
         var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
-        var statuses = SettingsConfigurationService.Instance.GetProviderCredentialStatuses();
+        var statuses = await SettingsConfigurationService.Instance.GetProviderCredentialStatusesAsync();
+        if (version != _credentialLoadVersion)
+            return;
+        Credentials.Clear();
 
         foreach (var provider in catalog)
         {
             var status = statuses.FirstOrDefault(s => s.ProviderId == provider.Id);
-            var state = status?.State ?? CredentialState.NotRequired;
+            var state = status?.State ?? CredentialState.Unavailable;
 
             Credentials.Add(new CredentialEntryViewModel
             {
@@ -194,6 +199,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
                     CredentialState.Partial => "Partial",
                     CredentialState.Missing => "Missing",
                     CredentialState.NotRequired => "Not required",
+                    CredentialState.Unavailable => "Unavailable",
                     _ => "Unknown"
                 },
                 StatusColor = state switch
@@ -291,7 +297,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 IsEditPanelVisible = false;
-                LoadCredentials();
+                await LoadCredentialsAsync();
             });
 
             _notificationService.ShowNotification(
@@ -378,7 +384,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             {
                 IsEditPanelVisible = false;
                 IsTestResultVisible = false;
-                LoadCredentials();
+                await LoadCredentialsAsync();
             });
 
             _notificationService.ShowNotification(

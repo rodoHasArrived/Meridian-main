@@ -13,6 +13,11 @@ last_reviewed: 2026-09-05
 
 ## Purpose
 
+`SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
+credential states. Missing, ambiguous or refused responses remain unavailable, even when environment
+variables contain keys. The synchronous environment method remains a legacy diagnostic helper and
+is no longer used by the WPF settings, credential management or add-provider status surfaces.
+
 Setup wizard credential saves use the authenticated canonical credential API through the shared
 session/CSRF client. They no longer write secrets to application configuration, process environment,
 or user environment. An optional retained connection ID selects scoped persistence. Missing or refused

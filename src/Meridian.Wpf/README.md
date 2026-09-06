@@ -17,6 +17,12 @@ Menu product.
 
 ## Shared close and lot convergence
 
+Credential status in the settings shell, settings vault, credential management page and add-provider
+wizard is loaded asynchronously from the shared authenticated API service. Failed reads stay
+unavailable; environment credentials do not establish configured status. View-model refreshes reject
+older responses after a newer load starts. Connection selection and scoped default-runtime adoption
+remain separate cutover work.
+
 Fund Ledger carries its explicitly selected book/account/entity/period context to the shared command-center service. Both the queue and private-capital close headline consume the shared decision; clear local lane inputs cannot establish close readiness. The browser and WPF use the same contributor manifest and blocking rules.
 
 Account, aggregate, strategy-run, and trading position presentations use `MarkFreshnessPresentation` over the shared assessment. Observation date, age, and review reason remain visible in rows and inspectors. An absent mark date is unknown evidence, even when the enclosing position snapshot is recent. Close acceptance exercises recovery using the shared decision and authoritative subject scope.
