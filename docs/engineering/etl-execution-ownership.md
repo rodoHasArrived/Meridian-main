@@ -61,3 +61,14 @@ This includes all four forced process-termination scenarios and the catalog shar
 Full repository CI and hosted validation remain required for the candidate. These tests do not
 by themselves establish release certification, installed-host recovery, restart deduplication,
 or crash-between-every-stage proof.
+
+The additional `durable-flushed` process case initializes the production pipeline's WAL and
+persistent deduplication ledger, kills the writer after flush, observes lease expiry, reloads
+the interrupted job, and transitions it to Paused before retry. It checks one suppressed
+duplicate, exactly one stored trade, a retained checkpoint, successful source cleanup, and
+exactly one catalog data file. Its first run passed the retry and deduplication assertions but
+failed the catalog count: the internal `_dedup/dedup_ledger.jsonl` was indexed as a second data
+file. Default catalog rebuild exclusions now include `_dedup`. The corrected Windows run passed
+all 27 selected crash-retention, catalog, and process-runner tests with zero failures or skips
+(`artifacts/p0-etl-durable-catalog-tests.log`). This scenario covers restart after the flush
+boundary, not every crash window; hosted validation remains required.

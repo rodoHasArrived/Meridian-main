@@ -2,7 +2,9 @@ using System.Diagnostics;
 using System.Text.Json;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Config;
 using Meridian.ProcessTestHelper;
+using Meridian.Storage.Coordination;
 using Meridian.Storage.Etl;
 using Meridian.Tests.TestHelpers;
 
@@ -17,6 +19,7 @@ public sealed class EtlCrashRetentionTests
     [InlineData("flushed", true, false, false)]
     [InlineData("catalog", true, true, false)]
     [InlineData("export-written", true, true, true)]
+    [InlineData("durable-flushed", true, false, false)]
     public async Task ProcessKilled_BetweenRequiredStages_RetainsSourceWithoutAdvancingCheckpoint(
         string stage, bool flushed, bool catalogCommitted, bool exportWritten)
     {
@@ -62,6 +65,7 @@ public sealed class EtlCrashRetentionTests
             Assert.Null(await new EtlAuditStore(root).LoadCheckpointAsync(jobId, timeout.Token));
             Assert.Equal(exportWritten, File.Exists(Path.Combine(root, "export.csv")));
             var records = Directory.GetFiles(Path.Combine(root, "normalized"), "*.jsonl", SearchOption.AllDirectories)
+                .Where(path => !path.Contains(Path.DirectorySeparatorChar + "_dedup" + Path.DirectorySeparatorChar))
                 .SelectMany(File.ReadAllLines).Where(line => !string.IsNullOrWhiteSpace(line)).ToArray();
             Assert.Equal(flushed ? 1 : 0, records.Length);
             foreach (var record in records)
@@ -72,6 +76,38 @@ public sealed class EtlCrashRetentionTests
             var manifest = await File.ReadAllTextAsync(Path.Combine(root, "normalized", "_catalog", "manifest.json"), timeout.Token);
             var catalog = JsonSerializer.Deserialize<StorageCatalog>(manifest)!;
             Assert.Equal(catalogCommitted ? 1 : 0, catalog.Statistics.TotalFiles);
+            if (stage == "durable-flushed")
+            {
+                // Observe actual lease expiry after process death, without rewriting lease state.
+                var store = new SharedStorageCoordinationStore(new CoordinationConfig(), root);
+                while ((await store.GetLeaseAsync($"jobs/etl/{jobId}", timeout.Token)) is { } lease &&
+                       lease.ExpiresAtUtc > DateTimeOffset.UtcNow)
+                    await Task.Delay(20, timeout.Token);
+                start.ArgumentList[^1] = "durable-restart";
+                using var restarted = Process.Start(start) ?? throw new InvalidOperationException("ETL restart did not start.");
+                var restartErrors = restarted.StandardError.ReadToEndAsync();
+                try
+                {
+                    await restarted.WaitForExitAsync(timeout.Token);
+                    Assert.True(restarted.ExitCode == 0, await restartErrors);
+                    Assert.False(File.Exists(source));
+                    Assert.NotNull(await new EtlAuditStore(root).LoadCheckpointAsync(jobId, timeout.Token));
+                    Assert.Equal("1", await File.ReadAllTextAsync(Path.Combine(root, "restart-deduplicated"), timeout.Token));
+                    var storedTrades = Directory.GetFiles(Path.Combine(root, "normalized"), "*.jsonl", SearchOption.AllDirectories)
+                        .Where(path => !path.Contains(Path.DirectorySeparatorChar + "_dedup" + Path.DirectorySeparatorChar))
+                        .SelectMany(File.ReadAllLines).Where(line => !string.IsNullOrWhiteSpace(line));
+                    Assert.Single(storedTrades);
+                    var completedCatalog = JsonSerializer.Deserialize<StorageCatalog>(await File.ReadAllTextAsync(
+                        Path.Combine(root, "normalized", "_catalog", "manifest.json"), timeout.Token))!;
+                    Assert.Equal(1, completedCatalog.Statistics.TotalFiles);
+                }
+                finally
+                {
+                    if (!restarted.HasExited)
+                        restarted.Kill(entireProcessTree: true);
+                    await restarted.WaitForExitAsync();
+                }
+            }
         }
         finally
         {

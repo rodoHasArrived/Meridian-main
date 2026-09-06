@@ -30,7 +30,8 @@ Catalog reads allow the JSONL sink's append handle to stay open, including on Wi
 are bounded to captured file sizes; size/mtime changes or metadata-read failures reject the
 candidate and retain the previous catalog. `StorageCatalogServiceTests` covers live append
 handles and mutation before commit, while `EtlCrashRetentionTests` exercises the real sink and
-catalog through ETL process-termination boundaries.
+catalog through ETL process-termination boundaries. Default rebuilds exclude internal `_dedup`
+ledger files alongside WAL and catalog metadata, so durability records are not counted as data.
 
 `src/Meridian.Storage` is Meridian's record-keeping layer. When market data, accounting entries,
 loan events, exports, or operator evidence need to survive a restart, this project decides where and
