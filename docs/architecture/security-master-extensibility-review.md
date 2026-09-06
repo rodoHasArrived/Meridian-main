@@ -3871,14 +3871,24 @@ other kind is sent as a ticker regardless. Against the production store neither 
 valid request for any security. The backfill then takes its non-success branch (`:136-141`),
 returns normally, and is counted as a success (`:101`) — P4's misreport, now with every row in
 it — and the fetch logs and moves on. P4's typed-outcome remedy is still right, and would only
-make this failure visible; it does not make the jobs work.
+make this failure visible; it does not make the jobs work. And fixing the identifier alone does
+not make the backfill work either (added 2026-09-06, after review): `BackfillTickerAsync` reads
+the ticker-details response as an array and takes its first element
+(`TradingParametersBackfillService.cs:146-154`), but Polygon's `/v3/reference/tickers/{symbol}`
+returns `results` as a single object — which the repository's own client already models that way
+(`PolygonSymbolSearchProvider.cs:107-115`, `:224-227`) — so every *valid* response takes the "No
+results found" return as well. Two defects stand between the job and its first amendment, and
+either alone leaves the success count at 100% of nothing.
 
-**Remedy.** Resolve the identifier before calling the vendor: select an active `Ticker` or a
-Polygon-scoped `ProviderSymbol` alias for the security from the identifier store, and skip — as a
-typed, counted outcome — a security that has neither. Carry the primary identifier's kind and
-value as separate fields on the summary rather than a formatted string, so no consumer has to
-parse a display form. Do this before, not after, P4's outcome typing, or the typed outcome will
-faithfully report that nothing works.
+**Remedy.** Three parts, and the first two before P4's outcome typing. Resolve the identifier
+before calling the vendor: select an active `Ticker` or a Polygon-scoped `ProviderSymbol` alias
+for the security from the identifier store, and skip — as a typed, counted outcome — a security
+that has neither. Parse the ticker-details response as the object it is, reusing the
+`PolygonTickerDetails` model the symbol-search provider already has rather than a second reading
+of the same endpoint. Carry the primary identifier's kind and value as separate fields on the
+summary rather than a formatted string, so no consumer has to parse a display form. Do the first
+two before, not after, P4's outcome typing, or the typed outcome will faithfully report that
+nothing works.
 
 ### Smaller notes, not filed as findings
 
@@ -4085,4 +4095,6 @@ the economics are bound there, and what stays caller-authored is the kind, the l
 and the case linkage — and a sixteenth narrowed it once more, since the validator binds the kind
 to the retained event's type, leaving the lineage hashes and the case linkage; the same round
 filed B7, the kind-prefixed identifier both Polygon jobs send as a ticker, which turns P4's
-success-count misreport into one that would cover every row.
+success-count misreport into one that would cover every row; a seventeenth added B7's second
+defect — the backfill parses an object-shaped response as an array — so that the remedy is not
+presented as complete one fix early.
