@@ -159,9 +159,9 @@ public sealed class CredentialCompatibilityEndpointsTests
         await using var app = await CreateAppAsync(_ => { });
         var response = await app.GetTestClient().PostAsync(route, JsonContent(new
         {
-            credentials = new { apiKey = "compat-audit-key" },
+            credentials = new { ApiKey = "compat-audit-key" },
             requestedBy = "forged-operator",
-            providerId = "polygon"
+            provider = "polygon"
         }));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var store = app.Services.GetRequiredService<IProviderCredentialStore>();
@@ -183,9 +183,9 @@ public sealed class CredentialCompatibilityEndpointsTests
         await using var app = await CreateAppAsync(_ => { }, includeActor: false);
         var response = await app.GetTestClient().PostAsync(route, JsonContent(new
         {
-            credentials = new { apiKey = "compat-audit-key" },
+            credentials = new { ApiKey = "compat-audit-key" },
             requestedBy = "forged-operator",
-            providerId = "polygon"
+            provider = "polygon"
         }));
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         File.Exists(app.Services.GetRequiredService<IProviderCredentialStore>().VaultPath).Should().BeFalse();
