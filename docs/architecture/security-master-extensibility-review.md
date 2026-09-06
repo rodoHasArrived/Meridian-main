@@ -3924,9 +3924,16 @@ or consults the case's prior posting — the service contains no reference to a 
 restatement, or the postings table — and migration 031 keys posting uniqueness on the projection,
 not the case (`031_security_master_corporate_action_accounting_lane.sql:127`), so a second posting
 per case is permitted by schema. The spine's own correction check, when a candidate carries one,
-proves that the referenced journal is a posted, internally consistent event in the same book,
-period, and basis (`AssetAccountingEventSpineService.cs`, `ResolveCorrectionAuthorityAsync`) — not
-that it is *this case's* journal. So a reopened case can attach, approve, and post a second
+proves that the referenced journal is a posted event whose retained impact and scope match the
+reference's own book, period, and basis (`AssetAccountingEventSpineService.cs:866-877`,
+`ResolveCorrectionAuthorityAsync`) — not that it is *this case's* journal, and not that it shares
+the correcting spine's scope either (corrected 2026-09-06, after review; the previous sentence said
+"in the same book, period, and basis", which read as same-scope validation): every comparison in
+that method is between the reference and the *corrected* event, none reads `source.Scope`, and the
+request-side check asks only that the reference's fields be non-empty and name a different event
+(`:629-639`), as does the spine validator (`AssetAccountingEventDtos.cs:415-424`) — so a correction
+drafted in one book or basis can name a journal posted in another and pass.
+So a reopened case can attach, approve, and post a second
 originating journal, or a correction of some other event in the scope, and the durable history
 then holds two postings for the case with no lineage between them — while the case read shows
 only the later one (corrected 2026-09-05, after review; the previous sentence said the case record
@@ -3937,8 +3944,16 @@ certain from source; the restatement command surface itself was not read for thi
 
 **Remedy.** For a case with a prior posting, the fresh binding must carry correction lineage that
 resolves to that case's own retained journal and lot impact: require `spine.Correction` to be
-present, require its posted journal id and lot batch to equal the case's last posting, and refuse
-an originating candidate outright. Lineage is necessary and not sufficient (added 2026-09-06,
+present,
+require its posted journal id and lot batch to equal the case's last posting, and refuse an
+originating candidate outright. And require the correcting spine's book and accounting basis to
+equal the corrected journal's (added 2026-09-06, after review): the correction check never compares
+them, and a reversal posted into another book or basis neutralizes nothing where the original
+stands. The period may differ, because the corrected period may since have closed, but only under a
+rule the lane states — a correction posts into the corrected period while it is open, and into the
+current open period with the corrected period named in its lineage once it is not — not by the
+silence the check keeps today.
+Lineage is necessary and not sufficient (added 2026-09-06,
 after review; the previous version stopped at the matching reference): the spine's correction
 check loads the corrected event's retained `PostedJournalImpact`, whose `Lines` are retained with
 it (`AssetAccountingEventDtos.cs:147-158`), and compares only its identity — journal, book,
@@ -4143,10 +4158,19 @@ the case store before the spine append — a posting-in-progress marker written 
 optimistic version, which the `Approved → AccountingReview` transition refuses while it stands and
 the record step consumes — so the transition and the posting cannot interleave. A marker needs
 its failure and retry semantics stated, or it becomes a lock nobody holds (added 2026-09-06,
-after review): key it as the posting receipt already is — case id, the command's idempotency
-key, and the request fingerprint (`CorporateActionCaseAccountingService.cs:179-185`,
-`PostgresCorporateActionOperationsStore.Accounting.cs:45`) — so a retry with the same key reclaims
-it and a different command finds it held; write it under the command's `ExpectedVersion` and let
+after review):
+key it on the case — one active reservation per case, unique while it stands — and carry the
+command's idempotency key and request fingerprint on it as attributes (corrected 2026-09-06, after
+review; the previous version keyed it as the posting receipt is keyed, which is not one per case:
+the receipt table is unique on operation kind, aggregate id, and idempotency key, with the
+fingerprint a compared value — `030_security_master_corporate_action_operations.sql:713-726`,
+`PostgresCorporateActionOperationsStore.Accounting.cs:45-60`,
+`CorporateActionCaseAccountingService.cs:179-185` — so a marker keyed the same way would admit a
+second command under a second key, and a caller that had read the reservation's successor case
+version could reserve the approved case again and reach a second journal append), so that a retry
+with the same key and fingerprint reclaims it, the same key with a different fingerprint is a
+conflict, and any other command finds it held;
+write it under the command's `ExpectedVersion` and let
 it advance the case version, so the record step consumes the reservation's version rather than
 the client's; clear it in the same transaction that records a failure confirmed to have happened
 *before the append was invoked* — a validation, period, or spine-load failure, or cancellation
@@ -4305,8 +4329,22 @@ repository's own model keeps them apart: the symbol-search provider declares `ma
 `PolygonTickerData` carries `market` and not `primary_exchange`
 (`TradingParametersBackfillService.cs:251-252`). Add `primary_exchange` to it and write that value
 under `exchange`; `market` — the asset-market category — has no canonical common-terms key and must
-not be written under one, or a category lands where a venue is expected, for exactly the securities
-the backfill touched. Give consumers the primary identifier's kind and value as structured fields
+not be written under one,
+or a category lands where a venue is expected, for exactly the securities the backfill touched. The
+merge has a fourth key, and it is the one that needs the most care (added 2026-09-06, after review;
+the previous list stopped at three and dropped an update the service advertises): the service's
+contract names currency among the parameters it backfills
+(`TradingParametersBackfillService.cs:10-12`), it already extracts `currency_name` (`:173-177`) and
+models it (`:248-249`), and the previous sentence merged nothing under `currency`. But `currency` is
+not a trading parameter like the other three: it is a required canonical field the command mapping
+will not do without (`SecurityMasterMapping.cs:217`), and the one the accounting spine asserts
+against the event's and the ledger book's functional currency before it drafts
+(`AssetAccountingEventSpineService.cs:845-846`), so a vendor value overwriting it under an open
+position changes what the ledger will refuse. Merge it as a validated three-letter code,
+upper-cased, only where the security's `currency` is absent; where a value is present and differs,
+do not overwrite — return the difference as a typed conflict outcome for an operator — and say so in
+the service contract, which today promises the backfill without the distinction.
+Give consumers the primary identifier's kind and value as structured fields
 *additively* — new optional members alongside `SecuritySummaryDto.PrimaryIdentifier` and its
 positional constructor (`SecurityDtos.cs:19-26`), or a dedicated internal lookup DTO — because
 Contracts changes are required to stay additive for the browser and WPF clients that construct and
@@ -4390,8 +4428,10 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    review) — so a deployment audit decides whether there is anything to repair (the routes are live
    to external callers; source cannot say no rows exist — corrected 2026-09-05), and every month of
    postings after a consumer lands makes retrofitted verification a data-repair exercise. B4, B5,
-   and B6 ride with it: a reopened case must carry correction lineage to its own posting and a
-   correcting effect that neutralizes it — the journal lines and, once B3 applies lot mutations,
+   and B6 ride with it: a reopened case must carry
+   correction lineage to its own posting, in the same book and basis (added 2026-09-06), and a
+   correcting effect
+   that neutralizes it — the journal lines and, once B3 applies lot mutations,
    the lots, by inverse mutations in the same transaction, with typed inverses for created targets
    and fully relieved sources (added 2026-09-06) — under a correction approval
    recorded before drafting over a deterministic preview of the
@@ -4400,8 +4440,9 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    2026-09-06) — before it can bind again (extended 2026-09-06),
    approval must reference a durable evidence record — one the lane
    must first define, with a stable identifier on the approval contract — rather than mint retained
-   evidence at posting, and posting must be fenced against a case transition that lands between the
-   spine append and the case record,
+   evidence at posting, and
+   posting must be fenced, by one active reservation per case (corrected 2026-09-06), against a case
+   transition that lands between the spine append and the case record,
    with any orphan already made left unauthorized and corrected by an approved reversal or rebook,
    not adopted and not retroactively approved,
    and a confirmed append failure resumed from the Approved attestation the spine already holds
@@ -4621,5 +4662,10 @@ a reload before it is a check and only the position takes part in the append's c
 gave B3's lot seam a target position to lock, since the plan names successor lots by security alone
 and a security and book may carry more than one position; added the inverse create and delete
 operations B4's reversal needs, since the plan's vocabulary has neither; drew B6's ambiguity
-boundary at the Approved-stage append the posting service makes first; and required B6's
-journal-found branch to reconcile the lot batch the journal record cannot name.
+boundary at the Approved-stage append the posting service makes first;
+and required B6's journal-found branch to reconcile the lot batch the journal record cannot name; a
+thirtieth (2026-09-06) keyed B6's reservation on the case rather than as the receipt is keyed, since
+the receipt's uniqueness admits a second command under a second key; withdrew B4's reading of the
+correction check as same-scope validation, since it compares the reference to the corrected event
+and never to the correcting spine's scope; and added the currency the backfill advertises to B7's
+merge, fill-only and validated, since the ledger asserts that field before it drafts.
