@@ -11,6 +11,36 @@ public sealed class DirectLendingPostgresIntegrationTests
     private const string WorkflowIdPrefix = "wf-";
 
     [DirectLendingDatabaseFact]
+    public async Task CashFlowIdentityMigration_PreservesRetainedFlowsAndReconciliationReferences()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+            return;
+        var loan = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m,
+            new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "migration-retention"));
+        var projection = await db.Service.RequestProjectionAsync(loan.LoanId, new DateOnly(2026, 6, 30));
+        var reconciliation = await db.Service.ReconcileAsync(loan.LoanId);
+        var flows = await db.Store.GetProjectedCashFlowsAsync(projection.ProjectionRunId);
+        var results = await db.Store.GetReconciliationResultsAsync(reconciliation!.ReconciliationRunId);
+        flows.Should().NotBeEmpty();
+        results.Should().Contain(result => result.ProjectedCashFlowId != null);
+        await using var connection = new NpgsqlConnection(db.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"alter table {db.Schema}.projected_cash_flow rename column projected_cash_flow_id to projected_flow_id; alter table {db.Schema}.reconciliation_result rename column projected_cash_flow_id to projected_flow_id;";
+        await command.ExecuteNonQueryAsync();
+        var migration = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,
+            "DirectLending", "Migrations", "009_direct_lending_cash_flow_identity.sql"));
+        command.CommandText = migration.Replace("__SCHEMA__", db.Schema, StringComparison.Ordinal);
+        await command.ExecuteNonQueryAsync();
+        await command.ExecuteNonQueryAsync();
+        (await db.Store.GetProjectedCashFlowsAsync(projection.ProjectionRunId)).Should().BeEquivalentTo(flows);
+        (await db.Store.GetReconciliationResultsAsync(reconciliation.ReconciliationRunId)).Should().BeEquivalentTo(results);
+    }
+
+    [DirectLendingDatabaseFact]
     public async Task ProjectionRetry_ConcurrentCommandsRetainOneRunAndOriginalFlowIdentities()
     {
         await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
