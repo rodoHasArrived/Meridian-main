@@ -3573,8 +3573,10 @@ is that the count can only grow.
 **Remedy.** Retain, at drafting time, every projection input that can stale independently — the
 digest commits the case version, the election id and version, the policy-decision id and version,
 the lot-snapshot id and version, the position-snapshot id, and the position version
-(`CorporateActionAccountingProjectionService.Fingerprints.cs:48-60`) — typed on the spine
-candidate (or the drafted spine's scope). At attach, reload each of them from its authority and
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:48-60`), and the accounting period's id
+and expected version (`:73-74`; added to this list 2026-09-06, after review, which had omitted it) —
+typed on the spine candidate (or the drafted spine's scope).
+At attach, reload each of them from its authority and
 compare the current version to the retained one, refusing `ProjectionStale` on any mismatch; for
 the case, that read is the row the store already loads at the caller's `ExpectedVersion`
 (`PostgresCorporateActionOperationsStore.Accounting.cs:103-106`). A case-version comparison alone
@@ -3585,7 +3587,14 @@ position when it drafts (`AssetAccountingEventSpineService.cs:984-1013`), not wh
 attaches, and attach reads nothing but the case (`CorporateActionCaseAccountingService.cs:62-65`
 checks that the policy and lot identities are present, `:82` requires the loaded case attachable)
 — so a candidate built from an obsolete position or policy state would pass a case-version check
-and post. Retaining the fields is the precondition; reloading them is the check. Leave
+and post. Retaining the fields is the precondition; reloading them is the check. The period is the
+one input the lane already retains in the clear and still verifies too late (added 2026-09-06, after
+review): attach keeps the candidate's `ExpectedPeriodVersion` on the binding
+(`CorporateActionCaseAccountingService.cs:362-366`, `:393-394`), but the live period is read and its
+version compared only when the case lane posts (`EnsureOpenPeriodAsync`, `:222`, `:411-433`) and
+again by the posting service (`AccountingPostingCandidatePostService.cs:323-337`) — both after
+approval — so a candidate drafted against a period that has since advanced attaches and is approved
+before anything notices; the same reload at attach, and at approval, closes that. Leave
 `bound_case_version` as it is: the first version
 of this paragraph (corrected 2026-09-02, after review) said to stamp it "from the verified value's
 successor" so the column would mean the version prepared against — a remedy that changes nothing,
@@ -3805,13 +3814,22 @@ Second, close both generic routes to this kind:
 refuse `EventKind == CorporateAction` on `LedgerAssetAccountingEventProjections`, or require on it
 an attestation only the in-process projector can produce, so a corporate-action spine has exactly
 one origin; and on the generic posting route (`:474`), refuse corporate-action candidates, or load
-the stored case approval by the caller's `ApprovalId` and compare its attestor and evidence
-identity *before* the append — where `EnsureAssetProjectionApprovedAsync` already runs
-(`AccountingPostingCandidatePostService.cs:341-346`), ahead of `journalStore.AppendAsync`
-(`:349`) — so a corporate-action journal has exactly one posting authority. That comparison
-belongs on the posting route, not in the case lane's adoption branch (corrected 2026-09-05, after
-review; the first version offered the adoption check as the alternative): the branch runs only
-once `spine.PostedJournalImpact` exists (`CorporateActionCaseAccountingService.cs:233-243`), after
+the stored case approval by the caller's `ApprovalId` and require it to be active and bound to this
+candidate — its `CaseId` the case the spine's linkage names, its `ProjectionId` a binding whose
+`DraftedCandidateFingerprint` is this candidate's, and its attestor and evidence identity the
+Approved stage's — *before* the append, where `EnsureAssetProjectionApprovedAsync` already runs
+(`AccountingPostingCandidatePostService.cs:341-346`), ahead of `journalStore.AppendAsync` (`:349`),
+so a corporate-action journal has exactly one posting authority. Attestor and evidence alone are not
+that binding (corrected 2026-09-06, after review; the previous sentence compared only those): the
+approval row already carries `CaseId`, `ProjectionId`, `BoundCaseVersion`, and its voided state
+(`CorporateActionCaseAccountingContracts.cs:54-67`), and without them a valid, active approval from
+a different case — the same approver, real evidence — would authorize an unrelated candidate, since
+`EnsureAssetProjectionApprovedAsync` itself validates only the spine and the Approved stage the
+caller's request built (`:477-519`).
+That comparison belongs on the posting route, not in the case lane's adoption branch (corrected
+2026-09-05, after review; the first version offered the adoption check as the alternative): the
+branch runs only once `spine.PostedJournalImpact` exists
+(`CorporateActionCaseAccountingService.cs:233-243`), after
 the journal (`:349`) and the Posted spine version (`:611-617`) are appended, both immutable, so
 refusing adoption leaves the unauthorised journal posted and only stops the case from recording
 it as its own. Keep the adoption comparison as defense in depth, no more. With both, the values
@@ -4094,9 +4112,10 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    compare; and decide whether the key governs posting or is renamed, since today it governs
    nothing. In the same change retain every independently versioned drafting-time
    input the digest commits (case, election, policy decision, lot snapshot, position snapshot,
-   position) as typed fields on the candidate, and at attach reload each from its authority and
-   compare, refusing a stale draft on any mismatch — a case-version check alone misses a position
-   or policy decision that moved without touching the case (corrected 2026-09-06);
+   position, accounting period) as typed fields on the candidate, and at attach reload each from
+   its authority and compare, refusing a stale draft on any mismatch — a case-version check alone
+   misses a position or policy decision that moved without touching the case, and the period is
+   verified today only at posting, after approval (corrected 2026-09-06);
    `bound_case_version` stays the post-attach stamp the currency gate needs, and is not
    where the candidate's currency gets tested (B2). This entry has been corrected with its finding:
    the first version said all six fields were comparable at attach, the second said three, the
@@ -4293,4 +4312,7 @@ as what B3 is for; and its remedy gained the lot-mutation seam it lacked, since 
 the spine request from the event alone, the posting candidate's only lot instruction models
 acquisition and disposal, and the spine resolves no other kind — and scoped B7's universal failure
 to the bulk, search-backed paths, since the two direct post-create and post-amend fetch calls pass
-the raw identifier value.
+the raw identifier value; a twenty-third (2026-09-06) bound B3's posting-side check to the approval
+row's own case, projection, and fingerprint rather than to attestor and evidence alone, and added
+the accounting period to B2's attach-time reload, since the digest commits its version and the lane
+verifies it only when it posts, after approval.
