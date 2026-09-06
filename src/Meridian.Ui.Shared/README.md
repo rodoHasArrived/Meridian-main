@@ -11,6 +11,10 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Ui.Shared
 
+The portfolio cash ladder blocks decisions when any opening balance, projected cash flow,
+or capital activity lacks currency evidence, even when other rows identify a currency.
+Blocked ladders return no buckets, preventing incomplete inputs from emitting breach flags.
+
 The shared workstation graph owns first-run state, the curated starter catalog,
 versioned sample provisioning, and outcome-based activation evidence. Browser and WPF
 clients consume these endpoints instead of defining client-only setup policy. Initial

@@ -82,6 +82,22 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
             decisionBlockers.Add("The authoritative cash-balance provider returned no opening balances.");
         }
 
+        if (cashBalances.Any(static balance => string.IsNullOrWhiteSpace(balance.Currency)))
+        {
+            decisionBlockers.Add("An opening cash balance is missing currency evidence.");
+        }
+
+        if (positions.SelectMany(static position => position.Operations.ProjectedCashFlows)
+            .Any(static flow => string.IsNullOrWhiteSpace(flow.Currency)))
+        {
+            decisionBlockers.Add("A projected cash flow is missing currency evidence.");
+        }
+
+        if (capitalActivity.Any(static activity => string.IsNullOrWhiteSpace(activity.Currency)))
+        {
+            decisionBlockers.Add("A capital activity is missing currency evidence.");
+        }
+
         var cashCurrencies = cashBalances
             .Select(static balance => balance.Currency)
             .Where(static currency => !string.IsNullOrWhiteSpace(currency))

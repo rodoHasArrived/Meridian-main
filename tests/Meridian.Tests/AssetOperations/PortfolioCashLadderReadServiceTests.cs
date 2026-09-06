@@ -199,6 +199,48 @@ public sealed class PortfolioCashLadderReadServiceTests
         ladder.BlockingReasons.Should().ContainMatch("*no authoritative FX conversion source*");
     }
 
+    [Theory]
+    [InlineData("cash", "")]
+    [InlineData("cash", " ")]
+    [InlineData("flow", "")]
+    [InlineData("flow", " ")]
+    [InlineData("capital", "")]
+    [InlineData("capital", " ")]
+    public async Task GetCashLadderAsync_WhenAnyAmountLacksCurrency_BlocksDespiteOtherUsdEvidence(
+        string missingSource, string missingCurrency)
+    {
+        var securityId = Guid.NewGuid();
+        var detail = BuildDetail(securityId, "Held bond", couponAmount: 100m);
+        var assetOperations = Substitute.For<IAssetOperationsQueryService>();
+        assetOperations.GetOperationsAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(detail with
+            {
+                ProjectedCashFlows = detail.ProjectedCashFlows
+                    .Select(flow => flow with { Currency = missingSource == "flow" ? missingCurrency : "USD" })
+                    .ToArray()
+            });
+        var holdings = Substitute.For<IPortfolioHoldingsSource>();
+        holdings.GetHoldingsAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns([new PortfolioHoldingDto(securityId, 1m)]);
+        var cash = BuildCashBalanceProvider();
+        cash.GetCashBalancesAsync(Arg.Any<CancellationToken>()).Returns([
+            new PortfolioCashBalanceDto("cash-1", "Known cash", 100m, "USD", "Ledger", "cash-1"),
+            new PortfolioCashBalanceDto("cash-2", "Additional cash", 100m,
+                missingSource == "cash" ? missingCurrency : "USD", "Ledger", "cash-2")]);
+        var capital = Substitute.For<IPortfolioCapitalScheduleProvider>();
+        capital.GetCapitalActivityAsync(Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns([new PortfolioCapitalActivityDto(Guid.NewGuid(), "Redemption", Today.AddDays(2),
+                1000m, missingSource == "capital" ? missingCurrency : "USD", "Capital", "redemption-1", "Scheduled outflow")]);
+        var service = new PortfolioCashLadderReadService(assetOperationsQueryService: assetOperations,
+            holdingsSource: holdings, cashBalanceProvider: cash, capitalScheduleProvider: capital);
+
+        var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
+
+        ladder.IsDecisionReady.Should().BeFalse();
+        ladder.Buckets.Should().BeEmpty("unidentified currency cannot support cash or breach decisions");
+        ladder.BlockingReasons.Should().ContainMatch("*missing currency evidence*");
+    }
+
     private static IPortfolioCashBalanceProvider BuildCashBalanceProvider()
     {
         var provider = Substitute.For<IPortfolioCashBalanceProvider>();
