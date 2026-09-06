@@ -18,7 +18,10 @@ last_reviewed: 2026-08-30
 `DirectLendingOutboxDispatcher` treats rejected projection and reconciliation command results as
 failed deliveries. The durable message is marked failed for retry and is acknowledged only after
 the command succeeds. `DirectLendingOutboxFailureTests` exercises failure followed by success for
-both topics; this does not prove idempotence across every crash after a projection commit.
+both topics. Projection and reconciliation retries with a command ID reuse a deterministic run
+identity; outbox replay can use its source-event causation ID when the command ID is absent.
+After publication failure, the service reloads committed detail rows rather than rebuilding them.
+Calls without either identity still create a new run and require separate API retry-policy work.
 
 Meridian application layer contains use cases, orchestration services, commands, and workflow
 coordination.

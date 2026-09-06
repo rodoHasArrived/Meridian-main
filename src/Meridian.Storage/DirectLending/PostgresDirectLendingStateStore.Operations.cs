@@ -137,6 +137,15 @@ public sealed partial class PostgresDirectLendingStateStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await LockRunIdentityAsync(connection, transaction, "projection", run.ProjectionRunId, ct).ConfigureAwait(false);
+        var committed = await ReadProjectionIdentityAsync(connection, transaction, run.ProjectionRunId, ct).ConfigureAwait(false);
+        if (committed is not null)
+        {
+            if (committed.LoanId != run.LoanId || committed.ProjectionAsOf != run.ProjectionAsOf)
+                throw new InvalidOperationException("Projection run identity conflicts with the committed request.");
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            return committed;
+        }
 
         if (run.SupersedesProjectionRunId is Guid supersededId)
         {
@@ -525,6 +534,15 @@ public sealed partial class PostgresDirectLendingStateStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await LockRunIdentityAsync(connection, transaction, "reconciliation", run.ReconciliationRunId, ct).ConfigureAwait(false);
+        var committed = await ReadReconciliationIdentityAsync(connection, transaction, run.ReconciliationRunId, ct).ConfigureAwait(false);
+        if (committed is not null)
+        {
+            if (committed.LoanId != run.LoanId)
+                throw new InvalidOperationException("Reconciliation run identity belongs to another loan.");
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            return committed;
+        }
 
         await using (var deleteExceptions = connection.CreateCommand())
         {

@@ -11,6 +11,59 @@ public sealed class DirectLendingPostgresIntegrationTests
     private const string WorkflowIdPrefix = "wf-";
 
     [DirectLendingDatabaseFact]
+    public async Task ProjectionRetry_ConcurrentCommandsRetainOneRunAndOriginalFlowIdentities()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+            return;
+        var loan = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m,
+            new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "retry-flow"));
+        var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "integration-test", true);
+        var asOf = new DateOnly(2026, 6, 30);
+        var results = await Task.WhenAll(Enumerable.Range(0, 8)
+            .Select(_ => db.CommandService.RequestProjectionAsync(loan.LoanId, asOf, metadata)));
+        results.Should().OnlyContain(result => result.IsSuccess);
+        results.Select(result => result.Value!.ProjectionRunId).Distinct().Should().ContainSingle();
+        var retained = (await db.Store.GetProjectionRunsAsync(loan.LoanId)).Should().ContainSingle().Subject;
+        var flows = await db.Store.GetProjectedCashFlowsAsync(retained.ProjectionRunId);
+        flows.Should().NotBeEmpty();
+        var replay = await db.CommandService.RequestProjectionAsync(loan.LoanId, asOf, metadata);
+        replay.Value!.Should().Be(retained);
+        (await db.Store.GetProjectedCashFlowsAsync(retained.ProjectionRunId))
+            .Select(flow => flow.ProjectedCashFlowId).Should().Equal(flows.Select(flow => flow.ProjectedCashFlowId));
+        var conflict = await db.CommandService.RequestProjectionAsync(loan.LoanId, asOf.AddDays(1), metadata);
+        conflict.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
+        (await db.Store.GetProjectionRunsAsync(loan.LoanId)).Should().ContainSingle();
+    }
+
+    [DirectLendingDatabaseFact]
+    public async Task ReconciliationRetry_RetainsCommittedResultsUnderConcurrentDelivery()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+            return;
+        var loan = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m,
+            new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "retry-reconciliation"));
+        await db.CommandService.RequestProjectionAsync(loan.LoanId, new DateOnly(2026, 6, 30));
+        var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "integration-test", true);
+        var deliveries = await Task.WhenAll(Enumerable.Range(0, 8)
+            .Select(_ => db.CommandService.ReconcileAsync(loan.LoanId, metadata)));
+        deliveries.Should().OnlyContain(result => result.IsSuccess);
+        deliveries.Select(result => result.Value!.ReconciliationRunId).Distinct().Should().ContainSingle();
+        var retained = (await db.Store.GetReconciliationRunsAsync(loan.LoanId)).Should().ContainSingle().Subject;
+        var details = await db.Store.GetReconciliationResultsAsync(retained.ReconciliationRunId);
+        details.Should().NotBeEmpty();
+        var replay = await db.CommandService.ReconcileAsync(loan.LoanId, metadata);
+        replay.Value!.Should().Be(retained);
+        (await db.Store.GetReconciliationResultsAsync(retained.ReconciliationRunId))
+            .Select(result => result.ReconciliationResultId).Should().Equal(details.Select(result => result.ReconciliationResultId));
+    }
+
+    [DirectLendingDatabaseFact]
     public async Task PostgresService_ShouldPersistSchemaVersionedHistoryAndSnapshots()
     {
         await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();

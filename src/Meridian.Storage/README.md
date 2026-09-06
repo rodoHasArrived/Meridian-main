@@ -11,6 +11,12 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+Direct-lending projection and reconciliation persistence serializes matching run identities with
+a PostgreSQL transaction advisory lock. A committed identity returns its existing run before any
+detail-row deletion, insertion, or superseding update. Concurrent retries retain the first saved
+flows and reconciliation results. `DirectLendingPostgresIntegrationTests` covers both paths;
+hosted database validation is required before treating this as release evidence.
+
 ## Shared close and lot convergence
 
 Migration `V_ledger_034__open_lot_acquisition.sql` adds nullable retained acquisition facts to the existing tax-lot record, without backfilling legacy rows. Canonical identity and acquisition economics cannot be rewritten; ordinary partial relief preserves acquisition evidence. `LedgerOpenLotProjection` refuses missing evidence or unexplained basis drift and translates the legacy per-100 face convention into explicit face quantity. Atomic fingerprints include populated acquisition facts while absent fields preserve legacy fingerprints. Focused proof: `OpenLotConvergenceTests`, `OpenLotPostgresTests`, and `AtomicTaxLotJournalStoreTests`.
