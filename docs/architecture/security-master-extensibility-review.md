@@ -3644,9 +3644,16 @@ own lines — and attach to it whatever lineage hash and case, lot, policy, and 
 make B1's checks pass. The prerequisite is stated exactly (narrowed 2026-09-06, after review, in
 two steps: the first version let the caller invent the economics, the second let the caller pick
 the kind): the position must already retain a corporate-action event, and the deterministic event
-identity B1 would recompute must be that event's — so the reach is a case bound to *another*
-corporate action's retained event on the same position, or to its own event under
-caller-authored lineage and linkage, not to an arbitrary acquisition or disposal. Retaining a
+identity B1 would recompute must be that event's. That identity hashes the source action id
+*and* the case id (`CorporateActionAccountingProjectionService.Fingerprints.cs:10-22`), and the
+position check compares the whole economic event, id included, against what the position
+retains (`AssetAccountingEventSpineService.cs:984-993`) — so once B1 recomputes the identity from
+the target case's own action and case, another action's retained event cannot match it, and the
+"another corporate action" reach falls away (narrowed a third time 2026-09-06, after review) unless
+the position authority itself has been made to retain a forged event, which is a different and
+larger prerequisite. What remains is the case's *own* retained event under caller-authored
+lineage and linkage — not an arbitrary acquisition or disposal, and not another action.
+Retaining a
 case version that caller supplied does not bind those economics to *this case's* action. The
 spine's fingerprint, the validator, the position check, and Rules Studio keep the *record*, the
 *kind*, and the *economics* honest; nothing keeps the *association* honest — that this journal is
@@ -3863,9 +3870,13 @@ until the next attempt resolves the outcome from the journal store's own idempot
 the posting it keys by ledger book and source event (`FindExistingPostingAsync`, `:351`) — not
 from the exception and not from the spine stage: a posting found there under this approval
 completes the record (adoption is legitimate here, because the standing marker proves no
-transition intervened) and advances the spine if the service had not; no posting found clears
-the marker; and a marker past a bounded age still unresolved goes to reconciliation rather than
-being cleared. Recover: not by adopting the journal "regardless of
+transition intervened) and advances the spine if the service had not; a posting *not* found does
+not clear it (corrected 2026-09-06, after review; the previous version cleared on the first
+miss), because the original commit can still be in flight after the caller lost its connection
+and a single negative read is not proof of rollback — the marker stays until a bounded
+reconciliation establishes a stable negative outcome; and a marker past that bound still
+unresolved goes to reconciliation rather than being cleared. Recover: not by adopting the
+journal "regardless of
 the case's current state" (corrected 2026-09-06, after review; the first version of this remedy
 said exactly that): the transition
 that won the race voided the approval on purpose
@@ -3899,8 +3910,16 @@ the ticker-details response as an array and takes its first element
 (`TradingParametersBackfillService.cs:146-154`), but Polygon's `/v3/reference/tickers/{symbol}`
 returns `results` as a single object — which the repository's own client already models that way
 (`PolygonSymbolSearchProvider.cs:107-115`, `:224-227`) — so every *valid* response takes the "No
-results found" return as well. Two defects stand between the job and its first amendment, and
-either alone leaves the success count at 100% of nothing.
+results found" return as well. And a third stands behind those two (added 2026-09-06, after
+review): the amendment the backfill builds cannot be applied. It serialises `CommonTerms` as
+three vendor-named fields — `min_tick_size`, `lot_size`, `market`
+(`TradingParametersBackfillService.cs:185-191`) — and passes that as the security's common terms,
+but the command mapping requires `displayName` and `currency` and reads the canonical `lotSize`,
+`tickSize`, and `exchange` keys (`SecurityMasterMapping.cs:214-226`), strictly, by design
+(`:228-231`); `CommonTerms` is a whole document, not a patch, so `AmendTermsAsync` throws on the
+missing required fields, the inner catch (`:219-222`) returns normally, and the outer loop counts
+another success. Three defects stand between the job and its first amendment, and any one of
+them alone leaves the success count at 100% of nothing.
 
 **Remedy.** Three parts, and the first two before P4's outcome typing. Resolve the identifier
 before calling the vendor: select an active `Ticker` or a Polygon-scoped `ProviderSymbol` alias
@@ -3911,7 +3930,10 @@ that has neither. Parse the ticker-details response as the object it is, into th
 an array to that one object (`:237`); not into the symbol-search provider's `PolygonTickerDetails`,
 which is a private nested type without either field (`PolygonSymbolSearchProvider.cs:233`)
 (corrected 2026-09-06, after review; the first version of this remedy said to reuse it, which
-would have failed to compile or dropped both parameters). Give consumers the primary identifier's
+would have failed to compile or dropped both parameters). Merge the fetched values into the
+security's existing canonical common-terms document — the detail the backfill already loads
+(`:193`) — under the canonical keys, and amend with the merged document, never the three-field
+replacement (added 2026-09-06, after review). Give consumers the primary identifier's
 kind and value as structured fields *additively* — new optional members alongside
 `SecuritySummaryDto.PrimaryIdentifier` and its positional constructor
 (`SecurityDtos.cs:19-26`), or a dedicated internal lookup DTO — because Contracts changes are
@@ -4133,4 +4155,8 @@ field-less model offered for reuse, and a contract field offered for replacement
 contracts are additive-only; a nineteenth corrected the fence once more — an append that throws
 is not a confirmed failure, since the journal can commit while the caller sees an exception, so
 the marker resolves from the journal store's idempotency record, never from the exception or the
-spine stage.
+spine stage; a twentieth removed the "another corporate action" reach from B3 (the identity B1
+recomputes hashes the case's own action and case ids, so another action's retained event cannot
+match it), stopped the fence clearing on a single negative read, and added B7's third defect —
+the amendment replaces the common terms with three vendor-named fields the strict command mapping
+rejects.
