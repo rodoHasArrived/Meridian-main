@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text;
+using System.Security.Cryptography;
 using FluentAssertions;
 using Meridian.Contracts.Catalog;
 using Meridian.Storage;
@@ -357,6 +359,81 @@ public sealed class StorageCatalogServiceTests : IDisposable
 
         savedCatalog.Should().NotBeNull();
         savedCatalog!.Symbols.Should().ContainKey("AAPL");
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task RebuildCatalogAsync_AppendHandleRemainsOpen_IndexesFlushedBytesAndChecksum()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await _service.InitializeAsync(timeout.Token);
+        var path = Path.Combine(_testDirectory, "AAPL", "Trade", "2026-01-05.jsonl");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        var bytes = Encoding.UTF8.GetBytes("{\"Symbol\":\"AAPL\",\"Sequence\":1}\n");
+        await using var writer = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read | FileShare.Delete);
+        await writer.WriteAsync(bytes, timeout.Token);
+        await writer.FlushAsync(timeout.Token);
+        writer.Flush(flushToDisk: true);
+
+        var result = await _service.RebuildCatalogAsync(ct: timeout.Token);
+
+        result.Success.Should().BeTrue(string.Join("; ", result.Errors));
+        var entry = _service.GetFilesForSymbol("AAPL").Should().ContainSingle().Which;
+        entry.SizeBytes.Should().Be(bytes.Length);
+        entry.EventCount.Should().Be(1);
+        entry.ChecksumSha256.Should().Be(Convert.ToHexStringLower(SHA256.HashData(bytes)));
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task RebuildCatalogAsync_FileChangesAfterScan_PreservesPreviousManifest()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await _service.InitializeAsync(timeout.Token);
+        var manifest = Path.Combine(_testDirectory, "_catalog", "manifest.json");
+        var retained = await File.ReadAllTextAsync(manifest, timeout.Token);
+        var retainedId = _service.GetCatalog().CatalogId;
+        var path = Path.Combine(_testDirectory, "candidate.jsonl");
+        await File.WriteAllTextAsync(path, "{}\n", timeout.Token);
+        var mutated = false;
+        var progress = new InlineCatalogProgress(update =>
+        {
+            if (update.Phase == "Indexing" && !mutated)
+            {
+                File.AppendAllText(path, "{}\n");
+                mutated = true;
+            }
+        });
+
+        var result = await _service.RebuildCatalogAsync(new CatalogRebuildOptions { MaxParallelism = 1 }, progress, timeout.Token);
+
+        mutated.Should().BeTrue();
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain(message => message.Contains("changed while scanning", StringComparison.Ordinal));
+        _service.GetCatalog().CatalogId.Should().Be(retainedId);
+        (await File.ReadAllTextAsync(manifest, timeout.Token)).Should().Be(retained);
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task RebuildCatalogAsync_MetadataReadFails_RejectsCandidateInsteadOfPublishingZeroEvents()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await _service.InitializeAsync(timeout.Token);
+        var manifest = Path.Combine(_testDirectory, "_catalog", "manifest.json");
+        var retained = await File.ReadAllTextAsync(manifest, timeout.Token);
+        await File.WriteAllBytesAsync(Path.Combine(_testDirectory, "broken.jsonl.gz"), [1, 2, 3, 4], timeout.Token);
+
+        var result = await _service.RebuildCatalogAsync(ct: timeout.Token);
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().NotBeEmpty();
+        (await File.ReadAllTextAsync(manifest, timeout.Token)).Should().Be(retained);
+    }
+
+    private sealed class InlineCatalogProgress(Action<CatalogRebuildProgress> report) : IProgress<CatalogRebuildProgress>
+    {
+        public void Report(CatalogRebuildProgress value) => report(value);
     }
 
     [Fact]

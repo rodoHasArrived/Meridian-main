@@ -7,7 +7,7 @@ public static class ProcessTestHelperMarker
 {
 }
 
-internal static class Program
+internal static partial class Program
 {
     public static async Task<int> Main(string[] args)
     {
@@ -24,6 +24,7 @@ internal static class Program
                 "spawn-detached-gated-mutation" => await SpawnGatedMutationAsync(args, detachChildOutput: true).ConfigureAwait(false),
                 "delayed-spawn-gated-mutation" => await DelayedSpawnGatedMutationAsync(args).ConfigureAwait(false),
                 "emit-output" => await EmitOutputAsync(args).ConfigureAwait(false),
+                "etl-crash-stage" => await RunEtlUntilKilledAsync(args).ConfigureAwait(false),
                 _ => throw new ArgumentOutOfRangeException(nameof(args), args[0], "Unknown helper mode.")
             };
         }

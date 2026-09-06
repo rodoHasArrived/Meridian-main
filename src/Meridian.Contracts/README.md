@@ -23,6 +23,11 @@ single monitoring transport owner.
 
 ## Purpose
 
+`Coordination/IExecutionLease.cs` defines execution-scoped ownership. A unique run owner can
+execute a side effect only while the coordination store excludes lease transfer. Managers or
+stores that do not implement this capability throw rather than falling back to a check followed
+by an unprotected action. This service contract does not change workstation transport payloads.
+
 Meridian contracts contains shared DTOs and cross-layer contracts used by host, services,
 dashboard, and WPF.
 
