@@ -3875,8 +3875,18 @@ append a second full originating effect, doubling the ledger under a lineage tha
 restatement. The correcting candidate must therefore neutralize the retained impact: its projected
 effect must be a reversal of the retained lines, a reversal-and-rebook pair, or a validated delta
 — an effect whose sum with the retained lines equals the restated economics — and the spine must
-verify that where it already holds both sides, in `ResolveCorrectionAuthorityAsync` with the
-retained lines in hand, rather than accept any balanced effect that cites the right journal. The
+verify that where it already holds both sides: in `ResolveCorrectionAuthorityAsync`, comparing the
+correcting effect it receives on the spine, `source.ProjectedEffect.Lines`, with the corrected
+event's retained `PostedJournalImpact.Lines` it loads, rather than accepting any balanced effect
+that cites the right journal. The operands are named because a review read the method as holding
+only the prior lines (stated 2026-09-06, after review): it takes only the source spine, but that
+spine carries the correcting effect at both call sites — projection sets `ProjectedEffect` from the
+request before calling it (`:166-171`, `:239`), and drafting passes the stored Projected spine
+(`:381`), on which the validator requires the effect to be present
+(`AssetAccountingEventDtos.cs:583`) — and the Drafted step then refuses unless the Rules Studio
+dry-run's generated lines equal that projected effect (`:1161-1167`), so the candidate the lane
+posts is those lines by construction; re-asserting the same comparison at candidate construction is
+belt and braces, not the missing check. The
 ledger's general posting path already has the vocabulary (`AccountingPostingIntentDto.Reversal`,
 `Rebook`, and `Restatement`, each requiring source-journal lineage,
 `AccountingPostingCommandValidator.cs:114-120`); the spine's correction reference carries the
@@ -4314,5 +4324,10 @@ acquisition and disposal, and the spine resolves no other kind — and scoped B7
 to the bulk, search-backed paths, since the two direct post-create and post-amend fetch calls pass
 the raw identifier value; a twenty-third (2026-09-06) bound B3's posting-side check to the approval
 row's own case, projection, and fingerprint rather than to attestor and evidence alone, and added
-the accounting period to B2's attach-time reload, since the digest commits its version and the lane
-verifies it only when it posts, after approval.
+the accounting period to B2's attach-time reload, since the
+digest commits its version and the lane verifies it only when it posts, after approval; a
+twenty-fourth (2026-09-06) named the two operands of B4's neutralization check — the correcting
+effect the spine carries as `ProjectedEffect` and the corrected event's retained posted lines —
+after a review read the correction-authority method as holding only the prior lines; source shows it
+receives the correcting effect at both call sites and the dry-run equality binds the drafted
+candidate to it, so the check stays where the remedy put it.
