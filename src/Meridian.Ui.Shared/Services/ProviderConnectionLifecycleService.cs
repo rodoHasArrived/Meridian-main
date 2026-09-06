@@ -196,12 +196,14 @@ public sealed class ProviderConnectionLifecycleService
             using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"status {(int)response.StatusCode} ({response.ReasonPhrase ?? response.StatusCode.ToString()})");
+                throw new HttpRequestException("Provider verification returned an unsuccessful status.", null, response.StatusCode);
             }
 
             var account = await response.Content.ReadFromJsonAsync<AlpacaAccountVerificationResponse>(cancellationToken: ct)
                 .ConfigureAwait(false);
-            var accountId = FirstNonBlank(account?.AccountNumber, account?.Id, "unknown");
+            var accountId = FirstNonBlank(account?.AccountNumber, account?.Id);
+            if (string.IsNullOrWhiteSpace(accountId))
+                throw new InvalidOperationException("Provider account identity is missing.");
             var verifiedAt = DateTimeOffset.UtcNow;
             await _credentialStore.RecordVerificationAsync(
                 new ProviderCredentialVerificationUpdate(
@@ -224,8 +226,10 @@ public sealed class ProviderConnectionLifecycleService
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            var message = $"Alpaca /v2/account verification failed: {ex.Message}";
-            _logger.LogWarning(ex, "Provider connection center Alpaca verification failed for {Environment}", environment);
+            const string message = "Alpaca account verification failed.";
+            // Provider reason phrases, JSON paths and transport exceptions can echo credentials.
+            _logger.LogWarning("Alpaca account verification failed for {Environment} ({FailureType})",
+                environment, ex.GetType().Name);
             var verifiedAt = DateTimeOffset.UtcNow;
             await _credentialStore.RecordVerificationAsync(
                 new ProviderCredentialVerificationUpdate(
