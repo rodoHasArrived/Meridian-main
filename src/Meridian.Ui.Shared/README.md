@@ -32,6 +32,10 @@ The ledger open-lot maintenance routes expose survey, exception queue, retained 
 
 Journal automation exposes a read-only valuation freshness preview and retains dated mark evidence through journal review. The same policy decisions feed browser and desktop position read models; absent observation history stays review required. Close subject ownership is resolved from authoritative book, account, and entity records through `CloseReadinessSubjectSource`.
 
+## Credential migration recovery
+
+The provider-module compatibility adapter requires atomic legacy-import support from the credential vault. It removes the plaintext sidecar only after the complete import and audit succeed; retries preserve credentials already retained in the vault.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser

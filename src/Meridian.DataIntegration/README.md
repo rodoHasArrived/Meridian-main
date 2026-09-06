@@ -11,6 +11,10 @@ last_reviewed: 2026-08-05
 
 # src/Meridian.DataIntegration
 
+## Credential migration recovery
+
+Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. All vault reads and mutations share a bounded, cancellable file lock across store instances; audit failure retains the sidecar for retry.
+
 ## Purpose
 
 Physical bounded-context module project for provider, ingestion, canonicalization, validation,

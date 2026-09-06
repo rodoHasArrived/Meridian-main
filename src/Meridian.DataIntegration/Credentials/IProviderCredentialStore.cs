@@ -17,6 +17,12 @@ public interface IProviderCredentialStore
     Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default);
 }
 
+/// <summary>Atomic, insert-only import of a complete historical credential sidecar.</summary>
+public interface ILegacyProviderCredentialImporter
+{
+    Task ImportLegacyAsync(IReadOnlyList<ProviderCredentialSaveRequest> requests, CancellationToken ct = default);
+}
+
 public sealed record ProviderCredentialSaveRequest(
     string ProviderId,
     IReadOnlyDictionary<string, string?> Credentials,
