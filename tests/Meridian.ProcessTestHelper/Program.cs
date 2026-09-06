@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using Meridian.Storage.Services;
 
 namespace Meridian.ProcessTestHelper;
 
@@ -24,6 +25,7 @@ internal static class Program
                 "spawn-detached-gated-mutation" => await SpawnGatedMutationAsync(args, detachChildOutput: true).ConfigureAwait(false),
                 "delayed-spawn-gated-mutation" => await DelayedSpawnGatedMutationAsync(args).ConfigureAwait(false),
                 "emit-output" => await EmitOutputAsync(args).ConfigureAwait(false),
+                "audit-append-batch" => await AppendAuditBatchAsync(args).ConfigureAwait(false),
                 _ => throw new ArgumentOutOfRangeException(nameof(args), args[0], "Unknown helper mode.")
             };
         }
@@ -38,6 +40,23 @@ internal static class Program
     {
         RequireArgumentCount(args, 2);
         File.WriteAllText(args[1], "mutated");
+        return 0;
+    }
+
+    private static async Task<int> AppendAuditBatchAsync(IReadOnlyList<string> args)
+    {
+        RequireArgumentCount(args, 6);
+        var count = ParsePositiveInt(args[5], "count");
+        var paths = Enumerable.Range(0, count)
+            .Select(index => Path.Combine(args[1], $"{args[2]}-{index:D3}.jsonl"))
+            .ToArray();
+        foreach (var path in paths)
+            await File.WriteAllTextAsync(path, path).ConfigureAwait(false);
+        await File.WriteAllTextAsync(args[3], Environment.ProcessId.ToString()).ConfigureAwait(false);
+        await WaitForFileAsync(args[4], TimeSpan.FromSeconds(60)).ConfigureAwait(false);
+        var audit = new AuditChainService();
+        foreach (var path in paths)
+            await audit.AppendEntryAsync(path).ConfigureAwait(false);
         return 0;
     }
 
