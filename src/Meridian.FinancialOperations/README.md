@@ -11,6 +11,10 @@ last_reviewed: 2026-09-05
 
 # src/Meridian.FinancialOperations
 
+OFX canonical rows retain the containing statement's `CURDEF` currency when no row-level
+currency is supplied. The parser does not borrow currency from another statement; explicit
+row evidence takes precedence. Missing currency remains absent for downstream refusal.
+
 Operations Continuity forwards the journal candidate's typed provenance to the governed posting
 command. PostgreSQL round-trip coverage verifies that seeded origins retain the `SEEDED` journal
 tag and that fixture evidence marked as real cannot commit a journal or a successful posting audit.

@@ -273,12 +273,14 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     private const long MaximumStatementBytes = 32L * 1024 * 1024;
     private const int MaximumRows = 100_000;
     private const int MaximumLineCharacters = 64 * 1024;
+    private const NumberStyles DecimalStyles = NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint;
     private static readonly string[] ExpectedColumns =
         ["account", "symbol", "quantity", "price", "cashAmount", "activityType", "tradeDate"];
     // The canonical artifact written by StatementImportService is this parser's own input, so the
     // accepted optional suffix must stay a prefix-compatible superset of what that writer emits, in
     // the same order. Widening here keeps narrower artifacts written before a column was added
-    // readable, because a shorter header is still a valid prefix of the full list. Only the first
+    // structurally recognizable. Financial rows nevertheless require explicit currency evidence;
+    // a legacy prefix without currency is refused instead of defaulting to USD. Only the first
     // four are carried onto CanonicalStatementRow; the remainder are artifact-level provenance that
     // reconciliation does not consume, and are tolerated rather than mapped.
     private static readonly string[] OptionalCanonicalColumns =
@@ -444,20 +446,24 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                     $"Statement CSV row {recordStartLine} has {fields.Count} columns; expected {header.Count} from the validated header.");
             }
 
-            if (!decimal.TryParse(fields[2], NumberStyles.Number, CultureInfo.InvariantCulture, out var quantity) ||
-                !decimal.TryParse(fields[3], NumberStyles.Number, CultureInfo.InvariantCulture, out var price) ||
-                !decimal.TryParse(fields[4], NumberStyles.Number, CultureInfo.InvariantCulture, out var cashAmount) ||
+            if (!decimal.TryParse(fields[2].Trim(), DecimalStyles, CultureInfo.InvariantCulture, out var quantity) ||
+                !decimal.TryParse(fields[3].Trim(), DecimalStyles, CultureInfo.InvariantCulture, out var price) ||
+                !decimal.TryParse(fields[4].Trim(), DecimalStyles, CultureInfo.InvariantCulture, out var cashAmount) ||
                 !DateOnly.TryParse(fields[6], CultureInfo.InvariantCulture, DateTimeStyles.None, out var tradeDate))
             {
                 throw new InvalidDataException($"Statement CSV row {recordStartLine} contains an invalid numeric or date value.");
             }
 
-            // Capture the four optional canonical columns (settlementDate, currency, feesCommission,
+            // Capture canonical evidence columns (settlementDate, currency, feesCommission,
             // externalTransactionId) that the header validation already guaranteed are present in
             // order. These flow into currency-aware, external-id-based matching downstream instead
             // of being discarded at the canonical-row boundary.
             DateOnly? settlementDate = null;
-            var currency = "USD";
+            if (fields.Count <= 8 || string.IsNullOrWhiteSpace(fields[8]))
+                throw new InvalidDataException($"Statement CSV row {recordStartLine} requires explicit currency evidence.");
+            var currency = fields[8].Trim().ToUpperInvariant();
+            if (currency.Length != 3 || currency.Any(c => c is < 'A' or > 'Z'))
+                throw new InvalidDataException($"Statement CSV row {recordStartLine} requires a three-letter currency code.");
             decimal? feesCommission = null;
             string? externalTransactionId = null;
             if (fields.Count > 7 && !string.IsNullOrWhiteSpace(fields[7]))
@@ -474,13 +480,10 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 settlementDate = parsedSettlement;
             }
 
-            if (fields.Count > 8 && !string.IsNullOrWhiteSpace(fields[8]))
+            if (fields.Count > 9 && !string.IsNullOrWhiteSpace(fields[9]))
             {
-                currency = fields[8].Trim().ToUpperInvariant();
-            }
-
-            if (fields.Count > 9 && decimal.TryParse(fields[9], NumberStyles.Number, CultureInfo.InvariantCulture, out var parsedFees))
-            {
+                if (!decimal.TryParse(fields[9].Trim(), DecimalStyles, CultureInfo.InvariantCulture, out var parsedFees))
+                    throw new InvalidDataException($"Statement CSV row {recordStartLine} contains an invalid feesCommission value.");
                 feesCommission = parsedFees;
             }
 

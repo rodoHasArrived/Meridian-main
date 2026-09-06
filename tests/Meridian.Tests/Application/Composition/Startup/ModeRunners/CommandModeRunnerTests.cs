@@ -31,10 +31,10 @@ public sealed class CommandModeRunnerTests
         await File.WriteAllTextAsync(configPath, CreateMinimalConfig(dataRoot));
         await File.WriteAllLinesAsync(statementPath,
         [
-            "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
-            "FUND-1,SPY,10,500,0,position,2026-05-28",
-            "FUND-1,,0,0,2500.25,cash,2026-05-28",
-            "FUND-1,MSFT,1,15.75,0,fee,2026-05-28"
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency",
+            "FUND-1,SPY,10,500,0,position,2026-05-28,,USD",
+            "FUND-1,,0,0,2500.25,cash,2026-05-28,,USD",
+            "FUND-1,MSFT,1,15.75,0,fee,2026-05-28,,USD"
         ]);
 
         var log = Logger.None;

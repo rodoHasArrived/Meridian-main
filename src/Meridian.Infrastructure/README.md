@@ -28,6 +28,13 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Canonical CSV statement imports require an explicit three-letter currency on every row.
+Older seven-column files must be regenerated with source-backed currency evidence; the
+importer does not supply USD. Quantity, price, cash and nonblank fees use invariant decimal
+notation without grouping separators. Missing optional fees remain absent, while malformed
+fees fail validation and import before persistence. Quoted fields and explicit zero amounts
+remain supported.
+
 Use this module for provider implementation, external service integration, and adapter behavior.
 
 Backfill worker shutdown closes intake, cancels and observes every admitted provider attempt,

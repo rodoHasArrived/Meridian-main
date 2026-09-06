@@ -226,6 +226,20 @@ public static class OfxDocumentParser
                 [AggregateColumn] = node.Name.ToUpperInvariant()
             };
             FlattenLeaves(node, entry);
+            // Currency belongs to the containing statement, never the first statement in the file.
+            // A row-level currency remains authoritative, including an explicitly blank value.
+            if (!entry.ContainsKey("CURSYM") && !entry.ContainsKey("CURDEF"))
+            {
+                for (var parent = node.Parent; parent is not null; parent = parent.Parent)
+                {
+                    if (parent.Name is "STMTRS" or "CCSTMTRS" or "INVSTMTRS")
+                    {
+                        if (parent.Leaves.TryGetValue("CURDEF", out var currency))
+                            entry["CURDEF"] = currency;
+                        break;
+                    }
+                }
+            }
             NormalizeEntry(entry, accountId);
             entries.Add(entry);
             if (entries.Count > maxEntries)
