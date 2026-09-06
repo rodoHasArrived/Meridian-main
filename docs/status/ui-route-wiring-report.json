@@ -2764,7 +2764,7 @@
         "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": true
@@ -5682,6 +5682,84 @@
       "called_by_wpf": false
     },
     {
+      "path": "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/apply",
+      "method": "POST",
+      "constant": "LedgerOpenLotBackfillApply",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence",
+      "method": "POST",
+      "constant": "LedgerOpenLotBackfillEvidence",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}",
+      "method": "GET",
+      "constant": "LedgerOpenLotBackfillEvidenceById",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}/review",
+      "method": "POST",
+      "constant": "LedgerOpenLotBackfillEvidenceReview",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/exceptions",
+      "method": "GET",
+      "constant": "LedgerOpenLotBackfillExceptions",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/survey",
+      "method": "POST",
+      "constant": "LedgerOpenLotBackfillSurvey",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
       "path": "/api/ledger/close-management/evidence-review",
       "method": "POST",
       "constant": "LedgerCloseManagementEvidenceReview",
@@ -5833,6 +5911,19 @@
       ],
       "obsolete_reason": null,
       "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/ledger/journal-automation/daily-mark-to-market-preview",
+      "method": "POST",
+      "constant": "LedgerJournalAutomationDailyMarkToMarketPreview",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -6308,12 +6399,12 @@
     {
       "path": "/api/loans/portfolio",
       "method": "GET",
-      "constant": null,
+      "constant": "DirectLendingPortfolioSummary",
       "files": [
         "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs"
       ],
       "obsolete_reason": null,
-      "state": "unwired",
+      "state": "wired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": true
@@ -10011,11 +10102,167 @@
       "called_by_wpf": true
     },
     {
+      "path": "/api/security-master/corporate-actions/cases",
+      "method": "GET",
+      "constant": "SecurityMasterCorporateActionCases",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}",
+      "method": "GET",
+      "constant": "SecurityMasterCorporateActionCase",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-approval",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionCaseAccountingApproval",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-posting",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionCaseAccountingPosting",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-projection",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionCaseAccountingProjection",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts",
+      "method": "GET",
+      "constant": "SecurityMasterCorporateActionCaseConflicts",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "registry-only",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionCaseConflicts",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "registry-only",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}",
+      "method": "GET",
+      "constant": "SecurityMasterCorporateActionCaseConflict",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "registry-only",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionCaseConflictResolution",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/evidence",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionCaseEvidence",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/options",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionCaseOptions",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/transition",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionCaseTransition",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
       "path": "/api/security-master/corporate-actions/inbox",
       "method": "GET",
       "constant": "SecurityMasterCorporateActionsInbox",
       "files": [
-        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs"
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
       ],
       "obsolete_reason": null,
       "state": "wired",
@@ -10028,10 +10275,10 @@
       "method": "POST",
       "constant": "SecurityMasterCorporateActionsInboxApply",
       "files": [
-        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs"
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
       ],
       "obsolete_reason": null,
-      "state": "wired",
+      "state": "unwired",
       "excluded_reason": null,
       "test_only_reference": false,
       "called_by_wpf": false
@@ -10041,7 +10288,72 @@
       "method": "POST",
       "constant": "SecurityMasterCorporateActionsIngest",
       "files": [
-        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs"
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/source-proposals",
+      "method": "GET",
+      "constant": "SecurityMasterCorporateActionSourceProposals",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/source-proposals",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionSourceProposals",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}",
+      "method": "GET",
+      "constant": "SecurityMasterCorporateActionSourceProposal",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "unwired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/accept",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionSourceProposalAccept",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "registry-only",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": false
+    },
+    {
+      "path": "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/reject",
+      "method": "POST",
+      "constant": "SecurityMasterCorporateActionSourceProposalReject",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs"
       ],
       "obsolete_reason": null,
       "state": "unwired",
@@ -12936,6 +13248,19 @@
       "called_by_wpf": false
     },
     {
+      "path": "/api/workstation/operations/financial-operations-command-center",
+      "method": "GET",
+      "constant": "FinancialOperationsCommandCenter",
+      "files": [
+        "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseReadiness.cs"
+      ],
+      "obsolete_reason": null,
+      "state": "wired",
+      "excluded_reason": null,
+      "test_only_reference": false,
+      "called_by_wpf": true
+    },
+    {
       "path": "/api/workstation/operations/private-capital-close-cockpit",
       "method": "GET",
       "constant": "OperationsPrivateCapitalCloseCockpit",
@@ -15039,6 +15364,9 @@
     "workstation-endpoints.ts::reportingTemplateApproveEndpoint",
     "workstation-endpoints.ts::reportingTemplateRejectEndpoint",
     "workstation-endpoints.ts::reportingTemplateSubmitEndpoint",
+    "workstation-endpoints.ts::securityMasterCorporateActionCaseConflictEndpoint",
+    "workstation-endpoints.ts::securityMasterCorporateActionCaseConflictsEndpoint",
+    "workstation-endpoints.ts::securityMasterCorporateActionSourceProposalAcceptEndpoint",
     "workstation-endpoints.ts::securityMasterCoverageDraftEndpoint",
     "workstation-endpoints.ts::workstationFinancialRecordExplorerEndpoint"
   ]

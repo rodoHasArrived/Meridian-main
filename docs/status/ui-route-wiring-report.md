@@ -23,23 +23,22 @@ its reason rather than dropped.
 
 | Metric | Count |
 | --- | ---: |
-| Mapped backend routes (path + verb) | 1153 |
-| Wired — called by a dashboard module | 502 |
-| Registry-only — declared in the endpoint registry, no caller | 92 |
-| Unwired — no dashboard reference at all | 559 |
-| Actionable (unwired or registry-only, not excluded by design) | 599 |
+| Mapped backend routes (path + verb) | 1178 |
+| Wired — called by a dashboard module | 505 |
+| Registry-only — declared in the endpoint registry, no caller | 96 |
+| Unwired — no dashboard reference at all | 577 |
+| Actionable (unwired or registry-only, not excluded by design) | 621 |
 | Excluded by design (probes, webhooks, tombstones, desktop-only) | 52 |
 
 ## Actionable routes
 
-### `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` (57)
+### `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` (56)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
 | POST | `/api/journals/{journalEntryId:guid}/post` | unwired | — |
 | POST | `/api/loans/` | unwired | — |
 | GET | `/api/loans/operations` | unwired | called by WPF |
-| GET | `/api/loans/portfolio` | unwired | called by WPF |
 | POST | `/api/loans/rebuild-all` | unwired | — |
 | GET | `/api/loans/rebuild-checkpoints` | unwired | — |
 | POST | `/api/loans/servicer-statements/import` | unwired | — |
@@ -131,12 +130,11 @@ its reason rather than dropped.
 | GET | `/api/fund-accounts/{accountId:guid}/sync-history` | unwired | — |
 | GET | `/api/funds/{fundId:guid}/accounts` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` (32)
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` (31)
 
 | Method | Route | State | Notes |
 | --- | --- | --- | --- |
 | GET | `/api/security-master/asset-profiles/promotion-candidates` | unwired | — |
-| POST | `/api/security-master/corporate-actions/ingest` | unwired | — |
 | GET | `/api/security-master/coverage/draft/{symbol}` | registry-only | — |
 | GET | `/api/security-master/data-entitlements` | unwired | — |
 | POST | `/api/security-master/data-entitlements` | unwired | — |
@@ -255,6 +253,30 @@ its reason rather than dropped.
 | GET | `/api/storage/tiers/plan` | unwired | — |
 | GET | `/api/storage/tiers/statistics` | unwired | — |
 
+### `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs` (19)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/security-master/corporate-actions/cases` | unwired | — |
+| GET | `/api/security-master/corporate-actions/cases/{caseId:guid}` | unwired | — |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-approval` | unwired | — |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-posting` | unwired | — |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-projection` | unwired | — |
+| GET | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts` | registry-only | — |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts` | registry-only | — |
+| GET | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}` | registry-only | — |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution` | unwired | — |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/evidence` | unwired | — |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/options` | unwired | — |
+| POST | `/api/security-master/corporate-actions/cases/{caseId:guid}/transition` | unwired | — |
+| POST | `/api/security-master/corporate-actions/inbox/apply` | unwired | — |
+| POST | `/api/security-master/corporate-actions/ingest` | unwired | — |
+| GET | `/api/security-master/corporate-actions/source-proposals` | unwired | — |
+| POST | `/api/security-master/corporate-actions/source-proposals` | unwired | — |
+| GET | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}` | unwired | — |
+| POST | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/accept` | registry-only | — |
+| POST | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/reject` | unwired | — |
+
 ### `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs` (16)
 
 | Method | Route | State | Notes |
@@ -334,23 +356,6 @@ its reason rather than dropped.
 | GET | `/api/environment-designer/versions/{versionId:guid}` | unwired | — |
 | POST | `/api/environment-designer/versions/{versionId:guid}/rollback` | unwired | — |
 
-### `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` (12)
-
-| Method | Route | State | Notes |
-| --- | --- | --- | --- |
-| GET | `/api/execution/accounts` | unwired | — |
-| GET | `/api/execution/accounts/{accountId}` | unwired | called by WPF |
-| GET | `/api/execution/accounts/{accountId}/positions` | unwired | — |
-| GET | `/api/execution/capabilities` | unwired | — |
-| POST | `/api/execution/controls/circuit-breaker` | unwired | called by WPF |
-| GET | `/api/execution/orders` | unwired | — |
-| GET | `/api/execution/orders/{orderId}` | unwired | — |
-| GET | `/api/execution/portfolio` | unwired | — |
-| GET | `/api/execution/portfolio/aggregate` | unwired | — |
-| GET | `/api/execution/positions` | unwired | — |
-| POST | `/api/execution/positions/{symbol}/close` | unwired | — |
-| GET | `/api/execution/sessions/{sessionId}/tca` | unwired | — |
-
 ### `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingGovernance.cs` (12)
 
 | Method | Route | State | Notes |
@@ -401,6 +406,22 @@ its reason rather than dropped.
 | GET | `/api/symbols/{symbol}/status` | unwired | — |
 | GET | `/api/symbols/{symbol}/trades` | unwired | — |
 | POST | `/api/symbols/{symbol}/update` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` (11)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/execution/accounts` | unwired | — |
+| GET | `/api/execution/accounts/{accountId}` | unwired | called by WPF |
+| GET | `/api/execution/accounts/{accountId}/positions` | unwired | — |
+| GET | `/api/execution/capabilities` | unwired | — |
+| GET | `/api/execution/orders` | unwired | — |
+| GET | `/api/execution/orders/{orderId}` | unwired | — |
+| GET | `/api/execution/portfolio` | unwired | — |
+| GET | `/api/execution/portfolio/aggregate` | unwired | — |
+| GET | `/api/execution/positions` | unwired | — |
+| POST | `/api/execution/positions/{symbol}/close` | unwired | — |
+| GET | `/api/execution/sessions/{sessionId}/tca` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs` (11)
 
@@ -627,6 +648,17 @@ its reason rather than dropped.
 | POST | `/api/ledger/accounting-configuration/posting-rules/candidates/asset-accounting` | unwired | — |
 | POST | `/api/ledger/accounting-configuration/posting-rules/candidates/post` | unwired | — |
 | POST | `/api/ledger/accounting-configuration/posting-rules/projection-sets` | unwired | — |
+
+### `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs` (6)
+
+| Method | Route | State | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/apply` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence` | unwired | — |
+| GET | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/evidence/{evidenceRecordId:guid}/review` | unwired | — |
+| GET | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/exceptions` | unwired | — |
+| POST | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/survey` | unwired | — |
 
 ### `src/Meridian.Ui.Shared/Endpoints/OmsIntegrationEndpoints.cs` (6)
 
@@ -1150,6 +1182,9 @@ may be listed as actionable even though a screen calls them.
 - `workstation-endpoints.ts::reportingTemplateApproveEndpoint`
 - `workstation-endpoints.ts::reportingTemplateRejectEndpoint`
 - `workstation-endpoints.ts::reportingTemplateSubmitEndpoint`
+- `workstation-endpoints.ts::securityMasterCorporateActionCaseConflictEndpoint`
+- `workstation-endpoints.ts::securityMasterCorporateActionCaseConflictsEndpoint`
+- `workstation-endpoints.ts::securityMasterCorporateActionSourceProposalAcceptEndpoint`
 - `workstation-endpoints.ts::securityMasterCoverageDraftEndpoint`
 - `workstation-endpoints.ts::workstationFinancialRecordExplorerEndpoint`
 
