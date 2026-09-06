@@ -10,6 +10,50 @@ public sealed class DirectLendingPostgresIntegrationTests
 {
     private const string WorkflowIdPrefix = "wf-";
 
+    private static async Task AssertPendingPublicationAsync(DirectLendingPostgresTestDatabase db,
+        Guid loanId, string kind, Guid runId)
+    {
+        await using var connection = new NpgsqlConnection(db.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"select count(*) from {db.Schema}.outbox_message where topic = 'direct-lending.asset-operations.requested' and message_key = @key and processed_at is null;";
+        command.Parameters.AddWithValue("key", $"{loanId:N}/{kind}/{runId:N}");
+        (await command.ExecuteScalarAsync()).Should().Be(1L, "the committed run owns one durable publication despite retries");
+    }
+
+    [DirectLendingDatabaseFact]
+    public async Task ProjectionCommit_WhenPublicationEnqueueFails_RollsBackRunAndDetails()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+            return;
+        var loan = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m,
+            new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "enqueue-rollback"));
+        await using var connection = new NpgsqlConnection(db.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            create function {db.Schema}.reject_derived_publication() returns trigger language plpgsql as $test$
+            begin
+                if NEW.topic = 'direct-lending.asset-operations.requested' then
+                    raise exception 'Injected publication enqueue failure';
+                end if;
+                return NEW;
+            end $test$;
+            create trigger reject_derived_publication before insert on {db.Schema}.outbox_message
+                for each row execute function {db.Schema}.reject_derived_publication();
+            """;
+        await command.ExecuteNonQueryAsync();
+        var request = () => db.Service.RequestProjectionAsync(loan.LoanId, new DateOnly(2026, 6, 30));
+        await request.Should().ThrowAsync<PostgresException>().Where(error => error.SqlState == "P0001");
+        (await db.Store.GetProjectionRunsAsync(loan.LoanId)).Should().BeEmpty();
+        command.CommandText = $"select count(*) from {db.Schema}.projected_cash_flow where loan_id = @loan_id;";
+        command.Parameters.AddWithValue("loan_id", loan.LoanId);
+        (await command.ExecuteScalarAsync()).Should().Be(0L);
+    }
+
     [DirectLendingDatabaseFact]
     public async Task CashFlowIdentityMigration_PreservesRetainedFlowsAndReconciliationReferences()
     {
@@ -88,6 +132,7 @@ public sealed class DirectLendingPostgresIntegrationTests
         var conflict = await db.CommandService.RequestProjectionAsync(loan.LoanId, asOf.AddDays(1), metadata);
         conflict.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
         (await db.Store.GetProjectionRunsAsync(loan.LoanId)).Should().ContainSingle();
+        await AssertPendingPublicationAsync(db, loan.LoanId, "projection", retained.ProjectionRunId);
     }
 
     [DirectLendingDatabaseFact]
@@ -113,6 +158,7 @@ public sealed class DirectLendingPostgresIntegrationTests
         replay.Value!.Should().Be(retained);
         (await db.Store.GetReconciliationResultsAsync(retained.ReconciliationRunId))
             .Select(result => result.ReconciliationResultId).Should().Equal(details.Select(result => result.ReconciliationResultId));
+        await AssertPendingPublicationAsync(db, loan.LoanId, "reconciliation", retained.ReconciliationRunId);
     }
 
     [DirectLendingDatabaseFact]

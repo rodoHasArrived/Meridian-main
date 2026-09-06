@@ -567,8 +567,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 return DirectLendingCommandResult<ProjectionRunDto>.Failure(DirectLendingErrorCode.Conflict,
                     "The command identity already belongs to a projection with a different as-of date.");
             var committedFlows = await _operationsStore.GetProjectedCashFlowsAsync(runId, ct).ConfigureAwait(false);
-            await PublishAssetOperationsAsync(stored.Contract, metadata, ct,
-                projectionRun: committed, projectedFlows: committedFlows).ConfigureAwait(false);
+            await _operationsStore.SaveProjectionRunAsync(committed, committedFlows, ct).ConfigureAwait(false);
             return DirectLendingCommandResult<ProjectionRunDto>.Success(committed);
         }
 
@@ -598,14 +597,6 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
 
         var flows = BuildProjectedFlows(stored.Contract, stored.Servicing, runId, asOf);
         var savedRun = await _operationsStore.SaveProjectionRunAsync(run, flows, ct).ConfigureAwait(false);
-        var savedFlows = ReferenceEquals(savedRun, run) ? flows
-            : await _operationsStore.GetProjectedCashFlowsAsync(savedRun.ProjectionRunId, ct).ConfigureAwait(false);
-        await PublishAssetOperationsAsync(
-            stored.Contract,
-            metadata,
-            ct,
-            projectionRun: savedRun,
-            projectedFlows: savedFlows).ConfigureAwait(false);
         return DirectLendingCommandResult<ProjectionRunDto>.Success(savedRun);
     }
 
@@ -624,13 +615,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             .FirstOrDefault(candidate => candidate.ReconciliationRunId == runId);
         if (committed is not null)
         {
-            var committedState = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
-            if (committedState is not null)
-            {
-                var committedResults = await _operationsStore.GetReconciliationResultsAsync(runId, ct).ConfigureAwait(false);
-                await PublishAssetOperationsAsync(committedState.Contract, metadata, ct,
-                    reconciliationRun: committed, reconciliationResults: committedResults).ConfigureAwait(false);
-            }
+            var committedResults = await _operationsStore.GetReconciliationResultsAsync(runId, ct).ConfigureAwait(false);
+            await _operationsStore.SaveReconciliationRunAsync(committed, committedResults, [], ct).ConfigureAwait(false);
             return DirectLendingCommandResult<ReconciliationRunDto>.Success(committed);
         }
 
@@ -723,19 +709,6 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
 
         var run = new ReconciliationRunDto(runId, loanId, latestProjection.ProjectionRunId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "Completed");
         var savedRun = await _operationsStore.SaveReconciliationRunAsync(run, results, exceptions, ct).ConfigureAwait(false);
-        var savedResults = ReferenceEquals(savedRun, run) ? results
-            : await _operationsStore.GetReconciliationResultsAsync(savedRun.ReconciliationRunId, ct).ConfigureAwait(false);
-        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
-        if (stored is not null)
-        {
-            await PublishAssetOperationsAsync(
-                stored.Contract,
-                metadata,
-                ct,
-                reconciliationRun: savedRun,
-                reconciliationResults: savedResults).ConfigureAwait(false);
-        }
-
         return DirectLendingCommandResult<ReconciliationRunDto>.Success(savedRun);
     }
 
@@ -1485,6 +1458,18 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         // boundary. Asset-operations projection is deliberately dispatched by the durable
         // direct-lending.projection.requested outbox message; performing it here would allow a
         // post-commit transport failure to report the command as failed even though it committed.
+    }
+
+    public async Task<DirectLendingCommandResult<bool>> PublishAssetOperationsAsync(Guid loanId,
+        DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+            return DirectLendingCommandResult<bool>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        if (stored.Contract.CurrentTerms.SecurityMasterReference is not null && _assetOperationsCommandService is null)
+            return DirectLendingCommandResult<bool>.Failure(DirectLendingErrorCode.Validation, "Asset Operations publication service is unavailable.");
+        await PublishAssetOperationsAsync(stored.Contract, metadata, ct).ConfigureAwait(false);
+        return DirectLendingCommandResult<bool>.Success(true);
     }
 
     private async Task PublishAssetOperationsAsync(

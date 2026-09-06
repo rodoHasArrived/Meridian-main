@@ -143,6 +143,7 @@ public sealed partial class PostgresDirectLendingStateStore
         {
             if (committed.LoanId != run.LoanId || committed.ProjectionAsOf != run.ProjectionAsOf)
                 throw new InvalidOperationException("Projection run identity conflicts with the committed request.");
+            await EnqueueAssetPublicationAsync(connection, transaction, committed.LoanId, "projection", committed.ProjectionRunId, ct).ConfigureAwait(false);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
             return committed;
         }
@@ -272,6 +273,7 @@ public sealed partial class PostgresDirectLendingStateStore
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
+        await EnqueueAssetPublicationAsync(connection, transaction, run.LoanId, "projection", run.ProjectionRunId, ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return run;
     }
@@ -540,6 +542,7 @@ public sealed partial class PostgresDirectLendingStateStore
         {
             if (committed.LoanId != run.LoanId)
                 throw new InvalidOperationException("Reconciliation run identity belongs to another loan.");
+            await EnqueueAssetPublicationAsync(connection, transaction, committed.LoanId, "reconciliation", committed.ReconciliationRunId, ct).ConfigureAwait(false);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
             return committed;
         }
@@ -696,6 +699,7 @@ public sealed partial class PostgresDirectLendingStateStore
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
+        await EnqueueAssetPublicationAsync(connection, transaction, run.LoanId, "reconciliation", run.ReconciliationRunId, ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return run;
     }

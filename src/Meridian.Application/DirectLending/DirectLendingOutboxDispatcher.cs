@@ -128,6 +128,14 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                     throw new DirectLendingCommandException(reconciliationError);
                 break;
 
+            case "direct-lending.asset-operations.requested":
+                var publication = await _commandService.PublishAssetOperationsAsync(envelope.LoanId,
+                    new DirectLendingCommandMetadataDto(envelope.CommandId, envelope.CorrelationId,
+                        envelope.SourceEventId, envelope.SourceSystem, ReplayFlag: true), ct).ConfigureAwait(false);
+                if (publication.Error is { } publicationError)
+                    throw new DirectLendingCommandException(publicationError);
+                break;
+
             default:
                 throw new InvalidOperationException($"Unsupported direct lending outbox topic '{message.Topic}'.");
         }
