@@ -514,7 +514,7 @@ public sealed class DirectLendingEndpointsTests
     }
 
     [Theory]
-    [InlineData(Environments.Development)]
+    [InlineData("Development")]
     [InlineData("Test")]
     public async Task DirectLendingLimiter_ExplicitDevelopmentOverrideRetainsTestWorkflow(string environmentName)
     {
@@ -531,6 +531,31 @@ public sealed class DirectLendingEndpointsTests
             using var accepted = await client.PostAsJsonAsync("/api/loans", BuildCreateRequest());
             accepted.StatusCode.Should().Be(HttpStatusCode.Created);
         }
+    }
+
+    [Fact]
+    public async Task DirectLendingLimiter_RemovingDevelopmentOverrideCannotReuseUnlimitedActorPartition()
+    {
+        using var quiet = new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
+        using var bypass = new Meridian.Tests.Application.Composition.EnvironmentVariableScope("MDC_DISABLE_RATE_LIMIT", "true");
+        using var packaged = new Meridian.Tests.Application.Composition.EnvironmentVariableScope("MDC_PACKAGED_BUILD", null);
+        using var customer = new Meridian.Tests.Application.Composition.EnvironmentVariableScope("MERIDIAN_CUSTOMER_BUILD", null);
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>());
+        using var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Test-Actor", "direct-lending-global");
+        using var bypassed = await client.PostAsJsonAsync("/api/loans", BuildCreateRequest());
+        bypassed.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", "false");
+        for (var index = 0; index < 20; index++)
+        {
+            using var accepted = await client.PostAsJsonAsync("/api/loans", BuildCreateRequest());
+            accepted.StatusCode.Should().Be(HttpStatusCode.Created);
+        }
+        using var rejected = await client.PostAsJsonAsync("/api/loans", BuildCreateRequest());
+        rejected.StatusCode.Should().Be(HttpStatusCode.TooManyRequests,
+            "an actor name must never collide with the cached unlimited development partition");
     }
 
     [Theory]
@@ -590,7 +615,7 @@ public sealed class DirectLendingEndpointsTests
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ViewDirectLending | UserPermission.ManageDirectLending,
-        string environmentName = Environments.Development)
+        string environmentName = "Development")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {

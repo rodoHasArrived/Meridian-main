@@ -121,7 +121,9 @@ explicit Development/Test host outside production, packaged and customer posture
 one shared bypass policy from the final host registrations; absent policy or host environment does
 not authorize a bypass. Direct-lending writes retain a separate 20-command/minute operator budget,
 leave loan reads available when that budget is exhausted, and return a positive `Retry-After` delay
-before invoking a rejected command.
+before invoking a rejected command. Actor and IP partition keys are namespaced separately from
+the unlimited development partition, so disabling the override cannot retain an unlimited budget
+for an operator whose name matches that internal partition.
 
 Shared operational endpoints use stable RFC 7807 Problem Details types for validation,
 authorization, conflict, unavailable-runtime, timeout, and internal failures. API-key, login-session,
