@@ -221,11 +221,17 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     }
 
     [Fact]
-    public async Task StopBacktest_UnknownId_Returns404()
+    public async Task StopBacktest_ReturnsNotImplementedProblem()
     {
         var response = await _strategyMutationClient.PostAsync("/api/lean/backtest/nonexistent-id-xyz/stop", content: null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(
+            HttpStatusCode.NotImplemented,
+            "Meridian cannot stop a Lean run launched by an external engine");
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        doc.RootElement.GetProperty("status").GetInt32().Should().Be(501);
+        doc.RootElement.GetProperty("type").GetString().Should().Contain("not-implemented");
+        doc.RootElement.GetProperty("detail").GetString().Should().Contain("Lean CLI");
     }
 
     [Fact]

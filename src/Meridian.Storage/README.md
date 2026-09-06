@@ -33,6 +33,14 @@ detail-row deletion, insertion, or superseding update. Concurrent retries retain
 flows and reconciliation results. `DirectLendingPostgresIntegrationTests` covers both paths;
 hosted database validation is required before treating this as release evidence.
 
+Audit-chain appends stream and validate retained entry hashes and predecessor links while holding
+the cross-process append lock. An unreadable, malformed, empty, or broken retained chain fails
+without replacing its history. Payload-file verification remains the separate full verification
+operation. `AuditChainServiceTests` covers fail-closed retention; `AuditChainProcessTests` starts
+three independent writers together and verifies that all 36 files occur once in one chain.
+`WriteAheadLogProcessTests` observes an idle delayed flush, terminates the writer without disposal,
+and recovers the single retained record through a fresh WAL instance.
+
 ## Shared close and lot convergence
 
 Migration `V_ledger_034__open_lot_acquisition.sql` adds nullable retained acquisition facts to the existing tax-lot record, without backfilling legacy rows. Canonical identity and acquisition economics cannot be rewritten; ordinary partial relief preserves acquisition evidence. `LedgerOpenLotProjection` refuses missing evidence or unexplained basis drift and translates the legacy per-100 face convention into explicit face quantity. Atomic fingerprints include populated acquisition facts while absent fields preserve legacy fingerprints. Focused proof: `OpenLotConvergenceTests`, `OpenLotPostgresTests`, and `AtomicTaxLotJournalStoreTests`.

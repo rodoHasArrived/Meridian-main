@@ -491,7 +491,10 @@ internal sealed class OperationsLedgerPostingService
             OperatorRationale: request.Rationale,
             Evidence: evidence,
             ActionOrigin: request.ActionOrigin,
-            LedgerBookId: workflow.LedgerBookId);
+            LedgerBookId: workflow.LedgerBookId)
+        {
+            Provenance = candidate.Provenance
+        };
     }
 
     public async Task<IReadOnlyDictionary<Guid, SecurityStatusDto>> ResolveAuthoritativeSecurityStatusesAsync(

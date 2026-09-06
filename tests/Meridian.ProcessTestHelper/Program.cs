@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
+using Meridian.Storage.Archival;
+using Meridian.Storage.Services;
 
 namespace Meridian.ProcessTestHelper;
 
@@ -24,6 +26,8 @@ internal static class Program
                 "spawn-detached-gated-mutation" => await SpawnGatedMutationAsync(args, detachChildOutput: true).ConfigureAwait(false),
                 "delayed-spawn-gated-mutation" => await DelayedSpawnGatedMutationAsync(args).ConfigureAwait(false),
                 "emit-output" => await EmitOutputAsync(args).ConfigureAwait(false),
+                "audit-append-batch" => await AppendAuditBatchAsync(args).ConfigureAwait(false),
+                "wal-append-and-wait" => await AppendWalAndWaitAsync(args).ConfigureAwait(false),
                 _ => throw new ArgumentOutOfRangeException(nameof(args), args[0], "Unknown helper mode.")
             };
         }
@@ -38,6 +42,41 @@ internal static class Program
     {
         RequireArgumentCount(args, 2);
         File.WriteAllText(args[1], "mutated");
+        return 0;
+    }
+
+    private static async Task<int> AppendAuditBatchAsync(IReadOnlyList<string> args)
+    {
+        RequireArgumentCount(args, 6);
+        var count = ParsePositiveInt(args[5], "count");
+        var paths = Enumerable.Range(0, count)
+            .Select(index => Path.Combine(args[1], $"{args[2]}-{index:D3}.jsonl"))
+            .ToArray();
+        foreach (var path in paths)
+            await File.WriteAllTextAsync(path, path).ConfigureAwait(false);
+        await File.WriteAllTextAsync(args[3], Environment.ProcessId.ToString()).ConfigureAwait(false);
+        await WaitForFileAsync(args[4], TimeSpan.FromSeconds(60)).ConfigureAwait(false);
+        var audit = new AuditChainService();
+        foreach (var path in paths)
+            await audit.AppendEntryAsync(path).ConfigureAwait(false);
+        return 0;
+    }
+
+    private static async Task<int> AppendWalAndWaitAsync(IReadOnlyList<string> args)
+    {
+        RequireArgumentCount(args, 4);
+        await using var wal = new WriteAheadLog(args[1], new WalOptions
+        {
+            SyncMode = WalSyncMode.BatchedSync,
+            SyncBatchSize = 1_000,
+            MaxFlushDelay = TimeSpan.FromMilliseconds(50)
+        });
+        await wal.InitializeAsync().ConfigureAwait(false);
+        await wal.AppendAsync(args[3], "PROCESS-RECOVERY").ConfigureAwait(false);
+        await File.WriteAllTextAsync(args[2], "appended").ConfigureAwait(false);
+        // The parent kills this process; neither FlushAsync nor DisposeAsync should establish
+        // durability for this test. Only the lifecycle-owned delayed flush can do so.
+        await Task.Delay(Timeout.InfiniteTimeSpan).ConfigureAwait(false);
         return 0;
     }
 
