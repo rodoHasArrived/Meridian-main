@@ -16,6 +16,8 @@ the cross-process append lock. An unreadable, malformed, empty, or broken retain
 without replacing its history. Payload-file verification remains the separate full verification
 operation. `AuditChainServiceTests` covers fail-closed retention; `AuditChainProcessTests` starts
 three independent writers together and verifies that all 36 files occur once in one chain.
+`WriteAheadLogProcessTests` observes an idle delayed flush, terminates the writer without disposal,
+and recovers the single retained record through a fresh WAL instance.
 
 ## Shared close and lot convergence
 

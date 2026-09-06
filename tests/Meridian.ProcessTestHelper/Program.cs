@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Services;
 
 namespace Meridian.ProcessTestHelper;
@@ -26,6 +27,7 @@ internal static class Program
                 "delayed-spawn-gated-mutation" => await DelayedSpawnGatedMutationAsync(args).ConfigureAwait(false),
                 "emit-output" => await EmitOutputAsync(args).ConfigureAwait(false),
                 "audit-append-batch" => await AppendAuditBatchAsync(args).ConfigureAwait(false),
+                "wal-append-and-wait" => await AppendWalAndWaitAsync(args).ConfigureAwait(false),
                 _ => throw new ArgumentOutOfRangeException(nameof(args), args[0], "Unknown helper mode.")
             };
         }
@@ -57,6 +59,24 @@ internal static class Program
         var audit = new AuditChainService();
         foreach (var path in paths)
             await audit.AppendEntryAsync(path).ConfigureAwait(false);
+        return 0;
+    }
+
+    private static async Task<int> AppendWalAndWaitAsync(IReadOnlyList<string> args)
+    {
+        RequireArgumentCount(args, 4);
+        await using var wal = new WriteAheadLog(args[1], new WalOptions
+        {
+            SyncMode = WalSyncMode.BatchedSync,
+            SyncBatchSize = 1_000,
+            MaxFlushDelay = TimeSpan.FromMilliseconds(50)
+        });
+        await wal.InitializeAsync().ConfigureAwait(false);
+        await wal.AppendAsync(args[3], "PROCESS-RECOVERY").ConfigureAwait(false);
+        await File.WriteAllTextAsync(args[2], "appended").ConfigureAwait(false);
+        // The parent kills this process; neither FlushAsync nor DisposeAsync should establish
+        // durability for this test. Only the lifecycle-owned delayed flush can do so.
+        await Task.Delay(Timeout.InfiniteTimeSpan).ConfigureAwait(false);
         return 0;
     }
 

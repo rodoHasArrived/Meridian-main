@@ -48,6 +48,11 @@ integration scenario starts three independent writers and checks all 36 retained
 the gap between the previous same-process concurrency test and the PRD-009 multi-process requirement.
 Fresh hosted validation is required for this follow-up as well.
 
+The WAL process-recovery scenario adds the PRD-009 low-volume termination proof: its child appends
+one record without an explicit flush or commit, the parent observes the lifecycle-owned delayed
+flush while the child is alive, then kills the child without disposal and recovers exactly that
+record using a fresh WAL instance. This proves process termination recovery, not power-loss durability.
+
 Run [30283696811](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30283696811)
 (`workflow_dispatch`, `main` @ `104171091`) failed all four jobs. Per-job root causes and their
 dispositions:
