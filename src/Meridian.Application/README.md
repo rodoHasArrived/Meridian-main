@@ -38,6 +38,11 @@ this constructor alone does not establish end-to-end tenant isolation.
 only that owner's OAuth tokens, including refresh responses, and leave unassigned legacy sidecars alone.
 Default host registration still needs connection ownership propagation before scoped services replace
 the provider-wide OAuth runtime.
+## Provider setup attribution
+
+Provider setup accepts the initiating actor from its HTTP boundary and retains it in credential
+vault audit records. Operator endpoints reject missing identity; internal callers retain an explicit
+service attribution when no operator initiated the call.
 
 ## Purpose
 

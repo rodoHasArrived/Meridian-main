@@ -97,14 +97,14 @@ public static class BrokerageConnectionEndpoints
 
         group.MapPost("/alpaca/connect", async (AlpacaBrokerageConnectionRequestDto request, HttpContext context) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
                 return PermissionDenied();
 
             var service = ResolveAlpacaConnectionService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var status = await service.ConnectAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var status = await service.ConnectAsync(request, context.RequestAborted, actor).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
         .WithName("ConnectAlpacaBrokerageConnection").RequirePermission(UserPermission.ManageCredentials)
@@ -113,14 +113,14 @@ public static class BrokerageConnectionEndpoints
 
         group.MapDelete("/alpaca", async (HttpContext context) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
                 return PermissionDenied();
 
             var service = ResolveAlpacaConnectionService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var status = await service.RevokeAsync(context.RequestAborted).ConfigureAwait(false);
+            var status = await service.RevokeAsync(context.RequestAborted, actor).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
         .WithName("RevokeAlpacaBrokerageConnection").RequirePermission(UserPermission.ManageCredentials)

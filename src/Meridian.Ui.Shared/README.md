@@ -35,6 +35,18 @@ Journal automation exposes a read-only valuation freshness preview and retains d
 ## Credential migration recovery
 
 The provider-module compatibility adapter requires atomic legacy-import support from the credential vault. It removes the plaintext sidecar only after the complete import and audit succeed; retries preserve credentials already retained in the vault.
+## Credential audit identity
+
+Canonical and compatibility credential routes require an authenticated actor in addition to tenant
+scope and credential-management permission. Saves replace caller-supplied `RequestedBy` with that
+actor; delete and verification pass the same identity into the vault audit. Accounting-provider
+verification retains the initiating actor after any provider-internal verification event.
+Alpaca verification requires a provider-returned account identity and reports fixed failure text;
+response reason phrases, JSON paths and exception details never enter its returned errors or logs.
+The Alpaca brokerage connect/revoke routes apply the same identity and verification rules.
+Provider setup passes the server-resolved actor into credential persistence. Plaid operator mutations
+require an authenticated actor and never fall back to a request identity; signed webhook authentication
+remains independent of operator sessions.
 
 ## Purpose
 

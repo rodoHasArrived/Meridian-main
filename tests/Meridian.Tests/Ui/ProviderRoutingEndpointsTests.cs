@@ -462,9 +462,39 @@ public sealed class ProviderRoutingEndpointsTests
         stored!.Get("ApiKey").Should().Be("fake-handler-key");
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ConfigureProvider_RequiresAndRetainsAuthenticatedActor(bool includeActor)
+    {
+        await using var app = await CreateAppAsync(includeActor: includeActor);
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderConfigure, JsonContent(new
+        {
+            kind = "alpaca",
+            displayName = "Actor Test",
+            apiKey = "actor-key",
+            apiSecret = "actor-secret",
+            environment = "paper",
+            capabilities = new[] { "streaming" },
+            requestedBy = "forged-operator"
+        }));
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
+        if (!includeActor)
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            File.Exists(store.VaultPath).Should().BeFalse();
+            return;
+        }
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var auditPath = Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl");
+        var audit = JsonSerializer.Deserialize<JsonElement>((await File.ReadAllLinesAsync(auditPath)).Last());
+        audit.GetProperty("actor").GetString().Should().Be("provider-routing-test-operator");
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         UserPermission? permissions = UserPermission.ManageProviders | UserPermission.ManageCredentials,
-        Action<IServiceCollection>? registerServices = null)
+        Action<IServiceCollection>? registerServices = null,
+        bool includeActor = true)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-routing-endpoints", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -507,7 +537,8 @@ public sealed class ProviderRoutingEndpointsTests
         {
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-routing-test-operator";
+            if (includeActor)
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-routing-test-operator";
             if (permissions is not null)
             {
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions.Value;
