@@ -297,8 +297,8 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 IsEditPanelVisible = false;
-                await LoadCredentialsAsync();
             });
+            await LoadCredentialsAsync();
 
             _notificationService.ShowNotification(
                 "Credentials Saved",
@@ -384,8 +384,8 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             {
                 IsEditPanelVisible = false;
                 IsTestResultVisible = false;
-                await LoadCredentialsAsync();
             });
+            await LoadCredentialsAsync();
 
             _notificationService.ShowNotification(
                 "Credentials Removed",
