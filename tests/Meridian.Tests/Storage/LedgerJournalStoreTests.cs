@@ -49,7 +49,7 @@ public sealed class LedgerJournalStoreTests
         await postingTransaction.CommitAsync(ct);
 
         var awaitClose = async () => await closeTask;
-        await awaitClose.Should().ThrowAsync<LedgerValidationException>().WithMessage("*remain non-zero*");
+        await awaitClose.Should().ThrowAsync<LedgerBookValidationException>().WithMessage("*remain non-zero*");
         var retained = await database.JournalStore.GetPeriodAsync(period.PeriodId, ct);
         retained!.Status.Should().Be("SoftClosed");
         retained.Version.Should().Be(period.Version);
