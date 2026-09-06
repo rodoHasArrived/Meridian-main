@@ -11,6 +11,13 @@ last_reviewed: 2026-09-05
 
 # src/Meridian.FinancialOperations
 
+OFX account identity is scoped to the containing bank, credit-card or investment statement.
+The parser does not borrow an account from a sibling statement or unrelated row. Missing,
+blank or conflicting statement headers cannot supply account evidence. The document-level
+account summary is populated only when every emitted row shares one nonblank account;
+connector validation and import authorization retain responsibility for rejecting invalid rows
+and mixed-account imports before evidence retention.
+
 Operations Continuity forwards the journal candidate's typed provenance to the governed posting
 command. PostgreSQL round-trip coverage verifies that seeded origins retain the `SEEDED` journal
 tag and that fixture evidence marked as real cannot commit a journal or a successful posting audit.

@@ -190,12 +190,13 @@ public static class OfxDocumentParser
         }
 
         var entries = new List<IReadOnlyDictionary<string, string>>();
-        var accountId = FindFirstLeaf(root, "ACCTID");
-        if (bound == OfxParseBound.None && !CollectEntries(root, accountId, entries, maxEntries))
+        if (bound == OfxParseBound.None && !CollectEntries(root, null, entries, maxEntries))
         {
             bound = OfxParseBound.TooManyEntries;
         }
 
+        var accounts = entries.Select(entry => entry.GetValueOrDefault("ACCTID")?.Trim()).Distinct(StringComparer.Ordinal).ToArray();
+        var accountId = accounts.Length == 1 && !string.IsNullOrWhiteSpace(accounts[0]) ? accounts[0] : null;
         return new OfxDocument(accountId, entries);
     }
 
@@ -219,6 +220,9 @@ public static class OfxDocumentParser
         List<IReadOnlyDictionary<string, string>> entries,
         int maxEntries)
     {
+        if (node.Name is "STMTRS" or "CCSTMTRS" or "INVSTMTRS")
+            accountId = StatementAccount(node);
+
         if (IsEntryNode(node))
         {
             var entry = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -341,22 +345,19 @@ public static class OfxDocumentParser
         return digits >= 8 ? trimmed[..8] : trimmed;
     }
 
-    private static string? FindFirstLeaf(OfxNode node, string tagName)
+    private static string? StatementAccount(OfxNode statement)
     {
-        if (node.Leaves.TryGetValue(tagName, out var value))
+        var identities = new List<string>();
+        if (statement.Leaves.TryGetValue("ACCTID", out var directAccount))
+            identities.Add(directAccount.Trim());
+        foreach (var header in statement.Children)
         {
-            return value;
+            if (header.Name is "BANKACCTFROM" or "CCACCTFROM" or "INVACCTFROM")
+                identities.Add(header.Leaves.TryGetValue("ACCTID", out var account) ? account.Trim() : string.Empty);
         }
-
-        foreach (var child in node.Children)
-        {
-            if (FindFirstLeaf(child, tagName) is { } found)
-            {
-                return found;
-            }
-        }
-
-        return null;
+        // Conflicting or blank header identities cannot supply authoritative account evidence.
+        var distinct = identities.Distinct(StringComparer.Ordinal).ToArray();
+        return distinct.Length == 1 && distinct[0].Length > 0 ? distinct[0] : null;
     }
 
     private static string SkipSgmlHeader(string content)
