@@ -106,11 +106,13 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         switch (message.Topic)
         {
             case "direct-lending.projection.requested":
-                await _commandService.RequestProjectionAsync(
+                var projection = await _commandService.RequestProjectionAsync(
                     envelope.LoanId,
                     envelope.EffectiveDate,
                     new DirectLendingCommandMetadataDto(envelope.CommandId, envelope.CorrelationId, envelope.SourceEventId, envelope.SourceSystem, ReplayFlag: true),
                     ct).ConfigureAwait(false);
+                if (projection.Error is { } projectionError)
+                    throw new DirectLendingCommandException(projectionError);
                 break;
 
             case "direct-lending.journal.requested":
@@ -118,10 +120,12 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 break;
 
             case "direct-lending.reconciliation.requested":
-                await _commandService.ReconcileAsync(
+                var reconciliation = await _commandService.ReconcileAsync(
                     envelope.LoanId,
                     new DirectLendingCommandMetadataDto(envelope.CommandId, envelope.CorrelationId, envelope.SourceEventId, envelope.SourceSystem, ReplayFlag: true),
                     ct).ConfigureAwait(false);
+                if (reconciliation.Error is { } reconciliationError)
+                    throw new DirectLendingCommandException(reconciliationError);
                 break;
         }
     }
