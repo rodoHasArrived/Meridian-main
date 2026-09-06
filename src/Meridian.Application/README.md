@@ -11,6 +11,14 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Application
 
+Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
+shared service into committed run identity handling. Repeating a command on the same loan
+returns the retained run; reusing a projection command with a different explicit date returns
+409. In-memory workflows follow the same retry rule. The two HTTP write routes require a non-empty UUID in `X-Command-Id` and return 400
+before mutation when it is missing or invalid. Internal calls without an identity retain
+legacy new-run behavior and must not be treated as safe automatic retries.
+
+
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
 
 ## Purpose

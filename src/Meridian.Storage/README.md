@@ -11,6 +11,11 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+Migration 009 reconciles the historical `projected_flow_id` column with the cash-flow
+identity name consumed by the store. It renames both projection and reconciliation columns
+in place, preserving retained IDs and foreign keys, and rejects ambiguous dual-column schemas.
+
+
 Direct-lending projection and reconciliation persistence serializes matching run identities with
 a PostgreSQL transaction advisory lock. A committed identity returns its existing run before any
 detail-row deletion, insertion, or superseding update. Concurrent retries retain the first saved
