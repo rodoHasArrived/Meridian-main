@@ -3615,9 +3615,12 @@ case version compared to the attach request's expected version is two caller-sup
 Following that point to its origin changes what B1 and B2 can mean until it is fixed.
 
 Every authority B1 and B2 propose to compare against at attach — the lineage's input hash, the
-event identity, the evidence rows, the kind, and any drafting-time version retained in future —
-originates in the request that drafted the spine event. At the pinned source that request has one
-production origin, and it is not the corporate-action projector.
+evidence rows' role binding, the linkage identities, and any drafting-time version retained in
+future — originates in the request that drafted the spine event; the event identity and the kind are
+the exceptions, the first because B1's comparison value is recomputed from the case row, the second
+because the validator binds it, as the rest of this section shows (the list narrowed 2026-09-06,
+after review; it had named both). At the pinned source that request has one production origin, and
+it is not the corporate-action projector.
 `CorporateActionAccountingProjectionService` and `CorporateActionAssetAccountingEventMapper`, which
 compute the hashes and validate the role-bearing manifest, are registered
 (`LedgerFeatureRegistration.cs:54-59`) and resolved by nothing; no non-test code builds a
@@ -3667,14 +3670,20 @@ the target case's own action and case, another action's retained event cannot ma
 the position authority itself has been made to retain a forged event, which is a different and
 larger prerequisite. What remains is the case's *own* retained event under caller-authored
 lineage and linkage — not an arbitrary acquisition or disposal, and not another action.
-Retaining a
-case version that caller supplied does not bind those economics to *this case's* action. The
-spine's fingerprint, the validator, the position check, and Rules Studio keep the *record*, the
-*kind*, and the *economics* honest; nothing keeps the *association* honest — that this journal is
-this case's corporate action — and the association is what the case lane posts under
-maker-checker. B1's field-level
-remedies remain right — they make the binding mean what the drafting request said — but their
-value is bounded by B3 until the drafting request is server-authored.
+Retaining a case version that caller supplied does not bind those economics to *this case's* action.
+The spine's fingerprint, the validator, the position check, and Rules Studio keep the *record*, the
+*kind*, and the *economics* honest. The *association* — that this journal is this case's corporate
+action, which is what the case lane posts under maker-checker — is kept honest by exactly one of
+B1's comparisons, and the sentence that stood here said otherwise (corrected 2026-09-06, after
+review; the previous version said "nothing keeps the association honest", contradicting the
+paragraph above it): the event identity B1 recomputes takes its inputs from the case row — the
+case's own action id and case id — not from the drafting request, and the position check binds the
+retained event to that identity, so once that comparison runs the event is this case's action's
+event whoever drafted it. What nothing binds is the rest of what the case lane reads: the lineage
+hashes and the linkage identities and versions (case, lot, policy, election, position snapshot),
+which the drafting request authors and attach can only compare against themselves. B1's field-level
+remedies remain right; the identity check stands on its own, and the value of the hash and linkage
+comparisons is bounded by B3 until the drafting request is server-authored.
 
 The same boundary has a posting side (added 2026-09-05, after review). The generic posting route
 `MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts)`
@@ -3689,8 +3698,10 @@ holder of the case's approval id and its retained candidate can post through the
 with evidence of their choosing, and the case's own post command adopts the journal as its
 maker-checker outcome. B1's intro sentence about the adoption path is corrected above to match.
 
-**Remedy.** Two halves, and together they are the precondition for B1 and B2. First, a
-server-side corporate-action drafting orchestrator: load the case, the accepted source proposal,
+**Remedy.** Two halves, and together they are the precondition for B1's hash and role-bound
+comparisons and for B2's version comparisons — not for B1's identity check, which binds the
+association from the case row alone (narrowed 2026-09-06, after review). First, a server-side
+corporate-action drafting orchestrator: load the case, the accepted source proposal,
 the lot snapshot, the policy decision, the election, and the position from their stores; build the
 projection request and the role-bearing manifest from those reads. Four of those reads name
 authorities that do not exist yet, and the list is honest only with that said (corrected
@@ -3746,8 +3757,30 @@ lines, the rule-pack reference, and the component-to-line mappings, has one call
 (`CorporateActionAssetAccountingEventMapperTests.cs:380`) — and nothing under `src/` constructs
 the `ProjectedAccountingEffectDto` it takes. Without a server-side rule-resolution step that
 produces those three from the projection and the resolved policy, the orchestrator either cannot
-run or takes the mapped accounts from its caller — the boundary B3 exists to close. The position
-deserves its
+run or takes the mapped accounts from its caller — the boundary B3 exists to close.
+The sequence also has no step that applies the corporate action's lot intent, and the remedy must
+add one (added 2026-09-06, after review): the projector's output retains the spine event request and
+the lot mutations as siblings (`CorporateActionAssetAccountingEventProjectionDto`,
+`CorporateActionAccountingDtos.cs:1021-1027`); the mapper validates the mutation plan and then
+builds the spine's projection request from the event alone
+(`CorporateActionAssetAccountingEventMapper.cs:76-80`, `:174-187`), and that request has no lot slot
+at all (`ProjectAssetAccountingEventRequestDto`, `AssetAccountingEventDtos.cs:211-224`); the only
+lot instruction the later posting candidate accepts is `AssetLotMutationInstructionDto` (`:315`),
+which models an acquisition or a set of disposal selections and nothing else, where the
+corporate-action plan speaks in carry-over, allocate, change-quantity, reduce-carrying-value, and
+transfer mutations (`CorporateActionLotMutationKindDto`,
+`CorporateActionAccountingDtos.cs:251-260`); no adapter between the two models exists in the tree;
+and the spine's own lot resolution returns nothing for any kind but acquisition and disposal
+(`ResolveAuthoritativeLotMutationAsync`, `AssetAccountingEventSpineService.cs:882-903`). So a split,
+an allocation, or a carrying-value adjustment would post its journal with its lot operation dropped,
+while the case binding stamps `HasAuthoritativeLotResolution: true` as a literal
+(`CorporateActionCaseAccountingService.cs:403`) — a flag that on the projection means the *plan*
+validated (`CorporateActionAccountingDtos.cs:327-328`), not that anything applied it. The
+orchestrator therefore needs an executable corporate-action lot-mutation seam — a typed instruction
+the posting candidate can carry for these kinds, and a lot-store operation that applies it in the
+same transaction as the journal append — or the lane posts accounting for lot changes it never
+makes; defining the lot-snapshot authority above does not change that.
+The position deserves its
 own sentence (added 2026-09-02, after review; the first version of this list omitted it): the
 projector requires a `PositionSnapshotId` (`CorporateActionAccountingProjectionService.cs:259`)
 bound by a PositionSnapshot-role manifest row at `PositionVersion` (`:1890-1895`), and at the pin
@@ -3959,11 +3992,19 @@ path formats a security's `PrimaryIdentifier` as `"{Kind}:{Value}"`
 (`SecurityMasterDbMapper.cs:7-15`, `ToSummary`), and both Polygon jobs pass that string to the
 vendor as the ticker: `BackfillAllAsync` hands `security.PrimaryIdentifier` to
 `BackfillTickerAsync` (`TradingParametersBackfillService.cs:91-100`), which puts it in the path of
-the ticker URL (`:131-134`); `PolygonCorporateActionFetcher` does the same into its dividend
-query (`PolygonCorporateActionFetcher.cs:187-199`, `:218-219`). So a ticker-primary security is
-requested as `Ticker:AAPL`, and a security whose primary identifier is an ISIN, CUSIP, or any
-other kind is sent as a ticker regardless. Against the production store neither job can make a
-valid request for any security. The backfill then takes its non-success branch (`:136-141`),
+the ticker URL (`:131-134`); `PolygonCorporateActionFetcher` does the same into its dividend query
+when it walks the search results itself (`FetchAndPersistAllAsync`,
+`PolygonCorporateActionFetcher.cs:187-199`, `:218-219`). So on those paths a ticker-primary security
+is requested as `Ticker:AAPL`, and a security whose primary identifier is an ISIN, CUSIP, or any
+other kind is sent as a ticker regardless. The scope is the bulk, search-backed paths, not every
+call (narrowed 2026-09-06, after review; the previous sentence said neither job could make a valid
+request for any security): the Security Master service also calls the fetcher directly after a
+create and after an amendment, and those two calls pass the projection's raw
+`PrimaryIdentifierValue` (`SecurityMasterService.cs:181-188`, `:340-347`), so for a ticker-primary
+security they issue a valid request, while for an ISIN- or CUSIP-primary security they still send
+that value as a ticker, since they too hold the value and not the kind. Against the production
+store, then, the bulk paths cannot make a valid request for any security, and the direct calls
+cannot for any non-ticker primary. The backfill then takes its non-success branch (`:136-141`),
 returns normally, and is counted as a success (`:101`) — P4's misreport, now with every row in
 it — and the fetch logs and moves on. P4's typed-outcome remedy is still right, and would only
 make this failure visible; it does not make the jobs work. And fixing the identifier alone does
@@ -3983,10 +4024,12 @@ missing required fields, the inner catch (`:219-222`) returns normally, and the 
 another success. Three defects stand between the job and its first amendment, and any one of
 them alone leaves the success count at 100% of nothing.
 
-**Remedy.** Three parts, and the first two before P4's outcome typing. Resolve the identifier
-before calling the vendor: select an active `Ticker` or a Polygon-scoped `ProviderSymbol` alias
-for the security from the identifier store, and skip — as a typed, counted outcome — a security
-that has neither. Parse the ticker-details response as the object it is, into the backfill's own
+**Remedy.** Three parts, and the first two before P4's outcome typing. Resolve the identifier before
+calling the vendor — on the bulk paths and on the two direct post-create and post-amend calls alike
+(added 2026-09-06, after review), so non-ticker primaries are covered wherever the fetcher is
+entered: select an active `Ticker` or a Polygon-scoped `ProviderSymbol` alias for the security from
+the identifier store, and skip — as a typed, counted outcome — a security that has neither.
+Parse the ticker-details response as the object it is, into the backfill's own
 `PolygonTickerData` — which already carries `min_tick_size` and `lot_size`
 (`TradingParametersBackfillService.cs:240-246`) — with its response model's `Results` changed from
 an array to that one object (`:237`); not into the symbol-search provider's `PolygonTickerDetails`,
@@ -4058,7 +4101,10 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    where the candidate's currency gets tested (B2). This entry has been corrected with its finding:
    the first version said all six fields were comparable at attach, the second said three, the
    third said one; the count is the least important part of it. B3 comes first because without it
-   B1's and B2's comparisons verify the drafting caller's word against itself. Do this while the
+   B1's hash comparisons and B2's version comparisons verify the drafting caller's word against
+   itself; the identity comparison is the exception, since its value comes from the case row, so
+   it binds the journal to this case's action on its own and can land before B3 (narrowed
+   2026-09-06). Do this while the
    lane has no shipped consumer — the case routes are live API with no client caller, and the
    drafting pipeline has no production caller at all (an earlier version of this entry said the
    lane's one consumer was the workstation; it has none at the pin — corrected 2026-09-02, after
@@ -4239,5 +4285,12 @@ line citations into two files that later `main` merges lengthened — `AssetAcco
 (twenty-one lines added above the spine validator) and `AccountingPostingCandidatePostService.cs`
 (one `using` and nineteen lines added above the lifecycle-stage builders) — had been given at the
 merged head's numbering rather than the pin's, because the corrections were read in a worktree
-that carried the merges; they are renumbered to `5b901dda`, and the pass's one post-pin model,
-B5's open-lot backfill evidence, is marked as read at `41c8d08c`.
+that carried the merges; they are renumbered to `5b901dda`, and the pass's one post-pin model, B5's
+open-lot backfill evidence, is marked as read at `41c8d08c`; a twenty-second (2026-09-06, on the
+merge commit) narrowed B3 twice — the association is bound by B1's identity check alone, since its
+comparison value comes from the case row, which leaves the lineage hashes and the linkage versions
+as what B3 is for; and its remedy gained the lot-mutation seam it lacked, since the mapper builds
+the spine request from the event alone, the posting candidate's only lot instruction models
+acquisition and disposal, and the spine resolves no other kind — and scoped B7's universal failure
+to the bulk, search-backed paths, since the two direct post-create and post-amend fetch calls pass
+the raw identifier value.
