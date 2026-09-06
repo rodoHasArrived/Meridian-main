@@ -3850,13 +3850,22 @@ key, and the request fingerprint (`CorporateActionCaseAccountingService.cs:179-1
 `PostgresCorporateActionOperationsStore.Accounting.cs:45`) — so a retry with the same key reclaims
 it and a different command finds it held; write it under the command's `ExpectedVersion` and let
 it advance the case version, so the record step consumes the reservation's version rather than
-the client's; clear it in the same transaction that records a confirmed pre-append failure (the
-append threw or cancellation was observed before it was issued); and when the outcome is
-uncertain — crash or cancellation once the append was issued — leave it, and let the next
-attempt resolve it from the bound spine: a posted impact under this approval id completes the record
-(adoption is legitimate here, because the standing marker proves no transition intervened), a
-still-Drafted spine clears it, and a marker past a bounded age with neither goes to
-reconciliation rather than being cleared. Recover: not by adopting the journal "regardless of
+the client's; clear it in the same transaction that records a failure confirmed to have happened
+*before the append was invoked* — a validation, period, or spine-load failure, or cancellation
+observed before the call — and treat nothing after that point as confirmed (corrected 2026-09-06,
+after review; the previous version counted "the append threw" as a pre-append failure and let a
+still-Drafted spine clear the marker): the journal append can commit while its caller receives an
+exception, and the posting service advances the spine to Posted only after the append and a
+reload of the journal it wrote (`AccountingPostingCandidatePostService.cs:350-365`), so a durable
+journal can exist while the bound spine still reads Drafted, and a spine-stage check would clear
+the only fence with the orphan standing. So once the append has been invoked, the marker stays
+until the next attempt resolves the outcome from the journal store's own idempotency record —
+the posting it keys by ledger book and source event (`FindExistingPostingAsync`, `:351`) — not
+from the exception and not from the spine stage: a posting found there under this approval
+completes the record (adoption is legitimate here, because the standing marker proves no
+transition intervened) and advances the spine if the service had not; no posting found clears
+the marker; and a marker past a bounded age still unresolved goes to reconciliation rather than
+being cleared. Recover: not by adopting the journal "regardless of
 the case's current state" (corrected 2026-09-06, after review; the first version of this remedy
 said exactly that): the transition
 that won the race voided the approval on purpose
@@ -4121,4 +4130,7 @@ defect — the backfill parses an object-shaped response as an array — so that
 presented as complete one fix early; an eighteenth (Copilot) gave B6's fence its failure and retry
 semantics, and corrected two B7 remedy instructions that were wrong in kind — a private,
 field-less model offered for reuse, and a contract field offered for replacement where the
-contracts are additive-only.
+contracts are additive-only; a nineteenth corrected the fence once more — an append that throws
+is not a confirmed failure, since the journal can commit while the caller sees an exception, so
+the marker resolves from the journal store's idempotency record, never from the exception or the
+spine stage.
