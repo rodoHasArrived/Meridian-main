@@ -20,6 +20,13 @@ providers, including the store's permitted environment fallback. Missing records
 partial or deliberately removed fields cannot be filled from legacy configuration or another credential
 source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
 
+The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScopedProviderCredentialStore`
+and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and
+environment, rejects unmanaged provider types, and never falls back to provider-wide records or config.
+The scoped store registration aliases the existing vault instance. Default host construction and the
+legacy setup route still use provider-wide resolution until authorized scope is propagated by callers;
+this constructor alone does not establish end-to-end tenant isolation.
+
 ## Purpose
 
 Meridian application layer contains use cases, orchestration services, commands, and workflow

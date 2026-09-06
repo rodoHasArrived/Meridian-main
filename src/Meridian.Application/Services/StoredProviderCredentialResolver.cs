@@ -14,6 +14,7 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
 {
     private readonly IProviderCredentialStore _credentialStore;
     private readonly IProviderCredentialResolver _fallback;
+    private readonly ProviderCredentialScope? _scope;
 
     public StoredProviderCredentialResolver(
         IProviderCredentialStore credentialStore,
@@ -21,6 +22,20 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
     {
         _credentialStore = credentialStore ?? throw new ArgumentNullException(nameof(credentialStore));
         _fallback = fallback ?? throw new ArgumentNullException(nameof(fallback));
+    }
+
+    /// <summary>
+    /// Binds runtime credential resolution to an already authorized connection scope.
+    /// The caller must derive this scope from trusted ownership context. Missing scoped
+    /// records never fall back to provider-wide credentials, configuration or environment.
+    /// </summary>
+    public StoredProviderCredentialResolver(
+        IScopedProviderCredentialStore credentialStore,
+        IProviderCredentialResolver fallback,
+        ProviderCredentialScope scope)
+        : this(credentialStore, fallback)
+    {
+        _scope = scope ?? throw new ArgumentNullException(nameof(scope));
     }
 
     public ICredentialContext CreateContext(
@@ -32,6 +47,8 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         var providerId = ResolveProviderId(providerType);
         if (providerId is null)
         {
+            if (_scope is not null)
+                throw new InvalidOperationException("Scoped credentials require a catalog-managed provider.");
             return _fallback.CreateContext(providerType, configuredValues);
         }
 
@@ -44,7 +61,9 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         // The store owns the complete record, including its environment-fallback policy.
         // Missing/removed fields must never be supplied from another account's config or environment.
         // Storage failures propagate instead of silently switching credential ownership.
-        var stored = _credentialStore.ReadForProviderAsync(providerId).GetAwaiter().GetResult();
+        var stored = _scope is null
+            ? _credentialStore.ReadForProviderAsync(providerId).GetAwaiter().GetResult()
+            : ((IScopedProviderCredentialStore)_credentialStore).ReadScopedAsync(providerId, _scope).GetAwaiter().GetResult();
         var values = new Dictionary<string, string?>(StringComparer.Ordinal);
         if (stored is not null)
         {
