@@ -92,3 +92,46 @@ public sealed record ProviderCredentialReadResult(
     public string? Get(string fieldName)
         => Credentials.TryGetValue(fieldName, out var value) ? value : null;
 }
+
+
+/// <summary>Explicit ownership boundary for provider secrets; values must come from trusted routing context.</summary>
+public sealed record ProviderCredentialScope
+{
+    public ProviderCredentialScope(string tenantId, string connectionId, string externalAccountId, string environment)
+    {
+        TenantId = RequireIdentity(tenantId, nameof(tenantId));
+        ConnectionId = RequireIdentity(connectionId, nameof(connectionId));
+        ExternalAccountId = RequireIdentity(externalAccountId, nameof(externalAccountId));
+        Environment = RequireIdentity(environment, nameof(environment)).ToLowerInvariant();
+    }
+    public string TenantId { get; }
+    public string ConnectionId { get; }
+    public string ExternalAccountId { get; }
+    public string Environment { get; }
+
+    internal string StorageKey(string providerId)
+    {
+        var payload = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new[]
+            { providerId, TenantId, ConnectionId, ExternalAccountId, Environment });
+        return providerId + "@scope:" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(payload));
+    }
+
+    private static string RequireIdentity(string value, string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value, name);
+        var normalized = value.Trim();
+        if (normalized.Length > 512 || normalized.Any(char.IsControl))
+            throw new ArgumentException("Credential scope identity is invalid.", name);
+        return normalized;
+    }
+}
+
+/// <summary>Scope-bound access never falls back to an unscoped record or process environment.</summary>
+public interface IScopedProviderCredentialStore : IProviderCredentialStore
+{
+    Task<ProviderCredentialStoreStatus> GetScopedStatusAsync(string providerId, ProviderCredentialScope scope, CancellationToken ct = default);
+    Task<ProviderCredentialReadResult?> ReadScopedAsync(string providerId, ProviderCredentialScope scope, CancellationToken ct = default);
+    Task SaveScopedAsync(ProviderCredentialSaveRequest request, ProviderCredentialScope scope, CancellationToken ct = default);
+    Task DeleteScopedAsync(string providerId, ProviderCredentialScope scope, string? actor = null, CancellationToken ct = default);
+    Task RecordScopedVerificationAsync(ProviderCredentialVerificationUpdate update, ProviderCredentialScope scope, CancellationToken ct = default);
+}

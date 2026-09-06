@@ -24,6 +24,13 @@ Legacy provider sidecars are imported as one validated, insert-only vault snapsh
 
 ## Purpose
 
+`IScopedProviderCredentialStore` binds provider secrets to explicit tenant, connection, external
+account and environment identities. Scoped operations use independent encrypted records, validate
+persisted scope, and never fall back to provider-wide or process-environment credentials. Rotation,
+verification and deletion operate on one scope; audit entries retain the corresponding scope.
+The provider-only API remains a legacy compatibility surface. Runtime consumer and OAuth routing
+must be migrated to trusted scoped context before PRD-002 can claim end-to-end isolation.
+
 ETL runs acquire a unique execution lease before admission. Staging, audit/reject writes, and
 event publication use guarded actions; flush, catalog/export commit, checkpoint, source cleanup,
 and successful terminalization share one guarded commit stage. Parsing may wait outside that

@@ -227,3 +227,73 @@ public sealed class ProviderCredentialStoreTests : IDisposable
             Directory.Delete(_dataRoot, recursive: true);
     }
 }
+
+
+public sealed class ScopedProviderCredentialStoreTests : IDisposable
+{
+    private readonly string _root = Path.Combine(Path.GetTempPath(), $"meridian-scoped-credentials-{Guid.NewGuid():N}");
+
+    [Theory]
+    [InlineData("tenant")]
+    [InlineData("connection")]
+    [InlineData("account")]
+    [InlineData("environment")]
+    public async Task ScopeIsolation_SurvivesConcurrentSaveRestartRotationVerificationAndDelete(string dimension)
+    {
+        var first = new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "paper");
+        var second = new ProviderCredentialScope(dimension == "tenant" ? "tenant-b" : "tenant-a",
+            dimension == "connection" ? "connection-b" : "connection-a",
+            dimension == "account" ? "account-b" : "account-a", dimension == "environment" ? "live" : "paper");
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(Request("legacy", "paper"));
+        await Task.WhenAll(store.SaveScopedAsync(Request("first", first.Environment), first),
+            new FileProviderCredentialStore(_root).SaveScopedAsync(Request("second", second.Environment), second));
+        var restarted = new FileProviderCredentialStore(_root);
+        (await restarted.ReadScopedAsync("alpaca", first))!.Get("KeyId").Should().Be("first-key");
+        (await restarted.ReadScopedAsync("alpaca", second))!.Get("SecretKey").Should().Be("second-secret");
+        await restarted.SaveScopedAsync(new ProviderCredentialSaveRequest("alpaca",
+            new Dictionary<string, string?> { ["KeyId"] = "rotated-key" }, first.Environment, "operator"), first);
+        await restarted.RecordScopedVerificationAsync(new("alpaca", true, ExternalAccountId: first.ExternalAccountId, Actor: "operator"), first);
+        (await restarted.ReadScopedAsync("alpaca", first))!.Get("SecretKey").Should().Be("first-secret");
+        (await restarted.ReadScopedAsync("alpaca", second))!.LastVerifiedAt.Should().BeNull();
+        await restarted.DeleteScopedAsync("alpaca", first, "operator");
+        (await restarted.ReadScopedAsync("alpaca", first)).Should().BeNull("scoped access cannot fall back to the legacy provider record");
+        (await restarted.ReadScopedAsync("alpaca", second))!.Get("KeyId").Should().Be("second-key");
+        (await restarted.ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("legacy-key");
+        var audit = await File.ReadAllTextAsync(Path.Combine(_root, ".mdc", "provider-credentials.audit.jsonl"));
+        audit.Should().Contain("connection-a").And.Contain("tenant-a");
+        audit.Should().NotContain("first-secret").And.NotContain("second-secret").And.NotContain("rotated-key");
+    }
+
+    [Fact]
+    public async Task EnvironmentMismatch_RefusesBeforePersistence()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        var scope = new ProviderCredentialScope("tenant", "connection", "account", "paper");
+        var save = () => store.SaveScopedAsync(Request("wrong", "live"), scope);
+        await save.Should().ThrowAsync<InvalidDataException>();
+        File.Exists(store.VaultPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task VerificationForAnotherAccount_LeavesOriginalRecordUnchanged()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        var scope = new ProviderCredentialScope("tenant", "connection", "account-a", "paper");
+        await store.SaveScopedAsync(Request("first", "paper"), scope);
+        var verify = () => store.RecordScopedVerificationAsync(new("alpaca", true, ExternalAccountId: "account-b"), scope);
+        await verify.Should().ThrowAsync<InvalidDataException>();
+        var retained = await store.ReadScopedAsync("alpaca", scope);
+        retained!.ExternalAccountId.Should().Be("account-a");
+        retained.LastVerifiedAt.Should().BeNull();
+    }
+
+    private static ProviderCredentialSaveRequest Request(string value, string environment) => new("alpaca",
+        new Dictionary<string, string?> { ["KeyId"] = value + "-key", ["SecretKey"] = value + "-secret" }, environment, "operator");
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_root))
+            Directory.Delete(_root, recursive: true);
+    }
+}
