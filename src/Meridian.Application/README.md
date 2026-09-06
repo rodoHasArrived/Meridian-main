@@ -15,6 +15,12 @@ last_reviewed: 2026-08-30
 
 ## Purpose
 
+Provider-integration REST composition uses `ProviderIntegrationHttpClientTransport.CreateHttpClient`
+to validate DNS at connection time and connect only to the checked numeric addresses. It disables
+automatic redirects and system proxy routing; the transport checks every redirect against the
+approved HTTPS origin. See [the threat model](../../docs/security/threat-model-current-state.md)
+for the boundary and remaining certification requirements.
+
 Meridian application layer contains use cases, orchestration services, commands, and workflow
 coordination.
 

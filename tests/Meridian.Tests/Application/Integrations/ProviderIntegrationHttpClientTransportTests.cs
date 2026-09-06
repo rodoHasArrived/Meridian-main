@@ -7,6 +7,77 @@ namespace Meridian.Tests.Application.Integrations;
 
 public sealed class ProviderIntegrationHttpClientTransportTests
 {
+    [Theory]
+    [InlineData("fc00::1")]
+    [InlineData("fd12:3456::1")]
+    [InlineData("::ffff:10.1.2.3")]
+    public async Task SendAsync_RejectsPrivateIpv6BeforeSending(string address)
+    {
+        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        using var client = new HttpClient(handler);
+        var transport = new ProviderIntegrationHttpClientTransport(client,
+            hostResolver: new StaticHostResolver(IPAddress.Parse(address)));
+        await FluentActions.Awaiting(() => transport.SendAsync(CreateRequest("/v1/data")))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*non-public address*");
+        handler.Requests.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("127.0.0.1")]
+    [InlineData("169.254.169.254")]
+    [InlineData("fd12:3456::1")]
+    public async Task SendAsync_DnsRebindsAfterPreflight_ProductionHandlerRefusesConnection(string reboundAddress)
+    {
+        var resolver = new RebindingHostResolver(IPAddress.Parse(reboundAddress));
+        using var client = ProviderIntegrationHttpClientTransport.CreateHttpClient(resolver);
+        var transport = new ProviderIntegrationHttpClientTransport(client, hostResolver: resolver);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var failure = await FluentActions.Awaiting(() => transport.SendAsync(CreateRequest("/v1/data"), timeout.Token))
+            .Should().ThrowAsync<HttpRequestException>();
+        failure.Which.ToString().Should().Contain("non-public address");
+        resolver.Calls.Should().Be(2, "preflight and connection must each validate DNS before any socket connects");
+    }
+
+    private sealed class RebindingHostResolver(IPAddress reboundAddress) : IProviderIntegrationHostResolver
+    {
+        public int Calls { get; private set; }
+        public ValueTask<IReadOnlyList<IPAddress>> ResolveAsync(string host, CancellationToken ct = default)
+            => ValueTask.FromResult<IReadOnlyList<IPAddress>>([++Calls == 1 ? IPAddress.Parse("203.0.113.10") : reboundAddress]);
+    }
+
+    [Fact]
+    public async Task SendAsync_SameOriginRedirectRebinds_RejectsBeforeSecondRequest()
+    {
+        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.Redirect)
+        {
+            Headers = { Location = new Uri("/redirected", UriKind.Relative) }
+        });
+        using var client = new HttpClient(handler);
+        var resolver = new RebindingHostResolver(IPAddress.Loopback);
+        var transport = new ProviderIntegrationHttpClientTransport(client, hostResolver: resolver);
+        await FluentActions.Awaiting(() => transport.SendAsync(CreateRequest("/v1/data")))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*non-public address*");
+        handler.Requests.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task SendAsync_UnknownLengthBodyExceedsLimit_RejectsWhileReading()
+    {
+        var content = new StreamContent(new NonSeekableMemoryStream(new byte[(8 * 1024 * 1024) + 1]));
+        content.Headers.ContentLength.Should().BeNull();
+        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+        using var client = new HttpClient(handler);
+        var transport = new ProviderIntegrationHttpClientTransport(client,
+            hostResolver: new StaticHostResolver(IPAddress.Parse("203.0.113.10")));
+        await FluentActions.Awaiting(() => transport.SendAsync(CreateRequest("/v1/data")))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*exceeds*");
+    }
+
+    private sealed class NonSeekableMemoryStream(byte[] buffer) : MemoryStream(buffer)
+    {
+        public override bool CanSeek => false;
+    }
+
     [Fact]
     public async Task SendAsync_SendsRequestWithQueryAndReturnsBodyAndHeaders()
     {
