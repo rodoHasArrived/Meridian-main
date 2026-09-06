@@ -3769,9 +3769,31 @@ maker-checker outcome. B1's intro sentence about the adoption path is corrected 
 **Remedy.** Two halves, and together they are the precondition for B1's hash and role-bound
 comparisons and for B2's version comparisons — not for B1's identity check, which binds the
 association from the case row alone (narrowed 2026-09-06, after review). First, a server-side
-corporate-action drafting orchestrator: load the case, the accepted source proposal,
-the lot snapshot, the policy decision, the election, and the position from their stores; build the
-projection request and the role-bearing manifest from those reads. Four of those reads name
+corporate-action drafting orchestrator:
+load the case, the accepted source proposal, the lot snapshot, the policy decision, the election,
+and the position from their stores; build the projection request and the role-bearing manifest from
+those reads. The position read has a scope to satisfy, not only an identity (added 2026-09-06, after
+review): the case's stored scope distinguishes structure node, financial account, portfolio, custody
+account, and jurisdiction as well as fund, book, period, basis, and currency
+(`CorporateActionCaseScopeDto`, `CorporateActionOperationsContracts.cs:387-399`), but the
+projection-scope check compares only book, period, basis, fund, and currency
+(`EnsureProjectionMatchesCaseScope`, `CorporateActionCaseAccountingContracts.cs:364-376`), and
+attach adds only the security id and the tenant and company
+(`CorporateActionCaseAccountingService.cs:326`, `:334-335`). A security may carry more than one
+position under the same fund, book, and period — the position projection's uniqueness includes the
+position id (`003_instrument_position_projection_guards.sql:155-157`) — so a candidate drafted
+against the wrong one, another portfolio's or custody account's, passes every scope check the lane
+runs, and the identity comparison above does not catch it either, because the deterministic identity
+hashes the position id the drafting request supplied
+(`CorporateActionAccountingProjectionService.Fingerprints.cs:10-22`), the spine's own choice and not
+the case's assignment. The orchestrator must therefore resolve the position from the case's complete
+scope, and attach must compare the spine's `BookPositionId` against that case-derived position and
+the scope it was resolved under; the spine's scope can carry part of that today — its `Dimensions`
+set has slots for entity, portfolio, and an account id and none for custody account or jurisdiction
+(`AssetAccountingEventScopeDto`, `AssetAccountingEventDtos.cs:68-79`; `LedgerDimensionSetDto`,
+`AccountingConfigurationDtos.cs:249-273`) — and nothing writes or compares them, so the dimensions
+the spine cannot express are retained on the binding and compared there.
+Four of those reads name
 authorities that do not exist yet, and the list is honest only with that said (corrected
 2026-09-05, after review, twice: the previous version sent the orchestrator to reload a numeric
 source version from the proposal and listed the election as if a store held it; the version after
@@ -4226,12 +4248,23 @@ atomic path B3's seam joins — the journal store's idempotency record is a `Led
 with no batch identity on it (`ILedgerJournalStore.cs:256-272`), while the path that succeeds takes
 the batch id from `AtomicTaxLotJournalResult` (`:449-460`) and stamps it on the Posted stage and the
 case result (`AccountingPostingCandidatePostService.cs:301-318`, asserted again at `:735`); adopting
-the journal without the batch would advance the spine with a lot lineage it cannot name. The batch
-id is deterministic — a digest of the book, the source event, and the intent (`:1264-1271`) — so the
-recovery can recompute it, but the store exposes no read for a batch by id; one is required,
-returning the batch's canonical fingerprint, and the branch must reload the batch, require that
-fingerprint to match the one the retained Drafted candidate's instruction produces, and only then
-advance the spine with that batch id.
+the journal without the batch would advance the spine with a lot lineage it cannot name.
+The batch id is deterministic — a digest of the book, the source event, and the intent
+(`:1264-1271`) — so the recovery can recompute it, and the store already reads a batch by that id:
+`ILedgerJournalStore.GetAtomicTaxLotPostingAsync` (`ILedgerJournalStore.cs:84-92`), implemented by
+the Postgres store (`PostgresLedgerJournalStore.AtomicTaxLots.cs:13`) and used by the projection
+store to prove that a Posted projection's batch identity is durable authority rather than caller
+metadata (`IAssetAccountingEventProjectionStore.cs:392-396`), returning the batch's canonical
+fingerprint, journal, mutated lots, mutations, and evidence (`AtomicTaxLotJournalResult`,
+`:449-460`) (corrected 2026-09-06, after review; the previous sentence said no such read existed and
+prescribed one — the search that "confirmed" its absence looked for a name the method does not
+carry, the closure check verifying the wrong thing this document's Method warns against). The
+journal-found branch must call it with the recomputed id, require the result's journal to be the
+posting it found and its fingerprint to match the one the retained Drafted candidate's instruction
+produces, and only then advance the spine with that batch id; what B3's seam adds is the
+corporate-action mutation kinds, since the result's kind enumerates acquisition and disposal alone
+(`AtomicTaxLotMutationKind`, `ILedgerJournalStore.cs:352-356`) — the type extends and the read
+stays.
 Recover: not by adopting the
 journal "regardless of
 the case's current state" (corrected 2026-09-06, after review; the first version of this remedy
@@ -4419,9 +4452,13 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    the first version said all six fields were comparable at attach, the second said three, the
    third said one; the count is the least important part of it. B3 comes first because without it
    B1's hash comparisons and B2's version comparisons verify the drafting caller's word against
-   itself; the identity comparison is the exception, since its value comes from the case row, so
-   it binds the journal to this case's action on its own and can land before B3 (narrowed
-   2026-09-06). Do this while the
+   itself; the identity comparison is the exception, since its value comes from the case row,
+   so it binds the journal to this case's action on its own and can land before B3 (narrowed
+   2026-09-06). The position is the other exception in the opposite direction: the identity hashes
+   the position id the drafting caller chose, so B3's orchestrator must resolve it from the case's
+   complete scope — structure node, financial account, portfolio, custody account, jurisdiction —
+   which no gate compares today (added 2026-09-06).
+   Do this while the
    lane has no shipped consumer — the case routes are live API with no client caller, and the
    drafting pipeline has no production caller at all (an earlier version of this entry said the
    lane's one consumer was the workstation; it has none at the pin — corrected 2026-09-02, after
@@ -4667,5 +4704,11 @@ and required B6's journal-found branch to reconcile the lot batch the journal re
 thirtieth (2026-09-06) keyed B6's reservation on the case rather than as the receipt is keyed, since
 the receipt's uniqueness admits a second command under a second key; withdrew B4's reading of the
 correction check as same-scope validation, since it compares the reference to the corrected event
-and never to the correcting spine's scope; and added the currency the backfill advertises to B7's
-merge, fill-only and validated, since the ledger asserts that field before it drafts.
+and never to the correcting spine's scope;
+and added the currency the backfill advertises to B7's merge, fill-only and validated, since the
+ledger asserts that field before it drafts; a thirty-first (2026-09-06) withdrew B6's claim that the
+store had no batch read, since `GetAtomicTaxLotPostingAsync` exists and the projection store already
+uses it — the search that confirmed its absence looked for the wrong name, which is the closure
+failure this addendum has described twice before — and bound B3's position read to the case's
+complete scope, since the scope check compares five of the case scope's ten fields and the identity
+hashes the caller's position id.
