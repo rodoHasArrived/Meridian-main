@@ -9104,6 +9104,7 @@ Meridian-main
 │   │   │   │   ├── ConfigurationUnificationTests.cs
 │   │   │   │   ├── ConfigValidatorCliTests.cs
 │   │   │   │   ├── OAuthTokenPersistencePermissionTests.cs
+│   │   │   │   ├── OAuthTokenRefreshFailureTests.cs
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
 │   │   │   │   └── ProviderCredentialStoreTests.cs
 │   │   │   ├── Coordination

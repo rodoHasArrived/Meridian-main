@@ -2664,7 +2664,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10893,
+      "line_count": 10894,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5192,7 +5192,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 657,
+      "line_count": 664,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
