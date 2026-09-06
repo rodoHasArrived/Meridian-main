@@ -3059,7 +3059,7 @@ migration 031, and three workstation routes. This pass therefore had three jobs:
 closure against the property the finding requires rather than the artefact the fix produced, retire
 the "not re-verified" debt the 2026-08-29 status section explicitly left on P4's cancellation half,
 and review the new accounting lane end to end. One new finding (B1) came out of the third job at
-the pass; review of the pass's pull request then filed five more from it (B2–B6, each dated in
+the pass; review of the pass's pull request then filed six more from it (B2–B7, each dated in
 place). The
 2026-08-31 findings are untouched by the range — no commit between `eaa83032` and `5b901dda`
 touches any of their anchor files (`git log` over each path returns empty) — so A1–A4 re-verify as
@@ -3170,7 +3170,7 @@ still live, per the table below.
 | N4/N5 | Pack registry overlap rule cannot fire; shared prose contract schema | `SecurityAssetPackRegistry.cs` untouched in the range. |
 | N6 | Projection fan-out per upsert | Store untouched in the range. |
 | P4 (semantic) | Classifier has no content-equivalence check | `SecurityMasterIngestFailureClassifier.cs:38-51`, re-read this pass — see the closure bullet above for why the cancellation fix does not close this. |
-| P4 (backfill) | Both swallow points, the `break`, and the success count | `TradingParametersBackfillService.cs` unchanged: the `SearchAsync` catch still swallows and `return`s (`:62-70`), the loop still `break`s on `IsCancellationRequested` (`:85-89`), and the per-item `catch (Exception)` (`:98-108`) still counts a swallowed cancellation as `failureCount++` — **including the one `BackfillTickerAsync` correctly rethrows at `:223-227`**, so the inner fix is defeated one frame up and the run completes with a spurious failure count. The inner method misreports the other way as well (added 2026-09-02, after review; the row's first version listed only the cancellation sites): `BackfillTickerAsync` returns normally on a non-success status (`:136-141`), an empty result (`:146-152`), and a missing security (`:194-198`), and its `HttpRequestException` (`:219-222`) and `Exception` (`:228-231`) catches log and return — every one of which the loop then counts as `successCount++` (`:101`). The missing-key return (`:118-122`) is not among them — `BackfillAllAsync` checks the same key and returns before its loop (`:51-55`) — but that early return is a false success of its own: the interface returns `Task` with no outcome (`ITradingParametersBackfillService.cs:12`), so the desktop handler reports "completed successfully" after a run that did nothing, as it does after any normal return (`SecurityMasterViewModel.cs:2237-2241`). (Corrected 2026-09-05, after review: the row's second version listed the missing key among the counted branches.) |
+| P4 (backfill) | Both swallow points, the `break`, and the success count | `TradingParametersBackfillService.cs` unchanged: the `SearchAsync` catch still swallows and `return`s (`:62-70`), the loop still `break`s on `IsCancellationRequested` (`:85-89`), and the per-item `catch (Exception)` (`:98-108`) still counts a swallowed cancellation as `failureCount++` — **including the one `BackfillTickerAsync` correctly rethrows at `:223-227`**, so the inner fix is defeated one frame up and the run completes with a spurious failure count. The inner method misreports the other way as well (added 2026-09-02, after review; the row's first version listed only the cancellation sites): `BackfillTickerAsync` returns normally on a non-success status (`:136-141`), an empty result (`:146-152`), and a missing security (`:194-198`), and its `HttpRequestException` (`:219-222`) and `Exception` (`:228-231`) catches log and return — every one of which the loop then counts as `successCount++` (`:101`). The missing-key return (`:118-122`) is not among them — `BackfillAllAsync` checks the same key and returns before its loop (`:51-55`) — but that early return is a false success of its own: the interface returns `Task` with no outcome (`ITradingParametersBackfillService.cs:12`), so the desktop handler reports "completed successfully" after a run that did nothing, as it does after any normal return (`SecurityMasterViewModel.cs:2237-2241`). (Corrected 2026-09-05, after review: the row's second version listed the missing key among the counted branches.) Against the production search every row takes the non-success branch, because the identifier handed to Polygon is kind-prefixed — B7, below. |
 | P4 (WPF plumbing) | Desktop backfill has nothing to cancel with | `OnBackfillTradingParams()` takes no token and passes none (`SecurityMasterViewModel.cs:2224, :2237`); the sibling import handler plumbs one (`Import.cs:18, :69`), so the pattern exists in the same file. |
 | P4 (Polygon fetch) | HTTP failure reads as end-of-pagination; cancellation reads as an empty or short fetch | `PolygonSecurityMasterIngestProvider.cs:128-149` unchanged: `catch (Exception)` returns `null` for a non-success status or any exception, `FetchAllAsync` `break`s on `null` (`:80-82`) and returns the pages fetched so far as a normal result — so an HTTP failure mid-pagination imports a partial set that the CLI reports as success. Cancellation takes a different path (corrected 2026-09-05, after review; earlier passes and this one's header said a cancelled ingest imports a partial set): the same catch swallows the `OperationCanceledException`, but `ExecutePolygonIngestAsync` re-checks the token before its first `CreateAsync` (`SecurityMasterCommands.cs:272`) and propagates cancellation having imported nothing — unless cancellation lands during the first page, when the empty result takes the "No tickers returned" branch (`:259-263`) and the run reports success with nothing fetched. The catch is wrong for both reasons; what it produces differs by cause. |
 | P1 (CLI) | `--imported-by` stamps an unvalidated caller string | `SecurityMasterCommands.cs:364-368` unchanged; neither validation against a known identity nor a documented trust exception has appeared. |
@@ -3622,28 +3622,35 @@ Before the projection can become a Drafted candidate, `BuildPostingCandidateAsyn
 book's accounting policy, dry-runs Rules Studio, and refuses unless the request's projected effect
 equals the generated lines in account, side, amount, currency, and dimension (`:415-452`,
 `:1124-1167`). So the economic event and the effect are not the caller's to invent: they must be
-a retained event on the position and its promoted-rule output. What the spine takes from the
-request as given (`:149-170`) is the event *kind*, the `ProjectionLineage` — `TermsHash` and the
-projection-input hash with it — and every corporate-action linkage the case lane later reads:
-which case, at which version, with which lot, policy, and election identities. Those are the
-fields B1 and B2 compare, and none of them is bound by the position or by Rules Studio. The
-request DTO's own
+a retained event on the position and its promoted-rule output. Nor is the event *kind* free
+(narrowed again 2026-09-06, after review; the version before this listed the kind among the
+caller-authored fields): the spine validator requires the economic event's `EventType` to equal
+the type name derived from the kind (`AssetAccountingEventDtos.cs:447-452`, `:29`), and that
+economic event must be one the position retains — so a `CorporateAction`-kind spine can be
+drafted only over a retained corporate-action-typed event. What the spine takes from the request
+as given (`:149-170`) is therefore the `ProjectionLineage` — `TermsHash` and the projection-input
+hash with it — and every corporate-action linkage the case lane later reads: which case, at which
+version, with which lot, policy, and election identities. Those are the fields B1 and B2 compare,
+and none of them is bound by the position, the validator, or Rules Studio. The request DTO's own
 contract says it is an "authoritative handoff from an Asset Operations projector"
 (`AssetAccountingEventDtos.cs:207-209`); the route makes it a handoff from whoever holds ledger
 mutation.
 
 The consequence for B1 and B2: with the drafting boundary where it is, attach-time comparison
 proves that the attach request is consistent with the drafting request — not that either is
-correct. A caller with ledger-mutation permission can draft a `CorporateAction`-kind spine over
-any event the book position already retains — real economics, Rules Studio's own lines — and
-attach to it whatever kind, lineage hash, and case, lot, policy, and election identities make
-B1's checks pass; the deterministic event identity is reproducible from public inputs, but it
-must also name a retained event, which narrows the forgery to events the position already
-carries (narrowed 2026-09-06, after review; the previous version let the caller invent the
-economics too). Retaining a case version that caller supplied does not bind those economics to
-*this case's* action. The spine's fingerprint, the position check, and Rules Studio keep the
-*record* and the *economics* honest; nothing keeps the *association* honest — that this journal
-is this case's corporate action — and the association is what the case lane posts under
+correct. A caller with ledger-mutation permission can draft a `CorporateAction`-kind spine over a
+corporate-action-typed event the book position already retains — real economics, Rules Studio's
+own lines — and attach to it whatever lineage hash and case, lot, policy, and election identities
+make B1's checks pass. The prerequisite is stated exactly (narrowed 2026-09-06, after review, in
+two steps: the first version let the caller invent the economics, the second let the caller pick
+the kind): the position must already retain a corporate-action event, and the deterministic event
+identity B1 would recompute must be that event's — so the reach is a case bound to *another*
+corporate action's retained event on the same position, or to its own event under
+caller-authored lineage and linkage, not to an arbitrary acquisition or disposal. Retaining a
+case version that caller supplied does not bind those economics to *this case's* action. The
+spine's fingerprint, the validator, the position check, and Rules Studio keep the *record*, the
+*kind*, and the *economics* honest; nothing keeps the *association* honest — that this journal is
+this case's corporate action — and the association is what the case lane posts under
 maker-checker. B1's field-level
 remedies remain right — they make the binding mean what the drafting request said — but their
 value is bounded by B3 until the drafting request is server-authored.
@@ -3849,6 +3856,30 @@ reconciliation — a fresh approval of the already-posted economics, or a restat
 automatic adoption. The fence is the remedy; the recovery is what the lane owes any orphan it has
 already made. Neither exists at the pin.
 
+### B7 — The Polygon jobs send a kind-prefixed identifier where a ticker is required
+
+Filed 2026-09-06 from review of the P4 backfill row (the reviewer's point that typing the
+backfill's outcomes would only report a universal failure more accurately). The production search
+path formats a security's `PrimaryIdentifier` as `"{Kind}:{Value}"`
+(`SecurityMasterDbMapper.cs:7-15`, `ToSummary`), and both Polygon jobs pass that string to the
+vendor as the ticker: `BackfillAllAsync` hands `security.PrimaryIdentifier` to
+`BackfillTickerAsync` (`TradingParametersBackfillService.cs:91-100`), which puts it in the path of
+the ticker URL (`:131-134`); `PolygonCorporateActionFetcher` does the same into its dividend
+query (`PolygonCorporateActionFetcher.cs:187-199`, `:218-219`). So a ticker-primary security is
+requested as `Ticker:AAPL`, and a security whose primary identifier is an ISIN, CUSIP, or any
+other kind is sent as a ticker regardless. Against the production store neither job can make a
+valid request for any security. The backfill then takes its non-success branch (`:136-141`),
+returns normally, and is counted as a success (`:101`) — P4's misreport, now with every row in
+it — and the fetch logs and moves on. P4's typed-outcome remedy is still right, and would only
+make this failure visible; it does not make the jobs work.
+
+**Remedy.** Resolve the identifier before calling the vendor: select an active `Ticker` or a
+Polygon-scoped `ProviderSymbol` alias for the security from the identifier store, and skip — as a
+typed, counted outcome — a security that has neither. Carry the primary identifier's kind and
+value as separate fields on the summary rather than a formatted string, so no consumer has to
+parse a display form. Do this before, not after, P4's outcome typing, or the typed outcome will
+faithfully report that nothing works.
+
 ### Smaller notes, not filed as findings
 
 - **The corporate-action CLI verb hardcodes its actor.** `Actor: "meridian-cli"` at
@@ -3930,7 +3961,10 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    review). The remedy is P4's own prescription one method down: a
    typed per-ticker outcome, or a propagated failure, before the count is incremented. Scope by
    method, per the item: the per-item catch fix alone is defeated by the search catch above it,
-   and a cancellation fix alone closes P4 with failed tickers still counted as successes.
+   and a cancellation fix alone closes P4 with failed tickers still counted as successes. And
+   fix B7 first (added 2026-09-06, after review): until the jobs resolve a real ticker instead of
+   the kind-prefixed primary identifier, the typed outcome would report, correctly, that every
+   lookup failed.
 3. **The classifier's payload-equivalence check (P4's semantic half).** Unchanged in posture and
    now the only part of the duplicate-classification defect left: a reused `SecurityId` with
    different terms is still `Skipped`. The typed outcome exists; it needs the content-equivalence
@@ -4048,4 +4082,7 @@ written would have adopted a journal through an approval the winning transition 
 032's fix, which is a two-population rollout because applied scripts are checksum-immutable; and
 B3's account of the generic route, narrowed once the position check and Rules Studio were read:
 the economics are bound there, and what stays caller-authored is the kind, the lineage hashes,
-and the case linkage.
+and the case linkage — and a sixteenth narrowed it once more, since the validator binds the kind
+to the retained event's type, leaving the lineage hashes and the case linkage; the same round
+filed B7, the kind-prefixed identifier both Polygon jobs send as a ticker, which turns P4's
+success-count misreport into one that would cover every row.
