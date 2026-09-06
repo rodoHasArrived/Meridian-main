@@ -3096,11 +3096,17 @@ fail-closed check decides (`:77`). Composition is sound: the parent view model c
 `DesktopMutationAuthorization` over the DI-singleton session (`SecurityMasterViewModel.cs:1583`,
 `App.xaml.cs:449`) and hands the same instance to all three child dialogs (`:1670, :1698, :1722`).
 
-Three boundaries of this closure, stated so it is not read wider than it is. First, a null session,
-or a credential-free host that names no anonymous role, remains fail-open
-(`DesktopMutationPermissionResolver.cs:70-77`) — the resolver's comment records this as the shell's
+Three boundaries of this closure, stated so it is not read wider than it is. First, a host with
+no session *and* no configured anonymous role — `MDC_ANONYMOUS_ROLE` unset — remains fail-open
+(`DesktopMutationPermissionResolver.cs:70-77`); the resolver's comment records this as the shell's
 unconfigured local-development posture, the same decision `HasPermission` and the read-scope
-resolver already make for that host. That is a documented, consistent posture, not drift; the
+resolver already make for that host. A null session alone is not the fail-open case (corrected
+2026-09-06, after review; the previous sentence's "a null session, or a credential-free host that
+names no anonymous role" read the null session as fail-open unconditionally): the configured-role
+resolution runs before the null-session branch (`:65` ahead of `:70`), so a session-less shell
+with a named role is refused like any other host —
+`DesktopMutationPermissionResolverTests.cs:149-157` pins a null session under `ReadOnly` to a
+refusal. That is a documented, consistent posture, not drift; the
 parity P5 required was for the credential-backed and named-anonymous-role hosts, and both are
 established. Second, closure is scoped to the Security Master lane: the same sweep found the P5
 shape alive one lane over — see the strategy-promotion note below. Third, closure is of
@@ -3947,4 +3953,6 @@ evidence row behind it), and corrected B4's operator-visible consequence — the
 only the newest posting, so the second journal is hidden, not shown; an eleventh (a suppressed
 Copilot comment) replaced B2's "all find the binding current" with the actual guard sequence — one
 stamp comparison at ReadyForApproval, then identity and concurrency checks at approval and
-posting — which leaves the stale-draft conclusion where it was.
+posting — which leaves the stale-draft conclusion where it was; a twelfth (2026-09-06) narrowed
+P5's fail-open boundary to a null session *with no configured anonymous role*, since the named
+role is resolved before the null-session branch.
