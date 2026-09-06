@@ -150,9 +150,51 @@ public sealed class CredentialCompatibilityEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Theory]
+    [InlineData("/api/credentials/polygon")]
+    [InlineData("/api/credentials/polygon/test")]
+    [InlineData("/api/providers/polygon/test-connection")]
+    public async Task CompatibilityMutation_RecordsAuthenticatedActor(string route)
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        var response = await app.GetTestClient().PostAsync(route, JsonContent(new
+        {
+            credentials = new { apiKey = "compat-audit-key" },
+            requestedBy = "forged-operator",
+            providerId = "polygon"
+        }));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var auditPath = Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl");
+        var entries = (await File.ReadAllLinesAsync(auditPath)).Select(line => JsonSerializer.Deserialize<JsonElement>(line)).ToArray();
+        entries.Should().NotBeEmpty();
+        entries.Should().OnlyContain(entry => entry.GetProperty("actor").GetString() == "credential-test-operator");
+        (await app.GetTestClient().DeleteAsync("/api/credentials/polygon")).StatusCode.Should().Be(HttpStatusCode.OK);
+        var deletion = JsonSerializer.Deserialize<JsonElement>((await File.ReadAllLinesAsync(auditPath)).Last());
+        deletion.GetProperty("actor").GetString().Should().Be("credential-test-operator");
+    }
+
+    [Theory]
+    [InlineData("/api/credentials/polygon")]
+    [InlineData("/api/credentials/polygon/test")]
+    [InlineData("/api/providers/polygon/test-connection")]
+    public async Task CompatibilityMutation_WithoutActorDoesNotWriteVault(string route)
+    {
+        await using var app = await CreateAppAsync(_ => { }, includeActor: false);
+        var response = await app.GetTestClient().PostAsync(route, JsonContent(new
+        {
+            credentials = new { apiKey = "compat-audit-key" },
+            requestedBy = "forged-operator",
+            providerId = "polygon"
+        }));
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        File.Exists(app.Services.GetRequiredService<IProviderCredentialStore>().VaultPath).Should().BeFalse();
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
-        UserPermission permissions = UserPermission.ManageCredentials)
+        UserPermission permissions = UserPermission.ManageCredentials,
+        bool includeActor = true)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "credential-compat", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -181,7 +223,8 @@ public sealed class CredentialCompatibilityEndpointsTests
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "credential-test-operator";
+            if (includeActor)
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "credential-test-operator";
             await next();
         });
         app.UseRateLimiter();

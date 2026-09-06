@@ -32,6 +32,13 @@ The ledger open-lot maintenance routes expose survey, exception queue, retained 
 
 Journal automation exposes a read-only valuation freshness preview and retains dated mark evidence through journal review. The same policy decisions feed browser and desktop position read models; absent observation history stays review required. Close subject ownership is resolved from authoritative book, account, and entity records through `CloseReadinessSubjectSource`.
 
+## Credential audit identity
+
+Canonical and compatibility credential routes require an authenticated actor in addition to tenant
+scope and credential-management permission. Saves replace caller-supplied `RequestedBy` with that
+actor; delete and verification pass the same identity into the vault audit. Accounting-provider
+verification retains the initiating actor after any provider-internal verification event.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser

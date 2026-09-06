@@ -282,10 +282,39 @@ public sealed class ProviderConnectionEndpointsTests
         rawConnections.Should().NotContain("qbo-refresh-token");
     }
 
+    [Fact]
+    public async Task CredentialMutationAudit_UsesAuthenticatedActorForSaveVerifyAndDelete()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        var client = app.GetTestClient();
+        var save = await client.PutAsync("/api/providers/polygon/credentials", new StringContent(
+            """{"credentials":{"apiKey":"audit-test-key"},"requestedBy":"forged-operator"}""", Encoding.UTF8, "application/json"));
+        save.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.PostAsync("/api/providers/polygon/verify", null)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.DeleteAsync("/api/providers/polygon/credentials")).StatusCode.Should().Be(HttpStatusCode.OK);
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var auditPath = Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl");
+        var entries = (await File.ReadAllLinesAsync(auditPath)).Select(line => JsonSerializer.Deserialize<JsonElement>(line)).ToArray();
+        entries.Should().HaveCount(3);
+        entries.Should().OnlyContain(entry => entry.GetProperty("actor").GetString() == "provider-ops");
+        entries.Select(entry => entry.GetProperty("action").GetString()).Should().Equal("save", "verify-success", "delete");
+    }
+
+    [Fact]
+    public async Task CredentialSave_WithoutAuthenticatedActorCannotUseRequestedByAsIdentity()
+    {
+        await using var app = await CreateAppAsync(_ => { }, includeActor: false);
+        var response = await app.GetTestClient().PutAsync("/api/providers/polygon/credentials", new StringContent(
+            """{"credentials":{"apiKey":"audit-test-key"},"requestedBy":"forged-operator"}""", Encoding.UTF8, "application/json"));
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        File.Exists(app.Services.GetRequiredService<IProviderCredentialStore>().VaultPath).Should().BeFalse();
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ManageCredentials,
-        bool includeTenantScope = true)
+        bool includeTenantScope = true,
+        bool includeActor = true)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-connection-endpoints", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -311,7 +340,8 @@ public sealed class ProviderConnectionEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-ops";
+            if (includeActor)
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-ops";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             if (includeTenantScope)
             {
