@@ -1,6 +1,6 @@
 {
   "total_files": 664,
-  "total_lines": 141121,
+  "total_lines": 141132,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -976,7 +976,7 @@
     },
     {
       "path": "build/scripts/docs/README.md",
-      "line_count": 818,
+      "line_count": 820,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3120,7 +3120,7 @@
     },
     {
       "path": "docs/product/w10-depth-slate-2026-07.md",
-      "line_count": 585,
+      "line_count": 592,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5584,7 +5584,7 @@
     },
     {
       "path": "tests/scripts/README.md",
-      "line_count": 44,
+      "line_count": 46,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

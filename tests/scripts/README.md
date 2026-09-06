@@ -17,6 +17,8 @@ Meridian assemblies, so they run without the .NET toolchain.
 - **Fixtures:** shared input fixtures live under `tests/scripts/fixtures/`.
 - **No collection side effects:** tests shell out to the tool under test (via `subprocess`) or import
   it by path; they must not mutate the working tree.
+- **Portable report paths:** repository-relative diagnostic paths use `/` on every platform;
+  fixtures should distinguish those paths from absolute temporary paths outside the checkout.
 
 ## Where each kind of Python test lives
 
