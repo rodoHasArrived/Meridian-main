@@ -3219,7 +3219,16 @@ version corrected only the index): the collision query groups every kind (`:18-2
 before the old index is dropped (`:26-32`, `:37-38`), so a migration whose index is scoped to the
 canonical kinds but whose preflight is not still refuses to run on exactly the installs the
 scoping is for — those holding a legitimate repeated `ProviderSymbol`. The predicate goes in both
-places, or the fix does not deploy where it matters.
+places, or the fix does not deploy where it matters. And it cannot go into `032` itself for a
+database that has already applied it (added 2026-09-06, after review): the runner records every
+applied script with a checksum and, under its default drift policy, refuses to start when an
+applied script has changed (`PostgresMigrationRunner.cs:54-76`; `MigrationDriftPolicy.Throw`,
+`PostgresMigrationRunnerOptions.cs:78-81`). The fix therefore serves two populations. Databases
+that applied 032 need an append-only follow-up migration that drops the unfiltered index and
+creates the allowlisted one. Databases blocked inside 032's preflight never recorded it, so a
+follow-up never reaches them; they need a stated recovery — the repeated provider symbols
+resolved before 032 runs, or a runner-level way to supersede the blocked script — and the fix is
+not complete until it says which.
 This note records the merge so the index is not later read as A2's closure;
 verifying 032 against A2's requirements — and this over-constraint — is the next pass's work.
 
@@ -3602,22 +3611,40 @@ compute the hashes and validate the role-bearing manifest, are registered
 route: `MapPost(UiApiRoutes.LedgerAssetAccountingEventProjections)` takes a
 `ProjectAssetAccountingEventRequestDto` from the body
 (`LedgerEndpoints.AccountingConfiguration.cs:322`), requires ledger-mutation permission (`:324`),
-rebinds the actor and tenant scope (`:344-352`), and hands the rest to the spine. The spine takes
-the event kind, economic event (its id included), lineage (its `TermsHash` included), retained
-evidence rows, and projected effect from that request into the record as given
-(`AssetAccountingEventSpineService.cs:149-170`); what it resolves server-side is the security,
-position, ledger book, and period (`:216-238`) — scope, not economics. The request DTO's own
+rebinds the actor and tenant scope (`:344-352`), and hands the rest to the spine. What the spine
+then binds and what it takes as given needs stating exactly (corrected 2026-09-06, after review;
+the previous version said it resolved "scope, not economics"). It resolves the security, position,
+ledger book, and period (`AssetAccountingEventSpineService.cs:216-238`) and, against the book
+position, requires the request's economic event to equal one the position already retains — its
+origin event, its current-state source event, or a lineage trigger event — and every asserted
+evidence identity to match evidence the position retains (`ValidatePosition`, `:984-1013`).
+Before the projection can become a Drafted candidate, `BuildPostingCandidateAsync` resolves the
+book's accounting policy, dry-runs Rules Studio, and refuses unless the request's projected effect
+equals the generated lines in account, side, amount, currency, and dimension (`:415-452`,
+`:1124-1167`). So the economic event and the effect are not the caller's to invent: they must be
+a retained event on the position and its promoted-rule output. What the spine takes from the
+request as given (`:149-170`) is the event *kind*, the `ProjectionLineage` — `TermsHash` and the
+projection-input hash with it — and every corporate-action linkage the case lane later reads:
+which case, at which version, with which lot, policy, and election identities. Those are the
+fields B1 and B2 compare, and none of them is bound by the position or by Rules Studio. The
+request DTO's own
 contract says it is an "authoritative handoff from an Asset Operations projector"
 (`AssetAccountingEventDtos.cs:207-209`); the route makes it a handoff from whoever holds ledger
 mutation.
 
 The consequence for B1 and B2: with the drafting boundary where it is, attach-time comparison
 proves that the attach request is consistent with the drafting request — not that either is
-correct. A caller with ledger-mutation permission can draft a `CorporateAction`-kind spine whose
-lineage hash, evidence rows, and event id are whatever makes B1's checks pass, including the
-deterministic event identity, which is a function of public inputs; retaining a case version that
-caller supplied does not bind the economics to the case. The spine's fingerprint and the scope
-resolution keep the *record* honest; nothing keeps the *economics* honest. B1's field-level
+correct. A caller with ledger-mutation permission can draft a `CorporateAction`-kind spine over
+any event the book position already retains — real economics, Rules Studio's own lines — and
+attach to it whatever kind, lineage hash, and case, lot, policy, and election identities make
+B1's checks pass; the deterministic event identity is reproducible from public inputs, but it
+must also name a retained event, which narrows the forgery to events the position already
+carries (narrowed 2026-09-06, after review; the previous version let the caller invent the
+economics too). Retaining a case version that caller supplied does not bind those economics to
+*this case's* action. The spine's fingerprint, the position check, and Rules Studio keep the
+*record* and the *economics* honest; nothing keeps the *association* honest — that this journal
+is this case's corporate action — and the association is what the case lane posts under
+maker-checker. B1's field-level
 remedies remain right — they make the binding mean what the drafting request said — but their
 value is bounded by B3 until the drafting request is server-authored.
 
@@ -3806,14 +3833,21 @@ without a restatement. Reach: the window is the length of a ledger append, and t
 an ordinary governed command, so this is a race two operators can run without intending to;
 whether it has happened is, as with B3, not knowable from source.
 
-**Remedy.** Either fence or recover, and say which. Fence: reserve the posting in the case store
-before the spine append — a posting-in-progress marker or state written under the case's
-optimistic version, which the `Approved → AccountingReview` transition refuses while it stands and
-the record step consumes — so the transition and the posting cannot interleave. Recover: make the
-retry path reach the adoption branch whenever the bound spine already carries a posted impact
-under this case's approval id, regardless of the case's current state, and reconcile such a case
-into `Posted` rather than leaving it bindable. The first prevents the orphan; the second admits it
-and closes it. Both are defensible; neither exists at the pin.
+**Remedy.** Fence, and recover without waving the orphan through. Fence: reserve the posting in
+the case store before the spine append — a posting-in-progress marker or state written under the
+case's optimistic version, which the `Approved → AccountingReview` transition refuses while it
+stands and the record step consumes — so the transition and the posting cannot interleave.
+Recover: not by adopting the journal "regardless of the case's current state" (corrected
+2026-09-06, after review; the first version of this remedy said exactly that): the transition
+that won the race voided the approval on purpose
+(`PostgresCorporateActionOperationsStore.Cases.cs:633-640`), and adopting through it would
+resurrect a voided authorization and overwrite a governed decision with `Posted` — another
+approval bypass, offered as the fix for one. Recovery has to preserve the newer decision and
+surface the orphan: when the bound spine carries a posted impact under an approval the case no
+longer holds, block the case with that journal attached and route it through an explicit
+reconciliation — a fresh approval of the already-posted economics, or a restatement — never an
+automatic adoption. The fence is the remedy; the recovery is what the lane owes any orphan it has
+already made. Neither exists at the pin.
 
 ### Smaller notes, not filed as findings
 
@@ -3876,8 +3910,8 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    postings after a consumer lands makes retrofitted verification a data-repair exercise. B4, B5,
    and B6 ride with it: a reopened case must carry correction lineage to its own posting before
    it can bind again, approval must reference retained evidence rather than mint it at posting,
-   and posting must be fenced against — or recover from — a case transition that lands between
-   the spine append and the case record.
+   and posting must be fenced against a case transition that lands between the spine append and
+   the case record, with any orphan already made routed through reconciliation, not adopted.
 2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
    both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
    side", which an earlier version of this entry said while the same list it introduces names an
@@ -4008,4 +4042,10 @@ resolution as role-based evaluation rather than refusal, since an authorised nam
 granted; a fourteenth (2026-09-06) added B6 — posting is not fenced against a concurrent
 `Approved → AccountingReview` transition, the one shape the crash-retry adoption path cannot
 recover — and withdrew the accounting policy service as a candidate policy-decision authority,
-since its state is a process-local dictionary and its identities are strings.
+since its state is a process-local dictionary and its identities are strings; a fifteenth
+(2026-09-06) corrected three of the pass's own statements — B6's recovery option, which as first
+written would have adopted a journal through an approval the winning transition had voided;
+032's fix, which is a two-population rollout because applied scripts are checksum-immutable; and
+B3's account of the generic route, narrowed once the position check and Rules Studio were read:
+the economics are bound there, and what stays caller-authored is the kind, the lineage hashes,
+and the case linkage.
