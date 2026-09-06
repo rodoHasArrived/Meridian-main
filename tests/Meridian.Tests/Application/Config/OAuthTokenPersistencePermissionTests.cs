@@ -76,6 +76,28 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         File.Exists(TokenPath).Should().BeFalse();
     }
 
+    [Fact]
+    public async Task ProviderCredentialMutationsAndOAuthMutationsPreserveEachOther()
+    {
+        var vault = new FileProviderCredentialStore(_root);
+        await vault.SaveOAuthTokenAsync("custom-provider", SampleToken());
+        await vault.SaveAsync(new ProviderCredentialSaveRequest("alpaca", new Dictionary<string, string?>
+        {
+            ["KeyId"] = "provider-key",
+            ["SecretKey"] = "provider-secret"
+        }));
+        await vault.SaveOAuthTokenAsync("other-provider", SampleToken("other-access"));
+        await vault.DeleteAsync("alpaca");
+        var reopened = new FileProviderCredentialStore(_root);
+        var tokens = await reopened.ReadOAuthTokensAsync();
+        tokens["custom-provider"].AccessToken.Should().Be("access-secret");
+        tokens["other-provider"].AccessToken.Should().Be("other-access");
+        await reopened.SaveAsync(new ProviderCredentialSaveRequest("polygon", new Dictionary<string, string?> { ["apiKey"] = "retained-key" }));
+        await reopened.SaveOAuthTokenAsync("custom-provider", null);
+        (await reopened.ReadForProviderAsync("polygon"))!.Get("apiKey").Should().Be("retained-key");
+        (await reopened.ReadOAuthTokensAsync()).Should().NotContainKey("custom-provider");
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))

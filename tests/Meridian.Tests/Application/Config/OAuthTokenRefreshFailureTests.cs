@@ -86,6 +86,59 @@ public sealed class OAuthTokenRefreshFailureTests
         }
     }
 
+    [Fact]
+    public async Task RotatedToken_PersistenceFailureIsNotAcknowledgedAndCanBeRetainedForRecovery()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-oauth-errors", Guid.NewGuid().ToString("N"));
+        using var handler = new RetryHandler(false, "provider-secret");
+        using var client = new HttpClient(handler);
+        try
+        {
+            var vault = new RejectingVault(new FileProviderCredentialStore(root));
+            await using var service = new OAuthTokenRefreshService(root, httpClient: client, vault: vault);
+            service.RegisterProvider(new OAuthProviderConfig("provider", "client", TokenEndpoint: "https://provider.example/token"));
+            var original = new OAuthToken("original-access", "Bearer", DateTimeOffset.UtcNow.AddHours(1), "original-refresh");
+            await service.StoreTokenAsync("provider", original);
+            // Consume the handler's HTTP failure before the provider performs its real rotation.
+            (await service.RefreshTokenAsync("provider")).Success.Should().BeFalse();
+            var successes = 0;
+            service.OnTokenRefreshed += (_, _) => successes++;
+            vault.RejectWrites = true;
+
+            var failed = await service.RefreshTokenAsync("provider");
+
+            failed.Success.Should().BeFalse();
+            failed.Token.Should().BeNull();
+            failed.Error.Should().Be("Token refresh failed.");
+            successes.Should().Be(0);
+            service.GetToken("provider")!.RefreshToken.Should().Be("replacement-refresh");
+            (await vault.ReadOAuthTokensAsync())["provider"].RefreshToken.Should().Be("original-refresh");
+
+            vault.RejectWrites = false;
+            await service.StoreTokenAsync("provider", service.GetToken("provider")!);
+            var reopened = new FileProviderCredentialStore(root);
+            (await reopened.ReadOAuthTokensAsync())["provider"].RefreshToken.Should().Be("replacement-refresh");
+            handler.Calls.Should().Be(2, "persistence recovery must not need another remote token rotation");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    private sealed class RejectingVault(IOAuthTokenVault inner) : IOAuthTokenVault
+    {
+        public bool RejectWrites { get; set; }
+        public Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
+            => inner.ReadOAuthTokensAsync(ct);
+        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
+            => inner.ImportOAuthTokensAsync(tokens, ct);
+        public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
+            => RejectWrites ? Task.FromException(new IOException("secret-bearing storage failure"))
+                : inner.SaveOAuthTokenAsync(providerName, token, ct);
+    }
+
     private sealed class CaptureSink : ILogEventSink
     {
         public List<LogEvent> Events { get; } = [];
