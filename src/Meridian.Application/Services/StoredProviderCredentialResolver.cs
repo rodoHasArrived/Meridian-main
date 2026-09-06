@@ -7,8 +7,8 @@ using Meridian.Infrastructure.DataSources;
 namespace Meridian.Application.Services;
 
 /// <summary>
-/// Resolves provider credentials from Meridian's encrypted provider store before falling back to
-/// legacy environment/config resolution.
+/// Resolves catalog-managed provider credentials exclusively through the credential store.
+/// Unmanaged provider types retain their legacy resolver; managed records never mix sources.
 /// </summary>
 public sealed class StoredProviderCredentialResolver : IProviderCredentialResolver
 {
@@ -29,46 +29,29 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
     {
         ArgumentNullException.ThrowIfNull(providerType);
 
-        var fallbackContext = _fallback.CreateContext(providerType, configuredValues);
         var providerId = ResolveProviderId(providerType);
         if (providerId is null)
         {
-            return fallbackContext;
+            return _fallback.CreateContext(providerType, configuredValues);
         }
 
         var descriptor = ProviderCredentialCatalog.Find(providerId);
         if (descriptor is null)
         {
-            return fallbackContext;
+            return _fallback.CreateContext(providerType, configuredValues);
         }
 
-        var stored = ReadStore(providerId);
-        if (stored is null)
-        {
-            return fallbackContext;
-        }
-
+        // The store owns the complete record, including its environment-fallback policy.
+        // Missing/removed fields must never be supplied from another account's config or environment.
+        // Storage failures propagate instead of silently switching credential ownership.
+        var stored = _credentialStore.ReadForProviderAsync(providerId).GetAwaiter().GetResult();
         var values = new Dictionary<string, string?>(StringComparer.Ordinal);
-        foreach (var attribute in AttributeCredentialResolver.GetAttributes(providerType))
+        if (stored is not null)
         {
-            values[attribute.Name] = FirstNonBlank(
-                ResolveStoredValue(stored, descriptor, attribute.Name),
-                fallbackContext.Get(attribute.Name));
+            foreach (var attribute in AttributeCredentialResolver.GetAttributes(providerType))
+                values[attribute.Name] = ResolveStoredValue(stored, descriptor, attribute.Name);
         }
-
         return new ResolvedCredentialContext(values);
-    }
-
-    private ProviderCredentialReadResult? ReadStore(string providerId)
-    {
-        try
-        {
-            return _credentialStore.ReadForProviderAsync(providerId).GetAwaiter().GetResult();
-        }
-        catch (ArgumentException)
-        {
-            return null;
-        }
     }
 
     private static string? ResolveStoredValue(
@@ -103,9 +86,6 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
 
         return null;
     }
-
-    private static string? FirstNonBlank(params string?[] values)
-        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 
     private sealed class ResolvedCredentialContext : ICredentialContext
     {
