@@ -51,7 +51,8 @@ public sealed class AlpacaBrokerageConnectionService
 
     public async Task<BrokerageConnectionStatusDto> ConnectAsync(
         AlpacaBrokerageConnectionRequestDto request,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? actor = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
@@ -78,7 +79,7 @@ public sealed class AlpacaBrokerageConnectionService
                     ["SecretKey"] = secretKey
                 },
                 Environment: environment,
-                Actor: "browser-workstation"),
+                Actor: actor ?? "brokerage-connection-service"),
             ct).ConfigureAwait(false);
 
         try
@@ -91,7 +92,7 @@ public sealed class AlpacaBrokerageConnectionService
                     Success: true,
                     ExternalAccountId: account.AccountId,
                     VerifiedAt: verifiedAt,
-                    Actor: "browser-workstation"),
+                    Actor: actor ?? "brokerage-connection-service"),
                 ct).ConfigureAwait(false);
 
             var status = await _credentialStore.GetStatusAsync(ProviderId, ct).ConfigureAwait(false);
@@ -99,15 +100,18 @@ public sealed class AlpacaBrokerageConnectionService
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            var message = $"Alpaca /v2/account verification failed: {ex.Message}";
-            _logger.LogWarning(ex, "Alpaca API-key verification failed for {Environment} environment", environment);
+            var message = ex is HttpRequestException { StatusCode: { } statusCode }
+                ? $"Alpaca account verification failed: HTTP {(int)statusCode}."
+                : "Alpaca account verification failed.";
+            _logger.LogWarning("Alpaca account verification failed for {Environment} ({FailureType})",
+                environment, ex.GetType().Name);
             await _credentialStore.RecordVerificationAsync(
                 new ProviderCredentialVerificationUpdate(
                     ProviderId,
                     Success: false,
                     ErrorMessage: message,
                     VerifiedAt: DateTimeOffset.UtcNow,
-                    Actor: "browser-workstation"),
+                    Actor: actor ?? "brokerage-connection-service"),
                 ct).ConfigureAwait(false);
 
             var status = await _credentialStore.GetStatusAsync(ProviderId, ct).ConfigureAwait(false);
@@ -115,10 +119,10 @@ public sealed class AlpacaBrokerageConnectionService
         }
     }
 
-    public async Task<BrokerageConnectionStatusDto> RevokeAsync(CancellationToken ct = default)
+    public async Task<BrokerageConnectionStatusDto> RevokeAsync(CancellationToken ct = default, string? actor = null)
     {
         ct.ThrowIfCancellationRequested();
-        await _credentialStore.DeleteAsync(ProviderId, actor: "browser-workstation", ct).ConfigureAwait(false);
+        await _credentialStore.DeleteAsync(ProviderId, actor: actor ?? "brokerage-connection-service", ct).ConfigureAwait(false);
         var status = await _credentialStore.GetStatusAsync(ProviderId, ct).ConfigureAwait(false);
         return BuildStatus(status);
     }
@@ -137,12 +141,14 @@ public sealed class AlpacaBrokerageConnectionService
         using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"status {(int)response.StatusCode} ({response.ReasonPhrase ?? response.StatusCode.ToString()})");
+            throw new HttpRequestException("Provider verification returned an unsuccessful status.", null, response.StatusCode);
         }
 
         var account = await response.Content.ReadFromJsonAsync<AlpacaAccountVerificationResponse>(cancellationToken: ct)
             .ConfigureAwait(false);
-        var accountId = FirstNonBlank(account?.AccountNumber, account?.Id, "unknown")!;
+        var accountId = FirstNonBlank(account?.AccountNumber, account?.Id);
+        if (string.IsNullOrWhiteSpace(accountId))
+            throw new InvalidOperationException("Provider account identity is missing.");
         return new AlpacaAccountVerification(accountId);
     }
 

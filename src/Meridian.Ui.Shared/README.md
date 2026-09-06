@@ -40,6 +40,7 @@ actor; delete and verification pass the same identity into the vault audit. Acco
 verification retains the initiating actor after any provider-internal verification event.
 Alpaca verification requires a provider-returned account identity and reports fixed failure text;
 response reason phrases, JSON paths and exception details never enter its returned errors or logs.
+The Alpaca brokerage connect/revoke routes apply the same identity and verification rules.
 
 ## Purpose
 
