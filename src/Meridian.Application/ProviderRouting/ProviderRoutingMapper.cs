@@ -20,7 +20,9 @@ internal static class ProviderRoutingMapper
             Scope: ToDto(config.Scope),
             Tags: config.Tags ?? Array.Empty<string>(),
             Description: config.Description,
-            ProductionReady: config.ProductionReady);
+            ProductionReady: config.ProductionReady,
+            TenantId: config.TenantId,
+            CredentialEnvironment: config.CredentialEnvironment);
 
     public static ProviderBindingDto ToDto(ProviderBindingConfig config)
         => new(

@@ -30,6 +30,77 @@ public sealed class ProviderRoutingEndpointsTests
     };
 
     [Fact]
+    public async Task TenantConnectionOwnership_ReloadsThroughSharedContractsAndSelectsOnlyItsCredentials()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "connection-ownership", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var path = Path.Combine(root, "appsettings.json");
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new { dataRoot = root }));
+            var service = new ProviderConnectionService(new ApplicationConfigStore(path));
+            var first = new CreateProviderConnectionRequest("connection-a", "alpaca", "First", ExternalAccountId: "account-a");
+            var second = new CreateProviderConnectionRequest("connection-b", "alpaca", "Second", ExternalAccountId: "account-b");
+            var created = await service.UpsertForTenantAsync(first, "tenant-a", "paper");
+            await service.UpsertForTenantAsync(second, "tenant-b", "live");
+            created.TenantId.Should().Be("tenant-a");
+            created.CredentialEnvironment.Should().Be("paper");
+            var reopened = new ProviderConnectionService(new ApplicationConfigStore(path));
+            var scope = await reopened.GetCredentialScopeForTenantAsync("connection-a", "tenant-a");
+            scope.Should().Be(new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "paper"));
+            (await reopened.GetCredentialScopeForTenantAsync("connection-a", "tenant-b")).Should().BeNull();
+
+            var vault = new FileProviderCredentialStore(root);
+            await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("alpaca",
+                new Dictionary<string, string?> { ["KeyId"] = "owned-key", ["SecretKey"] = "owned-secret" }, "paper"), scope!);
+            var otherScope = await reopened.GetCredentialScopeForTenantAsync("connection-b", "tenant-b");
+            (await vault.ReadScopedAsync("alpaca", otherScope!)).Should().BeNull();
+            (await vault.ReadScopedAsync("alpaca", scope!))!.Get("KeyId").Should().Be("owned-key");
+            var config = new ApplicationConfigStore(path).Load();
+            var dto = JsonSerializer.Deserialize<ProviderConnectionsConfigDto>(JsonSerializer.Serialize(config.ProviderConnections), JsonOptions)!;
+            dto.Connections!.Single(c => c.ConnectionId == "connection-a").TenantId.Should().Be("tenant-a");
+            dto.Connections!.Single(c => c.ConnectionId == "connection-b").CredentialEnvironment.Should().Be("live");
+            var response = Deserialize<ProviderConnectionDto>(JsonSerializer.Serialize(created));
+            response.TenantId.Should().Be("tenant-a");
+            response.CredentialEnvironment.Should().Be("paper");
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public async Task TenantConnectionOwnership_RejectsTakeoverReassignmentAndLegacyMutation()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "connection-ownership", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var path = Path.Combine(root, "appsettings.json");
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new { dataRoot = root }));
+            var service = new ProviderConnectionService(new ApplicationConfigStore(path));
+            var request = new CreateProviderConnectionRequest("owned", "alpaca", "Owned", ExternalAccountId: "account-a");
+            await service.UpsertForTenantAsync(request, "tenant-a", "paper");
+            var retained = await File.ReadAllTextAsync(path);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request, "tenant-b", "paper"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request with { ConnectionId = " owned " }, "tenant-b", "paper"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request with { ExternalAccountId = "account-b" }, "tenant-a", "paper"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request, "tenant-a", "live"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request with { CredentialReference = "vault:alpaca/paper" }, "tenant-a", "paper"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertAsync(request));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync("owned"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteForTenantAsync("owned", "tenant-b"));
+            (await File.ReadAllTextAsync(path)).Should().Be(retained);
+
+            var legacy = request with { ConnectionId = "legacy" };
+            await service.UpsertAsync(legacy);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(legacy, "tenant-a", "paper"));
+            (await service.GetCredentialScopeForTenantAsync("legacy", "tenant-a")).Should().BeNull();
+            (await service.DeleteForTenantAsync("owned", "tenant-a")).Should().BeTrue();
+            (await service.GetConnectionAsync("legacy")).Should().NotBeNull();
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
     public async Task ConfigureProvider_StoresAlpacaCredentialsInEncryptedStoreAndLeavesConfigSecretFree()
     {
         await using var app = await CreateAppAsync();

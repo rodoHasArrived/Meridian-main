@@ -15,6 +15,13 @@ last_reviewed: 2026-08-30
 
 ## Credential source ownership
 
+`ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
+environment with the external account. Scope resolution uses that retained ownership, returns no scope
+to another tenant, and refuses incomplete records. Owned connections cannot be reassigned or modified
+through legacy mutation methods; legacy connections require an explicit ownership migration. Shared
+configuration and API DTOs preserve the fields on reload. These service operations still require HTTP
+and default runtime wiring, and do not make configuration writes a multi-process transaction.
+
 `StoredProviderCredentialResolver` uses the credential store as the complete authority for catalog-managed
 providers, including the store's permitted environment fallback. Missing records remain unconfigured;
 partial or deliberately removed fields cannot be filled from legacy configuration or another credential

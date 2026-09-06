@@ -78,7 +78,9 @@ public sealed record ProviderConnectionDto(
     ProviderRouteScopeDto? Scope,
     string[] Tags,
     string? Description,
-    bool ProductionReady);
+    bool ProductionReady,
+    string? TenantId = null,
+    string? CredentialEnvironment = null);
 
 /// <summary>
 /// Provider binding DTO exposed to clients.

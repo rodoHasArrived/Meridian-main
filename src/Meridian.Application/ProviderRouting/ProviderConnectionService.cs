@@ -1,6 +1,7 @@
 using Meridian.Core.Config;
 using Meridian.Contracts.Api;
 using Meridian.ProviderSdk;
+using Meridian.DataIntegration.Credentials;
 
 namespace Meridian.Application.ProviderRouting;
 
@@ -32,8 +33,35 @@ public sealed class ProviderConnectionService
         return Task.FromResult(connection is null ? null : ProviderRoutingMapper.ToDto(connection));
     }
 
-    public async Task<ProviderConnectionDto> UpsertAsync(CreateProviderConnectionRequest request, CancellationToken ct = default)
+    public Task<ProviderConnectionDto> UpsertAsync(CreateProviderConnectionRequest request, CancellationToken ct = default)
+        => UpsertInternalAsync(request, null, null, ct);
+
+    /// <summary>Creates or updates a connection for a server-authorized tenant. Legacy ownership is never inferred.</summary>
+    public Task<ProviderConnectionDto> UpsertForTenantAsync(CreateProviderConnectionRequest request, string tenantId, string environment, CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(environment);
+        return UpsertInternalAsync(request, tenantId.Trim(), environment.Trim().ToLowerInvariant(), ct);
+    }
+
+    /// <summary>Resolves retained credential ownership only for the authorized tenant.</summary>
+    public Task<ProviderCredentialScope?> GetCredentialScopeForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ct.ThrowIfCancellationRequested();
+        var connection = (_store.Load().ProviderConnections?.Connections ?? [])
+            .FirstOrDefault(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
+        if (connection is null || !string.Equals(connection.TenantId, tenantId.Trim(), StringComparison.Ordinal))
+            return Task.FromResult<ProviderCredentialScope?>(null);
+        if (string.IsNullOrWhiteSpace(connection.ExternalAccountId) || string.IsNullOrWhiteSpace(connection.CredentialEnvironment))
+            throw new InvalidDataException("Retained credential ownership is incomplete.");
+        return Task.FromResult<ProviderCredentialScope?>(new ProviderCredentialScope(connection.TenantId!, connection.ConnectionId,
+            connection.ExternalAccountId, connection.CredentialEnvironment));
+    }
+
+    private async Task<ProviderConnectionDto> UpsertInternalAsync(CreateProviderConnectionRequest request, string? tenantId, string? environment, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ProviderFamilyId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.DisplayName);
 
@@ -43,7 +71,24 @@ public sealed class ProviderConnectionService
 
         var connectionId = string.IsNullOrWhiteSpace(request.ConnectionId)
             ? Guid.NewGuid().ToString("N")
-            : request.ConnectionId;
+            : request.ConnectionId.Trim();
+
+        var existingIndex = connections.FindIndex(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
+        var existing = existingIndex >= 0 ? connections[existingIndex] : null;
+        if (existing is not null && !string.Equals(existing.TenantId, tenantId, StringComparison.Ordinal))
+            throw new InvalidOperationException("Connection ownership does not match the authorized tenant.");
+        if (tenantId is not null)
+        {
+            var scope = new ProviderCredentialScope(tenantId, connectionId, request.ExternalAccountId ?? string.Empty, environment!);
+            if (existing is not null && (existing.ExternalAccountId != scope.ExternalAccountId || existing.CredentialEnvironment != scope.Environment ||
+                !string.Equals(existing.ProviderFamilyId, request.ProviderFamilyId.Trim(), StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException("Existing credential ownership cannot be reassigned.");
+            // A provider-wide or caller-supplied vault reference is not ownership evidence.
+            if (!string.IsNullOrWhiteSpace(request.CredentialReference) && request.CredentialReference != existing?.CredentialReference)
+                throw new InvalidOperationException("Credential references must be assigned by the scoped credential workflow.");
+            connectionId = scope.ConnectionId;
+            request = request with { ExternalAccountId = scope.ExternalAccountId };
+        }
 
         var next = new ProviderConnectionConfig(
             ConnectionId: connectionId,
@@ -58,9 +103,10 @@ public sealed class ProviderConnectionService
             Scope: ProviderRoutingMapper.ToConnectionScope(request.Scope),
             Tags: request.Tags,
             Description: request.Description,
-            ProductionReady: request.ProductionReady);
+            ProductionReady: request.ProductionReady,
+            TenantId: tenantId,
+            CredentialEnvironment: environment);
 
-        var existingIndex = connections.FindIndex(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
         if (existingIndex >= 0)
             connections[existingIndex] = next;
         else
@@ -77,11 +123,24 @@ public sealed class ProviderConnectionService
         return ProviderRoutingMapper.ToDto(next);
     }
 
-    public async Task<bool> DeleteAsync(string connectionId, CancellationToken ct = default)
+    public Task<bool> DeleteAsync(string connectionId, CancellationToken ct = default)
+        => DeleteInternalAsync(connectionId, null, ct);
+
+    /// <summary>Deletes configuration only after matching its retained tenant owner.</summary>
+    public Task<bool> DeleteForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        return DeleteInternalAsync(connectionId, tenantId.Trim(), ct);
+    }
+
+    private async Task<bool> DeleteInternalAsync(string connectionId, string? tenantId, CancellationToken ct)
     {
         var cfg = _store.Load();
         var section = ProviderRoutingConfigExtensions.GetSection(cfg);
         var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
+        if (connections.Any(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(c.TenantId, tenantId, StringComparison.Ordinal)))
+            throw new InvalidOperationException("Connection ownership does not match the authorized tenant.");
         var removed = connections.RemoveAll(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 0;
         if (!removed)
             return false;
