@@ -32,7 +32,7 @@ public sealed class StatusEndpointTests : IClassFixture<EndpointTestFixture>
     [Fact]
     public async Task Health_ReturnsJsonWithChecks()
     {
-        var response = await _client.GetAsync("/health");
+        var response = await _providerReadClient.GetAsync("/health");
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");

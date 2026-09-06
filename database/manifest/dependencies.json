@@ -35530,6 +35530,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperationsLedgerJournalCandidateDto",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperationsLedgerJournalCandidateDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsJournalEntryMetadataDto"
     },
     {
@@ -46991,7 +46997,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "c0391e44b465f0ff427f28ea83c432901fcdcf3457b0b9c7e210476d7c31dcc9",
+  "fingerprint": "56189ab1f02dfd99a1ef89f55f1ab5e62bbbba0c51873229c56ed01690f057f8",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -68746,7 +68752,7 @@
   "summary": {
     "contract_references": 3096,
     "contract_set_memberships": 3673,
-    "edges": 7807,
+    "edges": 7808,
     "foreign_keys": 132,
     "logical_references": 6,
     "nodes": 3765

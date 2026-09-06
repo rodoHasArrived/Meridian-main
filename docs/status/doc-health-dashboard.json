@@ -1,11 +1,11 @@
 {
   "total_files": 665,
-  "total_lines": 140345,
+  "total_lines": 140393,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 263,
-  "average_lines": 211.0,
+  "average_lines": 211.1,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2272,7 +2272,7 @@
     },
     {
       "path": "docs/engineering/production-certification-evidence-chain.md",
-      "line_count": 453,
+      "line_count": 480,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2672,7 +2672,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10899,
+      "line_count": 10901,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5232,7 +5232,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1496,
+      "line_count": 1500,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5296,7 +5296,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 755,
+      "line_count": 759,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5464,7 +5464,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 581,
+      "line_count": 589,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5496,7 +5496,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1407,
+      "line_count": 1410,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

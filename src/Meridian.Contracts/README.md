@@ -15,6 +15,10 @@ Lifecycle route contracts distinguish sanitized unauthenticated readiness/livene
 authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
 single monitoring transport owner.
 
+Operations Continuity journal candidates carry a typed `Provenance` origin mark into the posting
+command. Omitted marks remain `Real`; seeded or simulated evidence must be explicitly marked,
+and the governed ledger boundary rejects mismatches.
+
 ## Shared close and lot convergence
 
 `Workstation/CloseReadinessDtos.cs` defines the declared five-dimension close scope, required contributor posture, and owner/record-linked blockers. `Accounting/Lots/` defines security-identified decimal lot views with retained acquisition currency, FX, basis, and evidence; this is an additive migration contract, not a legacy-writer cutover.
