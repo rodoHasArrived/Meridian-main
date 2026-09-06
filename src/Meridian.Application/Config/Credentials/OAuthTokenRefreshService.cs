@@ -173,7 +173,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                _log.Error(ex, "Error in OAuth token refresh loop");
+                _log.Error("Error in OAuth token refresh loop ({FailureType})", ex.GetType().Name);
             }
         }
     }
@@ -358,7 +358,8 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
         {
-            _log.Warning(ex, "Could not verify permissions on persisted OAuth tokens at {TokenPath}", _tokenPersistencePath);
+            _log.Warning("Could not verify permissions on persisted OAuth tokens at {TokenPath} ({FailureType})",
+                _tokenPersistencePath, ex.GetType().Name);
         }
     }
 
@@ -386,7 +387,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to load persisted OAuth tokens");
+            _log.Warning("Failed to load persisted OAuth tokens ({FailureType})", ex.GetType().Name);
         }
     }
 
@@ -409,7 +410,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to persist OAuth tokens");
+            _log.Warning("Failed to persist OAuth tokens ({FailureType})", ex.GetType().Name);
         }
     }
 

@@ -50,7 +50,8 @@ Core workstation host. Do not introduce a second listener or independent monitor
 - Provider credential setup, testing, and token-refresh orchestration consumes
   `Meridian.DataIntegration.Credentials`; Application no longer owns generic provider credential
   store contracts. OAuth refresh failures expose only numeric HTTP status or a fixed failure message;
-  logs record the exception type without exception details. Provider response bodies, reason phrases,
+  refresh-loop and token-persistence logs record the exception type without exception details.
+  Malformed token JSON can include secrets in exception paths. Provider response bodies, reason phrases,
   and exception messages can contain secrets and must not enter failure events or returned errors.
   Refresh failure retains the prior token so a later retry can recover. The optional logger permits
   isolated verification of this boundary. Plaintext OAuth token persistence remains an unresolved
