@@ -3605,10 +3605,21 @@ the live position on every append
 (`PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:157-180`), which catches a moved
 position at the Approved and Posted appends inside posting, after the case's approval; and nothing
 re-reads a lot snapshot, policy decision, or election after attach, since none has an authority to
-read. So the reload must run at attach, at approval, and at posting before the spine append — or
-each authority's update must fence the binding, superseding it and voiding its approval atomically,
-as the case store already voids the approval on `Approved → AccountingReview`
-(`PostgresCorporateActionOperationsStore.Cases.cs:633-640`). Leave `bound_case_version` as it is:
+read. So the reload of the external dependencies — position, lot snapshot, policy decision,
+election, period — must run at attach, at approval, and at posting before the spine append, or each
+authority's update must fence the binding, superseding it and voiding its approval atomically, as
+the case store already voids the approval on `Approved → AccountingReview`
+(`PostgresCorporateActionOperationsStore.Cases.cs:633-640`). The case itself is the exception at the
+later gates (narrowed 2026-09-06, after review; the previous sentence listed it with the rest): its
+workflow version advances by design at attach
+(`PostgresCorporateActionOperationsStore.Accounting.cs:116-123`), at ReadyForApproval
+(`PostgresCorporateActionOperationsStore.Cases.cs:646-649`), and at approval
+(`PostgresCorporateActionOperationsStore.Accounting.cs:201-209`), so comparing the drafting-time
+version again there would refuse every case; after attach the case is governed by its transition
+chain, and what the later gates should require is that the current version be the binding's
+`BoundCaseVersion` advanced by exactly the expected transitions, or that a separately retained
+material-content revision of the case — a digest over the fields that change its economics — still
+match; the drafting-time version is compared once, at attach. Leave `bound_case_version` as it is:
 the first version
 of this paragraph (corrected 2026-09-02, after review) said to stamp it "from the verified value's
 successor" so the column would mean the version prepared against — a remedy that changes nothing,
@@ -3908,8 +3919,19 @@ request before calling it (`:166-171`, `:239`), and drafting passes the stored P
 (`AssetAccountingEventDtos.cs:583`) — and the Drafted step then refuses unless the Rules Studio
 dry-run's generated lines equal that projected effect (`:1161-1167`), so the candidate the lane
 posts is those lines by construction; re-asserting the same comparison at candidate construction is
-belt and braces, not the missing check. The
-ledger's general posting path already has the vocabulary (`AccountingPostingIntentDto.Reversal`,
+belt and braces, not the missing check.
+The reversal also needs a drafting path that can produce it (added 2026-09-06, after review): the
+Drafted step's rule dry run receives only the source event's type, amount, currency, and effective
+date (`RuleDryRunRequestDto`, `AccountingConfigurationDtos.cs:806-819`;
+`AssetAccountingEventSpineService.cs:434-450`), the gate then requires the generated lines to equal
+the projected effect (`:1161-1167`), and the correction becomes an `Adjustment` posting kind only
+when the candidate is built afterwards (`:471-494`) — so a negation of the retained lines cannot
+pass the equality unless the rule generation is told it is reversing, and the ledger's reversal
+vocabulary below cannot reach the dry run. Add a typed reversal input to the projection and the
+dry-run request, or an authoritative reversal builder that derives the negated lines from the
+retained impact and satisfies the Drafted gate in place of the rule dry run; without one the
+requirement blocks every correction instead of governing it.
+The ledger's general posting path already has the vocabulary (`AccountingPostingIntentDto.Reversal`,
 `Rebook`, and `Restatement`, each requiring source-journal lineage,
 `AccountingPostingCommandValidator.cs:114-120`); the spine's correction reference carries the
 lineage without the economics. Until then, "the route left is restatement" names a door, not a
@@ -3950,9 +3972,21 @@ such: #2910 landed it after `5b901dda`, and the lines are the merged head's, `41
 `OpenLotBackfillDtos.cs:68-70`), where the identity handed to the ledger is built from the loaded
 row and never from the request (`OpenLotBackfillRules.cs:70-74`); and a stable evidence identifier
 on the approval contract, added alongside the reference and hash (the contracts are additive-only,
-see B7), so the approval names a record the store can dereference. With both in place, posting loads
-that record, checks its review state and hash, and builds the identity from it; without them a
-caller keeps supplying the same two assertions. Until then the lane's gaps are not confined to
+see B7), so the approval names a record the store can dereference.
+With both in place, posting loads that record and compares the whole identity it retains — not only
+its id, hash, and review state — against what the posting authority requires (tightened 2026-09-06,
+after review; the previous sentence had posting build the identity from the loaded row, which would
+re-create at the subject what B5 removes at the review fields): the posting service requires every
+approval evidence row to carry the `PostingApproval` subject type and a subject id composed from the
+exact event version, fund, book, period, basis, approval id, drafted-candidate fingerprint, tenant,
+and company (`AccountingPostingCandidatePostService.cs:1489-1508`), which the case lane today
+composes at posting (`CorporateActionCaseAccountingService.cs:476-499`). So the evidence record must
+be retained and reviewed with that approval-specific identity — the approval id allocated before the
+evidence is retained, the subject bound to the exact projection scope and candidate fingerprint —
+and posting compares the loaded subject with the one it would compose; a generic artifact, or an
+open-lot-style row passed unchanged, fails that check, and re-stamping its subject at posting is the
+minting defect again. Without the authority and the identifier a caller keeps supplying the same two
+assertions. Until then the lane's gaps are not confined to
 attach-time bindings; the approval boundary is a format check dressed as retention.
 
 ### B6 — Posting is not fenced against a concurrent case transition
@@ -4151,13 +4185,16 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    compare; and decide whether the key governs posting or is renamed, since today it governs
    nothing. In the same change retain every independently versioned drafting-time
    input the digest commits (case, election, policy decision, lot snapshot, position snapshot,
-   position, accounting period) as typed fields on the candidate, and reload each from its
-   authority and compare at attach, at approval, and at posting before the spine append — or
-   fence the binding so an authority update supersedes it and voids its approval — refusing a
-   stale draft on any mismatch: a case-version check alone misses a position or policy decision
-   that moved without touching the case, approval and posting re-read only the stored binding,
-   and only the period and the position get a later live check, both after approval (corrected
-   2026-09-06);
+   position, accounting period) as typed fields on the candidate; compare the drafting-time case
+   version once, at attach, and reload the external dependencies from their authorities and
+   compare at attach, at approval, and at posting before the spine append — or fence the binding
+   so an authority update supersedes it and voids its approval — refusing a stale draft on any
+   mismatch, with the case governed at the later gates by its transition chain or a retained
+   material-content revision, since its workflow version advances by design at attach,
+   ReadyForApproval, and approval (narrowed 2026-09-06): a case-version check alone misses a
+   position or policy decision that moved without touching the case, approval and posting
+   re-read only the stored binding, and only the period and the position get a later live check,
+   both after approval (corrected 2026-09-06);
    `bound_case_version` stays the post-attach stamp the currency gate needs, and is not
    where the candidate's currency gets tested (B2). This entry has been corrected with its finding:
    the first version said all six fields were comparable at attach, the second said three, the
@@ -4367,5 +4404,11 @@ so the check stays where the remedy put it; a twenty-fifth (2026-09-06) extended
 attach to approval and posting, since approval and posting re-read only the stored binding and its
 static flags and only the period and the position get a later live check; narrowed B7's identifier
 precedence to Polygon-scoped provider symbols, admitting a ticker only when unambiguous, since
-tickers sit outside duplicate detection; and withdrew B4's "validated delta" form, since no retained
-target exists to validate a delta against.
+tickers sit outside duplicate detection; and withdrew B4's "validated delta" form,
+since no retained target exists to validate a delta against; a twenty-sixth (2026-09-06) excepted
+the case's workflow version from B2's later-gate reload, since attach, ReadyForApproval, and
+approval each advance it by design; added the reversal-aware drafting path B4's negation form needs,
+since the rule dry run receives no correction input and the Drafted gate requires the generated
+lines to equal the projected effect; and bound B5's retained evidence to the approval-specific
+subject the posting service requires, so posting compares the loaded identity rather than composing
+it.
