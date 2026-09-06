@@ -89,7 +89,13 @@ public sealed class SecurityMasterMigrationRunnerTests : IClassFixture<SecurityM
     public async Task Migration030_ReportsEveryCollisionInDeterministicOrderBeforeChangingIndexes()
     {
         var schema = $"sm_collision_{Guid.NewGuid():N}";
-        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        // This isolated fixture asserts the migration's complete collision diagnostic.
+        // Npgsql redacts Detail by default; enable it only on this test connection.
+        var connectionString = new NpgsqlConnectionStringBuilder(_fixture.Options.ConnectionString)
+        {
+            IncludeErrorDetail = true
+        };
+        await using var connection = new NpgsqlConnection(connectionString.ConnectionString);
         await connection.OpenAsync();
         try
         {
