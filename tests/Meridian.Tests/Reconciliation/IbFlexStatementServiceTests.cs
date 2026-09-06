@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Xml.Linq;
+using System.Xml;
 using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
@@ -590,11 +591,16 @@ public sealed class IbFlexStatementServiceTests : IDisposable
         document.Root!.AddFirst(new XElement("Metadata", Enumerable.Range(0, 1_000)
             .Select(index => new XElement("Ignored", new XAttribute("id", index)))));
         document.Descendants("Trade").First().Add(new XComment("retained source-row note"));
-        var expectedHashes = document.Descendants()
+        var request = MakeRequest(WriteFlexFile(document.ToString()));
+        // Match the previous whole-document reader against the exact saved bytes, including
+        // indentation retained around row comments by an externally supplied XmlReader.
+        using var baselineReader = XmlReader.Create(request.SourcePath, new XmlReaderSettings { Async = true });
+        var baseline = await XDocument.LoadAsync(baselineReader, LoadOptions.None, CancellationToken.None);
+        var expectedHashes = baseline.Descendants()
             .Where(element => element.Name.LocalName is "Trade" or "OpenPosition" or "CashTransaction")
             .Select(element => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(element.ToString(SaveOptions.DisableFormatting)))))
             .ToArray();
-        var request = MakeRequest(WriteFlexFile(document.ToString()));
+
         (await _service.ValidateAsync(request)).IsValid.Should().BeTrue();
         var imported = await _service.ImportAsync(request);
         imported.Rows.Select(row => row.RawChecksum).Should().Equal(expectedHashes);
