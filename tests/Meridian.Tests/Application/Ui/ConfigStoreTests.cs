@@ -58,6 +58,49 @@ public sealed class ConfigStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task ConcurrentPresetAndConnectionMutations_PreserveOwnershipAndSelectedPreset()
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, "{}");
+        var presetId = (await new ProviderPresetService(new ConfigStore(path)).GetPresetsAsync()).First().PresetId;
+        await Task.WhenAll(Enumerable.Range(0, 24).Select(index => Task.Run(async () =>
+        {
+            var store = new ConfigStore(path);
+            await new ProviderConnectionService(store).UpsertForTenantAsync(new CreateProviderConnectionRequest(
+                $"owned-{index}", "alpaca", $"Owned {index}", ExternalAccountId: $"account-{index}"), "tenant-a", "paper");
+            (await new ProviderPresetService(store).ApplyAsync(presetId)).Should().NotBeNull();
+        })));
+        (await new ProviderConnectionService(new ConfigStore(path)).GetConnectionsForTenantAsync("tenant-a"))
+            .Select(row => row.ConnectionId).Should().BeEquivalentTo(Enumerable.Range(0, 24).Select(index => $"owned-{index}"));
+        (await new ProviderPresetService(new ConfigStore(path)).GetPresetsAsync())
+            .Where(preset => preset.IsEnabled).Should().ContainSingle(preset => preset.PresetId == presetId);
+        var before = await File.ReadAllTextAsync(path);
+        (await new ProviderPresetService(new ConfigStore(path)).ApplyAsync("missing-preset")).Should().BeNull();
+        (await File.ReadAllTextAsync(path)).Should().Be(before);
+    }
+
+    [Theory]
+    [InlineData("{")]
+    [InlineData("null")]
+    public async Task BindingAndPresetMutations_RefuseUnreadableConfiguration(string body)
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, body);
+        var store = new ConfigStore(path);
+        Func<Task>[] mutations = [
+            () => new ProviderBindingService(store).UpsertAsync(new UpdateProviderBindingRequest("binding", "RealtimeMarketData", "owned")),
+            () => new ProviderBindingService(store).DeleteAsync("binding"),
+            () => new ProviderPresetService(store).ApplyAsync("preset")];
+        foreach (var mutation in mutations)
+        {
+            var error = await Record.ExceptionAsync(mutation);
+            error.Should().NotBeNull();
+            error!.GetType().Should().Be(body == "null" ? typeof(InvalidDataException) : typeof(JsonException));
+            (await File.ReadAllTextAsync(path)).Should().Be(body);
+        }
+    }
+
+    [Fact]
     public async Task ConnectionMutation_RechecksOwnershipAfterWaitingForConfigurationWriter()
     {
         var path = Path.Combine(CreateTempDirectory(), "appsettings.json");

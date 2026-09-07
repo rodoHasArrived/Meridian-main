@@ -27,27 +27,27 @@ public sealed class ProviderPresetService
 
     public async Task<ProviderPresetDto?> ApplyAsync(string presetId, CancellationToken ct = default)
     {
-        var cfg = _store.Load();
-        var section = ProviderRoutingConfigExtensions.GetSection(cfg);
-        var presets = ProviderRoutingConfigExtensions.GetEffectivePresets(cfg).ToList();
-        var target = presets.FirstOrDefault(p => string.Equals(p.PresetId, presetId, StringComparison.OrdinalIgnoreCase));
-        if (target is null)
-            return null;
-
-        presets = presets
-            .Select(p => p with { IsEnabled = string.Equals(p.PresetId, presetId, StringComparison.OrdinalIgnoreCase) })
-            .ToList();
-
-        var persisted = presets.Where(p => !p.IsBuiltIn || p.IsEnabled).ToArray();
-        await _store.SaveAsync(cfg with
+        return await _store.UpdateRequiredAsync<ProviderPresetDto?>(cfg =>
         {
-            ProviderConnections = section with
-            {
-                Presets = persisted
-            }
-        }, ct).ConfigureAwait(false);
+            var section = ProviderRoutingConfigExtensions.GetSection(cfg);
+            var presets = ProviderRoutingConfigExtensions.GetEffectivePresets(cfg).ToList();
+            var target = presets.FirstOrDefault(p => string.Equals(p.PresetId, presetId, StringComparison.OrdinalIgnoreCase));
+            if (target is null)
+                return (cfg, null);
 
-        return ProviderRoutingMapper.ToDto(presets.First(p => p.IsEnabled));
+            presets = presets
+                .Select(p => p with { IsEnabled = string.Equals(p.PresetId, presetId, StringComparison.OrdinalIgnoreCase) })
+                .ToList();
+
+            var persisted = presets.Where(p => !p.IsBuiltIn || p.IsEnabled).ToArray();
+            return (cfg with
+            {
+                ProviderConnections = section with
+                {
+                    Presets = persisted
+                }
+            }, ProviderRoutingMapper.ToDto(presets.First(p => p.IsEnabled)));
+        }, ct).ConfigureAwait(false);
     }
 }
 
