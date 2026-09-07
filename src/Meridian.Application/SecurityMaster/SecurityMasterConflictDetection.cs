@@ -193,6 +193,19 @@ internal static class SecurityMasterConflictDetection
     private static bool IsExcludedFromAmbiguityPairing(SecurityIdentifierKind kind)
         => SecurityIdentifierNormalizer.IsExcludedFromAmbiguityPairing(kind);
 
+    /// <summary>
+    /// The identifier-ambiguity field paths this build can authoritatively re-evaluate — one per
+    /// kind its <see cref="SecurityIdentifierKind"/> enum defines. Supersession sweeps are
+    /// restricted to these paths: a conflict persisted by a newer node for a kind this build
+    /// does not know loads its claims as Unknown and never re-enters the detected set here, so
+    /// closing it on that absence would hide a valid ambiguity until a newer instance refreshes
+    /// again — the nodes that still read the kind own that judgment.
+    /// </summary>
+    internal static readonly IReadOnlySet<string> EvaluableIdentifierConflictFieldPaths =
+        Enum.GetValues<SecurityIdentifierKind>()
+            .Select(static kind => $"Identifiers.{kind}")
+            .ToHashSet(StringComparer.Ordinal);
+
     private static (IdentifierClaim Left, IdentifierClaim Right)? FindDeterministicOverlap(
         IEnumerable<IdentifierClaim> leftClaims,
         IEnumerable<IdentifierClaim> rightClaims)

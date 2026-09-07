@@ -107,10 +107,14 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
                     (_, existing) => IsDetectorSuperseded(existing) ? conflict : existing);
             }
 
+            // Mirrors the durable store: supersession is restricted to the identifier kinds this
+            // build reads — a newer node's future-kind row loads its claims as Unknown here and
+            // never re-enters the detected set, so its absence is not evidence the pair is gone.
             var detectedIds = detected.Select(static conflict => conflict.ConflictId).ToHashSet();
             foreach (var existing in _conflicts.Values.Where(static conflict =>
                          conflict.Status == "Open"
-                         && conflict.ConflictKind == SecurityMasterConflictKinds.IdentifierAmbiguity))
+                         && conflict.ConflictKind == SecurityMasterConflictKinds.IdentifierAmbiguity
+                         && SecurityMasterConflictDetection.EvaluableIdentifierConflictFieldPaths.Contains(conflict.FieldPath)))
             {
                 if (detectedIds.Contains(existing.ConflictId))
                 {
@@ -241,13 +245,16 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
             // Mirrors the durable store: a refresh that loaded the pre-amendment universe can
             // have retained a conflict these subjects no longer produce, and this scan is
-            // authoritative for every pair touching a subject — supersede what it did not
-            // re-detect instead of leaving the stale row open until the next full refresh.
+            // authoritative for every pair touching a subject — on the kinds this build reads
+            // (a newer node's future-kind row never re-enters the detected set and is left
+            // untouched) — supersede what it did not re-detect instead of leaving the stale row
+            // open until the next full refresh.
             var detectedIds = candidates.Select(static conflict => conflict.ConflictId).ToHashSet();
             var subjectIds = excludedSecurityIds.Select(static id => id.ToString()).ToHashSet(StringComparer.Ordinal);
             foreach (var existing in _conflicts.Values.Where(conflict =>
                          conflict.Status == "Open"
                          && conflict.ConflictKind == SecurityMasterConflictKinds.IdentifierAmbiguity
+                         && SecurityMasterConflictDetection.EvaluableIdentifierConflictFieldPaths.Contains(conflict.FieldPath)
                          && (subjectIds.Contains(conflict.ValueA) || subjectIds.Contains(conflict.ValueB))
                          && !detectedIds.Contains(conflict.ConflictId)))
             {

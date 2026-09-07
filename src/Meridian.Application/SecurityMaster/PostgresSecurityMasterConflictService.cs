@@ -70,9 +70,12 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             _logger.LogInformation("Detected {Count} identifier conflicts in Security Master", detected.Count);
         }
 
-        // A full refresh is authoritative for identifier ambiguity. Close only still-open
-        // detector-owned rows that disappeared because the claim windows no longer overlap;
-        // operator resolutions and field conflicts are never rewritten here.
+        // A full refresh is authoritative for identifier ambiguity — but only for the kinds this
+        // build reads: a row a newer node persisted for a future kind loads its claims as
+        // Unknown here and never re-enters the detected set, so it is left untouched rather than
+        // closed on that absence. Close only still-open detector-owned rows on evaluable paths
+        // that disappeared because the claim windows no longer overlap; operator resolutions and
+        // field conflicts are never rewritten here.
         await using (var supersede = connection.CreateCommand())
         {
             supersede.Transaction = transaction;
@@ -84,6 +87,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                     resolved_at = @resolved_at
                 where status = 'Open'
                   and conflict_kind = @conflict_kind
+                  and field_path = any(@evaluable_field_paths)
                   and not (conflict_id = any(@detected_ids));
                 """;
             supersede.Parameters.AddWithValue(
@@ -91,6 +95,10 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 SecurityMasterConflictService.IdentifierNoLongerDetectedReason);
             supersede.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
             supersede.Parameters.AddWithValue("conflict_kind", SecurityMasterConflictKinds.IdentifierAmbiguity);
+            supersede.Parameters.AddWithValue(
+                "evaluable_field_paths",
+                NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Text,
+                SecurityMasterConflictDetection.EvaluableIdentifierConflictFieldPaths.ToArray());
             supersede.Parameters.AddWithValue(
                 "detected_ids",
                 NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid,
@@ -575,9 +583,11 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         // The projection write commits BEFORE this lock is taken, so a full refresh that loaded
         // the pre-write universe can have upserted or retained a conflict the subjects' amended
         // claims no longer produce. This scan holds the subjects' current claims and enumerates
-        // every pair touching a subject, so it is authoritative for them: still-open detector
-        // rows referencing a subject that the scan did not re-detect are superseded here rather
-        // than lingering until the next full refresh.
+        // every pair touching a subject, so it is authoritative for them — on the kinds this
+        // build reads: a newer node's future-kind row never re-enters this scan's detected set
+        // and is left untouched. Still-open detector rows on evaluable paths referencing a
+        // subject that the scan did not re-detect are superseded here rather than lingering
+        // until the next full refresh.
         await using (var supersede = connection.CreateCommand())
         {
             supersede.Transaction = transaction;
@@ -589,6 +599,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                     resolved_at = @resolved_at
                 where status = 'Open'
                   and conflict_kind = @conflict_kind
+                  and field_path = any(@evaluable_field_paths)
                   and (value_a = any(@subject_ids) or value_b = any(@subject_ids))
                   and not (conflict_id = any(@detected_ids));
                 """;
@@ -597,6 +608,10 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 SecurityMasterConflictService.IdentifierNoLongerDetectedReason);
             supersede.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
             supersede.Parameters.AddWithValue("conflict_kind", SecurityMasterConflictKinds.IdentifierAmbiguity);
+            supersede.Parameters.AddWithValue(
+                "evaluable_field_paths",
+                NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Text,
+                SecurityMasterConflictDetection.EvaluableIdentifierConflictFieldPaths.ToArray());
             supersede.Parameters.AddWithValue(
                 "subject_ids",
                 NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Text,

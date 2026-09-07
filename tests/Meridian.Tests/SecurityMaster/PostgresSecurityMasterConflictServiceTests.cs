@@ -774,6 +774,56 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task GetOpenConflictsAsync_FutureKindConflictRows_AreNotSupersededByThisBuild()
+    {
+        var value = $"FWD-{Guid.NewGuid():N}";
+        var first = MakeProjection(Guid.NewGuid(), "Ticker", value, "vendor-a", primaryValue: $"{value}-A");
+        var second = MakeProjection(Guid.NewGuid(), "Ticker", value, "vendor-b", primaryValue: $"{value}-B");
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        await store.UpsertProjectionAsync(first, CancellationToken.None);
+        await store.UpsertProjectionAsync(second, CancellationToken.None);
+        var service = NewService(store);
+
+        var original = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single(conflict =>
+            (conflict.ValueA == first.SecurityId.ToString() && conflict.ValueB == second.SecurityId.ToString())
+            || (conflict.ValueA == second.SecurityId.ToString() && conflict.ValueB == first.SecurityId.ToString()));
+
+        // Model rows persisted by a newer node: the claims' kind text and the conflict's field
+        // path name a kind this build cannot parse, so detection here loads the claims as
+        // Unknown, excludes them from pairing, and never re-detects the conflict id.
+        await using (var connection = new Npgsql.NpgsqlConnection(_fixture.Options.ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using (var identifiers = connection.CreateCommand())
+            {
+                identifiers.CommandText =
+                    $"update {_fixture.Options.Schema}.security_identifiers set identifier_kind = 'FutureKind' where security_id = any(@security_ids);";
+                identifiers.Parameters.AddWithValue(
+                    "security_ids",
+                    NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid,
+                    new[] { first.SecurityId, second.SecurityId });
+                await identifiers.ExecuteNonQueryAsync();
+            }
+
+            await using (var conflictRow = connection.CreateCommand())
+            {
+                conflictRow.CommandText =
+                    $"update {_fixture.Options.Schema}.security_master_conflicts set field_path = 'Identifiers.FutureKind' where conflict_id = @conflict_id;";
+                conflictRow.Parameters.AddWithValue("conflict_id", original.ConflictId);
+                await conflictRow.ExecuteNonQueryAsync();
+            }
+        }
+
+        // A refresh on this build must not treat the pair's absence from its own detected set as
+        // supersession — the newer nodes that read the kind own that judgment.
+        var open = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        open.Should().Contain(conflict => conflict.ConflictId == original.ConflictId);
+        (await service.GetConflictAsync(original.ConflictId, CancellationToken.None))!
+            .Status.Should().Be("Open");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task GetOpenConflictsAsync_ReopensDetectorSupersededConflictWithSameId()
     {
         var boundary = DateTimeOffset.UtcNow;
