@@ -490,4 +490,51 @@ public sealed class KeyboardShortcutServiceTests
             }
         });
     }
+
+    [Fact]
+    public void DefersToFocusedRoutedCommand_HonorsMirroredBindingsOnExternalCompositionSurfaces()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var filterBox = new TextBox();
+            var railButton = new Button { Content = "Inspector action" };
+            var rail = new StackPanel { Children = { railButton } };
+            var denseGrid = new DenseDataGridControl
+            {
+                FilterTarget = filterBox,
+                ShortcutScope = rail,
+                CloseDetailsCommand = new RelayCommand(() => { })
+            };
+            var window = new Window
+            {
+                Width = 400,
+                Height = 300,
+                Content = new StackPanel { Children = { filterBox, rail, denseGrid } }
+            };
+            try
+            {
+                window.Show();
+
+                // The filter target and the inspector rail are siblings of the grid, so a
+                // routed query from focus inside them cannot reach the grid's bindings; the
+                // grid compensates with mirrored key bindings targeting itself, and the global
+                // handler must defer through those targets rather than consume the gesture
+                // before the mirrored binding ever runs.
+                filterBox.Focus();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.F, ModifierKeys.Control).Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.Escape, ModifierKeys.None).Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.S, ModifierKeys.Control).Should().BeFalse();
+
+                railButton.Focus();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.F, ModifierKeys.Control).Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.Escape, ModifierKeys.None).Should().BeTrue();
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
 }

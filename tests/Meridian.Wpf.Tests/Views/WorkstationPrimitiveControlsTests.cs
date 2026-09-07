@@ -606,6 +606,48 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     [Fact]
+    public void DenseDataGridControl_ShouldCopyOnlyTheSelectedInstanceAmongValueEqualRows()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            // Two distinct row instances that compare equal — the record-based row models these
+            // tables bind use value equality. Selecting one must copy exactly one row: matching
+            // the selection by value while walking the display-ordered items would also copy
+            // every unselected row that merely equals the selected one.
+            var tableRows = new ObservableCollection<RowFixture>
+            {
+                new("Alpaca", "Degraded"),
+                new("Alpaca", "Degraded")
+            };
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                SelectionMode = SelectionMode.Extended
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectedIndex = 1;
+
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be(
+                    "Provider\tStatus\n" +
+                    "Alpaca\tDegraded");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void DenseDataGridControl_ShouldNeutralizeFormulaPrefixesOnStringCellsOnly()
     {
         WpfTestThread.Run(() =>

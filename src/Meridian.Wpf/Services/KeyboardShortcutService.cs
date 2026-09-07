@@ -123,9 +123,57 @@ public sealed class KeyboardShortcutService
             _ => null
         };
 
-        return routed is not null
-               && Keyboard.FocusedElement is { } focused
-               && routed.CanExecute(null, focused);
+        if (routed is null || Keyboard.FocusedElement is not { } focused)
+        {
+            return false;
+        }
+
+        if (routed.CanExecute(null, focused))
+        {
+            return true;
+        }
+
+        // The dense grid mirrors its chrome gestures onto external composition surfaces (the
+        // filter target, the inspector rail) as key bindings whose CommandTarget is the grid,
+        // because those surfaces are siblings of the grid and a query routed from the focused
+        // element can never reach the grid's command bindings. The deferral must honor the same
+        // compensation, or this tunneling handler would consume the gesture before the mirrored
+        // binding ever runs: a matching binding on the focused element's chain whose target can
+        // execute serves the gesture.
+        return FindMirroredRoutedCommandTarget(focused as DependencyObject, key, modifiers, routed) is { } target
+               && routed.CanExecute(null, target);
+    }
+
+    /// <summary>
+    /// The <see cref="KeyBinding.CommandTarget"/> of the nearest key binding for this gesture
+    /// and routed command on the focused element's ancestor chain — the same chain WPF's own
+    /// input processing consults, nearest binding first — or null when no such binding exists.
+    /// </summary>
+    private static IInputElement? FindMirroredRoutedCommandTarget(
+        DependencyObject? element, Key key, ModifierKeys modifiers, RoutedCommand routed)
+    {
+        while (element is not null)
+        {
+            if (element is UIElement scope)
+            {
+                foreach (InputBinding binding in scope.InputBindings)
+                {
+                    if (binding is KeyBinding { CommandTarget: { } target } keyBinding
+                        && keyBinding.Key == key
+                        && keyBinding.Modifiers == modifiers
+                        && ReferenceEquals(keyBinding.Command, routed))
+                    {
+                        return target;
+                    }
+                }
+            }
+
+            element = element is System.Windows.Media.Visual or System.Windows.Media.Media3D.Visual3D
+                ? System.Windows.Media.VisualTreeHelper.GetParent(element) ?? LogicalTreeHelper.GetParent(element)
+                : LogicalTreeHelper.GetParent(element);
+        }
+
+        return null;
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)

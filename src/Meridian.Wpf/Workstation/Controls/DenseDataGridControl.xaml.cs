@@ -588,8 +588,12 @@ public partial class DenseDataGridControl : UserControl
 
         // SelectedItems reports click order: an Extended selection built upward would paste
         // rows inverted relative to the visible grid. Items is the display-ordered (sorted,
-        // filtered) view, so the copied block walks it and keeps only the selected rows.
-        var selectedRows = new HashSet<object>(RowsList.SelectedItems.Cast<object>());
+        // filtered) view, so the copied block walks it and keeps only the selected rows —
+        // matched by reference identity, because the record-based row models these tables bind
+        // compare by value, and value equality would also copy every unselected row that merely
+        // equals a selected one.
+        var selectedRows = new HashSet<object>(
+            RowsList.SelectedItems.Cast<object>(), ReferenceEqualityComparer.Instance);
         foreach (var selectedItem in RowsList.Items.Cast<object>().Where(selectedRows.Contains))
         {
             lines.Add(columns.Count == 0
