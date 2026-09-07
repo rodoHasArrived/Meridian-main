@@ -93,6 +93,51 @@ public sealed class CredentialManagementViewModelTests
         });
     }
 
+    [Fact]
+    public void PendingSave_DisablesConflictingCommandsAndRefusalPreservesRetryFields()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var saved = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var handler = new Handler(request =>
+            {
+                if (request.Method == HttpMethod.Put)
+                {
+                    started.SetResult();
+                    return saved.Task;
+                }
+                return Task.FromResult(Json(request.RequestUri!.AbsolutePath == "/api/provider-routing/connections"
+                    ? Connections : "[{\"providerId\":\"alpaca\",\"credentialState\":1}]"));
+            });
+            using var api = new ApiClientService(new Factory(handler));
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            await viewModel.LoadCredentialsAsync();
+            var selected = viewModel.Credentials.First();
+            viewModel.SelectedCredential = selected;
+            await viewModel.SelectionStatusLoad;
+            viewModel.EditCredentialCommand.Execute(null);
+            foreach (var field in viewModel.EditFields)
+                field.Value = "retry-value";
+            var pending = ((IAsyncRelayCommand)viewModel.SaveCredentialCommand).ExecuteAsync(null);
+            await started.Task;
+            viewModel.IsBusy.Should().BeTrue();
+            viewModel.SaveCredentialCommand.CanExecute(null).Should().BeFalse();
+            viewModel.RemoveCredentialCommand.CanExecute(null).Should().BeFalse();
+            viewModel.TestCredentialCommand.CanExecute(null).Should().BeFalse();
+            viewModel.TestAllCredentialsCommand.CanExecute(null).Should().BeFalse();
+            viewModel.EditCredentialCommand.CanExecute(null).Should().BeFalse();
+            saved.SetResult(Json("{}", HttpStatusCode.Forbidden));
+            await pending;
+            viewModel.IsBusy.Should().BeFalse();
+            viewModel.SelectedCredential.Should().BeSameAs(selected);
+            viewModel.IsEditPanelVisible.Should().BeTrue();
+            viewModel.EditFields.Should().NotBeEmpty().And.OnlyContain(field => field.Value == "retry-value");
+            viewModel.SaveCredentialCommand.CanExecute(null).Should().BeTrue();
+            viewModel.RemoveCredentialCommand.CanExecute(null).Should().BeTrue();
+        });
+    }
+
     private static HttpResponseMessage Json(string body, HttpStatusCode status = HttpStatusCode.OK)
         => new(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
 

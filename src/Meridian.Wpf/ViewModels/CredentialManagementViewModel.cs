@@ -88,7 +88,11 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
     public bool IsBusy
     {
         get => _isBusy;
-        private set => SetProperty(ref _isBusy, value);
+        private set
+        {
+            if (SetProperty(ref _isBusy, value))
+                NotifyCredentialCommands();
+        }
     }
 
     public string StatusMessage
@@ -112,9 +116,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             {
                 IsEditPanelVisible = false;
                 IsTestResultVisible = false;
-                ((RelayCommand)EditCredentialCommand).NotifyCanExecuteChanged();
-                ((AsyncRelayCommand)RemoveCredentialCommand).NotifyCanExecuteChanged();
-                ((AsyncRelayCommand)TestCredentialCommand).NotifyCanExecuteChanged();
+                NotifyCredentialCommands();
                 SelectionStatusLoad = LoadSelectedStatusAsync(value);
             }
         }
@@ -170,12 +172,21 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
 
-        EditCredentialCommand = new RelayCommand(BeginEdit, () => SelectedCredential != null);
-        RemoveCredentialCommand = new AsyncRelayCommand(RemoveCredentialAsync, () => SelectedCredential != null);
-        TestCredentialCommand = new AsyncRelayCommand(TestSelectedCredentialAsync, () => SelectedCredential != null);
-        TestAllCredentialsCommand = new AsyncRelayCommand(TestAllCredentialsAsync);
-        SaveCredentialCommand = new AsyncRelayCommand(SaveCredentialAsync);
+        EditCredentialCommand = new RelayCommand(BeginEdit, () => SelectedCredential != null && !IsBusy);
+        RemoveCredentialCommand = new AsyncRelayCommand(RemoveCredentialAsync, () => SelectedCredential != null && !IsBusy);
+        TestCredentialCommand = new AsyncRelayCommand(TestSelectedCredentialAsync, () => SelectedCredential != null && !IsBusy);
+        TestAllCredentialsCommand = new AsyncRelayCommand(TestAllCredentialsAsync, () => !IsBusy && Credentials.Any(row => row.RequiresCredentials));
+        SaveCredentialCommand = new AsyncRelayCommand(SaveCredentialAsync, () => SelectedCredential != null && !IsBusy);
         CancelEditCommand = new RelayCommand(CancelEdit);
+    }
+
+    private void NotifyCredentialCommands()
+    {
+        ((RelayCommand)EditCredentialCommand).NotifyCanExecuteChanged();
+        ((AsyncRelayCommand)RemoveCredentialCommand).NotifyCanExecuteChanged();
+        ((AsyncRelayCommand)TestCredentialCommand).NotifyCanExecuteChanged();
+        ((AsyncRelayCommand)SaveCredentialCommand).NotifyCanExecuteChanged();
+        ((AsyncRelayCommand)TestAllCredentialsCommand).NotifyCanExecuteChanged();
     }
 
     internal Task SelectionStatusLoad { get; private set; } = Task.CompletedTask;
@@ -221,6 +232,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
                 StatusMessage = "Owned connections are unavailable from the authenticated service.";
         }
         StatusMessageColor = "#AABCCD";
+        NotifyCredentialCommands();
     }
 
     private async Task LoadSelectedStatusAsync(CredentialEntryViewModel? selected)
@@ -355,7 +367,22 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
     private async Task TestSelectedCredentialAsync()
     {
         var selected = SelectedCredential;
-        if (selected is null || selected.IsTesting)
+        if (selected is null || IsBusy)
+            return;
+        IsBusy = true;
+        try
+        {
+            await VerifyCredentialAsync(selected);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task VerifyCredentialAsync(CredentialEntryViewModel selected)
+    {
+        if (selected.IsTesting)
             return;
         selected.IsTesting = true;
         ++_selectedStatusVersion;
@@ -399,7 +426,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             foreach (var cred in entries)
             {
                 SelectedCredential = cred;
-                await TestSelectedCredentialAsync();
+                await VerifyCredentialAsync(cred);
             }
             var ok = entries.Count(c => c.StatusText == "Verified");
             StatusMessage = $"{ok} of {entries.Count} providers verified by the service";

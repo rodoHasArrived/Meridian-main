@@ -25,6 +25,8 @@ connections with account and environment labels. Status, save, removal and verif
 connection ID; incomplete or ambiguous ownership cannot become an editable row.
 Credential commands expose asynchronous completion. Desktop regression tests exercise late status
 responses, selected-account saves, blank secret editors and loss of editable rows after refused discovery.
+Conflicting credential commands are disabled during persistence or verification. Refused saves restore
+command availability and retain the current editor values for an explicit retry.
 
 Credential status in the settings shell, settings vault, credential management page and add-provider
 wizard is loaded asynchronously from the shared authenticated API service. Failed reads stay
