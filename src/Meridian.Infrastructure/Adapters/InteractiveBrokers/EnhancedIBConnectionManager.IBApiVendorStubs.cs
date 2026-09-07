@@ -153,8 +153,11 @@ public sealed partial class EnhancedIBConnectionManager
         RecordMessageReceived();
         if (!TryDequeueLiveDepthExchangeRequest(out var requestId)) return;
         _dataServiceRequestIds.TryRemove(requestId, out _);
+        // IB reports AggGroup = -1 for an exchange that does not participate in SMART depth
+        // aggregation, so only a positive group id marks an aggregator — testing against zero
+        // would publish every ordinary exchange as an aggregator in the capability directory.
         var values = depthMktDataDescriptions.Select(static value => new ProviderDepthExchangeDescription(
-            value.Exchange, value.SecType, value.ListingExch, value.ServiceDataType, value.AggGroup != 0)).ToArray();
+            value.Exchange, value.SecType, value.ListingExch, value.ServiceDataType, value.AggGroup > 0)).ToArray();
         DepthExchangesReceived?.Invoke(this, (requestId, values));
     }
 
