@@ -48,6 +48,13 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     private int _nextBrokerRequestId = 50_000;
     private readonly ConcurrentDictionary<int, int> _marketRuleRequests = new();
     private readonly ConcurrentQueue<int> _depthExchangeRequests = new();
+    // Depth-exchange ids whose vendor submission threw after the FIFO enqueue above: the
+    // directory callback carries no request id, so a dead id left at the head of the queue
+    // would claim the next successful callback and leave the live request unanswered forever.
+    // ConcurrentQueue cannot remove an interior element, so failed submissions are tombstoned
+    // and skipped at dequeue. Request ids are process-monotonic, never reused, so a tombstone
+    // can never shadow a future live submission.
+    private readonly ConcurrentDictionary<int, bool> _failedDepthExchangeSubmissions = new();
 
     // Ids submitted through the IIBDataServiceTransport surface. IB's error() callback is one
     // funnel for every id domain on this client -- order ids included -- so RequestRejected must
@@ -1001,10 +1008,32 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         catch
         {
             // The submission never reached the vendor, so the id must not stay eligible
-            // for rejection routing.
+            // for rejection routing — and its FIFO correlation slot must die with it, or the
+            // next successful directory callback would be answered to this dead request while
+            // the live one behind it waits forever.
+            _failedDepthExchangeSubmissions.TryAdd(requestId, true);
             _dataServiceRequestIds.TryRemove(requestId, out _);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Dequeues the next depth-exchange correlation id, skipping ids whose vendor submission
+    /// failed after they were enqueued. Both directory callbacks (the smoke-build shape and the
+    /// official SDK's <c>mktDepthExchanges</c>) route through this so a failed submission can
+    /// never consume a live request's response.
+    /// </summary>
+    private bool TryDequeueLiveDepthExchangeRequest(out int requestId)
+    {
+        while (_depthExchangeRequests.TryDequeue(out requestId))
+        {
+            if (!_failedDepthExchangeSubmissions.TryRemove(requestId, out _))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>Starts a correlated, five-second real-time bar stream.</summary>
@@ -1411,7 +1440,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void reqMktDepthExchanges(DepthMktDataDescription[] depthMktDataDescriptions)
     {
         RecordMessageReceived();
-        if (!_depthExchangeRequests.TryDequeue(out var requestId)) return;
+        if (!TryDequeueLiveDepthExchangeRequest(out var requestId)) return;
         _dataServiceRequestIds.TryRemove(requestId, out _);
         var values = depthMktDataDescriptions.Select(value => new ProviderDepthExchangeDescription(
             value.Exchange, value.SecType, value.ListingExch, value.ServiceDataType, value.AggGroup != 0)).ToArray();

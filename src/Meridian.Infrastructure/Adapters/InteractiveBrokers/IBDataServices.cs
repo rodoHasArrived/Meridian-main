@@ -104,11 +104,23 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     // next scanner row for that id begins a fresh batch and replaces the accumulated results.
     // Entries for terminal requests are inert — request ids are process-monotonic, never reused.
     private readonly ConcurrentDictionary<int, bool> _scannerBatchClosed = new();
-    // Serializes each request's read-model transition WITH its publication: without the gate, a
-    // callback that paused between AddOrUpdate and Publish could publish its stale active model
-    // after another thread published the terminal one, resurrecting the request for watchers and
-    // letting the last-write-wins durable projector overwrite the terminal record.
-    private readonly ConcurrentDictionary<int, object> _readModelGates = new();
+    // Serializes each request's read-model transition WITH the ORDER of its publications:
+    // without the gate, a callback that paused between AddOrUpdate and Publish could publish its
+    // stale active model after another thread published the terminal one, resurrecting the
+    // request for watchers and letting the last-write-wins durable projector overwrite the
+    // terminal record. Publications themselves run OUTSIDE the lock: Publish reaches the durable
+    // projector and the public synchronous ReadModelUpdated event, and a subscriber reacting to
+    // one request by transitioning another must not be able to entangle two requests' gates into
+    // a lock-ordering deadlock. Each transition therefore enqueues its publication under the
+    // lock, and a single drainer per request delivers the queue in order with no lock held.
+    private readonly ConcurrentDictionary<int, RequestGate> _readModelGates = new();
+
+    private sealed class RequestGate
+    {
+        public readonly object Lock = new();
+        public readonly Queue<ProviderDataRequestReadModel> PendingPublications = new();
+        public bool Draining;
+    }
     private readonly TenantScopedProviderDataUpdateHub _updates = new();
     private int _nextRequestId = 90_000;
 
@@ -518,14 +530,18 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         // the submission in Issue: a cancel racing the pre-send window would otherwise spend its
         // transport cancel on a subscription that does not exist yet, and the late send would
         // then leak a live vendor stream behind a read model already frozen at Cancelled.
-        var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
-        lock (gate)
+        var gate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
+        lock (gate.Lock)
         {
             if (!_requests.TryGetValue(requestId, out var request))
                 throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
             _transport.CancelDataRequest(requestId, request.Capability);
             CancelRequest(requestId);
         }
+
+        // The nested transition only enqueued its publication (this thread held the gate);
+        // deliver it now that the lock is released.
+        DrainPublications(gate);
     }
 
     /// <summary>Fails closed on a local timeout and stops a cancellable vendor stream.</summary>
@@ -534,14 +550,18 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         // Serialized with Issue's submission for the same reason as CancelRequest: a timeout
         // firing inside the pre-send window must not spend its wire cancel before the
         // subscription exists and then let the late send leak an unreleasable stream.
-        var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
-        lock (gate)
+        var gate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
+        lock (gate.Lock)
         {
             if (!_requests.TryGetValue(requestId, out var request))
                 throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
             _transport.CancelDataRequest(requestId, request.Capability);
             UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.TimedOut, ErrorCode = "timeout", ErrorMessage = "The provider callback did not complete before the request timeout." });
         }
+
+        // The nested transition only enqueued its publication (this thread held the gate);
+        // deliver it now that the lock is released.
+        DrainPublications(gate);
     }
 
     public void RejectRequest(int requestId, string code, string message)
@@ -747,8 +767,15 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             // Persist and publish the immutable owner-bound Requested state before transport. IB
             // transports may deliver callbacks synchronously; publishing after send could otherwise
             // overwrite a callback's richer Streaming/Completed snapshot with stale Requested state.
+            // The publication routes through the request's ordered queue so a subscriber reacting
+            // to Requested by transitioning the request delivers its publication after this one.
             PublishLineageUpdated(evidence);
-            Publish(projection);
+            var registrationGate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
+            lock (registrationGate.Lock)
+            {
+                registrationGate.PendingPublications.Enqueue(projection);
+            }
+            DrainPublications(registrationGate);
         }
         catch
         {
@@ -768,12 +795,16 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             // release. Under the gate the send either wins, so the cancel that follows targets a
             // real subscription, or the terminal transition wins and the send is skipped with the
             // read model already frozen.
-            var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
-            lock (gate)
+            var gate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
+            lock (gate.Lock)
             {
                 if (_requests.TryGetValue(requestId, out var preSend) && IsActiveStatus(preSend.Status))
                     send(requestId);
             }
+
+            // A transport that delivers callbacks synchronously can enqueue publications while
+            // the send holds the gate; deliver them now that the lock is released.
+            DrainPublications(gate);
         }
         catch (Exception transportException)
         {
@@ -810,12 +841,14 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
     private void UpdateReadModel(int requestId, Func<ProviderDataRequestReadModel, ProviderDataRequestReadModel> update)
     {
-        // The transition and its publication are serialized per request: the map alone would
-        // stay consistent (terminal outcomes are frozen in the atomic update below), but a
-        // publication escaping the transition's ordering could deliver a stale active model
-        // after the terminal one to watchers and the durable projector.
-        var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
-        lock (gate)
+        // The transition and the ORDER of its publication are serialized per request: the map
+        // alone would stay consistent (terminal outcomes are frozen in the atomic update below),
+        // but a publication escaping the transition's ordering could deliver a stale active model
+        // after the terminal one to watchers and the durable projector. The publication itself is
+        // only enqueued here and delivered by DrainPublications after the lock is released, so
+        // subscriber callbacks never run under any request's gate.
+        var gate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
+        lock (gate.Lock)
         {
             var lineage = _lineage.TryGetValue(requestId, out var currentLineage) ? currentLineage : null;
             var applied = true;
@@ -838,7 +871,52 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
                     return update(current) with { UpdatedAt = DateTimeOffset.UtcNow, Lineage = lineage };
                 });
             if (applied)
-                Publish(updated);
+                gate.PendingPublications.Enqueue(updated);
+        }
+
+        DrainPublications(gate);
+    }
+
+    /// <summary>
+    /// Delivers a request's pending publications in transition order with no gate held. A thread
+    /// that still holds the gate (a cancel or timeout wrapping a transition, a transport send, or
+    /// a reentrant callback) skips delivery — the outermost holder drains after releasing — and
+    /// the Draining flag hands the queue to exactly one drainer at a time, so per-request order
+    /// is preserved while subscriber callbacks can transition other requests without ever forming
+    /// a cross-request lock cycle.
+    /// </summary>
+    private void DrainPublications(RequestGate gate)
+    {
+        if (Monitor.IsEntered(gate.Lock))
+        {
+            return;
+        }
+
+        while (true)
+        {
+            ProviderDataRequestReadModel next;
+            lock (gate.Lock)
+            {
+                if (gate.Draining || gate.PendingPublications.Count == 0)
+                {
+                    return;
+                }
+
+                gate.Draining = true;
+                next = gate.PendingPublications.Dequeue();
+            }
+
+            try
+            {
+                Publish(next);
+            }
+            finally
+            {
+                lock (gate.Lock)
+                {
+                    gate.Draining = false;
+                }
+            }
         }
     }
 

@@ -151,7 +151,7 @@ public sealed partial class EnhancedIBConnectionManager
         // forwarding mirror that callback so a production request completes instead of staying
         // Requested with its rejection routing retained.
         RecordMessageReceived();
-        if (!_depthExchangeRequests.TryDequeue(out var requestId)) return;
+        if (!TryDequeueLiveDepthExchangeRequest(out var requestId)) return;
         _dataServiceRequestIds.TryRemove(requestId, out _);
         var values = depthMktDataDescriptions.Select(static value => new ProviderDepthExchangeDescription(
             value.Exchange, value.SecType, value.ListingExch, value.ServiceDataType, value.AggGroup != 0)).ToArray();

@@ -593,6 +593,33 @@ public sealed class IBDataServicesTests
         transport.Calls.Should().Equal($"cancel:{requestId}:pnl");
     }
 
+    [Fact]
+    public void ConcurrentTerminalTransitions_WithCrossCancellingSubscriber_DoNotDeadlock()
+    {
+        using var services = new IBDataServices(new CallbackTransport());
+        var first = services.SubscribePnl("DU1", "model-a");
+        var second = services.SubscribePnl("DU2", "model-b");
+
+        // A synchronous watcher reacting to one request's completion by cancelling the other
+        // models the cross-request reaction that must not entangle two requests' gates: with
+        // publications delivered under the per-request locks, two concurrent completions each
+        // holding their own gate while cancelling the other would deadlock both transitions.
+        services.ReadModelUpdated += model =>
+        {
+            if (model.Status == ProviderDataRequestStatus.Completed)
+                services.CancelRequest(model.RequestId == first ? second : first, CancellationToken.None);
+        };
+
+        var completeFirst = Task.Run(() => services.CompleteRequest(first));
+        var completeSecond = Task.Run(() => services.CompleteRequest(second));
+
+        Task.WaitAll([completeFirst, completeSecond], TimeSpan.FromSeconds(10)).Should().BeTrue(
+            "terminal transitions must not deadlock on each other's publication callbacks");
+        services.GetRequests().Should().OnlyContain(request =>
+            request.Status == ProviderDataRequestStatus.Completed
+            || request.Status == ProviderDataRequestStatus.Cancelled);
+    }
+
     /// <summary>
     /// The vendor delivers a bounded historical-tick result as batches whose done flag describes
     /// the batch, so the transport may mark only the final batch's last element as completing —
