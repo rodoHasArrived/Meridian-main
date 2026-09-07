@@ -102,6 +102,30 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
+    public async Task ConfigureProvider_PreservesConnectionCommittedWhileSetupWaitsForConfigurationLock()
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var service = app.Services.GetRequiredService<ProviderSetupService>();
+        Task<ProviderSetupResult> pending;
+        using (var lease = new FileStream(store.ConfigPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+        {
+            pending = service.ConfigureAsync(new ProviderSetupRequest("alpaca", "Setup", null, null, null, ["streaming"], "paper"));
+            pending.IsCompleted.Should().BeFalse();
+            var current = store.LoadRequired();
+            var section = ProviderRoutingConfigExtensions.GetSection(current);
+            var owned = new ProviderConnectionConfig("retained-owned", "alpaca", "Owned", ExternalAccountId: "account-a", TenantId: "tenant-test", CredentialEnvironment: "paper");
+            var changed = current with { ProviderConnections = section with { Connections = [.. section.Connections ?? [], owned] } };
+            await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(changed, AppConfigJsonOptions.Write));
+        }
+        (await pending).Success.Should().BeTrue();
+        var final = store.LoadRequired();
+        final.ProviderConnections!.Connections.Should().Contain(row => row.ConnectionId == "retained-owned" && row.TenantId == "tenant-test" && row.ExternalAccountId == "account-a");
+        final.ProviderConnections.Connections.Should().Contain(row => row.ConnectionId == "alpaca");
+        final.DataSources!.Sources.Should().Contain(row => row.Id == "alpaca");
+    }
+
+    [Fact]
     public async Task ConfigureProvider_StoresAlpacaCredentialsInEncryptedStoreAndLeavesConfigSecretFree()
     {
         await using var app = await CreateAppAsync();
