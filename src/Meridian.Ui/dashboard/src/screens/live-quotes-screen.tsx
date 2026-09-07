@@ -18,6 +18,7 @@ import {
   TrendingUp,
   X
 } from "lucide-react";
+import { marketDataDeskPath } from "@/lib/workspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -145,7 +146,7 @@ export function LiveQuotesScreen() {
                 icon={<RotateCcw className="h-4 w-4" aria-hidden="true" />}
               />
               <Button asChild variant="outline" size="sm">
-                <Link to="/data/watchlist" aria-label="Open symbol watchlist">
+                <Link to={marketDataDeskPath("watchlist")} aria-label="Open symbol watchlist">
                   <ListPlus className="h-4 w-4" aria-hidden="true" />
                   <span className="ml-1.5">Watchlist</span>
                 </Link>
@@ -153,7 +154,7 @@ export function LiveQuotesScreen() {
               {activeSymbol ? (
                 <Button asChild variant="outline" size="sm">
                   <Link
-                    to={`/data/alerts?symbol=${encodeURIComponent(activeSymbol)}`}
+                    to={marketDataDeskPath("alerts", { symbol: activeSymbol })}
                     aria-label={`Set a price alert for ${activeSymbol}`}
                   >
                     <BellPlus className="h-4 w-4" aria-hidden="true" />
@@ -255,7 +256,7 @@ export function LiveQuotesScreen() {
                 Add starter symbols
               </Button>
               <Button asChild variant="outline" size="sm">
-                <Link to="/data/watchlist" aria-label="Import symbols from watchlist">
+                <Link to={marketDataDeskPath("watchlist")} aria-label="Import symbols from watchlist">
                   <FileSpreadsheet className="h-4 w-4" aria-hidden="true" />
                   Import watchlist
                 </Link>
