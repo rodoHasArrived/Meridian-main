@@ -40,6 +40,7 @@ import {
   type OrderTicketServices,
   type PaperSessionServices,
   type PromotionGateServices,
+  type TradingConfirmAction,
   type TradingConfirmServices,
   type TradingReadinessServices
 } from "@/screens/trading-screen.view-model";
@@ -317,6 +318,7 @@ const executionControlsSnapshot: ExecutionControlSnapshot = {
     changedAt: "2026-01-01T00:00:00Z"
   },
   defaultMaxPositionSize: 5000,
+  version: 3,
   symbolPositionLimits: { AAPL: 2500 },
   manualOverrides: [
     {
@@ -1199,7 +1201,8 @@ describe("trading confirmation view model", () => {
       cancelAllOrders: vi.fn(),
       closePosition: vi.fn(),
       pauseStrategy: vi.fn(),
-      stopStrategy: vi.fn()
+      stopStrategy: vi.fn(),
+      updateExecutionCircuitBreaker: vi.fn()
     };
     const { result } = renderHook(() => useTradingConfirmViewModel({ services }));
 
@@ -1249,7 +1252,8 @@ describe("trading confirmation view model", () => {
       cancelAllOrders: vi.fn(),
       closePosition: vi.fn().mockResolvedValue(acceptedResult),
       pauseStrategy: vi.fn(),
-      stopStrategy: vi.fn()
+      stopStrategy: vi.fn(),
+      updateExecutionCircuitBreaker: vi.fn()
     };
     const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
     const { result } = renderHook(() => useTradingConfirmViewModel({ services, fundAccountId }));
@@ -3201,5 +3205,156 @@ describe("trading readiness blocker taxonomy parity", () => {
 
     expect(byId.get("brokerage-sync-incomplete")?.tone).toBe("danger");
     expect(byId.get("brokerage-sync-incomplete")?.action?.href).toBe("/portfolio/accounts/fund-1");
+  });
+});
+
+describe("execution circuit breaker control", () => {
+  function breakerServices(
+    updateExecutionCircuitBreaker: TradingConfirmServices["updateExecutionCircuitBreaker"]
+  ): TradingConfirmServices {
+    return {
+      cancelOrder: vi.fn(),
+      cancelAllOrders: vi.fn(),
+      closePosition: vi.fn(),
+      pauseStrategy: vi.fn(),
+      stopStrategy: vi.fn(),
+      updateExecutionCircuitBreaker
+    };
+  }
+
+  async function runBreakerAction(
+    services: TradingConfirmServices,
+    action: TradingConfirmAction
+  ): Promise<ReturnType<typeof useTradingConfirmViewModel>> {
+    const { result } = renderHook(() => useTradingConfirmViewModel({ services }));
+
+    act(() => {
+      result.current.openConfirm(action);
+      result.current.setReviewAcknowledged(true);
+    });
+
+    await act(async () => {
+      await result.current.executeConfirm();
+    });
+
+    return result.current;
+  }
+
+  it("reports Failed when a 200 response does not confirm the breaker actually opened", async () => {
+    const services = breakerServices(vi.fn().mockResolvedValue({
+      ...executionControlsSnapshot,
+      circuitBreaker: { ...executionControlsSnapshot.circuitBreaker, isOpen: false }
+    }));
+
+    const vm = await runBreakerAction(services, { kind: "open-circuit-breaker" });
+
+    expect(services.updateExecutionCircuitBreaker).toHaveBeenCalledWith(expect.objectContaining({ isOpen: true }));
+    expect(vm.resultPanel).toEqual(expect.objectContaining({ status: "Failed" }));
+    expect(vm.resultPanel?.message).toContain("did NOT open");
+    expect(vm.resultPanel?.message).toContain("Verify the book at the broker");
+  });
+
+  it("passes a Partial sweep through and names the orders still working", async () => {
+    const services = breakerServices(vi.fn().mockResolvedValue({
+      ...executionControlsSnapshot,
+      circuitBreaker: { ...executionControlsSnapshot.circuitBreaker, isOpen: true },
+      sweep: {
+        outcome: "Partial",
+        requested: 3,
+        cancelled: 2,
+        stillWorking: [{ orderId: "PO-77", symbol: "AAPL", reason: "Broker rejected the cancellation." }]
+      }
+    }));
+
+    const vm = await runBreakerAction(services, { kind: "open-circuit-breaker" });
+
+    expect(vm.resultPanel).toEqual(expect.objectContaining({ status: "Partial" }));
+    expect(vm.resultPanel?.message).toContain("Cancelled 2 of 3 open orders");
+    expect(vm.resultPanel?.message).toContain("PO-77");
+  });
+
+  it("warns that an empty local book proves nothing when the broker view was unavailable", async () => {
+    const services = breakerServices(vi.fn().mockResolvedValue({
+      ...executionControlsSnapshot,
+      circuitBreaker: { ...executionControlsSnapshot.circuitBreaker, isOpen: true },
+      sweep: {
+        outcome: "Completed",
+        requested: 0,
+        cancelled: 0,
+        stillWorking: [],
+        brokerViewUnavailable: true,
+        brokerViewError: "Gateway timed out."
+      }
+    }));
+
+    const vm = await runBreakerAction(services, { kind: "open-circuit-breaker" });
+
+    expect(vm.resultPanel).toEqual(expect.objectContaining({ status: "Completed" }));
+    expect(vm.resultPanel?.message).toContain("broker book could not be read");
+    expect(vm.resultPanel?.message).toContain("Gateway timed out.");
+  });
+
+  it("treats a bare snapshot with no sweep as a halt without a reported sweep", async () => {
+    const services = breakerServices(vi.fn().mockResolvedValue({
+      ...executionControlsSnapshot,
+      circuitBreaker: { ...executionControlsSnapshot.circuitBreaker, isOpen: true }
+    }));
+
+    const vm = await runBreakerAction(services, { kind: "open-circuit-breaker" });
+
+    expect(vm.resultPanel).toEqual(expect.objectContaining({ status: "Completed" }));
+    expect(vm.resultPanel?.message).toContain("no cancel-all sweep was reported");
+  });
+
+  it("confirms a reset against the returned closed state", async () => {
+    const services = breakerServices(vi.fn().mockResolvedValue({
+      ...executionControlsSnapshot,
+      circuitBreaker: { ...executionControlsSnapshot.circuitBreaker, isOpen: false }
+    }));
+
+    const vm = await runBreakerAction(services, { kind: "close-circuit-breaker" });
+
+    expect(services.updateExecutionCircuitBreaker).toHaveBeenCalledWith(expect.objectContaining({ isOpen: false }));
+    expect(vm.resultPanel).toEqual(expect.objectContaining({ status: "Completed" }));
+    expect(vm.resultPanel?.message).toContain("Order submission can resume");
+  });
+
+  it("publishes the breaker action, label, and aria label for both breaker states", () => {
+    const closed = buildExecutionEvidenceState({
+      auditEntries: [],
+      controlsSnapshot: executionControlsSnapshot,
+      loading: false,
+      errorText: null
+    });
+
+    expect(closed.controlsPanel?.breakerAction).toEqual({ kind: "open-circuit-breaker" });
+    expect(closed.controlsPanel?.breakerActionLabel).toBe("Open breaker");
+    expect(closed.controlsPanel?.breakerActionDisabled).toBe(false);
+    expect(closed.controlsPanel?.breakerActionAriaLabel).toContain("halt submission and cancel all open orders");
+
+    const open = buildExecutionEvidenceState({
+      auditEntries: [],
+      controlsSnapshot: {
+        ...executionControlsSnapshot,
+        circuitBreaker: { ...executionControlsSnapshot.circuitBreaker, isOpen: true }
+      },
+      loading: false,
+      errorText: null
+    });
+
+    expect(open.controlsPanel?.breakerAction).toEqual({ kind: "close-circuit-breaker" });
+    expect(open.controlsPanel?.breakerActionLabel).toBe("Reset breaker");
+    expect(open.controlsPanel?.breakerActionAriaLabel).toContain("allow order submission to resume");
+  });
+
+  it("has no breaker control to press when the controls snapshot is unavailable", () => {
+    const state = buildExecutionEvidenceState({
+      auditEntries: [],
+      controlsSnapshot: null,
+      loading: false,
+      errorText: null
+    });
+
+    expect(state.controlsPanel).toBeNull();
   });
 });

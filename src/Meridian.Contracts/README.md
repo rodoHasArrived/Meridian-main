@@ -15,6 +15,10 @@ Lifecycle route contracts distinguish sanitized unauthenticated readiness/livene
 authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
 single monitoring transport owner.
 
+Operations Continuity journal candidates carry a typed `Provenance` origin mark into the posting
+command. Omitted marks remain `Real`; seeded or simulated evidence must be explicitly marked,
+and the governed ledger boundary rejects mismatches.
+
 ## Shared close and lot convergence
 
 `Workstation/CloseReadinessDtos.cs` defines the declared five-dimension close scope, required contributor posture, and owner/record-linked blockers. `Accounting/Lots/` defines security-identified decimal lot views with retained acquisition currency, FX, basis, and evidence; this is an additive migration contract, not a legacy-writer cutover.
@@ -22,6 +26,11 @@ single monitoring transport owner.
 `OpenLotBackfillDtos` adds retained acquisition-source packets, independent review, a durable exception queue, and versioned application receipts. Apply accepts a retained source identity rather than replacement acquisition facts. `MarkFreshnessDtos` carries one server decision per position, including observation date, age, policy version, and blocking reason; absent assessments remain review required. Close plan transports retain workflow, account, and evidence-version stamps for declared-scope validation.
 
 ## Purpose
+
+`Coordination/IExecutionLease.cs` defines execution-scoped ownership. A unique run owner can
+execute a side effect only while the coordination store excludes lease transfer. Managers or
+stores that do not implement this capability throw rather than falling back to a check followed
+by an unprotected action. This service contract does not change workstation transport payloads.
 
 Meridian contracts contains shared DTOs and cross-layer contracts used by host, services,
 dashboard, and WPF.
