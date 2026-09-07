@@ -449,6 +449,39 @@ public sealed class ProviderConnectionEndpointsTests
         File.Exists(vault.VaultPath).Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData("provider-tenant")]
+    [InlineData("another-tenant")]
+    public async Task ScopedCredentialRoute_RejectsDuplicateRetainedIds(string duplicateTenant)
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "owned", "provider-tenant", "alpaca", "account-a", "paper");
+        var store = new Meridian.Application.UI.ConfigStore(app.Services.GetRequiredService<ConfigStore>().ConfigPath);
+        var config = store.Load();
+        var original = config.ProviderConnections!.Connections!.Single();
+        config = config with
+        {
+            ProviderConnections = config.ProviderConnections with
+            {
+                Connections = [original, original with { ConnectionId = "OWNED", TenantId = duplicateTenant, ExternalAccountId = "account-b" }]
+            }
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
+        var before = await File.ReadAllTextAsync(store.ConfigPath);
+        var service = new Meridian.Application.ProviderRouting.ProviderConnectionService(store);
+        (await service.GetCredentialScopeForTenantAsync("owned", "provider-tenant")).Should().BeNull();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteForTenantAsync("owned", "provider-tenant"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(
+            new Meridian.Contracts.Api.CreateProviderConnectionRequest("owned", "alpaca", "Owned", ExternalAccountId: "account-a"), "provider-tenant", "paper"));
+        var client = app.GetTestClient();
+        (await client.GetAsync("/api/providers/connections?connectionId=owned")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PutAsync("/api/providers/alpaca/credentials?connectionId=owned", JsonContent(new { credentials = new { KeyId = "refused", SecretKey = "refused" } }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.DeleteAsync("/api/providers/alpaca/credentials?connectionId=owned")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsync("/api/providers/alpaca/verify?connectionId=owned", JsonContent(new { }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await File.ReadAllTextAsync(store.ConfigPath)).Should().Be(before);
+        File.Exists(((FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>()).VaultPath).Should().BeFalse();
+    }
+
     [Fact]
     public async Task ScopedCredentialVerification_DoesNotInvokeProviderWideAccountingVerifier()
     {

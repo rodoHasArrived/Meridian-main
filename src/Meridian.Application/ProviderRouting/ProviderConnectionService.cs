@@ -32,6 +32,8 @@ public sealed class ProviderConnectionService
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ct.ThrowIfCancellationRequested();
         var connections = (_store.Load().ProviderConnections?.Connections ?? [])
+            .GroupBy(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1).Select(group => group.Single())
             .Where(connection => string.Equals(connection.TenantId, tenantId.Trim(), StringComparison.Ordinal))
             .Select(ProviderRoutingMapper.ToDto).ToArray();
         return Task.FromResult<IReadOnlyList<ProviderConnectionDto>>(connections);
@@ -60,8 +62,9 @@ public sealed class ProviderConnectionService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ct.ThrowIfCancellationRequested();
-        var connection = (_store.Load().ProviderConnections?.Connections ?? [])
-            .FirstOrDefault(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
+        var matches = (_store.Load().ProviderConnections?.Connections ?? [])
+            .Where(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var connection = matches.Length == 1 ? matches[0] : null;
         if (connection is null || !string.Equals(connection.TenantId, tenantId.Trim(), StringComparison.Ordinal))
             return Task.FromResult<ProviderCredentialScope?>(null);
         if (string.IsNullOrWhiteSpace(connection.ExternalAccountId) || string.IsNullOrWhiteSpace(connection.CredentialEnvironment))
@@ -84,6 +87,8 @@ public sealed class ProviderConnectionService
             ? Guid.NewGuid().ToString("N")
             : request.ConnectionId.Trim();
 
+        if (connections.Count(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 1)
+            throw new InvalidOperationException("Connection ownership is ambiguous.");
         var existingIndex = connections.FindIndex(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
         var existing = existingIndex >= 0 ? connections[existingIndex] : null;
         if (existing is not null && !string.Equals(existing.TenantId, tenantId, StringComparison.Ordinal))
@@ -152,6 +157,8 @@ public sealed class ProviderConnectionService
         if (connections.Any(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(c.TenantId, tenantId, StringComparison.Ordinal)))
             throw new InvalidOperationException("Connection ownership does not match the authorized tenant.");
+        if (connections.Count(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 1)
+            throw new InvalidOperationException("Connection ownership is ambiguous.");
         var removed = connections.RemoveAll(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 0;
         if (!removed)
             return false;

@@ -86,7 +86,9 @@ public sealed class ProviderTrustScoringService
             .ToDictionary(c => c.ConnectionId, StringComparer.OrdinalIgnoreCase);
 
         var snapshots = new List<ProviderTrustSnapshotDto>();
-        foreach (var connection in section.Connections ?? Array.Empty<ProviderConnectionConfig>())
+        var visibleConnections = (section.Connections ?? []).GroupBy(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1).Select(group => group.Single());
+        foreach (var connection in visibleConnections)
         {
             if (tenantId is not null && connection.TenantId != tenantId)
                 continue;

@@ -269,11 +269,14 @@ public sealed class ProviderRoutingEndpointsTests
             Connections: [
                 new("owned", "yahoo", "Owned", TenantId: "tenant-test", ExternalAccountId: "account-owned", CredentialEnvironment: "paper"),
                 new("foreign", "yahoo", "Foreign", TenantId: "tenant-other", ExternalAccountId: "account-foreign", CredentialEnvironment: "paper"),
-                new("unassigned", "yahoo", "Unassigned")],
+                new("unassigned", "yahoo", "Unassigned"),
+                new("ambiguous", "yahoo", "Ambiguous", TenantId: "tenant-test"),
+                new("AMBIGUOUS", "yahoo", "Ambiguous other", TenantId: "tenant-other")],
             Bindings: [
                 new("owned-binding", ProviderCapabilityKind.HistoricalBars, "owned", FailoverConnectionIds: ["foreign", "unassigned"]),
                 new("foreign-binding", ProviderCapabilityKind.HistoricalBars, "foreign"),
-                new("unassigned-binding", ProviderCapabilityKind.HistoricalBars, "unassigned")])
+                new("unassigned-binding", ProviderCapabilityKind.HistoricalBars, "unassigned"),
+                new("ambiguous-binding", ProviderCapabilityKind.HistoricalBars, "ambiguous")])
         };
         await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
         var client = app.GetTestClient();
@@ -281,7 +284,7 @@ public sealed class ProviderRoutingEndpointsTests
         var response = await client.GetAsync(route + "?tenantId=tenant-other");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadAsStringAsync();
-        body.Should().Contain("owned").And.NotContain("foreign").And.NotContain("unassigned");
+        body.Should().Contain("owned").And.NotContain("foreign").And.NotContain("unassigned").And.NotContain("ambiguous");
         using var document = JsonDocument.Parse(body);
         document.RootElement.GetArrayLength().Should().Be(1);
         if (route == UiApiRoutes.ProviderRoutingTrustSnapshots)
@@ -545,15 +548,29 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Theory]
-    [InlineData("tenant-test", "paper", true)]
-    [InlineData("other-tenant", "paper", false)]
-    [InlineData("tenant-test", "live", false)]
-    public async Task ConfigureOwnedConnection_PreservesRoutingAndCannotChangeCredentialOwnership(string owner, string requestedEnvironment, bool allowed)
+    [InlineData("tenant-test", "paper", true, false)]
+    [InlineData("other-tenant", "paper", false, false)]
+    [InlineData("tenant-test", "live", false, false)]
+    [InlineData("tenant-test", "paper", false, true)]
+    public async Task ConfigureOwnedConnection_PreservesRoutingAndCannotChangeCredentialOwnership(string owner, string requestedEnvironment, bool allowed, bool duplicate)
     {
         await using var app = await CreateAppAsync();
         var configStore = app.Services.GetRequiredService<ApplicationConfigStore>();
         await app.Services.GetRequiredService<ProviderConnectionService>().UpsertForTenantAsync(
             new CreateProviderConnectionRequest("existing", "alpaca", "Existing account", ExternalAccountId: "account-a"), owner, "paper");
+        if (duplicate)
+        {
+            var config = configStore.Load();
+            var original = config.ProviderConnections!.Connections!.Single();
+            config = config with
+            {
+                ProviderConnections = config.ProviderConnections with
+                {
+                    Connections = [original, original with { ConnectionId = "EXISTING", ExternalAccountId = "account-b" }]
+                }
+            };
+            await File.WriteAllTextAsync(configStore.ConfigPath, JsonSerializer.Serialize(config));
+        }
         var retainedConfig = await File.ReadAllTextAsync(configStore.ConfigPath);
         var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderConfigure + "?connectionId=existing", JsonContent(new
         {
@@ -581,7 +598,7 @@ public sealed class ProviderRoutingEndpointsTests
         }
         else
         {
-            response.StatusCode.Should().Be(owner == "other-tenant" ? HttpStatusCode.Forbidden : HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(owner == "other-tenant" || duplicate ? HttpStatusCode.Forbidden : HttpStatusCode.BadRequest);
             File.Exists(vault.VaultPath).Should().BeFalse();
         }
     }

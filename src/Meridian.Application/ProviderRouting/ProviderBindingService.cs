@@ -30,7 +30,8 @@ public sealed class ProviderBindingService
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ct.ThrowIfCancellationRequested();
         var section = ProviderRoutingConfigExtensions.GetSection(_store.Load());
-        var ids = (section.Connections ?? []).Where(connection => connection.TenantId == tenantId.Trim())
+        var ids = (section.Connections ?? []).GroupBy(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1).Select(group => group.Single()).Where(connection => connection.TenantId == tenantId.Trim())
             .Select(connection => connection.ConnectionId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var bindings = (section.Bindings ?? []).Where(binding => ids.Contains(binding.ConnectionId))
             .Select(ProviderRoutingMapper.ToDto)

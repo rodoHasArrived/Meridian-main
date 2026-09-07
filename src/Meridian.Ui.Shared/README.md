@@ -11,6 +11,9 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Ui.Shared
 
+Scoped credential lifecycle requests require exactly one retained connection ID match. Duplicate IDs
+are refused before status, mutation or verification can select an account; discovery also omits them.
+
 Provider-routing connection discovery, bindings and trust summaries filter by retained ownership
 using the authenticated workstation tenant. Binding failover IDs are limited to the same visible
 connection set. Each service applies ownership against its captured configuration before returning

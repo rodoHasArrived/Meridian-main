@@ -78,8 +78,9 @@ public sealed class ProviderConnectionLifecycleService
     private ProviderConnectionConfig RequireOwnedConnection(string connectionId, string tenantId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
-        var connection = (ConfigStore.LoadConfig(_configStore.ConfigPath).ProviderConnections?.Connections ?? [])
-            .FirstOrDefault(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
+        var matches = (ConfigStore.LoadConfig(_configStore.ConfigPath).ProviderConnections?.Connections ?? [])
+            .Where(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var connection = matches.Length == 1 ? matches[0] : null;
         if (connection is null || !string.Equals(connection.TenantId, tenantId, StringComparison.Ordinal) ||
             string.IsNullOrWhiteSpace(connection.ExternalAccountId) || string.IsNullOrWhiteSpace(connection.CredentialEnvironment))
             throw new UnauthorizedAccessException("Credential connection ownership could not be established.");

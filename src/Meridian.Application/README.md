@@ -18,6 +18,8 @@ last_reviewed: 2026-08-30
 `ProviderConnectionService.GetConnectionsForTenantAsync` lists connections only when retained
 tenant ownership matches the authorized tenant. Unassigned legacy connections require explicit
 ownership establishment and are not implicitly claimed by discovery.
+Duplicate connection IDs, including case variants, cannot establish credential ownership. Discovery
+omits ambiguous records; scoped setup, scope resolution and connection mutations refuse them.
 
 `ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
 environment with the external account. Scope resolution uses that retained ownership, returns no scope
