@@ -735,7 +735,7 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
-    public async Task FindIdentifierCandidatesAsync_UnknownKind_MatchesForwardCompatibleRows()
+    public async Task FindIdentifierCandidatesAsync_UnknownKind_IsNotQueried()
     {
         var value = $"FWD{Guid.NewGuid():N}";
         var existing = MakeProjection(Guid.NewGuid(), "Ticker", value, "polygon", primaryValue: $"{value}-A");
@@ -755,9 +755,10 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
             await update.ExecuteNonQueryAsync();
         }
 
-        // An ingest or incremental rebuild on this node sees that identifier as Unknown; the
-        // lookup must still find the stored row rather than querying for a kind text that is
-        // never written, or the ambiguity stays invisible until a full-universe refresh.
+        // An ingest on this node reads that identifier back as Unknown — as it would ANY future
+        // kind, so value-only matching could not tell one newer kind's claims from another's and
+        // detection discards Unknown claims outright. The lookup must skip the key entirely:
+        // ambiguity among a future kind's claims is owned by the newer nodes that still read it.
         var lookup = new SecurityIdentifierDto(
             SecurityIdentifierKind.Unknown,
             value,
@@ -769,7 +770,7 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
             [Guid.NewGuid()],
             CancellationToken.None);
 
-        candidates.Select(candidate => candidate.SecurityId).Should().Contain(existing.SecurityId);
+        candidates.Should().BeEmpty();
     }
 
     [SecurityMasterDatabaseFact]

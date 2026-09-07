@@ -53,7 +53,7 @@ internal static class SecurityMasterConflictDetection
         {
             foreach (var id in record.Identifiers)
             {
-                if (IsIssuerScopedKind(id.Kind))
+                if (IsExcludedFromAmbiguityPairing(id.Kind))
                 {
                     continue;
                 }
@@ -185,12 +185,13 @@ internal static class SecurityMasterConflictDetection
     }
 
     /// <summary>
-    /// Issuer-level kinds never participate in identifier-ambiguity pairing; the shared contract
-    /// (and its rationale) lives in <see cref="SecurityIdentifierNormalizer.IsIssuerScopedKind"/>
-    /// so the candidate lookup and this detection loop can never disagree about the set.
+    /// Issuer-level kinds and Unknown — a newer node's kind this build cannot read — never
+    /// participate in identifier-ambiguity pairing; the shared contract (and its rationale)
+    /// lives in <see cref="SecurityIdentifierNormalizer.IsExcludedFromAmbiguityPairing"/> so the
+    /// candidate lookup and this detection loop can never disagree about the set.
     /// </summary>
-    private static bool IsIssuerScopedKind(SecurityIdentifierKind kind)
-        => SecurityIdentifierNormalizer.IsIssuerScopedKind(kind);
+    private static bool IsExcludedFromAmbiguityPairing(SecurityIdentifierKind kind)
+        => SecurityIdentifierNormalizer.IsExcludedFromAmbiguityPairing(kind);
 
     private static (IdentifierClaim Left, IdentifierClaim Right)? FindDeterministicOverlap(
         IEnumerable<IdentifierClaim> leftClaims,

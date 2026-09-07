@@ -31,6 +31,18 @@ public static class SecurityIdentifierNormalizer
         => kind is SecurityIdentifierKind.Cik or SecurityIdentifierKind.Lei;
 
     /// <summary>
+    /// Kinds excluded from identifier-ambiguity pairing altogether: the issuer-scoped kinds
+    /// above, plus <see cref="SecurityIdentifierKind.Unknown"/> — this node's degraded reading of
+    /// ANY kind minted by a newer node. Two different future kinds degrade to the same Unknown,
+    /// so pairing such claims on value alone would assert an ambiguity this node cannot actually
+    /// compare; the newer nodes that still read the kind own that detection. Conflict detection
+    /// and the ambiguity-candidate lookup share this set so they can never disagree about which
+    /// claims participate.
+    /// </summary>
+    public static bool IsExcludedFromAmbiguityPairing(SecurityIdentifierKind kind)
+        => kind is SecurityIdentifierKind.Unknown || IsIssuerScopedKind(kind);
+
+    /// <summary>
     /// Returns the normalized namespace that participates in identifier identity. Provider data on
     /// canonical identifier kinds is provenance, not identity, and therefore returns an empty scope.
     /// </summary>

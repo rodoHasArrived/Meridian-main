@@ -147,6 +147,30 @@ public sealed class SecurityMasterConflictServiceTests
     }
 
     [Fact]
+    public async Task GetOpenConflictsAsync_UnknownKindIdentifiers_DoNotPairDistinctSecurities()
+    {
+        // A kind minted by a newer node degrades to Unknown on this node, and two DIFFERENT
+        // future kinds degrade to the same Unknown — so two records reading back as Unknown with
+        // one value may share nothing but this node's ignorance. Pairing them would assert an
+        // ambiguity the node cannot actually compare; the newer nodes that still read the kind
+        // own that detection.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                MakeProjection(Guid.NewGuid(), "Unknown", "FWD-2049-X", provider: "provider-a"),
+                MakeProjection(Guid.NewGuid(), "Unknown", "FWD-2049-X", provider: "provider-b")
+            });
+
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        conflicts.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task GetOpenConflictsAsync_NormalizesPunctuationBeforeComparing()
     {
         var store = Substitute.For<ISecurityMasterStore>();
