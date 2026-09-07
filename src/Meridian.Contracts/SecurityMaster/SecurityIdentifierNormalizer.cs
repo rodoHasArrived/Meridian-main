@@ -21,6 +21,16 @@ public static class SecurityIdentifierNormalizer
         => kind is SecurityIdentifierKind.ProviderSymbol;
 
     /// <summary>
+    /// Kinds that identify an issuer or legal entity rather than a standalone tradable security —
+    /// per their contract in <see cref="SecurityIdentifierKind"/>, CIK names an EDGAR filer and
+    /// LEI names an ISO 17442 legal entity. Distinct securities of one issuer legitimately share
+    /// these, so they never participate in identifier-ambiguity pairing, and ambiguity-candidate
+    /// lookups skip them rather than loading every sibling security of a large filer.
+    /// </summary>
+    public static bool IsIssuerScopedKind(SecurityIdentifierKind kind)
+        => kind is SecurityIdentifierKind.Cik or SecurityIdentifierKind.Lei;
+
+    /// <summary>
     /// Returns the normalized namespace that participates in identifier identity. Provider data on
     /// canonical identifier kinds is provenance, not identity, and therefore returns an empty scope.
     /// </summary>

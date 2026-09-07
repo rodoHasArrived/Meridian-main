@@ -714,6 +714,65 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task FindIdentifierCandidatesAsync_IssuerScopedKinds_AreNotQueried()
+    {
+        // A large filer's securities legitimately share a CIK, and detection unconditionally
+        // discards issuer-scoped pairs — so the candidate lookup must skip these keys instead
+        // of loading every sibling projection to no effect.
+        var shared = $"C{Guid.NewGuid():N}";
+        var first = MakeProjection(Guid.NewGuid(), "Cik", shared, "edgar", primaryValue: $"{shared}-A");
+        var second = MakeProjection(Guid.NewGuid(), "Cik", shared, "edgar", primaryValue: $"{shared}-B");
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        await store.UpsertProjectionAsync(first, CancellationToken.None);
+        await store.UpsertProjectionAsync(second, CancellationToken.None);
+
+        var candidates = await store.FindIdentifierCandidatesAsync(
+            [second.Identifiers[0]],
+            [second.SecurityId],
+            CancellationToken.None);
+
+        candidates.Should().BeEmpty();
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task FindIdentifierCandidatesAsync_UnknownKind_MatchesForwardCompatibleRows()
+    {
+        var value = $"FWD{Guid.NewGuid():N}";
+        var existing = MakeProjection(Guid.NewGuid(), "Ticker", value, "polygon", primaryValue: $"{value}-A");
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        await store.UpsertProjectionAsync(existing, CancellationToken.None);
+
+        // Model a row written by a newer node: the stored kind text is one this build cannot
+        // parse, which LoadIdentifiersAsync degrades to Unknown on read while the row keeps the
+        // newer kind's original text.
+        await using (var connection = new Npgsql.NpgsqlConnection(_fixture.Options.ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using var update = connection.CreateCommand();
+            update.CommandText =
+                $"update {_fixture.Options.Schema}.security_identifiers set identifier_kind = 'FutureKind' where security_id = @security_id;";
+            update.Parameters.AddWithValue("security_id", existing.SecurityId);
+            await update.ExecuteNonQueryAsync();
+        }
+
+        // An ingest or incremental rebuild on this node sees that identifier as Unknown; the
+        // lookup must still find the stored row rather than querying for a kind text that is
+        // never written, or the ambiguity stays invisible until a full-universe refresh.
+        var lookup = new SecurityIdentifierDto(
+            SecurityIdentifierKind.Unknown,
+            value,
+            IsPrimary: true,
+            ValidFrom: DateTimeOffset.UtcNow.AddDays(-1));
+
+        var candidates = await store.FindIdentifierCandidatesAsync(
+            [lookup],
+            [Guid.NewGuid()],
+            CancellationToken.None);
+
+        candidates.Select(candidate => candidate.SecurityId).Should().Contain(existing.SecurityId);
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task GetOpenConflictsAsync_ReopensDetectorSupersededConflictWithSameId()
     {
         var boundary = DateTimeOffset.UtcNow;
