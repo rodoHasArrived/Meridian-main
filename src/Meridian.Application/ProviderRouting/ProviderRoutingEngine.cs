@@ -34,12 +34,26 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         _kernelObservability = kernelObservability ?? new KernelObservabilityService();
     }
 
-    public async ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
+    public ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
+        => RouteCoreAsync(context, null, ct);
+
+    /// <summary>Routes using only connections retained for the authorized tenant.</summary>
+    public ValueTask<ProviderRouteResult> RouteForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        return RouteCoreAsync(context, tenantId.Trim(), ct);
+    }
+
+    private async ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct)
     {
         var executionScope = _kernelObservability.BeginExecution(context);
-        var snapshot = GetSnapshot();
-        var connections = snapshot.ConnectionsById;
+        var snapshot = tenantId is null ? GetSnapshot() :
+            ProviderRoutingSnapshot.Build(_store.Load(), ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath));
+        var connections = tenantId is null ? snapshot.ConnectionsById : snapshot.ConnectionsById
+            .Where(pair => pair.Value.TenantId == tenantId).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         var bindings = snapshot.GetBindings(context.Capability);
+        if (tenantId is not null)
+            bindings = bindings.Where(binding => connections.ContainsKey(binding.ConnectionId)).ToArray();
         var policy = snapshot.GetPolicy(context.Capability);
 
         var candidates = new List<ProviderRouteDecision>();
@@ -111,6 +125,8 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             };
 
             var fallbackConnectionIds = ResolveFallbacks(binding, connection, connections, effectivePolicy);
+            if (tenantId is not null)
+                fallbackConnectionIds = fallbackConnectionIds.Where(connections.ContainsKey).ToArray();
             var policyGate = DeterminePolicyGate(context, connection, binding, effectivePolicy);
 
             candidates.Add(new ProviderRouteDecision(
@@ -230,12 +246,13 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             RequiresManualApproval: requiresManualApproval,
             PolicyGate: resultGate);
 
-        _history.Enqueue(result);
-        while (_history.Count > 50 && _history.TryDequeue(out _))
+        if (tenantId is null)
         {
+            _history.Enqueue(result);
+            while (_history.Count > 50 && _history.TryDequeue(out _))
+            { }
+            _kernelObservability.RecordResult(context, result, healthCache, executionScope);
         }
-
-        _kernelObservability.RecordResult(context, result, healthCache, executionScope);
 
         return result;
     }

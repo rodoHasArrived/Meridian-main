@@ -292,6 +292,40 @@ public sealed class ProviderRoutingEndpointsTests
                 .ConnectionIds.Should().Equal("owned");
     }
 
+    [Theory]
+    [InlineData("tenant-test", true)]
+    [InlineData("tenant-else", false)]
+    public async Task RoutePreview_FiltersOwnershipBeforeRankingHealthAndFallback(string owner, bool available)
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var config = store.Load() with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(
+            Connections: [new("owned", "yahoo", "Owned", TenantId: owner),
+                new("foreign", "yahoo", "Foreign", TenantId: "tenant-other"),
+                new("legacy", "yahoo", "Legacy")],
+            Bindings: [new("owned-binding", ProviderCapabilityKind.HistoricalBars, "owned", Priority: 100, FailoverConnectionIds: ["foreign", "legacy"]),
+                new("foreign-binding", ProviderCapabilityKind.HistoricalBars, "foreign", Priority: 1),
+                new("legacy-binding", ProviderCapabilityKind.HistoricalBars, "legacy", Priority: 1)])
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderRoutingPreview + "?tenantId=tenant-other",
+            JsonContent(new RoutePreviewRequest(Capability: "HistoricalBars", Symbol: "SPY")));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().NotContain("foreign").And.NotContain("legacy");
+        var preview = Deserialize<RoutePreviewResponse>(body);
+        preview.IsRoutable.Should().Be(available);
+        preview.SelectedConnectionId.Should().Be(available ? "owned" : null);
+        var health = (HealthyProviderConnectionHealthSource)app.Services.GetRequiredService<IProviderConnectionHealthSource>();
+        if (available)
+            health.ConnectionIds.Should().NotBeEmpty().And.OnlyContain(id => id == "owned");
+        else
+            health.ConnectionIds.Should().BeEmpty();
+        app.Services.GetRequiredService<ProviderRoutingService>().GetRouteHistory().Should().BeEmpty();
+    }
+
     [Fact]
     public async Task ProviderRoutingEndpoints_ReturnConnectionsBindingsAndTrustSnapshotsForOwnedSetupConnections()
     {

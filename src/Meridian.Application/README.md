@@ -21,6 +21,11 @@ ownership establishment and are not implicitly claimed by discovery.
 Duplicate connection IDs, including case variants, cannot establish credential ownership. Discovery
 omits ambiguous records; scoped setup, scope resolution and connection mutations refuse them.
 
+Tenant-aware route preview filters connections and bindings before ranking, health queries and
+failover expansion. It reads fresh configuration and does not add tenant results to unscoped route
+history or result telemetry. Unscoped latency/quality metrics are excluded with explicit neutral-score
+reasons; default runtime routing and tenant-aware operational history remain separate work.
+
 `ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
 environment with the external account. Scope resolution uses that retained ownership, returns no scope
 to another tenant, and refuses incomplete records. Owned connections cannot be reassigned or modified

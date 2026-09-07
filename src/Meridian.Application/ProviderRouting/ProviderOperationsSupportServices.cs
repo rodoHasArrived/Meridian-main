@@ -290,6 +290,12 @@ public sealed class ProviderRouteExplainabilityService
         return ProviderRoutingMapper.ToDto(result);
     }
 
+    public async Task<RoutePreviewResponse> PreviewForTenantAsync(RoutePreviewRequest request, string tenantId, CancellationToken ct = default)
+    {
+        var result = await _selector.SelectForTenantAsync(ProviderRoutingMapper.ToRouteContext(request), tenantId, ct).ConfigureAwait(false);
+        return ProviderRoutingMapper.ToDto(result);
+    }
+
     public Task<IReadOnlyList<RoutePreviewResponse>> GetHistoryAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<RoutePreviewResponse>>(_routingService.GetRouteHistory()
             .Select(ProviderRoutingMapper.ToDto)

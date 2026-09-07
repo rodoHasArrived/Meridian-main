@@ -85,7 +85,10 @@ public static class ProviderRoutingEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.PreviewAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!tenant.HasTenantScope)
+                return EndpointHelpers.Forbidden();
+            var result = await service.PreviewForTenantAsync(request, tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("PreviewProviderRoute").RequirePermission(UserPermission.ManageCredentials)
