@@ -4002,8 +4002,19 @@ or a reversal followed by a rebook — a second correction-linked candidate, not
 candidate, which the gate above would refuse, since after the reversal posts the case has a prior
 posting again): its `spine.Correction` names the reversal's posted journal, so the chain reads
 original, reversal, rebook through the one-event reference the spine has
-(`AssetAccountingCorrectionReferenceDto`, `AssetAccountingEventDtos.cs:164-172`); its posting kind
-says rebook, so the negation rule binds the reversal leg and not this one; its lines are what Rules
+(`AssetAccountingCorrectionReferenceDto`, `AssetAccountingEventDtos.cs:164-172`);
+its intent says rebook, so the negation rule binds the reversal leg and not this one — an intent the
+lane cannot express yet (corrected 2026-09-07, after review; the previous clause said the posting
+kind would say it, and no posting kind does): `LedgerPostingKindDto` has `Originating` and
+`Adjustment` and no rebook (`LedgerBookDtos.cs:42-44`), the spine stamps `Adjustment` on every
+candidate that carries a correction (`AssetAccountingEventSpineService.cs:492`), and the draft
+service maps that kind to the `Adjustment` intent before any treatment is consulted
+(`AccountingJournalDraftService.cs:551-557`), so a correction-linked second candidate never reaches
+the `Rebook` branch the posting command validator already has (`AccountingPostingIntentDto.Rebook`,
+`AccountingPostingCommandDtos.cs:9-16`; `AccountingPostingCommandValidator.cs:114-120`) — a typed
+rebook intent has to be retained through projection, drafting, and candidate generation, distinct
+from the reversal's, before this chain can be told apart from a second reversal;
+its lines are what Rules
 Studio generates for the restated economics under the pre-draft approval's intended target; and it
 needs the case to re-enter `AccountingReview` a second time after the reversal posts, because attach
 binds one spine per request (`AttachCorporateActionAccountingProjectionRequestDto`,
@@ -4267,13 +4278,18 @@ stage is Approved under this same approval — the stage's reference is the appr
 (`AccountingPostingCandidatePostService.cs:1360-1369`) — with the bound drafted fingerprint and no
 posted impact, and resume posting from that attestation, which the posting service already does when
 it finds the Approved stage present (`:493-497`);
-the stable negative releases the marker to a retry that reads both stores and continues from what
-they hold (corrected 2026-09-07, after review; the previous sentence released it to the
-Approved-stage resumption and to nothing else, which left one outcome stranded): a journal found
+the stable negative hands the marker, without releasing it, to a retry that reads both stores and
+continues from what they hold (corrected 2026-09-07, after review, twice: the first version released
+it to the Approved-stage resumption and to nothing else, which left one outcome stranded; the second
+released it for the retry to reclaim, which reopened the race — in the gap between release and
+reclaim `Approved → AccountingReview` can commit and void the approval, leaving a transitioned case
+whose spine is Approved with no journal, the state attach and the normal retry both refuse):
+ownership is renewed in place — the same row, the same key and fingerprint, a new attempt — in one
+atomic write, so the transition stays refused through the resumed append; then a journal found
 completes the record; an Approved stage under this approval and no journal resumes from that
 attestation; and a spine still Drafted with no journal — the Approved-stage append itself never
-committed — is reclaimed by the same command and fingerprint and retried from Drafted, since a
-reservation that only an Approved spine can satisfy would hold that case for ever.
+committed — is retried from Drafted under the same reservation, since one that only an Approved
+spine can satisfy would hold that case for ever.
 The journal-found
 branch has a lot half too (added 2026-09-06, after review; the previous version adopted the journal
 and advanced the spine from the journal record alone): when the posting carried a lot batch — the
@@ -4499,9 +4515,10 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    to external callers; source cannot say no rows exist — corrected 2026-09-05), and every month of
    postings after a consumer lands makes retrofitted verification a data-repair exercise. B4, B5,
    and B6 ride with it: a reopened case must carry
-   correction lineage to its own posting, in the same book and basis (added 2026-09-06), with a
-   rebook itself correction-linked and bound in a second re-entry rather than originating (corrected
-   2026-09-07), and a correcting effect
+   correction lineage to its own posting, in the same book and basis (added 2026-09-06),
+   with a rebook itself correction-linked, carrying a typed rebook intent the lane must first
+   define, and bound in a second re-entry rather than originating (corrected 2026-09-07),
+   and a correcting effect
    that neutralizes it — the journal lines and, once B3 applies lot mutations,
    the lots, by inverse mutations in the same transaction, with typed inverses for created targets
    and fully relieved sources (added 2026-09-06) — under a correction approval
@@ -4516,7 +4533,9 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    transition that lands between the spine append and the case record,
    with any orphan already made left unauthorized and corrected by an approved reversal or rebook,
    not adopted and not retroactively approved,
-   and a confirmed append failure resumed from whatever the two stores hold — the Approved
+   and a confirmed append failure resumed under the same reservation, renewed in place and never
+   released, from whatever the two stores hold
+   — the Approved
    attestation when the spine carries it, Drafted when the Approved append itself never committed —
    rather than refused as no longer Drafted, with the ambiguity boundary drawn at the Approved-stage
    append and a found journal's lot batch reconciled before it is adopted (added 2026-09-06,
@@ -4751,6 +4770,10 @@ the case scope's ten fields and the identity hashes the caller's position id; a 
 (2026-09-07) made refusal of the corporate-action kind on the generic posting route the rule rather
 than an option, since an approval lookup there is authorization and not B6's reservation or the case
 record; made B4's rebook a correction-linked second binding, since the gate that refuses originating
-candidates on a posted case would have refused the rebook the remedy itself described; and let B6's
-stable negative retry from Drafted when the Approved append never committed, since a reservation
-only an Approved spine could satisfy would strand the case.
+candidates on a posted case would have refused the rebook the remedy itself described;
+and let B6's stable negative retry from Drafted when the Approved append never committed, since a
+reservation only an Approved spine could satisfy would strand the case; a thirty-third (2026-09-07)
+replaced B4's "posting kind says rebook" with a typed rebook intent the lane must first retain,
+since no posting kind says it and the spine stamps Adjustment on every correction; and kept B6's
+reservation held through the stable-negative retry by renewing it in place, since releasing it for
+the retry to reclaim reopened the race the fence exists to close.
