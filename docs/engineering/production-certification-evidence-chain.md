@@ -26,6 +26,33 @@ not change the tracker's release-gate semantics; the tracker stays authoritative
 
 ## Hosted-Run Diagnosis: Production Certification run #4 (2026-07-27)
 
+### 2026-09-06 regression diagnosis
+
+[Run 34009195583](https://github.com/rodoHasArrived/Meridian-main/actions/runs/34009195583)
+on `87f91548455be9932069b597ea0381a1a67917e4` passed recovery and documentation evidence but failed
+dependency evidence and integration tests (899 passed, 6 failed, 0 skipped). Direct Lending did
+not run because the first test command failed. This is not a release-certifying result.
+
+The repair candidate updates Browserslist from 4.28.2 to 4.28.9 to remove the two high-severity
+advisories. It restores authorized detailed-health schema tests, enables PostgreSQL error detail
+only on the collision-diagnostic test connection, and verifies the retired Lean stop route's
+explicit 501 problem response. Operations Continuity now carries typed journal provenance into
+the posting command; seeded fixtures must retain their mark instead of entering as real data.
+The PostgreSQL scenario also proves rejection of unmarked fixture evidence without a journal commit.
+These changes require a fresh complete certification run; they do not close any P0 evidence gate.
+
+The follow-up storage review found that `AuditChainService` logged a prior-tail read failure and
+continued an append with an empty predecessor. The candidate now validates retained links before
+extending the chain and refuses malformed or broken history without modifying it. A process-level
+integration scenario starts three independent writers and checks all 36 retained entries, closing
+the gap between the previous same-process concurrency test and the PRD-009 multi-process requirement.
+Fresh hosted validation is required for this follow-up as well.
+
+The WAL process-recovery scenario adds the PRD-009 low-volume termination proof: its child appends
+one record without an explicit flush or commit, the parent observes the lifecycle-owned delayed
+flush while the child is alive, then kills the child without disposal and recovers exactly that
+record using a fresh WAL instance. This proves process termination recovery, not power-loss durability.
+
 Run [30283696811](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30283696811)
 (`workflow_dispatch`, `main` @ `104171091`) failed all four jobs. Per-job root causes and their
 dispositions:
