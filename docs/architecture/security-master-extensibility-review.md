@@ -3910,13 +3910,24 @@ id and version with a retained evidence row for that read; a fresh identifier is
 Second, close both generic routes to this kind:
 refuse `EventKind == CorporateAction` on `LedgerAssetAccountingEventProjections`, or require on it
 an attestation only the in-process projector can produce, so a corporate-action spine has exactly
-one origin; and on the generic posting route (`:474`), refuse corporate-action candidates, or load
-the stored case approval by the caller's `ApprovalId` and require it to be active and bound to this
-candidate — its `CaseId` the case the spine's linkage names, its `ProjectionId` a binding whose
-`DraftedCandidateFingerprint` is this candidate's, and its attestor and evidence identity the
+one origin;
+and on the generic posting route (`:474`), refuse corporate-action candidates — that is the rule,
+not one of two options (corrected 2026-09-07, after review; the previous sentence offered loading
+the stored case approval on that route as an alternative): the posting service has no case-store
+dependency, so a generic call that passed such a lookup would still append the journal and the
+Posted spine without taking B6's reservation and without writing the case-side posting record,
+leaving an immutable journal with no case record until a later case command happened to adopt it,
+and racing `Approved → AccountingReview` outside the fence exactly as B6 describes; an approval
+lookup is authorization, not the posting authority. If the generic route must accept the kind at
+all, it delegates the candidate to the case lane's complete workflow — reservation, post, record —
+rather than posting it itself. Where a check on the route is still wanted as defense in depth, it
+loads the stored case approval by the caller's `ApprovalId` and requires it to be active and bound
+to this candidate — its `CaseId` the case the spine's linkage names, its `ProjectionId` a binding
+whose `DraftedCandidateFingerprint` is this candidate's, and its attestor and evidence identity the
 Approved stage's — *before* the append, where `EnsureAssetProjectionApprovedAsync` already runs
-(`AccountingPostingCandidatePostService.cs:341-346`), ahead of `journalStore.AppendAsync` (`:349`),
-so a corporate-action journal has exactly one posting authority. Attestor and evidence alone are not
+(`AccountingPostingCandidatePostService.cs:341-346`), ahead of `journalStore.AppendAsync` (`:349`);
+but it refuses regardless, so a corporate-action journal has exactly one posting authority.
+Attestor and evidence alone are not
 that binding (corrected 2026-09-06, after review; the previous sentence compared only those): the
 approval row already carries `CaseId`, `ProjectionId`, `BoundCaseVersion`, and its voided state
 (`CorporateActionCaseAccountingContracts.cs:54-67`), and without them a valid, active approval from
@@ -3985,9 +3996,21 @@ a different event (`:629-639`), and the Drafted gate only that an approved adjus
 (`:805-819`). So a reopened case could cite its own posting as this remedy requires and still
 append a second full originating effect, doubling the ledger under a lineage that reads as a
 restatement. The correcting candidate must therefore neutralize the retained impact: its projected
-effect must be a reversal — the exact negation of the retained lines — or a reversal followed by a
-rebook, a new originating candidate for the restated economics that carries lineage to the reversal
-and whose own lines Rules Studio binds as it binds any originating candidate. A "validated delta" is
+effect must be a reversal — the exact negation of the retained lines —
+or a reversal followed by a rebook — a second correction-linked candidate, not an originating one
+(corrected 2026-09-07, after review; the previous sentence called the rebook a new originating
+candidate, which the gate above would refuse, since after the reversal posts the case has a prior
+posting again): its `spine.Correction` names the reversal's posted journal, so the chain reads
+original, reversal, rebook through the one-event reference the spine has
+(`AssetAccountingCorrectionReferenceDto`, `AssetAccountingEventDtos.cs:164-172`); its posting kind
+says rebook, so the negation rule binds the reversal leg and not this one; its lines are what Rules
+Studio generates for the restated economics under the pre-draft approval's intended target; and it
+needs the case to re-enter `AccountingReview` a second time after the reversal posts, because attach
+binds one spine per request (`AttachCorporateActionAccountingProjectionRequestDto`,
+`CorporateActionCaseAccountingContracts.cs:116-137`) and the lane has no compound
+reversal-plus-rebook posting — a compound model that posts both atomically is the alternative, and
+it does not exist.
+A "validated delta" is
 not a third form the spine can check today (withdrawn 2026-09-06, after review; the previous
 sentence offered one whose sum with the retained lines would equal the restated economics):
 validating a delta needs the restated target as a third operand, and neither the projection request
@@ -4085,8 +4108,11 @@ own actor, time, and evidence, before anything is drafted; the server-side build
 Drafted step's `CorrectionApproval` from that decision, attach compares the drafted fingerprint
 against the approved preview's, and the post-attach maker-checker approval B5 governs still binds
 the posting. A rebook's replacement lines are not known until Rules Studio generates them, so its
-pre-draft approval covers the reversal half and the intended target economics, and the drafted lines
-bind through the post-attach approval as any originating candidate's do. The alternative is to
+pre-draft approval covers the reversal half and the intended target economics,
+and the drafted lines bind through the post-attach approval of the rebook's own second binding
+(corrected 2026-09-07, after review; the previous sentence said "as any originating candidate's do",
+and the rebook is correction-linked, not originating).
+The alternative is to
 reorder the lifecycle — let the case lane draft a correction without approval metadata and stamp it
 at posting from the case approval — but the spine requires the metadata at Drafted and the candidate
 carries it into the journal from there (`:494`), so the reorder moves a gate the spine was built
@@ -4241,7 +4267,14 @@ stage is Approved under this same approval — the stage's reference is the appr
 (`AccountingPostingCandidatePostService.cs:1360-1369`) — with the bound drafted fingerprint and no
 posted impact, and resume posting from that attestation, which the posting service already does when
 it finds the Approved stage present (`:493-497`);
-the stable negative releases the marker to that resumption and to nothing else. The journal-found
+the stable negative releases the marker to a retry that reads both stores and continues from what
+they hold (corrected 2026-09-07, after review; the previous sentence released it to the
+Approved-stage resumption and to nothing else, which left one outcome stranded): a journal found
+completes the record; an Approved stage under this approval and no journal resumes from that
+attestation; and a spine still Drafted with no journal — the Approved-stage append itself never
+committed — is reclaimed by the same command and fingerprint and retried from Drafted, since a
+reservation that only an Approved spine can satisfy would hold that case for ever.
+The journal-found
 branch has a lot half too (added 2026-09-06, after review; the previous version adopted the journal
 and advanced the spine from the journal record alone): when the posting carried a lot batch — the
 atomic path B3's seam joins — the journal store's idempotency record is a `LedgerJournalEntryRecord`
@@ -4466,8 +4499,9 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    to external callers; source cannot say no rows exist — corrected 2026-09-05), and every month of
    postings after a consumer lands makes retrofitted verification a data-repair exercise. B4, B5,
    and B6 ride with it: a reopened case must carry
-   correction lineage to its own posting, in the same book and basis (added 2026-09-06), and a
-   correcting effect
+   correction lineage to its own posting, in the same book and basis (added 2026-09-06), with a
+   rebook itself correction-linked and bound in a second re-entry rather than originating (corrected
+   2026-09-07), and a correcting effect
    that neutralizes it — the journal lines and, once B3 applies lot mutations,
    the lots, by inverse mutations in the same transaction, with typed inverses for created targets
    and fully relieved sources (added 2026-09-06) — under a correction approval
@@ -4482,9 +4516,11 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    transition that lands between the spine append and the case record,
    with any orphan already made left unauthorized and corrected by an approved reversal or rebook,
    not adopted and not retroactively approved,
-   and a confirmed append failure resumed from the Approved attestation the spine already holds
+   and a confirmed append failure resumed from whatever the two stores hold — the Approved
+   attestation when the spine carries it, Drafted when the Approved append itself never committed —
    rather than refused as no longer Drafted, with the ambiguity boundary drawn at the Approved-stage
-   append and a found journal's lot batch reconciled before it is adopted (added 2026-09-06).
+   append and a found journal's lot batch reconciled before it is adopted (added 2026-09-06,
+   extended 2026-09-07).
 2. **Finish P4's remediation where it actually still lives — cancellation and outcome reporting
    both.** The create loops and EDGAR's broad catches are done and verified — not "the ingest
    side", which an earlier version of this entry said while the same list it introduces names an
@@ -4709,6 +4745,12 @@ and added the currency the backfill advertises to B7's merge, fill-only and vali
 ledger asserts that field before it drafts; a thirty-first (2026-09-06) withdrew B6's claim that the
 store had no batch read, since `GetAtomicTaxLotPostingAsync` exists and the projection store already
 uses it — the search that confirmed its absence looked for the wrong name, which is the closure
-failure this addendum has described twice before — and bound B3's position read to the case's
-complete scope, since the scope check compares five of the case scope's ten fields and the identity
-hashes the caller's position id.
+failure this addendum has described twice before —
+and bound B3's position read to the case's complete scope, since the scope check compares five of
+the case scope's ten fields and the identity hashes the caller's position id; a thirty-second
+(2026-09-07) made refusal of the corporate-action kind on the generic posting route the rule rather
+than an option, since an approval lookup there is authorization and not B6's reservation or the case
+record; made B4's rebook a correction-linked second binding, since the gate that refuses originating
+candidates on a posted case would have refused the rebook the remedy itself described; and let B6's
+stable negative retry from Drafted when the Approved append never committed, since a reservation
+only an Approved spine could satisfy would strand the case.
