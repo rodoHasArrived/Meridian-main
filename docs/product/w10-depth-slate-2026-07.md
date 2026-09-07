@@ -160,18 +160,23 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
 
 ### `W10-MARK-001` — valuation freshness
 
-- The daily pricing policy defaults stale-price handling to disabled, and only one production caller
-  overrides it. Flipping the default is a behavioral change, and the policy type is public, so it is
-  breaking for external constructors.
-- Two freshness controls overlap: the ledger stale-price policy and the mark-price quality policy,
-  both driven from the same maximum-age input in the one production path.
-- **A mark dated after the valuation date is currently treated as fresh.** The assessment computes a
-  negative age, clamps it to zero, and returns fresh; a test pins that behavior. A fail-closed policy
-  that only blocks *old* marks still admits prices that were not observable as of the valuation.
-- The shared position read models carry no mark observation date or age. The fund portfolio position,
-  the portfolio position summary, and the workstation trading position row all live in the shared
-  contracts and none exposes freshness; the trading row carries a mark price with no date attached.
-  Without extending those contracts, each client would infer freshness independently or omit it.
+Implementation in progress (2026-09-04): one shared freshness policy now blocks missing, stale,
+future and insufficient-confidence observations while preserving complete-coverage requirements.
+Browser and WPF positions expose the shared observation date, age and review reason; unknown dates
+remain unknown. The read-only preview reports the selected valuation batch's impact, and retained
+evidence is checked through journal submission, approval and posting. Refusal-and-repair tests are
+linked from the registry. No standing override or live WPF rendering certification is claimed.
+
+Baseline constraints at registration, retained as the rationale for this behavioral change:
+
+- The daily pricing policy defaulted stale-price handling to disabled, and only one production caller
+  overrode it. Changing the public policy default affects external constructors.
+- Two freshness controls overlapped: the ledger stale-price policy and mark-price quality policy,
+  both driven from the same maximum-age input in the production path.
+- Future observations were treated as fresh because negative age was clamped to zero. Blocking
+  old marks alone would still have admitted prices unobservable as of the valuation.
+- Shared position contracts lacked mark observation dates and age, leaving clients to infer
+  freshness independently or omit it. Shared assessments now carry those facts and the policy decision.
 
 ### `W10-RECON-001` — break identity
 
@@ -392,10 +397,12 @@ blueprinting any row** — several of these are the reason a row's outcome is ph
 
 ### `W10-SEAM-001` — close readiness
 
-Implementation in progress (2026-09-04): the Financial Operations command center now carries a typed scope/contributor/blocker projection, exposes its previously missing browser route, and feeds browser and WPF close headlines. Requests never fill missing scope dimensions from a selected workflow. Calendar identities bind through the exact book-scoped workflow; private-capital results must match every declared dimension; the close plan must match the workflow version. Contributor absence, failure, ambiguity, or stale evaluation blocks readiness. The fund-wide workspace no longer publishes an independent ready claim.
+Implementation in progress (2026-09-04): the Financial Operations command center carries one typed scope/contributor/blocker projection for browser and WPF. Declared book/account/entity ownership binds to authoritative records, close plans carry workflow and retained-evidence versions, and contributor snapshots are rechecked for concurrent change. Private-capital statements, NAV and allocation support must belong to the selected source events and period/entity scope. Both hard close and workflow publication require the shared authority before mutation. WPF Accounting Close uses the governed server HTTP client; both workstations invalidate old decisions and delayed responses when selection changes.
 
-Remaining acceptance work: prove complete contributor subject ownership and coherent snapshots under concurrent changes, wire scoped selection and blocker recovery through every close entry point, and retain browser/WPF plus hosted integration evidence. This implementation is not production certification.
+Acceptance scenarios now cover missing, stale, incorrectly scoped and concurrently changed evidence, followed by underlying repair and readiness recovery. They exercise the real shared publication boundary, browser command gating and WPF module/HTTP recovery, including mixed-period and mixed-entity support. Execution evidence is retained with [PR #2910](https://github.com/rodoHasArrived/Meridian-main/pull/2910); the full release gate and operator certification remain separate. Browser screenshots use seeded data, and no live WPF rendering proof is claimed.
 
+The following observations and source line references describe the registration baseline that
+motivated the implementation above; they are not current readiness behavior.
 
 - Four services compute close readiness and a fifth computes asset-class coverage under a readiness
   name. Between them they encode readiness five incompatible ways: a scored close-readiness record, an
