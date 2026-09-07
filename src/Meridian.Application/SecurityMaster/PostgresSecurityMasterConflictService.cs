@@ -49,13 +49,18 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
         var detected = SecurityMasterConflictDetection.DetectAll(all, DateTimeOffset.UtcNow);
 
+        // Detection emits every claimant pair, so a value shared by N securities yields O(N²)
+        // conflicts; legacy-row reconciliation must resolve each pair's records by id from an
+        // index built once, not rescan the universe per pair while the advisory lock blocks
+        // ingest.
+        var recordsById = IndexBySecurityId(all);
         foreach (var conflict in detected)
         {
             await ReconcileLegacyIdentifierConflictIdAsync(
                 connection,
                 transaction,
                 conflict,
-                FindLegacyIdentifierConflictIds(conflict, all),
+                FindLegacyIdentifierConflictIds(conflict, recordsById),
                 ct).ConfigureAwait(false);
             await UpsertDetectedIdentifierConflictAsync(connection, transaction, conflict, ct).ConfigureAwait(false);
         }
@@ -546,7 +551,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             projections,
             existingCandidates,
             DateTimeOffset.UtcNow);
-        var candidateUniverse = projections.Concat(existingCandidates).ToArray();
+        var recordsById = IndexBySecurityId(projections.Concat(existingCandidates));
 
         int newConflicts = 0;
         foreach (var conflict in candidates)
@@ -555,7 +560,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 connection,
                 transaction,
                 conflict,
-                FindLegacyIdentifierConflictIds(conflict, candidateUniverse),
+                FindLegacyIdentifierConflictIds(conflict, recordsById),
                 ct).ConfigureAwait(false);
             var opened = await UpsertDetectedIdentifierConflictAsync(connection, transaction, conflict, ct).ConfigureAwait(false);
             if (opened)
@@ -804,9 +809,22 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) > 0;
     }
 
+    /// <summary>One lookup shared by every pair of a refresh: id → projection, last write wins.</summary>
+    private static Dictionary<Guid, SecurityProjectionRecord> IndexBySecurityId(
+        IEnumerable<SecurityProjectionRecord> records)
+    {
+        var byId = new Dictionary<Guid, SecurityProjectionRecord>();
+        foreach (var record in records)
+        {
+            byId[record.SecurityId] = record;
+        }
+
+        return byId;
+    }
+
     private static IReadOnlyList<Guid> FindLegacyIdentifierConflictIds(
         SecurityMasterConflict conflict,
-        IReadOnlyList<SecurityProjectionRecord> universe)
+        IReadOnlyDictionary<Guid, SecurityProjectionRecord> recordsById)
     {
         const string prefix = "Identifiers.";
         if (!conflict.FieldPath.StartsWith(prefix, StringComparison.Ordinal)
@@ -817,9 +835,8 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             return Array.Empty<Guid>();
         }
 
-        var first = universe.FirstOrDefault(record => record.SecurityId == firstSecurityId);
-        var second = universe.FirstOrDefault(record => record.SecurityId == secondSecurityId);
-        if (first is null || second is null)
+        if (!recordsById.TryGetValue(firstSecurityId, out var first)
+            || !recordsById.TryGetValue(secondSecurityId, out var second))
         {
             return Array.Empty<Guid>();
         }
