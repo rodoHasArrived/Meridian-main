@@ -44,6 +44,14 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void fundamentalData(int reqId, string data)
     {
+        // The official SDK delivers fundamentals through this callback; mirroring the
+        // smoke-shaped twin keeps the payload forwarded and, critically, releases the id from
+        // rejection-routing ownership — an empty handler would grow _dataServiceRequestIds on
+        // every successful fundamentals request and leave completed vendor ids eligible for
+        // later error routing.
+        RecordMessageReceived();
+        _dataServiceRequestIds.TryRemove(reqId, out _);
+        FundamentalReportReceived?.Invoke(this, (reqId, new ProviderFundamentalReport(data)));
     }
 
     public void updateNewsBulletin(int msgId, int msgType, string message, string origExchange)
