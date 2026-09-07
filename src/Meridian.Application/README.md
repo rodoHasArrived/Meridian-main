@@ -28,6 +28,11 @@ lose each other's connection additions or deletions. Waiting operations honor ca
 ownership after acquiring the lock. Whole-configuration saves and capability override writes take the
 same lock; callers that prepare whole-configuration snapshots before acquisition still need conversion
 to transactional updates to prevent stale snapshot replacement. External editors do not honor this lock.
+Certification persistence re-reads configuration inside the transaction after the runner completes.
+Deleted, ambiguous or changed connections and results naming another connection are refused without
+writing certification state. Unrelated concurrent connection changes are retained. This compares the
+current connection record with the checked record; it does not provide a durable revision fence for
+changes that are subsequently reverted or certify the provenance of every runner implementation.
 Provider setup performs this strict read before credential persistence and returns a fixed failure
 without creating a vault when required configuration is unreadable.
 

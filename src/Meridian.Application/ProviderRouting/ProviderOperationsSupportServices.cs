@@ -220,12 +220,16 @@ public sealed class ProviderCertificationService
 
     public async Task<ProviderCertificationDto?> RunAsync(string connectionId, CancellationToken ct = default)
     {
-        var cfg = _store.Load();
+        var cfg = _store.LoadRequired();
         var section = ProviderRoutingConfigExtensions.GetSection(cfg);
-        var connection = (section.Connections ?? Array.Empty<ProviderConnectionConfig>())
-            .FirstOrDefault(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
-        if (connection is null)
+        var matches = (section.Connections ?? Array.Empty<ProviderConnectionConfig>())
+            .Where(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (matches.Length == 0)
             return null;
+        if (matches.Length != 1)
+            throw new InvalidOperationException("Certification connection is ambiguous.");
+        var connection = matches[0];
+        var expectedConnection = System.Text.Json.JsonSerializer.Serialize(connection);
 
         var adapter = _catalog.GetFamily(connection.ProviderFamilyId);
         if (adapter is null)
@@ -233,38 +237,46 @@ public sealed class ProviderCertificationService
 
         var result = await _runner.RunAsync(connection.ConnectionId, adapter, ct).ConfigureAwait(false);
 
-        var certifications = (section.Certifications ?? Array.Empty<ProviderCertificationConfig>()).ToList();
-        var nextCertification = new ProviderCertificationConfig(
-            ConnectionId: connection.ConnectionId,
-            Status: result.Status,
-            LastRunAt: result.RanAt,
-            ExpiresAt: result.Success ? result.RanAt.AddDays(30) : result.RanAt.AddDays(7),
-            ProductionReady: result.Success,
-            Checks: result.Checks.ToArray(),
-            Notes: result.Success ? ["Certification passed."] : ["Certification failed."]);
-
-        var existingIndex = certifications.FindIndex(c => string.Equals(c.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase));
-        if (existingIndex >= 0)
-            certifications[existingIndex] = nextCertification;
-        else
-            certifications.Add(nextCertification);
-
-        var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>())
-            .Select(c => string.Equals(c.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase)
-                ? c with { ProductionReady = result.Success }
-                : c)
-            .ToArray();
-
-        await _store.SaveAsync(cfg with
+        if (!string.Equals(result.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Certification result does not match the requested connection.");
+        return await _store.UpdateRequiredAsync<ProviderCertificationDto?>(current =>
         {
-            ProviderConnections = section with
-            {
-                Connections = connections,
-                Certifications = certifications.ToArray()
-            }
-        }, ct).ConfigureAwait(false);
+            var currentSection = ProviderRoutingConfigExtensions.GetSection(current);
+            var retained = (currentSection.Connections ?? [])
+                .Where(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (retained.Length != 1 || System.Text.Json.JsonSerializer.Serialize(retained[0]) != expectedConnection)
+                throw new InvalidOperationException("Connection changed while certification was running; retry against current configuration.");
+            var certifications = (currentSection.Certifications ?? Array.Empty<ProviderCertificationConfig>()).ToList();
+            var nextCertification = new ProviderCertificationConfig(
+                ConnectionId: connection.ConnectionId,
+                Status: result.Status,
+                LastRunAt: result.RanAt,
+                ExpiresAt: result.Success ? result.RanAt.AddDays(30) : result.RanAt.AddDays(7),
+                ProductionReady: result.Success,
+                Checks: result.Checks.ToArray(),
+                Notes: result.Success ? ["Certification passed."] : ["Certification failed."]);
 
-        return ProviderRoutingMapper.ToDto(nextCertification);
+            var existingIndex = certifications.FindIndex(c => string.Equals(c.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase));
+            if (existingIndex >= 0)
+                certifications[existingIndex] = nextCertification;
+            else
+                certifications.Add(nextCertification);
+
+            var connections = (currentSection.Connections ?? Array.Empty<ProviderConnectionConfig>())
+                .Select(c => string.Equals(c.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase)
+                    ? c with { ProductionReady = result.Success }
+                    : c)
+                .ToArray();
+
+            return (current with
+            {
+                ProviderConnections = currentSection with
+                {
+                    Connections = connections,
+                    Certifications = certifications.ToArray()
+                }
+            }, ProviderRoutingMapper.ToDto(nextCertification));
+        }, ct).ConfigureAwait(false);
     }
 }
 

@@ -1,3 +1,5 @@
+using Moq;
+using Meridian.ProviderSdk;
 using FluentAssertions;
 using Meridian.Application.UI;
 using Meridian.Application.ProviderRouting;
@@ -97,6 +99,51 @@ public sealed class ConfigStoreTests : IDisposable
             error.Should().NotBeNull();
             error!.GetType().Should().Be(body == "null" ? typeof(InvalidDataException) : typeof(JsonException));
             (await File.ReadAllTextAsync(path)).Should().Be(body);
+        }
+    }
+
+    [Theory]
+    [InlineData("delete")]
+    [InlineData("change")]
+    [InlineData("unrelated")]
+    [InlineData("wrong-result")]
+    public async Task CertificationCommit_RevalidatesConnectionAndPreservesConcurrentChanges(string action)
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, "{}");
+        var store = new ConfigStore(path);
+        var connections = new ProviderConnectionService(store);
+        var request = new CreateProviderConnectionRequest("owned", "alpaca", "Original", ExternalAccountId: "account-a");
+        await connections.UpsertForTenantAsync(request, "tenant-a", "paper");
+        var adapter = Mock.Of<IProviderFamilyAdapter>();
+        var catalog = new Mock<IProviderFamilyCatalogService>();
+        catalog.Setup(value => value.GetFamily("alpaca")).Returns(adapter);
+        var completed = new TaskCompletionSource<ProviderCertificationRunResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var runner = new Mock<IProviderCertificationRunner>();
+        runner.Setup(value => value.RunAsync("owned", adapter, It.IsAny<CancellationToken>())).Returns(completed.Task);
+        var service = new ProviderCertificationService(store, catalog.Object, runner.Object);
+        var pending = service.RunAsync("owned");
+        runner.Verify(value => value.RunAsync("owned", adapter, It.IsAny<CancellationToken>()), Times.Once);
+        if (action == "delete")
+            await connections.DeleteForTenantAsync("owned", "tenant-a");
+        else if (action == "change")
+            await connections.UpsertForTenantAsync(request with { DisplayName = "Changed" }, "tenant-a", "paper");
+        else if (action == "unrelated")
+            await connections.UpsertForTenantAsync(request with { ConnectionId = "other", ExternalAccountId = "account-b" }, "tenant-a", "paper");
+        var before = await File.ReadAllTextAsync(path);
+        completed.SetResult(new ProviderCertificationRunResult(action == "wrong-result" ? "foreign" : "owned", true, "Passed", [], DateTimeOffset.UtcNow));
+        if (action == "unrelated")
+        {
+            (await pending).Should().NotBeNull();
+            (await connections.GetConnectionsForTenantAsync("tenant-a")).Select(row => row.ConnectionId)
+                .Should().BeEquivalentTo("owned", "other");
+            (await service.GetCertificationsAsync()).Should().ContainSingle(row => row.ConnectionId == "owned" && row.ProductionReady);
+        }
+        else
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => pending);
+            (await File.ReadAllTextAsync(path)).Should().Be(before);
+            (await service.GetCertificationsAsync()).Should().BeEmpty();
         }
     }
 
