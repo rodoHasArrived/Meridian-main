@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using Meridian.Wpf.Workstation.Controls;
 
 namespace Meridian.Wpf.Services;
 
@@ -79,6 +80,16 @@ public sealed class KeyboardShortcutService
             key = e.SystemKey;
         }
 
+        // Context-specific gestures defer to the focused element: this tunneling handler runs
+        // before any control's own routed-command binding, so consuming Ctrl+C, Ctrl+F, or
+        // Escape here would starve the dense grids' copy, filter-focus, and close-details
+        // bindings (and a text editor's native copy) whenever a global registration shares the
+        // gesture. When the focused element can serve the matching routed command the event is
+        // left unhandled and routes to it; the registrations remain for the shortcut catalog
+        // and as the behavior everywhere nothing focused can serve the gesture.
+        if (DefersToFocusedRoutedCommand(key, modifiers))
+            return;
+
         foreach (var kvp in _shortcuts)
         {
             var action = kvp.Value;
@@ -87,16 +98,6 @@ public sealed class KeyboardShortcutService
 
             if (action.Key == key && action.Modifiers == modifiers)
             {
-                // A context-specific gesture defers to the focused element: this tunneling
-                // handler runs before any control's own routed-command binding, so consuming
-                // Ctrl+C here would starve the dense grids' and text editors' Copy bindings
-                // while the global action itself has no copy target. When the focused element
-                // can serve the routed command the event is left unhandled and routes to it;
-                // the registration remains for the shortcut catalog and as a backstop where
-                // nothing focused can copy.
-                if (DefersToFocusedRoutedCommand(kvp.Key))
-                    return;
-
                 e.Handled = true;
                 OnShortcutInvoked(kvp.Key, action);
                 return;
@@ -105,15 +106,27 @@ public sealed class KeyboardShortcutService
     }
 
     /// <summary>
-    /// True when this action's gesture belongs to the focused element rather than the global
-    /// handler. Copy is the one such registration today: dense grids and text editors carry
-    /// their own routed <see cref="ApplicationCommands.Copy"/> binding, which this service's
-    /// tunneling PreviewKeyDown would otherwise consume before they ever see the key.
+    /// True when this gesture belongs to the focused element rather than the global handler:
+    /// dense grids carry routed bindings for copy (<see cref="ApplicationCommands.Copy"/>),
+    /// filter focus (<see cref="DenseGridKeyboardCommands.FocusFilter"/>), and close-details
+    /// (<see cref="DenseGridKeyboardCommands.CloseDetails"/>), and text editors serve the
+    /// routed Copy natively — all of which this service's tunneling PreviewKeyDown would
+    /// otherwise consume before they ever see the key.
     /// </summary>
-    internal static bool DefersToFocusedRoutedCommand(string actionId)
-        => actionId == "Copy"
-           && Keyboard.FocusedElement is { } focused
-           && ApplicationCommands.Copy.CanExecute(null, focused);
+    internal static bool DefersToFocusedRoutedCommand(Key key, ModifierKeys modifiers)
+    {
+        RoutedCommand? routed = (key, modifiers) switch
+        {
+            (Key.C, ModifierKeys.Control) => ApplicationCommands.Copy,
+            (Key.F, ModifierKeys.Control) => DenseGridKeyboardCommands.FocusFilter,
+            (Key.Escape, ModifierKeys.None) => DenseGridKeyboardCommands.CloseDetails,
+            _ => null
+        };
+
+        return routed is not null
+               && Keyboard.FocusedElement is { } focused
+               && routed.CanExecute(null, focused);
+    }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {

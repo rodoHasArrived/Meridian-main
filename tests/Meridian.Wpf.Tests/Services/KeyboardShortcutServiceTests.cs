@@ -1,8 +1,10 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.Workstation.Controls;
 
 namespace Meridian.Wpf.Tests.Services;
 
@@ -409,7 +411,7 @@ public sealed class KeyboardShortcutServiceTests
     // ── Context-specific gesture deferral ────────────────────────────
 
     [Fact]
-    public void DefersToFocusedRoutedCommand_YieldsCopyToAFocusedEditorAndOnlyCopy()
+    public void DefersToFocusedRoutedCommand_YieldsCopyToAFocusedEditorAndOnlyMappedGestures()
     {
         WpfTestThread.Run(() =>
         {
@@ -422,10 +424,10 @@ public sealed class KeyboardShortcutServiceTests
                 textBox.SelectAll();
 
                 // The focused editor carries a live routed Copy binding, so the tunneling
-                // global handler must leave Ctrl+C unhandled for it — while every other
-                // registration keeps its global behavior.
-                KeyboardShortcutService.DefersToFocusedRoutedCommand("Copy").Should().BeTrue();
-                KeyboardShortcutService.DefersToFocusedRoutedCommand("Save").Should().BeFalse();
+                // global handler must leave Ctrl+C unhandled for it — while an unmapped
+                // gesture keeps its global behavior even over a focused editor.
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.C, ModifierKeys.Control).Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.S, ModifierKeys.Control).Should().BeFalse();
             }
             finally
             {
@@ -435,18 +437,52 @@ public sealed class KeyboardShortcutServiceTests
     }
 
     [Fact]
-    public void DefersToFocusedRoutedCommand_KeepsCopyGlobalWhenTheFocusedElementCannotCopy()
+    public void DefersToFocusedRoutedCommand_KeepsGesturesGlobalWhenTheFocusedElementCannotServeThem()
     {
         WpfTestThread.Run(() =>
         {
-            var button = new Button { Content = "No copy target" };
+            var button = new Button { Content = "No routed targets" };
             var window = new Window { Width = 200, Height = 100, Content = button };
             try
             {
                 window.Show();
                 button.Focus();
 
-                KeyboardShortcutService.DefersToFocusedRoutedCommand("Copy").Should().BeFalse();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.C, ModifierKeys.Control).Should().BeFalse();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.F, ModifierKeys.Control).Should().BeFalse();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.Escape, ModifierKeys.None).Should().BeFalse();
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DefersToFocusedRoutedCommand_YieldsFilterAndCloseGesturesToAFocusedDenseGrid()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var denseGrid = new DenseDataGridControl
+            {
+                FilterTarget = new TextBox(),
+                CloseDetailsCommand = new RelayCommand(() => { })
+            };
+            var window = new Window { Width = 300, Height = 200, Content = denseGrid };
+            try
+            {
+                window.Show();
+                var rowsList = (ListView)denseGrid.FindName("RowsList");
+                rowsList.Focus();
+
+                // With focus inside a grid that can serve them, Ctrl+F and Escape belong to
+                // the grid's filter-focus and close-details bindings, not the global
+                // SearchSymbols / CancelBackfill registrations that share the gestures.
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.F, ModifierKeys.Control).Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.Escape, ModifierKeys.None).Should().BeTrue();
             }
             finally
             {
