@@ -202,17 +202,18 @@ public sealed class SecurityMasterRebuildOrchestrator
             return;
         }
 
-        try
+        // A deferred security can have been rebuilt again by a later batch whose scan
+        // succeeded, so only its id was held. Each deferred security is re-read from the
+        // store and the retry scans the projection as persisted now; one that no longer
+        // exists has nothing left to scan. The reloads share the retry's best-effort
+        // boundary — the batch and checkpoint are already committed — but each failure is
+        // contained per security: one transient read aborting the loop would abandon the
+        // scan for records already reloaded and ids not yet read, and no later replay will
+        // re-detect any of them.
+        var records = new List<SecurityProjectionRecord>();
+        foreach (var securityId in deferredSecurityIds.Distinct())
         {
-            // A deferred security can have been rebuilt again by a later batch whose scan
-            // succeeded, so only its id was held. Each deferred security is re-read from the
-            // store and the retry scans the projection as persisted now; one that no longer
-            // exists has nothing left to scan. The reloads share the retry's best-effort
-            // boundary: the batch and checkpoint are already committed, so a transient read
-            // failure here is conflict-service degradation to surface, not a reason to fail
-            // the completed rebuild.
-            var records = new List<SecurityProjectionRecord>();
-            foreach (var securityId in deferredSecurityIds.Distinct())
+            try
             {
                 var current = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
                 if (current is not null)
@@ -220,12 +221,22 @@ public sealed class SecurityMasterRebuildOrchestrator
                     records.Add(current);
                 }
             }
-
-            if (records.Count == 0)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                return;
+                _logger.LogError(
+                    ex,
+                    "Deferred conflict-detection reload failed for security {SecurityId}; it carries no ambiguity scan and needs a full conflict refresh",
+                    securityId);
             }
+        }
 
+        if (records.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
             await _conflictService.RecordConflictsForProjectionsAsync(records, ct).ConfigureAwait(false);
             _logger.LogInformation(
                 "Deferred conflict detection succeeded on retry for {SecurityCount} securities",
@@ -236,7 +247,7 @@ public sealed class SecurityMasterRebuildOrchestrator
             _logger.LogError(
                 ex,
                 "Conflict detection failed twice during projection rebuild; {SecurityCount} rebuilt securities carry no ambiguity scan and need a full conflict refresh",
-                deferredSecurityIds.Count);
+                records.Count);
         }
     }
 }
