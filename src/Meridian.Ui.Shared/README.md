@@ -13,7 +13,9 @@ last_reviewed: 2026-08-30
 
 Provider-routing connection discovery, bindings and trust summaries filter by retained ownership
 using the authenticated workstation tenant. Binding failover IDs are limited to the same visible
-connection set. Request headers and query parameters cannot select another tenant. Route preview,
+connection set. Each service applies ownership against its captured configuration before returning
+bindings or evaluating trust; foreign connections do not trigger health queries. Request headers and
+query parameters cannot select another tenant. Route preview,
 default setup ownership and atomic configuration updates remain separate integration work.
 
 The shared workstation graph owns first-run state, the curated starter catalog,

@@ -24,6 +24,20 @@ public sealed class ProviderBindingService
         return Task.FromResult<IReadOnlyList<ProviderBindingDto>>(bindings);
     }
 
+    /// <summary>Reads bindings and their retained connection ownership from one configuration snapshot.</summary>
+    public Task<IReadOnlyList<ProviderBindingDto>> GetBindingsForTenantAsync(string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ct.ThrowIfCancellationRequested();
+        var section = ProviderRoutingConfigExtensions.GetSection(_store.Load());
+        var ids = (section.Connections ?? []).Where(connection => connection.TenantId == tenantId.Trim())
+            .Select(connection => connection.ConnectionId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var bindings = (section.Bindings ?? []).Where(binding => ids.Contains(binding.ConnectionId))
+            .Select(ProviderRoutingMapper.ToDto)
+            .Select(binding => binding with { FailoverConnectionIds = binding.FailoverConnectionIds.Where(ids.Contains).ToArray() }).ToArray();
+        return Task.FromResult<IReadOnlyList<ProviderBindingDto>>(bindings);
+    }
+
     public async Task<ProviderBindingDto> UpsertAsync(UpdateProviderBindingRequest request, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Capability);

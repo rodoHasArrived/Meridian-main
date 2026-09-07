@@ -68,7 +68,17 @@ public sealed class ProviderTrustScoringService
         _healthSource = healthSource;
     }
 
-    public async Task<IReadOnlyList<ProviderTrustSnapshotDto>> GetTrustSnapshotsAsync(CancellationToken ct = default)
+    public Task<IReadOnlyList<ProviderTrustSnapshotDto>> GetTrustSnapshotsAsync(CancellationToken ct = default)
+        => GetTrustSnapshotsCoreAsync(null, ct);
+
+    /// <summary>Evaluates only connections belonging to the authorized tenant in the captured configuration.</summary>
+    public Task<IReadOnlyList<ProviderTrustSnapshotDto>> GetTrustSnapshotsForTenantAsync(string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        return GetTrustSnapshotsCoreAsync(tenantId.Trim(), ct);
+    }
+
+    private async Task<IReadOnlyList<ProviderTrustSnapshotDto>> GetTrustSnapshotsCoreAsync(string? tenantId, CancellationToken ct)
     {
         var cfg = _store.Load();
         var section = ProviderRoutingConfigExtensions.GetSection(cfg);
@@ -78,6 +88,8 @@ public sealed class ProviderTrustScoringService
         var snapshots = new List<ProviderTrustSnapshotDto>();
         foreach (var connection in section.Connections ?? Array.Empty<ProviderConnectionConfig>())
         {
+            if (tenantId is not null && connection.TenantId != tenantId)
+                continue;
             var health = await _healthSource.GetHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct).ConfigureAwait(false);
             certifications.TryGetValue(connection.ConnectionId, out var certification);
             var reasons = new List<DecisionReason>();

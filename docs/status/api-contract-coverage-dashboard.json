@@ -2981,13 +2981,13 @@
     {
       "method": "GET",
       "path": "/api/provider-routing/trust-snapshots",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:63",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:59",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/provider-routing/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:85",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:78",
       "documented": false
     },
     {

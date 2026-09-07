@@ -284,6 +284,9 @@ public sealed class ProviderRoutingEndpointsTests
         body.Should().Contain("owned").And.NotContain("foreign").And.NotContain("unassigned");
         using var document = JsonDocument.Parse(body);
         document.RootElement.GetArrayLength().Should().Be(1);
+        if (route == UiApiRoutes.ProviderRoutingTrustSnapshots)
+            ((HealthyProviderConnectionHealthSource)app.Services.GetRequiredService<IProviderConnectionHealthSource>())
+                .ConnectionIds.Should().Equal("owned");
     }
 
     [Fact]
@@ -671,12 +674,14 @@ public sealed class ProviderRoutingEndpointsTests
 
     private sealed class HealthyProviderConnectionHealthSource : IProviderConnectionHealthSource
     {
+        public List<string> ConnectionIds { get; } = [];
         public ValueTask<ProviderConnectionHealthSnapshot> GetHealthAsync(
             string connectionId,
             string providerFamilyId,
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ConnectionIds.Add(connectionId);
             return ValueTask.FromResult(new ProviderConnectionHealthSnapshot(
                 connectionId,
                 providerFamilyId,

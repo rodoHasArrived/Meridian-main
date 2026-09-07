@@ -39,7 +39,6 @@ public static class ProviderRoutingEndpoints
 
         group.MapGet(UiApiRoutes.ProviderRoutingBindings, async (
             ProviderBindingService service,
-            ProviderConnectionService connections,
             HttpContext context) =>
         {
             if (!HasManageCredentialsPermission(context))
@@ -50,11 +49,8 @@ public static class ProviderRoutingEndpoints
             var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             if (!tenant.HasTenantScope)
                 return EndpointHelpers.Forbidden();
-            var owned = await connections.GetConnectionsForTenantAsync(tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
-            var ids = owned.Select(connection => connection.ConnectionId).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var result = await service.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result.Where(binding => ids.Contains(binding.ConnectionId))
-                .Select(binding => binding with { FailoverConnectionIds = binding.FailoverConnectionIds.Where(ids.Contains).ToArray() }).ToArray(), jsonOptions);
+            var result = await service.GetBindingsForTenantAsync(tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
         })
         .WithName("GetProviderRoutingBindings").RequirePermission(UserPermission.ManageCredentials)
         .WithDescription("Returns configured provider-routing capability bindings.")
@@ -62,7 +58,6 @@ public static class ProviderRoutingEndpoints
 
         group.MapGet(UiApiRoutes.ProviderRoutingTrustSnapshots, async (
             ProviderTrustScoringService service,
-            ProviderConnectionService connections,
             HttpContext context) =>
         {
             if (!HasManageCredentialsPermission(context))
@@ -73,10 +68,8 @@ public static class ProviderRoutingEndpoints
             var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             if (!tenant.HasTenantScope)
                 return EndpointHelpers.Forbidden();
-            var owned = await connections.GetConnectionsForTenantAsync(tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
-            var ids = owned.Select(connection => connection.ConnectionId).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var result = await service.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result.Where(snapshot => ids.Contains(snapshot.ConnectionId)).ToArray(), jsonOptions);
+            var result = await service.GetTrustSnapshotsForTenantAsync(tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
         })
         .WithName("GetProviderRoutingTrustSnapshots").RequirePermission(UserPermission.ManageCredentials)
         .WithDescription("Returns provider trust snapshots for configured routing connections.")
