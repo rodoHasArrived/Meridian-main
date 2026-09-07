@@ -1730,6 +1730,7 @@ Meridian-main
 │   │   │   └── w10-mark-001-fail-closed-marks.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
+│   │   ├── etl-execution-ownership.md
 │   │   ├── free-development-tools.md
 │   │   ├── live-trading-engine.md
 │   │   ├── practical-csharp-wpf-financial-markets.md
@@ -3850,6 +3851,7 @@ Meridian-main
 │   │   │   ├── CoordinationSnapshot.cs
 │   │   │   ├── IClusterCoordinator.cs
 │   │   │   ├── ICoordinationStore.cs
+│   │   │   ├── IExecutionLease.cs
 │   │   │   ├── ILeaseManager.cs
 │   │   │   ├── IScheduledWorkOwnershipService.cs
 │   │   │   ├── ISubscriptionOwnershipService.cs
@@ -5254,6 +5256,7 @@ Meridian-main
 │   │   ├── Coordination
 │   │   │   ├── ClusterCoordinatorService.cs
 │   │   │   ├── LeaseManager.cs
+│   │   │   ├── LeaseManager.Execution.cs
 │   │   │   ├── ScheduledWorkOwnershipService.cs
 │   │   │   ├── SplitBrainDetector.cs
 │   │   │   └── SubscriptionOwnershipService.cs
@@ -5857,6 +5860,7 @@ Meridian-main
 │   │   │   ├── RetentionComplianceReporter.cs
 │   │   │   ├── SourceRegistry.cs
 │   │   │   ├── StorageCatalogService.cs
+│   │   │   ├── StorageCatalogService.ReadSnapshot.cs
 │   │   │   ├── StorageChecksumService.cs
 │   │   │   ├── StorageSearchService.cs
 │   │   │   ├── SymbolRegistryService.cs
@@ -6817,6 +6821,8 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.execution-blotter.tsx
 │   │   │   │   │   ├── trading-screen.execution-blotter.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.execution-blotter.view-model.ts
+│   │   │   │   │   ├── trading-screen.execution-controls-header.tsx
+│   │   │   │   │   ├── trading-screen.execution-controls.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.test.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.ts
 │   │   │   │   │   ├── trading-screen.linked-context.ts
@@ -8439,7 +8445,8 @@ Meridian-main
 │   ├── Meridian.ProcessTestHelper
 │   │   ├── Meridian.ProcessTestHelper.csproj
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json
-│   │   └── Program.cs
+│   │   ├── Program.cs
+│   │   └── Program.Etl.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── Helpers
 │   │   │   ├── FakeQuantDataContext.cs
@@ -9325,7 +9332,9 @@ Meridian-main
 │   │   │   │   ├── CredentialStatusTests.cs
 │   │   │   │   └── OAuthTokenTests.cs
 │   │   │   ├── Etl
+│   │   │   │   ├── EtlCrashRetentionTests.cs
 │   │   │   │   ├── EtlExportServiceTests.cs
+│   │   │   │   ├── EtlJobOrchestratorOwnershipTests.cs
 │   │   │   │   ├── EtlJobOrchestratorTests.cs
 │   │   │   │   ├── EtlNormalizationServiceTests.cs
 │   │   │   │   └── EtlPreviewServiceTests.cs
@@ -9751,6 +9760,7 @@ Meridian-main
 │   │   │   │   └── ApiDocumentationServiceTests.cs
 │   │   │   ├── Coordination
 │   │   │   │   ├── ClusterCoordinatorServiceTests.cs
+│   │   │   │   ├── ExecutionLeaseTests.cs
 │   │   │   │   ├── LeaseManagerTests.cs
 │   │   │   │   └── SplitBrainDetectorTests.cs
 │   │   │   ├── Diagnostics
@@ -9991,6 +10001,7 @@ Meridian-main
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
+│   │   │   ├── AuditChainProcessTests.cs
 │   │   │   ├── AuditChainServiceTests.cs
 │   │   │   ├── CanonicalOpenLotConsumerTests.cs
 │   │   │   ├── CanonicalSymbolRegistryTests.cs
@@ -10057,6 +10068,7 @@ Meridian-main
 │   │   │   ├── TierMigrationServiceTests.cs
 │   │   │   ├── WriteAheadLogCorruptionModeTests.cs
 │   │   │   ├── WriteAheadLogFuzzTests.cs
+│   │   │   ├── WriteAheadLogProcessTests.cs
 │   │   │   ├── WriteAheadLogTests.cs
 │   │   │   └── XlsxWorkbookWriterTests.cs
 │   │   ├── Strategies
