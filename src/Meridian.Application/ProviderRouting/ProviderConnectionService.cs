@@ -26,6 +26,17 @@ public sealed class ProviderConnectionService
         return Task.FromResult<IReadOnlyList<ProviderConnectionDto>>(connections);
     }
 
+    /// <summary>Lists only connections with retained ownership matching the authorized tenant.</summary>
+    public Task<IReadOnlyList<ProviderConnectionDto>> GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ct.ThrowIfCancellationRequested();
+        var connections = (_store.Load().ProviderConnections?.Connections ?? [])
+            .Where(connection => string.Equals(connection.TenantId, tenantId.Trim(), StringComparison.Ordinal))
+            .Select(ProviderRoutingMapper.ToDto).ToArray();
+        return Task.FromResult<IReadOnlyList<ProviderConnectionDto>>(connections);
+    }
+
     public Task<ProviderConnectionDto?> GetConnectionAsync(string connectionId, CancellationToken ct = default)
     {
         var connection = (_store.Load().ProviderConnections?.Connections ?? Array.Empty<ProviderConnectionConfig>())

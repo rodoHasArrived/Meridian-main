@@ -7,6 +7,7 @@ using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
+using Meridian.Core.Config;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.ProviderSdk;
@@ -253,8 +254,40 @@ public sealed class ProviderRoutingEndpointsTests
         vaultJson.Should().NotContain(secret);
     }
 
+    [Theory]
+    [InlineData(UiApiRoutes.ProviderRoutingConnections)]
+    [InlineData(UiApiRoutes.ProviderRoutingBindings)]
+    [InlineData(UiApiRoutes.ProviderRoutingTrustSnapshots)]
+    public async Task RoutingDiscovery_ExcludesForeignAndUnassignedConnections(string route)
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var config = store.Load();
+        config = config with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(
+            Connections: [
+                new("owned", "yahoo", "Owned", TenantId: "tenant-test", ExternalAccountId: "account-owned", CredentialEnvironment: "paper"),
+                new("foreign", "yahoo", "Foreign", TenantId: "tenant-other", ExternalAccountId: "account-foreign", CredentialEnvironment: "paper"),
+                new("unassigned", "yahoo", "Unassigned")],
+            Bindings: [
+                new("owned-binding", ProviderCapabilityKind.HistoricalBars, "owned", FailoverConnectionIds: ["foreign", "unassigned"]),
+                new("foreign-binding", ProviderCapabilityKind.HistoricalBars, "foreign"),
+                new("unassigned-binding", ProviderCapabilityKind.HistoricalBars, "unassigned")])
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Tenant-Id", "tenant-other");
+        var response = await client.GetAsync(route + "?tenantId=tenant-other");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("owned").And.NotContain("foreign").And.NotContain("unassigned");
+        using var document = JsonDocument.Parse(body);
+        document.RootElement.GetArrayLength().Should().Be(1);
+    }
+
     [Fact]
-    public async Task ProviderRoutingEndpoints_ReturnConnectionsBindingsAndTrustSnapshotsForSetupConnections()
+    public async Task ProviderRoutingEndpoints_ReturnConnectionsBindingsAndTrustSnapshotsForOwnedSetupConnections()
     {
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
@@ -266,6 +299,23 @@ public sealed class ProviderRoutingEndpointsTests
             capabilities = new[] { "backfill" }
         }));
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Establish explicit retained ownership in this fixture; production never claims legacy connections implicitly.
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var config = store.Load();
+        config = config with
+        {
+            ProviderConnections = config.ProviderConnections! with
+            {
+                Connections = config.ProviderConnections!.Connections!.Select(connection => connection with
+                {
+                    TenantId = "tenant-test",
+                    ExternalAccountId = "yahoo-account",
+                    CredentialEnvironment = "paper"
+                }).ToArray()
+            }
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
 
         var connectionsResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingConnections);
         connectionsResponse.StatusCode.Should().Be(HttpStatusCode.OK);

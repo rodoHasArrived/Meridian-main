@@ -15,6 +15,10 @@ last_reviewed: 2026-08-30
 
 ## Credential source ownership
 
+`ProviderConnectionService.GetConnectionsForTenantAsync` lists connections only when retained
+tenant ownership matches the authorized tenant. Unassigned legacy connections require explicit
+ownership establishment and are not implicitly claimed by discovery.
+
 `ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
 environment with the external account. Scope resolution uses that retained ownership, returns no scope
 to another tenant, and refuses incomplete records. Owned connections cannot be reassigned or modified

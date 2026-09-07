@@ -2969,25 +2969,25 @@
     {
       "method": "GET",
       "path": "/api/provider-routing/connections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:20",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:21",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/provider-routing/bindings",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:36",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:40",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/provider-routing/trust-snapshots",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:52",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:63",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/provider-routing/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:68",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:85",
       "documented": false
     },
     {
