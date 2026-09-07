@@ -89,7 +89,13 @@ public sealed class SecurityMasterMigrationRunnerTests : IClassFixture<SecurityM
     public async Task Migration030_ReportsEveryCollisionInDeterministicOrderBeforeChangingIndexes()
     {
         var schema = $"sm_collision_{Guid.NewGuid():N}";
-        await using var connection = new NpgsqlConnection(WithErrorDetail(_fixture.Options.ConnectionString));
+        // This isolated fixture asserts the migration's complete collision diagnostic.
+        // Npgsql redacts Detail by default; enable it only on this test connection.
+        var connectionString = new NpgsqlConnectionStringBuilder(_fixture.Options.ConnectionString)
+        {
+            IncludeErrorDetail = true
+        };
+        await using var connection = new NpgsqlConnection(connectionString.ConnectionString);
         await connection.OpenAsync();
         try
         {
@@ -166,15 +172,5 @@ public sealed class SecurityMasterMigrationRunnerTests : IClassFixture<SecurityM
             cleanup.CommandText = $"drop schema if exists {schema} cascade;";
             await cleanup.ExecuteNonQueryAsync();
         }
-    }
-
-    private static string WithErrorDetail(string connectionString)
-    {
-        var builder = new NpgsqlConnectionStringBuilder(connectionString)
-        {
-            IncludeErrorDetail = true
-        };
-
-        return builder.ConnectionString;
     }
 }

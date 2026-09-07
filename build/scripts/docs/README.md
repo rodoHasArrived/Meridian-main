@@ -812,6 +812,8 @@ resolves to it, `registry-only` when just the registry declares it, and `unwired
 Routes the browser is not meant to call (probes, provider webhooks, `410 Gone` tombstones,
 desktop-only handoffs) are listed separately with the reason, not silently dropped. Use
 `--fail-on-unresolved` to gate on route expressions the analyzer cannot fold to a literal.
+All source scans prune dependency, build, and cache directories before descending, so local
+package junctions cannot recurse back into the repository or invent route coverage.
 
 The pilot readiness dashboard derives readiness from the artifact stage-gate details and evidence
 graph, including required golden-path stage coverage and self-edge checks. Do not treat top-level

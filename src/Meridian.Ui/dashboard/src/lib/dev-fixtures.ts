@@ -540,7 +540,8 @@ const fixtureExecutionControls: ExecutionControlSnapshot = {
       runId: "run-dev-1"
     }
   ],
-  asOf: "2026-04-28T18:15:00Z"
+  asOf: "2026-04-28T18:15:00Z",
+  version: 7
 };
 
 const fixtureReplayFiles = {
