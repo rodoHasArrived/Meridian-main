@@ -3,6 +3,7 @@ import type {
   AccountingRulePackReference,
   EconomicEventReference,
   JournalEntryLifecycleTransition,
+  KillSwitchSweepFailure,
   LedgerDimensionSet,
   OperationsActionOrigin,
   ProjectionLineage,
@@ -270,10 +271,14 @@ export interface ResolveReconciliationBreakRequest {
 
 export interface TradingActionResult {
   actionId: string;
-  status: "Accepted" | "Completed" | "Rejected" | "Failed";
+  status: "Accepted" | "Completed" | "Partial" | "Rejected" | "Failed";
   message: string;
   occurredAt: string;
   auditId?: string | null;
+  /** Orders a kill-switch sweep could not withdraw; present on cancel-all and breaker activation. */
+  stillWorking?: KillSwitchSweepFailure[] | null;
+  /** True when the sweep could not read the broker book, so an empty local book proves nothing. */
+  brokerViewUnavailable?: boolean | null;
 }
 
 // --- Multi-run comparison types ---

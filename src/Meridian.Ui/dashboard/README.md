@@ -11,6 +11,9 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Ui/dashboard
 
+The build lockfile resolves Browserslist 4.28.9, removing the high-severity cache-growth and
+custom-stats parsing advisories reported by the September 6 production-certification scan.
+
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
