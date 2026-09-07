@@ -586,7 +586,11 @@ public partial class DenseDataGridControl : UserControl
             lines.Add(string.Join("\t", columns.Select(column => EscapeTsvCell(GuardFormulaPrefix(column.Header, column.Header)))));
         }
 
-        foreach (var selectedItem in RowsList.SelectedItems.Cast<object>())
+        // SelectedItems reports click order: an Extended selection built upward would paste
+        // rows inverted relative to the visible grid. Items is the display-ordered (sorted,
+        // filtered) view, so the copied block walks it and keeps only the selected rows.
+        var selectedRows = new HashSet<object>(RowsList.SelectedItems.Cast<object>());
+        foreach (var selectedItem in RowsList.Items.Cast<object>().Where(selectedRows.Contains))
         {
             lines.Add(columns.Count == 0
                 ? EscapeTsvCell(GuardFormulaPrefix(selectedItem, Convert.ToString(selectedItem, culture) ?? string.Empty))

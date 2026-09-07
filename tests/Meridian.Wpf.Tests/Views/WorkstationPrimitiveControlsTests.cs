@@ -562,6 +562,50 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     [Fact]
+    public void DenseDataGridControl_ShouldCopySelectedRowsInDisplayOrder()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture>
+            {
+                new("Alpaca", "Degraded"),
+                new("IEX Cloud", "Healthy"),
+                new("Polygon.io", "Healthy")
+            };
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                SelectionMode = SelectionMode.Extended
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                // An Extended selection built upward (Ctrl+click the last row, then the first)
+                // reports SelectedItems in click order; the copied block must follow the grid's
+                // visible order regardless.
+                rowsList.SelectedItems.Add(tableRows[2]);
+                rowsList.SelectedItems.Add(tableRows[0]);
+
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be(
+                    "Provider\tStatus\n" +
+                    "Alpaca\tDegraded\n" +
+                    "Polygon.io\tHealthy");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void DenseDataGridControl_ShouldNeutralizeFormulaPrefixesOnStringCellsOnly()
     {
         WpfTestThread.Run(() =>
