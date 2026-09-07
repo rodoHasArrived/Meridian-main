@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "ba85237888be56f098f77dcd3e774c3545af6709453eed50bfe521e17f0c82a8",
-      "source_hash": "fb6de97e4bec4a403d364df39380f728743bee2ae765a2afd18732cb840499b5"
+      "readme_hash": "18649341d49b136a2b4c752e05eda9b4087c14e39a0ccce7b1e6a3ca39c75807",
+      "source_hash": "fbba7ef9e258bf659884eb4d2e560d0ec67b6440f6e3de5881f2ab9a0895eff7"
     },
     {
       "id": "SRC-BACKTESTING",

@@ -637,6 +637,39 @@ public sealed class ProviderRoutingEndpointsTests
         }
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("{")]
+    [InlineData("null")]
+    [InlineData("[]")]
+    public async Task ConfigureProvider_UnreadableConfigurationCannotCommitCredentials(string? content)
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        if (content is null)
+            File.Delete(store.ConfigPath);
+        else
+            await File.WriteAllTextAsync(store.ConfigPath, content);
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderConfigure, JsonContent(new
+        {
+            kind = "alpaca",
+            displayName = "Rejected setup",
+            apiKey = "uncommitted-key",
+            apiSecret = "uncommitted-secret",
+            environment = "paper",
+            capabilities = new[] { "streaming" }
+        }));
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("readable existing configuration").And.NotContain("uncommitted-key").And.NotContain("uncommitted-secret");
+        var vault = app.Services.GetRequiredService<IProviderCredentialStore>();
+        File.Exists(vault.VaultPath).Should().BeFalse();
+        if (content is null)
+            File.Exists(store.ConfigPath).Should().BeFalse();
+        else
+            (await File.ReadAllTextAsync(store.ConfigPath)).Should().Be(content);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         UserPermission? permissions = UserPermission.ManageProviders | UserPermission.ManageCredentials,
         Action<IServiceCollection>? registerServices = null,

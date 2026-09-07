@@ -22,6 +22,8 @@ Duplicate connection IDs, including case variants, cannot establish credential o
 omits ambiguous records; scoped setup, scope resolution and connection mutations refuse them.
 Connection upsert and deletion use `ConfigStore.LoadRequired` so missing, corrupt or JSON-null
 configuration cannot be replaced by an empty default ownership model. Failed reads preserve the file.
+Provider setup performs this strict read before credential persistence and returns a fixed failure
+without creating a vault when required configuration is unreadable.
 
 Tenant-aware route preview filters connections and bindings before ranking, health queries and
 failover expansion. It reads fresh configuration and does not add tenant results to unscoped route

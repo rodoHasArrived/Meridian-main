@@ -4,6 +4,7 @@ using Meridian.DataIntegration.Credentials;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
 using Meridian.ProviderSdk;
+using System.Text.Json;
 
 namespace Meridian.Application.ProviderRouting;
 
@@ -99,6 +100,16 @@ public sealed class ProviderSetupService
             return Failure(displayName, validation.Error ?? "Provider setup validation failed.");
         }
 
+        AppConfig cfg;
+        try
+        {
+            cfg = _store.LoadRequired();
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException)
+        {
+            return Failure(displayName, "Provider setup requires readable existing configuration.");
+        }
+
         var environment = validation.NormalizedEnvironment ?? descriptor.NormalizeEnvironment(request.Environment);
         var referenceEnvironment = string.IsNullOrWhiteSpace(environment) ? "default" : environment;
         var credentialReference = descriptor.RequiresCredentials
@@ -167,7 +178,6 @@ public sealed class ProviderSetupService
             return Failure(displayName, $"Provider '{request.Kind}' is not yet supported by the local data-source configuration model.");
         }
 
-        var cfg = _store.Load();
         var dataSources = cfg.DataSources ?? new DataSourcesConfig();
         var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
         var section = ProviderRoutingConfigExtensions.GetSection(cfg);
