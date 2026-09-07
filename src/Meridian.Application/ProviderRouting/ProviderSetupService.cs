@@ -105,7 +105,7 @@ public sealed class ProviderSetupService
         {
             cfg = _store.LoadRequired();
         }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException)
+        catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException or JsonException)
         {
             return Failure(displayName, "Provider setup requires readable existing configuration.");
         }
