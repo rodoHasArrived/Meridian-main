@@ -79,64 +79,64 @@ public sealed class ProviderConnectionService
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ProviderFamilyId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.DisplayName);
 
-        var cfg = _store.LoadRequired();
-        var section = ProviderRoutingConfigExtensions.GetSection(cfg);
-        var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
-
-        var connectionId = string.IsNullOrWhiteSpace(request.ConnectionId)
-            ? Guid.NewGuid().ToString("N")
-            : request.ConnectionId.Trim();
-
-        if (connections.Count(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 1)
-            throw new InvalidOperationException("Connection ownership is ambiguous.");
-        var existingIndex = connections.FindIndex(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
-        var existing = existingIndex >= 0 ? connections[existingIndex] : null;
-        if (existing is not null && !string.Equals(existing.TenantId, tenantId, StringComparison.Ordinal))
-            throw new InvalidOperationException("Connection ownership does not match the authorized tenant.");
-        if (tenantId is not null)
+        return await _store.UpdateRequiredAsync(cfg =>
         {
-            var scope = new ProviderCredentialScope(tenantId, connectionId, request.ExternalAccountId ?? string.Empty, environment!);
-            if (existing is not null && (existing.ExternalAccountId != scope.ExternalAccountId || existing.CredentialEnvironment != scope.Environment ||
-                !string.Equals(existing.ProviderFamilyId, request.ProviderFamilyId.Trim(), StringComparison.OrdinalIgnoreCase)))
-                throw new InvalidOperationException("Existing credential ownership cannot be reassigned.");
-            // A provider-wide or caller-supplied vault reference is not ownership evidence.
-            if (!string.IsNullOrWhiteSpace(request.CredentialReference) && request.CredentialReference != existing?.CredentialReference)
-                throw new InvalidOperationException("Credential references must be assigned by the scoped credential workflow.");
-            connectionId = scope.ConnectionId;
-            request = request with { ExternalAccountId = scope.ExternalAccountId };
-        }
+            var section = ProviderRoutingConfigExtensions.GetSection(cfg);
+            var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
 
-        var next = new ProviderConnectionConfig(
-            ConnectionId: connectionId,
-            ProviderFamilyId: request.ProviderFamilyId.Trim(),
-            DisplayName: request.DisplayName.Trim(),
-            ConnectionType: ProviderRoutingMapper.ParseEnum(request.ConnectionType, ProviderConnectionType.DataVendor),
-            ConnectionMode: ProviderRoutingMapper.ParseEnum(request.ConnectionMode, ProviderConnectionMode.ReadOnly),
-            Enabled: request.Enabled,
-            CredentialReference: request.CredentialReference,
-            InstitutionId: request.InstitutionId,
-            ExternalAccountId: request.ExternalAccountId,
-            Scope: ProviderRoutingMapper.ToConnectionScope(request.Scope),
-            Tags: request.Tags,
-            Description: request.Description,
-            ProductionReady: request.ProductionReady,
-            TenantId: tenantId,
-            CredentialEnvironment: environment);
+            var connectionId = string.IsNullOrWhiteSpace(request.ConnectionId)
+                ? Guid.NewGuid().ToString("N")
+                : request.ConnectionId.Trim();
 
-        if (existingIndex >= 0)
-            connections[existingIndex] = next;
-        else
-            connections.Add(next);
-
-        await _store.SaveAsync(cfg with
-        {
-            ProviderConnections = section with
+            if (connections.Count(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 1)
+                throw new InvalidOperationException("Connection ownership is ambiguous.");
+            var existingIndex = connections.FindIndex(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
+            var existing = existingIndex >= 0 ? connections[existingIndex] : null;
+            if (existing is not null && !string.Equals(existing.TenantId, tenantId, StringComparison.Ordinal))
+                throw new InvalidOperationException("Connection ownership does not match the authorized tenant.");
+            if (tenantId is not null)
             {
-                Connections = connections.ToArray()
+                var scope = new ProviderCredentialScope(tenantId, connectionId, request.ExternalAccountId ?? string.Empty, environment!);
+                if (existing is not null && (existing.ExternalAccountId != scope.ExternalAccountId || existing.CredentialEnvironment != scope.Environment ||
+                    !string.Equals(existing.ProviderFamilyId, request.ProviderFamilyId.Trim(), StringComparison.OrdinalIgnoreCase)))
+                    throw new InvalidOperationException("Existing credential ownership cannot be reassigned.");
+                // A provider-wide or caller-supplied vault reference is not ownership evidence.
+                if (!string.IsNullOrWhiteSpace(request.CredentialReference) && request.CredentialReference != existing?.CredentialReference)
+                    throw new InvalidOperationException("Credential references must be assigned by the scoped credential workflow.");
+                connectionId = scope.ConnectionId;
+                request = request with { ExternalAccountId = scope.ExternalAccountId };
             }
-        }, ct).ConfigureAwait(false);
 
-        return ProviderRoutingMapper.ToDto(next);
+            var next = new ProviderConnectionConfig(
+                ConnectionId: connectionId,
+                ProviderFamilyId: request.ProviderFamilyId.Trim(),
+                DisplayName: request.DisplayName.Trim(),
+                ConnectionType: ProviderRoutingMapper.ParseEnum(request.ConnectionType, ProviderConnectionType.DataVendor),
+                ConnectionMode: ProviderRoutingMapper.ParseEnum(request.ConnectionMode, ProviderConnectionMode.ReadOnly),
+                Enabled: request.Enabled,
+                CredentialReference: request.CredentialReference,
+                InstitutionId: request.InstitutionId,
+                ExternalAccountId: request.ExternalAccountId,
+                Scope: ProviderRoutingMapper.ToConnectionScope(request.Scope),
+                Tags: request.Tags,
+                Description: request.Description,
+                ProductionReady: request.ProductionReady,
+                TenantId: tenantId,
+                CredentialEnvironment: environment);
+
+            if (existingIndex >= 0)
+                connections[existingIndex] = next;
+            else
+                connections.Add(next);
+
+            return (cfg with
+            {
+                ProviderConnections = section with
+                {
+                    Connections = connections.ToArray()
+                }
+            }, ProviderRoutingMapper.ToDto(next));
+        }, ct).ConfigureAwait(false);
     }
 
     public Task<bool> DeleteAsync(string connectionId, CancellationToken ct = default)
@@ -151,36 +151,36 @@ public sealed class ProviderConnectionService
 
     private async Task<bool> DeleteInternalAsync(string connectionId, string? tenantId, CancellationToken ct)
     {
-        var cfg = _store.LoadRequired();
-        var section = ProviderRoutingConfigExtensions.GetSection(cfg);
-        var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
-        if (connections.Any(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(c.TenantId, tenantId, StringComparison.Ordinal)))
-            throw new InvalidOperationException("Connection ownership does not match the authorized tenant.");
-        if (connections.Count(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 1)
-            throw new InvalidOperationException("Connection ownership is ambiguous.");
-        var removed = connections.RemoveAll(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 0;
-        if (!removed)
-            return false;
-
-        var bindings = (section.Bindings ?? Array.Empty<ProviderBindingConfig>())
-            .Where(b => !string.Equals(b.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        var certifications = (section.Certifications ?? Array.Empty<ProviderCertificationConfig>())
-            .Where(c => !string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        await _store.SaveAsync(cfg with
+        return await _store.UpdateRequiredAsync(cfg =>
         {
-            ProviderConnections = section with
-            {
-                Connections = connections.ToArray(),
-                Bindings = bindings,
-                Certifications = certifications
-            }
-        }, ct).ConfigureAwait(false);
+            var section = ProviderRoutingConfigExtensions.GetSection(cfg);
+            var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
+            if (connections.Any(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(c.TenantId, tenantId, StringComparison.Ordinal)))
+                throw new InvalidOperationException("Connection ownership does not match the authorized tenant.");
+            if (connections.Count(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 1)
+                throw new InvalidOperationException("Connection ownership is ambiguous.");
+            var removed = connections.RemoveAll(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 0;
+            if (!removed)
+                return (cfg, false);
 
-        return true;
+            var bindings = (section.Bindings ?? Array.Empty<ProviderBindingConfig>())
+                .Where(b => !string.Equals(b.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            var certifications = (section.Certifications ?? Array.Empty<ProviderCertificationConfig>())
+                .Where(c => !string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            return (cfg with
+            {
+                ProviderConnections = section with
+                {
+                    Connections = connections.ToArray(),
+                    Bindings = bindings,
+                    Certifications = certifications
+                }
+            }, true);
+        }, ct).ConfigureAwait(false);
     }
 }

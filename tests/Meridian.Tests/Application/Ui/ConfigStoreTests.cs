@@ -13,6 +13,65 @@ public sealed class ConfigStoreTests : IDisposable
     private readonly Func<string> _originalPathResolver = ConfigStore.DefaultPathResolver;
     private readonly List<string> _tempDirectories = [];
 
+    [Fact]
+    public async Task ConcurrentConnectionMutations_PreserveEveryOwnedConnectionAcrossStoreInstances()
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, "{}");
+        await Task.WhenAll(Enumerable.Range(0, 24).Select(index => Task.Run(async () =>
+        {
+            var service = new ProviderConnectionService(new ConfigStore(path));
+            await service.UpsertForTenantAsync(new CreateProviderConnectionRequest(
+                $"owned-{index}", "alpaca", $"Owned {index}", ExternalAccountId: $"account-{index}"), "tenant-a", "paper");
+        })));
+        var rows = await new ProviderConnectionService(new ConfigStore(path)).GetConnectionsForTenantAsync("tenant-a");
+        rows.Select(row => row.ConnectionId).Should().BeEquivalentTo(Enumerable.Range(0, 24).Select(index => $"owned-{index}"));
+        await Task.WhenAll(Enumerable.Range(0, 12).Select(index => Task.Run(() =>
+            new ProviderConnectionService(new ConfigStore(path)).DeleteForTenantAsync($"owned-{index}", "tenant-a"))));
+        rows = await new ProviderConnectionService(new ConfigStore(path)).GetConnectionsForTenantAsync("tenant-a");
+        rows.Select(row => row.ConnectionId).Should().BeEquivalentTo(Enumerable.Range(12, 12).Select(index => $"owned-{index}"));
+    }
+
+    [Fact]
+    public async Task ConnectionMutation_RechecksOwnershipAfterWaitingForConfigurationWriter()
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, "{}");
+        var service = new ProviderConnectionService(new ConfigStore(path));
+        await service.UpsertForTenantAsync(new CreateProviderConnectionRequest("owned", "alpaca", "Original", ExternalAccountId: "account-a"), "tenant-a", "paper");
+        Task<bool> pending;
+        string changed;
+        using (var lease = new FileStream(path + ".lock", FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            pending = service.DeleteForTenantAsync("owned", "tenant-a");
+            pending.IsCompleted.Should().BeFalse();
+            changed = (await File.ReadAllTextAsync(path)).Replace("tenant-a", "tenant-b", StringComparison.Ordinal);
+            await File.WriteAllTextAsync(path, changed);
+        }
+        await Assert.ThrowsAsync<InvalidOperationException>(() => pending);
+        (await File.ReadAllTextAsync(path)).Should().Be(changed);
+    }
+
+    [Fact]
+    public async Task CancelledConfigurationWriter_DoesNotChangeStateAndAllowsRetry()
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, "{}");
+        var service = new ProviderConnectionService(new ConfigStore(path));
+        var request = new CreateProviderConnectionRequest("owned", "alpaca", "Owned", ExternalAccountId: "account-a");
+        using (var lease = new FileStream(path + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+        using (var cancellation = new CancellationTokenSource())
+        {
+            var pending = service.UpsertForTenantAsync(request, "tenant-a", "paper", cancellation.Token);
+            pending.IsCompleted.Should().BeFalse();
+            cancellation.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
+            (await File.ReadAllTextAsync(path)).Should().Be("{}");
+        }
+        await service.UpsertForTenantAsync(request, "tenant-a", "paper");
+        (await service.GetConnectionsForTenantAsync("tenant-a")).Should().ContainSingle();
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("{")]

@@ -22,6 +22,12 @@ Duplicate connection IDs, including case variants, cannot establish credential o
 omits ambiguous records; scoped setup, scope resolution and connection mutations refuse them.
 Connection upsert and deletion use `ConfigStore.LoadRequired` so missing, corrupt or JSON-null
 configuration cannot be replaced by an empty default ownership model. Failed reads preserve the file.
+Connection upsert and deletion use `ConfigStore.UpdateRequiredAsync` to hold a shared sidecar file
+lock across the required read, ownership validation and atomic write. Separate store instances cannot
+lose each other's connection additions or deletions. Waiting operations honor cancellation and re-read
+ownership after acquiring the lock. Whole-configuration saves and capability override writes take the
+same lock; callers that prepare whole-configuration snapshots before acquisition still need conversion
+to transactional updates to prevent stale snapshot replacement. External editors do not honor this lock.
 Provider setup performs this strict read before credential persistence and returns a fixed failure
 without creating a vault when required configuration is unreadable.
 
