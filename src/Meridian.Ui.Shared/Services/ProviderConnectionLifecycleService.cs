@@ -192,24 +192,15 @@ public sealed class ProviderConnectionLifecycleService
                 result.Warnings);
         }
 
-        var verifiedAt = DateTimeOffset.UtcNow;
-        await _credentialStore.RecordVerificationAsync(
-            new ProviderCredentialVerificationUpdate(
-                descriptor.ProviderId,
-                Success: true,
-                VerifiedAt: verifiedAt,
-                Actor: actor ?? "provider-connection-lifecycle"),
-            ct).ConfigureAwait(false);
-
         return new ProviderCredentialVerificationResultDto(
             descriptor.ProviderId,
-            Success: true,
-            ProviderVerificationStateDto.Verified,
-            ProviderContinuityHealthDto.Healthy,
-            LastVerifiedAt: verifiedAt,
-            LastError: null,
+            Success: false,
+            ProviderVerificationStateDto.NotVerified,
+            ProviderContinuityHealthDto.Blocked,
+            LastVerifiedAt: null,
+            LastError: "Live credential verification is not available for this provider.",
             ExternalAccountId: null,
-            Warnings: ["Credential presence was verified locally; provider-specific live connectivity checks can be added behind this shared route."]);
+            Warnings: ["Credential presence does not establish provider connectivity or account ownership."]);
     }
 
     public async Task<ProviderCredentialMutationResultDto> DeleteCredentialsAsync(

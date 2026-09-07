@@ -286,19 +286,42 @@ public sealed class ProviderConnectionEndpointsTests
     [Fact]
     public async Task CredentialMutationAudit_UsesAuthenticatedActorForSaveVerifyAndDelete()
     {
-        await using var app = await CreateAppAsync(_ => { });
+        using var env = AlpacaEnvScope.Clear();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(_ => { }, new StringContent("{\"account_number\":\"audit-account\"}", Encoding.UTF8, "application/json")))));
         var client = app.GetTestClient();
-        var save = await client.PutAsync("/api/providers/polygon/credentials", new StringContent(
-            """{"credentials":{"apiKey":"audit-test-key"},"requestedBy":"forged-operator"}""", Encoding.UTF8, "application/json"));
+        var save = await client.PutAsync("/api/providers/alpaca/credentials", new StringContent(
+            """{"credentials":{"KeyId":"audit-test-key","SecretKey":"audit-test-secret"},"environment":"paper","requestedBy":"forged-operator"}""", Encoding.UTF8, "application/json"));
         save.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await client.PostAsync("/api/providers/polygon/verify", null)).StatusCode.Should().Be(HttpStatusCode.OK);
-        (await client.DeleteAsync("/api/providers/polygon/credentials")).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.PostAsync("/api/providers/alpaca/verify", null)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.DeleteAsync("/api/providers/alpaca/credentials")).StatusCode.Should().Be(HttpStatusCode.OK);
         var store = app.Services.GetRequiredService<IProviderCredentialStore>();
         var auditPath = Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl");
         var entries = (await File.ReadAllLinesAsync(auditPath)).Select(line => JsonSerializer.Deserialize<JsonElement>(line)).ToArray();
         entries.Should().HaveCount(3);
         entries.Should().OnlyContain(entry => entry.GetProperty("actor").GetString() == "provider-ops");
         entries.Select(entry => entry.GetProperty("action").GetString()).Should().Equal("save", "verify-success", "delete");
+    }
+
+    [Theory]
+    [InlineData("polygon")]
+    [InlineData("tiingo")]
+    [InlineData("finnhub")]
+    public async Task CredentialPresence_DoesNotCreateVerificationEvidence(string providerId)
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        var client = app.GetTestClient();
+        (await client.PutAsync($"/api/providers/{providerId}/credentials", JsonContent(new { credentials = new { ApiKey = "presence-only-key" } })))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var before = await File.ReadAllTextAsync(store.VaultPath);
+        var result = await ReadAsync<ProviderCredentialVerificationResultDto>(await client.PostAsync($"/api/providers/{providerId}/verify", null));
+        result.Success.Should().BeFalse();
+        result.VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+        result.LastVerifiedAt.Should().BeNull();
+        result.ExternalAccountId.Should().BeNull();
+        (await store.ReadForProviderAsync(providerId))!.LastVerifiedAt.Should().BeNull();
+        (await File.ReadAllTextAsync(store.VaultPath)).Should().Be(before);
     }
 
     [Fact]

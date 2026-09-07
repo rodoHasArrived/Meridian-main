@@ -13,6 +13,8 @@ last_reviewed: 2026-08-30
 
 Scoped credential lifecycle requests require exactly one retained connection ID match. Duplicate IDs
 are refused before status, mutation or verification can select an account; discovery also omits them.
+Providers without an available live verifier return NotVerified/Blocked even when credential fields
+are complete. Presence checks no longer create verified timestamps or successful-verification records.
 
 Provider-routing connection discovery, bindings and trust summaries filter by retained ownership
 using the authenticated workstation tenant. Binding failover IDs are limited to the same visible
