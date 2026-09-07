@@ -23,6 +23,8 @@ Legacy environment values are not automatically erased or migrated. Server verif
 still bound the assurance available from these operations. Credential rows represent explicit owned
 connections with account and environment labels. Status, save, removal and verification carry that
 connection ID; incomplete or ambiguous ownership cannot become an editable row.
+Credential commands expose asynchronous completion. Desktop regression tests exercise late status
+responses, selected-account saves, blank secret editors and loss of editable rows after refused discovery.
 
 Credential status in the settings shell, settings vault, credential management page and add-provider
 wizard is loaded asynchronously from the shared authenticated API service. Failed reads stay

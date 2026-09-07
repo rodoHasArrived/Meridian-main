@@ -70,6 +70,7 @@ public sealed class CredentialFieldViewModel : BindableBase
 public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 {
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly SettingsConfigurationService _settingsService;
 
     private bool _isBusy;
     private string _statusMessage = string.Empty;
@@ -112,9 +113,9 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
                 IsEditPanelVisible = false;
                 IsTestResultVisible = false;
                 ((RelayCommand)EditCredentialCommand).NotifyCanExecuteChanged();
-                ((RelayCommand)RemoveCredentialCommand).NotifyCanExecuteChanged();
-                ((RelayCommand)TestCredentialCommand).NotifyCanExecuteChanged();
-                _ = LoadSelectedStatusAsync(value);
+                ((AsyncRelayCommand)RemoveCredentialCommand).NotifyCanExecuteChanged();
+                ((AsyncRelayCommand)TestCredentialCommand).NotifyCanExecuteChanged();
+                SelectionStatusLoad = LoadSelectedStatusAsync(value);
             }
         }
     }
@@ -159,17 +160,25 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
     public CredentialManagementViewModel(
         WpfServices.CredentialService credentialService,
         WpfServices.NotificationService notificationService)
+        : this(SettingsConfigurationService.Instance, notificationService)
     {
         ArgumentNullException.ThrowIfNull(credentialService);
-        _notificationService = notificationService;
+    }
+
+    internal CredentialManagementViewModel(SettingsConfigurationService settingsService, WpfServices.NotificationService notificationService)
+    {
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
 
         EditCredentialCommand = new RelayCommand(BeginEdit, () => SelectedCredential != null);
-        RemoveCredentialCommand = new RelayCommand(() => _ = RemoveCredentialAsync(), () => SelectedCredential != null);
-        TestCredentialCommand = new RelayCommand(() => _ = TestSelectedCredentialAsync(), () => SelectedCredential != null);
-        TestAllCredentialsCommand = new RelayCommand(() => _ = TestAllCredentialsAsync());
-        SaveCredentialCommand = new RelayCommand(() => _ = SaveCredentialAsync());
+        RemoveCredentialCommand = new AsyncRelayCommand(RemoveCredentialAsync, () => SelectedCredential != null);
+        TestCredentialCommand = new AsyncRelayCommand(TestSelectedCredentialAsync, () => SelectedCredential != null);
+        TestAllCredentialsCommand = new AsyncRelayCommand(TestAllCredentialsAsync);
+        SaveCredentialCommand = new AsyncRelayCommand(SaveCredentialAsync);
         CancelEditCommand = new RelayCommand(CancelEdit);
     }
+
+    internal Task SelectionStatusLoad { get; private set; } = Task.CompletedTask;
 
     private int _credentialLoadVersion;
     private int _selectedStatusVersion;
@@ -182,10 +191,10 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         StatusMessage = "Loading owned connections…";
         try
         {
-            var connections = await SettingsConfigurationService.Instance.GetOwnedCredentialConnectionsAsync();
+            var connections = await _settingsService.GetOwnedCredentialConnectionsAsync();
             if (version != _credentialLoadVersion)
                 return;
-            var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
+            var catalog = _settingsService.GetProviderCatalog();
             foreach (var connection in connections)
             {
                 var provider = catalog.FirstOrDefault(item => string.Equals(item.Id, connection.ProviderFamilyId, StringComparison.OrdinalIgnoreCase));
@@ -220,7 +229,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         if (selected is null)
             return;
         var version = _credentialLoadVersion;
-        var statuses = await SettingsConfigurationService.Instance.GetProviderCredentialStatusesAsync(connectionId: selected.ConnectionId);
+        var statuses = await _settingsService.GetProviderCredentialStatusesAsync(connectionId: selected.ConnectionId);
         if (version != _credentialLoadVersion || statusVersion != _selectedStatusVersion || !ReferenceEquals(SelectedCredential, selected) || selected.IsTesting)
             return;
         var status = statuses.FirstOrDefault(item => item.ProviderId == selected.ProviderId);
@@ -236,7 +245,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         EditFields.Clear();
         IsTestResultVisible = false;
 
-        var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
+        var catalog = _settingsService.GetProviderCatalog();
         var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
         if (provider is null)
             return;
@@ -291,7 +300,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         IsBusy = true;
         try
         {
-            await SettingsConfigurationService.Instance.SaveProviderCredentialsAsync(selected.ProviderId, fields, selected.ConnectionId);
+            await _settingsService.SaveProviderCredentialsAsync(selected.ProviderId, fields, selected.ConnectionId);
             IsEditPanelVisible = false;
             EditFields.Clear();
             await LoadCredentialsAsync();
@@ -324,7 +333,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         IsBusy = true;
         try
         {
-            await SettingsConfigurationService.Instance.RemoveProviderCredentialsAsync(selected.ProviderId, selected.ConnectionId);
+            await _settingsService.RemoveProviderCredentialsAsync(selected.ProviderId, selected.ConnectionId);
             IsEditPanelVisible = false;
             IsTestResultVisible = false;
             EditFields.Clear();
@@ -356,7 +365,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         var success = false;
         try
         {
-            success = await SettingsConfigurationService.Instance.VerifyProviderCredentialsAsync(selected.ProviderId, selected.ConnectionId);
+            success = await _settingsService.VerifyProviderCredentialsAsync(selected.ProviderId, selected.ConnectionId);
         }
         catch (Exception)
         {
