@@ -9109,6 +9109,7 @@ Meridian-main
 │   │   │   │   ├── ConfigurationUnificationTests.cs
 │   │   │   │   ├── ConfigValidatorCliTests.cs
 │   │   │   │   ├── OAuthTokenPersistencePermissionTests.cs
+│   │   │   │   ├── OAuthTokenRefreshFailureTests.cs
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
 │   │   │   │   └── ProviderCredentialStoreTests.cs
 │   │   │   ├── Coordination
@@ -10563,6 +10564,7 @@ Meridian-main
 │   │   │   ├── ChartingPageViewModelTests.cs
 │   │   │   ├── ClusterStatusViewModelTests.cs
 │   │   │   ├── CollectionSessionViewModelTests.cs
+│   │   │   ├── CredentialManagementViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs
 │   │   │   ├── DataExportViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs

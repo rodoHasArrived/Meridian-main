@@ -13,6 +13,10 @@ last_reviewed: 2026-07-25
 
 ## Purpose
 
+Provider connection configuration retains optional `TenantId` and `CredentialEnvironment` ownership
+fields. Missing fields identify legacy, unassigned connections; callers must not infer an owner from
+the current session. Application services enforce ownership before scoped credential resolution.
+
 Core contains cross-cutting primitives used throughout Meridian: configuration, validation,
 exceptions, logging, monitoring, scheduling, serialization, redaction, masking, and pipeline
 helpers.

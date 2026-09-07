@@ -4,6 +4,7 @@ using Meridian.DataIntegration.Credentials;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
 using Meridian.ProviderSdk;
+using System.Text.Json;
 
 namespace Meridian.Application.ProviderRouting;
 
@@ -25,7 +26,43 @@ public sealed class ProviderSetupService
         _setupRegistry = setupRegistry;
     }
 
-    public async Task<ProviderSetupResult> ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default)
+    /// <summary>Configures credentials for an existing connection whose tenant ownership is already retained.</summary>
+    public async Task<ProviderSetupResult> ConfigureForConnectionAsync(ProviderSetupRequest request, string connectionId, string tenantId, string actor, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+        var matches = (_store.Load().ProviderConnections?.Connections ?? [])
+            .Where(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var connection = matches.Length == 1 ? matches[0] : null;
+        if (connection is null || !string.Equals(connection.TenantId, tenantId, StringComparison.Ordinal) ||
+            string.IsNullOrWhiteSpace(connection.ExternalAccountId) || string.IsNullOrWhiteSpace(connection.CredentialEnvironment))
+            throw new UnauthorizedAccessException("Provider setup connection ownership could not be established.");
+        var handler = _setupRegistry.Find(request.Kind ?? string.Empty);
+        if (handler is null || !string.Equals(handler.Descriptor.ProviderId, connection.ProviderFamilyId, StringComparison.OrdinalIgnoreCase))
+            throw new UnauthorizedAccessException("Provider setup connection ownership could not be established.");
+        var descriptor = ProviderCredentialCatalog.Find(handler.Descriptor.ProviderId)
+            ?? throw new InvalidOperationException("Provider credential catalog entry is unavailable.");
+        if (request.Environment is not null && !string.Equals(descriptor.NormalizeEnvironment(request.Environment), connection.CredentialEnvironment, StringComparison.Ordinal))
+            return Failure(connection.DisplayName, "Provider setup environment does not match retained ownership.");
+        var validation = handler.Validate(new ProviderSetupContext(descriptor.ProviderId, connection.DisplayName,
+            NormalizeCapabilities(request.Capabilities), connection.CredentialEnvironment, request.ApiKey, request.ApiSecret, request.Endpoint));
+        if (!validation.Success)
+            return Failure(connection.DisplayName, validation.Error ?? "Provider setup validation failed.");
+        var scopedStore = _credentialStore as IScopedProviderCredentialStore
+            ?? throw new InvalidOperationException("Credential vault does not support scoped ownership.");
+        var scope = new ProviderCredentialScope(tenantId, connection.ConnectionId, connection.ExternalAccountId, connection.CredentialEnvironment);
+        if (validation.Credentials is { Count: > 0 } && descriptor.RequiresCredentials)
+            await scopedStore.SaveScopedAsync(new ProviderCredentialSaveRequest(descriptor.ProviderId, validation.Credentials,
+                scope.Environment, actor), scope, ct).ConfigureAwait(false);
+        var status = await scopedStore.GetScopedStatusAsync(descriptor.ProviderId, scope, ct).ConfigureAwait(false);
+        return new ProviderSetupResult(true, connection.ConnectionId, connection.DisplayName,
+            "Connection credentials were configured; verify the retained account before use.", null,
+            connection.ConnectionId, [], status.CredentialState, status.CredentialSource, connection.CredentialReference,
+            scope.Environment, validation.Warnings?.ToArray() ?? []);
+    }
+
+    public async Task<ProviderSetupResult> ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default, string? actor = null)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -63,6 +100,15 @@ public sealed class ProviderSetupService
             return Failure(displayName, validation.Error ?? "Provider setup validation failed.");
         }
 
+        try
+        {
+            _ = _store.LoadRequired();
+        }
+        catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException or JsonException)
+        {
+            return Failure(displayName, "Provider setup requires readable existing configuration.");
+        }
+
         var environment = validation.NormalizedEnvironment ?? descriptor.NormalizeEnvironment(request.Environment);
         var referenceEnvironment = string.IsNullOrWhiteSpace(environment) ? "default" : environment;
         var credentialReference = descriptor.RequiresCredentials
@@ -86,7 +132,7 @@ public sealed class ProviderSetupService
                         descriptor.ProviderId,
                         submittedCredentials,
                         string.IsNullOrWhiteSpace(environment) ? null : environment,
-                        Actor: SetupActor,
+                        Actor: actor ?? SetupActor,
                         Metadata: new Dictionary<string, string>
                         {
                             ["setupSource"] = "legacy-provider-configure"
@@ -131,88 +177,90 @@ public sealed class ProviderSetupService
             return Failure(displayName, $"Provider '{request.Kind}' is not yet supported by the local data-source configuration model.");
         }
 
-        var cfg = _store.Load();
-        var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-        var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
-        var section = ProviderRoutingConfigExtensions.GetSection(cfg);
-        var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
-        var bindings = (section.Bindings ?? Array.Empty<ProviderBindingConfig>()).ToList();
-        var providerId = BuildProviderId(descriptor.ProviderId, sources, connections);
-        var sourcePriority = sources.Count == 0 ? 10 : Math.Max(10, sources.Count * 10 + 10);
-
-        sources.Add(new DataSourceConfig(
-            Id: providerId,
-            Name: displayName,
-            Provider: sourceKind.Value,
-            Enabled: true,
-            Type: sourceType,
-            Priority: sourcePriority,
-            Alpaca: sourceKind.Value == DataSourceKind.Alpaca
-                ? new AlpacaOptions(UseSandbox: IsSandboxEnvironment(credentialStatus.Environment))
-                : null,
-            Polygon: sourceKind.Value == DataSourceKind.Polygon
-                ? new PolygonOptions()
-                : null,
-            IB: sourceKind.Value == DataSourceKind.IB
-                ? BuildInteractiveBrokersOptions(request.Endpoint)
-                : null,
-            Description: $"Configured from the provider setup form for {displayName}.",
-            Tags: normalizedCapabilities));
-
-        var connection = new ProviderConnectionConfig(
-            ConnectionId: providerId,
-            ProviderFamilyId: descriptor.ProviderId,
-            DisplayName: displayName,
-            ConnectionType: ProviderConnectionType.DataVendor,
-            ConnectionMode: execution.ConnectionMode,
-            Enabled: execution.EnableBindings,
-            CredentialReference: credentialReference,
-            Tags: normalizedCapabilities,
-            Description: $"Configured from the provider setup form for {displayName}.",
-            ProductionReady: false);
-
-        var existingConnectionIndex = connections.FindIndex(c =>
-            string.Equals(c.ConnectionId, providerId, StringComparison.OrdinalIgnoreCase));
-        if (existingConnectionIndex >= 0)
+        return await _store.UpdateRequiredAsync(cfg =>
         {
-            connections[existingConnectionIndex] = connection;
-        }
-        else
-        {
-            connections.Add(connection);
-        }
+            var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+            var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
+            var section = ProviderRoutingConfigExtensions.GetSection(cfg);
+            var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
+            var bindings = (section.Bindings ?? Array.Empty<ProviderBindingConfig>()).ToList();
+            var providerId = BuildProviderId(descriptor.ProviderId, sources, connections);
+            var sourcePriority = sources.Count == 0 ? 10 : Math.Max(10, sources.Count * 10 + 10);
 
-        var seededBindingIds = SeedBindings(providerId, normalizedCapabilities, sourceType, sourcePriority, execution.EnableBindings, bindings);
-        var nextDataSources = dataSources with
-        {
-            Sources = sources.ToArray(),
-            DefaultRealTimeSourceId = dataSources.DefaultRealTimeSourceId ?? (sourceType is DataSourceType.RealTime or DataSourceType.Both ? providerId : null),
-            DefaultHistoricalSourceId = dataSources.DefaultHistoricalSourceId ?? (sourceType is DataSourceType.Historical or DataSourceType.Both ? providerId : null)
-        };
+            sources.Add(new DataSourceConfig(
+                Id: providerId,
+                Name: displayName,
+                Provider: sourceKind.Value,
+                Enabled: true,
+                Type: sourceType,
+                Priority: sourcePriority,
+                Alpaca: sourceKind.Value == DataSourceKind.Alpaca
+                    ? new AlpacaOptions(UseSandbox: IsSandboxEnvironment(credentialStatus.Environment))
+                    : null,
+                Polygon: sourceKind.Value == DataSourceKind.Polygon
+                    ? new PolygonOptions()
+                    : null,
+                IB: sourceKind.Value == DataSourceKind.IB
+                    ? BuildInteractiveBrokersOptions(request.Endpoint)
+                    : null,
+                Description: $"Configured from the provider setup form for {displayName}.",
+                Tags: normalizedCapabilities));
 
-        await _store.SaveAsync(cfg with
-        {
-            DataSources = nextDataSources,
-            ProviderConnections = section with
+            var connection = new ProviderConnectionConfig(
+                ConnectionId: providerId,
+                ProviderFamilyId: descriptor.ProviderId,
+                DisplayName: displayName,
+                ConnectionType: ProviderConnectionType.DataVendor,
+                ConnectionMode: execution.ConnectionMode,
+                Enabled: execution.EnableBindings,
+                CredentialReference: credentialReference,
+                Tags: normalizedCapabilities,
+                Description: $"Configured from the provider setup form for {displayName}.",
+                ProductionReady: false);
+
+            var existingConnectionIndex = connections.FindIndex(c =>
+                string.Equals(c.ConnectionId, providerId, StringComparison.OrdinalIgnoreCase));
+            if (existingConnectionIndex >= 0)
             {
-                Connections = connections.ToArray(),
-                Bindings = bindings.ToArray()
+                connections[existingConnectionIndex] = connection;
             }
-        }, ct).ConfigureAwait(false);
+            else
+            {
+                connections.Add(connection);
+            }
 
-        return new ProviderSetupResult(
-            Success: true,
-            ProviderId: providerId,
-            ProviderName: displayName,
-            Message: $"{displayName} was configured.",
-            Error: null,
-            ConnectionId: providerId,
-            BindingIds: seededBindingIds,
-            CredentialState: credentialStatus.CredentialState,
-            CredentialSource: credentialStatus.CredentialSource,
-            CredentialReference: credentialReference,
-            Environment: string.IsNullOrWhiteSpace(credentialStatus.Environment) ? null : credentialStatus.Environment,
-            Warnings: warnings.ToArray());
+            var seededBindingIds = SeedBindings(providerId, normalizedCapabilities, sourceType, sourcePriority, execution.EnableBindings, bindings);
+            var nextDataSources = dataSources with
+            {
+                Sources = sources.ToArray(),
+                DefaultRealTimeSourceId = dataSources.DefaultRealTimeSourceId ?? (sourceType is DataSourceType.RealTime or DataSourceType.Both ? providerId : null),
+                DefaultHistoricalSourceId = dataSources.DefaultHistoricalSourceId ?? (sourceType is DataSourceType.Historical or DataSourceType.Both ? providerId : null)
+            };
+
+            var nextConfig = cfg with
+            {
+                DataSources = nextDataSources,
+                ProviderConnections = section with
+                {
+                    Connections = connections.ToArray(),
+                    Bindings = bindings.ToArray()
+                }
+            };
+
+            return (nextConfig, new ProviderSetupResult(
+                Success: true,
+                ProviderId: providerId,
+                ProviderName: displayName,
+                Message: $"{displayName} was configured.",
+                Error: null,
+                ConnectionId: providerId,
+                BindingIds: seededBindingIds,
+                CredentialState: credentialStatus.CredentialState,
+                CredentialSource: credentialStatus.CredentialSource,
+                CredentialReference: credentialReference,
+                Environment: string.IsNullOrWhiteSpace(credentialStatus.Environment) ? null : credentialStatus.Environment,
+                Warnings: warnings.ToArray()));
+        }, ct).ConfigureAwait(false);
     }
 
     private static ProviderSetupResult Failure(string providerName, string error)

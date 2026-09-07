@@ -269,12 +269,30 @@ public static class ProviderEndpoints
             [FromBody] ProviderSetupRequest req,
             [FromServices] ProviderSetupService setupService) =>
         {
-            if (!HasProviderSetupPermission(context, req))
+            if (!HasProviderSetupPermission(context, req) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await setupService.ConfigureAsync(req, context.RequestAborted).ConfigureAwait(false);
+            ProviderSetupResult result;
+            if (context.Request.Query.TryGetValue("connectionId", out var connectionIds))
+            {
+                var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (connectionIds.Count != 1 || string.IsNullOrWhiteSpace(connectionIds[0]) || !tenant.HasTenantScope)
+                    return EndpointHelpers.Forbidden();
+                try
+                {
+                    result = await setupService.ConfigureForConnectionAsync(req, connectionIds[0]!, tenant.TenantId!, actor, context.RequestAborted).ConfigureAwait(false);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+            }
+            else
+            {
+                result = await setupService.ConfigureAsync(req, context.RequestAborted, actor).ConfigureAwait(false);
+            }
             return result.Success
                 ? Results.Json(result, jsonOptions)
                 : Results.BadRequest(result);

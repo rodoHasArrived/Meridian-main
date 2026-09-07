@@ -258,6 +258,17 @@ public sealed class ApiClientService : IDisposable
     }
 
     /// <summary>
+    /// Sends a PUT request using the current authenticated session and CSRF protection.
+    /// </summary>
+    public async Task<ApiResponse<T>> PutWithResponseAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
+    {
+        using var lease = AcquireSession();
+        var url = BuildUrl(lease.Session.BaseUrl, endpoint);
+        return await SendWithResponseAsync<T>(() => lease.Session.ApiClient.SendAsync(
+            CreateMutationRequest(lease.Session.BaseUrl, HttpMethod.Put, url, CreateJsonContent(body)), ct), ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Sends a DELETE request and returns the API response.
     /// </summary>
     public async Task<ApiResponse<T>> DeleteWithResponseAsync<T>(

@@ -7,6 +7,7 @@ using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
+using Meridian.Core.Config;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.ProviderSdk;
@@ -28,6 +29,101 @@ public sealed class ProviderRoutingEndpointsTests
     {
         PropertyNameCaseInsensitive = true
     };
+
+    [Fact]
+    public async Task TenantConnectionOwnership_ReloadsThroughSharedContractsAndSelectsOnlyItsCredentials()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "connection-ownership", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var path = Path.Combine(root, "appsettings.json");
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new { dataRoot = root }));
+            var service = new ProviderConnectionService(new ApplicationConfigStore(path));
+            var first = new CreateProviderConnectionRequest("connection-a", "alpaca", "First", ExternalAccountId: "account-a");
+            var second = new CreateProviderConnectionRequest("connection-b", "alpaca", "Second", ExternalAccountId: "account-b");
+            var created = await service.UpsertForTenantAsync(first, "tenant-a", "paper");
+            await service.UpsertForTenantAsync(second, "tenant-b", "live");
+            created.TenantId.Should().Be("tenant-a");
+            created.CredentialEnvironment.Should().Be("paper");
+            var reopened = new ProviderConnectionService(new ApplicationConfigStore(path));
+            var scope = await reopened.GetCredentialScopeForTenantAsync("connection-a", "tenant-a");
+            scope.Should().Be(new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "paper"));
+            (await reopened.GetCredentialScopeForTenantAsync("connection-a", "tenant-b")).Should().BeNull();
+
+            var vault = new FileProviderCredentialStore(root);
+            await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("alpaca",
+                new Dictionary<string, string?> { ["KeyId"] = "owned-key", ["SecretKey"] = "owned-secret" }, "paper"), scope!);
+            var otherScope = await reopened.GetCredentialScopeForTenantAsync("connection-b", "tenant-b");
+            (await vault.ReadScopedAsync("alpaca", otherScope!)).Should().BeNull();
+            (await vault.ReadScopedAsync("alpaca", scope!))!.Get("KeyId").Should().Be("owned-key");
+            var config = new ApplicationConfigStore(path).Load();
+            var dto = JsonSerializer.Deserialize<ProviderConnectionsConfigDto>(JsonSerializer.Serialize(config.ProviderConnections), JsonOptions)!;
+            dto.Connections!.Single(c => c.ConnectionId == "connection-a").TenantId.Should().Be("tenant-a");
+            dto.Connections!.Single(c => c.ConnectionId == "connection-b").CredentialEnvironment.Should().Be("live");
+            var response = Deserialize<ProviderConnectionDto>(JsonSerializer.Serialize(created));
+            response.TenantId.Should().Be("tenant-a");
+            response.CredentialEnvironment.Should().Be("paper");
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public async Task TenantConnectionOwnership_RejectsTakeoverReassignmentAndLegacyMutation()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "connection-ownership", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var path = Path.Combine(root, "appsettings.json");
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new { dataRoot = root }));
+            var service = new ProviderConnectionService(new ApplicationConfigStore(path));
+            var request = new CreateProviderConnectionRequest("owned", "alpaca", "Owned", ExternalAccountId: "account-a");
+            await service.UpsertForTenantAsync(request, "tenant-a", "paper");
+            var retained = await File.ReadAllTextAsync(path);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request, "tenant-b", "paper"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request with { ConnectionId = " owned " }, "tenant-b", "paper"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request with { ExternalAccountId = "account-b" }, "tenant-a", "paper"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request, "tenant-a", "live"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request with { CredentialReference = "vault:alpaca/paper" }, "tenant-a", "paper"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertAsync(request));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync("owned"));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteForTenantAsync("owned", "tenant-b"));
+            (await File.ReadAllTextAsync(path)).Should().Be(retained);
+
+            var legacy = request with { ConnectionId = "legacy" };
+            await service.UpsertAsync(legacy);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(legacy, "tenant-a", "paper"));
+            (await service.GetCredentialScopeForTenantAsync("legacy", "tenant-a")).Should().BeNull();
+            (await service.DeleteForTenantAsync("owned", "tenant-a")).Should().BeTrue();
+            (await service.GetConnectionAsync("legacy")).Should().NotBeNull();
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public async Task ConfigureProvider_PreservesConnectionCommittedWhileSetupWaitsForConfigurationLock()
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var service = app.Services.GetRequiredService<ProviderSetupService>();
+        Task<ProviderSetupResult> pending;
+        using (var lease = new FileStream(store.ConfigPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+        {
+            pending = service.ConfigureAsync(new ProviderSetupRequest("alpaca", "Setup", null, null, null, ["streaming"], "paper"));
+            pending.IsCompleted.Should().BeFalse();
+            var current = store.LoadRequired();
+            var section = ProviderRoutingConfigExtensions.GetSection(current);
+            var owned = new ProviderConnectionConfig("retained-owned", "alpaca", "Owned", ExternalAccountId: "account-a", TenantId: "tenant-test", CredentialEnvironment: "paper");
+            var changed = current with { ProviderConnections = section with { Connections = [.. section.Connections ?? [], owned] } };
+            await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(changed, AppConfigJsonOptions.Write));
+        }
+        (await pending).Success.Should().BeTrue();
+        var final = store.LoadRequired();
+        final.ProviderConnections!.Connections.Should().Contain(row => row.ConnectionId == "retained-owned" && row.TenantId == "tenant-test" && row.ExternalAccountId == "account-a");
+        final.ProviderConnections.Connections.Should().Contain(row => row.ConnectionId == "alpaca");
+        final.DataSources!.Sources.Should().Contain(row => row.Id == "alpaca");
+    }
 
     [Fact]
     public async Task ConfigureProvider_StoresAlpacaCredentialsInEncryptedStoreAndLeavesConfigSecretFree()
@@ -182,8 +278,80 @@ public sealed class ProviderRoutingEndpointsTests
         vaultJson.Should().NotContain(secret);
     }
 
+    [Theory]
+    [InlineData(UiApiRoutes.ProviderRoutingConnections)]
+    [InlineData(UiApiRoutes.ProviderRoutingBindings)]
+    [InlineData(UiApiRoutes.ProviderRoutingTrustSnapshots)]
+    public async Task RoutingDiscovery_ExcludesForeignAndUnassignedConnections(string route)
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var config = store.Load();
+        config = config with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(
+            Connections: [
+                new("owned", "yahoo", "Owned", TenantId: "tenant-test", ExternalAccountId: "account-owned", CredentialEnvironment: "paper"),
+                new("foreign", "yahoo", "Foreign", TenantId: "tenant-other", ExternalAccountId: "account-foreign", CredentialEnvironment: "paper"),
+                new("unassigned", "yahoo", "Unassigned"),
+                new("ambiguous", "yahoo", "Ambiguous", TenantId: "tenant-test"),
+                new("AMBIGUOUS", "yahoo", "Ambiguous other", TenantId: "tenant-other")],
+            Bindings: [
+                new("owned-binding", ProviderCapabilityKind.HistoricalBars, "owned", FailoverConnectionIds: ["foreign", "unassigned"]),
+                new("foreign-binding", ProviderCapabilityKind.HistoricalBars, "foreign"),
+                new("unassigned-binding", ProviderCapabilityKind.HistoricalBars, "unassigned"),
+                new("ambiguous-binding", ProviderCapabilityKind.HistoricalBars, "ambiguous")])
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Tenant-Id", "tenant-other");
+        var response = await client.GetAsync(route + "?tenantId=tenant-other");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("owned").And.NotContain("foreign").And.NotContain("unassigned").And.NotContain("ambiguous");
+        using var document = JsonDocument.Parse(body);
+        document.RootElement.GetArrayLength().Should().Be(1);
+        if (route == UiApiRoutes.ProviderRoutingTrustSnapshots)
+            ((HealthyProviderConnectionHealthSource)app.Services.GetRequiredService<IProviderConnectionHealthSource>())
+                .ConnectionIds.Should().Equal("owned");
+    }
+
+    [Theory]
+    [InlineData("tenant-test", true)]
+    [InlineData("tenant-else", false)]
+    public async Task RoutePreview_FiltersOwnershipBeforeRankingHealthAndFallback(string owner, bool available)
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var config = store.Load() with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(
+            Connections: [new("owned", "yahoo", "Owned", TenantId: owner),
+                new("foreign", "yahoo", "Foreign", TenantId: "tenant-other"),
+                new("legacy", "yahoo", "Legacy")],
+            Bindings: [new("owned-binding", ProviderCapabilityKind.HistoricalBars, "owned", Priority: 100, FailoverConnectionIds: ["foreign", "legacy"]),
+                new("foreign-binding", ProviderCapabilityKind.HistoricalBars, "foreign", Priority: 1),
+                new("legacy-binding", ProviderCapabilityKind.HistoricalBars, "legacy", Priority: 1)])
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderRoutingPreview + "?tenantId=tenant-other",
+            JsonContent(new RoutePreviewRequest(Capability: "HistoricalBars", Symbol: "SPY")));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().NotContain("foreign").And.NotContain("legacy");
+        var preview = Deserialize<RoutePreviewResponse>(body);
+        preview.IsRoutable.Should().Be(available);
+        preview.SelectedConnectionId.Should().Be(available ? "owned" : null);
+        var health = (HealthyProviderConnectionHealthSource)app.Services.GetRequiredService<IProviderConnectionHealthSource>();
+        if (available)
+            health.ConnectionIds.Should().NotBeEmpty().And.OnlyContain(id => id == "owned");
+        else
+            health.ConnectionIds.Should().BeEmpty();
+        app.Services.GetRequiredService<ProviderRoutingService>().GetRouteHistory().Should().BeEmpty();
+    }
+
     [Fact]
-    public async Task ProviderRoutingEndpoints_ReturnConnectionsBindingsAndTrustSnapshotsForSetupConnections()
+    public async Task ProviderRoutingEndpoints_ReturnConnectionsBindingsAndTrustSnapshotsForOwnedSetupConnections()
     {
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
@@ -195,6 +363,23 @@ public sealed class ProviderRoutingEndpointsTests
             capabilities = new[] { "backfill" }
         }));
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Establish explicit retained ownership in this fixture; production never claims legacy connections implicitly.
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var config = store.Load();
+        config = config with
+        {
+            ProviderConnections = config.ProviderConnections! with
+            {
+                Connections = config.ProviderConnections!.Connections!.Select(connection => connection with
+                {
+                    TenantId = "tenant-test",
+                    ExternalAccountId = "yahoo-account",
+                    CredentialEnvironment = "paper"
+                }).ToArray()
+            }
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
 
         var connectionsResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingConnections);
         connectionsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -391,9 +576,128 @@ public sealed class ProviderRoutingEndpointsTests
         stored!.Get("ApiKey").Should().Be("fake-handler-key");
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ConfigureProvider_RequiresAndRetainsAuthenticatedActor(bool includeActor)
+    {
+        await using var app = await CreateAppAsync(includeActor: includeActor);
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderConfigure, JsonContent(new
+        {
+            kind = "alpaca",
+            displayName = "Actor Test",
+            apiKey = "actor-key",
+            apiSecret = "actor-secret",
+            environment = "paper",
+            capabilities = new[] { "streaming" },
+            requestedBy = "forged-operator"
+        }));
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
+        if (!includeActor)
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            File.Exists(store.VaultPath).Should().BeFalse();
+            return;
+        }
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var auditPath = Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl");
+        var audit = JsonSerializer.Deserialize<JsonElement>((await File.ReadAllLinesAsync(auditPath)).Last());
+        audit.GetProperty("actor").GetString().Should().Be("provider-routing-test-operator");
+    }
+
+    [Theory]
+    [InlineData("tenant-test", "paper", true, false)]
+    [InlineData("other-tenant", "paper", false, false)]
+    [InlineData("tenant-test", "live", false, false)]
+    [InlineData("tenant-test", "paper", false, true)]
+    public async Task ConfigureOwnedConnection_PreservesRoutingAndCannotChangeCredentialOwnership(string owner, string requestedEnvironment, bool allowed, bool duplicate)
+    {
+        await using var app = await CreateAppAsync();
+        var configStore = app.Services.GetRequiredService<ApplicationConfigStore>();
+        await app.Services.GetRequiredService<ProviderConnectionService>().UpsertForTenantAsync(
+            new CreateProviderConnectionRequest("existing", "alpaca", "Existing account", ExternalAccountId: "account-a"), owner, "paper");
+        if (duplicate)
+        {
+            var config = configStore.Load();
+            var original = config.ProviderConnections!.Connections!.Single();
+            config = config with
+            {
+                ProviderConnections = config.ProviderConnections with
+                {
+                    Connections = [original, original with { ConnectionId = "EXISTING", ExternalAccountId = "account-b" }]
+                }
+            };
+            await File.WriteAllTextAsync(configStore.ConfigPath, JsonSerializer.Serialize(config));
+        }
+        var retainedConfig = await File.ReadAllTextAsync(configStore.ConfigPath);
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderConfigure + "?connectionId=existing", JsonContent(new
+        {
+            kind = "alpaca",
+            displayName = "Must not create another connection",
+            apiKey = "scoped-setup-key",
+            apiSecret = "scoped-setup-secret",
+            environment = requestedEnvironment,
+            capabilities = new[] { "streaming" }
+        }));
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        (await File.ReadAllTextAsync(configStore.ConfigPath)).Should().Be(retainedConfig);
+        if (allowed)
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = Deserialize<ProviderSetupResult>(await response.Content.ReadAsStringAsync());
+            result.ConnectionId.Should().Be("existing");
+            result.BindingIds.Should().BeEmpty();
+            var stored = await vault.ReadScopedAsync("alpaca", new ProviderCredentialScope(owner, "existing", "account-a", "paper"));
+            stored!.Get("KeyId").Should().Be("scoped-setup-key");
+            stored.ExternalAccountId.Should().Be("account-a");
+            stored.LastVerifiedAt.Should().BeNull();
+            var audit = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl"));
+            audit.Should().Contain("provider-routing-test-operator").And.NotContain("scoped-setup-secret");
+        }
+        else
+        {
+            response.StatusCode.Should().Be(owner == "other-tenant" || duplicate ? HttpStatusCode.Forbidden : HttpStatusCode.BadRequest);
+            File.Exists(vault.VaultPath).Should().BeFalse();
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("{")]
+    [InlineData("null")]
+    [InlineData("[]")]
+    public async Task ConfigureProvider_UnreadableConfigurationCannotCommitCredentials(string? content)
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        if (content is null)
+            File.Delete(store.ConfigPath);
+        else
+            await File.WriteAllTextAsync(store.ConfigPath, content);
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderConfigure, JsonContent(new
+        {
+            kind = "alpaca",
+            displayName = "Rejected setup",
+            apiKey = "uncommitted-key",
+            apiSecret = "uncommitted-secret",
+            environment = "paper",
+            capabilities = new[] { "streaming" }
+        }));
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("readable existing configuration").And.NotContain("uncommitted-key").And.NotContain("uncommitted-secret");
+        var vault = app.Services.GetRequiredService<IProviderCredentialStore>();
+        File.Exists(vault.VaultPath).Should().BeFalse();
+        if (content is null)
+            File.Exists(store.ConfigPath).Should().BeFalse();
+        else
+            (await File.ReadAllTextAsync(store.ConfigPath)).Should().Be(content);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         UserPermission? permissions = UserPermission.ManageProviders | UserPermission.ManageCredentials,
-        Action<IServiceCollection>? registerServices = null)
+        Action<IServiceCollection>? registerServices = null,
+        bool includeActor = true)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-routing-endpoints", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -436,7 +740,8 @@ public sealed class ProviderRoutingEndpointsTests
         {
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-routing-test-operator";
+            if (includeActor)
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-routing-test-operator";
             if (permissions is not null)
             {
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions.Value;
@@ -477,12 +782,14 @@ public sealed class ProviderRoutingEndpointsTests
 
     private sealed class HealthyProviderConnectionHealthSource : IProviderConnectionHealthSource
     {
+        public List<string> ConnectionIds { get; } = [];
         public ValueTask<ProviderConnectionHealthSnapshot> GetHealthAsync(
             string connectionId,
             string providerFamilyId,
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ConnectionIds.Add(connectionId);
             return ValueTask.FromResult(new ProviderConnectionHealthSnapshot(
                 connectionId,
                 providerFamilyId,

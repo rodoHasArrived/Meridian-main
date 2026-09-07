@@ -43,10 +43,10 @@ public partial class AddProviderWizardPage : Page
         DataContext = _viewModel;
     }
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e)
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         var providers = _settingsConfigService.GetProviderCatalog();
-        var credentialStatuses = _settingsConfigService.GetProviderCredentialStatuses();
+        var credentialStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync();
 
         _viewModel.LoadProviderCatalog(providers, credentialStatuses);
         _viewModel.CurrentStep = 1;

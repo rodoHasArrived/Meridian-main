@@ -11,6 +11,19 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Ui.Shared
 
+Scoped credential lifecycle requests require exactly one retained connection ID match. Duplicate IDs
+are refused before status, mutation or verification can select an account; discovery also omits them.
+Providers without an available live verifier return NotVerified/Blocked even when credential fields
+are complete. Presence checks no longer create verified timestamps or successful-verification records.
+
+Provider-routing connection discovery, bindings and trust summaries filter by retained ownership
+using the authenticated workstation tenant. Binding failover IDs are limited to the same visible
+connection set. Each service applies ownership against its captured configuration before returning
+bindings or evaluating trust; foreign connections do not trigger health queries. Request headers and
+query parameters cannot select another tenant. Route preview uses the same authenticated tenant
+before candidate selection and failover expansion. Default setup ownership and atomic configuration
+updates remain separate integration work.
+
 The shared workstation graph owns first-run state, the curated starter catalog,
 versioned sample provisioning, and outcome-based activation evidence. Browser and WPF
 clients consume these endpoints instead of defining client-only setup policy. Initial
@@ -31,6 +44,35 @@ The tenant-guarded Financial Operations command-center endpoint now exposes the 
 The ledger open-lot maintenance routes expose survey, exception queue, retained source inspection, independent review, and versioned application under explicit administrative permission and exact registered tenant/company book ownership. Actors and governed action origins come from the authenticated session. Unknown ownership is blocking. Review and application use retained source identities, never replacement request-side acquisition facts.
 
 Journal automation exposes a read-only valuation freshness preview and retains dated mark evidence through journal review. The same policy decisions feed browser and desktop position read models; absent observation history stays review required. Close subject ownership is resolved from authoritative book, account, and entity records through `CloseReadinessSubjectSource`.
+
+## Credential migration recovery
+
+The provider-module compatibility adapter requires atomic legacy-import support from the credential vault. It removes the plaintext sidecar only after the complete import and audit succeed; retries preserve credentials already retained in the vault.
+## Credential audit identity
+
+Canonical credential save, verify and delete routes accept `connectionId` as a query parameter.
+Provider configure accepts the query for an existing owned connection as well; it uses the server
+tenant and actor, refuses environment reassignment, and preserves the retained routing configuration.
+The connection-list GET accepts the same query and returns only that connection's status, using
+retained account/environment metadata and scoped credentials. Provider-wide metrics never supply
+health or fallback evidence for that scoped result, including after its credentials are deleted.
+The shared lifecycle resolves its retained tenant, provider, external account and environment against
+the server session before accessing scoped credentials. Missing, ambiguous, unowned or mismatched
+connections are refused. Scoped Alpaca verification requires the returned account to match retained
+ownership. Other scoped providers remain unverified until a connection-bound live verifier exists;
+provider-wide accounting verifiers are not invoked for scoped requests. Omitting the query retains
+the legacy path during the unfinished workstation/default-runtime cutover.
+
+Canonical and compatibility credential routes require an authenticated actor in addition to tenant
+scope and credential-management permission. Saves replace caller-supplied `RequestedBy` with that
+actor; delete and verification pass the same identity into the vault audit. Accounting-provider
+verification retains the initiating actor after any provider-internal verification event.
+Alpaca verification requires a provider-returned account identity and reports fixed failure text;
+response reason phrases, JSON paths and exception details never enter its returned errors or logs.
+The Alpaca brokerage connect/revoke routes apply the same identity and verification rules.
+Provider setup passes the server-resolved actor into credential persistence. Plaid operator mutations
+require an authenticated actor and never fall back to a request identity; signed webhook authentication
+remains independent of operator sessions.
 
 ## Purpose
 

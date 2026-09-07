@@ -29,7 +29,9 @@ public sealed record ProviderConnectionConfig(
     ProviderConnectionScope? Scope = null,
     string[]? Tags = null,
     string? Description = null,
-    bool ProductionReady = false
+    bool ProductionReady = false,
+    string? TenantId = null,
+    string? CredentialEnvironment = null
 );
 
 /// <summary>
