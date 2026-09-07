@@ -87,12 +87,33 @@ public sealed class KeyboardShortcutService
 
             if (action.Key == key && action.Modifiers == modifiers)
             {
+                // A context-specific gesture defers to the focused element: this tunneling
+                // handler runs before any control's own routed-command binding, so consuming
+                // Ctrl+C here would starve the dense grids' and text editors' Copy bindings
+                // while the global action itself has no copy target. When the focused element
+                // can serve the routed command the event is left unhandled and routes to it;
+                // the registration remains for the shortcut catalog and as a backstop where
+                // nothing focused can copy.
+                if (DefersToFocusedRoutedCommand(kvp.Key))
+                    return;
+
                 e.Handled = true;
                 OnShortcutInvoked(kvp.Key, action);
                 return;
             }
         }
     }
+
+    /// <summary>
+    /// True when this action's gesture belongs to the focused element rather than the global
+    /// handler. Copy is the one such registration today: dense grids and text editors carry
+    /// their own routed <see cref="ApplicationCommands.Copy"/> binding, which this service's
+    /// tunneling PreviewKeyDown would otherwise consume before they ever see the key.
+    /// </summary>
+    internal static bool DefersToFocusedRoutedCommand(string actionId)
+        => actionId == "Copy"
+           && Keyboard.FocusedElement is { } focused
+           && ApplicationCommands.Copy.CanExecute(null, focused);
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {

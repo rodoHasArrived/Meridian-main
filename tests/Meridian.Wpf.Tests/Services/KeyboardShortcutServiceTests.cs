@@ -1,5 +1,8 @@
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Tests.Support;
 
 namespace Meridian.Wpf.Tests.Services;
 
@@ -401,5 +404,54 @@ public sealed class KeyboardShortcutServiceTests
         var svc = CreateService();
         var act = () => svc.Detach();
         act.Should().NotThrow();
+    }
+
+    // ── Context-specific gesture deferral ────────────────────────────
+
+    [Fact]
+    public void DefersToFocusedRoutedCommand_YieldsCopyToAFocusedEditorAndOnlyCopy()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var textBox = new TextBox { Text = "copy me" };
+            var window = new Window { Width = 200, Height = 100, Content = textBox };
+            try
+            {
+                window.Show();
+                textBox.Focus();
+                textBox.SelectAll();
+
+                // The focused editor carries a live routed Copy binding, so the tunneling
+                // global handler must leave Ctrl+C unhandled for it — while every other
+                // registration keeps its global behavior.
+                KeyboardShortcutService.DefersToFocusedRoutedCommand("Copy").Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand("Save").Should().BeFalse();
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DefersToFocusedRoutedCommand_KeepsCopyGlobalWhenTheFocusedElementCannotCopy()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var button = new Button { Content = "No copy target" };
+            var window = new Window { Width = 200, Height = 100, Content = button };
+            try
+            {
+                window.Show();
+                button.Focus();
+
+                KeyboardShortcutService.DefersToFocusedRoutedCommand("Copy").Should().BeFalse();
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
     }
 }
