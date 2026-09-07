@@ -1012,10 +1012,13 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             var ownership = capturedOwnership
                 ?? throw new InvalidOperationException(
                     $"Durable IB callback {model.RequestId} has no captured tenant and company ownership.");
-            _projector.Materialize(
-                ownership,
-                model,
-                _lineage.TryGetValue(model.RequestId, out var lineage) ? lineage : null);
+            // The standalone lineage MUST be the snapshot the model itself carries, not the live
+            // dictionary: a callback recording newer lineage while this queued model drains would
+            // otherwise pair an older read model with newer standalone evidence in one durable
+            // materialization — internally inconsistent, and retained if the process dies before
+            // the next queued publication lands. Per-request delivery is FIFO, so the final
+            // materialization still carries the newest model with its own newest lineage.
+            _projector.Materialize(ownership, model, model.Lineage);
         }
 
         _updates.Publish(capturedOwnership, model);

@@ -704,6 +704,49 @@ public sealed class IBDataServicesTests
             || request.Status == ProviderDataRequestStatus.Cancelled);
     }
 
+    [Fact]
+    public void DurableMaterializations_PairEachModelWithItsOwnLineageSnapshot()
+    {
+        // Two availability reports land inside the gated send, so two lineage-and-model
+        // transitions sit queued before any drain runs. Each durable materialization must carry
+        // the lineage snapshot its model was built with: resolving the live lineage map at drain
+        // time instead would pair the first queued model with the second, newer lineage.
+        var store = new RecordingDurableResultStore();
+        var transport = new CallbackTransport { MarketDataTypesDuringPnlRequest = [3, 1] };
+        using var services = new IBDataServices(transport, new IBDurableResultProjector(store));
+
+        services.SubscribePnl(
+            "DU123", "model-a", ownership: new IBDataRequestOwnership("tenant-a", "company-a"));
+
+        store.Materializations.Should().NotBeEmpty();
+        foreach (var (request, lineage) in store.Materializations)
+        {
+            lineage.Should().BeSameAs(request.Lineage,
+                "a durable materialization must persist the lineage snapshot its read model was built with");
+        }
+    }
+
+    private sealed class RecordingDurableResultStore : IBDurableResultStore
+    {
+        public List<(ProviderDataRequestReadModel Request, IBDataLineage? Lineage)> Materializations { get; } = [];
+
+        public void Upsert(
+            IBDataRequestOwnership ownership,
+            string providerConnectionId,
+            string requestCorrelationId,
+            ProviderDataRequestReadModel request,
+            IBDataLineage? lineage)
+            => Materializations.Add((request, lineage));
+
+        public IReadOnlyList<IBDurableResult> Get(
+            string tenantId,
+            string companyId,
+            string? capability = null,
+            string? accountId = null,
+            string? modelAccountId = null)
+            => [];
+    }
+
     /// <summary>
     /// The vendor delivers a bounded historical-tick result as batches whose done flag describes
     /// the batch, so the transport may mark only the final batch's last element as completing —
@@ -854,6 +897,7 @@ public sealed class IBDataServicesTests
         public ProviderScannerResult? ScannerResultDuringRequest { get; init; }
         public Exception? CancelFailure { get; init; }
         public bool ReportMarketDataTypeDuringPnlRequest { get; init; }
+        public IReadOnlyList<int>? MarketDataTypesDuringPnlRequest { get; init; }
         public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
         public event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
         public event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
@@ -887,10 +931,12 @@ public sealed class IBDataServicesTests
         public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize) { }
         public void RequestPnl(int requestId, string account, string? modelCode)
         {
-            // Models the IB reader loop delivering the availability callback while the send is
-            // still on the wire: the service observes it synchronously inside its gated send.
+            // Models the IB reader loop delivering availability callbacks while the send is
+            // still on the wire: the service observes them synchronously inside its gated send.
             if (ReportMarketDataTypeDuringPnlRequest)
                 MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(requestId, 3));
+            foreach (var marketDataType in MarketDataTypesDuringPnlRequest ?? [])
+                MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(requestId, marketDataType));
         }
         public void RequestMarketRule(int requestId, int marketRuleId) { }
         public void RequestDepthExchanges(int requestId) { }
