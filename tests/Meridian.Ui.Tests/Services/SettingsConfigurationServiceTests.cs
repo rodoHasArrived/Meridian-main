@@ -9,6 +9,50 @@ namespace Meridian.Ui.Tests.Services;
 
 public sealed class SettingsConfigurationServiceTests
 {
+    [Fact]
+    public async Task OwnedConnections_KeepDistinctAccountsAndExcludeIncompleteOrAmbiguousOwnership()
+    {
+        const string body = """
+            [
+              {"connectionId":"paper-a","providerFamilyId":"alpaca","tenantId":"tenant-a","externalAccountId":"account-a","credentialEnvironment":"paper"},
+              {"connectionId":"live-b","providerFamilyId":"alpaca","tenantId":"tenant-a","externalAccountId":"account-b","credentialEnvironment":"live"},
+              {"connectionId":"legacy","providerFamilyId":"alpaca","externalAccountId":"account-c","credentialEnvironment":"paper"},
+              {"connectionId":"missing-account","providerFamilyId":"alpaca","tenantId":"tenant-a","credentialEnvironment":"paper"},
+              {"connectionId":"duplicate","providerFamilyId":"alpaca","tenantId":"tenant-a","externalAccountId":"account-d","credentialEnvironment":"paper"},
+              {"connectionId":"DUPLICATE","providerFamilyId":"alpaca","tenantId":"tenant-a","externalAccountId":"account-e","credentialEnvironment":"live"}
+            ]
+            """;
+        using var handler = new StatusHandler(HttpStatusCode.OK, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var rows = await new SettingsConfigurationService(api).GetOwnedCredentialConnectionsAsync();
+        rows.Select(row => row.ConnectionId).Should().Equal("paper-a", "live-b");
+        rows.Select(row => row.ExternalAccountId).Should().Equal("account-a", "account-b");
+        rows.Select(row => row.CredentialEnvironment).Should().Equal("paper", "live");
+        handler.Path.Should().Be(UiApiRoutes.ProviderRoutingConnections);
+    }
+
+    [Theory]
+    [InlineData(403, "[]")]
+    [InlineData(200, "null")]
+    public async Task OwnedConnections_FailedDiscoveryDoesNotReturnEditableRows(int status, string body)
+    {
+        using var handler = new StatusHandler((HttpStatusCode)status, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        Func<Task> action = async () => await new SettingsConfigurationService(api).GetOwnedCredentialConnectionsAsync();
+        await action.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task CredentialStatus_UsesExplicitConnectionSelection()
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, "[{\"providerId\":\"alpaca\",\"credentialState\":1}]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var rows = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync(connectionId: "paper / A");
+        rows.Single(row => row.ProviderId == "alpaca").State.Should().Be(CredentialState.Missing);
+        handler.Path.Should().Be(UiApiRoutes.ProviderConnections);
+        handler.Query.Should().Be("?connectionId=paper%20%2F%20A");
+    }
+
     [Theory]
     [InlineData(200, "alpaca", true, 2, true, true)]
     [InlineData(403, "alpaca", true, 2, true, false)]

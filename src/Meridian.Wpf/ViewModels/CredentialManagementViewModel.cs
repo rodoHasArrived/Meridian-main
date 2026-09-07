@@ -20,9 +20,10 @@ public sealed class CredentialEntryViewModel : BindableBase
     private bool _isTesting;
 
     public string ProviderId { get; init; } = string.Empty;
+    public string ConnectionId { get; init; } = string.Empty;
     public string DisplayName { get; init; } = string.Empty;
     public string CredentialType { get; init; } = string.Empty;
-    public bool HasCredentials { get; init; }
+    public bool HasCredentials { get; set; }
     public bool RequiresCredentials { get; init; }
 
     public string StatusText
@@ -113,6 +114,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
                 ((RelayCommand)EditCredentialCommand).NotifyCanExecuteChanged();
                 ((RelayCommand)RemoveCredentialCommand).NotifyCanExecuteChanged();
                 ((RelayCommand)TestCredentialCommand).NotifyCanExecuteChanged();
+                _ = LoadSelectedStatusAsync(value);
             }
         }
     }
@@ -170,51 +172,61 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
     }
 
     private int _credentialLoadVersion;
+    private int _selectedStatusVersion;
 
     public async Task LoadCredentialsAsync()
     {
         var version = ++_credentialLoadVersion;
-        var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
-        var statuses = await SettingsConfigurationService.Instance.GetProviderCredentialStatusesAsync();
-        if (version != _credentialLoadVersion)
-            return;
+        SelectedCredential = null;
         Credentials.Clear();
-
-        foreach (var provider in catalog)
+        StatusMessage = "Loading owned connections…";
+        try
         {
-            var status = statuses.FirstOrDefault(s => s.ProviderId == provider.Id);
-            var state = status?.State ?? CredentialState.Unavailable;
-
-            Credentials.Add(new CredentialEntryViewModel
+            var connections = await SettingsConfigurationService.Instance.GetOwnedCredentialConnectionsAsync();
+            if (version != _credentialLoadVersion)
+                return;
+            var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
+            foreach (var connection in connections)
             {
-                ProviderId = provider.Id,
-                DisplayName = provider.DisplayName,
-                CredentialType = GetCredentialType(provider),
-                HasCredentials = state is CredentialState.Configured or CredentialState.Partial,
-                RequiresCredentials = provider.CredentialFields.Length > 0,
-                StatusText = state switch
+                var provider = catalog.FirstOrDefault(item => string.Equals(item.Id, connection.ProviderFamilyId, StringComparison.OrdinalIgnoreCase));
+                if (provider is null)
+                    continue;
+                Credentials.Add(new CredentialEntryViewModel
                 {
-                    CredentialState.Configured => "Configured",
-                    CredentialState.Partial => "Partial",
-                    CredentialState.Missing => "Missing",
-                    CredentialState.NotRequired => "Not required",
-                    CredentialState.Unavailable => "Unavailable",
-                    _ => "Unknown"
-                },
-                StatusColor = state switch
-                {
-                    CredentialState.Configured => "#3FB950",
-                    CredentialState.Partial => "#D29922",
-                    CredentialState.Missing => "#F85149",
-                    _ => "#AABCCD"
-                }
-            });
+                    ProviderId = provider.Id,
+                    ConnectionId = connection.ConnectionId,
+                    DisplayName = $"{connection.DisplayName} · {connection.ExternalAccountId} · {connection.CredentialEnvironment}",
+                    CredentialType = GetCredentialType(provider),
+                    RequiresCredentials = provider.CredentialFields.Length > 0,
+                    StatusText = "Select to load status",
+                    StatusColor = "#AABCCD"
+                });
+            }
+            StatusMessage = Credentials.Count == 0
+                ? "No owned credential connections are available. Establish connection ownership before editing credentials."
+                : $"{Credentials.Count} owned connections. Select an account and environment to manage credentials.";
         }
-
-        var configured = Credentials.Count(c => c.HasCredentials);
-        var total = Credentials.Count(c => c.RequiresCredentials);
-        StatusMessage = $"{configured} of {total} providers configured";
+        catch (Exception)
+        {
+            if (version == _credentialLoadVersion)
+                StatusMessage = "Owned connections are unavailable from the authenticated service.";
+        }
         StatusMessageColor = "#AABCCD";
+    }
+
+    private async Task LoadSelectedStatusAsync(CredentialEntryViewModel? selected)
+    {
+        var statusVersion = ++_selectedStatusVersion;
+        if (selected is null)
+            return;
+        var version = _credentialLoadVersion;
+        var statuses = await SettingsConfigurationService.Instance.GetProviderCredentialStatusesAsync(connectionId: selected.ConnectionId);
+        if (version != _credentialLoadVersion || statusVersion != _selectedStatusVersion || !ReferenceEquals(SelectedCredential, selected) || selected.IsTesting)
+            return;
+        var status = statuses.FirstOrDefault(item => item.ProviderId == selected.ProviderId);
+        selected.HasCredentials = status?.State is CredentialState.Configured or CredentialState.Partial;
+        selected.StatusText = status?.StatusMessage ?? "Credential status is unavailable from the service.";
+        selected.StatusColor = status?.State == CredentialState.Configured ? "#3FB950" : "#AABCCD";
     }
 
     private void BeginEdit()
@@ -279,7 +291,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         IsBusy = true;
         try
         {
-            await SettingsConfigurationService.Instance.SaveProviderCredentialsAsync(selected.ProviderId, fields);
+            await SettingsConfigurationService.Instance.SaveProviderCredentialsAsync(selected.ProviderId, fields, selected.ConnectionId);
             IsEditPanelVisible = false;
             EditFields.Clear();
             await LoadCredentialsAsync();
@@ -312,7 +324,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         IsBusy = true;
         try
         {
-            await SettingsConfigurationService.Instance.RemoveProviderCredentialsAsync(selected.ProviderId);
+            await SettingsConfigurationService.Instance.RemoveProviderCredentialsAsync(selected.ProviderId, selected.ConnectionId);
             IsEditPanelVisible = false;
             IsTestResultVisible = false;
             EditFields.Clear();
@@ -337,13 +349,14 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         if (selected is null || selected.IsTesting)
             return;
         selected.IsTesting = true;
+        ++_selectedStatusVersion;
         IsTestResultVisible = true;
         TestResultText = $"Testing {selected.DisplayName}�";
         TestResultColor = "#AABCCD";
         var success = false;
         try
         {
-            success = await SettingsConfigurationService.Instance.VerifyProviderCredentialsAsync(selected.ProviderId);
+            success = await SettingsConfigurationService.Instance.VerifyProviderCredentialsAsync(selected.ProviderId, selected.ConnectionId);
         }
         catch (Exception)
         {
@@ -400,5 +413,9 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         };
     }
 
-    public void Dispose() { }
+    public void Dispose()
+    {
+        ++_credentialLoadVersion;
+        SelectedCredential = null;
+    }
 }

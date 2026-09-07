@@ -181,13 +181,31 @@ public sealed class SettingsConfigurationService
         return connectionId is null ? route : UiApiRoutes.WithQuery(route, "connectionId=" + Uri.EscapeDataString(connectionId));
     }
 
-    /// <summary>Reads server-owned credential status without treating local environment values as authority.</summary>
-    public async Task<IReadOnlyList<ProviderCredentialStatus>> GetProviderCredentialStatusesAsync(CancellationToken ct = default)
+    /// <summary>Lists uniquely identified connections with complete retained credential ownership.</summary>
+    public async Task<IReadOnlyList<ProviderConnectionDto>> GetOwnedCredentialConnectionsAsync(CancellationToken ct = default)
     {
+        var response = await _apiClient.GetWithResponseAsync<List<ProviderConnectionDto>>(UiApiRoutes.ProviderRoutingConnections, ct).ConfigureAwait(false);
+        if (!response.Success || response.Data is null)
+            throw new InvalidOperationException("Owned connections are unavailable from the authenticated service.");
+        return response.Data.Where(connection => connection is not null)
+            .GroupBy(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1).Select(group => group.Single())
+            .Where(connection => !string.IsNullOrWhiteSpace(connection.ConnectionId) &&
+                !string.IsNullOrWhiteSpace(connection.ProviderFamilyId) && !string.IsNullOrWhiteSpace(connection.TenantId) &&
+                !string.IsNullOrWhiteSpace(connection.ExternalAccountId) && !string.IsNullOrWhiteSpace(connection.CredentialEnvironment)).ToArray();
+    }
+
+    /// <summary>Reads server-owned credential status without treating local environment values as authority.</summary>
+    public async Task<IReadOnlyList<ProviderCredentialStatus>> GetProviderCredentialStatusesAsync(CancellationToken ct = default, string? connectionId = null)
+    {
+        if (connectionId is not null)
+            ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
+        var route = connectionId is null ? UiApiRoutes.ProviderConnections :
+            UiApiRoutes.WithQuery(UiApiRoutes.ProviderConnections, "connectionId=" + Uri.EscapeDataString(connectionId));
         IReadOnlyList<ProviderConnectionRowDto> rows = [];
         try
         {
-            var response = await _apiClient.GetWithResponseAsync<List<ProviderConnectionRowDto>>(UiApiRoutes.ProviderConnections, ct).ConfigureAwait(false);
+            var response = await _apiClient.GetWithResponseAsync<List<ProviderConnectionRowDto>>(route, ct).ConfigureAwait(false);
             if (response.Success && response.Data is not null)
                 rows = response.Data;
         }
@@ -196,7 +214,7 @@ public sealed class SettingsConfigurationService
 
         return GetProviderCatalog().Select(provider =>
         {
-            var matches = rows.Where(row => string.Equals(row.ProviderId, provider.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
+            var matches = rows.Where(row => row is not null && string.Equals(row.ProviderId, provider.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
             if (matches.Length != 1)
                 return new ProviderCredentialStatus(provider.Id, provider.DisplayName, CredentialState.Unavailable,
                     "Credential status is unavailable from the service.", []);
