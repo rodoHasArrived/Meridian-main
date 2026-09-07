@@ -594,6 +594,29 @@ public sealed class IBDataServicesTests
     }
 
     [Fact]
+    public void LineageSubscriberCancellingAtRegistration_LeavesTheTerminalModelAsTheLastPublication()
+    {
+        using var services = new IBDataServices(new CallbackTransport());
+        var statuses = new List<ProviderDataRequestStatus>();
+        services.ReadModelUpdated += model => statuses.Add(model.Status);
+
+        // A consumer reacting to the registration-time lineage publication by cancelling the
+        // request runs before Issue's own drain: the Requested projection must already sit in
+        // the per-request queue ahead of the terminal model, or watchers would receive stale
+        // Requested after Cancelled.
+        services.LineageUpdated += lineage =>
+        {
+            if (lineage.Status == "requested")
+                services.CancelRequest(lineage.RequestId, CancellationToken.None);
+        };
+
+        services.SubscribePnl("DU123", "model-a");
+
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        statuses.Should().Equal(ProviderDataRequestStatus.Requested, ProviderDataRequestStatus.Cancelled);
+    }
+
+    [Fact]
     public void ConcurrentTerminalTransitions_WithCrossCancellingSubscriber_DoNotDeadlock()
     {
         using var services = new IBDataServices(new CallbackTransport());

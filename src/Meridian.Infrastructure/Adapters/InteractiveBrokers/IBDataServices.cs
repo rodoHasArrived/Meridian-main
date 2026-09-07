@@ -767,14 +767,17 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             // Persist and publish the immutable owner-bound Requested state before transport. IB
             // transports may deliver callbacks synchronously; publishing after send could otherwise
             // overwrite a callback's richer Streaming/Completed snapshot with stale Requested state.
-            // The publication routes through the request's ordered queue so a subscriber reacting
-            // to Requested by transitioning the request delivers its publication after this one.
-            PublishLineageUpdated(evidence);
+            // The Requested projection is queued BEFORE lineage subscribers run: a consumer that
+            // reacts to LineageUpdated by terminating this request publishes through the same
+            // per-request queue, so its terminal model must find Requested already ahead of it —
+            // publishing lineage first would let that terminal publication run before Requested
+            // was even queued, leaving watchers with stale Requested as the latest update.
             var registrationGate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
             lock (registrationGate.Lock)
             {
                 registrationGate.PendingPublications.Enqueue(projection);
             }
+            PublishLineageUpdated(evidence);
             DrainPublications(registrationGate);
         }
         catch
