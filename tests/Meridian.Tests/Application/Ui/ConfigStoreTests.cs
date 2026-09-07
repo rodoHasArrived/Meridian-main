@@ -33,6 +33,31 @@ public sealed class ConfigStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task ConcurrentBindingAndConnectionMutations_PreserveBothCollections()
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, "{}");
+        await Task.WhenAll(Enumerable.Range(0, 24).Select(index => Task.Run(async () =>
+        {
+            var store = new ConfigStore(path);
+            await new ProviderConnectionService(store).UpsertForTenantAsync(new CreateProviderConnectionRequest(
+                $"owned-{index}", "alpaca", $"Owned {index}", ExternalAccountId: $"account-{index}"), "tenant-a", "paper");
+            await new ProviderBindingService(store).UpsertAsync(new UpdateProviderBindingRequest(
+                $"binding-{index}", "RealtimeMarketData", $"owned-{index}"));
+        })));
+        var service = new ProviderConnectionService(new ConfigStore(path));
+        (await service.GetConnectionsForTenantAsync("tenant-a")).Should().HaveCount(24);
+        var bindings = new ProviderBindingService(new ConfigStore(path));
+        (await bindings.GetBindingsAsync()).Select(row => row.BindingId).Should()
+            .BeEquivalentTo(Enumerable.Range(0, 24).Select(index => $"binding-{index}"));
+        await Task.WhenAll(Enumerable.Range(0, 12).Select(index => Task.Run(() =>
+            new ProviderBindingService(new ConfigStore(path)).DeleteAsync($"binding-{index}"))));
+        (await bindings.GetBindingsAsync()).Select(row => row.BindingId).Should()
+            .BeEquivalentTo(Enumerable.Range(12, 12).Select(index => $"binding-{index}"));
+        (await service.GetConnectionsForTenantAsync("tenant-a")).Should().HaveCount(24);
+    }
+
+    [Fact]
     public async Task ConnectionMutation_RechecksOwnershipAfterWaitingForConfigurationWriter()
     {
         var path = Path.Combine(CreateTempDirectory(), "appsettings.json");

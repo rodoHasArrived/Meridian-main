@@ -44,62 +44,62 @@ public sealed class ProviderBindingService
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Capability);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ConnectionId);
 
-        var cfg = _store.Load();
-        var section = ProviderRoutingConfigExtensions.GetSection(cfg);
-        var bindings = (section.Bindings ?? Array.Empty<ProviderBindingConfig>()).ToList();
-
-        var bindingId = string.IsNullOrWhiteSpace(request.BindingId)
-            ? Guid.NewGuid().ToString("N")
-            : request.BindingId;
-
-        var next = new ProviderBindingConfig(
-            BindingId: bindingId,
-            Capability: ProviderRoutingMapper.ParseEnum(request.Capability, ProviderCapabilityKind.RealtimeMarketData),
-            ConnectionId: request.ConnectionId,
-            Target: ProviderRoutingMapper.ToBindingTarget(request.Target),
-            Priority: request.Priority,
-            Enabled: request.Enabled,
-            FailoverConnectionIds: request.FailoverConnectionIds,
-            SafetyModeOverride: string.IsNullOrWhiteSpace(request.SafetyModeOverride)
-                ? null
-                : ProviderRoutingMapper.ParseEnum(request.SafetyModeOverride, ProviderSafetyMode.HealthAwareFailover),
-            Notes: request.Notes);
-
-        var existingIndex = bindings.FindIndex(b => string.Equals(b.BindingId, bindingId, StringComparison.OrdinalIgnoreCase));
-        if (existingIndex >= 0)
-            bindings[existingIndex] = next;
-        else
-            bindings.Add(next);
-
-        await _store.SaveAsync(cfg with
+        return await _store.UpdateRequiredAsync(cfg =>
         {
-            ProviderConnections = section with
-            {
-                Bindings = bindings.ToArray()
-            }
-        }, ct).ConfigureAwait(false);
+            var section = ProviderRoutingConfigExtensions.GetSection(cfg);
+            var bindings = (section.Bindings ?? Array.Empty<ProviderBindingConfig>()).ToList();
 
-        return ProviderRoutingMapper.ToDto(next);
+            var bindingId = string.IsNullOrWhiteSpace(request.BindingId)
+                ? Guid.NewGuid().ToString("N")
+                : request.BindingId;
+
+            var next = new ProviderBindingConfig(
+                BindingId: bindingId,
+                Capability: ProviderRoutingMapper.ParseEnum(request.Capability, ProviderCapabilityKind.RealtimeMarketData),
+                ConnectionId: request.ConnectionId,
+                Target: ProviderRoutingMapper.ToBindingTarget(request.Target),
+                Priority: request.Priority,
+                Enabled: request.Enabled,
+                FailoverConnectionIds: request.FailoverConnectionIds,
+                SafetyModeOverride: string.IsNullOrWhiteSpace(request.SafetyModeOverride)
+                    ? null
+                    : ProviderRoutingMapper.ParseEnum(request.SafetyModeOverride, ProviderSafetyMode.HealthAwareFailover),
+                Notes: request.Notes);
+
+            var existingIndex = bindings.FindIndex(b => string.Equals(b.BindingId, bindingId, StringComparison.OrdinalIgnoreCase));
+            if (existingIndex >= 0)
+                bindings[existingIndex] = next;
+            else
+                bindings.Add(next);
+
+            return (cfg with
+            {
+                ProviderConnections = section with
+                {
+                    Bindings = bindings.ToArray()
+                }
+            }, ProviderRoutingMapper.ToDto(next));
+        }, ct).ConfigureAwait(false);
     }
 
     public async Task<bool> DeleteAsync(string bindingId, CancellationToken ct = default)
     {
-        var cfg = _store.Load();
-        var section = ProviderRoutingConfigExtensions.GetSection(cfg);
-        var bindings = (section.Bindings ?? Array.Empty<ProviderBindingConfig>()).ToList();
-        var removed = bindings.RemoveAll(b => string.Equals(b.BindingId, bindingId, StringComparison.OrdinalIgnoreCase)) > 0;
-        if (!removed)
-            return false;
-
-        await _store.SaveAsync(cfg with
+        return await _store.UpdateRequiredAsync(cfg =>
         {
-            ProviderConnections = section with
-            {
-                Bindings = bindings.ToArray()
-            }
-        }, ct).ConfigureAwait(false);
+            var section = ProviderRoutingConfigExtensions.GetSection(cfg);
+            var bindings = (section.Bindings ?? Array.Empty<ProviderBindingConfig>()).ToList();
+            var removed = bindings.RemoveAll(b => string.Equals(b.BindingId, bindingId, StringComparison.OrdinalIgnoreCase)) > 0;
+            if (!removed)
+                return (cfg, false);
 
-        return true;
+            return (cfg with
+            {
+                ProviderConnections = section with
+                {
+                    Bindings = bindings.ToArray()
+                }
+            }, true);
+        }, ct).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<ProviderPolicyDto>> GetPoliciesAsync(CancellationToken ct = default)
