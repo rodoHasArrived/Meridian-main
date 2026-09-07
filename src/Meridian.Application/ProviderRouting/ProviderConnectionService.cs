@@ -79,7 +79,7 @@ public sealed class ProviderConnectionService
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ProviderFamilyId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.DisplayName);
 
-        var cfg = _store.Load();
+        var cfg = _store.LoadRequired();
         var section = ProviderRoutingConfigExtensions.GetSection(cfg);
         var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
 
@@ -151,7 +151,7 @@ public sealed class ProviderConnectionService
 
     private async Task<bool> DeleteInternalAsync(string connectionId, string? tenantId, CancellationToken ct)
     {
-        var cfg = _store.Load();
+        var cfg = _store.LoadRequired();
         var section = ProviderRoutingConfigExtensions.GetSection(cfg);
         var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
         if (connections.Any(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase) &&

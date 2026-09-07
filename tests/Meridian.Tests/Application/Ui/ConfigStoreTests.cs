@@ -1,5 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.UI;
+using Meridian.Application.ProviderRouting;
+using Meridian.Contracts.Api;
+using System.Text.Json;
 
 namespace Meridian.Tests.Application.UI;
 
@@ -9,6 +12,37 @@ public sealed class ConfigStoreTests : IDisposable
     private readonly string _originalCurrentDirectory = Environment.CurrentDirectory;
     private readonly Func<string> _originalPathResolver = ConfigStore.DefaultPathResolver;
     private readonly List<string> _tempDirectories = [];
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("{")]
+    [InlineData("null")]
+    [InlineData("[]")]
+    public async Task ConnectionMutation_RequiresReadableConfigurationAndPreservesRejectedState(string? body)
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        if (body is not null)
+            await File.WriteAllTextAsync(path, body);
+        var service = new ProviderConnectionService(new ConfigStore(path));
+        Func<Task>[] mutations = [
+            () => service.UpsertForTenantAsync(new CreateProviderConnectionRequest("owned", "alpaca", "Owned", ExternalAccountId: "account-a"), "tenant-a", "paper"),
+            () => service.DeleteForTenantAsync("owned", "tenant-a")];
+        foreach (var mutation in mutations)
+        {
+            var error = await Record.ExceptionAsync(mutation);
+            error.Should().NotBeNull();
+            if (body is null)
+            {
+                error.Should().BeOfType<FileNotFoundException>();
+                File.Exists(path).Should().BeFalse();
+            }
+            else
+            {
+                error!.GetType().Should().Be(body == "null" ? typeof(InvalidDataException) : typeof(JsonException));
+                (await File.ReadAllTextAsync(path)).Should().Be(body);
+            }
+        }
+    }
 
     [Fact]
     public void DefaultConstructor_UsesAncestorConfigDirectoryWhenPresent()

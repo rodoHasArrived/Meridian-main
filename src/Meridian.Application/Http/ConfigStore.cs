@@ -96,6 +96,15 @@ public sealed class ConfigStore
     /// </summary>
     public AppConfig Load() => LoadConfig(ConfigPath);
 
+    /// <summary>Loads existing configuration without substituting defaults when authoritative state cannot be read.</summary>
+    public AppConfig LoadRequired()
+    {
+        var json = File.ReadAllText(ConfigPath);
+        var config = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read)
+            ?? throw new InvalidDataException("Required configuration is empty.");
+        return NormalizeLoadedConfig(ConfigPath, json, config);
+    }
+
     public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default)
     {
         try

@@ -20,6 +20,8 @@ tenant ownership matches the authorized tenant. Unassigned legacy connections re
 ownership establishment and are not implicitly claimed by discovery.
 Duplicate connection IDs, including case variants, cannot establish credential ownership. Discovery
 omits ambiguous records; scoped setup, scope resolution and connection mutations refuse them.
+Connection upsert and deletion use `ConfigStore.LoadRequired` so missing, corrupt or JSON-null
+configuration cannot be replaced by an empty default ownership model. Failed reads preserve the file.
 
 Tenant-aware route preview filters connections and bindings before ranking, health queries and
 failover expansion. It reads fresh configuration and does not add tenant results to unscoped route
