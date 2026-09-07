@@ -10,9 +10,12 @@ that a real endpoint or registry file in this repository depends on.
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 # Lives in tests/scripts rather than beside the generator: only this directory is
 # discovered by build/scripts/ci/run-script-tests.py, so a suite anywhere else runs
@@ -29,6 +32,70 @@ assert spec is not None and spec.loader is not None
 wiring = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = wiring
 spec.loader.exec_module(wiring)
+
+
+class SourceTraversalTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        self.source = self.root / "src"
+        self.dashboard = self.source / "Meridian.Ui/dashboard/src"
+        self.wpf = self.source / "Meridian.Wpf"
+        self.enterContext(mock.patch.multiple(
+            wiring, REPO_ROOT=self.root, SRC_ROOT=self.source,
+            DASHBOARD_ROOT=self.dashboard, WPF_ROOT=self.wpf,
+        ))
+
+    def write_source(self, path: Path, text: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    def test_backend_inventory_prunes_dependencies_builds_and_caches_before_descent(self) -> None:
+        project = self.source / "Meridian.Ui"
+        self.write_source(
+            project / "Endpoints/Nested/RealEndpoints.cs",
+            'class UiApiRoutes { public const string Real = "/api/real"; }\n'
+            'app.MapGet(UiApiRoutes.Real, () => "ready");\n',
+        )
+        excluded = {"node_modules", "bin", "obj", "dist", ".git", "__pycache__", "coverage"}
+        for name in excluded:
+            self.write_source(
+                project / name / "nested/FakeEndpoints.cs",
+                'class FakeRoutes { public const string Fake = "/api/fake"; }\n'
+                'app.MapGet(FakeRoutes.Fake, () => "fake");\n',
+            )
+
+        scandir = os.scandir
+
+        def reject_excluded_descent(path: str | Path):
+            parts = Path(path).relative_to(self.source).parts
+            self.assertFalse(excluded.intersection(parts), f"Traversed excluded directory: {path}")
+            return scandir(path)
+
+        with mock.patch.object(wiring.os, "scandir", side_effect=reject_excluded_descent):
+            constants = wiring.load_route_constants()
+            routes, unresolved = wiring.collect_backend_routes(constants)
+
+        self.assertEqual({"Real": "/api/real", "UiApiRoutes.Real": "/api/real"}, constants)
+        self.assertEqual(["/api/real"], [route["path"] for route in routes])
+        self.assertEqual([], unresolved)
+
+    def test_workstation_call_sites_ignore_dependency_and_build_mirrors(self) -> None:
+        self.write_source(
+            self.dashboard / "screens/Nested/RealScreen.tsx", 'fetch("/api/real");\n',
+        )
+        self.write_source(
+            self.wpf / "Services/Nested/RealClient.cs", 'GetAsync("/api/real");\n',
+        )
+        for root in (self.dashboard, self.wpf):
+            for name in ("node_modules", "bin", "obj", "dist", "coverage"):
+                self.write_source(root / name / "Mirror.tsx", 'fetch("/api/fake");\n')
+                self.write_source(root / name / "Mirror.cs", 'GetAsync("/api/fake");\n')
+
+        browser_files = wiring.dashboard_files()
+        self.assertEqual([self.dashboard / "screens/Nested/RealScreen.tsx"],
+                         [path for path, _ in browser_files])
+        self.assertEqual({"/api/real"}, wiring.collect_called_paths(browser_files, {}, {}))
+        self.assertEqual({"/api/real"}, wiring.collect_wpf_paths({}))
 
 
 class NormalizeTests(unittest.TestCase):

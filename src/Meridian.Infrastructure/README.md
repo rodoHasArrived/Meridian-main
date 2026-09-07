@@ -30,6 +30,21 @@ This layer owns external integration details while depending on lower contracts 
 
 Use this module for provider implementation, external service integration, and adapter behavior.
 
+The legacy IB Flex broker importer streams XML and materializes only supported trade, position,
+and cash rows. Its existing 32 MiB source-byte and 100,000-row ceilings are joined by independent
+64-level nesting, 500,000 parse-node (including attributes), 50,000 per-row node, and 64 KiB scalar
+limits, enforced while reading rather than after building a full document. Unrelated Flex sections
+are scanned under those quotas but not retained in a parse tree. DTDs remain prohibited; nested
+statements and element/text-based row payloads are rejected.
+
+Validation and import share the same field rules. Account identity must come from the row or
+statement; currency must be explicitly supplied as a three-letter code; required numeric fields
+must contain invariant decimals without grouping separators. Missing values no longer become USD
+or zero. Explicit zero values and source-provided statement account/date fallbacks remain valid.
+Row checksums keep their existing uppercase SHA-256 identities, including retained row comments;
+source/canonical artifact hashes and atomic import uniqueness remain owned by the existing snapshot
+and canonical-store path. Cancellation propagates during XML reading and canonical row mapping.
+
 Backfill worker shutdown closes intake, cancels and observes every admitted provider attempt,
 atomically releases queue ownership, and retains a restart-safe job transition before owned
 providers and queue resources are disposed. Its bounded completion reader remains live until every

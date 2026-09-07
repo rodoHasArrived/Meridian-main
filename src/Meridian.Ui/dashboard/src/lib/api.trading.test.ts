@@ -93,6 +93,7 @@ import {
   stopReplay,
   supersedeReconciliationBreak,
   submitOrder,
+  updateExecutionCircuitBreaker,
   updateExecutionDefaultPositionLimit,
   updateExecutionSymbolPositionLimit,
   updateWorkflowPreset,
@@ -194,6 +195,7 @@ describe("trading endpoint wiring", () => {
     await getExecutionControls();
     await updateExecutionDefaultPositionLimit({ maxPositionSize: 75, reason: "desk risk cap" });
     await updateExecutionSymbolPositionLimit("AAPL", { maxPositionSize: 10, reason: "event risk" });
+    await updateExecutionCircuitBreaker({ isOpen: true, reason: "kill switch drill" });
     await getTradingReadiness({ signal: controller.signal });
     await createExecutionManualOverride({
       kind: "BypassOrderControls",
@@ -216,6 +218,13 @@ describe("trading endpoint wiring", () => {
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ maxPositionSize: 10, reason: "event risk" })
+      })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/execution/controls/circuit-breaker",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ isOpen: true, reason: "kill switch drill" })
       })
     );
     expect(fetchMock).toHaveBeenCalledWith(
