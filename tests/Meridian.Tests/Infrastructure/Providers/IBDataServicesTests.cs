@@ -643,6 +643,67 @@ public sealed class IBDataServicesTests
             || request.Status == ProviderDataRequestStatus.Cancelled);
     }
 
+    [Fact]
+    public void MarketDataTypeReportedInsideTheGatedSend_RaisesLineageAfterTheGateIsReleased()
+    {
+        // The transport reports availability synchronously while Issue's send still holds the
+        // request's gate. If the lineage notification were raised there, the subscriber would run
+        // under the gate and any other thread transitioning the same request would block until
+        // the subscriber returned — the probe below joins such a thread with a timeout.
+        using var services = new IBDataServices(new CallbackTransport { ReportMarketDataTypeDuringPnlRequest = true });
+        var completedWithoutBlocking = false;
+        services.LineageUpdated += lineage =>
+        {
+            if (lineage.Status == "market-data-type")
+            {
+                var complete = Task.Run(() => services.CompleteRequest(lineage.RequestId));
+                completedWithoutBlocking = complete.Wait(TimeSpan.FromSeconds(10));
+            }
+        };
+
+        services.SubscribePnl("DU123", "model-a");
+
+        completedWithoutBlocking.Should().BeTrue(
+            "the availability lineage notification must be delivered after the gated send releases the request gate, where other threads can transition the request");
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Completed);
+    }
+
+    [Fact]
+    public void ConcurrentIssues_WithCrossCancellingLineageSubscriber_DoNotDeadlock()
+    {
+        // Two requests are issued concurrently on a transport whose send reports availability
+        // synchronously, and a lineage subscriber reacting to that report cancels the other
+        // request. Raised under the sending thread's gate, each subscriber would hold its own
+        // request's gate while taking the other's — the cross-request cycle the publication
+        // queue exists to prevent.
+        using var services = new IBDataServices(new CallbackTransport { ReportMarketDataTypeDuringPnlRequest = true });
+        var seen = new List<int>();
+        services.LineageUpdated += lineage =>
+        {
+            int[] others;
+            lock (seen)
+            {
+                if (!seen.Contains(lineage.RequestId))
+                    seen.Add(lineage.RequestId);
+                others = lineage.Status == "market-data-type"
+                    ? seen.Where(id => id != lineage.RequestId).ToArray()
+                    : [];
+            }
+
+            foreach (var other in others)
+                services.CancelRequest(other, CancellationToken.None);
+        };
+
+        var issueFirst = Task.Run(() => services.SubscribePnl("DU1", "model-a"));
+        var issueSecond = Task.Run(() => services.SubscribePnl("DU2", "model-b"));
+
+        Task.WaitAll([issueFirst, issueSecond], TimeSpan.FromSeconds(10)).Should().BeTrue(
+            "a lineage subscriber reacting to an availability report delivered inside one request's gated send must not entangle two requests' gates");
+        services.GetRequests().Should().OnlyContain(request =>
+            request.Status == ProviderDataRequestStatus.Requested
+            || request.Status == ProviderDataRequestStatus.Cancelled);
+    }
+
     /// <summary>
     /// The vendor delivers a bounded historical-tick result as batches whose done flag describes
     /// the batch, so the transport may mark only the final batch's last element as completing —
@@ -792,6 +853,7 @@ public sealed class IBDataServicesTests
         public string ProviderConnectionId => "ib-gateway:live:7";
         public ProviderScannerResult? ScannerResultDuringRequest { get; init; }
         public Exception? CancelFailure { get; init; }
+        public bool ReportMarketDataTypeDuringPnlRequest { get; init; }
         public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
         public event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
         public event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
@@ -823,7 +885,13 @@ public sealed class IBDataServicesTests
         public void RequestFundamentals(int requestId, SymbolConfig contract, string reportType) { }
         public void RequestDividendEarnings(int requestId, SymbolConfig contract) { }
         public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize) { }
-        public void RequestPnl(int requestId, string account, string? modelCode) { }
+        public void RequestPnl(int requestId, string account, string? modelCode)
+        {
+            // Models the IB reader loop delivering the availability callback while the send is
+            // still on the wire: the service observes it synchronously inside its gated send.
+            if (ReportMarketDataTypeDuringPnlRequest)
+                MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(requestId, 3));
+        }
         public void RequestMarketRule(int requestId, int marketRuleId) { }
         public void RequestDepthExchanges(int requestId) { }
         public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request) { }

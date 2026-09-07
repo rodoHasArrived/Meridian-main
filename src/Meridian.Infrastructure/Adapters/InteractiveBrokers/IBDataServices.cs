@@ -113,13 +113,33 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     // one request by transitioning another must not be able to entangle two requests' gates into
     // a lock-ordering deadlock. Each transition therefore enqueues its publication under the
     // lock, and a single drainer per request delivers the queue in order with no lock held.
+    // Lineage notifications ride the same queue for the same reason: a transport that delivers
+    // callbacks synchronously can record lineage while a gated send, cancel, or timeout holds
+    // the request's gate, and raising the synchronous LineageUpdated event there would hand a
+    // subscriber the ability to take a second request's gate under the first.
     private readonly ConcurrentDictionary<int, RequestGate> _readModelGates = new();
 
     private sealed class RequestGate
     {
         public readonly object Lock = new();
-        public readonly Queue<ProviderDataRequestReadModel> PendingPublications = new();
+        public readonly Queue<PendingPublication> PendingPublications = new();
         public bool Draining;
+    }
+
+    // One slot in a request's ordered publication queue: exactly one payload is set.
+    private readonly struct PendingPublication
+    {
+        private PendingPublication(ProviderDataRequestReadModel? model, IBDataLineage? lineage)
+        {
+            Model = model;
+            Lineage = lineage;
+        }
+
+        public ProviderDataRequestReadModel? Model { get; }
+        public IBDataLineage? Lineage { get; }
+
+        public static PendingPublication For(ProviderDataRequestReadModel model) => new(model, null);
+        public static PendingPublication For(IBDataLineage lineage) => new(null, lineage);
     }
     private readonly TenantScopedProviderDataUpdateHub _updates = new();
     private int _nextRequestId = 90_000;
@@ -767,17 +787,17 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             // Persist and publish the immutable owner-bound Requested state before transport. IB
             // transports may deliver callbacks synchronously; publishing after send could otherwise
             // overwrite a callback's richer Streaming/Completed snapshot with stale Requested state.
-            // The Requested projection is queued BEFORE lineage subscribers run: a consumer that
-            // reacts to LineageUpdated by terminating this request publishes through the same
-            // per-request queue, so its terminal model must find Requested already ahead of it —
-            // publishing lineage first would let that terminal publication run before Requested
-            // was even queued, leaving watchers with stale Requested as the latest update.
+            // Lineage evidence and the Requested projection are queued together under one hold, in
+            // that delivery order: a consumer that reacts to LineageUpdated by terminating this
+            // request publishes through the same per-request queue, so its terminal model finds
+            // Requested already ahead of it and watchers never see stale Requested as the latest
+            // update.
             var registrationGate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
             lock (registrationGate.Lock)
             {
-                registrationGate.PendingPublications.Enqueue(projection);
+                registrationGate.PendingPublications.Enqueue(PendingPublication.For(evidence));
+                registrationGate.PendingPublications.Enqueue(PendingPublication.For(projection));
             }
-            PublishLineageUpdated(evidence);
             DrainPublications(registrationGate);
         }
         catch
@@ -836,9 +856,22 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
     private IBDataLineage Update(int requestId, Func<IBDataLineage, IBDataLineage> update)
     {
-        var updated = _lineage.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current));
-        PublishLineageUpdated(updated);
-        UpdateReadModel(requestId, current => current with { Lineage = updated });
+        // The lineage transition shares the request's gate and publication queue with read-model
+        // transitions: recorders can run synchronously inside a gated send, cancel, or timeout,
+        // and raising LineageUpdated there would put subscriber code under the gate — a
+        // subscriber transitioning another request could then entangle two gates into the very
+        // cross-request deadlock the queue exists to prevent. Queueing under the gate also keeps
+        // two racing lineage updates from delivering stale-last.
+        var gate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
+        IBDataLineage updated;
+        lock (gate.Lock)
+        {
+            updated = _lineage.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current));
+            gate.PendingPublications.Enqueue(PendingPublication.For(updated));
+            UpdateReadModel(requestId, current => current with { Lineage = updated });
+        }
+
+        DrainPublications(gate);
         return updated;
     }
 
@@ -874,19 +907,19 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
                     return update(current) with { UpdatedAt = DateTimeOffset.UtcNow, Lineage = lineage };
                 });
             if (applied)
-                gate.PendingPublications.Enqueue(updated);
+                gate.PendingPublications.Enqueue(PendingPublication.For(updated));
         }
 
         DrainPublications(gate);
     }
 
     /// <summary>
-    /// Delivers a request's pending publications in transition order with no gate held. A thread
-    /// that still holds the gate (a cancel or timeout wrapping a transition, a transport send, or
-    /// a reentrant callback) skips delivery — the outermost holder drains after releasing — and
-    /// the Draining flag hands the queue to exactly one drainer at a time, so per-request order
-    /// is preserved while subscriber callbacks can transition other requests without ever forming
-    /// a cross-request lock cycle.
+    /// Delivers a request's pending publications — read-model updates and lineage notifications —
+    /// in transition order with no gate held. A thread that still holds the gate (a cancel or
+    /// timeout wrapping a transition, a transport send, or a reentrant callback) skips delivery —
+    /// the outermost holder drains after releasing — and the Draining flag hands the queue to
+    /// exactly one drainer at a time, so per-request order is preserved while subscriber
+    /// callbacks can transition other requests without ever forming a cross-request lock cycle.
     /// </summary>
     private void DrainPublications(RequestGate gate)
     {
@@ -897,7 +930,7 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
         while (true)
         {
-            ProviderDataRequestReadModel next;
+            PendingPublication next;
             lock (gate.Lock)
             {
                 if (gate.Draining || gate.PendingPublications.Count == 0)
@@ -911,7 +944,14 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
             try
             {
-                Publish(next);
+                if (next.Model is { } model)
+                {
+                    Publish(model);
+                }
+                else if (next.Lineage is { } lineage)
+                {
+                    PublishLineageUpdated(lineage);
+                }
             }
             finally
             {
