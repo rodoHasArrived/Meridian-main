@@ -999,19 +999,27 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void RequestDepthExchanges(int requestId)
     {
         TrackDataServiceRequest(requestId);
+        var enqueued = false;
         try
         {
             ThrowIfNotConnected();
             _depthExchangeRequests.Enqueue(requestId);
+            enqueued = true;
             _clientSocket.reqMktDepthExchanges();
         }
         catch
         {
             // The submission never reached the vendor, so the id must not stay eligible
-            // for rejection routing — and its FIFO correlation slot must die with it, or the
-            // next successful directory callback would be answered to this dead request while
-            // the live one behind it waits forever.
-            _failedDepthExchangeSubmissions.TryAdd(requestId, true);
+            // for rejection routing — and, when the id made it into the FIFO, its correlation
+            // slot must die with it, or the next successful directory callback would be
+            // answered to this dead request while the live one behind it waits forever. A
+            // failure before the enqueue (disconnected) left no slot, and tombstoning it
+            // anyway would leak one inert entry per retry for the length of an outage.
+            if (enqueued)
+            {
+                _failedDepthExchangeSubmissions.TryAdd(requestId, true);
+            }
+
             _dataServiceRequestIds.TryRemove(requestId, out _);
             throw;
         }
