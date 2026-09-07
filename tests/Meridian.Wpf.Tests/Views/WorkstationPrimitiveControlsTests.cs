@@ -327,6 +327,44 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     [Fact]
+    public void DenseDataGridControl_ShouldScopeEnterActivationToTheRowsList()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    new ObservableCollection<RowFixture> { new("Polygon.io", "Healthy") },
+                    [new("Provider", nameof(RowFixture.Name), 120)],
+                    "Provider readiness table")
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                // Enter is row activation: it binds to the rows list, not the control-wide
+                // chrome, so a focused empty-state or chrome button keeps Enter as its normal
+                // keyboard activation instead of losing it to a row command with nothing to open.
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                var chrome = denseGrid.Content.Should().BeOfType<Grid>().Subject;
+
+                chrome.InputBindings.OfType<KeyBinding>()
+                    .Should().NotContain(binding => binding.Key == Key.Enter);
+                rowsList.InputBindings.OfType<KeyBinding>()
+                    .Should().ContainSingle(binding =>
+                        binding.Key == Key.Enter
+                        && binding.Command == DenseGridKeyboardCommands.OpenSelectedDetails);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void DenseDataGridControl_ShouldMirrorChromeShortcutsOntoExternalFilterTarget()
     {
         WpfTestThread.Run(() =>

@@ -44,7 +44,6 @@
     <Grid>
         <Grid.InputBindings>
             <KeyBinding Key="F" Modifiers="Control" Command="{x:Static controls:DenseGridKeyboardCommands.FocusFilter}" />
-            <KeyBinding Key="Enter" Command="{x:Static controls:DenseGridKeyboardCommands.OpenSelectedDetails}" />
             <KeyBinding Key="Escape" Command="{x:Static controls:DenseGridKeyboardCommands.CloseDetails}" />
             <KeyBinding Key="C" Modifiers="Control" Command="ApplicationCommands.Copy" />
             <KeyBinding Key="F" Modifiers="Control+Shift" Command="{x:Static controls:DenseGridKeyboardCommands.ClearFilters}" />
@@ -68,7 +67,15 @@
                   ItemContainerStyle="{StaticResource DenseGridRowItemStyle}"
                   AutomationProperties.AutomationId="{Binding ElementName=Root, Path=GridAutomationId}"
                   AutomationProperties.Name="{Binding ElementName=Root, Path=Table.Title}"
-                  SelectionChanged="RowsList_SelectionChanged" />
+                  SelectionChanged="RowsList_SelectionChanged">
+            <ListView.InputBindings>
+                <!-- Enter is row activation, so it binds to the rows list rather than the whole
+                     control: with focus on an empty-state or chrome button, Enter must remain
+                     that button's normal keyboard activation instead of being swallowed by a row
+                     command that has no selected row to open. -->
+                <KeyBinding Key="Enter" Command="{x:Static controls:DenseGridKeyboardCommands.OpenSelectedDetails}" />
+            </ListView.InputBindings>
+        </ListView>
         <Border x:Name="EmptyPanel"
                 Visibility="Collapsed"
                 Background="{StaticResource PremiumPanelBrush}"
