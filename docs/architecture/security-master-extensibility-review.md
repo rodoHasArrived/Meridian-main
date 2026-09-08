@@ -4598,6 +4598,303 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-09-07
+
+Re-read against `193afa1a`. 238 commits landed since `5b901dda` (the 2026-09-01 baseline), and three
+of them move this document's ground: `71483dc4`/`240a6422`/`ea334537` gave `SecurityAssetTermsSchema`
+a closed-vocabulary dimension with a declared escape and a verbatim-carry exemption, `1180c485`
+introduced `SecurityTermsProjectionRegistry` — the first declarative relational projection, covering
+`DirectLoan` and `StructuredCredit` — and `c26dd251` wired `FaceValueLot` into the lot of record.
+This pass therefore had two jobs: re-verify the standing open items against a range that touched
+their neighbourhood without touching them, and review the axes prior passes had covered only
+indirectly — identifier-to-entity modeling, classification reference data, and the path from the
+declarative catalogs to the two operator clients. Seven findings came out of the second job (C1–C7).
+No code was changed and no tests were run; every claim is a source read at `193afa1a`.
+
+### Re-verified as still open
+
+| # | Item | Evidence at `193afa1a` |
+| --- | --- | --- |
+| A1 | Cash-flow resolver cannot read `DirectLoan`'s coupon or principal basis | `CouponRateAliases` is still `["fixedCouponRate", "couponRate", "coupon", "annualRate"]` (`StructuredCashFlowTermsResolver.cs:19`) and still lacks `currentCouponRate`, the key `DirectLoan` actually declares (`SecurityAssetTermsSchema.cs:369`); `principalBasis` still falls back to `100m` (`SecurityMasterCashFlowService.cs:240`). The range's projection work made `DirectLoan`'s spread and coupon queryable as columns without making them readable by the resolver. |
+| A3 | Readiness models a subset of the catalog, no parity guard | `SecurityMasterOperationalReadinessService.cs` untouched in the range. |
+| A4 | Profile `IsProjected`/`IsSearchable` govern nothing | `SecurityAssetProfiles.cs` untouched in the range. |
+| N4/N5 | Pack registry overlap rule cannot fire; shared prose contract schema | `SecurityAssetPackRegistry.cs` untouched. Its only production consumer remains `SecurityMasterOperationalReadinessService.cs:295, :873` — the registry publishes coverage into a readiness report and governs no engine. |
+| — | Deferred quartet | Partially advanced, not closed. `1180c485` gives two of the four Asset Operations classes a declarative relational projection; the alternatives book — `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee` — still has none (`src/Meridian.Storage/SecurityMaster/Migrations/` ends at 033 with no table for any of them). Valid-time term history, codec generation and N6 are untouched. |
+
+**What the range did close, on its own terms.** `SecurityTermsProjectionRegistry` is the pattern this
+document has asked for twice: a projection declared as data, cross-validated against
+`SecurityAssetTermsSchema` for key existence, declared type, and gate-on-required
+(`SecurityTermsProjectionRegistry.cs:242-300`), with ordinal key matching chosen deliberately because
+the decode side is case-sensitive (`:272-275`). It covers 2 of 26 classes and says so; the eleven
+hand-written writers are explicitly left to migrate one at a time behind their own guards
+(`:128-137`). That is a correct staging, and it is noted here so the registry's existence is not
+later read as the deferred quartet's closure.
+
+### C1 — There is no issuer entity; the identifier namespace is absorbing entity identifiers
+
+`grep -rn "IssuerId\|issuer_id\|IssuerEntity" src/` over C# and F# returns **nothing**. Issuer is a
+free-text string, denormalized onto each security: `CommonTerms.IssuerName: string option`
+(`SecurityMaster.fs:26`), `issuerName` declared independently on Bond, CertificateOfDeposit,
+CommercialPaper and OtherSecurity (`SecurityAssetTermsSchema.cs:262, 297, 305, 340`), and
+`issuer_name text` on the projections (`005_security_master_bond_reference_projection.sql:3, :42`).
+`bond_issuer_projection` is indexed on `(issuer_name, maturity_date)` (`:51-52`) — an issuer rollup
+keyed on a text label with no normalization, no identifier, and no identity across asset classes.
+
+The consequence is visible inside the Security Master's own contracts. `SecurityIdentifierKind`
+carries two members whose documentation states they do not identify a security:
+
+```csharp
+/// <summary>Legal Entity Identifier (ISO 17442) — 20-char alphanumeric; required for OTC derivatives regulatory reporting.</summary>
+Lei,
+/// <summary>SEC Central Index Key — identifies an EDGAR filer or issuer, not a standalone tradable security.</summary>
+Cik,
+```
+(`SecurityIdentifiers.cs:26, :36`.)
+
+Both are legal-entity identifiers, and both are carried in the per-security identifier table because
+there is no entity table to carry them. `SecurityIdentifierNormalizer` validates them properly — LEI
+against the ISO 7064 mod 97-10 check digit (`:320`), CIK as a 1-10 digit code (`:81`) — so the
+system knows these are entity keys and validates them as such while filing them under the wrong
+aggregate. Two securities of the same issuer carry the LEI twice with nothing asserting the two
+copies agree, and the uniqueness work of migration 032 does not reach them: an LEI repeated across
+an issuer's securities is correct data that a per-security uniqueness rule cannot express.
+
+What this blocks is not speculative. `InstrumentTypeDescriptorCatalog` names issuer concentration as
+a risk model the platform supports, twice:
+
+```csharp
+RiskModelHints: ["equity exposure", "issuer concentration", "country and sector classification"]),
+...
+RiskModelHints: ["duration", "spread", "rating", "issuer concentration", "cash-flow profile"]),
+```
+(`InstrumentTypeDescriptorCatalog.cs:35, :211`.)
+
+Those two lines are the **only** occurrences of "issuer concentration" in `src/`. There is no
+issuer-exposure aggregation, no parent/subsidiary hierarchy, and no look-through anywhere in
+`Meridian.Risk` — the capability is asserted in a prose hint string and implemented nowhere. For an
+institutional book the missing aggregate also blocks issuer-level ratings (C2), counterparty
+exposure across asset classes (a `Repo` counterparty, a `Swap` leg, a `DirectLoan` borrower and a
+`CommitmentGuarantee` counterparty are four unrelated free-text strings today), and any regulatory
+surface that reports on the entity rather than the instrument.
+
+This is a modeling gap, not a defect: nothing computes a wrong answer, because nothing computes one
+at all. It is filed first because every remedy below is cheaper than it and none of them substitutes
+for it.
+
+### C2 — Credit rating and sector/industry have no canonical home
+
+Neither concept is modeled. `grep -i "rating"` over `src/Meridian.Contracts/SecurityMaster/` and the
+F# domain returns three things, none of them a rating: `DataVendorEntitlementCategory.CreditRatings`
+(`DataVendorEntitlement.cs:20` — permission to consume a feed), the word inside a `RiskModelHints`
+prose list (`InstrumentTypeDescriptorCatalog.cs:211`), and `OperatorOverrides.cs:29`, which names
+ratings as an example of the annotation surface:
+
+```csharp
+/// paths outside the asset-terms namespace are free-form annotations
+/// (e.g. ratings, sector classification) that never amend the canonical security terms,
+```
+
+So the one place an operator can record a rating is an untyped `IReadOnlyDictionary<string, string>`
+overlay whose contract explicitly says it never reaches the golden record. There is no agency, no
+scale, no watch/outlook status, no effective date, and no provenance — a rating recorded today
+cannot be told from a rating recorded three years ago, and two agencies disagreeing is two dictionary
+keys the operator invents.
+
+Sector is the same. `SecurityMaster.fs:759` says "sector/industry taxonomy is layered on separately",
+and the separate layer does not exist: `SecurityReferenceTaxonomyCatalog` — the shared, data-driven
+vocabulary source both validation engines read — declares five keys, `collateral-type`,
+`property-type`, `reporting-cadence`, `option-put-call`, `warrant-type`
+(`SecurityReferenceTaxonomyCatalog.cs:22-26`). No GICS, no sector, no industry, no rating scale.
+
+This compounds C1 rather than standing beside it: ratings and sector are issuer-level facts for most
+of the fixed-income book, so modeling them per-security before there is an issuer would denormalize
+the same value onto every bond an issuer has outstanding and reproduce `issuer_name`'s problem one
+level down.
+
+### C3 — A second per-asset-class capability matrix, unguarded against the first
+
+`InstrumentTypeDescriptorCatalog` (438 lines, `src/Meridian.Contracts/SecurityMaster/`) is a full
+per-class capability table keyed on the market-data `InstrumentType` enum, and it restates facts
+`SecurityAssetClassCatalog` also declares — in different types, with no guard between them:
+
+| Fact | `SecurityAssetClassCatalog` | `InstrumentTypeDescriptorCatalog` |
+| --- | --- | --- |
+| Preferred identifiers | `IReadOnlyList<SecurityIdentifierKind>` | `PreferredIdentifierKinds: string[]` — `"ISIN"`, `"CUSIP"`, `"FIGI"` in upper case, which is not how the enum spells them |
+| Cash-flow capability | `SupportsCashflowScheduleByDefault` | `ProducesCashFlows` |
+| Lot capability | `UsesFaceValueLots` | `RequiresLotTracking` |
+| Derivative | F# `AssetClassRegistry.IsDerivative` | `IsDerivative` |
+| Underlying | `SecurityKind.underlyingSecurityId` | `RequiresUnderlying` |
+
+The parity guards added in `SecurityAssetClassParityGuardTests` bind the catalog to the validator
+registry, the pack registry in both directions, and (via `SecurityTermsProjectionRegistry.Validate`)
+the terms schema and the projections. `InstrumentTypeDescriptorCatalog` appears in **no** guard —
+the only tests touching it are `ProviderInstrumentCapabilityMatrixServiceTests` and
+`IBRuntimeGuidanceTests`, both about provider routing. The two matrices can drift silently, and on
+the identifier row they already disagree in spelling.
+
+The rest of the descriptor is the pattern N5 already filed against the pack registry, in a second
+location: `RequiredEconomicTerms: ["issuer", "share class", "currency", ...]`,
+`ValidationRules: ["primary identifier present", "listing venue known", ...]`, `LedgerBehaviorHints`,
+`RiskModelHints` (`:31-35`). These read as contracts and are prose — nothing resolves
+`"primary identifier present"` to a rule. C1's evidence is what this costs: a reader who trusts
+`RiskModelHints` concludes the platform aggregates issuer concentration.
+
+### C4 — The declarative schema is unreachable from either client, so both hardcode it
+
+No HTTP route exposes `SecurityAssetTermsSchema`, `SecurityAssetClassCatalog`, or
+`SecurityAssetPackRegistry`. `grep` for all three across `src/Meridian.Ui.Shared/Endpoints/` returns
+nothing, and `UiApiRoutes.cs` has no asset-class or terms-schema route — the only catalog-shaped
+route is `/api/security-master/asset-profiles` (`:348`), which serves custom profiles. A browser
+client therefore *cannot* build a schema-driven form, and the workstation's write surface is two
+free-text inputs where the operator types the canonical field path from memory
+(`security-passport-editor.tsx:329-350`); `assetClass` reaches that component and is used to render
+a badge (`:295`).
+
+Four hardcoded vocabularies fill the vacuum, and they do not agree with the catalog or each other:
+
+1. `security-details-tracker.view-model.ts:137-139` offers nine asset classes —
+   `"Equity", "FixedIncome", "Future", "Option", "Fund", "Currency", "Commodity", "Crypto", "Index"`.
+   Five are not asset classes: `FixedIncome` is the coarse taxonomy bucket, and `Fund`, `Currency`,
+   `Crypto` and `Index` are invented. The real names `Bond`, `CryptoCurrency`, `InvestmentFund` and
+   `FxSpot` are absent.
+2. The same file buckets all 26 classes into three field-visibility sets (`:378-388`): equity/fund,
+   fixed income, and everything else — which sees two fields, `marketPrice` and `contractSize`. The
+   sixteen alternative and money-market classes land there. An **unrecognized** class returns `true`
+   for every field (`:379`), so a garbage asset class renders a fuller form than `DirectLoan` does.
+3. `DeriveSubType` is copy-pasted verbatim into two files
+   (`SecurityMasterSecurityReferenceLookup.cs:176` and
+   `WorkstationEndpoints.SecurityMasterMapping.cs:86`), naming 11 of 26 classes and returning
+   `null` for the rest.
+4. `data-screen.view-model.ts:862` advertises eight classes for identifier-only CSV import —
+   `"Equity, Bond, Fund, Future, Option, FX, Crypto, Loan, or custom class."` — with `"Bond"` as the
+   placeholder. The server permits exactly two: `IdentifierOnlyImportableAssetClasses` filters on
+   `SupportsIdentifierOnlyImport` (`SecurityAssetClassCatalog.cs:517-521`), which only `Equity` and
+   `InvestmentFund` set. Bond declares `RequiresMaturity: true`, so the hint's own example is a write
+   the server rejects.
+
+The WPF lane is better where it reads the catalog — the asset-class list and identifier kinds are
+catalog-driven (`SecurityMasterEditViewModel.cs:28, :367`) — and no better on terms:
+`CreateAssetSpecificTermsTemplate` is a single hardcoded `Equity` branch (`:355-360`), and create is
+refused for 24 of 26 classes because only `Equity` and `CustomAsset` set
+`SupportsBasicCreateWorkflow` (`SecurityAssetClassCatalog.cs:30, :221`). That flag has exactly one
+production consumer, that view model (`:73`); the browser lane does not read it, so the two clients
+disagree about which classes are creatable.
+
+One route would collapse items 1–3: the terms schema already carries key, type, required-ness,
+aliases and — since `71483dc4` — the closed vocabularies and their escapes. It is the form
+definition; it is simply not served.
+
+### C5 — Four classes are marked cash-flow-capable and can never project one
+
+`SecurityMasterCashFlowService` returns `Empty()` when the resolved terms carry no maturity
+(`:219-222`), and maturity resolves through a fixed alias list:
+
+```csharp
+private static readonly string[] MaturityAliases = ["maturityDate", "maturity", "legalFinalMaturity"];
+```
+(`StructuredCashFlowTermsResolver.cs:15`.)
+
+Cross-referencing the terms schema against the catalog's `SupportsCashflowScheduleByDefault` flag,
+six classes assert the capability and cannot deliver it:
+
+| Class | Terminal date it declares | Why it resolves to `Empty()` |
+| --- | --- | --- |
+| `Repo` | `endDate` (`SecurityAssetTermsSchema.cs:322`) | not a maturity alias |
+| `CommitmentGuarantee` | `expiryDate` (`:430`) | not a maturity alias (its `effectiveDate` *is* an issue alias, so terms half-resolve) |
+| `PrivateFundInterest` | `navDate` (`:400`) | not a maturity alias |
+| `RealEstateHolding` | `valuationDate` (`:419`) | not a maturity alias |
+| `MoneyMarketFund` | none (`:288-293`) | no terminal date declared at all |
+| `CashSweep` | none (`:327-334`) | as above |
+
+This is A1's shape one level up: a hand-maintained alias list standing in for the declarative schema
+that already names every key each class declares. The failure is silent — an operator who assigns a
+cash-flow source to a repo gets an empty projection, not a rejection — and the catalog flag that
+promised the capability is read only by the workbench display path
+(`SecurityMasterWorkbenchQueryService.cs:3050`), never by the engine, so nothing can notice the
+contradiction. `PrivateFundInterest`, `RealEstateHolding` and `CommitmentGuarantee` additionally
+carry `AssetOperationsCapabilitySet.AlternativeAssetOperations`, which declares `ProjectedCashFlows`
+and `LedgerProjection`.
+
+### C6 — The amortization bridge cites a lot filter it does not implement
+
+`SecurityMasterAmortizationLedgerBridge.cs:286-296`:
+
+```csharp
+// Only lots explicitly linked to the posted security amortize; unlinked lots carry no
+// reference-data linkage (mirroring the cost-basis adjustment service's lot filter).
+if (lot.SecurityId != securityId || lot.AcquiredDate >= maturity)
+    continue;
+...
+var total = lot.Quantity * (lot.UnitCost - ParPrice);   // ParPrice = 100m, :56
+```
+
+The service it names filters on two conditions, not one — `AmortizesTowardPar` first, then maturity:
+
+```csharp
+// Registry-driven: amortization applies exactly to the classes the shared catalog marks as
+// par-priced (canonical names and vendor aliases like "MBS" both resolve there).
+if (!SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AmortizesTowardPar)
+    return;
+```
+(`SecurityMasterCostBasisAdjustmentService.cs:201-205` — the only read of `AmortizesTowardPar` in
+the repo.)
+
+The bridge keeps the maturity half and drops the class half while claiming parity. Handed a lot on a
+non-par-priced security it computes `quantity × (unitCost − 100)` and posts the result as premium
+amortization. Its protection today is that it has no production caller — it is DI-registered
+(`StorageFeatureRegistration.cs:375`) and nothing injects
+`ISecurityMasterAmortizationLedgerBridge` — which is why this is filed as a latent defect rather
+than a live one. The comment is the hazard: it tells the next reader the gate is present.
+
+### C7 — `DirectLoan` reaches the accounting slice only through vendor aliases
+
+`SecurityMasterAccountingEventService.IsFixedIncome` is a twelve-arm string comparison
+(`:298-310`). It lists `Bond`, `AssetBackedSecurity`, `CertificateOfDeposit`, `CommercialPaper`,
+`TreasuryBill`, six MBS/ABS vendor spellings, `"Loan"`, and `"AmortizingLoan"`. It does not list
+`DirectLoan` — the canonical catalog name. Nor does the catalog give the class a bridge to one:
+`DirectLoan`'s descriptor declares no `AccountingInstrumentClass` (unlike Bond, CoD, CommercialPaper
+and TreasuryBill, which map to `SecurityAccountingInstrumentClasses.Bond`, and StructuredCredit,
+which maps to `AssetBackedSecurity`), so `ResolveAccountingInstrumentClass` returns null and the
+adapter falls back to `definition.SubType ?? definition.AssetClass`
+(`SecurityMasterAccountingEventSourceAdapter.cs:663-670`). A `DirectLoan` record is therefore
+admitted only when that fallback happens to spell one of the two loan aliases, and rejected as
+`SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT` otherwise — while carrying
+`AssetOperationsCapabilitySet.DirectLending`, which declares `LedgerProjection`, and while being one
+of the two classes `1180c485` just gave a relational projection precisely because its instalment
+schedule drives money movement.
+
+The generalizable defect is that the gate is a string list at all. `AccountingInstrumentClass` is
+the catalog field built for this, and the one caller that resolves it still falls through to raw
+names when it is absent.
+
+### Priorities from this pass
+
+1. **Model the issuer (C1, unblocks C2).** An issuer aggregate with an identity, LEI/CIK moved onto
+   it, and a foreign key from the security — replacing four unrelated free-text counterparty strings
+   and `bond_issuer_projection`'s text rollup. Everything else here is a day's work; this is not, and
+   it is the one gap that blocks a class of institutional questions outright rather than degrading an
+   answer. Until it lands, delete `"issuer concentration"` from `RiskModelHints` — an unimplemented
+   capability asserted in a shipped catalog is worse than a silent absence.
+2. **Bind the capability flags to the engines that must honour them (C5, C7, A1).** Three separate
+   findings share one shape: a catalog flag or a schema-declared key asserts a capability, and the
+   engine dispatches on a hand-maintained alias list or string switch that does not know about it.
+   The cheap, high-value remedy is a parity guard in the shape the pass registry already has — assert
+   that every class with `SupportsCashflowScheduleByDefault` declares a term the resolver's maturity
+   aliases can read, that every class with `AmortizesTowardPar` is admitted by the accounting gate,
+   and that the resolver's alias lists are drawn from `SecurityAssetTermsSchema` rather than
+   maintained beside it. That guard fails today on six classes and would have caught A1 in August.
+3. **Serve the terms schema (C4).** One read route returning per-class fields, types, required flags,
+   aliases and `AllowedValues` retires three hardcoded UI vocabularies, replaces the free-text
+   `fieldPath` editor with a constrained control, and removes the CSV hint's promise of writes the
+   server rejects. The schema is already the form definition; the gap is transport.
+4. **Guard or collapse the second capability matrix (C3).** Either add
+   `InstrumentTypeDescriptorCatalog` to the parity guards and reconcile the identifier spellings, or
+   derive its Security-Master-facing fields from `SecurityAssetClassCatalog` and keep only the
+   provider-routing facts it uniquely owns. Drop the four prose "contract" fields or move them to
+   documentation — this is N5's remedy applied to the second instance.
+5. **Fix the comment or the filter in the amortization bridge (C6).** Smallest item here and the
+   only latent wrong number: add the `AmortizesTowardPar` gate the comment already claims.
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -4777,3 +5074,19 @@ replaced B4's "posting kind says rebook" with a typed rebook intent the lane mus
 since no posting kind says it and the spine stamps Adjustment on every correction; and kept B6's
 reservation held through the stable-negative retry by renewing it in place, since releasing it for
 the retry to reclaim reopened the race the fence exists to close.
+
+The 2026-09-07 pass established the merge delta with `git log` over `5b901dda..193afa1a` (238
+commits) and read: the vocabulary dimension added to `SecurityAssetTermsSchema` and the
+`SecurityTermsProjectionRegistry` its validation now anchors; `SecurityAssetClassCatalog`'s full
+capability matrix, extracted per class rather than read prose-wise, and each flag traced to its
+production consumers by grep; `SecurityIdentifiers`, `SecurityIdentifierNormalizer` and
+`SecurityReferenceTaxonomyCatalog` for the identifier and classification axes; and — new to this
+pass — the two paths out of the declarative catalogs, one to the operator clients
+(`Meridian.Ui.Shared/Endpoints/`, the dashboard's Security Master screens, the WPF edit and passport
+view models) and one to the money-moving engines (`StructuredCashFlowTermsResolver`,
+`SecurityMasterCashFlowService`, the three ledger bridges, `SecurityMasterAccountingEventService`).
+Both were walked from the catalog outward — asking of each declared capability which consumer
+honours it — rather than from the consumer inward, which is why C5 and C7 surfaced as flags no
+engine reads rather than as engines missing a class. The issuer and rating findings (C1, C2) came
+from the same direction: reading `RiskModelHints` and the override contract's own examples as
+capability claims and then looking for what implements them.
