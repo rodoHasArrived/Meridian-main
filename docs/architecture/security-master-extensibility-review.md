@@ -5208,8 +5208,17 @@ Master surfaces in `src/Meridian.Ui/dashboard/src/` against `SecurityAssetClassC
 `SecurityAssetTermsSchema`. A1 and A4 were re-derived from source; A2, P1, P3b and P4 were not, and
 their rows say so.
 
-No code was changed and no tests were run — the .NET SDK is not present in the pass's environment.
-Every claim in the 2026-09-08 pass is therefore a source claim. C5 is the one finding whose
-consequence depends on runtime behaviour; it is argued from the repository's own statement of that
-behaviour (`PostgresSecurityMasterStore.TermsProjection.cs:241-251`) and its row says what is
-observed and what is inferred.
+No code was changed. No .NET or TypeScript test was run, and no reviewed code path was executed:
+the .NET SDK is not present in the pass's environment. Every claim in the 2026-09-08 pass is
+therefore a source claim. C5 is the one finding whose consequence depends on runtime behaviour; it
+is argued from the repository's own statement of that behaviour
+(`PostgresSecurityMasterStore.TermsProjection.cs:241-251`) and its row says what is observed and
+what is inferred.
+
+The repository's documentation validation did run, on the pass's own diff — the docs-automation
+`core` profile, the rules engine, `validate-examples`, the AI inventory, handoff, contract-drift
+and Codex-memory checks, the roadmap and source diagram renderers, the workflow manifest, and
+`tools/roadmap/enforce_phase_scope.py` at `--phase PR1`. That is a check on this document, not on
+the subsystem it reviews, and it is recorded here only so the sentence above is not read as
+claiming more silence than the pass kept. (Added 2026-09-08, after the section was first written:
+its first version said "no tests were run", which the documentation lane's own checks contradict.)
