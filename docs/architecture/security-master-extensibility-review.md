@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-08 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-09 (scheduled institutional-requirements pass — no source drift since 2026-09-08, no new findings; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -5012,6 +5012,39 @@ Read as a delta on the standing lists; ordered by institutional risk per unit of
    `IStructuredCashFlowProvider` implementations belong in the same decision: a cash-flow source an
    operator can assign and that silently produces nothing should either be implementable or not be
    assignable.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-09-09: no source drift, no new findings
+
+This pass filed nothing, because there was nothing to file. `git diff --stat a5c6126f..168a55e4 --
+src/ tests/` is **empty**: between the 2026-09-08 pass's anchor and this pass's `168a55e4`, the only
+changed files are this review document, `docs/status/doc-health-dashboard.{json,md}` and
+`docs/status/example-validation.md`. No Security Master source, test, migration or contract changed.
+The subsystem this pass would assess is byte-for-byte the one the 2026-09-08 pass assessed, so a
+fresh read could only restate C1–C7 and the standing open lists under a new date.
+
+Recorded so the next pass does not re-derive the interval:
+
+- **The verdict stands** as written under *Verdict*, with its 2026-08-28 and 2026-09-01
+  supersession notes. Structurally sound and well governed; not yet uniformly extensible across
+  asset classes.
+- **Every open finding stands.** A1, A3, A4, N4/N5, N6, A2, P1, P3b, P4 and C1–C7 are open at
+  `168a55e4` on the same evidence the passes that filed them cite.
+- **The 2026-09-08 priority order stands unchanged**: C4 then C5 first (both small, both
+  correctness, neither needing a design decision); then the C1/C2/C3 decision about what the
+  normalized economic-terms model is for; then serving `SecurityAssetTermsSchema` to the browser
+  (C7); then C6.
+
+Two spot checks were re-run against `168a55e4` rather than carried forward on the document's word,
+chosen because they head the priority list:
+
+| Finding | Re-verified at `168a55e4` |
+| --- | --- |
+| C4 — create has no asset-class round-trip guard | `EnsureAssetClassRoundTripsSafely` still has exactly two call sites, `SecurityMasterService.cs:84` (`AmendTermsInternalAsync`) and `:257` (`DeactivateAsync`). `ExecuteCreateAsync` begins at `:305` and does not call it. Open. |
+| C5 — two numeric readers abort the upsert on an explicit null | `GetOptionalDecimal` (`PostgresSecurityMasterStore.cs:1829`) and `GetOptionalInt` (`:1834`) still reach for `TryGetDecimal`/`TryGetInt32` with no `ValueKind` check, while `GetOptionalString` (`:1813`), `GetOptionalBool` (`:1839`), `GetOptionalObject` (`:1845`) and `TryGetOptionalDateOnly` (`:1853`) all check first. The core `securities` upsert still reads `lot_size` and `tick_size` through the unguarded pair (`:339-340`). Open. |
+
+Nothing in this pass is a new claim about behaviour, and no code was executed.
 
 ---
 
