@@ -1080,6 +1080,98 @@ Meridian-main
 │   │   └── __init__.py
 │   ├── rules
 │   │   └── doc-rules.yaml
+│   ├── schema-control
+│   │   └── candidate
+│   │       ├── docs
+│   │       │   ├── contracts
+│   │       │   │   ├── asset-operations-contracts-page-01.md
+│   │       │   │   ├── asset-operations-contracts-page-02.md
+│   │       │   │   ├── asset-operations-contracts.md
+│   │       │   │   ├── banking-contracts.md
+│   │       │   │   ├── direct-lending-contracts-page-01.md
+│   │       │   │   ├── direct-lending-contracts-page-02.md
+│   │       │   │   ├── direct-lending-contracts.md
+│   │       │   │   ├── fund-governance-contracts-page-01.md
+│   │       │   │   ├── fund-governance-contracts-page-02.md
+│   │       │   │   ├── fund-governance-contracts.md
+│   │       │   │   ├── identity-access-contracts.md
+│   │       │   │   ├── ledger-contracts-page-01.md
+│   │       │   │   ├── ledger-contracts-page-02.md
+│   │       │   │   ├── ledger-contracts-page-03.md
+│   │       │   │   ├── ledger-contracts-page-04.md
+│   │       │   │   ├── ledger-contracts.md
+│   │       │   │   ├── money-market-contracts.md
+│   │       │   │   ├── reporting-contracts.md
+│   │       │   │   ├── security-master-contracts-page-01.md
+│   │       │   │   ├── security-master-contracts-page-02.md
+│   │       │   │   ├── security-master-contracts-page-03.md
+│   │       │   │   ├── security-master-contracts-page-04.md
+│   │       │   │   └── security-master-contracts.md
+│   │       │   ├── diagrams
+│   │       │   │   ├── asset_operations.mmd
+│   │       │   │   ├── banking.mmd
+│   │       │   │   ├── contracts-asset-operations-contracts-page-01.mmd
+│   │       │   │   ├── contracts-asset-operations-contracts-page-02.mmd
+│   │       │   │   ├── contracts-banking-contracts.mmd
+│   │       │   │   ├── contracts-direct-lending-contracts-page-01.mmd
+│   │       │   │   ├── contracts-direct-lending-contracts-page-02.mmd
+│   │       │   │   ├── contracts-fund-governance-contracts-page-01.mmd
+│   │       │   │   ├── contracts-fund-governance-contracts-page-02.mmd
+│   │       │   │   ├── contracts-identity-access-contracts.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-01.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-02.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-03.mmd
+│   │       │   │   ├── contracts-ledger-contracts-page-04.mmd
+│   │       │   │   ├── contracts-money-market-contracts.mmd
+│   │       │   │   ├── contracts-reporting-contracts.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-01.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-02.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-03.mmd
+│   │       │   │   ├── contracts-security-master-contracts-page-04.mmd
+│   │       │   │   ├── fund_accounts.mmd
+│   │       │   │   ├── fund_structure.mmd
+│   │       │   │   ├── identity_access.mmd
+│   │       │   │   ├── ledger.mmd
+│   │       │   │   ├── money_market.mmd
+│   │       │   │   ├── public.mmd
+│   │       │   │   ├── reporting.mmd
+│   │       │   │   └── security_master.mmd
+│   │       │   ├── modules
+│   │       │   │   ├── asset_operations.md
+│   │       │   │   ├── banking.md
+│   │       │   │   ├── fund_accounts.md
+│   │       │   │   ├── fund_structure.md
+│   │       │   │   ├── identity_access.md
+│   │       │   │   ├── ledger.md
+│   │       │   │   ├── money_market.md
+│   │       │   │   ├── public.md
+│   │       │   │   ├── reporting.md
+│   │       │   │   └── security_master.md
+│   │       │   ├── data-object-catalog.md
+│   │       │   ├── README.md
+│   │       │   └── schema-catalog.md
+│   │       ├── manifest
+│   │       │   ├── schemas
+│   │       │   │   ├── asset_operations.json
+│   │       │   │   ├── banking.json
+│   │       │   │   ├── fund_accounts.json
+│   │       │   │   ├── fund_structure.json
+│   │       │   │   ├── identity_access.json
+│   │       │   │   ├── ledger.json
+│   │       │   │   ├── money_market.json
+│   │       │   │   ├── public.json
+│   │       │   │   ├── reporting.json
+│   │       │   │   └── security_master.json
+│   │       │   ├── catalog.json
+│   │       │   ├── contracts.json
+│   │       │   ├── dependencies.json
+│   │       │   ├── migrations.json
+│   │       │   └── policies.json
+│   │       ├── reports
+│   │       │   ├── migration-application.json
+│   │       │   ├── policy-report.json
+│   │       │   └── summary.md
+│   │       └── render-manifest.json
 │   └── scripts
 │       ├── ai
 │       │   ├── tests
@@ -5536,13 +5628,16 @@ Meridian-main
 │   │   │   │   ├── 006_direct_lending_terms_projection_extended_fields.sql
 │   │   │   │   ├── 006_servicer_statement_intake.sql
 │   │   │   │   ├── 007_direct_lending_command_idempotency.sql
-│   │   │   │   └── 008_direct_lending_pik_accrual.sql
+│   │   │   │   ├── 008_direct_lending_pik_accrual.sql
+│   │   │   │   └── 009_direct_lending_cash_flow_identity.sql
 │   │   │   ├── DirectLendingMigrationRunner.cs
 │   │   │   ├── DirectLendingPersistenceBatch.cs
 │   │   │   ├── IDirectLendingOperationsStore.cs
 │   │   │   ├── IDirectLendingStateStore.cs
 │   │   │   ├── PostgresDirectLendingStateStore.cs
 │   │   │   ├── PostgresDirectLendingStateStore.Operations.cs
+│   │   │   ├── PostgresDirectLendingStateStore.Publication.cs
+│   │   │   ├── PostgresDirectLendingStateStore.RunIdentity.cs
 │   │   │   └── PostgresDirectLendingStateStore.WorkflowAudit.cs
 │   │   ├── Etl
 │   │   │   ├── EtlJobDefinitionStore.cs
@@ -9109,6 +9204,7 @@ Meridian-main
 │   │   │   │   ├── ConfigurationUnificationTests.cs
 │   │   │   │   ├── ConfigValidatorCliTests.cs
 │   │   │   │   ├── OAuthTokenPersistencePermissionTests.cs
+│   │   │   │   ├── OAuthTokenRefreshFailureTests.cs
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
 │   │   │   │   └── ProviderCredentialStoreTests.cs
 │   │   │   ├── Coordination
@@ -9123,6 +9219,7 @@ Meridian-main
 │   │   │   │   ├── DailyAccrualWorkerTests.cs
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
+│   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs
 │   │   │   │   └── PostgresDirectLendingCommandServiceTests.cs
 │   │   │   ├── FundStructure
@@ -9906,6 +10003,7 @@ Meridian-main
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresSecurityMasterConflictServiceTests.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStoreTests.cs
+│   │   │   ├── PostgresSecurityMasterStoreOptionalReadersTests.cs
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
@@ -9916,6 +10014,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
+│   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
