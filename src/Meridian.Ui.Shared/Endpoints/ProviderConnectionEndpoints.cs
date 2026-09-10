@@ -20,7 +20,7 @@ public static class ProviderConnectionEndpoints
             HttpContext context,
             ProviderConnectionLifecycleService service) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -37,14 +37,14 @@ public static class ProviderConnectionEndpoints
             HttpContext context,
             ProviderConnectionLifecycleService service) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
 
             try
             {
-                var result = await service.SaveCredentialsAsync(providerId, request, context.RequestAborted).ConfigureAwait(false);
+                var result = await service.SaveCredentialsAsync(providerId, request with { RequestedBy = actor }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ProviderCredentialValidationException ex)
@@ -65,14 +65,14 @@ public static class ProviderConnectionEndpoints
             HttpContext context,
             ProviderConnectionLifecycleService service) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
 
             try
             {
-                var result = await service.VerifyAsync(providerId, context.RequestAborted).ConfigureAwait(false);
+                var result = await service.VerifyAsync(providerId, context.RequestAborted, actor).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -89,14 +89,14 @@ public static class ProviderConnectionEndpoints
             HttpContext context,
             ProviderConnectionLifecycleService service) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
 
             try
             {
-                var result = await service.DeleteCredentialsAsync(providerId, "browser-workstation", context.RequestAborted)
+                var result = await service.DeleteCredentialsAsync(providerId, actor, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
