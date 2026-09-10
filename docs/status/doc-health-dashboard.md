@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 80 | 664 | 253 | 0 |
+| 1970-01-01 | 80 | 665 | 253 | 0 |
 
 ---
 
