@@ -32,6 +32,12 @@ legacy new-run behavior and must not be treated as safe automatic retries.
 
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
 
+## Provider setup attribution
+
+Provider setup accepts the initiating actor from its HTTP boundary and retains it in credential
+vault audit records. Operator endpoints reject missing identity; internal callers retain an explicit
+service attribution when no operator initiated the call.
+
 ## Purpose
 
 `DirectLendingOutboxDispatcher` treats rejected projection and reconciliation command results as
@@ -76,7 +82,14 @@ Core workstation host. Do not introduce a second listener or independent monitor
   owning stored market-event schema checks in Application.
 - Provider credential setup, testing, and token-refresh orchestration consumes
   `Meridian.DataIntegration.Credentials`; Application no longer owns generic provider credential
-  store contracts. Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
+  store contracts. OAuth refresh failures expose only numeric HTTP status or a fixed failure message;
+  refresh-loop and token-persistence logs record the exception type without exception details.
+  Malformed token JSON can include secrets in exception paths. Provider response bodies, reason phrases,
+  and exception messages can contain secrets and must not enter failure events or returned errors.
+  Refresh failure retains the prior token so a later retry can recover. The optional logger permits
+  isolated verification of this boundary. Plaintext OAuth token persistence remains an unresolved
+  credential-vault migration requirement; these error controls do not certify PRD-002.
+  Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one
   idempotent composition helper so layered workstation composition retains every catalog entry and
@@ -506,7 +519,7 @@ Core workstation host. Do not introduce a second listener or independent monitor
   application down -- so a governance refusal raised as a bare `InvalidOperationException` is
   indistinguishable from it and gets swallowed by the same tolerance. `ProductionRegistrationGuardService`
   and `ProductionServiceRegistrationPolicy` raise this type for every ADR-019 refusal, including the
-  unconstructible-singleton case found during final-graph validation. It derives from
+  unconstructible-factory case found during final-graph validation. It derives from
   `InvalidOperationException`, so existing catches and assertions naming that type keep matching; the
   added type only lets a host that wants to escalate do so. Hosts decide through
   `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`.
@@ -517,8 +530,13 @@ Core workstation host. Do not introduce a second listener or independent monitor
   safe to run twice, because such a host still starts them again as ordinary hosted services, and
   must answer without unbounded work, because they run with nothing on screen.
   `ProductionRegistrationGuardService` is deliberately **not** marked: in a production composition it
-  resolves every factory-registered singleton to prove the graph is constructible, and eager
-  validation of that size belongs behind a visible shell, so it stays an ordinary hosted service
+  resolves closed factory registrations across singleton, scoped and transient lifetimes and explicit
+  service keys. The unlabeled local-workstation posture performs the same runtime check for durable
+  store contracts; an explicitly pinned simulated/seeded provenance retains its labeled development
+  behavior. Validation uses an asynchronous scope so scoped/transient resources are released on
+  success, refusal and cancellation without disposing host-owned singletons. Wildcard keyed factories
+  are refused because their possible runtime keys cannot be exhaustively checked; null factory results
+  also refuse startup. Eager validation of that size belongs behind a visible shell, so it stays an ordinary hosted service
   running first in the chain. Its descriptor-only half is marked, as
   `StaticProductionRegistrationGuardService`, which `AddProductionRegistrationGuard` registers
   alongside it: `ProductionServiceRegistrationPolicy` performs no resolution at all, so that half

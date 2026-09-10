@@ -27,4 +27,8 @@ public interface ICoordinationStore
     Task<IReadOnlyList<string>> GetCorruptedLeaseFilesAsync(CancellationToken ct = default);
 
     string RootPath { get; }
+
+    /// <summary>Validates the exact live owner and excludes lease transfer for the entire action.</summary>
+    Task<bool> ExecuteUnderLeaseAsync(LeaseRecord lease, Func<CancellationToken, Task> action, CancellationToken ct = default)
+        => throw new NotSupportedException("This coordination store does not support fenced execution.");
 }
