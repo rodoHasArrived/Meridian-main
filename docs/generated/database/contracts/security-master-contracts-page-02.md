@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 4
 
-Objects 81-160 of 257. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 258. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -494,6 +494,9 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    class Meridian_Contracts_SecurityMaster_SecurityAliasHistoryConflictException["SecurityAliasHistoryConflictException"] {
+        +Guid AliasId
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAliasScope["SecurityAliasScope"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassCatalog["SecurityAssetClassCatalog"] {
@@ -514,20 +517,6 @@ classDiagram
         +bool SupportsIdentifierOnlyImport
         +bool SupportsProfileBackedTerms
         +bool UsesFaceValueLots
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetPackDescriptor["SecurityAssetPackDescriptor"] {
-        +AssetPackAccountingRules AccountingRules
-        +AssetPackAdmissionPolicy AdmissionPolicy
-        +IReadOnlyList~string~ AssetClasses
-        +AssetPackAutomationDepth AutomationDepth
-        +AssetPackContractSchema ContractSchema
-        +string DisplayName
-        +string LedgerExtensionPolicy
-        +IReadOnlyList~AssetPackLifecycleCoverage~ LifecycleCoverage
-        +IReadOnlyList~string~ LifecycleEvents
-        +string PackId
-        +IReadOnlyList~string~ PlannedAssetClasses
-        +AssetPackReportingTaxonomy ReportingTaxonomy
     }
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalAcceptanceResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto

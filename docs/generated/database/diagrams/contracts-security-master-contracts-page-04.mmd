@@ -1,5 +1,18 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
+        +decimal? CurrentIndexRate
+        +string? DayCountConvention
+        +CashFlowLegDirection? Direction
+        +bool ExchangesPrincipal
+        +decimal? FixedRate
+        +string? IndexName
+        +string LegId
+        +decimal? Notional
+        +string? PaymentFrequency
+        +CashFlowLegRateKind RateKind
+        +decimal? SpreadBps
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule["StructuredCashFlowLegSchedule"] {
         +CashFlowLegDirection? Direction
         +string LegId
@@ -142,6 +155,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry

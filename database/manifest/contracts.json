@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "f2c46579c0a2c8016e28e1963752123de78370d4487b01a8a5a4e2825811937b",
+      "fingerprint": "56326d0057fda8f1d96e176c044f4407fc9bb7402c3a700a5bb7bae6e9b1acd8",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1590,6 +1590,7 @@
         "Meridian.Contracts.SecurityMaster.ResolveSecurityRequest",
         "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
         "Meridian.Contracts.SecurityMaster.SecurityAliasDto",
+        "Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException",
         "Meridian.Contracts.SecurityMaster.SecurityAliasScope",
         "Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog",
         "Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
@@ -3566,7 +3567,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "4e8ecd4647502dec5b732c957b45ad50ec8f99680c38568cdb2627dc72aee5ea",
+      "fingerprint": "5d4e2eec6db01179507076d3836571b111b7860b202c04d846f2ade09772e93c",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -3728,6 +3729,7 @@
         "Meridian.Contracts.SecurityMaster.ResolveSecurityRequest",
         "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
         "Meridian.Contracts.SecurityMaster.SecurityAliasDto",
+        "Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException",
         "Meridian.Contracts.SecurityMaster.SecurityAliasScope",
         "Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog",
         "Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
@@ -3835,7 +3837,7 @@
       ]
     }
   ],
-  "fingerprint": "e6101c18370ef5c4dc9953710f1a6b4cc1a44d93681ef66718a459d0a5ab143f",
+  "fingerprint": "976762de4b8f0d9d5c6893c84cf30237cde19d6c76cfb39113b7a1c39833b7e0",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5755,7 +5757,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "5979f1aa2be285ea9a6383840049cb3e1e8d022dad8d8d5df2cfddf5d214911c",
+      "fingerprint": "a6edcc2fbcf09cf6019042c3f11e607c6929b6865eeaf385d7427b4144d1ecbe",
       "mapped_schemas": [
         "security_master"
       ],
@@ -5917,6 +5919,7 @@
         "Meridian.Contracts.SecurityMaster.ResolveSecurityRequest",
         "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
         "Meridian.Contracts.SecurityMaster.SecurityAliasDto",
+        "Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException",
         "Meridian.Contracts.SecurityMaster.SecurityAliasScope",
         "Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog",
         "Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
@@ -223651,6 +223654,61 @@
       "sources": [
         {
           "line": 63,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "InvalidOperationException"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "f1e8b2c2ca383b3721bd961851b68b1b5bc0f53c6001942878eb9923bc35e618",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AliasId",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "Guid",
+          "source_line": 92,
+          "type": "Guid"
+        }
+      ],
+      "name": "SecurityAliasHistoryConflictException",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException",
+      "references": [],
+      "source": {
+        "line": 82,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs"
+      },
+      "sources": [
+        {
+          "line": 82,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs"
         }
       ],
