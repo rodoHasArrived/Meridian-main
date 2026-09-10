@@ -113,10 +113,10 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     // one request by transitioning another must not be able to entangle two requests' gates into
     // a lock-ordering deadlock. Each transition therefore enqueues its publication under the
     // lock, and a single drainer per request delivers the queue in order with no lock held.
-    // Lineage notifications ride the same queue for the same reason: a transport that delivers
-    // callbacks synchronously can record lineage while a gated send, cancel, or timeout holds
-    // the request's gate, and raising the synchronous LineageUpdated event there would hand a
-    // subscriber the ability to take a second request's gate under the first.
+    // Lineage notifications ride the same queue for the same reason: recorders can run while a
+    // gated cancel or timeout holds the request's gate, and raising the synchronous
+    // LineageUpdated event under any such hold would hand a subscriber the ability to take a
+    // second request's gate under the first.
     private readonly ConcurrentDictionary<int, RequestGate> _readModelGates = new();
 
     private sealed class RequestGate
@@ -124,6 +124,21 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         public readonly object Lock = new();
         public readonly Queue<PendingPublication> PendingPublications = new();
         public bool Draining;
+        // Both fields below are guarded by Lock. Submission tracks where Issue's transport
+        // submission stands so cancel and timeout can coordinate with it without ever waiting
+        // on the send itself, which runs outside the gate. DeferredWireCancel records that a
+        // terminal transition fired while the send was in flight and left the wire cancel to
+        // the submitting thread, which spends it once the subscription exists.
+        public SubmissionState Submission;
+        public bool DeferredWireCancel;
+    }
+
+    private enum SubmissionState
+    {
+        NotStarted,
+        InFlight,
+        Submitted,
+        Failed,
     }
 
     // One slot in a request's ordered publication queue: exactly one payload is set.
@@ -561,42 +576,73 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     public void CancelRequest(int requestId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        // The wire cancel and the terminal transition share the request's transition gate with
-        // the submission in Issue: a cancel racing the pre-send window would otherwise spend its
-        // transport cancel on a subscription that does not exist yet, and the late send would
-        // then leak a live vendor stream behind a read model already frozen at Cancelled.
+        // The terminal transition is serialized with Issue's pre-send decision on the request's
+        // transition gate, but no transport call runs under the gate — a submission stalled on
+        // the wire must never block cancellation behind it. Where the submission stands decides
+        // the wire work: in the pre-send window the freeze itself stops the stream (Issue skips
+        // the send) and the wire cancel is then spent on a subscription that never existed;
+        // while a send is in flight the wire cancel is deferred to the submitting thread, which
+        // spends it once the subscription is real; after the submission has completed the wire
+        // cancel runs before the transition, so a wire failure leaves the read model
+        // un-cancelled while the vendor stream may still be live.
         var gate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
+        string capability;
+        SubmissionState submission;
         lock (gate.Lock)
         {
             if (!_requests.TryGetValue(requestId, out var request))
                 throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
-            _transport.CancelDataRequest(requestId, request.Capability);
-            CancelRequest(requestId);
+            capability = request.Capability;
+            submission = gate.Submission;
+            if (submission is SubmissionState.InFlight)
+                gate.DeferredWireCancel = true;
+            if (submission is SubmissionState.NotStarted or SubmissionState.InFlight)
+                CancelRequest(requestId);
         }
 
         // The nested transition only enqueued its publication (this thread held the gate);
         // deliver it now that the lock is released.
         DrainPublications(gate);
+
+        if (submission is SubmissionState.InFlight)
+            return;
+
+        _transport.CancelDataRequest(requestId, capability);
+        if (submission is not SubmissionState.NotStarted)
+            CancelRequest(requestId);
     }
 
     /// <summary>Fails closed on a local timeout and stops a cancellable vendor stream.</summary>
     public void TimeoutRequest(int requestId)
     {
-        // Serialized with Issue's submission for the same reason as CancelRequest: a timeout
-        // firing inside the pre-send window must not spend its wire cancel before the
-        // subscription exists and then let the late send leak an unreleasable stream.
+        // Timeout is the local fail-closed judgment, so unlike CancelRequest the read model is
+        // frozen first in every submission state: a wire stalled inside the send, or inside
+        // this thread's own cancel call below, can delay releasing the vendor stream but never
+        // the TimedOut outcome itself. The submission handshake matches CancelRequest — a
+        // pre-send timeout makes Issue skip the send, an in-flight one defers the wire cancel
+        // to the submitting thread, and a completed one releases the stream at the wire here.
         var gate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
+        string capability;
+        SubmissionState submission;
         lock (gate.Lock)
         {
             if (!_requests.TryGetValue(requestId, out var request))
                 throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
-            _transport.CancelDataRequest(requestId, request.Capability);
+            capability = request.Capability;
+            submission = gate.Submission;
+            if (submission is SubmissionState.InFlight)
+                gate.DeferredWireCancel = true;
             UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.TimedOut, ErrorCode = "timeout", ErrorMessage = "The provider callback did not complete before the request timeout." });
         }
 
         // The nested transition only enqueued its publication (this thread held the gate);
         // deliver it now that the lock is released.
         DrainPublications(gate);
+
+        if (submission is SubmissionState.InFlight)
+            return;
+
+        _transport.CancelDataRequest(requestId, capability);
     }
 
     public void RejectRequest(int requestId, string code, string message)
@@ -848,23 +894,60 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
         try
         {
-            // Submission shares the request's transition gate with cancel and timeout: a watcher
-            // reacting to the Requested publication above can cancel inside the pre-send window,
-            // and an ungated send would then create the very subscription that cancel already
-            // tried to stop at the wire — a live vendor stream no terminal transition will ever
-            // release. Under the gate the send either wins, so the cancel that follows targets a
-            // real subscription, or the terminal transition wins and the send is skipped with the
-            // read model already frozen.
+            // The pre-send decision is serialized with cancel and timeout on the request's
+            // transition gate, but the transport call itself runs outside the gate: a
+            // submission stalled on the wire must not pin the gate, or the fail-closed timeout
+            // and the cancellation a watcher fires against the published Requested model would
+            // block until the stall clears. The gate-held handshake keeps the original
+            // guarantee — a terminal transition in the pre-send window skips the send entirely,
+            // and one that lands while the send is in flight defers its wire cancel to this
+            // thread, which spends it below once the submission returns and the subscription
+            // actually exists.
             var gate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
+            var proceed = false;
             lock (gate.Lock)
             {
                 if (_requests.TryGetValue(requestId, out var preSend) && IsActiveStatus(preSend.Status))
-                    send(requestId);
+                {
+                    gate.Submission = SubmissionState.InFlight;
+                    proceed = true;
+                }
             }
 
-            // A transport that delivers callbacks synchronously can enqueue publications while
-            // the send holds the gate; deliver them now that the lock is released.
-            DrainPublications(gate);
+            if (proceed)
+            {
+                try
+                {
+                    send(requestId);
+                }
+                catch
+                {
+                    lock (gate.Lock)
+                    {
+                        // The submission never created a subscription, so a wire cancel a
+                        // racing terminal transition deferred here has nothing to release.
+                        gate.Submission = SubmissionState.Failed;
+                        gate.DeferredWireCancel = false;
+                    }
+
+                    throw;
+                }
+
+                bool releaseAtWire;
+                lock (gate.Lock)
+                {
+                    gate.Submission = SubmissionState.Submitted;
+                    releaseAtWire = gate.DeferredWireCancel;
+                    gate.DeferredWireCancel = false;
+                }
+
+                // A cancel or timeout froze the read model while the send was in flight and
+                // deferred its wire cancel here, where the subscription finally exists to be
+                // released. Synchronous callbacks raised during the send took the gate for
+                // themselves and drained their own publications, so nothing is left parked.
+                if (releaseAtWire)
+                    _transport.CancelDataRequest(requestId, service);
+            }
         }
         catch (Exception transportException)
         {
@@ -897,7 +980,7 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         Func<ProviderDataRequestReadModel, IBDataLineage, ProviderDataRequestReadModel>? project = null)
     {
         // The lineage transition shares the request's gate and publication queue with read-model
-        // transitions: recorders can run synchronously inside a gated send, cancel, or timeout,
+        // transitions: recorders can run synchronously inside a gated cancel or timeout,
         // and raising LineageUpdated there would put subscriber code under the gate — a
         // subscriber transitioning another request could then entangle two gates into the very
         // cross-request deadlock the queue exists to prevent. Queueing under the gate also keeps
@@ -960,7 +1043,7 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     /// <summary>
     /// Delivers a request's pending publications — read-model updates and lineage notifications —
     /// in transition order with no gate held. A thread that still holds the gate (a cancel or
-    /// timeout wrapping a transition, a transport send, or a reentrant callback) skips delivery —
+    /// timeout wrapping a transition, or a reentrant callback) skips delivery —
     /// the outermost holder drains after releasing — and the Draining flag hands the queue to
     /// exactly one drainer at a time, so per-request order is preserved while subscriber
     /// callbacks can transition other requests without ever forming a cross-request lock cycle.

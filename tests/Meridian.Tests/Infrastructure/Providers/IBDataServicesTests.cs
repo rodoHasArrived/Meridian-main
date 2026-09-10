@@ -705,6 +705,70 @@ public sealed class IBDataServicesTests
     }
 
     [Fact]
+    public async Task TimeoutDuringAStalledSubmission_FailsClosedWithoutWaitingForTheTransport()
+    {
+        // A submission stalled on the wire (socket backpressure, a wedged custom transport)
+        // must not pin the request's transition gate: a watcher that saw the published
+        // Requested model can still time the request out, the read model reaches its
+        // fail-closed TimedOut state immediately, and the wire cancel is deferred to the
+        // submitting thread for when the subscription actually exists.
+        using var transport = new StallingScannerTransport();
+        using var services = new IBDataServices(transport);
+
+        var issueTask = Task.Run(() => services.RequestScanner(
+            new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN")));
+        transport.SubmissionStarted.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+        var requestId = services.GetRequests().Single().RequestId;
+
+        await Task.Run(() => services.TimeoutRequest(requestId)).WaitAsync(TimeSpan.FromSeconds(5));
+
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.TimedOut);
+        transport.CancelledCapabilities.Should().BeEmpty(
+            "the wire cancel waits for the stalled submission to return instead of blocking the timeout");
+
+        transport.ReleaseSubmission.Set();
+        (await issueTask.WaitAsync(TimeSpan.FromSeconds(5))).Should().Be(requestId);
+        transport.CancelledCapabilities.Should().ContainSingle().Which.Should().Be("scanner");
+    }
+
+    private sealed class StallingScannerTransport : IIBDataServiceTransport, IDisposable
+    {
+        public ManualResetEventSlim SubmissionStarted { get; } = new(false);
+        public ManualResetEventSlim ReleaseSubmission { get; } = new(false);
+        public IReadOnlyList<string> CancelledCapabilities => _cancelledCapabilities;
+        private readonly List<string> _cancelledCapabilities = [];
+
+        public void RequestScanner(int requestId, IBScannerRequest request)
+        {
+            SubmissionStarted.Set();
+            ReleaseSubmission.Wait(TimeSpan.FromSeconds(30));
+        }
+
+        public void RequestContractDetails(int requestId, SymbolConfig contract) { }
+        public void RequestOptionChain(int requestId, SymbolConfig underlying) { }
+        public void RequestHistoricalNews(int requestId, int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults) { }
+        public void RequestNewsArticle(int requestId, string providerCode, string articleId) { }
+        public void RequestFundamentals(int requestId, SymbolConfig contract, string reportType) { }
+        public void RequestDividendEarnings(int requestId, SymbolConfig contract) { }
+        public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize) { }
+        public void RequestPnl(int requestId, string account, string? modelCode) { }
+        public void RequestMarketRule(int requestId, int marketRuleId) { }
+        public void RequestDepthExchanges(int requestId) { }
+
+        public void CancelDataRequest(int requestId, string capability)
+        {
+            lock (_cancelledCapabilities)
+                _cancelledCapabilities.Add(capability);
+        }
+
+        public void Dispose()
+        {
+            SubmissionStarted.Dispose();
+            ReleaseSubmission.Dispose();
+        }
+    }
+
+    [Fact]
     public void DurableMaterializations_PairEachModelWithItsOwnLineageSnapshot()
     {
         // Two availability reports land inside the gated send, so two lineage-and-model
