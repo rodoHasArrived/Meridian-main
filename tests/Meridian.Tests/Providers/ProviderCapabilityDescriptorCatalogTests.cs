@@ -6,12 +6,17 @@ using Meridian.Execution.Sdk;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
+using Meridian.Infrastructure.Adapters.NYSE;
+using Meridian.Infrastructure.Adapters.OpenFigi;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Robinhood;
+using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.YahooFinance;
@@ -61,7 +66,105 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             {
                 descriptor.Brokerage.Should().BeAssignableTo<IBrokerageGateway>();
             }
+
+            if (descriptor.SymbolResolver is not null)
+            {
+                descriptor.SymbolResolver.Should().BeAssignableTo<ISymbolResolver>();
+            }
+
+            if (descriptor.CompatibilityDataSource is not null)
+            {
+                descriptor.CompatibilityDataSource.Should().BeAssignableTo<IDataSource>();
+            }
         }
+    }
+
+    [Fact]
+    public void Descriptors_and_exclusions_cover_every_direct_adapter_folder()
+    {
+        string[] expectedProviderIds =
+        [
+            "alpaca", "alphavantage", "edgar", "finnhub", "fred", "ibkr", "nasdaq", "nyse",
+            "openfigi", "polygon", "robinhood", "stooq", "synthetic", "tiingo", "twelvedata", "yahoo"
+        ];
+        string[] expectedExcludedFolders =
+        [
+            "Core", "Failover", "Plaid", "Templates", "TradeStation", "Tradier"
+        ];
+
+        ProviderCapabilityDescriptorCatalog.Descriptors
+            .Select(static descriptor => descriptor.ProviderId)
+            .Should().BeEquivalentTo(expectedProviderIds);
+        ProviderCapabilityDescriptorCatalog.ExcludedAdapterFamilies
+            .Select(static exclusion => exclusion.FolderName)
+            .Should().BeEquivalentTo(expectedExcludedFolders);
+        ProviderCapabilityDescriptorCatalog.ExcludedAdapterFamilies.Should().OnlyContain(
+            static exclusion => !string.IsNullOrWhiteSpace(exclusion.Reason),
+            "every non-provider adapter folder must retain an explicit exclusion reason");
+
+        var expectedCapabilities = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["alpaca"] = "streaming,historical,search,corporate-actions,options,brokerage",
+            ["alphavantage"] = "historical,search,corporate-actions",
+            ["edgar"] = "search",
+            ["finnhub"] = "historical,search,corporate-actions",
+            ["fred"] = "historical,search",
+            ["ibkr"] = "streaming,historical,brokerage",
+            ["nasdaq"] = "historical,search,corporate-actions",
+            ["nyse"] = "streaming,data-source-compatibility",
+            ["openfigi"] = "symbol-resolution",
+            ["polygon"] = "streaming,historical,search,options",
+            ["robinhood"] = "streaming,historical,search,options,brokerage",
+            ["stooq"] = "historical",
+            ["synthetic"] = "streaming,historical,search,options",
+            ["tiingo"] = "historical,search,corporate-actions",
+            ["twelvedata"] = "historical,search,corporate-actions",
+            ["yahoo"] = "historical"
+        };
+
+        foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
+        {
+            GetCapabilityInventory(descriptor).Should().Be(
+                expectedCapabilities[descriptor.ProviderId],
+                "provider '{0}' must expose its complete audited shared-contract inventory",
+                descriptor.ProviderId);
+        }
+    }
+
+    [Fact]
+    public void Newly_catalogued_provider_families_expose_every_implemented_shared_capability()
+    {
+        var descriptors = ProviderCapabilityDescriptorCatalog.Descriptors
+            .ToDictionary(static descriptor => descriptor.ProviderId, StringComparer.OrdinalIgnoreCase);
+
+        var synthetic = descriptors["synthetic"];
+        synthetic.Streaming.Should().Be(typeof(SyntheticMarketDataClient));
+        synthetic.Historical.Should().Be(typeof(SyntheticHistoricalDataProvider));
+        synthetic.Search.Should().Be(typeof(SyntheticMarketDataClient));
+        synthetic.Options.Should().Be(typeof(SyntheticOptionsChainProvider));
+        synthetic.CorporateActions.Should().BeNull(
+            "SyntheticHistoricalDataProvider exposes historical corporate-action evidence, not ICorporateActionProvider");
+        synthetic.Brokerage.Should().BeNull();
+
+        var polygon = descriptors["polygon"];
+        polygon.Streaming.Should().Be(typeof(PolygonMarketDataClient));
+        polygon.Historical.Should().Be(typeof(PolygonHistoricalDataProvider));
+        polygon.Search.Should().Be(typeof(PolygonSymbolSearchProvider));
+        polygon.Options.Should().Be(typeof(PolygonOptionsChainProvider));
+        polygon.CorporateActions.Should().BeNull();
+        polygon.ExplicitExclusions.Should().ContainSingle(exclusion =>
+            exclusion.Capability == nameof(ICorporateActionProvider) &&
+            exclusion.Reason.Contains(nameof(PolygonCorporateActionFetcher), StringComparison.Ordinal));
+
+        var nyse = descriptors["nyse"];
+        nyse.Streaming.Should().Be(typeof(NyseMarketDataClient));
+        nyse.CompatibilityDataSource.Should().Be(typeof(NYSEDataSource));
+        nyse.Historical.Should().BeNull(
+            "NYSE historical access remains on its IDataSource compatibility adapter rather than IHistoricalDataProvider");
+
+        var openFigi = descriptors["openfigi"];
+        openFigi.SymbolResolver.Should().Be(typeof(OpenFigiSymbolResolver));
+        openFigi.Implementations().Should().ContainSingle().Which.Should().Be(typeof(OpenFigiSymbolResolver));
     }
 
     [Fact]
@@ -99,6 +202,7 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             AssertResolvable(provider, descriptor.ProviderId, descriptor.CorporateActions, typeof(ICorporateActionProvider));
             AssertResolvable(provider, descriptor.ProviderId, descriptor.Options, typeof(IOptionsChainProvider));
             AssertResolvable(provider, descriptor.ProviderId, descriptor.Brokerage, typeof(IBrokerageGateway));
+            AssertResolvable(provider, descriptor.ProviderId, descriptor.SymbolResolver, typeof(ISymbolResolver));
         }
     }
 
@@ -298,7 +402,26 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             {
                 services.AddSingleton(typeof(IBrokerageGateway), sp => sp.GetRequiredService(descriptor.Brokerage));
             }
+
+            if (descriptor.SymbolResolver is not null)
+            {
+                services.AddSingleton(typeof(ISymbolResolver), sp => sp.GetRequiredService(descriptor.SymbolResolver));
+            }
         }
+    }
+
+    private static string GetCapabilityInventory(ProviderCapabilityDescriptor descriptor)
+    {
+        var capabilities = new List<string>();
+        if (descriptor.HasStreaming) capabilities.Add("streaming");
+        if (descriptor.HasHistorical) capabilities.Add("historical");
+        if (descriptor.HasSearch) capabilities.Add("search");
+        if (descriptor.HasCorporateActions) capabilities.Add("corporate-actions");
+        if (descriptor.HasOptions) capabilities.Add("options");
+        if (descriptor.HasBrokerage) capabilities.Add("brokerage");
+        if (descriptor.HasSymbolResolver) capabilities.Add("symbol-resolution");
+        if (descriptor.HasCompatibilityDataSource) capabilities.Add("data-source-compatibility");
+        return string.Join(',', capabilities);
     }
 
     private static void AssertResolvable(IServiceProvider provider, string providerId, Type? implementation, Type contract)

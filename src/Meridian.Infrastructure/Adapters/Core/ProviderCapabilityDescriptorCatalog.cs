@@ -15,6 +15,8 @@ using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.TwelveData;
+using Meridian.Infrastructure.Adapters.NYSE;
+using Meridian.Infrastructure.Adapters.OpenFigi;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -29,7 +31,11 @@ public static class ProviderCapabilityDescriptorCatalog
         new("alpaca", typeof(AlpacaMarketDataClient), typeof(AlpacaHistoricalDataProvider), typeof(AlpacaSymbolSearchProvider), typeof(AlpacaCorporateActionProvider), typeof(AlpacaOptionsChainProvider), typeof(AlpacaBrokerageGateway),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Crypto],
             StreamingAssetClasses: [MarketDataAssetClass.Equities, MarketDataAssetClass.Options, MarketDataAssetClass.Crypto, MarketDataAssetClass.News]),
-        new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider),
+        new("synthetic", Streaming: typeof(SyntheticMarketDataClient), Historical: typeof(SyntheticHistoricalDataProvider), Search: typeof(SyntheticMarketDataClient), Options: typeof(SyntheticOptionsChainProvider),
+            Exclusions:
+            [
+                new(nameof(ICorporateActionProvider), "SyntheticHistoricalDataProvider emits historical corporate-action evidence through ICorporateActionSource; it is not an on-demand ICorporateActionProvider.")
+            ],
             InstrumentTypes: [InstrumentType.Equity]),
         new("ibkr", Streaming: typeof(IBMarketDataClient), Historical: typeof(IBHistoricalDataProvider), Brokerage: typeof(IBBrokerageGateway),
             ExecutionMode: IBProviderCapabilityExecutionMode.SimulationWhenVendorSdkUnavailable,
@@ -41,8 +47,16 @@ public static class ProviderCapabilityDescriptorCatalog
             ]),
         new("yahoo", Historical: typeof(YahooFinanceHistoricalDataProvider),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Index, InstrumentType.Forex, InstrumentType.Crypto]),
-        new("polygon", Historical: typeof(PolygonHistoricalDataProvider), Search: typeof(PolygonSymbolSearchProvider),
+        new("polygon", Streaming: typeof(PolygonMarketDataClient), Historical: typeof(PolygonHistoricalDataProvider), Search: typeof(PolygonSymbolSearchProvider), Options: typeof(PolygonOptionsChainProvider),
+            Exclusions:
+            [
+                new(nameof(ICorporateActionProvider), "PolygonCorporateActionFetcher is a hosted Security Master ingestion workflow; it does not implement the on-demand ICorporateActionProvider contract.")
+            ],
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Forex, InstrumentType.Crypto, InstrumentType.Index]),
+        new("nyse", Streaming: typeof(NyseMarketDataClient), CompatibilityDataSource: typeof(NYSEDataSource),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.Index]),
+        new("openfigi", SymbolResolver: typeof(OpenFigiSymbolResolver),
+            InstrumentTypes: [InstrumentType.Equity]),
         new(
             "robinhood",
             typeof(RobinhoodMarketDataClient),
@@ -68,6 +82,20 @@ public static class ProviderCapabilityDescriptorCatalog
         new("nasdaq", Historical: typeof(NasdaqDataLinkHistoricalDataProvider), Search: typeof(NasdaqDataLinkSymbolSearchProvider), CorporateActions: typeof(NasdaqDataLinkCorporateActionProvider),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Commodity, InstrumentType.Index])
     ];
+
+    /// <summary>
+    /// Direct adapter folders that intentionally do not advertise provider capabilities. Keeping
+    /// these exclusions beside the descriptors makes the folder-level inventory reviewable.
+    /// </summary>
+    public static IReadOnlyList<ProviderAdapterFamilyExclusion> ExcludedAdapterFamilies { get; } =
+    [
+        new("Core", "Shared provider primitives and orchestration, not a vendor adapter family."),
+        new("Failover", "Composite streaming orchestration over catalogued providers, not an independent provider family."),
+        new("Plaid", "Runtime financial-connectivity adapters implement Plaid-specific Contracts ports, not market-data provider capabilities."),
+        new("Templates", "Copy-only provider and brokerage scaffolds are not runtime registrations."),
+        new("TradeStation", "Mapper-only brokerage assets; no concrete shared-contract runtime adapter exists."),
+        new("Tradier", "Mapper-only brokerage assets; no concrete shared-contract runtime adapter exists.")
+    ];
 }
 
 public sealed record ProviderCapabilityDescriptor(
@@ -78,9 +106,12 @@ public sealed record ProviderCapabilityDescriptor(
     Type? CorporateActions = null,
     Type? Options = null,
     Type? Brokerage = null,
+    Type? SymbolResolver = null,
+    Type? CompatibilityDataSource = null,
     IBProviderCapabilityExecutionMode ExecutionMode = IBProviderCapabilityExecutionMode.NotApplicable,
     IReadOnlyList<InstrumentType>? InstrumentTypes = null,
-    IReadOnlyList<MarketDataAssetClass>? StreamingAssetClasses = null)
+    IReadOnlyList<MarketDataAssetClass>? StreamingAssetClasses = null,
+    IReadOnlyList<ProviderCapabilityExclusion>? Exclusions = null)
 {
     /// <summary>
     /// Instrument types this provider is declared to cover. Declared here, next to the adapter
@@ -91,12 +122,16 @@ public sealed record ProviderCapabilityDescriptor(
 
     public IReadOnlyList<MarketDataAssetClass> SupportedStreamingAssetClasses { get; } = StreamingAssetClasses ?? [];
 
+    public IReadOnlyList<ProviderCapabilityExclusion> ExplicitExclusions { get; } = Exclusions ?? [];
+
     public bool HasStreaming => Streaming is not null;
     public bool HasHistorical => Historical is not null;
     public bool HasSearch => Search is not null;
     public bool HasCorporateActions => CorporateActions is not null;
     public bool HasOptions => Options is not null;
     public bool HasBrokerage => Brokerage is not null;
+    public bool HasSymbolResolver => SymbolResolver is not null;
+    public bool HasCompatibilityDataSource => CompatibilityDataSource is not null;
 
     public IEnumerable<Type> Implementations()
     {
@@ -112,8 +147,14 @@ public sealed record ProviderCapabilityDescriptor(
             yield return Options;
         if (Brokerage is not null)
             yield return Brokerage;
+        if (SymbolResolver is not null)
+            yield return SymbolResolver;
     }
 }
+
+public sealed record ProviderCapabilityExclusion(string Capability, string Reason);
+
+public sealed record ProviderAdapterFamilyExclusion(string FolderName, string Reason);
 
 /// <summary>Catalog-level readiness signal; inventory cannot promote a guidance build to live routing.</summary>
 public enum IBProviderCapabilityExecutionMode
