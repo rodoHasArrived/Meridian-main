@@ -76,7 +76,8 @@ public sealed class ProviderConnectionLifecycleService
 
     public async Task<ProviderCredentialVerificationResultDto> VerifyAsync(
         string providerId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? actor = null)
     {
         var descriptor = RequireDescriptor(providerId);
         var read = await _credentialStore.ReadForProviderAsync(descriptor.ProviderId, ct).ConfigureAwait(false);
@@ -110,7 +111,7 @@ public sealed class ProviderConnectionLifecycleService
 
         if (descriptor.ProviderId.Equals("alpaca", StringComparison.OrdinalIgnoreCase))
         {
-            return await VerifyAlpacaAsync(read, ct).ConfigureAwait(false);
+            return await VerifyAlpacaAsync(read, ct, actor).ConfigureAwait(false);
         }
 
         var accountingVerification = _accountingSystemProviders
@@ -119,6 +120,9 @@ public sealed class ProviderConnectionLifecycleService
         if (accountingVerification is not null)
         {
             var result = await accountingVerification.VerifyConnectionAsync(ct).ConfigureAwait(false);
+            await _credentialStore.RecordVerificationAsync(new ProviderCredentialVerificationUpdate(
+                descriptor.ProviderId, result.Success, result.LastError, result.ExternalCompanyId,
+                result.VerifiedAtUtc, actor ?? "provider-connection-lifecycle"), ct).ConfigureAwait(false);
             return new ProviderCredentialVerificationResultDto(
                 descriptor.ProviderId,
                 result.Success,
@@ -136,7 +140,7 @@ public sealed class ProviderConnectionLifecycleService
                 descriptor.ProviderId,
                 Success: true,
                 VerifiedAt: verifiedAt,
-                Actor: "browser-workstation"),
+                Actor: actor ?? "provider-connection-lifecycle"),
             ct).ConfigureAwait(false);
 
         return new ProviderCredentialVerificationResultDto(
@@ -163,7 +167,8 @@ public sealed class ProviderConnectionLifecycleService
 
     private async Task<ProviderCredentialVerificationResultDto> VerifyAlpacaAsync(
         ProviderCredentialReadResult read,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? actor)
     {
         var keyId = read.Get("KeyId");
         var secretKey = read.Get("SecretKey");
@@ -191,12 +196,14 @@ public sealed class ProviderConnectionLifecycleService
             using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"status {(int)response.StatusCode} ({response.ReasonPhrase ?? response.StatusCode.ToString()})");
+                throw new HttpRequestException("Provider verification returned an unsuccessful status.", null, response.StatusCode);
             }
 
             var account = await response.Content.ReadFromJsonAsync<AlpacaAccountVerificationResponse>(cancellationToken: ct)
                 .ConfigureAwait(false);
-            var accountId = FirstNonBlank(account?.AccountNumber, account?.Id, "unknown");
+            var accountId = FirstNonBlank(account?.AccountNumber, account?.Id);
+            if (string.IsNullOrWhiteSpace(accountId))
+                throw new InvalidOperationException("Provider account identity is missing.");
             var verifiedAt = DateTimeOffset.UtcNow;
             await _credentialStore.RecordVerificationAsync(
                 new ProviderCredentialVerificationUpdate(
@@ -204,7 +211,7 @@ public sealed class ProviderConnectionLifecycleService
                     Success: true,
                     ExternalAccountId: accountId,
                     VerifiedAt: verifiedAt,
-                    Actor: "browser-workstation"),
+                    Actor: actor ?? "provider-connection-lifecycle"),
                 ct).ConfigureAwait(false);
 
             return new ProviderCredentialVerificationResultDto(
@@ -219,8 +226,10 @@ public sealed class ProviderConnectionLifecycleService
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            var message = $"Alpaca /v2/account verification failed: {ex.Message}";
-            _logger.LogWarning(ex, "Provider connection center Alpaca verification failed for {Environment}", environment);
+            const string message = "Alpaca account verification failed.";
+            // Provider reason phrases, JSON paths and transport exceptions can echo credentials.
+            _logger.LogWarning("Alpaca account verification failed for {Environment} ({FailureType})",
+                environment, ex.GetType().Name);
             var verifiedAt = DateTimeOffset.UtcNow;
             await _credentialStore.RecordVerificationAsync(
                 new ProviderCredentialVerificationUpdate(
@@ -228,7 +237,7 @@ public sealed class ProviderConnectionLifecycleService
                     Success: false,
                     ErrorMessage: message,
                     VerifiedAt: verifiedAt,
-                    Actor: "browser-workstation"),
+                    Actor: actor ?? "provider-connection-lifecycle"),
                 ct).ConfigureAwait(false);
 
             return new ProviderCredentialVerificationResultDto(
