@@ -13,6 +13,12 @@ last_reviewed: 2026-08-30
 
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
 
+## Provider setup attribution
+
+Provider setup accepts the initiating actor from its HTTP boundary and retains it in credential
+vault audit records. Operator endpoints reject missing identity; internal callers retain an explicit
+service attribution when no operator initiated the call.
+
 ## Purpose
 
 Meridian application layer contains use cases, orchestration services, commands, and workflow

@@ -5200,7 +5200,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 657,
+      "line_count": 663,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5488,7 +5488,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2314,
+      "line_count": 2327,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
