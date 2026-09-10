@@ -883,6 +883,32 @@ public sealed class IBDataServicesTests
         => new(DateTimeOffset.UtcNow, price, 10m, "TRADES", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
 
     [Fact]
+    public void BidAskHistoricalTicks_WithOppositeBookImbalance_KeepDistinctDeduplicationKeys()
+    {
+        // Two BID_ASK snapshots with the same prices and combined size but opposite side sizes
+        // (bid/ask 1/9 versus 9/1) are distinct observations: summing the sides into one scalar
+        // would give them the same deduplication identity and lose the book imbalance.
+        var services = new IBDataServices(new RecordingTransport());
+        var requestId = services.RequestHistoricalTicks(
+            new IBHistoricalTickRequest(new SymbolConfig("AAPL"), null, DateTimeOffset.UtcNow, 2));
+        var timestamp = DateTimeOffset.UtcNow;
+        var provenance = ProviderDataProvenance.Unattributed(timestamp);
+
+        services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance, 1m, 9m));
+        services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance, 9m, 1m));
+
+        var ticks = services.GetRequests().Single().HistoricalTicks!;
+        ticks.Should().HaveCount(2);
+        ticks[0].BidSize.Should().Be(1m);
+        ticks[0].AskSize.Should().Be(9m);
+        ticks[1].Provenance.StableDeduplicationKey.Should().NotBe(
+            ticks[0].Provenance.StableDeduplicationKey,
+            "opposite book imbalances are distinct observations, not duplicates");
+    }
+
+    [Fact]
     public void PnlCallbacks_RetainAccountAndModelIsolation()
     {
         var services = new IBDataServices(new RecordingTransport());
