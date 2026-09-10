@@ -1094,6 +1094,17 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     /// <summary>Cancels the associated vendor stream when its request lifetime ends.</summary>
     public void CancelDataRequest(int requestId, string capability)
     {
+        if (capability == "depth-exchanges")
+        {
+            // No vendor cancel exists for the depth-exchange directory, so a cancelled or
+            // timed-out request's id would stay live at the head of the correlation FIFO and
+            // swallow the next successful callback — the terminal guard discards the result and
+            // the newer request never completes. Tombstoning the slot makes the dequeue skip
+            // it; an id already delivered never re-enters the FIFO, so a late tombstone is
+            // inert.
+            _failedDepthExchangeSubmissions.TryAdd(requestId, true);
+        }
+
         if (!IsConnected)
         {
             _dataServiceRequestIds.TryRemove(requestId, out _);
@@ -1375,7 +1386,14 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void marketDataType(int reqId, int marketDataType)
     {
         RecordMessageReceived();
-        MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(reqId, marketDataType));
+        // Ordinary quote tickers are allocated independently of data-service request ids, so a
+        // Level 1 stream's id can eventually collide with a tracked request. The availability
+        // report is forwarded only for ids this manager submitted on the data service's behalf
+        // — transport-owned domain evidence the id alone cannot provide — so a colliding
+        // foreign stream cannot overwrite an unrelated request's lineage and durable
+        // provenance.
+        if (_dataServiceRequestIds.ContainsKey(reqId))
+            MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(reqId, marketDataType));
     }
     public void contractDetails(int reqId, ContractDetails contractDetails)
     {
