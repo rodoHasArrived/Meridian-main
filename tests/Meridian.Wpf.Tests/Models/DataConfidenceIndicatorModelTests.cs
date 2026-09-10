@@ -259,6 +259,98 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromProviderStatus_UnconfiguredOptionalStreams_DoNotDegradeTheActiveFeed()
+    {
+        // Alpaca enumerates its separately configured options, crypto, and news endpoints
+        // on every equities connection, marked NotConfigured and degraded; unavailable
+        // optional capability must not present a healthy active feed as Provider Degraded
+        // or push its "not connected" reason into the badge notes.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new Meridian.Contracts.Api.ProviderStatusResponse(
+                ProviderId: "alpaca",
+                Name: "Alpaca",
+                ProviderType: "MarketData",
+                IsConnected: true,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 3,
+                LastHeartbeat: null,
+                ConnectionState: "Streaming",
+                LastMessageReceivedAt: DateTimeOffset.UtcNow,
+                Streams: new[]
+                {
+                    new Meridian.Contracts.Api.ProviderStreamStatusResponse(
+                        "Equities", "sip", "sip", "Connected", true, false, null),
+                    new Meridian.Contracts.Api.ProviderStreamStatusResponse(
+                        "News", "news", "news-basic", "NotConfigured", false, true,
+                        "News stream is configured separately and not connected.")
+                }));
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Current);
+        model.Notes.Should().NotContain("News stream",
+            "an unconfigured optional stream's reason must not reach the badge notes");
+    }
+
+    [Fact]
+    public void FromProviderStatus_DegradedConfiguredStream_StillDegradesTheBadge()
+    {
+        // The unconfigured-stream exclusion must not swallow genuine degradation of a
+        // stream the provider actually runs.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new Meridian.Contracts.Api.ProviderStatusResponse(
+                ProviderId: "alpaca",
+                Name: "Alpaca",
+                ProviderType: "MarketData",
+                IsConnected: true,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 3,
+                LastHeartbeat: null,
+                ConnectionState: "Streaming",
+                LastMessageReceivedAt: DateTimeOffset.UtcNow,
+                Streams: new[]
+                {
+                    new Meridian.Contracts.Api.ProviderStreamStatusResponse(
+                        "Equities", "iex", "iex", "Connected", true, true,
+                        "Limited or delayed equity feed; not consolidated SIP data.")
+                }));
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.ProviderDegraded);
+        model.Notes.Should().Contain("Limited or delayed equity feed");
+    }
+
+    [Fact]
+    public void FromProviderStatus_TimestampAheadOfTheLocalClock_ReadsAsStale()
+    {
+        // Clock skew or malformed diagnostics can stamp a received-at instant hours ahead
+        // of this workstation; the one-sided ageing check alone would report Current until
+        // wall-clock time caught up. Small forward skew stays within tolerance.
+        static Meridian.Contracts.Api.ProviderStatusResponse Provider(DateTimeOffset receivedAt)
+            => new(
+                ProviderId: "polygon",
+                Name: "Polygon.io",
+                ProviderType: "MarketData",
+                IsConnected: true,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 3,
+                LastHeartbeat: null,
+                ConnectionState: "Streaming",
+                LastMessageReceivedAt: receivedAt);
+
+        var futureModel = DataConfidenceIndicatorModel.FromProviderStatus(
+            Provider(DateTimeOffset.UtcNow.AddHours(6)),
+            freshnessWindow: TimeSpan.FromMinutes(15));
+        var skewedModel = DataConfidenceIndicatorModel.FromProviderStatus(
+            Provider(DateTimeOffset.UtcNow.AddSeconds(10)),
+            freshnessWindow: TimeSpan.FromMinutes(15));
+
+        futureModel.ConfidenceLabel.Should().Be(DataConfidenceLabels.Stale);
+        futureModel.Tone.Should().Be(WorkspaceTone.Warning);
+        skewedModel.ConfidenceLabel.Should().Be(DataConfidenceLabels.Current);
+    }
+
+    [Fact]
     public void WithUpdatedFields_TheExplanationDescribesTheCurrentValues()
     {
         // Explanation is computed from the record's current fields: a `with` update must

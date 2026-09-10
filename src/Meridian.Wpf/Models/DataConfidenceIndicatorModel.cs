@@ -202,9 +202,13 @@ public sealed record DataConfidenceIndicatorModel(
     {
         // A connected provider is not proof of current data: without any received-at
         // timestamp freshness cannot be evaluated, and with a caller-supplied window an
-        // old timestamp is stale even while the socket stays up.
+        // old timestamp is stale even while the socket stays up. A timestamp ahead of the
+        // local clock beyond plausible skew is malformed freshness evidence, and the
+        // one-sided ageing check alone would report it as Current until wall-clock time
+        // caught up with it.
         var confidence = degraded ? DataConfidenceLevel.ProviderDegraded
             : asOf is null ? DataConfidenceLevel.Unknown
+            : asOf.Value - DateTimeOffset.UtcNow > MaximumForwardClockSkew ? DataConfidenceLevel.Stale
             : freshnessWindow is { } window && DateTimeOffset.UtcNow - asOf.Value > window ? DataConfidenceLevel.Stale
             : DataConfidenceLevel.Current;
 
@@ -313,9 +317,14 @@ public sealed record DataConfidenceIndicatorModel(
         _ => DataConfidenceLabels.Unknown
     };
 
+    // Providers stamp received-at instants with their own clocks; small skew against this
+    // workstation is normal, but anything further ahead is malformed diagnostics rather
+    // than evidence of fresh data.
+    private static readonly TimeSpan MaximumForwardClockSkew = TimeSpan.FromMinutes(1);
+
     private static bool HasDegradedStream(
         IReadOnlyList<Meridian.Contracts.Api.ProviderStreamStatusResponse>? streams)
-        => streams is not null && streams.Any(static stream => stream.IsDegraded);
+        => streams is not null && streams.Any(static stream => stream.IsDegraded && IsConfiguredStream(stream));
 
     private static string? DegradedStreamReasons(
         IReadOnlyList<Meridian.Contracts.Api.ProviderStreamStatusResponse>? streams)
@@ -326,12 +335,20 @@ public sealed record DataConfidenceIndicatorModel(
         }
 
         var reasons = streams
-            .Where(static stream => stream.IsDegraded && !string.IsNullOrWhiteSpace(stream.DegradationReason))
+            .Where(static stream => stream.IsDegraded && IsConfiguredStream(stream) && !string.IsNullOrWhiteSpace(stream.DegradationReason))
             .Select(static stream => stream.DegradationReason!.Trim())
             .Distinct(StringComparer.Ordinal)
             .ToArray();
         return reasons.Length == 0 ? null : string.Join("; ", reasons);
     }
+
+    // Providers enumerate every stream endpoint they know and mark the separately
+    // configured ones both NotConfigured and degraded (Alpaca's options, crypto, and news
+    // endpoints on an equities connection). An unconfigured optional stream is unavailable
+    // capability, not degradation of the active feed, so only configured streams fold into
+    // the aggregate badge and its notes.
+    private static bool IsConfiguredStream(Meridian.Contracts.Api.ProviderStreamStatusResponse stream)
+        => !string.Equals(stream.LifecycleState, "NotConfigured", StringComparison.OrdinalIgnoreCase);
 
     private static string Normalize(params string?[] candidates)
         => candidates.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
