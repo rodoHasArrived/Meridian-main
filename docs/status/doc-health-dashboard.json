@@ -2608,7 +2608,7 @@
     },
     {
       "path": "docs/generated/database/modules/security_master.md",
-      "line_count": 1324,
+      "line_count": 1326,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5360,7 +5360,7 @@
     },
     {
       "path": "src/Meridian.Instruments/README.md",
-      "line_count": 172,
+      "line_count": 179,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
