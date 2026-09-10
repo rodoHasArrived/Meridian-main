@@ -306,11 +306,11 @@ public static class UiEndpoints
     /// limiting entirely (intended for test environments where all requests share the
     /// same loopback address and a 10/min limit would be exhausted immediately).
     /// </summary>
-    public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services)
+    public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false)
     {
         // Allow tests (and dev environments) to opt out of rate limiting via env var.
         // In production this variable is absent, so the guard never triggers.
-        var disableRateLimit = string.Equals(
+        var disableRateLimit = !forceEnable && string.Equals(
             Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT"),
             "true",
             StringComparison.OrdinalIgnoreCase);
@@ -318,6 +318,13 @@ public static class UiEndpoints
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.OnRejected = (context, _) =>
+            {
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                    context.HttpContext.Response.Headers.RetryAfter = Math.Max(1, Math.Ceiling(retryAfter.TotalSeconds))
+                        .ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return ValueTask.CompletedTask;
+            };
 
             if (disableRateLimit)
             {
