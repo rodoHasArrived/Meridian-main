@@ -609,72 +609,86 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     private bool IsRoutable(int requestId)
         => _requests.TryGetValue(requestId, out var request) && IsActiveStatus(request.Status);
 
+    /// <summary>
+    /// Capability-checked routability for payload recorders. The vendor allocates ordinary
+    /// market-data ticker ids independently of this service's request ids, so after enough
+    /// subscription churn a foreign stream's id can collide with a tracked request; routed on
+    /// id alone, its payload would be appended to an unrelated read model and carried into the
+    /// durable projection. Each payload callback therefore also requires the tracked request's
+    /// immutable capability to match the callback's domain. Terminal notices and availability
+    /// reports stay id-routed: they carry no payload to misfile.
+    /// </summary>
+    private bool IsRoutable(int requestId, string capability)
+        => _requests.TryGetValue(requestId, out var request)
+           && IsActiveStatus(request.Status)
+           && string.Equals(request.Capability, capability, StringComparison.Ordinal);
+
     // Ownership guards are inline rather than a shared delegate-taking wrapper: these run on
     // the IB reader loop at market-data rates, and a capturing lambda per callback would
     // allocate a closure for every vendor tick, tracked or not.
     private void OnContractDetailsReceived(object? sender, (int RequestId, ProviderContractDetails Details) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "contract-details"))
             RecordContractDetails(value.RequestId, value.Details);
     }
 
     private void OnOptionChainDefinitionReceived(object? sender, (int RequestId, ProviderOptionChainDefinition Definition) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "option-chain"))
             RecordOptionChainDefinition(value.RequestId, value.Definition);
     }
 
     private void OnHistoricalNewsReceived(object? sender, (int RequestId, ProviderNewsHeadline Headline) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "historical-news"))
             RecordNewsHeadline(value.RequestId, value.Headline);
     }
 
     private void OnNewsArticleReceived(object? sender, (int RequestId, ProviderNewsArticlePayload Article) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "news-article"))
             RecordNewsArticle(value.RequestId, value.Article);
     }
 
     private void OnFundamentalReportReceived(object? sender, (int RequestId, ProviderFundamentalReport Report) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "fundamentals"))
             RecordFundamentalReport(value.RequestId, value.Report);
     }
 
     private void OnTickByTickReceived(object? sender, (int RequestId, ProviderTickByTickObservation Observation) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "tick-by-tick"))
             RecordTickByTick(value.RequestId, value.Observation);
     }
 
     private void OnDepthExchangesReceived(object? sender, (int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "depth-exchanges"))
             RecordDepthExchanges(value.RequestId, value.Exchanges);
     }
 
     private void OnDividendEarningsReceived(object? sender, (int RequestId, ProviderDividendEarnings Payload) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "dividend-earnings"))
             RecordDividendEarnings(value.RequestId, value.Payload);
     }
 
     private void OnOptionContractReceived(object? sender, (int RequestId, ProviderOptionContract Contract) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "option-chain"))
             RecordOptionContract(value.RequestId, value.Contract);
     }
 
     private void OnScannerResultReceived(object? sender, (int RequestId, ProviderScannerResult Result) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "scanner"))
             RecordScannerResult(value.RequestId, value.Result);
     }
 
     private void OnScannerBatchCompleted(object? sender, int requestId)
     {
-        if (!IsRoutable(requestId))
+        if (!IsRoutable(requestId, "scanner"))
             return;
 
         // A cycle that delivered no rows never reaches the replacement in RecordScannerResult,
@@ -695,25 +709,25 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
     private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "real-time-bars"))
             RecordRealTimeBar(value.RequestId, value.Bar);
     }
 
     private void OnHistoricalTickReceived(object? sender, (int RequestId, ProviderHistoricalTick Tick, bool Completed) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "historical-ticks"))
             RecordHistoricalTick(value.RequestId, value.Tick, value.Completed);
     }
 
     private void OnPnlReceived(object? sender, (int RequestId, ProviderAccountPnl Pnl) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "pnl"))
             RecordPnl(value.RequestId, value.Pnl);
     }
 
     private void OnMarketRuleReceived(object? sender, (int RequestId, IReadOnlyList<ProviderMarketRuleIncrement> Increments) value)
     {
-        if (IsRoutable(value.RequestId))
+        if (IsRoutable(value.RequestId, "market-rule"))
             RecordMarketRule(value.RequestId, value.Increments);
     }
 
@@ -806,6 +820,11 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             _requests.TryRemove(requestId, out _);
             _ownership.TryRemove(requestId, out _);
             _requestCorrelationIds.TryRemove(requestId, out _);
+            // Request ids are monotonic and the transport was never submitted, so the
+            // registration gate — and any publication still queued inside it — can never be
+            // drained or reused; leaving it behind would leak one gate per attempt while a
+            // persistence outage keeps failing registrations.
+            _readModelGates.TryRemove(requestId, out _);
             throw;
         }
 
