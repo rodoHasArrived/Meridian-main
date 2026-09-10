@@ -25,7 +25,7 @@ public sealed class ProviderSetupService
         _setupRegistry = setupRegistry;
     }
 
-    public async Task<ProviderSetupResult> ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default)
+    public async Task<ProviderSetupResult> ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default, string? actor = null)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -86,7 +86,7 @@ public sealed class ProviderSetupService
                         descriptor.ProviderId,
                         submittedCredentials,
                         string.IsNullOrWhiteSpace(environment) ? null : environment,
-                        Actor: SetupActor,
+                        Actor: actor ?? SetupActor,
                         Metadata: new Dictionary<string, string>
                         {
                             ["setupSource"] = "legacy-provider-configure"
