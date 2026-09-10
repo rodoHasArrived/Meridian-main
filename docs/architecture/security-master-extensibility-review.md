@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-08 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-10 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -5015,6 +5015,232 @@ Read as a delta on the standing lists; ordered by institutional risk per unit of
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-09-10
+
+Pinned at `168a55e4`, which is also `origin/main`. **No Security Master source changed since the
+2026-09-08 pass** — `git log --since=2026-09-07` over `src/Meridian.Contracts/SecurityMaster`,
+`src/Meridian.Application/SecurityMaster`, `src/Meridian.Storage/SecurityMaster` and
+`src/Meridian.ReferenceData/SecurityMaster` is empty, and the three commits in the range are the
+2026-09-08 review pass and its generated-doc refresh. Every standing finding — C1–C7, A1–A4,
+B1–B7, N4/N5, N6, P1, P3b, P4, A2 and the deferred quartet — therefore stands unchanged at the
+anchors those passes recorded, and this pass did not re-derive them.
+
+Because the code was still, this pass took as its frame the one part of the subsystem **no prior
+pass has framed on**: the migrate-on-read schema-evolution machinery — `AssetSpecificTermsSchema` /
+`EconomicTermsSchema`, the three upcasters and the composed chain, the `schema_version` column they
+feed, and the event-replay path that depends on them. (`Upcaster` appeared zero times in this
+document before this section; `SchemaVersion` once, in passing.)
+
+The verdict is unchanged. What this pass adds is that **the subsystem's schema-evolution layer is
+the least-guarded part of it**, and that the cross-family bridge the 2026-08 work added to close a
+read outage is presented as economics-preserving while carrying 11 of roughly 60 fields. C1 found
+the normalized read model to be a lossy one-way projection that consumers route around; D1 below is
+the same loss on the *return* leg, where nothing routes around it because it is the rebuild path.
+
+### D1 — The cross-family v2→v1 bridge drops 9 of the 14 modules it is given, and it is the rebuild fallback
+
+`SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert`
+(`src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:50-90`) flattens
+a v2 economic-terms document into the flat v1 asset-specific-terms shape. It reads five modules —
+`maturity`, `coupon`, `payment`, `accrual`, `discount` — and writes eleven fields.
+
+`BuildEconomicTermsJson` (`src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs:90-208`)
+emits **fourteen**. The nine `Convert` never looks at:
+
+`redemption`, `call`, `auction`, `sweep`, `financing`, `issuer`, `equityBehavior`, `fund`,
+`structuredProduct`.
+
+Six more fields are dropped inside the five modules it does read: `accrual.accrualMethod`,
+`accrual.exDividendDays`, `accrual.businessDayConvention`, `accrual.holidayCalendar`,
+`payment.paymentLagDays`, `payment.paymentCurrency`.
+
+What that means per asset class, in the terms an institutional user would name:
+
+- A **callable bond** loses `isCallable`, `firstCallDate`, `callPrice`, the entire `callSchedule`
+  and `putSchedule`, and `makeWholeSpreadBps`. What survives is a bullet bond with the same coupon.
+- An **MBS/ABS** loses `factor` and `factorDate` — the pool factor. Current face is
+  original face times factor; without it the position's principal balance is simply wrong. It also
+  loses `poolIdentifier`, `trancheClass`, `prepaymentAssumption`, `notionalBalance`,
+  `weightedAvgCoupon`, `creditEnhancementPct` and the IO/PO strip flags.
+- A **money-market fund** loses `sweepEligible`, `weightedAverageMaturityDays` and
+  `liquidityFeeEligible`; a **sweep vehicle** loses its whole `sweep` module, so the program name,
+  vehicle type and target account are gone.
+- **Every class** loses the `issuer` module — `leiCode`, `issuerSector`, `issuerCountry`,
+  `ultimateParentName`. That is the input to issuer-concentration and credit-exposure reporting.
+- **Repo / financing** loses counterparty, collateral type and haircut in full.
+
+**The path this fires on is projection rebuild.** `SecurityEconomicDefinitionAdapter.ToProjection`
+(`:57-58`) takes the retained v1 payload when present and falls back to
+`SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms)` when
+`LegacyAssetSpecificTerms` is null. In-process that field is never null: its only construction site
+is `ToEconomicRecord` (`:16-36`), which always assigns `projection.AssetSpecificTerms`, a
+non-nullable `JsonElement`. The fallback is reachable only for a
+`SecurityEconomicDefinitionRecord` **deserialized from a stored payload** in which the property is
+absent or null — and that is exactly what the replay path does:
+`SecurityMasterAggregateRebuilder.RebuildAsOfAsync` (`:61`), `RebuildRecordedAsOfAsync` (`:91`) and
+`RebuildAsync` (`:115`) each fold `SecurityMasterMapping.FromEconomicPayload(@event.Payload)`
+(`SecurityMasterMapping.cs:121-132`) over the event stream and hand the result to `ToProjection`.
+`SecurityMasterProjectionService.cs:36` does the same from a seed.
+
+`FromEconomicPayload` has two branches, and only one is exposed: a payload carrying
+`classification` and `economicTerms` deserializes straight to the record, so an event written
+without `legacyAssetSpecificTerms` yields null and takes the lossy fallback; a payload in the older
+projection shape goes through `ToEconomicRecord` and is safe. Whether such events exist is a
+question about deployment history that cannot be answered from the repository, and this finding
+does not claim they do. It claims the codebase models the case as live — the field is declared
+`JsonElement?` (`SecurityDtos.cs:119`), the adapter carries an explicit fallback for it, and the
+test suite constructs it null and calls that case "the latent v2 trap"
+(`SecurityAssetSpecificTermsUpcasterChainTests.cs:119-159`) — while the fallback silently discards
+about four fifths of the document.
+
+**Nothing says so.** The upcaster's own summary claims "the same document reads as a valid v1
+payload **with its economics preserved**" (`SecurityAssetSpecificTermsUpcasterChain.cs:13-15`); the
+adapter comment says it "lands as a valid v1 payload" (`SecurityEconomicDefinitionAdapter.cs:53-56`).
+Neither is qualified. There is no log, no diagnostic and no marker on the rebuilt projection
+recording that it was reconstructed by the lossy route, so a rebuilt callable bond is
+indistinguishable from a bullet bond that was always a bullet bond.
+
+**And nothing guards it.** `SecurityAssetTermsSchemaRoundTripTests` forces the v1 serialize and
+deserialize sides to agree per class and per field. `Convert` has four spot tests
+(`SecurityAssetSpecificTermsUpcasterChainTests.cs:34, :70, :120`) asserting `maturityDate`,
+`couponRate`, `dayCount` and `yieldRate` — the fields that do survive. No test asserts what is
+lost, so the nine dropped modules cannot fail a test, and a fifteenth module added to
+`BuildEconomicTermsJson` will be dropped by `Convert` in silence exactly as the thirteen in C1 are
+dropped by the serializer. This is the same missing instrument C1 asked for, on the other leg of
+the same round trip, and it strengthens the case for ranking the deferred codec-generation item
+above "deferred".
+
+The remedy has two halves, and the first is cheap. Either `Convert` covers the fourteen modules or
+its callers stop presenting it as preserving economics: at minimum the two doc comments must be
+corrected, and the rebuilt projection must carry a marker saying it came from the flattening route.
+The durable half is a `Convert` coverage test built the way the v1 round-trip suite is built —
+table-driven off `SecurityTermModules`, asserting per module that a populated module survives the
+v2 → v1 → read cycle — so the loss is enumerated in a test rather than discovered in a restatement.
+
+### D2 — The two payload families share one integer key, and version 2 is reserved by prose alone
+
+`SecurityMasterSchemaVersions.cs:48-53` states the rule plainly: `AssetSpecificTermsSchema` and
+`EconomicTermsSchema` "share nothing but the `schemaVersion` key, so their version numbers must
+never be compared against each other's acceptance sets."
+
+`SecurityAssetSpecificTermsUpcasterChain.Normalize` (`:130-136`) compares them:
+
+```csharp
+var version = SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(payload);
+return version == EconomicTermsSchema.Current
+    ? SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(payload)
+    : SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(payload);
+```
+
+The dispatch is on the bare integer read out of a payload sitting in the asset-specific-terms slot.
+That is not an inconsistency to tidy — the bridge cannot work any other way, because the slot holds
+one key and two families. But it has a consequence the code does not record: **the flat family can
+never use version 2.** `AssetSpecificTermsSchema` skips from `Legacy = 1` to
+`CustomAssetProfile = 3` (`:15, :18`), and nothing explains the gap; there is no reserved constant,
+no comment at the declaration, and no test asserting 2 stays unused.
+
+If a later change declares a genuine v1→v2 evolution of the flat family, every such payload routes
+into `Convert`, which looks for nested `maturity` / `coupon` / `discount` / `accrual` / `payment`
+objects, finds none in a flat document, and — because `GetObject` returns null for each and every
+`WriteIfPresent` returns false (`:92-111`) — emits `{"schemaVersion":1}`. An empty terms object,
+stamped as valid legacy, accepted by the guard at `SecurityMasterMapping.cs:711-723`, and persisted
+by the store with `schema_version = 1`. Total loss of the record's economics with no exception and
+no diagnostic anywhere in the path.
+
+The fix is a few lines and belongs with D1: declare the reservation
+(`public const int ReservedForEconomicTerms = 2;` or equivalent) with a comment at the declaration
+saying why, and add the test the chain's own unknown-future-version test
+(`SecurityAssetSpecificTermsUpcasterChainTests.cs:96-106`) is the template for — asserting that no
+`AssetSpecificTermsSchema` constant equals `EconomicTermsSchema.Current`. Better still, discriminate
+the families on something other than the shared integer, since a payload family that must avoid
+another family's numbers is not really versioned independently of it.
+
+### D3 — `securities.schema_version` has two definitions, and they disagree on the case the column exists for
+
+Migration `024_security_master_schema_version_column.sql` adds the column and states its purpose:
+"compatibility and audit queries can filter on it directly (e.g. WHERE schema_version = 1) without
+a per-row JSON extraction." It backfills **from the blob**:
+
+```sql
+set schema_version = (asset_specific_terms->>'schemaVersion')::integer
+```
+
+`PostgresSecurityMasterStore.UpsertProjectionCoreAsync` writes it from the **post-upcast** value:
+
+```csharp
+var schemaVersion = _assetSpecificTermsUpcaster.Upcast(record.AssetSpecificTerms.GetRawText())?.SchemaVersion
+    ?? SecurityMasterSchemaVersions.DefaultAssetSpecificTerms;
+```
+
+— `PostgresSecurityMasterStore.cs:324-329`, with the payload itself bound raw at `:346`, under a
+comment that states the divergence as intentional: "The stored payload itself is written unchanged
+so no existing read path observes an altered blob."
+
+For unstamped and v1 rows the two definitions agree at 1, which is why this has stayed invisible.
+They diverge on precisely the case the column was added to make visible: a v2 economic-terms
+document in the slot backfills as 2 and upserts as 1, so the column answers "what version is this
+row?" differently depending on whether the row was migrated or written. An operator running the
+migration's own example query — `where schema_version = 1`, to select rows the flat readers can
+handle — selects a v2 blob that the guard at `SecurityMasterMapping.cs:711-723` will reject on read,
+because that guard resolves the version from the blob and has never consulted the column.
+
+The blast radius is bounded, and the bound is worth stating: **no code reads this column.** A grep
+for `schema_version` across `src/Meridian.Storage/SecurityMaster/` returns the insert, the
+`on conflict` update, the parameter bind and the comment — no `select` anywhere, in this store or
+any other. The column and its index (`ix_securities_schema_version`) exist for human compatibility
+and audit queries, so the defect lands entirely on the audience the column was built for, and on
+any future reader that trusts it. Two options, both small: promote the *normalized* payload
+alongside the normalized version, which makes the column true by construction and closes the raw-v2
+blob at the same time; or keep the blob raw, define the column as "the version of the stored blob"
+in both writers, and let the guard stay the only authority on readability. What cannot hold is the
+present arrangement, where the same column means two things and the migration comment documents
+only one of them.
+
+### Smaller notes, not filed as findings
+
+- **`SecurityAssetSpecificTermsUpcasterPipeline.ToSchemaVersion` is wrong for profile payloads.** It
+  declares `AssetSpecificTermsSchema.Legacy` (`:176`), but the pipeline returns
+  `CustomAssetProfile` (3) for a profile-backed payload, which the chain passes through unchanged
+  and the chain's own test asserts (`SecurityAssetSpecificTermsUpcasterChainTests.cs:86-93`). The
+  declared "to" version is a property of the upcaster, not of the result, and only the result is
+  used — `:328` reads `.SchemaVersion` off the returned record, never `ToSchemaVersion` — so nothing
+  is wrong today. It is a false statement in a contract that a future consumer of
+  `ISchemaUpcaster<T>` would reasonably believe.
+- **The upcaster interface models single-hop transitions, and the chain is a hand-written `if`.**
+  `Normalize` (`:130-136`) is a two-branch conditional, not a registry keyed on
+  `FromSchemaVersion`. With three upcasters that is the right size; the note is only that adding a
+  fourth means editing the conditional, and the subsystem's recurring complaint (finding 4, N4/N5,
+  A3) is that adding a thing means editing N hand-maintained places.
+- **`AssetSpecificTermsSchema.IsAccepted` takes `isProfileBacked` as a caller-supplied boolean**
+  (`:31-33`), derived at the one guard site from the payload itself
+  (`SecurityMasterMapping.cs:725-729`). A second caller that computes it differently gets a
+  different acceptance answer for the same payload. Only one non-test caller exists today
+  (`SecurityValidationService.cs:214` is the other, and it derives the flag the same way).
+
+### Priorities from this pass
+
+Read as a delta on the standing lists. All three are small; none needs a design decision.
+
+1. **Correct the two doc comments that call the v2→v1 bridge economics-preserving (D1).** It is two
+   sentences, and until it lands, the next reviewer reads "with its economics preserved" instead of
+   the call graph — which is the failure mode B1's procedural rule was written for. Do it whether
+   or not the coverage test lands this pass.
+2. **Reserve version 2 in `AssetSpecificTermsSchema` and add the test (D2).** A constant, a comment
+   at the declaration and one assertion. It closes a silent total-loss path whose cost, if the gap
+   is ever filled by someone who does not know why it is a gap, is every economic term on every
+   record of the affected family.
+3. **Give `Convert` a per-module coverage test (D1).** Table-driven off `SecurityTermModules`, in
+   the shape `SecurityAssetTermsSchemaRoundTripTests` already proves. This is C1's requested
+   instrument applied to the other leg; specifying both at once is less work than specifying either
+   twice, and it is the guard that stops module fifteen from vanishing.
+4. **Pick one definition of `securities.schema_version` (D3).** Promoting the normalized payload is
+   the option that also removes the raw-v2 blob, and it is the one this review would choose; either
+   way the migration comment and the store comment must end up describing the same column.
+5. **Everything above stays behind C4 and C5** from the 2026-09-08 pass, which remain the two
+   cheapest correctness fixes in the subsystem and have now gone a pass without moving.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -5222,3 +5448,34 @@ and Codex-memory checks, the roadmap and source diagram renderers, the workflow 
 the subsystem it reviews, and it is recorded here only so the sentence above is not read as
 claiming more silence than the pass kept. (Added 2026-09-08, after the section was first written:
 its first version said "no tests were run", which the documentation lane's own checks contradict.)
+
+The 2026-09-10 pass first established that the subsystem was unchanged — `git log --since` and a
+`rev-list --left-right --count` against `origin/main` over the four Security Master source roots,
+all empty — and so did not re-derive any standing finding; the re-verification statement at the top
+of that section is a statement about the commit range, not about re-reading the anchors. It then
+read, as its own frame: `SecurityMasterSchemaVersions.cs`,
+`SecurityAssetSpecificTermsUpcaster.cs` and `SecurityAssetSpecificTermsUpcasterChain.cs` in full;
+`SecurityEconomicDefinitionAdapter.cs` (`ToEconomicRecord`, `ToProjection`,
+`BuildEconomicTermsJson`) against `Convert`, module by module and field by field;
+`PostgresSecurityMasterStore.UpsertProjectionCoreAsync` and migration `024`; the acceptance guard
+`EnsureSupportedAssetSchemaVersion` and its two callers; `SecurityMasterMapping.FromEconomicPayload`
+and `ToEventEnvelope`; the three `SecurityMasterAggregateRebuilder` replay entry points and
+`SecurityMasterProjectionService`; and the three upcaster test files. Reachability for D1 was
+established by enumerating every construction site of `SecurityEconomicDefinitionRecord` and every
+caller of `ToProjection` rather than by assuming the null case, and the finding says explicitly
+which half of it is a source claim and which half is a question about deployment history that the
+repository cannot answer.
+
+No code was changed. No .NET or TypeScript test was run and no reviewed code path was executed —
+the .NET SDK is not present in the pass's environment — so every claim in the 2026-09-10 pass is a
+source claim, and D3's blast-radius bound ("no code reads this column") is a grep result over
+`src/`, not an observation of a running system.
+
+The repository's documentation validation did run, on the pass's own diff: the docs-automation
+`core` profile (verified idempotent on a second run), `validate-examples` (0 invalid, so the two
+added `csharp` blocks parse), the rules engine, the AI inventory, handoff, contract-drift and
+Codex-memory checks, and `tools/roadmap/enforce_phase_scope.py` at `--phase PR1` (0 violations,
+with the regenerated `docs/status/` reports correctly recognized as generated-exempt). That is a
+check on this document, not on the subsystem it reviews, and it is recorded here only so the
+paragraph above is not read as claiming more silence than the pass kept — the same correction the
+2026-09-08 pass had to make after the fact (`4481741f`), made here before it was needed.
