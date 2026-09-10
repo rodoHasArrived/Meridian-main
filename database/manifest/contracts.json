@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "74eb29c3614b73f7d8fbc9af603ce928b913069c1538e056bc233800ec7ab23c",
+      "fingerprint": "f2c46579c0a2c8016e28e1963752123de78370d4487b01a8a5a4e2825811937b",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -530,8 +530,11 @@
         "Meridian.Contracts.Configuration.SymbolGroupsConfigDto",
         "Meridian.Contracts.Configuration.SymbolMappingsConfigDto",
         "Meridian.Contracts.Coordination.CoordinationSnapshot",
+        "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+        "Meridian.Contracts.Coordination.ExecutionLeaseLostException",
         "Meridian.Contracts.Coordination.IClusterCoordinator",
         "Meridian.Contracts.Coordination.ICoordinationStore",
+        "Meridian.Contracts.Coordination.IExecutionLease",
         "Meridian.Contracts.Coordination.ILeaseManager",
         "Meridian.Contracts.Coordination.IScheduledWorkOwnershipService",
         "Meridian.Contracts.Coordination.ISubscriptionOwnershipService",
@@ -3832,7 +3835,7 @@
       ]
     }
   ],
-  "fingerprint": "ed493a3584c6a995e0f4ac5b74be81c7d5d09c26d560bfab6c2ce58d2f2c7447",
+  "fingerprint": "92d2403d311bee7255327d1dbbe956de570401a9678cc16687cf3c92647d6bf4",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4500,13 +4503,16 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "6c467716dd79181cb03f0038ea1e7962eea13e159166316a369baaa31fd5e77c",
+      "fingerprint": "c5d44f29b7c26f1e17c9847a2c0988f0138fa8bb2d4d3c4d4140103cebd59ae6",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Coordination",
       "object_ids": [
         "Meridian.Contracts.Coordination.CoordinationSnapshot",
+        "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+        "Meridian.Contracts.Coordination.ExecutionLeaseLostException",
         "Meridian.Contracts.Coordination.IClusterCoordinator",
         "Meridian.Contracts.Coordination.ICoordinationStore",
+        "Meridian.Contracts.Coordination.IExecutionLease",
         "Meridian.Contracts.Coordination.ILeaseManager",
         "Meridian.Contracts.Coordination.IScheduledWorkOwnershipService",
         "Meridian.Contracts.Coordination.ISubscriptionOwnershipService",
@@ -5749,7 +5755,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "5979f1aa2be285ea9a6383840049cb3e1e8d022dad8d8d5df2cfddf5d214911c",
+      "fingerprint": "add19aa7bad1e7b0c8d70199c21c2121959a430a652cdef65d4955893e32ac6b",
       "mapped_schemas": [
         "security_master"
       ],
@@ -79517,6 +79523,105 @@
     },
     {
       "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "a39e69dd2a8e6329e70fe7ca5ea886e030957b45b092cbee15e0dcfd856cfac8",
+      "full_name": "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+      "id": "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CurrentOwner",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 22,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Lease",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IExecutionLease?",
+          "source_line": 22,
+          "type": "IExecutionLease?"
+        }
+      ],
+      "name": "ExecutionLeaseAcquireResult",
+      "namespace": "Meridian.Contracts.Coordination",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult",
+      "references": [
+        "Meridian.Contracts.Coordination.IExecutionLease"
+      ],
+      "source": {
+        "line": 22,
+        "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
+      },
+      "sources": [
+        {
+          "line": 22,
+          "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "InvalidOperationException ($\"Execution ownership of '{resourceId}' was lost; no further side effects are permitted.\")"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "fe26d304ad8e810927bdaa01d5b10d5d0d799878f4d3182bdb4c5ab9c9c2edb6",
+      "full_name": "Meridian.Contracts.Coordination.ExecutionLeaseLostException",
+      "id": "Meridian.Contracts.Coordination.ExecutionLeaseLostException",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ExecutionLeaseLostException",
+      "namespace": "Meridian.Contracts.Coordination",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Coordination.ExecutionLeaseLostException",
+      "references": [],
+      "source": {
+        "line": 27,
+        "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
+      },
+      "sources": [
+        {
+          "line": 27,
+          "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "service_contract",
       "containing_type": null,
       "contract_sets": [
@@ -79577,6 +79682,41 @@
         {
           "line": 3,
           "path": "src/Meridian.Contracts/Coordination/ICoordinationStore.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "IAsyncDisposable"
+      ],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "4ac2c8217055d7e6157dedf5ac99dfa4754ba989b7c97ae6977b53b596e8840c",
+      "full_name": "Meridian.Contracts.Coordination.IExecutionLease",
+      "id": "Meridian.Contracts.Coordination.IExecutionLease",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IExecutionLease",
+      "namespace": "Meridian.Contracts.Coordination",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Coordination.IExecutionLease",
+      "references": [],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs"
         }
       ],
       "type_parameters": []
@@ -217303,7 +217443,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "d22c265eefa94cbc23985eca51405f1e5c2178cd48802681aee5dda548e2c583",
+      "fingerprint": "1bbd06d59a8da1c2047b4f7819982910ad32970013d94fdd0cf732668246c0e5",
       "full_name": "Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
       "id": "Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
       "kind": "class",
@@ -217317,12 +217457,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
       "references": [],
       "source": {
-        "line": 55,
+        "line": 69,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs"
       },
       "sources": [
         {
-          "line": 55,
+          "line": 69,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs"
         }
       ],
@@ -226626,7 +226766,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "1e253b77f81e51ac45984fb4b98d0acc5f64a94544a0855fce540a84def9e0e1",
+      "fingerprint": "a89e900871b7c437314ec49f94f36841ccf8e35b986c33978e2f87621eab734a",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "kind": "class",
@@ -226640,12 +226780,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "references": [],
       "source": {
-        "line": 127,
+        "line": 211,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 127,
+          "line": 211,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -226666,7 +226806,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ac2001d98a7ba69c22f67440c82baae5330a3b475e5db39d8450fcd3cf04cb02",
+      "fingerprint": "ac82525e2297c1e8c79c4f261161adacf8e50bc2478d6b97b127f0f157cd4148",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "kind": "class",
@@ -226685,7 +226825,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityAssetSpecificTermsUpcasterPipeline",
-          "source_line": 170,
+          "source_line": 255,
           "type": "SecurityAssetSpecificTermsUpcasterPipeline"
         }
       ],
@@ -226698,12 +226838,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
       ],
       "source": {
-        "line": 167,
+        "line": 252,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 167,
+          "line": 252,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -227936,7 +228076,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "5703f88a64b166e204c2317afb57625c800028f4e3d1b05418487310a2221138",
+      "fingerprint": "6af53d5584ef68eaa75987c25e854b370e0c14a279b9b7c08f72e47b2d3ccbaa",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "id": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "kind": "class",
@@ -227944,6 +228084,48 @@
         "security_master"
       ],
       "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BridgedModules",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 44,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DroppedModules",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 52,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EconomicTermsModules",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 60,
+          "type": "IReadOnlyList<string>"
+        },
         {
           "collection": false,
           "collection_kind": null,
@@ -227955,7 +228137,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
-          "source_line": 20,
+          "source_line": 33,
           "type": "SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"
         }
       ],
@@ -227968,12 +228150,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
       ],
       "source": {
-        "line": 17,
+        "line": 30,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 17,
+          "line": 30,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -230354,7 +230536,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b2aefe50ce161d2791df6509ca214d8a34a78df828af596c3d8fcdf9806e4ccf",
+      "fingerprint": "83fd2e834afaf52e9820708e7102f328f213f85be7dfe6c2b75265e26c9d6003",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityMasterSchemaVersions",
       "id": "Meridian.Contracts.SecurityMaster.SecurityMasterSchemaVersions",
       "kind": "class",
@@ -230368,12 +230550,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityMasterSchemaVersions",
       "references": [],
       "source": {
-        "line": 68,
+        "line": 82,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs"
       },
       "sources": [
         {
-          "line": 68,
+          "line": 82,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs"
         }
       ],
