@@ -149,12 +149,18 @@ public static class SecurityIdentifierNormalizer
             ? string.Empty
             : value.Trim().ToUpperInvariant();
 
+    // Both strippers must mirror migration 016's SQL backfill character classes exactly
+    // ('[^A-Z0-9]' and '[^0-9]' after upper/trim): the stored normalized columns, the
+    // indexed candidate lookup, and every in-memory computation must give one raw value one
+    // identity. char.IsLetterOrDigit and char.IsDigit would keep non-ASCII letters and
+    // digits the SQL strips, splitting the same raw identifier into two identities on
+    // either side of the backfill.
     private static string StripNonAlphanumeric(string value)
     {
         var builder = new StringBuilder(value.Length);
         foreach (var character in value)
         {
-            if (char.IsLetterOrDigit(character))
+            if (character is (>= 'A' and <= 'Z') or (>= '0' and <= '9'))
             {
                 builder.Append(character);
             }
@@ -168,7 +174,7 @@ public static class SecurityIdentifierNormalizer
         var builder = new StringBuilder(value.Length);
         foreach (var character in value)
         {
-            if (char.IsDigit(character))
+            if (character is >= '0' and <= '9')
             {
                 builder.Append(character);
             }
