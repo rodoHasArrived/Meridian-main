@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T06:37:41Z",
+  "generatedAt": "2026-09-07T06:29:36Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2225,323 +2225,323 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T04:02:38Z",
-      "lastCommit": "7a40e6970",
-      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
-      "touches": 16
+      "path": "src/Meridian.Infrastructure/Reconciliation/IbFlexStatementService.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-06T14:21:59-07:00",
+      "lastCommit": "ac546aa33",
+      "lastSummary": "fix: delegate asynchronous XML value reads",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T04:02:38Z",
-      "lastCommit": "7a40e6970",
-      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
-      "touches": 13
+      "path": "src/Meridian.Infrastructure/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-06T14:16:08-07:00",
+      "lastCommit": "010ac9cb6",
+      "lastSummary": "fix: bound legacy IB Flex parsing and reject missing evidence",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T04:02:38Z",
-      "lastCommit": "7a40e6970",
-      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-06T00:31:37-07:00",
+      "lastCommit": "c7734ccc5",
+      "lastSummary": "Prove ETL restart deduplication and exclude its ledger from the catalog",
       "touches": 7
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:37:39Z",
-      "lastCommit": "b47f9df7a",
-      "lastSummary": "Saturate the CSV discovery allowance, and depth-check OFX leaves",
-      "touches": 10
+      "path": "src/Meridian.Storage/Interfaces/IStorageCatalogService.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-06T00:31:37-07:00",
+      "lastCommit": "c7734ccc5",
+      "lastSummary": "Prove ETL restart deduplication and exclude its ledger from the catalog",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs",
+      "path": "src/Meridian.Contracts/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Contracts/Coordination/ICoordinationStore.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Contracts/Coordination/ILeaseManager.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.DataIntegration/Etl/EtlServices.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:37:39Z",
-      "lastCommit": "b47f9df7a",
-      "lastSummary": "Saturate the CSV discovery allowance, and depth-check OFX leaves",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.DataIntegration/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Platform/Coordination/LeaseManager.Execution.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Platform/Coordination/LeaseManager.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Platform/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Services/StorageCatalogService.ReadSnapshot.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Services/StorageCatalogService.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-06T00:07:11-07:00",
+      "lastCommit": "d76982aff",
+      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Services/AuditChainService.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-05T22:26:20-07:00",
+      "lastCommit": "ccfc48437",
+      "lastSummary": "Reject damaged audit history and prove independent process appends",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-05T22:03:59-07:00",
+      "lastCommit": "d0fd41763",
+      "lastSummary": "Repair production certification provenance and integration regressions",
+      "touches": 21
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-05T22:03:59-07:00",
+      "lastCommit": "d0fd41763",
+      "lastSummary": "Repair production certification provenance and integration regressions",
       "touches": 8
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:17:20Z",
-      "lastCommit": "4eac56733",
-      "lastSummary": "Charge BAI2 newline padding to the line budget",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:05:30Z",
-      "lastCommit": "03a29b7f1",
-      "lastSummary": "Bound the objects Alpaca materializes before deserializing",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T23:33:52Z",
-      "lastCommit": "73dd54ea9",
-      "lastSummary": "Carry ingress codes through validate as well as commit",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T23:24:41Z",
-      "lastCommit": "b37e3cea5",
-      "lastSummary": "Charge the record cap on the append in camt, BAI2 and OFX",
-      "touches": 18
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T23:24:41Z",
-      "lastCommit": "b37e3cea5",
-      "lastSummary": "Charge the record cap on the append in camt, BAI2 and OFX",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T17:23:14Z",
-      "lastCommit": "2f72a8f3a",
-      "lastSummary": "Address the fourteenth Codex round: bound retained evidence rows at the seam",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T15:33:55Z",
-      "lastCommit": "291695dcf",
-      "lastSummary": "fix(wpf): register the tenancy guard in the composition root, not the feature module",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Wpf/App.xaml.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T15:33:55Z",
-      "lastCommit": "291695dcf",
-      "lastSummary": "fix(wpf): register the tenancy guard in the composition root, not the feature module",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T15:32:03Z",
-      "lastCommit": "8d2484482",
-      "lastSummary": "Address the seventh Codex round: measure and report the bounds honestly",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T15:25:46Z",
-      "lastCommit": "22e39ea6d",
-      "lastSummary": "fix(ledger): reuse the shared text primitive instead of a fourth copy of it",
+      "path": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-05T22:03:59-07:00",
+      "lastCommit": "d0fd41763",
+      "lastSummary": "Repair production certification provenance and integration regressions",
       "touches": 4
     },
     {
-      "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T15:16:36Z",
-      "lastCommit": "3753c6235",
-      "lastSummary": "fix(governance): close three more review findings, one a regression from the last round",
-      "touches": 3
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-05T22:03:59-07:00",
+      "lastCommit": "d0fd41763",
+      "lastSummary": "Repair production certification provenance and integration regressions",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs",
+      "path": "src/Meridian.Ui/dashboard/package-lock.json",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T15:16:36Z",
-      "lastCommit": "3753c6235",
-      "lastSummary": "fix(governance): close three more review findings, one a regression from the last round",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/PostgresFundStructureService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/Migrations/004_fund_structure_tenant_columns.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T09:17:06Z",
-      "lastCommit": "b5959430f",
-      "lastSummary": "chore(schema-control): refresh the schema snapshot for the new migrations",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_032__accounting_audit_chain.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T09:17:06Z",
-      "lastCommit": "b5959430f",
-      "lastSummary": "chore(schema-control): refresh the schema snapshot for the new migrations",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T09:07:11Z",
-      "lastCommit": "87a19b955",
-      "lastSummary": "fix(tenancy): report a refused tenant scope as 403 rather than a server error",
+      "lastModified": "2026-09-05T22:03:59-07:00",
+      "lastCommit": "d0fd41763",
+      "lastSummary": "Repair production certification provenance and integration regressions",
       "touches": 1
     },
     {
       "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T09:00:33Z",
-      "lastCommit": "08d2fc28f",
-      "lastSummary": "docs(roadmap): map SRC-APP to W9-GOV-008 and regenerate the traced docs",
+      "lastModified": "2026-09-05T02:00:23-07:00",
+      "lastCommit": "d49fbc8e7",
+      "lastSummary": "Harden log rendering and verify retained lot review versions",
+      "touches": 16
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-05T02:00:23-07:00",
+      "lastCommit": "d49fbc8e7",
+      "lastSummary": "Harden log rendering and verify retained lot review versions",
       "touches": 4
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-09-05T02:00:23-07:00",
+      "lastCommit": "d49fbc8e7",
+      "lastSummary": "Harden log rendering and verify retained lot review versions",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Reporting/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-05T02:00:23-07:00",
+      "lastCommit": "d49fbc8e7",
+      "lastSummary": "Harden log rendering and verify retained lot review versions",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Reporting/ReportGenerationService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-05T02:00:23-07:00",
+      "lastCommit": "d49fbc8e7",
+      "lastSummary": "Harden log rendering and verify retained lot review versions",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Wpf/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:59:30Z",
-      "lastCommit": "5ffeef44d",
-      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
       "touches": 9
     },
     {
-      "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:59:30Z",
-      "lastCommit": "5ffeef44d",
-      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-cockpit.view-model.test.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:59:30Z",
-      "lastCommit": "5ffeef44d",
-      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
-      "touches": 1
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs",
+      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-scope.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 1
+      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 1
+      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs",
+      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs",
+      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Services/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/FundStructureTenantScope.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/IFundStructureStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
+      "lastModified": "2026-09-05T00:50:55-07:00",
+      "lastCommit": "acfce77a2",
+      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
       "touches": 1
     }
   ],
