@@ -11,6 +11,28 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
+transaction as the run and its details. HTTP requests return the committed run without calling
+the publisher. The outbox worker publishes retained state and retries failures; missing publisher
+configuration for a Security Master-backed loan remains a failed delivery. Identified replays
+retain one message per run. Integration tests cover concurrent retries and enqueue-failure rollback.
+
+
+The lending cash reader uses `cash_transaction_id`, matching both the authoritative operations
+migration and the transaction writer; reconciliation exercises that persisted read path.
+
+
+Migration 009 reconciles the historical `projected_flow_id` column with the cash-flow
+identity name consumed by the store. It adds and backfills the current column names while retaining legacy IDs and foreign keys.
+A trigger synchronizes writes through either name and rejects conflicting IDs during rollout.
+
+
+Direct-lending projection and reconciliation persistence serializes matching run identities with
+a PostgreSQL transaction advisory lock. A committed identity returns its existing run before any
+detail-row deletion, insertion, or superseding update. Concurrent retries retain the first saved
+flows and reconciliation results. `DirectLendingPostgresIntegrationTests` covers both paths;
+hosted database validation is required before treating this as release evidence.
+
 Audit-chain appends stream and validate retained entry hashes and predecessor links while holding
 the cross-process append lock. An unreadable, malformed, empty, or broken retained chain fails
 without replacing its history. Payload-file verification remains the separate full verification

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Tests.Application.Composition;
 
+// Posture checks mutate process-wide environment variables read by other compositions.
+[Collection("Sequential")]
 public sealed class ProductionRegistrationGuardServiceTests
 {
     [Fact]
@@ -230,8 +232,211 @@ public sealed class ProductionRegistrationGuardServiceTests
             .Should().BeOfType<ProductionRegistrationGuardService>();
     }
 
+    [Theory]
+    [InlineData(ServiceLifetime.Singleton, false, false)]
+    [InlineData(ServiceLifetime.Scoped, false, false)]
+    [InlineData(ServiceLifetime.Transient, false, false)]
+    [InlineData(ServiceLifetime.Singleton, true, false)]
+    [InlineData(ServiceLifetime.Scoped, true, false)]
+    [InlineData(ServiceLifetime.Transient, true, false)]
+    [InlineData(ServiceLifetime.Singleton, false, true)]
+    [InlineData(ServiceLifetime.Scoped, false, true)]
+    [InlineData(ServiceLifetime.Transient, false, true)]
+    [InlineData(ServiceLifetime.Singleton, true, true)]
+    [InlineData(ServiceLifetime.Scoped, true, true)]
+    [InlineData(ServiceLifetime.Transient, true, true)]
+    public async Task StartAsync_FactoryHiddenStore_RefusesBeforeWorkersStart(
+        ServiceLifetime lifetime, bool keyed, bool local)
+    {
+        using var quiet = new ProductionEnvironmentQuietScope();
+        var worker = new StartProbe();
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(local
+                ? MeridianDeploymentPosture.LocalWorkstation : MeridianDeploymentPosture.ProductionApi);
+            services.AddProductionRegistrationGuard();
+            services.AddSingleton<IHostedService>(worker);
+            // Register after the guard, with a second safe binding under the same key. Validation
+            // must inspect the whole enumerable, not only the last service selected by GetService.
+            AddStoreFactory(services, lifetime, keyed, () => new InMemoryTestStore());
+            AddStoreFactory(services, lifetime, keyed, () => new DurableTestStore());
+        });
+
+        var start = () => host.StartAsync();
+        (await start.Should().ThrowAsync<StartupRefusedException>())
+            .Which.Message.Should().Contain(nameof(InMemoryTestStore));
+        worker.StartCount.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData(ServiceLifetime.Singleton, false)]
+    [InlineData(ServiceLifetime.Scoped, false)]
+    [InlineData(ServiceLifetime.Transient, false)]
+    [InlineData(ServiceLifetime.Singleton, true)]
+    [InlineData(ServiceLifetime.Scoped, true)]
+    [InlineData(ServiceLifetime.Transient, true)]
+    public async Task StartAsync_DurableFactory_AllLifetimesAndExplicitKeysStart(
+        ServiceLifetime lifetime, bool keyed)
+    {
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            services.AddProductionRegistrationGuard();
+            AddStoreFactory(services, lifetime, keyed, () => new DurableTestStore());
+        });
+        await host.StartAsync();
+        await host.StopAsync();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StartAsync_WildcardFactory_RefusesUnverifiableKeySpace(bool local)
+    {
+        using var quiet = new ProductionEnvironmentQuietScope();
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(local
+                ? MeridianDeploymentPosture.LocalWorkstation : MeridianDeploymentPosture.ProductionApi);
+            services.AddProductionRegistrationGuard();
+            services.AddKeyedSingleton<ITestStore>(KeyedService.AnyKey,
+                (_, key) => Equals(key, "unapproved-account") ? new InMemoryTestStore() : new DurableTestStore());
+        });
+        var start = () => host.StartAsync();
+        (await start.Should().ThrowAsync<StartupRefusedException>())
+            .Which.Message.Should().Contain("wildcard keyed factory");
+    }
+
+    [Theory]
+    [InlineData(ServiceLifetime.Scoped, false)]
+    [InlineData(ServiceLifetime.Transient, true)]
+    public async Task StartAsync_ValidationResources_AreAsynchronouslyDisposedOnSuccessAndRefusal(
+        ServiceLifetime lifetime, bool keyed)
+    {
+        foreach (var refuse in new[] { false, true })
+        {
+            var stores = new List<DurableAsyncTestStore>();
+            var services = new ServiceCollection();
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            services.AddProductionRegistrationGuard();
+            AddStoreFactory(services, lifetime, keyed, () =>
+            {
+                var store = new DurableAsyncTestStore();
+                stores.Add(store);
+                return store;
+            });
+            if (refuse)
+                services.AddSingleton<ISecondaryTestStore>(_ => throw new InvalidDataException("cannot construct"));
+            await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+            var start = () => provider.GetRequiredService<ProductionRegistrationGuardService>().StartAsync(CancellationToken.None);
+            if (refuse)
+                await start.Should().ThrowAsync<StartupRefusedException>();
+            else
+                await start();
+            stores.Should().ContainSingle();
+            stores[0].DisposeCount.Should().Be(1);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StartAsync_SingletonRemainsOwnedByHostAfterValidation(bool keyed)
+    {
+        var store = new DurableAsyncTestStore();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.AddProductionRegistrationGuard();
+        AddStoreFactory(services, ServiceLifetime.Singleton, keyed, () => store);
+        await using (var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true }))
+        {
+            await provider.GetRequiredService<ProductionRegistrationGuardService>().StartAsync(CancellationToken.None);
+            store.DisposeCount.Should().Be(0);
+            var resolved = keyed ? provider.GetRequiredKeyedService<ITestStore>("company-a")
+                : provider.GetRequiredService<ITestStore>();
+            resolved.Should().BeSameAs(store);
+        }
+        store.DisposeCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task StartAsync_Cancellation_DisposesValidationScopeAndDoesNotBecomeARefusal()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var store = new DurableAsyncTestStore();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.AddProductionRegistrationGuard();
+        services.AddScoped<ITestStore>(_ =>
+        {
+            cancellation.Cancel();
+            return store;
+        });
+        await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+        var start = () => provider.GetRequiredService<ProductionRegistrationGuardService>().StartAsync(cancellation.Token);
+        await start.Should().ThrowAsync<OperationCanceledException>();
+        store.DisposeCount.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StartAsync_NullFactoryResult_RefusesMissingAuthority(bool keyed)
+    {
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            services.AddProductionRegistrationGuard();
+            AddStoreFactory(services, ServiceLifetime.Scoped, keyed, () => null!);
+        });
+        var start = () => host.StartAsync();
+        (await start.Should().ThrowAsync<StartupRefusedException>()).Which.Message.Should().Contain("returned null");
+    }
+
+    [Fact]
+    public async Task StartAsync_LabeledLocalFactory_RemainsExplicitlySimulated()
+    {
+        using var quiet = new ProductionEnvironmentQuietScope();
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+            services.ForceDataProvenanceLabel(DataProvenance.Seeded);
+            services.AddProductionRegistrationGuard();
+            AddStoreFactory(services, ServiceLifetime.Scoped, true, () => new InMemoryTestStore());
+        });
+        await host.StartAsync();
+        await host.StopAsync();
+    }
+
+    private static void AddStoreFactory(IServiceCollection services, ServiceLifetime lifetime, bool keyed, Func<ITestStore> factory)
+        => services.Add(keyed
+            ? new ServiceDescriptor(typeof(ITestStore), "company-a", (_, _) => factory(), lifetime)
+            : new ServiceDescriptor(typeof(ITestStore), _ => factory(), lifetime));
+
+    private sealed class DurableAsyncTestStore : ITestStore, IAsyncDisposable
+    {
+        public int DisposeCount { get; private set; }
+        public ValueTask DisposeAsync()
+        {
+            DisposeCount++;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class StartProbe : IHostedService
+    {
+        public int StartCount { get; private set; }
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            StartCount++;
+            return Task.CompletedTask;
+        }
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
     private static IHost BuildHost(Action<IServiceCollection> configure)
         => new Microsoft.Extensions.Hosting.HostBuilder()
+            .UseDefaultServiceProvider(options => options.ValidateScopes = true)
             .ConfigureServices(services => configure(services))
             .Build();
 
