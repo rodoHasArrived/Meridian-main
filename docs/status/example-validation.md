@@ -8,10 +8,10 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1017 |
-| Valid | 587 |
+| Total code blocks | 1019 |
+| Valid | 588 |
 | Invalid | 0 |
-| Skipped | 430 |
+| Skipped | 431 |
 
 ## Summary by Language
 
@@ -21,7 +21,7 @@
 | `bash` | 165 | 165 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 325 | 325 | 0 | 0 |
+| `csharp` | 326 | 326 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 64 | 64 | 0 | 0 |
@@ -36,7 +36,7 @@
 | `sql` | 11 | 0 | 0 | 11 |
 | `text` | 63 | 0 | 0 | 63 |
 | `toml` | 31 | 0 | 0 | 31 |
-| `ts` | 9 | 0 | 0 | 9 |
+| `ts` | 10 | 0 | 0 | 10 |
 | `xml` | 10 | 10 | 0 | 0 |
 | `yaml` | 18 | 18 | 0 | 0 |
 
@@ -88,7 +88,7 @@ No invalid code examples found.
 | `docs/architecture/provider-integration-manifest-runtime.md` | 1 |
 | `docs/architecture/provider-management.md` | 7 |
 | `docs/architecture/security-lot-convergence-blueprint.md` | 1 |
-| `docs/architecture/security-master-extensibility-review.md` | 1 |
+| `docs/architecture/security-master-extensibility-review.md` | 2 |
 | `docs/architecture/storage-design.md` | 77 |
 | `docs/development/accounting-blueprints/commitment-and-capital-call-engine.md` | 21 |
 | `docs/development/accounting-blueprints/equalization-and-series-accounting.md` | 15 |
