@@ -402,8 +402,15 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             4 => IBMarketDataAvailability.DelayedFrozen,
             _ => IBMarketDataAvailability.Unknown
         };
-        var lineage = Update(requestId, x => x with { Availability = availability, IsDelayed = availability is IBMarketDataAvailability.Delayed or IBMarketDataAvailability.DelayedFrozen, Status = "market-data-type", ObservedAt = DateTimeOffset.UtcNow });
-        UpdateReadModel(requestId, current => RefreshProvenance(current, lineage));
+        // The provenance refresh rides the SAME gated transition as the lineage update: as two
+        // separate transitions, a cancellation, timeout, or rejection landing between them froze
+        // the read model with the new lineage availability embedded but the old availability
+        // still in its request and observation provenance — incoherent evidence the durable
+        // projector then materialized permanently.
+        Update(
+            requestId,
+            x => x with { Availability = availability, IsDelayed = availability is IBMarketDataAvailability.Delayed or IBMarketDataAvailability.DelayedFrozen, Status = "market-data-type", ObservedAt = DateTimeOffset.UtcNow },
+            (current, updated) => RefreshProvenance(current, updated));
     }
 
     /// <summary>Records contract exchange and market-rule evidence returned by IB.</summary>
@@ -676,7 +683,10 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
     private void OnOptionContractReceived(object? sender, (int RequestId, ProviderOptionContract Contract) value)
     {
-        if (IsRoutable(value.RequestId, "option-chain"))
+        // The manager's contractDetails callback deliberately emits an option payload alongside
+        // the contract details when a contract-details request resolves to an option, so both
+        // originating capabilities legitimately receive option contracts.
+        if (IsRoutable(value.RequestId, "option-chain") || IsRoutable(value.RequestId, "contract-details"))
             RecordOptionContract(value.RequestId, value.Contract);
     }
 
@@ -873,21 +883,28 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         return requestId;
     }
 
-    private IBDataLineage Update(int requestId, Func<IBDataLineage, IBDataLineage> update)
+    private IBDataLineage Update(
+        int requestId,
+        Func<IBDataLineage, IBDataLineage> update,
+        Func<ProviderDataRequestReadModel, IBDataLineage, ProviderDataRequestReadModel>? project = null)
     {
         // The lineage transition shares the request's gate and publication queue with read-model
         // transitions: recorders can run synchronously inside a gated send, cancel, or timeout,
         // and raising LineageUpdated there would put subscriber code under the gate — a
         // subscriber transitioning another request could then entangle two gates into the very
         // cross-request deadlock the queue exists to prevent. Queueing under the gate also keeps
-        // two racing lineage updates from delivering stale-last.
+        // two racing lineage updates from delivering stale-last. A caller-supplied projection
+        // (the availability recorder's provenance refresh) applies in the SAME read-model
+        // transition, so a terminal transition can never land between the lineage embed and its
+        // dependent read-model derivation; the embedded Lineage itself comes from
+        // UpdateReadModel's wrapper, which reads the map under this same gate hold.
         var gate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
         IBDataLineage updated;
         lock (gate.Lock)
         {
             updated = _lineage.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current));
             gate.PendingPublications.Enqueue(PendingPublication.For(updated));
-            UpdateReadModel(requestId, current => current with { Lineage = updated });
+            UpdateReadModel(requestId, current => project is null ? current : project(current, updated));
         }
 
         DrainPublications(gate);
