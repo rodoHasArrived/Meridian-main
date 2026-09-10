@@ -895,9 +895,9 @@ public sealed class IBDataServicesTests
         var provenance = ProviderDataProvenance.Unattributed(timestamp);
 
         services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
-            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance, 1m, 9m));
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance) { BidSize = 1m, AskSize = 9m });
         services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
-            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance, 9m, 1m));
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance) { BidSize = 9m, AskSize = 1m });
 
         var ticks = services.GetRequests().Single().HistoricalTicks!;
         ticks.Should().HaveCount(2);
@@ -906,6 +906,30 @@ public sealed class IBDataServicesTests
         ticks[1].Provenance.StableDeduplicationKey.Should().NotBe(
             ticks[0].Provenance.StableDeduplicationKey,
             "opposite book imbalances are distinct observations, not duplicates");
+    }
+
+    [Fact]
+    public void BidAskHistoricalTicks_WithTheSameMidpointButDifferentSpreads_KeepDistinctDeduplicationKeys()
+    {
+        // Two BID_ASK snapshots can share a midpoint, combined size, and even a balanced book
+        // while quoting different spreads (200.05/200.15 versus 200.00/200.20): the side prices
+        // are part of the observation and must keep the deduplication keys apart.
+        var services = new IBDataServices(new RecordingTransport());
+        var requestId = services.RequestHistoricalTicks(
+            new IBHistoricalTickRequest(new SymbolConfig("AAPL"), null, DateTimeOffset.UtcNow, 2));
+        var timestamp = DateTimeOffset.UtcNow;
+        var provenance = ProviderDataProvenance.Unattributed(timestamp);
+
+        services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance) { BidSize = 5m, AskSize = 5m });
+        services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
+            timestamp, 200.10m, 10m, "BID_ASK", 200.00m, 200.20m, null, provenance) { BidSize = 5m, AskSize = 5m });
+
+        var ticks = services.GetRequests().Single().HistoricalTicks!;
+        ticks.Should().HaveCount(2);
+        ticks[1].Provenance.StableDeduplicationKey.Should().NotBe(
+            ticks[0].Provenance.StableDeduplicationKey,
+            "quotes with the same midpoint but different spreads are distinct observations, not duplicates");
     }
 
     [Fact]

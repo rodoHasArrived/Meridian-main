@@ -248,7 +248,7 @@ public sealed partial class EnhancedIBConnectionManager
         {
             var tick = ticks[index];
             var completesRequest = done && index == ticks.Length - 1;
-            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)((tick.PriceBid + tick.PriceAsk) / 2), tick.SizeBid + tick.SizeAsk, "BID_ASK", (decimal)tick.PriceBid, (decimal)tick.PriceAsk, null, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time)), tick.SizeBid, tick.SizeAsk), completesRequest));
+            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)((tick.PriceBid + tick.PriceAsk) / 2), tick.SizeBid + tick.SizeAsk, "BID_ASK", (decimal)tick.PriceBid, (decimal)tick.PriceAsk, null, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))) { BidSize = tick.SizeBid, AskSize = tick.SizeAsk }, completesRequest));
         }
         if (done)
         {

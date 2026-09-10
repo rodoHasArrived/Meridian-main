@@ -91,7 +91,17 @@ public sealed record ProviderScannerResult(int Rank, string Symbol, string? Exch
 public sealed record ProviderRealTimeBar(DateTimeOffset Timestamp, decimal Open, decimal High, decimal Low, decimal Close, decimal Volume, decimal WeightedAveragePrice, int TradeCount, ProviderDataProvenance Provenance);
 
 /// <summary>Provider-neutral historical tick observation.</summary>
-public sealed record ProviderHistoricalTick(DateTimeOffset Timestamp, decimal Price, decimal Size, string TickKind, decimal? Bid, decimal? Ask, string? Exchange, ProviderDataProvenance Provenance, decimal? BidSize = null, decimal? AskSize = null);
+public sealed record ProviderHistoricalTick(DateTimeOffset Timestamp, decimal Price, decimal Size, string TickKind, decimal? Bid, decimal? Ask, string? Exchange, ProviderDataProvenance Provenance)
+{
+    // The side sizes stay non-positional so the original eight-argument constructor and
+    // Deconstruct signatures remain binary-compatible for separately compiled plugins.
+
+    /// <summary>Bid-side size when the tick carries per-side quantities (for example BID_ASK).</summary>
+    public decimal? BidSize { get; init; }
+
+    /// <summary>Ask-side size when the tick carries per-side quantities (for example BID_ASK).</summary>
+    public decimal? AskSize { get; init; }
+}
 
 /// <summary>Provider-neutral account or model-account P&amp;L observation.</summary>
 public sealed record ProviderAccountPnl(string AccountId, string? ModelAccountId, decimal Daily, decimal Unrealized, decimal Realized, decimal? Position, decimal? Value, ProviderDataProvenance Provenance);

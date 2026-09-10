@@ -527,12 +527,13 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     public void RecordHistoricalTick(int requestId, ProviderHistoricalTick tick, bool completed = false)
     {
         ArgumentNullException.ThrowIfNull(tick);
-        // Per-side sizes join the identity when present: two BID_ASK snapshots with the same
-        // prices and combined size but opposite book imbalance (bid/ask 1/9 versus 9/1) are
-        // distinct observations and must not share a deduplication key. Kinds without side
-        // sizes keep the historical composition, so existing keys stay stable.
-        var sideIdentity = tick.BidSize is not null || tick.AskSize is not null
-            ? $":{tick.BidSize}:{tick.AskSize}"
+        // Side prices and sizes join the identity when present: two BID_ASK snapshots sharing a
+        // midpoint and combined size can still differ in spread (bid/ask 200.05/200.15 versus
+        // 200.00/200.20) or book imbalance (sizes 1/9 versus 9/1), and each is a distinct
+        // observation that must not share a deduplication key. Kinds without side data keep the
+        // historical composition, so existing keys stay stable.
+        var sideIdentity = tick.Bid is not null || tick.Ask is not null || tick.BidSize is not null || tick.AskSize is not null
+            ? $":{tick.Bid}:{tick.Ask}:{tick.BidSize}:{tick.AskSize}"
             : string.Empty;
         UpdateReadModel(requestId, current => current with { Status = completed ? ProviderDataRequestStatus.Completed : ProviderDataRequestStatus.Streaming, HistoricalTicks = Append(current.HistoricalTicks, tick with { Provenance = CreateObservationProvenance(current, $"{tick.Timestamp:O}:{tick.TickKind}:{tick.Price}:{tick.Size}{sideIdentity}", tick.Timestamp) }) });
     }
