@@ -1730,6 +1730,7 @@ Meridian-main
 │   │   │   └── w10-mark-001-fail-closed-marks.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
+│   │   ├── etl-execution-ownership.md
 │   │   ├── free-development-tools.md
 │   │   ├── live-trading-engine.md
 │   │   ├── practical-csharp-wpf-financial-markets.md
@@ -3850,6 +3851,7 @@ Meridian-main
 │   │   │   ├── CoordinationSnapshot.cs
 │   │   │   ├── IClusterCoordinator.cs
 │   │   │   ├── ICoordinationStore.cs
+│   │   │   ├── IExecutionLease.cs
 │   │   │   ├── ILeaseManager.cs
 │   │   │   ├── IScheduledWorkOwnershipService.cs
 │   │   │   ├── ISubscriptionOwnershipService.cs
@@ -5254,6 +5256,7 @@ Meridian-main
 │   │   ├── Coordination
 │   │   │   ├── ClusterCoordinatorService.cs
 │   │   │   ├── LeaseManager.cs
+│   │   │   ├── LeaseManager.Execution.cs
 │   │   │   ├── ScheduledWorkOwnershipService.cs
 │   │   │   ├── SplitBrainDetector.cs
 │   │   │   └── SubscriptionOwnershipService.cs
@@ -5857,6 +5860,7 @@ Meridian-main
 │   │   │   ├── RetentionComplianceReporter.cs
 │   │   │   ├── SourceRegistry.cs
 │   │   │   ├── StorageCatalogService.cs
+│   │   │   ├── StorageCatalogService.ReadSnapshot.cs
 │   │   │   ├── StorageChecksumService.cs
 │   │   │   ├── StorageSearchService.cs
 │   │   │   ├── SymbolRegistryService.cs
@@ -8440,7 +8444,8 @@ Meridian-main
 │   ├── Meridian.ProcessTestHelper
 │   │   ├── Meridian.ProcessTestHelper.csproj
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json
-│   │   └── Program.cs
+│   │   ├── Program.cs
+│   │   └── Program.Etl.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── Helpers
 │   │   │   ├── FakeQuantDataContext.cs
@@ -9327,7 +9332,9 @@ Meridian-main
 │   │   │   │   ├── CredentialStatusTests.cs
 │   │   │   │   └── OAuthTokenTests.cs
 │   │   │   ├── Etl
+│   │   │   │   ├── EtlCrashRetentionTests.cs
 │   │   │   │   ├── EtlExportServiceTests.cs
+│   │   │   │   ├── EtlJobOrchestratorOwnershipTests.cs
 │   │   │   │   ├── EtlJobOrchestratorTests.cs
 │   │   │   │   ├── EtlNormalizationServiceTests.cs
 │   │   │   │   └── EtlPreviewServiceTests.cs
@@ -9753,6 +9760,7 @@ Meridian-main
 │   │   │   │   └── ApiDocumentationServiceTests.cs
 │   │   │   ├── Coordination
 │   │   │   │   ├── ClusterCoordinatorServiceTests.cs
+│   │   │   │   ├── ExecutionLeaseTests.cs
 │   │   │   │   ├── LeaseManagerTests.cs
 │   │   │   │   └── SplitBrainDetectorTests.cs
 │   │   │   ├── Diagnostics
@@ -9899,6 +9907,7 @@ Meridian-main
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresSecurityMasterConflictServiceTests.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStoreTests.cs
+│   │   │   ├── PostgresSecurityMasterStoreOptionalReadersTests.cs
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
@@ -9909,6 +9918,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
+│   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
