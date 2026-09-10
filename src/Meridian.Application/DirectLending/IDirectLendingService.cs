@@ -54,7 +54,7 @@ public interface IDirectLendingService
 
     Task<IReadOnlyList<FeeBalanceDto>> GetFeeBalancesAsync(Guid loanId, CancellationToken ct = default);
 
-    Task<ProjectionRunDto> RequestProjectionAsync(Guid loanId, DateOnly? projectionAsOf = null, CancellationToken ct = default);
+    Task<ProjectionRunDto> RequestProjectionAsync(Guid loanId, DateOnly? projectionAsOf = null, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null);
 
     Task<IReadOnlyList<ProjectionRunDto>> GetProjectionsAsync(Guid loanId, CancellationToken ct = default);
 
@@ -64,7 +64,7 @@ public interface IDirectLendingService
 
     Task<JournalEntryDto?> PostJournalAsync(Guid journalEntryId, CancellationToken ct = default);
 
-    Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, CancellationToken ct = default);
+    Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null);
 
     Task<IReadOnlyList<ReconciliationRunDto>> GetReconciliationRunsAsync(Guid loanId, CancellationToken ct = default);
 
