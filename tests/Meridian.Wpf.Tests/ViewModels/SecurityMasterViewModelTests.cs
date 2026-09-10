@@ -1,6 +1,7 @@
 #if WINDOWS
 using System.Collections.Concurrent;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Controls;
 using FluentAssertions;
@@ -1500,6 +1501,76 @@ public sealed class SecurityMasterViewModelTests
             viewModel.SelectedSecurity.Should().BeSameAs(initialSnapshot.Security);
             viewModel.SelectedTrustSnapshot.Should().BeSameAs(refreshedSnapshot);
         });
+    }
+
+    [Fact]
+    public void SignedOut_ReachesALiveViewModelThroughTheWeakSubscription()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopReadOnlyUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null)
+            .Set("MDC_ANONYMOUS_ROLE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-viewer", "pw").Succeeded.Should().BeTrue();
+
+        WpfTestThread.Run(() =>
+        {
+            using var viewModel = CreateViewModel(
+                CreateNavigationService(),
+                new StubWorkstationSecurityMasterApiClient(),
+                authenticationSession: session);
+            var canExecuteRefreshed = false;
+            viewModel.CreateNewCommand.CanExecuteChanged += (_, _) => canExecuteRefreshed = true;
+
+            session.SignOut();
+
+            canExecuteRefreshed.Should().BeTrue(
+                "the weak subscription must still deliver sign-outs to a live view model");
+        });
+    }
+
+    [Fact]
+    public void UnloadedViewModel_IsNotRootedByTheAuthenticationSessionSubscription()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopReadOnlyUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null)
+            .Set("MDC_ANONYMOUS_ROLE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+
+        WpfTestThread.Run(() =>
+        {
+            // The page's Unloaded calls Stop(), never Dispose(): an unloaded, undisposed
+            // view model must still be collectable while the singleton session lives on,
+            // or every navigation to Security Master would grow the sign-out invocation
+            // list by one permanently rooted view model.
+            var weakViewModel = CreateStoppedViewModel(session);
+            for (var attempt = 0; attempt < 20 && weakViewModel.IsAlive; attempt++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                Thread.Sleep(50);
+            }
+
+            weakViewModel.IsAlive.Should().BeFalse(
+                "the authentication session's SignedOut subscription must not root unloaded view models");
+            GC.KeepAlive(session);
+        });
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference CreateStoppedViewModel(DesktopAuthenticationSession session)
+    {
+        var viewModel = CreateViewModel(
+            CreateNavigationService(),
+            new StubWorkstationSecurityMasterApiClient(),
+            authenticationSession: session);
+        viewModel.Stop();
+        return new WeakReference(viewModel);
     }
 
     private static SecurityMasterViewModel CreateViewModel(

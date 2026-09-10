@@ -1637,7 +1637,16 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         if (_authenticationSession is not null)
         {
-            _authenticationSession.SignedOut += OnAuthenticationSessionSignedOut;
+            // A weak subscription keeps the singleton session from rooting this transient
+            // view model: the page's Unloaded calls only Stop() and nothing disposes
+            // resolved instances, so a strong handler would accumulate every unloaded
+            // instance in the SignedOut invocation list — while a journal-restored page
+            // must still observe sign-outs, so the handler cannot simply be removed on
+            // unload. Dispose still removes it deterministically.
+            WeakEventManager<WpfServices.DesktopAuthenticationSession, EventArgs>.AddHandler(
+                _authenticationSession,
+                nameof(WpfServices.DesktopAuthenticationSession.SignedOut),
+                OnAuthenticationSessionSignedOut);
         }
 
         StartWorkflowPolling();
@@ -3516,7 +3525,10 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         if (_authenticationSession is not null)
         {
-            _authenticationSession.SignedOut -= OnAuthenticationSessionSignedOut;
+            WeakEventManager<WpfServices.DesktopAuthenticationSession, EventArgs>.RemoveHandler(
+                _authenticationSession,
+                nameof(WpfServices.DesktopAuthenticationSession.SignedOut),
+                OnAuthenticationSessionSignedOut);
         }
 
         Stop();
