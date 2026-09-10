@@ -41,6 +41,12 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     private int _nextQuoteTickerId = 30_000;
     private readonly ConcurrentDictionary<int, string> _quoteTickerMap = new();
     private readonly ConcurrentDictionary<int, QuoteSubscription> _quoteSubscriptions = new();
+    // Scanner subscriptions ride the vendor connection like the streams above:
+    // scannerDataEnd is a refresh delimiter rather than completion, so a live scanner must
+    // survive an automatic reconnect. The originating request is retained by correlation id
+    // and re-issued during subscription replay; cancellation, rejection, and a failed
+    // submission retire it.
+    private readonly ConcurrentDictionary<int, IBScannerRequest> _scannerSubscriptions = new();
 
     private int _nextHistoricalReqId = 40_000;
     private readonly ConcurrentDictionary<int, TaskCompletionSource<List<IBApi.Bar>>> _historicalDataRequests = new();
@@ -606,6 +612,15 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                 subscription.RegulatorySnapshot);
         }
 
+        foreach (var (requestId, request) in _scannerSubscriptions.OrderBy(pair => pair.Key))
+        {
+            ct.ThrowIfCancellationRequested();
+            // Re-issued under the same correlation id: the retained read model continues the
+            // same stream, and the next scanner batch replaces the accumulated rows at the
+            // refresh delimiter.
+            _clientSocket.reqScannerSubscription(requestId, CreateScannerSubscription(request), [], []);
+        }
+
         return Task.CompletedTask;
     }
 
@@ -817,25 +832,28 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         try
         {
             ThrowIfNotConnected();
-            var subscription = new ScannerSubscription
-            {
-                Instrument = request.Instrument,
-                LocationCode = request.LocationCode,
-                ScanCode = request.ScanCode,
-                NumberOfRows = request.NumberOfRows,
-                AbovePrice = request.AbovePrice,
-                AboveVolume = request.AboveVolume
-            };
-            _clientSocket.reqScannerSubscription(requestId, subscription, [], []);
+            _scannerSubscriptions[requestId] = request;
+            _clientSocket.reqScannerSubscription(requestId, CreateScannerSubscription(request), [], []);
         }
         catch
         {
             // The submission never reached the vendor, so the id must not stay eligible
-            // for rejection routing.
+            // for rejection routing — nor be re-issued as a live subscription on reconnect.
+            _scannerSubscriptions.TryRemove(requestId, out _);
             _dataServiceRequestIds.TryRemove(requestId, out _);
             throw;
         }
     }
+
+    private static ScannerSubscription CreateScannerSubscription(IBScannerRequest request) => new()
+    {
+        Instrument = request.Instrument,
+        LocationCode = request.LocationCode,
+        ScanCode = request.ScanCode,
+        NumberOfRows = request.NumberOfRows,
+        AbovePrice = request.AbovePrice,
+        AboveVolume = request.AboveVolume
+    };
 
     public void RequestContractDetails(int requestId, SymbolConfig contract)
     {
@@ -1105,6 +1123,13 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             _liveDepthExchangeSubmissions.TryRemove(requestId, out _);
         }
 
+        if (capability == "scanner")
+        {
+            // A cancelled scanner must not be re-issued by the reconnect replay, connected
+            // or not — the disconnected early return below still ends its retention.
+            _scannerSubscriptions.TryRemove(requestId, out _);
+        }
+
         if (!IsConnected)
         {
             _dataServiceRequestIds.TryRemove(requestId, out _);
@@ -1263,7 +1288,9 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                 // A forwarded rejection makes the downstream read model terminal, so the id's
                 // rejection-routing ownership ends with it — leaving it tracked would grow the
                 // map by one entry per rejected request and let a recycled id reject a request
-                // that already finished.
+                // that already finished. A rejected scanner's retention ends with it too, or
+                // the reconnect replay would re-issue a subscription the vendor refused.
+                _scannerSubscriptions.TryRemove(id, out _);
                 RequestRejected?.Invoke(this, (id, errorCode.ToString(CultureInfo.InvariantCulture), errorMsg));
             }
         }

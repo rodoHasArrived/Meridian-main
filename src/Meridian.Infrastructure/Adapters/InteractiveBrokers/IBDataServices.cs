@@ -580,8 +580,10 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         // transition gate, but no transport call runs under the gate — a submission stalled on
         // the wire must never block cancellation behind it. Where the submission stands decides
         // the wire work: in the pre-send window the freeze itself stops the stream (Issue skips
-        // the send) and the wire cancel is then spent on a subscription that never existed;
-        // while a send is in flight the wire cancel is deferred to the submitting thread, which
+        // the send) and no wire cancel is spent at all — nothing was submitted, and a transport
+        // that rejects cancellation of an unknown id would throw through a subscriber running
+        // inside Issue's registration drain and tear down the already-cancelled request; while
+        // a send is in flight the wire cancel is deferred to the submitting thread, which
         // spends it once the subscription is real; after the submission has completed the wire
         // cancel runs before the transition, so a wire failure leaves the read model
         // un-cancelled while the vendor stream may still be live.
@@ -604,12 +606,11 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         // deliver it now that the lock is released.
         DrainPublications(gate);
 
-        if (submission is SubmissionState.InFlight)
+        if (submission is SubmissionState.NotStarted or SubmissionState.InFlight)
             return;
 
         _transport.CancelDataRequest(requestId, capability);
-        if (submission is not SubmissionState.NotStarted)
-            CancelRequest(requestId);
+        CancelRequest(requestId);
     }
 
     /// <summary>Fails closed on a local timeout and stops a cancellable vendor stream.</summary>
@@ -619,8 +620,9 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         // frozen first in every submission state: a wire stalled inside the send, or inside
         // this thread's own cancel call below, can delay releasing the vendor stream but never
         // the TimedOut outcome itself. The submission handshake matches CancelRequest — a
-        // pre-send timeout makes Issue skip the send, an in-flight one defers the wire cancel
-        // to the submitting thread, and a completed one releases the stream at the wire here.
+        // pre-send timeout makes Issue skip the send with no wire call at all, an in-flight
+        // one defers the wire cancel to the submitting thread, and a completed one releases
+        // the stream at the wire here.
         var gate = _readModelGates.GetOrAdd(requestId, static _ => new RequestGate());
         string capability;
         SubmissionState submission;
@@ -639,7 +641,7 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         // deliver it now that the lock is released.
         DrainPublications(gate);
 
-        if (submission is SubmissionState.InFlight)
+        if (submission is SubmissionState.NotStarted or SubmissionState.InFlight)
             return;
 
         _transport.CancelDataRequest(requestId, capability);

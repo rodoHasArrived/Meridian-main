@@ -584,13 +584,34 @@ public sealed class IBDataServicesTests
                 services.CancelRequest(model.RequestId, CancellationToken.None);
         };
 
+        services.SubscribePnl("DU123", "model-a");
+
+        // The cancel won the pre-send window, so the submission must be skipped entirely —
+        // and no wire cancel is spent either: nothing was submitted, and a transport that
+        // rejects cancellation of an unknown id would throw through this subscriber into
+        // Issue's registration handling.
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        transport.Calls.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Cancellation_PreSendWithARejectingTransportCancel_StillLandsCancelled()
+    {
+        // A transport that rejects cancellation of an unknown request must never get the
+        // chance to throw through the subscriber into Issue's registration handling: the
+        // pre-send freeze alone prevents the submission, so no wire cancel is attempted.
+        var transport = new CallbackTransport { CancelFailure = new InvalidOperationException("unknown request id") };
+        using var services = new IBDataServices(transport);
+        services.ReadModelUpdated += model =>
+        {
+            if (model.Status == ProviderDataRequestStatus.Requested)
+                services.CancelRequest(model.RequestId, CancellationToken.None);
+        };
+
         var requestId = services.SubscribePnl("DU123", "model-a");
 
-        // The cancel won the pre-send window, so the submission must be skipped entirely:
-        // its wire cancel already ran against a subscription that did not exist, so sending
-        // anyway would leak a live vendor stream no terminal transition will ever release.
-        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Cancelled);
-        transport.Calls.Should().Equal($"cancel:{requestId}:pnl");
+        services.GetRequests().Single(x => x.RequestId == requestId).Status
+            .Should().Be(ProviderDataRequestStatus.Cancelled);
     }
 
     [Fact]
