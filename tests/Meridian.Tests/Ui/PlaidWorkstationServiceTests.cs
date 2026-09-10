@@ -1,3 +1,14 @@
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using System.Threading.RateLimiting;
+using Meridian.Contracts.Api;
+using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using FluentAssertions;
 using Meridian.FinancialOperations.Banking;
 using Meridian.Application.Config.Credentials;
@@ -156,6 +167,70 @@ public sealed class PlaidWorkstationServiceTests
         created.AuthorizationId.Should().Be("auth-1");
         created.TransferId.Should().Be("transfer-1");
         fixture.Client.AuthorizeCalls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ExchangeEndpoint_ReplacesForgedActorInRetainedCredentialAudit()
+    {
+        var fixture = await PlaidFixture.CreateAsync();
+        await using var app = await CreateEndpointAppAsync(fixture, true);
+        var request = new PlaidPublicTokenExchangeRequest("public-token", "ins_1", "Test Bank",
+            [new PlaidAccountLinkRequest("plaid-account-1", "Cash", null, "1234", "depository", "checking")], "forged-operator");
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.PlaidPublicTokenExchange,
+            new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json"));
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var auditPath = Path.Combine(Path.GetDirectoryName(fixture.CredentialStore.VaultPath)!, "provider-credentials.audit.jsonl");
+        var audit = JsonSerializer.Deserialize<JsonElement>((await File.ReadAllLinesAsync(auditPath)).Last());
+        audit.GetProperty("actor").GetString().Should().Be("plaid-http-operator");
+    }
+
+    [Theory]
+    [InlineData("exchange")]
+    [InlineData("link")]
+    [InlineData("sync")]
+    [InlineData("transfer")]
+    public async Task PlaidMutation_RejectsMissingActorDespitePermissionsAndForgedRequest(string operation)
+    {
+        var fixture = await PlaidFixture.CreateAsync();
+        await using var app = await CreateEndpointAppAsync(fixture, false);
+        var path = operation switch
+        {
+            "exchange" => UiApiRoutes.PlaidPublicTokenExchange,
+            "link" => UiApiRoutes.PlaidLinkToken,
+            "sync" => UiApiRoutes.PlaidItemSync.Replace("{itemId}", "item-1"),
+            _ => UiApiRoutes.PlaidSandboxTransfer
+        };
+        var before = await File.ReadAllBytesAsync(fixture.CredentialStore.VaultPath);
+        var response = await app.GetTestClient().PostAsync(path, new StringContent(
+            """{"publicToken":"public-token","userId":"forged-operator","requestedBy":"forged-operator"}""", Encoding.UTF8, "application/json"));
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await File.ReadAllBytesAsync(fixture.CredentialStore.VaultPath)).Should().Equal(before);
+        (await fixture.Repository.ListItemsAsync()).Should().BeEmpty();
+    }
+
+    private static async Task<WebApplication> CreateEndpointAppAsync(PlaidFixture fixture, bool includeActor)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<IPlaidIngestionService>(fixture.Service);
+        builder.Services.AddSingleton<IPlaidTransferService>(fixture.Service);
+        builder.Services.AddSingleton(PlaidOptions.Default);
+        builder.Services.AddRateLimiter(options => options.AddPolicy(UiEndpoints.MutationRateLimitPolicy,
+            _ => RateLimitPartition.GetNoLimiter<string>("test")));
+        var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageCredentials | UserPermission.ManageDirectLending;
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "plaid-test-tenant";
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "plaid-test-company";
+            if (includeActor)
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "plaid-http-operator";
+            await next();
+        });
+        app.UseRateLimiter();
+        app.MapPlaidEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        await app.StartAsync();
+        return app;
     }
 
     private sealed class PlaidFixture

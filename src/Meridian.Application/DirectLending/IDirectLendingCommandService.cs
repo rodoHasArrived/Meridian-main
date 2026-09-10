@@ -4,6 +4,8 @@ namespace Meridian.Application.DirectLending;
 
 public interface IDirectLendingCommandService
 {
+    Task<DirectLendingCommandResult<bool>> PublishAssetOperationsAsync(Guid loanId, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
     Task<DirectLendingCommandResult<LoanContractDetailDto>> CreateLoanAsync(CreateLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
 
     Task<DirectLendingCommandResult<LoanContractDetailDto>> AmendTermsAsync(Guid loanId, AmendLoanTermsRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);

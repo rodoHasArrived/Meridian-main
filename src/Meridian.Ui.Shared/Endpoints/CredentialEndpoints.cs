@@ -24,7 +24,7 @@ public static class CredentialEndpoints
             HttpContext context,
             IProviderCredentialStore store) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -47,7 +47,7 @@ public static class CredentialEndpoints
             HttpContext context,
             IProviderCredentialStore store) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -88,7 +88,7 @@ public static class CredentialEndpoints
             HttpContext context,
             ProviderConnectionLifecycleService service) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -101,7 +101,7 @@ public static class CredentialEndpoints
 
             var request = await ReadLegacyRequestAsync(descriptor, context, context.RequestAborted)
                 .ConfigureAwait(false);
-            var result = await service.SaveCredentialsAsync(descriptor.ProviderId, request, context.RequestAborted)
+            var result = await service.SaveCredentialsAsync(descriptor.ProviderId, request with { RequestedBy = actor }, context.RequestAborted)
                 .ConfigureAwait(false);
 
             return Results.Json(new
@@ -123,7 +123,7 @@ public static class CredentialEndpoints
             HttpContext context,
             ProviderConnectionLifecycleService service) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -136,7 +136,7 @@ public static class CredentialEndpoints
 
             var result = await service.DeleteCredentialsAsync(
                 descriptor.ProviderId,
-                actor: "legacy-credentials-endpoint",
+                actor: actor,
                 context.RequestAborted).ConfigureAwait(false);
 
             return Results.Json(new
@@ -155,7 +155,7 @@ public static class CredentialEndpoints
             HttpContext context,
             ProviderConnectionLifecycleService service) =>
         {
-            if (!HasManageCredentialsPermission(context))
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -172,12 +172,12 @@ public static class CredentialEndpoints
                     .ConfigureAwait(false);
                 if (request.Credentials?.Count > 0)
                 {
-                    await service.SaveCredentialsAsync(descriptor.ProviderId, request, context.RequestAborted)
+                    await service.SaveCredentialsAsync(descriptor.ProviderId, request with { RequestedBy = actor }, context.RequestAborted)
                         .ConfigureAwait(false);
                 }
             }
 
-            var result = await service.VerifyAsync(descriptor.ProviderId, context.RequestAborted)
+            var result = await service.VerifyAsync(descriptor.ProviderId, context.RequestAborted, actor)
                 .ConfigureAwait(false);
 
             return Results.Json(new

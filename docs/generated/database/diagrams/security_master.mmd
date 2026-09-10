@@ -723,6 +723,7 @@ erDiagram
         numeric_12_8_ annual_rate
         jsonb formula_trace_json
         timestamp_with_time_zone created_at
+        uuid projected_cash_flow_id
     }
     security_master_projection_checkpoint {
         text projection_name PK
@@ -779,6 +780,7 @@ erDiagram
         jsonb tolerance_json
         text[] notes
         timestamp_with_time_zone created_at
+        uuid projected_cash_flow_id
     }
     security_master_reconciliation_run {
         uuid reconciliation_run_id PK
