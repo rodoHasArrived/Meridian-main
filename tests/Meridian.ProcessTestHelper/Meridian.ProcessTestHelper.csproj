@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Storage\Meridian.Storage.csproj" />
   </ItemGroup>
 </Project>

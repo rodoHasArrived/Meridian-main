@@ -17,6 +17,13 @@ Legacy provider sidecars are imported as one validated, insert-only vault snapsh
 
 ## Purpose
 
+ETL runs acquire a unique execution lease before admission. Staging, audit/reject writes, and
+event publication use guarded actions; flush, catalog/export commit, checkpoint, source cleanup,
+and successful terminalization share one guarded commit stage. Parsing may wait outside that
+stage, allowing a live runner to lose its lease without publishing when it resumes. Failure
+terminalization also requires ownership; a stale caller returns an explicitly unretained failure
+receipt without replacing shared job state. See [ETL execution ownership](../../docs/engineering/etl-execution-ownership.md).
+
 Physical bounded-context module project for provider, ingestion, canonicalization, validation,
 source evidence, and publish-data ownership conformance.
 
