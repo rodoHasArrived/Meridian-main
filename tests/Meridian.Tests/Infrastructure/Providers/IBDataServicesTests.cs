@@ -747,6 +747,72 @@ public sealed class IBDataServicesTests
             => [];
     }
 
+    [Fact]
+    public void CrossCapabilityCallbacks_WithACollidingRequestId_DoNotTouchTheReadModel()
+    {
+        // The vendor allocates ordinary ticker ids independently of this service's request ids,
+        // so a foreign stream's id can collide with a tracked request after subscription churn.
+        // A payload whose domain does not match the tracked request's capability must be
+        // dropped, not appended to the unrelated read model and its durable projection.
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribePnl("DU123", "model-a");
+
+        transport.RaiseTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
+        transport.RaiseScanner(requestId, new ProviderScannerResult(
+            0, "AAPL", "NASDAQ", null, null, null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+        transport.RaiseScannerBatchEnd(requestId);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Requested,
+            "a foreign-domain payload must not advance an unrelated request to Streaming");
+        request.TickByTickObservations.Should().BeNullOrEmpty();
+        request.ScannerResults.Should().BeNullOrEmpty();
+
+        // The request's own domain still records.
+        transport.RaisePnl(requestId, new ProviderAccountPnl(
+            "DU123", "model-a", 10m, 4m, 6m, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+        services.GetRequests().Single().Pnl.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void FailedRegistration_RemovesTheRequestGateWithTheOtherRequestState()
+    {
+        // Request ids are monotonic, so a gate left behind by a failed registration can never be
+        // drained or reused; during a persistence outage every retried request would leak one.
+        var store = new ThrowingDurableResultStore();
+        using var services = new IBDataServices(new RecordingTransport(), new IBDurableResultProjector(store));
+
+        var subscribe = () => services.SubscribePnl(
+            "DU123", "model-a", ownership: new IBDataRequestOwnership("tenant-a", "company-a"));
+
+        subscribe.Should().Throw<InvalidOperationException>();
+        services.GetRequests("tenant-a", "company-a").Should().BeEmpty();
+        var gates = (System.Collections.ICollection)typeof(IBDataServices)
+            .GetField("_readModelGates", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .GetValue(services)!;
+        gates.Count.Should().Be(0, "a failed registration must not leak its per-request gate");
+    }
+
+    private sealed class ThrowingDurableResultStore : IBDurableResultStore
+    {
+        public void Upsert(
+            IBDataRequestOwnership ownership,
+            string providerConnectionId,
+            string requestCorrelationId,
+            ProviderDataRequestReadModel request,
+            IBDataLineage? lineage)
+            => throw new InvalidOperationException("durable store unavailable");
+
+        public IReadOnlyList<IBDurableResult> Get(
+            string tenantId,
+            string companyId,
+            string? capability = null,
+            string? accountId = null,
+            string? modelAccountId = null)
+            => [];
+    }
+
     /// <summary>
     /// The vendor delivers a bounded historical-tick result as batches whose done flag describes
     /// the batch, so the transport may mark only the final batch's last element as completing —
