@@ -776,6 +776,50 @@ public sealed class IBDataServicesTests
     }
 
     [Fact]
+    public void OptionPayloadOnAContractDetailsRequest_IsRecorded()
+    {
+        // The manager's contractDetails callback deliberately emits an option payload alongside
+        // the details when a contract-details request resolves to an option; the capability
+        // guard must accept that flow, not only the option-chain request's.
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.RequestContractDetails(new SymbolConfig("AAPL"));
+
+        transport.RaiseOptionContract(requestId, new ProviderOptionContract(
+            "AAPL", string.Empty, new DateOnly(2027, 1, 15), 200m, "C", "SMART", string.Empty,
+            string.Empty, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+
+        services.GetRequests().Single().OptionContracts.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void TerminalTransitionDuringAvailabilityRecording_KeepsLineageAndProvenanceCoherent()
+    {
+        // A watcher reacting to the availability update by cancelling models a terminal
+        // transition racing the recorder. Recorded as two separate transitions, the cancel could
+        // freeze the read model with the new lineage availability embedded while its request and
+        // observation provenance still reported the previous availability — incoherent evidence
+        // the durable projector would materialize permanently.
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribePnl("DU123", "model-a");
+        services.ReadModelUpdated += model =>
+        {
+            if (model.Lineage?.Status == "market-data-type" && model.Status == ProviderDataRequestStatus.Requested)
+                services.CancelRequest(model.RequestId, CancellationToken.None);
+        };
+
+        transport.RaiseMarketDataType(requestId, 3);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.Lineage!.Availability.Should().Be(IBMarketDataAvailability.Delayed);
+        request.Provenance.MarketDataAvailability.Should().Be(
+            nameof(IBMarketDataAvailability.Delayed),
+            "the frozen terminal model must carry the same availability in its lineage and its provenance");
+    }
+
+    [Fact]
     public void FailedRegistration_RemovesTheRequestGateWithTheOtherRequestState()
     {
         // Request ids are monotonic, so a gate left behind by a failed registration can never be
@@ -1023,6 +1067,7 @@ public sealed class IBDataServicesTests
         public void RaiseDividend(int id, ProviderDividendEarnings value) => DividendEarningsReceived?.Invoke(this, (id, value));
         public void RaiseScanner(int id, ProviderScannerResult value) => ScannerResultReceived?.Invoke(this, (id, value));
         public void RaisePnl(int id, ProviderAccountPnl value) => PnlReceived?.Invoke(this, (id, value));
+        public void RaiseOptionContract(int id, ProviderOptionContract value) => OptionContractReceived?.Invoke(this, (id, value));
         public void RaiseMarketRule(int id, IReadOnlyList<ProviderMarketRuleIncrement> value) => MarketRuleReceived?.Invoke(this, (id, value));
         public void RaiseCompleted(int id) => RequestCompleted?.Invoke(this, id);
         public void RaiseRejected(int id, string code, string message) => RequestRejected?.Invoke(this, (id, code, message));
