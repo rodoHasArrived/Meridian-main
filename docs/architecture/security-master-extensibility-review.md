@@ -5241,6 +5241,45 @@ Read as a delta on the standing lists. All three are small; none needs a design 
 
 ---
 
+## Resolution pass — 2026-09-10
+
+An implementation pass on the five items the 2026-09-10 priorities name: D1–D3 from that pass and
+C4/C5 from 2026-09-08, which it ranks ahead of them.
+
+**Validation.** The authoring environment had no .NET SDK preinstalled; 10.0.401 was installed
+locally. `dotnet build tests/Meridian.Tests -c Release` succeeds with 0 errors. `dotnet test` filtered
+to `FullyQualifiedName~SecurityMaster|FullyQualifiedName~WorkstationEndpointsTests` ran 2,240 tests:
+2,185 passed, 54 skipped (the Postgres-backed suites, which need a database the container does not
+have), and 1 failed — `SecurityMasterMappingInteropTests.ToCreateCommand_UnknownAssetClass_DegradesToOtherSecurityPreservingRawClass`,
+which asserted the exact create-time degradation C4 names as the defect. It is split into
+`ToRecord_UnknownAssetClass_DegradesToOtherSecurityPreservingRawClass` (the read tolerance it was
+protecting, now exercised on the read path) and `ToCreateCommand_UnknownAssetClass_RejectsTheWrite`;
+the affected classes then pass 184/184. No F# source changed. The GitHub-hosted `quality-gate`
+remains the authoritative full run.
+
+### Closed this pass
+
+| # | Item | What landed |
+| --- | --- | --- |
+| C4 | Create is the one write path with no asset-class round-trip guard | The `OtherSecurity` fallback arm in `SecurityMasterMapping.ToSecurityKind` is now gated on `SecurityKindMappingMode`: in `Write` mode an unrecognized class throws with the refusal message and the catalog list, so `CreateAsync` with `"ExchangeTradedFund"`, `"Equitiy"` or `"equity"` fails before the command is built and nothing is appended or upserted. Read mode degrades exactly as before. Guarded at the mapping rather than the service so every write-mode mapping is covered, not only `ExecuteCreateAsync`. `SecurityMasterAssetClassSupportTests.CreateAsync_UnrecognizedAssetClass_IsRefusedInsteadOfPersistingAsOtherSecurity` locks it. |
+| C5 | Two numeric JSON readers on the hand-written projection path abort the upsert on an explicit null | `PostgresSecurityMasterStore.GetOptionalDecimal` / `GetOptionalInt` check `ValueKind == Number` before `TryGetDecimal` / `TryGetInt32`, back-porting the registry path's `DecodeTerm` fix to the readers that serve the core `securities` upsert and all eleven hand-written writers. `PostgresSecurityMasterStoreOptionalReadersTests` covers null, string, bool, object, array, absent and non-integral inputs. |
+| D2 | The two payload families share one integer key, and version 2 is reserved by prose alone | `AssetSpecificTermsSchema.ReservedForEconomicTerms = 2` is declared with the reason at the declaration. The chain no longer dispatches on the bare integer: `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument` requires the economic version *and* at least one economic-terms module key, so a flat payload stamped 2 passes through with its version preserved for the guard's `Unsupported schemaVersion '2'` diagnostic instead of being emptied to `{"schemaVersion":1}`. `SecurityAssetSpecificTermsUpcasterChainTests` asserts the reservation, that no accepted flat version equals `EconomicTermsSchema.Current`, and the pass-through. |
+| D3 | `securities.schema_version` has two definitions | One definition, stated in both writers: **the version stamped on the stored blob** (unstamped → 1), which is what migration 024 backfills. `UpsertProjectionCoreAsync` now writes `ResolveSchemaVersion(record.AssetSpecificTerms)` instead of the post-upcast version, so a v2 economic-terms document in the slot backfills *and* upserts as 2 and `where schema_version = 2` finds every row that needs the bridge. Chosen over promoting the normalized payload because, per D1, that would persist the lossy flattening into the projection. The store's optional `ISchemaUpcaster` constructor seam, whose only use was this promotion, is removed; the migration comment (both tracked copies) and the pipeline's summary now describe the same column. |
+| D1 (partial) | The cross-family v2→v1 bridge drops 9 of the 14 modules and is the rebuild fallback | The cheap half and the durable half both landed; the bridge itself stays lossy (see below). The upcaster and adapter comments no longer claim economics are preserved; they name the five bridged modules and the nine dropped ones. `Convert` stamps `flattenedFromEconomicTermsSchemaVersion: 2` on its output and `WasFlattenedFromEconomicTerms` reads it, so a projection rebuilt through the lossy route is distinguishable from one that always carried flat terms (the flat readers ignore undeclared keys, so the marker is inert on every read path). `BridgedModules` / `DroppedModules` / `EconomicTermsModules` are declared on the upcaster, and `SecurityEconomicTermsV2BridgeCoverageTests` reads the emitted module set off `ToEconomicRecord`, asserts it equals the classified set, asserts the exact flat key set `Convert` writes, and asserts per module and per field what survives and what is lost — so a fifteenth module fails a test until it is classified. |
+
+### Still open
+
+- **D1's lossless half.** Making the bridge carry call, structured-product, issuer, sweep, fund,
+  financing, redemption, auction and equity-behaviour terms needs an asset-class-aware flattening —
+  the flat spelling of a call date or a pool factor differs per class and `Convert` does not know
+  the class. That is the codec-generation item the standing lists defer; this pass makes its
+  absence visible (marker) and enumerated (test) rather than closing it.
+- The three 2026-09-10 smaller notes are unchanged, except that
+  `SecurityAssetSpecificTermsUpcasterPipeline.ToSchemaVersion` is now documented as a property of the
+  pipeline, not of any result.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
