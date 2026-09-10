@@ -185,23 +185,31 @@ public sealed partial class InMemoryDirectLendingService
     public Task<IReadOnlyList<PaymentAllocationDto>> GetPaymentAllocationsAsync(Guid loanId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PaymentAllocationDto>>(GetList(_paymentAllocations, loanId).ToArray());
     public Task<IReadOnlyList<FeeBalanceDto>> GetFeeBalancesAsync(Guid loanId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<FeeBalanceDto>>(GetList(_feeBalances, loanId).ToArray());
 
-    public Task<ProjectionRunDto> RequestProjectionAsync(Guid loanId, DateOnly? projectionAsOf = null, CancellationToken ct = default)
+    public Task<ProjectionRunDto> RequestProjectionAsync(Guid loanId, DateOnly? projectionAsOf = null, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null)
     {
         lock (_gate)
         {
-            return Task.FromResult(CreateProjectionLocked(loanId, projectionAsOf));
+            return Task.FromResult(CreateProjectionLocked(loanId, projectionAsOf, metadata));
         }
     }
 
     // Requires _gate to be held by the caller.
-    private ProjectionRunDto CreateProjectionLocked(Guid loanId, DateOnly? projectionAsOf)
+    private ProjectionRunDto CreateProjectionLocked(Guid loanId, DateOnly? projectionAsOf, DirectLendingCommandMetadataDto? metadata = null)
     {
         System.Diagnostics.Debug.Assert(Monitor.IsEntered(_gate), "CreateProjectionLocked must be called while holding _gate.");
         if (!_loans.TryGetValue(loanId, out var stored))
         {
             throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found."));
         }
-        var run = new ProjectionRunDto(Guid.NewGuid(), loanId, stored.TermsVersions[^1].VersionNumber, stored.Servicing.ServicingRevision, projectionAsOf ?? stored.TermsVersions[^1].Terms.MaturityDate, null, stored.History.LastOrDefault()?.EventId, "manual.request", ComputeTermsHash(stored.TermsVersions[^1].Terms), "in-memory", ProjectionRunStatus.Completed, GetList(_projectionRuns, loanId).LastOrDefault()?.ProjectionRunId, DateTimeOffset.UtcNow);
+        var runId = DirectLendingServiceSupport.CreateRunIdentity(loanId, "projection", metadata);
+        var existing = GetList(_projectionRuns, loanId).FirstOrDefault(item => item.ProjectionRunId == runId);
+        if (existing is not null)
+        {
+            if (projectionAsOf is { } requestedDate && requestedDate != existing.ProjectionAsOf)
+                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Conflict, "The command identity already belongs to a different projection date."));
+            return existing;
+        }
+        var run = new ProjectionRunDto(runId, loanId, stored.TermsVersions[^1].VersionNumber, stored.Servicing.ServicingRevision, projectionAsOf ?? stored.TermsVersions[^1].Terms.MaturityDate, null, stored.History.LastOrDefault()?.EventId, "manual.request", ComputeTermsHash(stored.TermsVersions[^1].Terms), "in-memory", ProjectionRunStatus.Completed, GetList(_projectionRuns, loanId).LastOrDefault()?.ProjectionRunId, DateTimeOffset.UtcNow);
         var flows = BuildFlows(stored, run);
         GetList(_projectionRuns, loanId).Add(run);
         _projectedCashFlows[run.ProjectionRunId] = flows.ToList();
@@ -231,7 +239,7 @@ public sealed partial class InMemoryDirectLendingService
         }
     }
 
-    public Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, CancellationToken ct = default)
+    public Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null)
     {
         lock (_gate)
         {
@@ -239,13 +247,16 @@ public sealed partial class InMemoryDirectLendingService
             {
                 throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found."));
             }
+            var runId = DirectLendingServiceSupport.CreateRunIdentity(loanId, "reconciliation", metadata);
+            var existing = GetList(_reconciliationRuns, loanId).FirstOrDefault(item => item.ReconciliationRunId == runId);
+            if (existing is not null)
+                return Task.FromResult<ReconciliationRunDto?>(existing);
             var latestProjection = GetList(_projectionRuns, loanId).OrderByDescending(static x => x.GeneratedAt).FirstOrDefault();
             if (latestProjection is null)
             {
                 latestProjection = CreateProjectionLocked(loanId, null);
             }
 
-            var runId = Guid.NewGuid();
             var run = new ReconciliationRunDto(runId, loanId, latestProjection.ProjectionRunId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "Completed");
             var flows = _projectedCashFlows.TryGetValue(latestProjection.ProjectionRunId, out var projected) ? projected : [];
             var cashTransactions = GetList(_cashTransactions, loanId);

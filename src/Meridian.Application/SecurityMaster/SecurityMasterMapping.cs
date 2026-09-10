@@ -407,6 +407,15 @@ internal static class SecurityMasterMapping
                 ToDistributionPolicyOption(GetOptionalString(json, "distributionPolicy")),
                 ToOption(GetOptionalBoolean(json, "isStableNav")),
                 ToOption(GetOptionalString(json, "pricingSource")))),
+            // Read tolerance must not become write tolerance. On a create, an unrecognized class
+            // ("ExchangeTradedFund", which the pack registry only PLANS; a typo like "Equitiy")
+            // would otherwise persist silently as OtherSecurity — and because OtherSecurity is a
+            // catalog class, every later amend passes the round-trip guard, so the
+            // misclassification is permanent and never surfaces. Amend and deactivate are guarded
+            // in SecurityMasterService.EnsureAssetClassRoundTripsSafely before they reach here;
+            // this arm is the one guard the create path has.
+            _ when mode == SecurityKindMappingMode.Write =>
+                throw new InvalidOperationException(UnrecognizedAssetClassOnWrite(assetClass)),
             // Unknown classes degrade to OtherSecurity with the raw class preserved as the category
             // instead of failing every read of the row. A newer node can register a class this node
             // has no deserializer for; throwing here made that a total read outage per security
@@ -704,6 +713,12 @@ internal static class SecurityMasterMapping
                 "Annual" => PaymentFrequency.Annual,
                 var other => PaymentFrequency.NewOtherFrequency(other)
             });
+
+    private static string UnrecognizedAssetClassOnWrite(string assetClass)
+        => $"Asset class '{assetClass}' is not a Security Master asset class this node recognizes, so the write is refused: " +
+           "persisting it would silently reclassify the security as OtherSecurity and the misclassification could never be " +
+           "corrected through the amend path. Use one of the catalog asset classes " +
+           $"({string.Join(", ", SecurityAssetClassCatalog.AssetClasses)}), or apply the change from a node that supports this class.";
 
     private static JsonElement ParseJson(string json)
         => JsonDocument.Parse(json).RootElement.Clone();
