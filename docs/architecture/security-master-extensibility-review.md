@@ -5466,6 +5466,16 @@ caller of `ToProjection` rather than by assuming the null case, and the finding 
 which half of it is a source claim and which half is a question about deployment history that the
 repository cannot answer.
 
-No code was changed. No test was run and no reviewed code path was executed: every claim in the
-2026-09-10 pass is a source claim, and D3's blast-radius bound ("no code reads this column") is a
-grep result over `src/`, not an observation of a running system.
+No code was changed. No .NET or TypeScript test was run and no reviewed code path was executed —
+the .NET SDK is not present in the pass's environment — so every claim in the 2026-09-10 pass is a
+source claim, and D3's blast-radius bound ("no code reads this column") is a grep result over
+`src/`, not an observation of a running system.
+
+The repository's documentation validation did run, on the pass's own diff: the docs-automation
+`core` profile (verified idempotent on a second run), `validate-examples` (0 invalid, so the two
+added `csharp` blocks parse), the rules engine, the AI inventory, handoff, contract-drift and
+Codex-memory checks, and `tools/roadmap/enforce_phase_scope.py` at `--phase PR1` (0 violations,
+with the regenerated `docs/status/` reports correctly recognized as generated-exempt). That is a
+check on this document, not on the subsystem it reviews, and it is recorded here only so the
+paragraph above is not read as claiming more silence than the pass kept — the same correction the
+2026-09-08 pass had to make after the fact (`4481741f`), made here before it was needed.
