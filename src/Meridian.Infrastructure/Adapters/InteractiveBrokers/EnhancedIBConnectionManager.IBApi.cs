@@ -48,13 +48,15 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     private int _nextBrokerRequestId = 50_000;
     private readonly ConcurrentDictionary<int, int> _marketRuleRequests = new();
     private readonly ConcurrentQueue<int> _depthExchangeRequests = new();
-    // Depth-exchange ids whose vendor submission threw after the FIFO enqueue above: the
-    // directory callback carries no request id, so a dead id left at the head of the queue
-    // would claim the next successful callback and leave the live request unanswered forever.
-    // ConcurrentQueue cannot remove an interior element, so failed submissions are tombstoned
-    // and skipped at dequeue. Request ids are process-monotonic, never reused, so a tombstone
-    // can never shadow a future live submission.
-    private readonly ConcurrentDictionary<int, bool> _failedDepthExchangeSubmissions = new();
+    // Depth-exchange ids still owed a directory callback. The callback carries no request id,
+    // so a dead id left at the head of the FIFO would claim the next successful callback and
+    // leave the live request unanswered forever — yet ConcurrentQueue cannot remove an interior
+    // element. Liveness therefore lives here: an id joins before its FIFO enqueue and leaves
+    // when its submission throws, its request is cancelled, or its callback is delivered, and
+    // the dequeue skips any queued id no longer present. Entries are only ever removed, never
+    // re-added, so a cancellation for an id that never reached the FIFO cannot leave anything
+    // behind — request ids are process-monotonic and never reused.
+    private readonly ConcurrentDictionary<int, bool> _liveDepthExchangeSubmissions = new();
 
     // Ids submitted through the IIBDataServiceTransport surface. IB's error() callback is one
     // funnel for every id domain on this client -- order ids included -- so RequestRejected must
@@ -999,43 +1001,40 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void RequestDepthExchanges(int requestId)
     {
         TrackDataServiceRequest(requestId);
-        var enqueued = false;
         try
         {
             ThrowIfNotConnected();
+            // Liveness must exist before the id is visible in the FIFO, or a concurrent
+            // directory callback could dequeue the id and judge it dead.
+            _liveDepthExchangeSubmissions[requestId] = true;
             _depthExchangeRequests.Enqueue(requestId);
-            enqueued = true;
             _clientSocket.reqMktDepthExchanges();
         }
         catch
         {
             // The submission never reached the vendor, so the id must not stay eligible
-            // for rejection routing — and, when the id made it into the FIFO, its correlation
-            // slot must die with it, or the next successful directory callback would be
-            // answered to this dead request while the live one behind it waits forever. A
-            // failure before the enqueue (disconnected) left no slot, and tombstoning it
-            // anyway would leak one inert entry per retry for the length of an outage.
-            if (enqueued)
-            {
-                _failedDepthExchangeSubmissions.TryAdd(requestId, true);
-            }
-
+            // for rejection routing — and its liveness dies with it, so a queued slot (when
+            // the failure followed the enqueue) is skipped instead of claiming the next
+            // successful directory callback while the live request behind it waits forever.
+            // A failure before the liveness entry was added (disconnected) makes the removal
+            // a no-op, leaving nothing behind across an outage's retries.
+            _liveDepthExchangeSubmissions.TryRemove(requestId, out _);
             _dataServiceRequestIds.TryRemove(requestId, out _);
             throw;
         }
     }
 
     /// <summary>
-    /// Dequeues the next depth-exchange correlation id, skipping ids whose vendor submission
-    /// failed after they were enqueued. Both directory callbacks (the smoke-build shape and the
-    /// official SDK's <c>mktDepthExchanges</c>) route through this so a failed submission can
-    /// never consume a live request's response.
+    /// Dequeues the next depth-exchange correlation id that is still live, discarding queued
+    /// ids whose vendor submission failed or whose request was cancelled. Both directory
+    /// callbacks (the smoke-build shape and the official SDK's <c>mktDepthExchanges</c>) route
+    /// through this so a dead submission can never consume a live request's response.
     /// </summary>
     private bool TryDequeueLiveDepthExchangeRequest(out int requestId)
     {
         while (_depthExchangeRequests.TryDequeue(out requestId))
         {
-            if (!_failedDepthExchangeSubmissions.TryRemove(requestId, out _))
+            if (_liveDepthExchangeSubmissions.TryRemove(requestId, out _))
             {
                 return true;
             }
@@ -1098,11 +1097,12 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         {
             // No vendor cancel exists for the depth-exchange directory, so a cancelled or
             // timed-out request's id would stay live at the head of the correlation FIFO and
-            // swallow the next successful callback — the terminal guard discards the result and
-            // the newer request never completes. Tombstoning the slot makes the dequeue skip
-            // it; an id already delivered never re-enters the FIFO, so a late tombstone is
-            // inert.
-            _failedDepthExchangeSubmissions.TryAdd(requestId, true);
+            // swallow the next successful callback — the terminal guard discards the result
+            // and the newer request never completes. Removing the liveness entry makes the
+            // dequeue skip the slot; a cancellation that arrives before the id ever entered
+            // the FIFO, or after its callback was delivered, is a no-op instead of a
+            // permanently retained tombstone.
+            _liveDepthExchangeSubmissions.TryRemove(requestId, out _);
         }
 
         if (!IsConnected)

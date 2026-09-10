@@ -895,9 +895,11 @@ public sealed class IBDataServicesTests
         var provenance = ProviderDataProvenance.Unattributed(timestamp);
 
         services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
-            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance) { BidSize = 1m, AskSize = 9m });
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance)
+        { BidSize = 1m, AskSize = 9m });
         services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
-            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance) { BidSize = 9m, AskSize = 1m });
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance)
+        { BidSize = 9m, AskSize = 1m });
 
         var ticks = services.GetRequests().Single().HistoricalTicks!;
         ticks.Should().HaveCount(2);
@@ -921,9 +923,11 @@ public sealed class IBDataServicesTests
         var provenance = ProviderDataProvenance.Unattributed(timestamp);
 
         services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
-            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance) { BidSize = 5m, AskSize = 5m });
+            timestamp, 200.10m, 10m, "BID_ASK", 200.05m, 200.15m, null, provenance)
+        { BidSize = 5m, AskSize = 5m });
         services.RecordHistoricalTick(requestId, new ProviderHistoricalTick(
-            timestamp, 200.10m, 10m, "BID_ASK", 200.00m, 200.20m, null, provenance) { BidSize = 5m, AskSize = 5m });
+            timestamp, 200.10m, 10m, "BID_ASK", 200.00m, 200.20m, null, provenance)
+        { BidSize = 5m, AskSize = 5m });
 
         var ticks = services.GetRequests().Single().HistoricalTicks!;
         ticks.Should().HaveCount(2);
