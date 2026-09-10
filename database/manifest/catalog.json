@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "83c2b1cc2ca20afb4dbb48156936f79529a8e8171813efc3fc548990f3a7953b",
+  "database_fingerprint": "52121c23e48f60486fecaa545cf300b9ef563dd2a746fa6a4d9878f3d3dbb317",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -15313,6 +15313,10 @@
       "object": "column:security_master.projected_cash_flow.principal_basis"
     },
     {
+      "fingerprint": "b54deb3b83df29320e992ef221bd9b9683c7ecfe0e104b158bcbfdce2aa46bfe",
+      "object": "column:security_master.projected_cash_flow.projected_cash_flow_id"
+    },
+    {
       "fingerprint": "c9e63a85e38bbb3c964a0e16812f41c73738678b121c92fe35fc5c8896cc4062",
       "object": "column:security_master.projected_cash_flow.projected_flow_id"
     },
@@ -15483,6 +15487,10 @@
     {
       "fingerprint": "a54822f05cbd69eb99abb392cb54be16bf8899b1dddd6d5e5cfc859a6a93f542",
       "object": "column:security_master.reconciliation_result.notes"
+    },
+    {
+      "fingerprint": "fd2d8ce753ee4814b3acb8165c44da4b36b83932ae2e82e16a0136c04f619e9b",
+      "object": "column:security_master.reconciliation_result.projected_cash_flow_id"
     },
     {
       "fingerprint": "7f1a5799447fcfb5c65a9b61a79e5900c41a42630f24c13804e77bb5f44084e6",
@@ -22009,6 +22017,10 @@
       "object": "function:reporting.validate_reporting_statement_revision_append()"
     },
     {
+      "fingerprint": "e3e3f6e3b8e0cea4de38dfc1498c2bbf9778dbcd603f1b8e264926a5017b2061",
+      "object": "function:security_master.synchronize_cash_flow_identity()"
+    },
+    {
       "fingerprint": "9b0f86ac9eee8b83a4aa8a7f73fa2c10f0e5b198e3c22fa82c6267496da438ae",
       "object": "function:security_master.update_security_search_vector()"
     },
@@ -24713,7 +24725,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "5c70a715993f4bc23e7edd7a11e4f997f0678f78423cee77446f575b3672d076",
+      "fingerprint": "30eb3f7a916492982f9c3c4b5da0990f884db4073110d0219dda091151a6a8f5",
       "object": "schema:security_master"
     },
     {
@@ -25337,7 +25349,7 @@
       "object": "table:security_master.payment_allocation"
     },
     {
-      "fingerprint": "311d3818abf1a8a6ab84a6fe7995a899d032a3246847e098df564adda2a3daab",
+      "fingerprint": "8c04366590d6e04477a80e152e03d0bdaa74bf3650d02290b3464da5a4b00745",
       "object": "table:security_master.projected_cash_flow"
     },
     {
@@ -25357,7 +25369,7 @@
       "object": "table:security_master.reconciliation_exception"
     },
     {
-      "fingerprint": "f93e65287ca3e159e9deb77ddb18ffdfc48927450436b68cb36b4f18763f5a95",
+      "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
       "object": "table:security_master.reconciliation_result"
     },
     {
@@ -25647,6 +25659,14 @@
     {
       "fingerprint": "1bc7290c6709817c8dd7fde3920442a8e2febf5b82ef6aed74e77a0ebd2b252c",
       "object": "trigger:reporting.reporting_statement_reconciliation_documents.trg_reporting_statement_document_truncate_guard"
+    },
+    {
+      "fingerprint": "33a22e61a3f68f23ba64a3e6d192d81c5d15de432f5aec0887fbfcd426058f57",
+      "object": "trigger:security_master.projected_cash_flow.synchronize_cash_flow_identity"
+    },
+    {
+      "fingerprint": "5beb2f255ceed9eba420f605ad5fbc33c77fde562fb64032c15e62d87efb0f8b",
+      "object": "trigger:security_master.reconciliation_result.synchronize_cash_flow_identity"
     },
     {
       "fingerprint": "c7cb35cbc5308126892ed3f8682c4680445965f00404cdb132d0cd4316fea1c3",
@@ -118022,9 +118042,40 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "5c70a715993f4bc23e7edd7a11e4f997f0678f78423cee77446f575b3672d076",
+      "fingerprint": "30eb3f7a916492982f9c3c4b5da0990f884db4073110d0219dda091151a6a8f5",
       "foreign_tables": [],
       "functions": [
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "b077153d8808055be76cfdf2019e6ea2381d0bbd20ba44928322a8286b82f2bb",
+          "fingerprint": "e3e3f6e3b8e0cea4de38dfc1498c2bbf9778dbcd603f1b8e264926a5017b2061",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "synchronize_cash_flow_identity",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "security_master",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "synchronize_cash_flow_identity()",
+          "strict": false,
+          "volatility": "volatile"
+        },
         {
           "acl": [
             {
@@ -137796,6 +137847,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "b54deb3b83df29320e992ef221bd9b9683c7ecfe0e104b158bcbfdce2aa46bfe",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "projected_cash_flow_id",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -137888,7 +137955,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "311d3818abf1a8a6ab84a6fe7995a899d032a3246847e098df564adda2a3daab",
+          "fingerprint": "8c04366590d6e04477a80e152e03d0bdaa74bf3650d02290b3464da5a4b00745",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -137973,7 +138040,26 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.projected_cash_flow FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+              "definition_hash": "5875f85a8d5211727ce93412e5b630cc5a61a9803f131ddb4a91ff06f69ca870",
+              "enabled": "origin",
+              "events": [
+                "insert",
+                "update"
+              ],
+              "fingerprint": "33a22e61a3f68f23ba64a3e6d192d81c5d15de432f5aec0887fbfcd426058f57",
+              "function_schema": "security_master",
+              "function_signature": "synchronize_cash_flow_identity()",
+              "level": "row",
+              "name": "synchronize_cash_flow_identity",
+              "relation": "projected_cash_flow",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -139373,6 +139459,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "fd2d8ce753ee4814b3acb8165c44da4b36b83932ae2e82e16a0136c04f619e9b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "projected_cash_flow_id",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -139488,7 +139590,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "f93e65287ca3e159e9deb77ddb18ffdfc48927450436b68cb36b4f18763f5a95",
+          "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -139550,7 +139652,26 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.reconciliation_result FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+              "definition_hash": "98a4eef916f96a62450ff0f7066e7d20e80062532cf8e338498c59063979229e",
+              "enabled": "origin",
+              "events": [
+                "insert",
+                "update"
+              ],
+              "fingerprint": "5beb2f255ceed9eba420f605ad5fbc33c77fde562fb64032c15e62d87efb0f8b",
+              "function_schema": "security_master",
+              "function_signature": "synchronize_cash_flow_identity()",
+              "level": "row",
+              "name": "synchronize_cash_flow_identity",
+              "relation": "reconciliation_result",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -169346,6 +169467,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "b54deb3b83df29320e992ef221bd9b9683c7ecfe0e104b158bcbfdce2aa46bfe",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "projected_cash_flow_id",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -169438,7 +169575,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "311d3818abf1a8a6ab84a6fe7995a899d032a3246847e098df564adda2a3daab",
+          "fingerprint": "8c04366590d6e04477a80e152e03d0bdaa74bf3650d02290b3464da5a4b00745",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -169523,7 +169660,26 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.projected_cash_flow FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+              "definition_hash": "5875f85a8d5211727ce93412e5b630cc5a61a9803f131ddb4a91ff06f69ca870",
+              "enabled": "origin",
+              "events": [
+                "insert",
+                "update"
+              ],
+              "fingerprint": "33a22e61a3f68f23ba64a3e6d192d81c5d15de432f5aec0887fbfcd426058f57",
+              "function_schema": "security_master",
+              "function_signature": "synchronize_cash_flow_identity()",
+              "level": "row",
+              "name": "synchronize_cash_flow_identity",
+              "relation": "projected_cash_flow",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -170923,6 +171079,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "fd2d8ce753ee4814b3acb8165c44da4b36b83932ae2e82e16a0136c04f619e9b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "projected_cash_flow_id",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -171038,7 +171210,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "f93e65287ca3e159e9deb77ddb18ffdfc48927450436b68cb36b4f18763f5a95",
+          "fingerprint": "53ff7040b61aa83c6e47e7577bcfd943c9532ab53730e491c5ac9045ad41358c",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -171100,7 +171272,26 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.reconciliation_result FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+              "definition_hash": "98a4eef916f96a62450ff0f7066e7d20e80062532cf8e338498c59063979229e",
+              "enabled": "origin",
+              "events": [
+                "insert",
+                "update"
+              ],
+              "fingerprint": "5beb2f255ceed9eba420f605ad5fbc33c77fde562fb64032c15e62d87efb0f8b",
+              "function_schema": "security_master",
+              "function_signature": "synchronize_cash_flow_identity()",
+              "level": "row",
+              "name": "synchronize_cash_flow_identity",
+              "relation": "reconciliation_result",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -180279,6 +180470,42 @@
         }
       ],
       "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.projected_cash_flow FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+          "definition_hash": "5875f85a8d5211727ce93412e5b630cc5a61a9803f131ddb4a91ff06f69ca870",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "update"
+          ],
+          "fingerprint": "33a22e61a3f68f23ba64a3e6d192d81c5d15de432f5aec0887fbfcd426058f57",
+          "function_schema": "security_master",
+          "function_signature": "synchronize_cash_flow_identity()",
+          "level": "row",
+          "name": "synchronize_cash_flow_identity",
+          "relation": "projected_cash_flow",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER synchronize_cash_flow_identity BEFORE INSERT OR UPDATE ON security_master.reconciliation_result FOR EACH ROW EXECUTE FUNCTION security_master.synchronize_cash_flow_identity()",
+          "definition_hash": "98a4eef916f96a62450ff0f7066e7d20e80062532cf8e338498c59063979229e",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "update"
+          ],
+          "fingerprint": "5beb2f255ceed9eba420f605ad5fbc33c77fde562fb64032c15e62d87efb0f8b",
+          "function_schema": "security_master",
+          "function_signature": "synchronize_cash_flow_identity()",
+          "level": "row",
+          "name": "synchronize_cash_flow_identity",
+          "relation": "reconciliation_result",
+          "schema": "security_master",
+          "timing": "before"
+        },
         {
           "comment": null,
           "definition": "CREATE TRIGGER trg_security_search_vector BEFORE INSERT OR UPDATE ON security_master.securities FOR EACH ROW EXECUTE FUNCTION security_master.update_security_search_vector()",
