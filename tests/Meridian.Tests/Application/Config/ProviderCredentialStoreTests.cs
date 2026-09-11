@@ -471,6 +471,22 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task ReadForProviderAsync_EnvironmentFallbackDoesNotRequireWritableVaultDirectory()
+    {
+        using var env = new EnvironmentScope("POLYGON_API_KEY", "read-only-polygon-key");
+        using var overrideFallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", "true");
+        // A file at the directory path deterministically prohibits creating the vault/lock,
+        // including when the test process has privileges that bypass read-only directory ACLs.
+        await File.WriteAllTextAsync(Path.Combine(_root, ".mdc"), "read-only-root-marker");
+
+        var read = await new FileProviderCredentialStore(_root).ReadForProviderAsync("polygon");
+
+        read!.Source.Should().Be(ProviderCredentialSourceDto.Environment);
+        read.Get("ApiKey").Should().Be("read-only-polygon-key");
+        (await File.ReadAllTextAsync(Path.Combine(_root, ".mdc"))).Should().Be("read-only-root-marker");
+    }
+
+    [Fact]
     public async Task ReadForProviderAsync_DoesNotUseEnvironmentFallbackInProductionOrPackagedBuilds()
     {
         using var env = new EnvironmentScope("POLYGON_API_KEY", "legacy-polygon-key");

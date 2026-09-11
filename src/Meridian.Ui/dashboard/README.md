@@ -62,6 +62,7 @@ instead of introducing one-off screen styling.
 - `src/app-shell.status-panel.ts` - app-shell bootstrap, degraded workspace, and recovery status view models.
 - `src/app-shell.trust-strip.ts` - app-shell build, mode, source, and provider posture view models.
 - `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
+- `src/screens/operations-continuity-screen.date-format.ts` - retained UTC timestamp and due-date formatting used by the Operations Continuity view model.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
 - `src/design-system/assets.ts` - dashboard bridge for the checked-in `Meridian Design System/` package, centralizing brand and workspace icon imports before app-shell or navigation components consume them.
 - `src/assets/` - browser-bundled brand and icon copies from the `Meridian Design System/assets/` source package, including the app icon and PNG tile.

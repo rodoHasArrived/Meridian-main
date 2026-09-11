@@ -13,7 +13,7 @@ last_reviewed: 2026-08-05
 
 ## Credential migration recovery
 
-Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. All vault reads and mutations share a bounded, cancellable file lock across store instances; audit failure retains the sidecar for retry.
+Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Vault reads and mutations share a bounded, cancellable file lock across store instances; reads with no vault remain available without writing to a read-only data root. Audit failure retains the sidecar for retry.
 
 ## Purpose
 

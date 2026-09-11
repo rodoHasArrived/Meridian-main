@@ -35,6 +35,19 @@ workstation root route, and every explicit non-redirect `<Route>` in the dashboa
 web capture script checks that coverage before launching Playwright. Update the route definition and
 fixture-backed wait evidence together when adding a new browser page.
 
+## Semantic-state review
+
+Ready/review/blocked/current/muted mapping is reviewed across browser badges, Evidence Workbench
+view models, WPF badge tone resources, and screenshot quality gates. Ready uses success, review
+uses warning, and blocked uses danger. Current and muted evidence keep their informational
+meaning rather than implying approval. The shared browser tone mappings and WPF theme resources
+remain the implementation references; retained screenshots must show the corresponding operator
+state as well as pass the capture validator above.
+
+`src/Meridian.Ui/dashboard/src/design-system-contract.test.ts` checks this cross-surface contract.
+This guard preserves evidence and operator-state consistency; it does not establish broader
+Evidence Vault product acceptance.
+
 ## Desktop WPF screenshot index
 
 The maintained desktop WPF coverage index lives at
