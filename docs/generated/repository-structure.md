@@ -9812,6 +9812,7 @@ Meridian-main
 │   │   │   ├── Connectors
 │   │   │   │   ├── AlpacaActivityStatementConnectorTests.cs
 │   │   │   │   ├── Bai2StatementConnectorTests.cs
+│   │   │   │   ├── BankStatementCurrencyEvidenceTests.cs
 │   │   │   │   ├── Camt053StatementConnectorTests.cs
 │   │   │   │   ├── CsvLineSplitterTests.cs
 │   │   │   │   ├── CsvStatementConnectorTests.cs
