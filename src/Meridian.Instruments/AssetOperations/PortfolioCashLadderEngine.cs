@@ -127,6 +127,43 @@ public static class PortfolioCashLadderEngine
             ])
     ];
 
+    /// <summary>
+    /// Returns the raw currencies of selected inputs before amount scaling or scenario
+    /// arithmetic. Uses the same run, position, and capital-kind selection as the ladder itself.
+    /// </summary>
+    public static IEnumerable<string> GetContributionCurrencies(PortfolioCashLadderInputs inputs, string? scenarioId = null)
+    {
+        ArgumentNullException.ThrowIfNull(inputs);
+        var windowEnd = inputs.AsOfDate.AddDays(Math.Max(1, inputs.HorizonDays));
+        foreach (var position in inputs.Positions)
+        {
+            foreach (var flow in SelectPositionFlows(position, inputs.AsOfDate, windowEnd))
+            {
+                yield return flow.Currency;
+            }
+        }
+
+        foreach (var (activity, _) in SelectCapitalActivities(inputs.CapitalActivity, inputs.AsOfDate, windowEnd))
+        {
+            yield return activity.Currency;
+        }
+
+        if (string.Equals(scenarioId, EarlyCallScenarioId, StringComparison.OrdinalIgnoreCase))
+        {
+            var callDates = SelectEarlyCallDates(inputs.Positions, inputs.AsOfDate, windowEnd);
+            foreach (var position in inputs.Positions)
+            {
+                if (callDates.TryGetValue(position.Operations.Subject.SecurityId, out var callDate))
+                {
+                    foreach (var flow in SelectCallPrincipalFlows(position, callDate))
+                    {
+                        yield return flow.Currency;
+                    }
+                }
+            }
+        }
+    }
+
     public static PortfolioCashLadderDto Build(PortfolioCashLadderInputs inputs, string? scenarioId = null)
     {
         ArgumentNullException.ThrowIfNull(inputs);
@@ -293,17 +330,12 @@ public static class PortfolioCashLadderEngine
         }
 
         var latestRun = SelectProjectionRun(operations);
-        var flows = LatestRunFlows(operations);
+        var flows = SelectPositionFlows(position, windowStart, windowEnd);
         var latestTerms = SelectTermsForRun(operations, latestRun);
 
         var rows = new List<PortfolioCashLadderContributionDto>();
         foreach (var flow in flows)
         {
-            if (flow.DueDate < windowStart || flow.DueDate >= windowEnd)
-            {
-                continue;
-            }
-
             var lane = ResolveInstrumentLane(flow.FlowType);
             var direction = ResolveInstrumentDirection(flow.FlowType);
             var amount = RoundCash(flow.Amount * quantity * direction);
@@ -335,22 +367,9 @@ public static class PortfolioCashLadderEngine
         DateOnly windowEnd,
         List<string> warnings)
     {
-        foreach (var activity in capitalActivity)
+        foreach (var (activity, direction) in SelectCapitalActivities(capitalActivity, windowStart, windowEnd, warnings))
         {
-            if (activity.DueDate < windowStart || activity.DueDate >= windowEnd)
-            {
-                continue;
-            }
-
-            var direction = ResolveCapitalDirection(activity.ActivityKind);
-            if (direction is null)
-            {
-                warnings.Add(
-                    $"Capital activity kind '{activity.ActivityKind}' ({activity.Summary}) is not recognized and was excluded from the ladder.");
-                continue;
-            }
-
-            var amount = RoundCash(Math.Abs(activity.Amount) * direction.Value);
+            var amount = RoundCash(Math.Abs(activity.Amount) * direction);
             yield return new PortfolioCashLadderContributionDto(
                 Guid.Empty,
                 activity.Summary,
@@ -368,6 +387,40 @@ public static class PortfolioCashLadderEngine
                 activity.Currency,
                 amount,
                 ScenarioAdjustment: null);
+        }
+    }
+
+    private static IEnumerable<AssetProjectedCashFlowDto> SelectPositionFlows(
+        PortfolioCashLadderPositionDto position,
+        DateOnly windowStart,
+        DateOnly windowEnd)
+        => position.Quantity == 0m
+            ? []
+            : LatestRunFlows(position.Operations)
+                .Where(flow => flow.DueDate >= windowStart && flow.DueDate < windowEnd);
+
+    private static IEnumerable<(PortfolioCapitalActivityDto Activity, int Direction)> SelectCapitalActivities(
+        IReadOnlyList<PortfolioCapitalActivityDto> capitalActivity,
+        DateOnly windowStart,
+        DateOnly windowEnd,
+        List<string>? warnings = null)
+    {
+        foreach (var activity in capitalActivity)
+        {
+            if (activity.DueDate < windowStart || activity.DueDate >= windowEnd)
+            {
+                continue;
+            }
+
+            var direction = ResolveCapitalDirection(activity.ActivityKind);
+            if (direction is null)
+            {
+                warnings?.Add(
+                    $"Capital activity kind '{activity.ActivityKind}' ({activity.Summary}) is not recognized and was excluded from the ladder.");
+                continue;
+            }
+
+            yield return (activity, direction.Value);
         }
     }
 
@@ -436,18 +489,7 @@ public static class PortfolioCashLadderEngine
         DateOnly windowStart,
         DateOnly windowEnd)
     {
-        var callDateBySecurity = new Dictionary<Guid, DateOnly>();
-        foreach (var position in inputs.Positions)
-        {
-            var callDate = ReadTermsDateForRun(
-                position.Operations,
-                SelectProjectionRun(position.Operations),
-                "callDate", "mandatoryPutDate", "preRefundDate");
-            if (callDate is { } date && date >= windowStart && date < windowEnd)
-            {
-                callDateBySecurity[position.Operations.Subject.SecurityId] = date;
-            }
-        }
+        var callDateBySecurity = SelectEarlyCallDates(inputs.Positions, windowStart, windowEnd);
 
         if (callDateBySecurity.Count == 0)
         {
@@ -477,13 +519,8 @@ public static class PortfolioCashLadderEngine
             }
 
             representativeOperations.TryAdd(securityId, position.Operations);
-            foreach (var flow in LatestRunFlows(position.Operations))
+            foreach (var flow in SelectCallPrincipalFlows(position, callDate))
             {
-                if (flow.DueDate <= callDate || ResolveInstrumentLane(flow.FlowType) != PrincipalLane)
-                {
-                    continue;
-                }
-
                 currencyBySecurity[securityId] = flow.Currency;
                 pulledPrincipalBySecurity[securityId] =
                     pulledPrincipalBySecurity.GetValueOrDefault(securityId)
@@ -505,6 +542,35 @@ public static class PortfolioCashLadderEngine
 
         return result;
     }
+
+    private static Dictionary<Guid, DateOnly> SelectEarlyCallDates(
+        IReadOnlyList<PortfolioCashLadderPositionDto> positions,
+        DateOnly windowStart,
+        DateOnly windowEnd)
+    {
+        var callDates = new Dictionary<Guid, DateOnly>();
+        foreach (var position in positions)
+        {
+            var callDate = ReadTermsDateForRun(
+                position.Operations,
+                SelectProjectionRun(position.Operations),
+                "callDate", "mandatoryPutDate", "preRefundDate");
+            if (callDate is { } date && date >= windowStart && date < windowEnd)
+            {
+                callDates[position.Operations.Subject.SecurityId] = date;
+            }
+        }
+
+        return callDates;
+    }
+
+    private static IEnumerable<AssetProjectedCashFlowDto> SelectCallPrincipalFlows(
+        PortfolioCashLadderPositionDto position,
+        DateOnly callDate)
+        => position.Quantity == 0m
+            ? []
+            : LatestRunFlows(position.Operations)
+                .Where(flow => flow.DueDate > callDate && ResolveInstrumentLane(flow.FlowType) == PrincipalLane);
 
     private static PortfolioCashLadderContributionDto BuildCallRedemptionRow(
         AssetOperationsDetailDto operations,

@@ -66,6 +66,14 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
 
+`PortfolioCashLadderEngine.GetContributionCurrencies` exposes raw currencies through the same
+latest-run, date-window, held-quantity, and capital-kind selectors used to build the ladder.
+The shared workstation read service uses this metadata before amount arithmetic to reject
+missing currency or unsupported FX aggregation. Superseded and out-of-window flows and
+unrecognized capital activities remain excluded; the engine retains its warning for an
+unrecognized in-window capital kind. Early-call validation also selects future principal that
+the scenario pulls into the requested window.
+
 Asset-specific instrument reference services live here because they expose financial instrument
 terms, lifecycle, contract, expiry, maturity, accrual, sweep, liquidity, fund-family, and
 chain-linkage details. Asset Operations projections also live here because they adapt instrument
