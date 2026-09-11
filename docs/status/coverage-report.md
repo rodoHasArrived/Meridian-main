@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1371 / 9116** items documented (**15.0%**) &mdash; Grade: **F**
+**1371 / 9117** items documented (**15.0%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 15.0%
