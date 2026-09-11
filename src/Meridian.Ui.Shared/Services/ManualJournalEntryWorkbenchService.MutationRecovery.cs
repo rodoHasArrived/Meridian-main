@@ -16,6 +16,11 @@ public sealed partial class ManualJournalEntryWorkbenchService
     private MutationCommand? _mutationCommand;
     private IManualJournalMutationSession? _mutationSession;
 
+    internal static IManualJournalMutationRecoveryStore DefaultMutationRecoveryFor(IManualJournalEntryDraftStore store)
+        => store is FileManualJournalEntryDraftStore fileStore
+            ? new FileManualJournalMutationRecoveryStore(fileStore.MutationRecoveryDirectory)
+            : EphemeralRecoveryStores.GetValue(store, static _ => new InMemoryManualJournalMutationRecoveryStore());
+
     private sealed record MutationCommand(string Key, string RequestHash, string ScopeKey, Guid JournalEntryId, bool OperationIsLifecycle);
 
     private static string RecoveryScope(string fund, string? tenant, string? company)

@@ -47,9 +47,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         _postingTarget = postingTarget;
         _reportPackWorkflowService = reportPackWorkflowService;
         _bankTransactionSource = bankTransactionSource;
-        _mutationRecovery = mutationRecovery ?? (draftStore is FileManualJournalEntryDraftStore fileStore
-            ? new FileManualJournalMutationRecoveryStore(fileStore.MutationRecoveryDirectory)
-            : EphemeralRecoveryStores.GetValue(draftStore, static _ => new InMemoryManualJournalMutationRecoveryStore()));
+        _mutationRecovery = mutationRecovery ?? DefaultMutationRecoveryFor(draftStore);
     }
 
     public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)

@@ -156,6 +156,32 @@ public sealed partial class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task ManualAuditRecovery_DemoSeeding_SharesLeaseAndCannotReplacePendingOperatorDraft()
+    {
+        using var fixture = await ManualRecoveryFixture.CreateAsync();
+        var recovery = new FileManualJournalMutationRecoveryStore(fixture.RecoveryDirectory);
+        var seeder = new DemoTenantProvisioner(journalDrafts: fixture.Drafts(), mutationRecovery: recovery);
+        await using (var held = await recovery.OpenSessionAsync())
+        {
+            using var cancelled = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => seeder.ProvisionAsync(cancelled.Token));
+        }
+
+        await seeder.ProvisionAsync();
+        var seeded = (await fixture.Drafts().GetAsync(DemoTenantBlueprint.FundProfileId, DemoTenantBlueprint.AccruedFeeDraftId))!;
+        var request = new SaveManualJournalEntryDraftRequest(seeded with { Memo = "Operator reviewed sample adjustment" },
+            "operator", "sample-operator-command");
+        await Assert.ThrowsAsync<IOException>(() => fixture.Service(drafts: new RecoveryFailingDraftStore(fixture.Drafts(), afterWrite: true)).SaveDraftAsync(request));
+
+        var report = await seeder.ProvisionAsync();
+        report.Warnings.Should().Contain(x => x.Contains("unresolved accounting mutation", StringComparison.Ordinal));
+        var retained = (await fixture.Drafts().GetAsync(seeded.FundProfileId, seeded.JournalEntryId))!;
+        retained.Memo.Should().Be(request.Draft.Memo);
+        retained.Version.Should().Be(seeded.Version + 1);
+        fixture.PendingFiles().Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task ManualAuditRecovery_RenamedValidReceipt_FailsClosedWithoutAuditRepair()
     {
         using var fixture = await ManualRecoveryFixture.CreateAsync();
