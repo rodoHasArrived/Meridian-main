@@ -34,6 +34,9 @@ Portfolio and Trading positions display the shared mark observation date, age, a
 
 Accounting and Operations Continuity require the shared decision to match all five selected close dimensions and the current workflow revision. Scope changes invalidate prior decisions and in-flight responses. Hard-lock requests forward that explicit scope to server-side close validation; a previously ready response cannot authorize a newly selected subject.
 
+Operations Continuity submits checklist controls from the shared workflow's explicit acknowledgment actor and time, including the first submission before any close package exists. Missing controls block submission. Rejected or reopened workflows can submit a newly reviewed cycle without reusing old package approvals. Approval decisions carry retained submission evidence; an assigned reviewer is not counted as having approved until the server records the actual decision. Close publication uses the current submission and decision history together with current prerequisite acknowledgments.
+Focused proof: `operations-continuity-screen.view-model.test.ts` and `operations-continuity-screen.test.tsx`.
+
 ## Purpose
 
 Browser workstation dashboard is the active browser operator workstation.
