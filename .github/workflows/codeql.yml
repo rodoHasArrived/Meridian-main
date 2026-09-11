@@ -51,19 +51,10 @@ jobs:
         with:
           global-json-file: global.json
 
-      # Shares the cache key used by Meridian CI, so CodeQL runs usually restore
-      # from a cache that the CI lane has already warmed.
-      - name: Cache NuGet packages
-        if: matrix.language == 'csharp'
-        uses: actions/cache@v6.1.0
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
       # Restore runs before init: it produces no compiler invocations for CodeQL to
       # observe, so keeping it outside the traced window avoids tracing overhead.
+      # Deliberately uncached: measured cold at 9s (run #7092), while caching
+      # ~/.nuget/packages cost 21s to restore plus 24s to save (run #7091).
       - name: Restore C# solution
         if: matrix.language == 'csharp'
         run: dotnet restore Meridian.WebWorkstation.slnf /p:EnableWindowsTargeting=true
