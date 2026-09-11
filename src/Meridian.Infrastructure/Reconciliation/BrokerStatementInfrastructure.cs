@@ -424,6 +424,11 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         }
 
         var sourceRowNumber = headerRecord.PhysicalLineCount;
+        if (header.Count <= 8)
+        {
+            throw new InvalidDataException("Statement CSV header requires an explicit currency column.");
+        }
+
         while (await ReadCsvRecordAsync(reader, ct).ConfigureAwait(false) is { } record)
         {
             var recordStartLine = sourceRowNumber + 1;
@@ -509,6 +514,11 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 FeesCommission = feesCommission,
                 ExternalTransactionId = externalTransactionId
             });
+        }
+
+        if (rows.Count == 0)
+        {
+            throw new InvalidDataException("Statement CSV contains no data rows.");
         }
 
         return rows;

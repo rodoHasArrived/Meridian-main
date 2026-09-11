@@ -96,7 +96,7 @@ public static class OfxDocumentParser
 
             var rawTag = body[(open + 1)..close].Trim();
             index = close + 1;
-            if (rawTag.Length == 0 || rawTag[0] is '?' or '!' || rawTag.EndsWith("/", StringComparison.Ordinal))
+            if (rawTag.Length == 0 || rawTag[0] is '?' or '!')
             {
                 continue;
             }
@@ -122,10 +122,11 @@ public static class OfxDocumentParser
                 continue;
             }
 
-            var name = NormalizeTagName(rawTag);
+            var selfClosing = rawTag.EndsWith("/", StringComparison.Ordinal);
+            var name = NormalizeTagName(selfClosing ? rawTag[..^1] : rawTag);
             var valueEnd = body.IndexOf('<', index);
-            var value = (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
-            if (value.Length > 0)
+            var value = selfClosing ? string.Empty : (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
+            if (value.Length > 0 || name is "CURSYM" or "CURDEF")
             {
                 // The same depth comparison the aggregate branch below makes, so a leaf is refused exactly
                 // where a child aggregate in its place would be. Only aggregates were checked, so a leaf
@@ -154,6 +155,11 @@ public static class OfxDocumentParser
             }
             else
             {
+                if (selfClosing)
+                {
+                    continue;
+                }
+
                 // stack carries the synthetic OFX-ROOT pushed before the walk, so its Count is one more
                 // than the aggregate depth the document actually declares. Comparing Count directly
                 // refused a document nested at exactly MaxNestingDepth, one level earlier than the camt

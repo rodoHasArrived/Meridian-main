@@ -207,6 +207,23 @@ public sealed class CsvStatementEvidenceTests : IDisposable
     private const string Header = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission";
 
     [Theory]
+    [InlineData("account,symbol,quantity,price,cashAmount,activityType,tradeDate")]
+    [InlineData(Header)]
+    public async Task MonthEndHeaderOnlyStatement_RefusesValidationAndImport(string header)
+    {
+        Directory.CreateDirectory(_root);
+        var path = Path.Combine(_root, "empty-statement.csv");
+        await File.WriteAllTextAsync(path, header + "\n\n");
+        var request = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)) { ExternalAccountId = "A1" };
+        var store = new JsonCanonicalStatementStore(_root);
+        var service = new CsvBrokerStatementService(store);
+
+        (await service.ValidateAsync(request)).IsValid.Should().BeFalse();
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.ImportAsync(request));
+        (await store.ListImportsAsync()).Should().BeEmpty();
+    }
+
+    [Theory]
     [InlineData("currency-missing")]
     [InlineData("currency-blank")]
     [InlineData("currency-invalid")]

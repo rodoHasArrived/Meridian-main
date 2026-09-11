@@ -28,6 +28,10 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Canonical CSV import requires the currency column in the header and at least one data row.
+Header-only statements cannot validate or persist as empty imports; every admitted row retains
+explicit currency and invariant decimal evidence.
+
 Canonical CSV statement imports require an explicit three-letter currency on every row.
 Older seven-column files must be regenerated with source-backed currency evidence; the
 importer does not supply USD. Quantity, price, cash and nonblank fees use invariant decimal
