@@ -31,11 +31,14 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
         var activity = PrivateCapitalCloseCockpitServiceTests.BuildActivity() with { ProjectedAtUtc = DateTimeOffset.UtcNow };
         var submitted = await OperationsContinuityWorkflowServiceTests.CreateApprovalSubmittedWorkflowAsync(
             workflowService, activity.LedgerBookId, "2026-06");
-        var approvals = OperationsContinuityWorkflowServiceTests.RequiredChecklistControlApprovals();
+        submitted.LedgerBookId.Should().Be(activity.LedgerBookId);
+        submitted.PeriodId.Should().Be("2026-06");
+        var approvals = await OperationsContinuityWorkflowServiceTests.ReadChecklistControlApprovalsAsync(workflowService, submitted.WorkflowId);
         var approved = await workflowService.ApproveWorkflowAsync(submitted.WorkflowId, new(
-            submitted.Version, "ops-user", "reviewer", "Review retained close evidence", "report-pack-1",
+            submitted.Version, "reviewer", "reviewer", "Review retained close evidence", "report-pack-1",
             ChecklistControlApprovals: approvals));
         approved.Success.Should().BeTrue();
+        approvals = await OperationsContinuityWorkflowServiceTests.ReadChecklistControlApprovalsAsync(workflowService, submitted.WorkflowId);
         var workflow = approved.Workflow!;
         var scope = new CloseReadinessScopeDto("fund-alpha", workflow.LedgerBookId,
             workflow.FundAccountId, "entity-master", workflow.PeriodId);
