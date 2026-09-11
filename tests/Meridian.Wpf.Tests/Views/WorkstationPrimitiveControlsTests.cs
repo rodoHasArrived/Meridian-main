@@ -455,6 +455,44 @@ public sealed class WorkstationPrimitiveControlsTests
         });
     }
 
+    [Fact]
+    public void DataConfidenceIndicator_CommandClearedMidPress_StillReleasesMouseCapture()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var indicator = new Meridian.Wpf.Controls.DataConfidenceIndicator();
+            var window = Show(indicator);
+            try
+            {
+                // With an executable command bound, ButtonBase's down handler captures the
+                // mouse; if the click-through trigger then clears the command before the
+                // up, the badge is left commandless while still owning the capture. The
+                // commandless early return must not skip the base up that releases it: a
+                // stranded capture would keep routing pointer input to an inert badge.
+                // The test pins that end state directly — capture engaged, command null.
+                var button = indicator.FindName("ExplanationButton").Should().BeAssignableTo<Button>().Which;
+                button.CaptureMouse().Should().BeTrue("a shown, enabled badge can take mouse capture");
+
+                var release = new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                {
+                    RoutedEvent = UIElement.MouseLeftButtonUpEvent
+                };
+                button.RaiseEvent(release);
+
+                release.Handled.Should().BeTrue(
+                    "a press the base began completes through the base even after the command is cleared");
+                button.IsMouseCaptured.Should().BeFalse(
+                    "completing the press must release the stranded mouse capture");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     private static Window Show(FrameworkElement element)
     {
         var window = new Window

@@ -32,7 +32,10 @@ public sealed class DataConfidenceExplanationButton : Button
 
     protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
     {
-        if (Command is null)
+        // Unless this button still owns a press the base began: the click-through trigger
+        // can clear the command between down and up, and skipping the base up would then
+        // strand the mouse capture and pressed state on a now-inert badge.
+        if (Command is null && !IsPressed && !IsMouseCaptured)
         {
             return;
         }
