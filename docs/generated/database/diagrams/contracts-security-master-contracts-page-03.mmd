@@ -212,6 +212,9 @@ classDiagram
         +string? LegacyAssetClass
     }
     class Meridian_Contracts_SecurityMaster_SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster["SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"] {
+        +IReadOnlyList~string~ BridgedModules
+        +IReadOnlyList~string~ DroppedModules
+        +IReadOnlyList~string~ EconomicTermsModules
         +SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster Instance
     }
     class Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto["SecurityEvidenceLinkDto"] {
