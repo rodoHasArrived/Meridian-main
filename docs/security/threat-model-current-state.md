@@ -82,6 +82,16 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 
 ### External data, SSRF, and integration boundaries
 - Most adapters use fixed vendor endpoints and resilient HTTP clients, reducing generic SSRF exposure.
+- The provider-integration REST transport requires an approved HTTPS origin and revalidates DNS
+  at each redirect. Its production client also resolves and checks addresses inside
+  `SocketsHttpHandler.ConnectCallback`, then connects to those numeric addresses without another
+  DNS lookup. TLS retains normal host/certificate validation. Automatic redirects and implicit
+  system proxies are disabled; configured provider origins must be directly reachable.
+  Private IPv6 unique-local addresses are rejected alongside private IPv4, loopback, and
+  link-local addresses. The response limit applies while streaming even without Content-Length.
+  Focused rebinding, redirect, private-address, and unknown-length-body tests are in
+  `ProviderIntegrationHttpClientTransportTests`; this does not certify every vendor adapter or
+  statement parser, and hosted validation remains required.
 - Operator-configured external hosts/ports (e.g., IB/SFTP/other integration settings) still require strict governance because misconfiguration can become internal network reachability.
 
 ### Database and business-state integrity

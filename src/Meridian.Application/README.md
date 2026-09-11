@@ -40,6 +40,12 @@ service attribution when no operator initiated the call.
 
 ## Purpose
 
+Provider-integration REST composition uses `ProviderIntegrationHttpClientTransport.CreateHttpClient`
+to validate DNS at connection time and connect only to the checked numeric addresses. It disables
+automatic redirects and system proxy routing; the transport checks every redirect against the
+approved HTTPS origin. See [the threat model](../../docs/security/threat-model-current-state.md)
+for the boundary and remaining certification requirements.
+
 `DirectLendingOutboxDispatcher` treats rejected projection and reconciliation command results as
 failed deliveries. The durable message is marked failed for retry and is acknowledged only after
 the command succeeds. `DirectLendingOutboxFailureTests` exercises failure followed by success for

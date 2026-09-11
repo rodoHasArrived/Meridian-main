@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Text;
 using Meridian.Contracts.Integrations;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,37 @@ namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegrationHttpTransport
 {
+    /// <summary>Creates the production client with connection-time DNS validation and address pinning.</summary>
+    public static HttpClient CreateHttpClient(IProviderIntegrationHostResolver? resolver = null)
+    {
+        resolver ??= new DnsProviderIntegrationHostResolver();
+        return new HttpClient(new SocketsHttpHandler
+        {
+            AllowAutoRedirect = false,
+            UseProxy = false,
+            ConnectCallback = async (context, ct) =>
+            {
+                var addresses = (await resolver.ResolveAsync(context.DnsEndPoint.Host, ct).ConfigureAwait(false)).ToArray();
+                if (addresses.Length == 0 || addresses.Any(IsBlockedAddress))
+                    throw new InvalidOperationException("Provider connection resolved to a non-public address.");
+
+                // Connect to the validated numeric addresses. A second DNS lookup must not
+                // occur between validation and connection; TLS still uses the request host.
+                var socket = new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+                try
+                {
+                    await socket.ConnectAsync(addresses, context.DnsEndPoint.Port, ct).ConfigureAwait(false);
+                    return new NetworkStream(socket, ownsSocket: true);
+                }
+                catch
+                {
+                    socket.Dispose();
+                    throw;
+                }
+            }
+        });
+    }
+
     private const int MaximumRedirects = 3;
     private const int MaximumResponseBytes = 8 * 1024 * 1024;
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
@@ -232,7 +264,8 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
                    bytes[0] >= 224;
         }
 
-        return address.IsIPv6LinkLocal || address.IsIPv6SiteLocal || address.IsIPv6Multicast;
+        return address.IsIPv6LinkLocal || address.IsIPv6SiteLocal || address.IsIPv6Multicast ||
+               (address.GetAddressBytes()[0] & 0xfe) == 0xfc;
     }
 
     private static HttpMethod ToHttpMethod(ProviderIntegrationHttpMethodDto method)
