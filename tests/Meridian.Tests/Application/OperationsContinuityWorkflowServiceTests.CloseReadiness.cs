@@ -20,10 +20,11 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         var service = CreateService(out var repository, out _, registerCloseReadinessGuard: false);
         var submitted = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(submitted.WorkflowId, new(
-            submitted.Version, "ops-user", "reviewer", "Approve prerequisite evidence", "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            submitted.Version, "reviewer", "reviewer", "Approve prerequisite evidence", "report-pack-1",
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, submitted.WorkflowId)));
+        approved.Success.Should().BeTrue();
         var request = new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "ops-user", "Close", "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, submitted.WorkflowId),
             CloseScope: missingScope ? null : await StateMachineCloseScopeAsync(service, submitted.WorkflowId));
         var result = await service.CloseWorkflowAsync(submitted.WorkflowId, request);
         result.Success.Should().BeFalse();
