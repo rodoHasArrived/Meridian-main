@@ -2288,7 +2288,6 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
-│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── ui-route-wiring-report.json
 │   │   ├── ui-route-wiring-report.md
@@ -4566,10 +4565,12 @@ Meridian-main
 │   │   │   ├── FinancialOperationsCommandCenterReadService.cs
 │   │   │   ├── FinancialOperationsCommandCenterReadService.OutputEvidence.cs
 │   │   │   ├── OperationsApprovalPolicyMatrixService.cs
+│   │   │   ├── OperationsChecklistControlEvidence.cs
 │   │   │   ├── OperationsCloseCalendarService.cs
 │   │   │   ├── OperationsContinuityRepositories.cs
 │   │   │   ├── OperationsContinuityWorkflow.cs
 │   │   │   ├── OperationsContinuityWorkflow.Reconciliation.cs
+│   │   │   ├── OperationsContinuityWorkflowService.ChecklistControls.cs
 │   │   │   ├── OperationsContinuityWorkflowService.CloseReadiness.cs
 │   │   │   ├── OperationsContinuityWorkflowService.cs
 │   │   │   ├── OperationsContinuityWorkflowService.Projection.cs
@@ -6701,6 +6702,7 @@ Meridian-main
 │   │   │   │   │   ├── operations-continuity-reviewed-automation.view-model.ts
 │   │   │   │   │   ├── operations-continuity-screen.close-test-fixtures.ts
 │   │   │   │   │   ├── operations-continuity-screen.command-state.ts
+│   │   │   │   │   ├── operations-continuity-screen.date-format.ts
 │   │   │   │   │   ├── operations-continuity-screen.test.tsx
 │   │   │   │   │   ├── operations-continuity-screen.tsx
 │   │   │   │   │   ├── operations-continuity-screen.view-model.test.ts

@@ -2073,7 +2073,7 @@ describe("Operations Continuity view model", () => {
     }
 
     const approved = closeReadyDetail.approvals[0]!;
-    const republished = buildCommandViewModel({
+    const republishReadyDetail: OperationsContinuityWorkflow = {
       ...closeReadyDetail,
       approvals: [
         { ...approved, approvalId: "current-submission", status: "Submitted", decidedAtUtc: null },
@@ -2091,6 +2091,20 @@ describe("Operations Continuity view model", () => {
         evidenceLinks: [],
         checklistControlApprovals: [{ taskId: "close-gate-approval", approvedBy: "old-reviewer", approvedAtUtc: "2026-05-09T16:00:00Z" }]
       }
+    };
+    const republishDecision = sharedCloseDecision(republishReadyDetail);
+    const republished = buildOperationsContinuityScreenViewModel({
+      workflows: [republishReadyDetail],
+      selectedWorkflowId: workflowId,
+      detail: republishReadyDetail,
+      commandCenter: republishDecision,
+      expectedCloseScope: republishDecision.closeReadiness!.scope,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
     }).commandSpine.rows[4]!;
     expect(republished.canCloseWorkflow).toBe(true);
     expect(republished.closeWorkflowReportPackId).toBe("report-pack-2026-05");
