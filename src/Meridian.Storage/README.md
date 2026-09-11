@@ -16,9 +16,12 @@ lot acquisition/disposal and reversals), period creation, close, and reopen reta
 same transaction. Verification scans the chain and its retained journal/leg, period, and close-event
 facts before further writes; an audit failure rolls back the mutation. A locked head serializes
 appenders, and Serializable callers retain the existing whole-transaction retry requirement.
-This deliberately costs a full history scan per append and requires volume validation before
-production acceptance. The hashed genesis inventory identifies pre-upgrade facts without claiming
-their old contents were protected. Whole-database rollback still requires an external checkpoint.
+Each append scans all prior events and covered facts: N new writes recheck at least N(N-1)/2
+prior events, in addition to existing history. This requires volume validation before production
+acceptance. The hashed genesis inventory identifies pre-upgrade facts without claiming their old
+contents were protected. A coherent rollback of the audit head, suffix, and corresponding facts
+requires an external checkpoint to detect, even when the rest of the database remains unchanged.
+Coverage permits new SQL columns but compares retained column values, including nested JSON, exactly.
 `LedgerEventAuditPostgresTests` exercises these boundaries; hosted PostgreSQL proof is required.
 
 Audit actors come from validated posting commands or period transitions. Missing legacy attribution

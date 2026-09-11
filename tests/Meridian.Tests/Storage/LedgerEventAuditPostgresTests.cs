@@ -149,7 +149,7 @@ public sealed class LedgerEventAuditPostgresTests
     }
 
     [LedgerDatabaseFact]
-    public async Task CoveredFactMutationAndUnauditedPeriodWrite_AreDetected()
+    public async Task UnauditedPeriodMutation_IsDetected()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         var ct = timeout.Token;
@@ -157,7 +157,40 @@ public sealed class LedgerEventAuditPostgresTests
         var (_, period) = await CreatePeriodAsync(database, ct);
         await SqlAsync(database, $"update {{schema}}.accounting_periods set label = 'unaudited change' where period_id = '{period.PeriodId:D}'", ct);
         var verify = () => database.JournalStore.VerifyLedgerEventAuditAsync(ct);
-        await verify.Should().ThrowAsync<LedgerValidationException>().WithMessage("*covered*" );
+        await verify.Should().ThrowAsync<LedgerValidationException>().WithMessage("*covered*");
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AddedNestedJournalMetadataAndLegDimensionKeys_AreDetectedBeforeNextPost()
+    {
+        string[] corruptions =
+        [
+            "update {schema}.journal_entries set metadata = metadata || '{\"unrecordedEvidence\":\"forged\"}'::jsonb",
+            "update {schema}.journal_legs set dimensions = coalesce(dimensions, '{}'::jsonb) || '{\"unrecordedDimension\":\"forged\"}'::jsonb"
+        ];
+        foreach (var corruption in corruptions)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            var ct = timeout.Token;
+            await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+            var (book, period) = await CreatePeriodAsync(database, ct);
+            var store = GovernedStore(database);
+            await store.AppendAsync(Write(book, period, "poster", dimensions: new(CostCenterId: "audit-fixture")), ct);
+            // Privileged corruption injection in a disposable schema only. Normal writes remain
+            // protected by immutable-row triggers, which are restored before verification.
+            await SqlAsync(database, """
+                alter table {schema}.journal_entries disable trigger user;
+                alter table {schema}.journal_legs disable trigger user;
+                """ + corruption + ";" + """
+                alter table {schema}.journal_entries enable trigger user;
+                alter table {schema}.journal_legs enable trigger user;
+                """, ct);
+            var verify = () => store.VerifyLedgerEventAuditAsync(ct);
+            await verify.Should().ThrowAsync<LedgerValidationException>().WithMessage("*audit coverage*");
+            var next = () => store.AppendAsync(Write(book, period, "next-poster"), ct);
+            await next.Should().ThrowAsync<LedgerValidationException>().WithMessage("*audit coverage*");
+            (await store.GetByPeriodAsync(period.PeriodId, ct)).Should().ContainSingle();
+        }
     }
 
     [LedgerDatabaseFact]
@@ -198,6 +231,21 @@ public sealed class LedgerEventAuditPostgresTests
         period.PeriodId.Should().NotBeEmpty();
     }
 
+    [LedgerDatabaseFact]
+    public async Task AdditiveJournalAndLegSqlColumns_PreserveExistingSnapshotVerification()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        var ct = timeout.Token;
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        var (book, period) = await CreatePeriodAsync(database, ct);
+        await GovernedStore(database).AppendAsync(Write(book, period, "poster"), ct);
+        await SqlAsync(database, """
+            alter table {schema}.journal_entries add column future_nullable_field text null;
+            alter table {schema}.journal_legs add column future_nullable_field text null;
+            """, ct);
+        (await database.JournalStore.VerifyLedgerEventAuditAsync(ct)).ChainedEvents.Should().Be(2);
+    }
+
     private static async Task<(LedgerBookRecord Book, LedgerAccountingPeriod Period)> CreatePeriodAsync(LedgerPostgresTestDatabase database, CancellationToken ct)
     {
         var now = DateTimeOffset.UtcNow;
@@ -205,25 +253,29 @@ public sealed class LedgerEventAuditPostgresTests
             "Audit fixture", "USD", now, now);
         await database.JournalStore.SaveLedgerBookAsync(book, ct);
         var period = new LedgerAccountingPeriod(Guid.NewGuid(), book.LedgerBookId, 2026, 5, "May 2026",
-            new(2026, 5, 1), new(2026, 5, 31), "Open", now, null, 0) { MutationActor = "period-creator" };
+            new(2026, 5, 1), new(2026, 5, 31), "Open", now, null, 0)
+        { MutationActor = "period-creator" };
         return (book, await database.JournalStore.SavePeriodAsync(period, 0, ct: ct));
     }
 
     private static PostgresLedgerJournalStore GovernedStore(LedgerPostgresTestDatabase database) => new(new LedgerJournalStoreOptions
     {
-        ConnectionString = database.Options.ConnectionString, SchemaName = database.Options.SchemaName,
-        RequireGovernedPostingCommand = true, RequireExpectedVersion = true
+        ConnectionString = database.Options.ConnectionString,
+        SchemaName = database.Options.SchemaName,
+        RequireGovernedPostingCommand = true,
+        RequireExpectedVersion = true
     });
 
-    private static LedgerJournalEntryWrite Write(LedgerBookRecord book, LedgerAccountingPeriod period, string actor, Guid? reverses = null)
+    private static LedgerJournalEntryWrite Write(LedgerBookRecord book, LedgerAccountingPeriod period, string actor,
+        Guid? reverses = null, LedgerLineDimensionSet? dimensions = null)
     {
         var id = Guid.NewGuid();
         var at = DateTimeOffset.Parse("2026-05-20T12:00:00Z");
         const string description = "Reviewed audit integration posting";
         var journal = new JournalEntry(id, at, description,
         [
-            new LedgerEntry(Guid.NewGuid(), id, at, new LedgerAccount("Cash", LedgerAccountType.Asset), reverses is null ? 100m : 0m, reverses is null ? 0m : 100m, description),
-            new LedgerEntry(Guid.NewGuid(), id, at, new LedgerAccount("Revenue", LedgerAccountType.Revenue), reverses is null ? 0m : 100m, reverses is null ? 100m : 0m, description)
+            new LedgerEntry(Guid.NewGuid(), id, at, new LedgerAccount("Cash", LedgerAccountType.Asset), reverses is null ? 100m : 0m, reverses is null ? 0m : 100m, description, dimensions: dimensions),
+            new LedgerEntry(Guid.NewGuid(), id, at, new LedgerAccount("Revenue", LedgerAccountType.Revenue), reverses is null ? 0m : 100m, reverses is null ? 100m : 0m, description, dimensions: dimensions)
         ]);
         var command = new AccountingPostingCommandDto(Guid.NewGuid(), book.LedgerBookId, period.PeriodId,
             new(2026, 5, 20), at, $"audit:{id:D}",

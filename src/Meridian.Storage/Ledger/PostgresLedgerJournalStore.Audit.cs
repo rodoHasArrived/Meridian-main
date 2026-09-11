@@ -22,7 +22,7 @@ public sealed partial class PostgresLedgerJournalStore
 
     /// <summary>
     /// Checks every link and every covered retained fact, including uncovered writes since genesis.
-    /// A matching rollback of the entire database needs an external checkpoint to detect.
+    /// A coherent rollback of the head, suffix and corresponding facts needs an external checkpoint to detect.
     /// </summary>
     public async Task<LedgerEventAuditVerification> VerifyLedgerEventAuditAsync(CancellationToken ct = default)
     {
@@ -151,6 +151,20 @@ public sealed partial class PostgresLedgerJournalStore
              from {Qualified("journal_legs")} l where l.journal_entry_id = {alias}.journal_entry_id), '[]'::jsonb))::text
         """;
 
+    private static string RetainedAuditColumnsSql(string row, string snapshot) => $"""
+        (select coalesce(jsonb_object_agg(column_value.key, column_value.value), jsonb_build_object())
+         from jsonb_each(to_jsonb({row})) column_value where ({snapshot}) ? column_value.key)
+        """;
+
+    private string RetainedJournalAuditSnapshotSql() => $"""
+        jsonb_build_object('journal', {RetainedAuditColumnsSql("j", "a.fact_snapshot::jsonb -> 'journal'")},
+            'legs', coalesce((select jsonb_agg({RetainedAuditColumnsSql("l", "retained_leg.value")} order by l.line_no)
+                from {Qualified("journal_legs")} l
+                join jsonb_array_elements(a.fact_snapshot::jsonb -> 'legs') retained_leg
+                  on retained_leg.value ->> 'entry_id' = l.entry_id::text
+                where l.journal_entry_id = j.journal_entry_id), '[]'::jsonb))
+        """;
+
     private static async Task SetLedgerAuditFormatAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
@@ -186,7 +200,8 @@ public sealed partial class PostgresLedgerJournalStore
         var genesis = Qualified("ledger_event_audit_genesis");
         // Compare identities, not just counts: a deleted covered journal cannot be replaced with
         // a different uncovered journal. Compare fields retained at capture, allowing later additive
-        // schema columns; leg cardinality still forbids extending an immutable aggregate.
+        // SQL columns only. Retained JSON columns use deep equality, so new metadata/dimension
+        // keys are mutations too; leg cardinality forbids extending an immutable aggregate.
         command.CommandText = $"""
             select exists (
                 select 1 from {Qualified("journal_entries")} j
@@ -194,7 +209,7 @@ public sealed partial class PostgresLedgerJournalStore
                 left join {genesis} g on g.subject_kind = 'journal' and g.subject_id = j.journal_entry_id
                 where (a.subject_id is null and g.subject_id is null)
                    or (a.subject_id is not null and
-                       (not ({JournalAuditSnapshotSql("j")})::jsonb @> a.fact_snapshot::jsonb
+                       ({RetainedJournalAuditSnapshotSql()} <> a.fact_snapshot::jsonb
                         or jsonb_array_length(a.fact_snapshot::jsonb -> 'legs') <>
                            (select count(*) from {Qualified("journal_legs")} l where l.journal_entry_id = j.journal_entry_id)))
                 union all
@@ -206,7 +221,8 @@ public sealed partial class PostgresLedgerJournalStore
                                    order by subject_version desc limit 1) a on true
                 left join {genesis} g on g.subject_kind = 'period' and g.subject_id = p.period_id
                 where (a.subject_id is null and (g.subject_id is null or g.subject_version <> p.version))
-                   or (a.subject_id is not null and (a.subject_version <> p.version or not to_jsonb(p) @> a.fact_snapshot::jsonb))
+                   or (a.subject_id is not null and (a.subject_version <> p.version
+                       or {RetainedAuditColumnsSql("p", "a.fact_snapshot::jsonb")} <> a.fact_snapshot::jsonb))
                 union all
                 select 1 from {events} a left join {Qualified("accounting_periods")} p on p.period_id = a.subject_id
                 where a.subject_kind = 'period' and p.period_id is null
@@ -215,7 +231,8 @@ public sealed partial class PostgresLedgerJournalStore
                 left join {events} a on a.close_event_id = c.event_id
                 left join {genesis} g on g.subject_kind = 'period-close' and g.subject_id = c.event_id
                 where (a.close_event_id is null and g.subject_id is null)
-                   or (a.close_event_id is not null and not to_jsonb(c) @> a.close_event_snapshot::jsonb)
+                   or (a.close_event_id is not null and
+                       {RetainedAuditColumnsSql("c", "a.close_event_snapshot::jsonb")} <> a.close_event_snapshot::jsonb)
                 union all
                 select 1 from {events} a left join {Qualified("period_close_events")} c on c.event_id = a.close_event_id
                 where a.close_event_id is not null and c.event_id is null
@@ -235,7 +252,8 @@ public sealed partial class PostgresLedgerJournalStore
         {
             var bytes = field is null ? null : Encoding.UTF8.GetBytes(field);
             hash.AppendData(Encoding.UTF8.GetBytes((bytes?.Length ?? -1).ToString(CultureInfo.InvariantCulture) + ":"));
-            if (bytes is not null) hash.AppendData(bytes);
+            if (bytes is not null)
+                hash.AppendData(bytes);
         }
         return Convert.ToHexStringLower(hash.GetHashAndReset());
     }

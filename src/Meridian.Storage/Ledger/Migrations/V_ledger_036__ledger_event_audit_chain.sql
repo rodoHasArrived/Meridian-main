@@ -72,4 +72,4 @@ end
 $genesis$;
 
 comment on table __SCHEMA__.ledger_event_audit_events is
-    'Ledger facts and actor attribution, hash chained in the same transaction as journal and period mutations. Null actor explicitly means unattributed; it is never synthesized from an approver. Verification checks covered facts as well as links. A whole database rollback requires an external retained checkpoint to detect.';
+    'Ledger facts and actor attribution, hash chained in the same transaction as journal and period mutations. Null actor explicitly means unattributed; it is never synthesized from an approver. Verification checks covered facts as well as links. Coherent rollback of the head, suffix and corresponding facts requires an external retained checkpoint to detect.';
