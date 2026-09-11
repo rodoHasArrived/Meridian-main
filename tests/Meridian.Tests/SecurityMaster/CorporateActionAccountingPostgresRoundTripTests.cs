@@ -154,13 +154,31 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
         drafted.DraftedCandidateResult!.IsBalanced.Should().BeTrue();
         var posting = new AccountingPostingCandidatePostService(candidateBuilder, journal, assetAccountingEventStore: assets);
         var accounting = new CorporateActionCaseAccountingService(operations, assets, posting, books);
+        var policyDecision = JsonSerializer.SerializeToElement(new
+        {
+            policyId = Policy, policyVersion = "v1", rulePackId = "corpact-pack", rulePackVersion = "v1",
+            selectedRuleId = Rule, selectedRuleVersion = "v1", eventId, bookId, periodId,
+            draftedCandidateFingerprint = drafted.DraftedCandidateFingerprint
+        });
+        var policyEvidence = await preparation.AddEvidenceAsync(new AddCorporateActionEvidenceRequestDto(
+            processingCase.CaseId, processingCase.Version, "retain-policy-decision", Tenant, Company,
+            CorporateActionEvidenceKinds.OperatorAnalysis, $"document://corporate-actions/{eventId:D}/policy",
+            Preparer, EvidenceHash: AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(policyDecision),
+            Metadata: policyDecision, ScopeAssertion: caseScope), ct);
+        var lotSnapshot = JsonSerializer.SerializeToElement(lot);
+        var lotEvidence = await preparation.AddEvidenceAsync(new AddCorporateActionEvidenceRequestDto(
+            processingCase.CaseId, policyEvidence.Case.Version, "retain-lot-snapshot", Tenant, Company,
+            CorporateActionEvidenceKinds.TaxLotSnapshot, $"document://corporate-actions/{eventId:D}/lots",
+            Preparer, EvidenceHash: AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(lotSnapshot),
+            Metadata: lotSnapshot, ScopeAssertion: caseScope), ct);
         // These request bindings are explicit test inputs. Their general source/lot resolution is a
         // separate review finding; success here must not be used to certify that unresolved authority.
         var attached = await accounting.AttachProjectionAsync(new AttachCorporateActionAccountingProjectionRequestDto(
-            processingCase.CaseId, processingCase.Version, "attach-dividend", Tenant, Company, eventId, 1,
-            drafted.SpineVersion, sourceHash, drafted.DraftedCandidateFingerprint!,
+            processingCase.CaseId, lotEvidence.Case.Version, "attach-dividend", Tenant, Company, eventId, 1,
+            drafted.SpineVersion, AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(projected.Spine),
+            drafted.DraftedCandidateFingerprint!,
             "corporate-action-posting/v1:" + drafted.DraftedCandidateFingerprint,
-            Guid.NewGuid(), 1, lot.TaxLotRecordId, lot.Version, Preparer, caseScope,
+            policyEvidence.Evidence.EvidenceId, 1, lotEvidence.Evidence.EvidenceId, 1, Preparer, caseScope,
             Authority: PreparationAuthority), ct);
         var ready = await TransitionAsync(preparation, attached.Case, CorporateActionCaseStates.ReadyForApproval, ct);
         var approvalRequest = new ApproveCorporateActionCaseAccountingRequestDto(
@@ -248,7 +266,8 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
             Reason: "Retain explicit fixture source."), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null,
             new string('a', 64), ct);
         var evidenced = await service.AddEvidenceAsync(new AddCorporateActionEvidenceRequestDto(
-            accepted.Case.CaseId, accepted.Case.Version, "retain-notice", Tenant, Company, "ProviderNotice",
+            accepted.Case.CaseId, accepted.Case.Version, "retain-notice", Tenant, Company,
+            CorporateActionEvidenceKinds.CustodianNotice,
             proposal.ProviderIdentity.EvidenceReference!, Preparer,
             EvidenceHash: proposal.ProviderIdentity.EvidenceHash, ScopeAssertion: scope), ct);
         var confirmed = await TransitionAsync(service, evidenced.Case, CorporateActionCaseStates.TermsConfirmed, ct);

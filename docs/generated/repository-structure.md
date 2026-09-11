@@ -9888,6 +9888,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsProjectionRoundTripTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
+│   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.cs
 │   │   │   ├── CorporateActionCaseAccountingPolicyTests.cs
 │   │   │   ├── CorporateActionCaseAccountingServiceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs
