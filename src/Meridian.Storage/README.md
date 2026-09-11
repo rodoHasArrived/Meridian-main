@@ -11,6 +11,16 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+`DurableLedgerPostingTarget.VerifyRetainedEntry` checks an existing journal against the exact
+retained recovery write without posting or appending. It shares the posting target's command
+normalization and strict content comparison, and requires the original journal identity. Manual
+workbench recovery uses this read-only boundary after an interrupted committed posting.
+
+Posting actor metadata comes from the typed command's `Actor`, with the version marker
+`postingActorAttribution=command-v1`. Reserved actor tags on an actorless command are rejected;
+unversioned legacy metadata does not establish actor attribution. Normal posting and retained-entry
+verification use the same normalization rules.
+
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
 the publisher. The outbox worker publishes retained state and retries failures; missing publisher

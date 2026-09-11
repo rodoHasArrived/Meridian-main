@@ -119,6 +119,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "manual-journal-drafts.json")));
+        services.TryAddSingleton<IManualJournalMutationRecoveryStore>(sp =>
+            new FileManualJournalMutationRecoveryStore(
+                Path.Combine(ResolveAccountingDataDirectory(sp), "manual-journal-drafts.json.mutations")));
         services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
             new FileDailyValuationPortfolioSource(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "daily-valuation-schedules.json")));

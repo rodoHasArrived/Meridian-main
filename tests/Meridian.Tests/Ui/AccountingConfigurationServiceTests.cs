@@ -19,7 +19,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class AccountingConfigurationServiceTests
+public sealed partial class AccountingConfigurationServiceTests
 {
     private static readonly Guid ManualJournalLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid ManualJournalPeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222");

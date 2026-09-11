@@ -17,6 +17,11 @@ Menu product.
 
 ## Shared close and lot convergence
 
+The Accounting feature registers the same durable manual-journal mutation recovery store as
+the browser host. Draft, posting and correction commands keep their original actor and audit
+identities across restart; an unresolved handoff remains blocked in the shared service. The
+`.mutations` directory beside the draft snapshot must be retained with accounting backups.
+
 Fund Ledger carries its explicitly selected book/account/entity/period context to the shared command-center service. Both the queue and private-capital close headline consume the shared decision; clear local lane inputs cannot establish close readiness. The browser and WPF use the same contributor manifest and blocking rules.
 
 Account, aggregate, strategy-run, and trading position presentations use `MarkFreshnessPresentation` over the shared assessment. Observation date, age, and review reason remain visible in rows and inspectors. An absent mark date is unknown evidence, even when the enclosing position snapshot is recent. Close acceptance exercises recovery using the shared decision and authoritative subject scope.

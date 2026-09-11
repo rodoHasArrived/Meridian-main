@@ -36,7 +36,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ILedgerJournalStore? journalStore = null,
         ReportPackWorkflowService? reportPackWorkflowService = null,
         IBankTransactionSource? bankTransactionSource = null,
-        IGovernedLedgerPostingTarget? postingTarget = null)
+        IGovernedLedgerPostingTarget? postingTarget = null,
+        IManualJournalMutationRecoveryStore? mutationRecovery = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -46,6 +47,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         _postingTarget = postingTarget;
         _reportPackWorkflowService = reportPackWorkflowService;
         _bankTransactionSource = bankTransactionSource;
+        _mutationRecovery = mutationRecovery ?? DefaultMutationRecoveryFor(draftStore);
     }
 
     public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
@@ -250,11 +252,23 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
 
     public Task<ManualJournalEntryDraftDto> SaveDraftAsync(
         SaveManualJournalEntryDraftRequest request, CancellationToken ct = default)
-        => SaveDraftCoreAsync(request, trustedAutomatedIntake: false, ct);
+        => ExecuteSaveMutationAsync(request, trustedAutomatedIntake: false, ct);
 
     internal Task<ManualJournalEntryDraftDto> SaveAutomatedDraftAsync(
         SaveManualJournalEntryDraftRequest request, CancellationToken ct)
-        => SaveDraftCoreAsync(request, trustedAutomatedIntake: true, ct);
+        => ExecuteSaveMutationAsync(request, trustedAutomatedIntake: true, ct);
+
+    private Task<ManualJournalEntryDraftDto> ExecuteSaveMutationAsync(
+        SaveManualJournalEntryDraftRequest request, bool trustedAutomatedIntake, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.Draft);
+        return ExecuteMutationAsync(trustedAutomatedIntake ? "automated-save" : "save", request,
+            request.Draft.FundProfileId, request.Draft.JournalEntryId, request.Draft.Version,
+            NormalizeOptional(request.TenantId) ?? request.Draft.TenantId,
+            NormalizeOptional(request.CompanyId) ?? request.Draft.CompanyId, request.CorrelationId,
+            () => SaveDraftCoreAsync(request, trustedAutomatedIntake, ct), ct);
+    }
 
     private async Task<ManualJournalEntryDraftDto> SaveDraftCoreAsync(
         SaveManualJournalEntryDraftRequest request, bool trustedAutomatedIntake, CancellationToken ct)
@@ -331,8 +345,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         };
         saved = ClearManualJournalReviewMetadataForEditableDraft(saved);
 
-        await _draftStore.SaveAsync(saved, ct).ConfigureAwait(false);
-        await AppendAuditAsync(saved, "manual-je.save-draft", request.Actor, request.CorrelationId, saved.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        await PersistMutationAsync([saved], ["manual-je.save-draft"], request.Actor, request.CorrelationId,
+            request.ReportGroupPrincipalIds, saved, ct).ConfigureAwait(false);
         return saved;
     }
 
@@ -384,7 +398,15 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         }, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked).ConfigureAwait(false);
     }
 
-    public async Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
+    public Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
+        SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return ExecuteMutationAsync("submit", request, request.FundProfileId, request.JournalEntryId, request.Version,
+            request.TenantId, request.CompanyId, request.CorrelationId, () => SubmitApprovalCoreAsync(request, ct), ct);
+    }
+
+    private async Task<ManualJournalEntryDraftDto> SubmitApprovalCoreAsync(
         SubmitManualJournalEntryApprovalRequest request,
         CancellationToken ct = default)
     {
@@ -440,12 +462,25 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             LifecycleTransitions = validated.LifecycleTransitions.Append(transition).ToArray()
         };
 
-        await _draftStore.SaveAsync(submitted, ct).ConfigureAwait(false);
-        await AppendAuditAsync(submitted, "manual-je.submit-approval", request.Actor, request.CorrelationId, submitted.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        // Lifecycle Submit shares this core under its outer command lease and retains that
+        // endpoint's result shape for recovery.
+        object result = _mutationCommand?.OperationIsLifecycle == true
+            ? new JournalEntryLifecycleActionResultDto(submitted, transition)
+            : submitted;
+        await PersistMutationAsync([submitted], ["manual-je.submit-approval"], request.Actor, request.CorrelationId,
+            request.ReportGroupPrincipalIds, result, ct).ConfigureAwait(false);
         return submitted;
     }
 
-    public async Task<ManualJournalEntryDraftDto> AttachEvidenceAsync(
+    public Task<ManualJournalEntryDraftDto> AttachEvidenceAsync(
+        AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return ExecuteMutationAsync("attach", request, request.FundProfileId, request.JournalEntryId, request.Version,
+            request.TenantId, request.CompanyId, request.CorrelationId, () => AttachEvidenceCoreAsync(request, ct), ct);
+    }
+
+    private async Task<ManualJournalEntryDraftDto> AttachEvidenceCoreAsync(
         AttachManualJournalEntryEvidenceRequest request,
         CancellationToken ct = default)
     {
@@ -504,12 +539,22 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             Version = draft.Version + 1
         };
 
-        await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
-        await AppendAuditAsync(next, "manual-je.attach-evidence", request.Actor, request.CorrelationId, evidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        await PersistMutationAsync([next], ["manual-je.attach-evidence"], request.Actor, request.CorrelationId,
+            request.ReportGroupPrincipalIds, next, ct).ConfigureAwait(false);
         return next;
     }
 
-    public async Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleActionAsync(
+    public Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleActionAsync(
+        JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return ExecuteMutationAsync("lifecycle-" + request.Action, request, request.FundProfileId, request.JournalEntryId,
+            request.Version, request.TenantId, request.CompanyId, request.CorrelationId,
+            () => ApplyLifecycleActionCoreAsync(request, ct), ct,
+            replayThroughValidation: request.Action == JournalEntryLifecycleActionDto.LockAfterClose);
+    }
+
+    private async Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleActionCoreAsync(
         JournalEntryLifecycleActionRequestDto request,
         CancellationToken ct = default)
     {
@@ -642,7 +687,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         JournalEntryLifecycleActionRequestDto request,
         CancellationToken ct)
     {
-        var submitted = await SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+        var submitted = await SubmitApprovalCoreAsync(new SubmitManualJournalEntryApprovalRequest(
             request.JournalEntryId,
             request.FundProfileId,
             request.Actor,
@@ -693,9 +738,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             next = mutate(next);
         }
 
-        await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
-        await AppendAuditAsync(next, auditAction, request.Actor, request.CorrelationId, next.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
-        return new JournalEntryLifecycleActionResultDto(next, transition);
+        var result = new JournalEntryLifecycleActionResultDto(next, transition);
+        await PersistMutationAsync([next], [auditAction], request.Actor, request.CorrelationId,
+            request.ReportGroupPrincipalIds, result, ct).ConfigureAwait(false);
+        return result;
     }
 
     private async Task<JournalEntryLifecycleActionResultDto> PostApprovedManualJournalEntryAsync(
@@ -755,15 +801,6 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ct)
             .ConfigureAwait(false);
 
-        if (_postingTarget is not null)
-        {
-            await _postingTarget.PostAsync(write, ct).ConfigureAwait(false);
-        }
-        else
-        {
-            await journalStore.AppendAsync(write, ct).ConfigureAwait(false);
-        }
-
         var transition = BuildTransition(draft.Status, ManualJournalEntryStatusDto.Posted, request, recordedAtUtc);
         var next = draft with
         {
@@ -776,9 +813,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             PostedBy = RequireText(request.Actor, nameof(request.Actor))
         };
 
-        await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
-        await AppendAuditAsync(next, "manual-je.post", request.Actor, request.CorrelationId, next.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
-        return new JournalEntryLifecycleActionResultDto(
+        var result = new JournalEntryLifecycleActionResultDto(
             next,
             transition,
             PostedJournal: new PostedLedgerJournalEntryResultDto(
@@ -792,6 +827,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 write.CorrelationId,
                 PostedAtUtc: recordedAtUtc,
                 IdempotencyKey: postingCommand.IdempotencyKey));
+        await PersistMutationAsync([next], ["manual-je.post"], request.Actor, request.CorrelationId,
+            request.ReportGroupPrincipalIds, result, ct, write).ConfigureAwait(false);
+        return result;
     }
 
     private async Task<LedgerJournalEntryWrite> BuildManualJournalEntryWriteAsync(
@@ -924,7 +962,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 RetainedBy: RequireText(request.Actor, nameof(request.Actor)),
                 SubjectId: draft.JournalEntryId.ToString("D"))).ToArray(),
             ActionOrigin: request.ActionOrigin,
-            LedgerBookId: ledgerBookId);
+            LedgerBookId: ledgerBookId)
+        {
+            Actor = RequireText(request.Actor, nameof(request.Actor))
+        };
     }
 
     private static JournalEntryMetadata BuildManualJournalEntryMetadata(
@@ -1361,9 +1402,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         // The source transition and its source-linked correction are one accounting mutation.
         // Retaining either draft without the other creates an unrecoverable workbench state, so
         // stores must publish both together or leave the prior source unchanged.
-        await _draftStore.SaveBatchAsync([corrected, correction], ct).ConfigureAwait(false);
-        await AppendAuditAsync(corrected, reverseSides ? "manual-je.reverse" : "manual-je.rebook", request.Actor, request.CorrelationId, corrected.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
-        await AppendAuditAsync(correction, auditAction, request.Actor, request.CorrelationId, correction.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
-        return new JournalEntryLifecycleActionResultDto(corrected, transition, [correction]);
+        var result = new JournalEntryLifecycleActionResultDto(corrected, transition, [correction]);
+        await PersistMutationAsync([corrected, correction], [reverseSides ? "manual-je.reverse" : "manual-je.rebook", auditAction],
+            request.Actor, request.CorrelationId, request.ReportGroupPrincipalIds, result, ct).ConfigureAwait(false);
+        return result;
     }
 }

@@ -252,7 +252,12 @@ public sealed record CreateLedgerPeriodRequest(
     int PeriodNo,
     string Label,
     DateOnly StartDate,
-    DateOnly EndDate);
+    DateOnly EndDate)
+{
+    /// <summary>Actual creator, stamped from the authenticated caller at public boundaries.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CreatedBy { get; init; }
+}
 
 public sealed record LedgerPeriodDto(
     Guid PeriodId,

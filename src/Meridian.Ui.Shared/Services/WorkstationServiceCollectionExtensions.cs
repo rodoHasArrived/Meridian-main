@@ -920,6 +920,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));
+        services.TryAddSingleton<IManualJournalMutationRecoveryStore>(sp =>
+            new FileManualJournalMutationRecoveryStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json.mutations")));
         services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
             new FileDailyValuationPortfolioSource(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "daily-valuation-schedules.json")));
@@ -960,7 +963,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<ReportPackWorkflowService>(),
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
-                sp.GetService<IGovernedLedgerPostingTarget>()));
+                sp.GetService<IGovernedLedgerPostingTarget>(),
+                sp.GetRequiredService<IManualJournalMutationRecoveryStore>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();

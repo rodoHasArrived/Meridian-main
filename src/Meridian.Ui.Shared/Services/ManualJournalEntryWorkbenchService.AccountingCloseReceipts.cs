@@ -92,7 +92,18 @@ public sealed partial class ManualJournalEntryWorkbenchService
     /// reopen intent is already durable. This is intentionally internal: ordinary lifecycle
     /// callers continue to be unable to reverse or unlock <c>CloseLocked</c> journals.
     /// </summary>
-    internal async Task<JournalEntryLifecycleActionResultDto> ReverseCloseLockedClosingEntryForGovernedReopenAsync(
+    internal Task<JournalEntryLifecycleActionResultDto> ReverseCloseLockedClosingEntryForGovernedReopenAsync(
+        JournalEntryLifecycleActionRequestDto request, Guid ledgerPeriodId, long ledgerPeriodVersion,
+        string reopenCommandHash, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return ExecuteMutationAsync("governed-reopen", request, request.FundProfileId, request.JournalEntryId,
+            request.Version, request.TenantId, request.CompanyId, request.CorrelationId,
+            () => ReverseCloseLockedClosingEntryForGovernedReopenCoreAsync(request, ledgerPeriodId, ledgerPeriodVersion, reopenCommandHash, ct),
+            ct, replayThroughValidation: true, fingerprintSalt: $"|{ledgerPeriodId:D}|{ledgerPeriodVersion}|{reopenCommandHash}");
+    }
+
+    private async Task<JournalEntryLifecycleActionResultDto> ReverseCloseLockedClosingEntryForGovernedReopenCoreAsync(
         JournalEntryLifecycleActionRequestDto request,
         Guid ledgerPeriodId,
         long ledgerPeriodVersion,
