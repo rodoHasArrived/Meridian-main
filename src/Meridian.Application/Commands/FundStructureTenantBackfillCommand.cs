@@ -28,11 +28,11 @@ internal sealed class FundStructureTenantBackfillCommand : ICliCommand
     {
         try
         {
-            var mode = CliArguments.GetValue(args, "--mode");
+            var action = CliArguments.GetValue(args, "--action");
             var outputPath = CliArguments.GetValue(args, "--output");
-            if (mode is not ("preview" or "apply") || string.IsNullOrWhiteSpace(outputPath))
+            if (action is not ("preview" or "apply") || string.IsNullOrWhiteSpace(outputPath))
             {
-                await _output.WriteLineAsync("Use --fund-tenant-backfill --mode preview|apply --output <evidence.json>. Apply also requires --run-id, --plan-hash, --operator, and --review-reference.");
+                await _output.WriteLineAsync("Use --fund-tenant-backfill --action preview|apply --output <evidence.json>. Apply also requires --run-id, --plan-hash, --operator, and --review-reference.");
                 return CliResult.Fail(2);
             }
 
@@ -42,7 +42,7 @@ internal sealed class FundStructureTenantBackfillCommand : ICliCommand
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
             deadline.CancelAfter(TimeSpan.FromSeconds(timeout));
 
-            if (mode == "preview")
+            if (action == "preview")
             {
                 var plan = await _createRunner().PreviewAsync(deadline.Token).ConfigureAwait(false);
                 await AtomicFileWriter.WriteAsync(outputPath, JsonSerializer.Serialize(plan, new JsonSerializerOptions { WriteIndented = true }), deadline.Token).ConfigureAwait(false);

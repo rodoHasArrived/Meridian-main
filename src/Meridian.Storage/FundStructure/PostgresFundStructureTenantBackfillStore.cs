@@ -30,7 +30,7 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
         new("client", "client_id", "Client", true, ["business_id"], ["investment_portfolio_ids"]),
         new("fund", "fund_id", "Fund", true, ["business_id"], ["sleeve_ids", "vehicle_ids", "entity_ids", "investment_portfolio_ids", "account_ids"]),
         new("sleeve", "sleeve_id", "Sleeve", true, ["fund_id"], ["investment_portfolio_ids", "account_ids"]),
-        new("vehicle", "vehicle_id", "Vehicle", true, ["fund_id"], ["legal_entity_id", "investment_portfolio_ids", "account_ids"]),
+        new("vehicle", "vehicle_id", "Vehicle", true, ["fund_id", "legal_entity_id"], ["investment_portfolio_ids", "account_ids"]),
         new("legal_entity", "entity_id", "LegalEntity", true, [], []),
         new("investment_portfolio", "investment_portfolio_id", "InvestmentPortfolio", true,
             ["business_id", "client_id", "fund_id", "sleeve_id", "vehicle_id", "entity_id"], ["account_ids"]),

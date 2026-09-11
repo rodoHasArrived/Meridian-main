@@ -17,7 +17,7 @@ public sealed class FundStructureTenantBackfillCommandTests
 
         result.Success.Should().BeFalse();
         creates.Should().Be(0);
-        output.ToString().Should().Contain("--mode preview|apply");
+        output.ToString().Should().Contain("--action preview|apply");
     }
 
     [Fact]
@@ -27,7 +27,7 @@ public sealed class FundStructureTenantBackfillCommandTests
         var command = new FundStructureTenantBackfillCommand(
             () => throw new InvalidOperationException("Host=private;Password=do-not-echo"), output);
 
-        var result = await command.ExecuteAsync(["--fund-tenant-backfill", "--mode", "preview", "--output", "unused.json"]);
+        var result = await command.ExecuteAsync(["--fund-tenant-backfill", "--action", "preview", "--output", "unused.json"]);
 
         result.Success.Should().BeFalse();
         output.ToString().Should().Contain("InvalidOperationException");

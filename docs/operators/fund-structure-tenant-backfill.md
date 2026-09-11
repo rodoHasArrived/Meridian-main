@@ -57,7 +57,7 @@ and the ledger migrations. The command does not run migrations or accept credent
 Use the same deployed binary and configuration for preview and apply.
 
 ```text
-Meridian --fund-tenant-backfill --mode preview --output tenant-plan.json --timeout-seconds 60
+Meridian --fund-tenant-backfill --action preview --output tenant-plan.json --timeout-seconds 60
 ```
 
 Review the complete evidence and proposed stamps, the separate CompanyId/TenantId values, every
@@ -80,7 +80,7 @@ produce previews but are blocked from apply. A future coordinated migration prot
 for those deployments; there is no override that pretends separate transactions are atomic.
 
 ```text
-Meridian --fund-tenant-backfill --mode apply --run-id <uuid> --plan-hash <reviewed-hash> --operator <operator-id> --review-reference <decision-reference> --output tenant-receipt.json --timeout-seconds 60
+Meridian --fund-tenant-backfill --action apply --run-id <uuid> --plan-hash <reviewed-hash> --operator <operator-id> --review-reference <decision-reference> --output tenant-receipt.json --timeout-seconds 60
 ```
 
 The command locks the ledger registry and books in SHARE mode, then locks the fund tables in

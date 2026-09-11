@@ -16,8 +16,8 @@ public sealed class FundStructureTenantBackfillTests
         var plan = await new FundStructureTenantBackfillRunner(store).PreviewAsync();
 
         plan.AttributionComplete.Should().BeTrue();
-        plan.Stamps.Should().HaveCount(4);
-        plan.StrictReadCounts.Should().ContainSingle().Which.Should().Be(new FundStructureTenantReadCount("tenant-a", 0, 3));
+        plan.Stamps.Should().HaveCount(7);
+        plan.StrictReadCounts.Should().ContainSingle().Which.Should().Be(new FundStructureTenantReadCount("tenant-a", 0, 4));
         plan.Evidence.Evidence.Single().CompanyId.Should().Be("company-separate-from-tenant");
         store.Commits.Should().Be(0);
         store.Disposals.Should().Be(1);
@@ -79,7 +79,7 @@ public sealed class FundStructureTenantBackfillTests
         var orphan = Row("legal_entity", Guid.NewGuid(), "LegalEntity");
         var plan = FundStructureTenantBackfillPlanner.Create(snapshot with { Rows = [.. snapshot.Rows, orphan] });
 
-        plan.Stamps.Should().HaveCount(4);
+        plan.Stamps.Should().HaveCount(7);
         plan.Stamps.Should().NotContain(stamp => stamp.Id == orphan.Id);
         plan.Exceptions.Should().ContainSingle().Which.NodeId.Should().Be(orphan.Id);
         plan.Exceptions.Single().CandidateTenantIds.Should().BeEmpty();
@@ -192,16 +192,24 @@ public sealed class FundStructureTenantBackfillTests
     private static FundStructureTenantBackfillSnapshot MakeSnapshot()
     {
         var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
         var fundId = Guid.NewGuid();
         var sleeveId = Guid.NewGuid();
         return new("source-identity", "schema-identity",
         [
             Row("organization", organizationId, "Organization"),
-            Row("fund", fundId, "Fund", [organizationId]),
+            Row("business", businessId, "Business", [organizationId]),
+            Row("fund", fundId, "Fund", [businessId]),
             Row("sleeve", sleeveId, "Sleeve", [fundId]),
-            Row("ownership_link", Guid.NewGuid(), "OwnershipLink", [fundId], [sleeveId], false)
+            Link(organizationId, businessId, "Owns"),
+            Link(businessId, fundId, "Operates"),
+            Link(fundId, sleeveId, "AllocatesTo")
         ], [Evidence(fundId, "tenant-a")], []);
     }
+
+    private static FundStructureTenantBackfillRow Link(Guid parent, Guid child, string relationshipType)
+        => new("ownership_link", Guid.NewGuid(), "OwnershipLink", false, null, [parent], [child],
+            JsonSerializer.SerializeToElement(new { relationship_type = relationshipType }));
 
     private static FundStructureTenantBackfillRow Row(string table, Guid id, string kind,
         IReadOnlyList<Guid>? parents = null, IReadOnlyList<Guid>? children = null, bool isNode = true)

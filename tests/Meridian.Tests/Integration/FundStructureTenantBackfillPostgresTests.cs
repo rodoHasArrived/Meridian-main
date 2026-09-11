@@ -47,6 +47,32 @@ public sealed class FundStructureTenantBackfillPostgresTests
     }
 
     [FundAccountDatabaseFact]
+    public async Task Preview_VehicleLegalEntityReference_IsAParentAndDoesNotCreateCycle()
+    {
+        await using var data = await TestData.CreateAsync();
+        var entityId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+        await data.ExecuteAsync($"""
+            INSERT INTO {data.FundSchema}.legal_entity
+                (entity_id, entity_type, code, name, jurisdiction, base_currency, effective_from)
+            VALUES ('{entityId}', 'LimitedPartnership', 'ENTITY', 'Retained entity', 'US-DE', 'USD', now());
+            INSERT INTO {data.FundSchema}.vehicle
+                (vehicle_id, fund_id, legal_entity_id, code, name, base_currency, effective_from)
+            VALUES ('{vehicleId}', '{data.FundId}', '{entityId}', 'VEHICLE', 'Retained vehicle', 'USD', now());
+            INSERT INTO {data.FundSchema}.ownership_link
+                (ownership_link_id, parent_node_id, child_node_id, relationship_type, effective_from)
+            VALUES ('{Guid.NewGuid()}', '{entityId}', '{vehicleId}', 'Owns', now());
+            """);
+
+        var preview = await data.Runner().PreviewAsync();
+
+        preview.AttributionComplete.Should().BeTrue();
+        preview.Exceptions.Should().BeEmpty();
+        preview.Stamps.Should().Contain(stamp => stamp.Id == entityId && stamp.TenantId == "tenant-a");
+        preview.Stamps.Should().Contain(stamp => stamp.Id == vehicleId && stamp.TenantId == "tenant-a");
+    }
+
+    [FundAccountDatabaseFact]
     public async Task Apply_StaleGraphAndLedgerEvidence_RefusesWithoutPartialStamp()
     {
         await using var data = await TestData.CreateAsync();
@@ -234,7 +260,7 @@ public sealed class FundStructureTenantBackfillPostgresTests
                     INSERT INTO {data.FundSchema}.sleeve (sleeve_id, fund_id, code, name, effective_from)
                     VALUES ('{data.SleeveId}', '{data.FundId}', 'SLEEVE', 'Retained sleeve', now());
                     INSERT INTO {data.FundSchema}.ownership_link (ownership_link_id, parent_node_id, child_node_id, relationship_type, effective_from)
-                    VALUES ('{Guid.NewGuid()}', '{data.FundId}', '{data.SleeveId}', 'Owns', now());
+                    VALUES ('{Guid.NewGuid()}', '{data.FundId}', '{data.SleeveId}', 'AllocatesTo', now());
                     INSERT INTO {data.LedgerSchema}.fund_profile_tenancy (fund_profile_id, tenant_id, company_id)
                     VALUES ('retained-fund', 'tenant-a', 'company-b');
                     INSERT INTO {data.LedgerSchema}.ledger_books

@@ -73,9 +73,11 @@ public static class FundStructureTenantBackfillPlanner
                 foreach (var parent in row.Parents)
                     foreach (var child in row.Children) AddEdge(parent, child);
                 if (!row.RetainedRow.TryGetProperty("relationship_type", out var relationship) ||
-                    !string.Equals(relationship.GetString(), "Owns", StringComparison.OrdinalIgnoreCase))
+                    row.Parents.Concat(row.Children).Any(id => !nodes.ContainsKey(id)) ||
+                    row.Parents.Any(parent => row.Children.Any(child =>
+                        !IsSupportedStructuralRelationship(relationship.GetString(), nodes[parent].Kind, nodes[child].Kind))))
                     foreach (var id in row.Parents.Concat(row.Children).Where(nodes.ContainsKey))
-                        Reject(id, "NonOwnershipRelationshipRequiresReview");
+                        Reject(id, "UnsupportedStructuralRelationshipRequiresReview");
             }
         }
 
@@ -236,6 +238,37 @@ public static class FundStructureTenantBackfillPlanner
 
     private static string? NormalizeTenant(string? tenant)
         => string.IsNullOrWhiteSpace(tenant) || tenant.Trim().Equals("all", StringComparison.OrdinalIgnoreCase) ? null : tenant.Trim();
+
+    private static bool IsSupportedStructuralRelationship(string? relationship, string parentKind, string childKind)
+        => relationship?.Trim().ToUpperInvariant() switch
+        {
+            "OWNS" => (parentKind, childKind) is
+                ("Organization", "Business") or
+                ("Client", "InvestmentPortfolio") or
+                ("Fund", "Vehicle") or
+                ("Fund", "LegalEntity") or
+                ("Vehicle", "InvestmentPortfolio") or
+                ("LegalEntity", "Vehicle") or
+                ("LegalEntity", "InvestmentPortfolio") or
+                ("Fund", "Account") or
+                ("Vehicle", "Account") or
+                ("LegalEntity", "Account"),
+            "ADVISES" => (parentKind, childKind) is ("Business", "Client"),
+            "OPERATES" => (parentKind, childKind) is
+                ("Business", "Fund") or
+                ("Business", "InvestmentPortfolio") or
+                ("Fund", "Account") or
+                ("Sleeve", "Account") or
+                ("Vehicle", "Account") or
+                ("InvestmentPortfolio", "Account"),
+            "CLEARSFOR" or "CUSTODIESFOR" => childKind == "Account" && parentKind is
+                "Fund" or "Sleeve" or "Vehicle" or "LegalEntity" or "InvestmentPortfolio",
+            "ALLOCATESTO" => (parentKind, childKind) is
+                ("Fund", "Sleeve") or
+                ("Fund", "InvestmentPortfolio") or
+                ("Sleeve", "InvestmentPortfolio"),
+            _ => false
+        };
 
     private static bool RegistryMatchesFund(FundStructureTenantBackfillEvidence row)
         => row.RetainedRegistryEntry is { } registry && registry.TryGetProperty("fund_profile_id", out var profile) &&
