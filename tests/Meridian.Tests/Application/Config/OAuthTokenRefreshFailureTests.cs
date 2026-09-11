@@ -24,8 +24,9 @@ public sealed class OAuthTokenRefreshFailureTests
             await File.WriteAllTextAsync(Path.Combine(root, ".mdc", "oauth_tokens.json"),
                 "{\"" + secret + "\":{\"AccessToken\":{}}}");
 
-            var construct = () => new OAuthTokenRefreshService(root, logger: logger);
-            var failure = construct.Should().Throw<InvalidOperationException>().Which;
+            await using var service = new OAuthTokenRefreshService(root, logger: logger);
+            var initialize = () => service.InitializeAsync();
+            var failure = (await initialize.Should().ThrowAsync<InvalidOperationException>()).Which;
             failure.ToString().Should().NotContain(secret);
             File.Exists(Path.Combine(root, ".mdc", "oauth_tokens.json")).Should().BeTrue();
             sink.Events.Should().Contain(entry => entry.Level == LogEventLevel.Warning);
@@ -124,6 +125,95 @@ public sealed class OAuthTokenRefreshFailureTests
         {
             if (Directory.Exists(root))
                 Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task CompletedRemoteRotation_CommitsReplacementDespiteCallerCancellation()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-oauth-errors", Guid.NewGuid().ToString("N"));
+        using var cancellation = new CancellationTokenSource();
+        using var handler = new RetryHandler(false, "provider-secret");
+        using var client = new HttpClient(handler);
+        try
+        {
+            var vault = new CancelOnRotationVault(new FileProviderCredentialStore(root), cancellation);
+            await using var service = new OAuthTokenRefreshService(root, httpClient: client, vault: vault);
+            service.RegisterProvider(new OAuthProviderConfig("provider", "client", TokenEndpoint: "https://provider.example/token"));
+            await service.StoreTokenAsync("provider", new OAuthToken("original-access", "Bearer",
+                DateTimeOffset.UtcNow.AddHours(1), "original-refresh"));
+            (await service.RefreshTokenAsync("provider")).Success.Should().BeFalse();
+
+            var refreshed = await service.RefreshTokenAsync("provider", cancellation.Token);
+
+            cancellation.IsCancellationRequested.Should().BeTrue();
+            vault.RotationCommitWasCancelable.Should().BeFalse();
+            refreshed.Success.Should().BeTrue();
+            (await vault.ReadOAuthTokensAsync())["provider"].RefreshToken.Should().Be("replacement-refresh");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ConstructionOnUiContext_ReturnsBeforeAsynchronousVaultInitialization()
+    {
+        var constructed = new TaskCompletionSource<OAuthTokenRefreshService>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var context = new NonPumpingContext();
+        var thread = new Thread(() =>
+        {
+            SynchronizationContext.SetSynchronizationContext(context);
+            try
+            { constructed.SetResult(new OAuthTokenRefreshService(Path.Combine(Path.GetTempPath(), "meridian-oauth-context", Guid.NewGuid().ToString("N")), vault: new YieldingVault())); }
+            catch (Exception ex) { constructed.SetException(ex); }
+        })
+        { IsBackground = true };
+        thread.Start();
+
+        await using var service = await constructed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await service.InitializeAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+        context.PostCount.Should().Be(0, "constructing the service must not begin or block UI-bound vault work");
+        service.GetAllTokens().Should().BeEmpty();
+    }
+
+    private sealed class NonPumpingContext : SynchronizationContext
+    {
+        public int PostCount;
+        public override void Post(SendOrPostCallback callback, object? state) => Interlocked.Increment(ref PostCount);
+    }
+
+    private sealed class YieldingVault : IOAuthTokenVault
+    {
+        public async Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
+        {
+            await Task.Yield();
+            return new Dictionary<string, OAuthToken>();
+        }
+        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
+            => Task.CompletedTask;
+        public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
+            => Task.CompletedTask;
+    }
+
+    private sealed class CancelOnRotationVault(IOAuthTokenVault inner, CancellationTokenSource cancellation) : IOAuthTokenVault
+    {
+        public bool RotationCommitWasCancelable { get; private set; }
+        public Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
+            => inner.ReadOAuthTokensAsync(ct);
+        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
+            => inner.ImportOAuthTokensAsync(tokens, ct);
+        public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
+        {
+            if (token?.RefreshToken == "replacement-refresh")
+            {
+                RotationCommitWasCancelable = ct.CanBeCanceled;
+                cancellation.Cancel();
+            }
+            return inner.SaveOAuthTokenAsync(providerName, token, ct);
         }
     }
 

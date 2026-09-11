@@ -64,11 +64,15 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
-            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-            if (vault.Providers.TryGetValue(descriptor.ProviderId, out var localRecord))
+            // An absent vault can be read without creating a directory or writable lock.
+            if (File.Exists(VaultPath) || File.Exists(_vaultBackupPath))
             {
-                return ToReadResult(descriptor, localRecord, ProviderCredentialSourceDto.LocalEncryptedStore);
+                using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+                var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+                if (vault.Providers.TryGetValue(descriptor.ProviderId, out var localRecord))
+                {
+                    return ToReadResult(descriptor, localRecord, ProviderCredentialSourceDto.LocalEncryptedStore);
+                }
             }
         }
         finally
@@ -182,36 +186,64 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             var descriptor = RequireDescriptor(request.ProviderId);
             return (Descriptor: descriptor, Request: request,
                 Fields: NormalizeCredentialFields(descriptor, request.Credentials));
-        }).ToArray();
-        if (prepared.Select(item => item.Descriptor.ProviderId).Distinct(StringComparer.OrdinalIgnoreCase).Count() != prepared.Length)
-            throw new InvalidOperationException("Legacy credential snapshot contains duplicate provider identities.");
+        }).GroupBy(item => item.Descriptor.ProviderId, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                var first = group.First();
+                var fields = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+                string? environment = null;
+                foreach (var item in group)
+                {
+                    var candidateEnvironment = NormalizeOptional(item.Request.Environment);
+                    if (candidateEnvironment is not null)
+                    {
+                        candidateEnvironment = item.Descriptor.NormalizeEnvironment(candidateEnvironment);
+                        if (environment is not null && !environment.Equals(candidateEnvironment, StringComparison.OrdinalIgnoreCase))
+                            throw new InvalidOperationException("Legacy provider aliases contain conflicting environments.");
+                        environment = candidateEnvironment;
+                    }
+                    foreach (var (key, value) in item.Fields)
+                    {
+                        var normalized = NormalizeOptional(value);
+                        if (normalized is null)
+                            continue;
+                        if (fields.TryGetValue(key, out var existing) && !string.Equals(existing, normalized, StringComparison.Ordinal))
+                            throw new InvalidOperationException("Legacy provider aliases contain conflicting credential fields.");
+                        fields[key] = normalized;
+                    }
+                }
+                return (first.Descriptor, Request: first.Request with { Environment = environment }, Fields: fields);
+            }).ToArray();
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-            var imported = new List<(ProviderCredentialCatalogEntry Descriptor, ProviderCredentialVaultRecord Record)>();
+            var changed = false;
             foreach (var item in prepared)
             {
-                // A retained vault value is authoritative even after a partial migration or rotation.
+                // The marker survives deletion and is committed with the first import. Audit
+                // retries must never interpret an operator deletion as a missing legacy import.
+                if (!vault.LegacyImportedProviderIds.Add(item.Descriptor.ProviderId))
+                    continue;
+                changed = true;
                 if (vault.Providers.ContainsKey(item.Descriptor.ProviderId))
                     continue;
                 var record = CreateUpdatedRecord(item.Descriptor, item.Request, item.Fields, null, DateTimeOffset.UtcNow);
                 vault.Providers.Add(item.Descriptor.ProviderId, record);
-                imported.Add((item.Descriptor, record));
             }
 
-            if (imported.Count > 0)
+            if (changed)
                 await WriteVaultAsync(vault, ct).ConfigureAwait(false);
             // Record every attempted provider, including retries after an audit-write failure.
             // The sidecar is retained until all these audit appends succeed.
             foreach (var item in prepared)
             {
-                var record = vault.Providers[item.Descriptor.ProviderId];
+                vault.Providers.TryGetValue(item.Descriptor.ProviderId, out var record);
                 await AppendAuditAsync(item.Descriptor, "legacy-import-or-preserve", "credential-vault-migration",
-                    BuildStatus(item.Descriptor, ToReadResult(item.Descriptor, record, ProviderCredentialSourceDto.LocalEncryptedStore)),
-                    record.Fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(), ct).ConfigureAwait(false);
+                    BuildStatus(item.Descriptor, record is null ? null : ToReadResult(item.Descriptor, record, ProviderCredentialSourceDto.LocalEncryptedStore)),
+                    record is null ? [] : record.Fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(), ct).ConfigureAwait(false);
             }
         }
         finally
@@ -241,10 +273,13 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             if (token is null)
+            {
                 vault.OAuthTokens.Remove(providerName);
+                vault.LegacyImportedOAuthProviders.Add(providerName);
+            }
             else
                 vault.OAuthTokens[providerName] = token;
-            await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            await WriteVaultAsync(vault, ct, discardPreviousGeneration: token is null).ConfigureAwait(false);
             await AppendOAuthAuditAsync(providerName, token is null ? "oauth-delete" : "oauth-save", ct).ConfigureAwait(false);
         }
         finally { _gate.Release(); }
@@ -265,7 +300,12 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             var changed = false;
             foreach (var pair in tokens)
-                changed |= vault.OAuthTokens.TryAdd(pair.Key, pair.Value);
+            {
+                if (!vault.LegacyImportedOAuthProviders.Add(pair.Key))
+                    continue;
+                changed = true;
+                vault.OAuthTokens.TryAdd(pair.Key, pair.Value);
+            }
             if (changed)
                 await WriteVaultAsync(vault, ct).ConfigureAwait(false);
             foreach (var provider in tokens.Keys)
@@ -274,9 +314,17 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         finally { _gate.Release(); }
     }
 
-    private Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct)
-        => AtomicFileWriter.AppendLinesAsync(_auditPath,
-            [JsonSerializer.Serialize(new { Timestamp = DateTimeOffset.UtcNow, ProviderId = providerName, Action = action }, JsonOptions)], ct);
+    private async Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct)
+    {
+        // The vault file lock serializes every audit writer. Token refreshes append one
+        // record without copying the entire history while holding that exclusive lock.
+        var line = JsonSerializer.Serialize(new { Timestamp = DateTimeOffset.UtcNow, ProviderId = providerName, Action = action }, JsonOptions);
+        await using var stream = new FileStream(_auditPath, FileMode.Append, FileAccess.Write, FileShare.Read,
+            4096, FileOptions.Asynchronous | FileOptions.WriteThrough);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes(line + "\n"), ct).ConfigureAwait(false);
+        await stream.FlushAsync(ct).ConfigureAwait(false);
+        stream.Flush(flushToDisk: true);
+    }
 
     private async Task<FileStream> AcquireVaultLockAsync(CancellationToken ct)
     {
@@ -307,7 +355,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             vault.Providers.Remove(descriptor.ProviderId);
-            await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            vault.LegacyImportedProviderIds.Add(descriptor.ProviderId);
+            await WriteVaultAsync(vault, ct, discardPreviousGeneration: true).ConfigureAwait(false);
             await AppendAuditAsync(
                 descriptor,
                 "delete",
@@ -685,6 +734,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
     {
         try
         {
+            if (!File.Exists(VaultPath) && File.Exists(_vaultBackupPath))
+                return await LoadVaultFromFileAsync(_vaultBackupPath, ct).ConfigureAwait(false);
             return await LoadVaultFromFileAsync(VaultPath, ct).ConfigureAwait(false);
         }
         catch (Exception primaryFailure) when (IsVaultCorruption(primaryFailure))
@@ -732,7 +783,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         var envelopeJson = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(envelopeJson))
         {
-            return new ProviderCredentialVault();
+            throw new InvalidOperationException("Provider credential vault is empty or truncated.");
         }
 
         var envelope = JsonSerializer.Deserialize<ProtectedVaultEnvelope>(envelopeJson, JsonOptions)
@@ -741,10 +792,10 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         var plainBytes = await UnprotectAsync(envelope.Protection, protectedBytes, ct).ConfigureAwait(false);
         var vaultJson = Encoding.UTF8.GetString(plainBytes);
         var vault = JsonSerializer.Deserialize<ProviderCredentialVault>(vaultJson, JsonOptions);
-        return vault ?? new ProviderCredentialVault();
+        return vault ?? throw new InvalidOperationException("Provider credential vault payload is invalid.");
     }
 
-    private async Task WriteVaultAsync(ProviderCredentialVault vault, CancellationToken ct)
+    private async Task WriteVaultAsync(ProviderCredentialVault vault, CancellationToken ct, bool discardPreviousGeneration = false)
     {
         EnsureVaultDirectory();
         vault.Version = VaultVersion;
@@ -759,11 +810,22 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         // Roll the current (readable) vault to the last-known-good backup before replacing
         // it, so a corrupting write can always fall back one generation in LoadVaultAsync.
         // Callers hold _gate, so the copy/write pair cannot interleave with another writer.
-        if (File.Exists(VaultPath))
+        if (discardPreviousGeneration)
+        {
+            // Deletion must remove every recoverable copy before it can be acknowledged.
+            File.Delete(_vaultBackupPath);
+        }
+        else if (File.Exists(VaultPath))
         {
             try
             {
+                // Keep a usable recovery copy when this mutation follows primary corruption.
+                await LoadVaultFromFileAsync(VaultPath, ct).ConfigureAwait(false);
                 File.Copy(VaultPath, _vaultBackupPath, overwrite: true);
+            }
+            catch (Exception ex) when (IsVaultCorruption(ex))
+            {
+                Log.Warning("Retained provider credential recovery backup because the primary vault is corrupt");
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -772,6 +834,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         }
 
         await AtomicFileWriter.WriteAsync(VaultPath, envelopeJson, ct).ConfigureAwait(false);
+        if (discardPreviousGeneration)
+            await AtomicFileWriter.WriteAsync(_vaultBackupPath, envelopeJson, CancellationToken.None).ConfigureAwait(false);
     }
 
     private async Task<(string Protection, byte[] ProtectedBytes)> ProtectAsync(byte[] plainBytes, CancellationToken ct)
@@ -971,6 +1035,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
         public Dictionary<string, ProviderCredentialVaultRecord> Providers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, OAuthToken> OAuthTokens { get; set; } = new(StringComparer.Ordinal);
+        public HashSet<string> LegacyImportedProviderIds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> LegacyImportedOAuthProviders { get; set; } = new(StringComparer.Ordinal);
     }
 
     private sealed class ProviderCredentialVaultRecord
