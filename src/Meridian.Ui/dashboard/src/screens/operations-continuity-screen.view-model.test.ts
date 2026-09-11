@@ -830,6 +830,69 @@ const closeCalendar: OperationsCloseCalendar = {
   ]
 };
 
+function buildCommandViewModel(workflow: OperationsContinuityWorkflow) {
+  return buildOperationsContinuityScreenViewModel({
+    workflows: [workflow],
+    selectedWorkflowId: workflow.workflowId,
+    detail: workflow,
+    loading: false,
+    detailLoading: false,
+    error: null,
+    detailError: null,
+    refresh: vi.fn(),
+    selectWorkflow: vi.fn()
+  });
+}
+
+function createApprovalSubmissionReadyDetail(): OperationsContinuityWorkflow {
+  const prerequisiteKeys = ["BrokerIngest", "SecurityMaster", "LedgerPosting", "Reconciliation"] as const;
+  return {
+    ...detail,
+    status: "ReconciliationActive",
+    approvalState: "Pending",
+    approvals: [],
+    breakCases: [],
+    closePackage: null,
+    gates: prerequisiteKeys.map((gateKey) => ({
+      ...gates[0]!,
+      gateKey,
+      displayName: gateKey,
+      completedBy: "execution-operator"
+    })),
+    closeChecklist: [
+      ...prerequisiteKeys.map((gate) => ({
+        ...detail.closeChecklist[0]!,
+        taskId: `close-gate-${gate.toLowerCase()}`,
+        gate,
+        label: `${gate} close gate`,
+        status: "Done",
+        blockingReason: null,
+        requiredApprovalCount: 1,
+        evidencePointer: `${gate}-evidence`,
+        canAcknowledge: false,
+        acknowledgedBy: "control-reviewer",
+        acknowledgedAtUtc: "2026-05-10T17:20:00Z"
+      })),
+      {
+        ...detail.closeChecklist[0]!,
+        taskId: "close-gate-approval",
+        gate: "Approval",
+        owner: "fund-controller",
+        status: "Pending",
+        requiredApprovalCount: 2,
+        acknowledgedBy: null,
+        acknowledgedAtUtc: null
+      }
+    ],
+    reportPackReadiness: {
+      isReady: true,
+      reportPackId: "report-pack-2026-05",
+      blockingReason: null,
+      evidenceLinks: []
+    }
+  };
+}
+
 describe("Operations Continuity view model", () => {
   it("lists workflows, opens detail, and ranks blocked-gate next action with a local route", () => {
     const vm = buildOperationsContinuityScreenViewModel({
@@ -1597,7 +1660,7 @@ describe("Operations Continuity view model", () => {
       capturedAtUtc: "2026-05-08T16:00:00Z"
     };
     const approvalReadyDetail: OperationsContinuityWorkflow = {
-      ...detail,
+      ...createApprovalSubmissionReadyDetail(),
       breakCases: detail.breakCases.map((breakCase) => ({
         ...breakCase,
         status: "Resolved"
@@ -1632,10 +1695,70 @@ describe("Operations Continuity view model", () => {
       submitApprovalReportPackId: "report-pack-2026-05",
       submitApprovalReviewer: "fund-controller",
       submitApprovalEvidenceLinks: expect.arrayContaining([reportPackEvidence]),
-      submitApprovalChecklistControlApprovals: [],
+      submitApprovalChecklistControlApprovals: approvalReadyDetail.closeChecklist
+        .filter((task) => task.gate !== "Approval")
+        .map((task) => ({
+          taskId: task.taskId,
+          approvedBy: task.acknowledgedBy,
+          approvedAtUtc: task.acknowledgedAtUtc
+        })),
       canSubmitApproval: true,
       submitApprovalDisabledReason: null
     });
+  });
+
+  it.each([
+    { acknowledgedAtUtc: null },
+    { acknowledgedBy: null },
+    { evidencePointer: null },
+    { status: "Blocked", blockingReason: "Evidence changed after acknowledgement." }
+  ])("blocks first submission with incomplete retained checklist evidence: %j", (missingEvidence) => {
+    const workflow = createApprovalSubmissionReadyDetail();
+    workflow.closeChecklist[0] = { ...workflow.closeChecklist[0]!, ...missingEvidence };
+    const row = buildCommandViewModel(workflow).commandSpine.rows[3]!;
+
+    expect(row.canSubmitApproval).toBe(false);
+    expect(row.submitApprovalDisabledReason).toContain("retained checklist-control approval");
+    expect(row.submitApprovalChecklistControlApprovals).not.toContainEqual(expect.objectContaining({
+      taskId: workflow.closeChecklist[0]!.taskId
+    }));
+  });
+
+  it.each(["Rejected", "Pending"] as const)("allows a new %s approval cycle with current acknowledgments despite historical approvals", (approvalState) => {
+    const workflow = createApprovalSubmissionReadyDetail();
+    workflow.approvalState = approvalState;
+    workflow.approvals = [
+      { ...detail.approvals[0]!, status: "Submitted" },
+      { ...detail.approvals[0]!, approvalId: "old-approved", status: "Approved", decidedAtUtc: "2026-05-09T17:00:00Z" }
+    ];
+    const row = buildCommandViewModel(workflow).commandSpine.rows[3]!;
+
+    expect(row.canSubmitApproval).toBe(true);
+    expect(row.submitApprovalChecklistControlApprovals).toHaveLength(4);
+    expect(row.submitApprovalChecklistControlApprovals.every((approval) => approval.taskId !== "close-gate-approval")).toBe(true);
+  });
+
+  it("does not reuse old package controls or report-pack identity after reopen", () => {
+    const workflow = createApprovalSubmissionReadyDetail();
+    workflow.closePackage = {
+      closePackageId: "old-package",
+      reportPackId: "old-report-pack",
+      retainedManifestId: "old-manifest",
+      retainedManifestRoute: "/workstation/accounting/operations-continuity",
+      evidenceHash: "old-hash",
+      publishedAtUtc: "2026-05-09T17:00:00Z",
+      publishedBy: "old-reviewer",
+      signOffRationale: "Prior closed cycle.",
+      evidenceLinks: [],
+      checklistControlApprovals: [{ taskId: "close-gate-brokeringest", approvedBy: "old-reviewer", approvedAtUtc: "2026-05-09T16:00:00Z" }]
+    };
+    workflow.closeChecklist = workflow.closeChecklist.map((task) => ({ ...task, acknowledgedAtUtc: null, acknowledgedBy: null }));
+    workflow.reportPackReadiness = { ...workflow.reportPackReadiness, reportPackId: null };
+    const row = buildCommandViewModel(workflow).commandSpine.rows[3]!;
+
+    expect(row.canSubmitApproval).toBe(false);
+    expect(row.submitApprovalReportPackId).toBeNull();
+    expect(row.submitApprovalChecklistControlApprovals).toEqual([]);
   });
 
   it("enables workflow approval decision metadata when report-pack and checklist evidence are retained", () => {
@@ -1783,7 +1906,7 @@ describe("Operations Continuity view model", () => {
         },
         {
           taskId: "close-gate-approval",
-          approvedBy: "fund-controller",
+          approvedBy: "ops-user",
           approvedAtUtc: "2026-05-10T17:30:00Z"
         }
       ]),
@@ -1794,6 +1917,26 @@ describe("Operations Continuity view model", () => {
       canRejectWorkflow: true,
       rejectWorkflowDisabledReason: null
     });
+    expect(vm.workflowApprovalHistory[0]!.approveWorkflowChecklistControlApprovals)
+      .not.toContainEqual(expect.objectContaining({ approvedBy: "fund-controller" }));
+
+    const selfApproval = buildCommandViewModel({
+      ...approvalDecisionReadyDetail,
+      approvals: [{ ...approvalDecisionReadyDetail.approvals[0]!, reviewer: "ops-user" }]
+    }).workflowApprovalHistory[0]!;
+    expect(selfApproval.canApproveWorkflow).toBe(false);
+    expect(selfApproval.approveWorkflowDisabledReason).toBe("Approval reviewer must differ from the workflow submitter.");
+
+    const historicalApproval = buildCommandViewModel({
+      ...approvalDecisionReadyDetail,
+      approvals: [
+        approvalDecisionReadyDetail.approvals[0]!,
+        { ...approvalDecisionReadyDetail.approvals[0]!, approvalId: "replacement-submission" }
+      ]
+    }).workflowApprovalHistory.find((row) => row.id === "approval-close-2026-05")!;
+    expect(historicalApproval.canApproveWorkflow).toBe(false);
+    expect(historicalApproval.canRejectWorkflow).toBe(false);
+    expect(historicalApproval.approveWorkflowDisabledReason).toContain("earlier workflow submission");
   });
 
   it("enables close package publication when shared close readiness and checklist-control approvals are retained", () => {
@@ -1900,6 +2043,35 @@ describe("Operations Continuity view model", () => {
       closeWorkflowDisabledReason: null,
       closeWorkflowAriaLabel: "Publish close package for 2026-05"
     });
+
+    const approved = closeReadyDetail.approvals[0]!;
+    const republished = buildCommandViewModel({
+      ...closeReadyDetail,
+      approvals: [
+        { ...approved, approvalId: "current-submission", status: "Submitted", decidedAtUtc: null },
+        { ...approved, submittedAtUtc: null }
+      ],
+      closePackage: {
+        closePackageId: "old-package",
+        reportPackId: "old-report-pack",
+        retainedManifestId: "old-manifest",
+        retainedManifestRoute: "/workstation/accounting/operations-continuity",
+        evidenceHash: "old-hash",
+        publishedAtUtc: "2026-05-09T17:00:00Z",
+        publishedBy: "old-reviewer",
+        signOffRationale: "Prior closed cycle.",
+        evidenceLinks: [],
+        checklistControlApprovals: [{ taskId: "close-gate-approval", approvedBy: "old-reviewer", approvedAtUtc: "2026-05-09T16:00:00Z" }]
+      }
+    }).commandSpine.rows[4]!;
+    expect(republished.canCloseWorkflow).toBe(true);
+    expect(republished.closeWorkflowReportPackId).toBe("report-pack-2026-05");
+    expect(republished.closeWorkflowChecklistControlApprovals).toContainEqual({
+      taskId: "close-gate-approval",
+      approvedBy: "ops-user",
+      approvedAtUtc: "2026-05-10T17:30:00Z"
+    });
+    expect(republished.closeWorkflowChecklistControlApprovals).not.toContainEqual(expect.objectContaining({ approvedBy: "old-reviewer" }));
   });
 
   it("fails closed when reconciliation lane evidence has no local route", () => {
@@ -2541,7 +2713,7 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.checklist[1]).toMatchObject({
       id: "close-gate-reportpack",
-      acknowledgementCommandPostureLabel: "Acknowledgement retained",
+      acknowledgementCommandPostureLabel: "Acknowledgement blocked",
       acknowledgementGuardLabel: "Expected workflow version 4"
     });
   });

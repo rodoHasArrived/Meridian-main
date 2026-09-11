@@ -131,18 +131,22 @@ public sealed class FundOpsCloseLaneScenarioTests
                 Rationale: "Report pack signed off by fund administrator"));
 
         posture.Success.Should().BeTrue();
+        posture.Workflow!.CloseChecklist.Where(task => task.Gate != OperationsGateKeyDto.Approval)
+            .Should().OnlyContain(task => task.AcknowledgedAtUtc == null && task.AcknowledgedBy == null,
+                "finishing a gate does not itself attest that an operator reviewed its evidence");
 
         // ---- STEP 9: operator submits the workflow for approval ----
 
+        var acknowledged = await AcknowledgeChecklistAsync(service, posture.Workflow!);
         var submitted = await service.SubmitForApprovalAsync(
             workflowId,
             new OperationsSubmitApprovalRequestDto(
-                posture.Workflow!.Version,
+                acknowledged.Version,
                 "ops-user",
                 Reviewer: "fund-controller",
                 Rationale: "All gates clean — submitting period close for controller sign-off",
                 ReportPackId: "report-pack-may-2026",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(acknowledged)));
 
         submitted.Success.Should().BeTrue();
         submitted.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
@@ -157,11 +161,16 @@ public sealed class FundOpsCloseLaneScenarioTests
                 Reviewer: "fund-controller",
                 Rationale: "Reviewed and approved — all evidence clean and consistent",
                 ReportPackId: "report-pack-may-2026",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(submitted.Workflow)));
 
         approved.Success.Should().BeTrue();
         approved.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ReadyForClose);
-        approved.Workflow.Approvals.Should().Contain(a => a.Status == OperationsApprovalStateDto.Approved);
+        var submission = submitted.Workflow.Approvals.Single(row => row.Status == OperationsApprovalStateDto.Submitted);
+        var decision = approved.Workflow.Approvals.Single(row => row.Status == OperationsApprovalStateDto.Approved);
+        decision.Operator.Should().Be(submission.Operator);
+        decision.SubmittedAtUtc.Should().Be(submission.SubmittedAtUtc);
+        decision.Reviewer.Should().Be("fund-controller");
+        decision.DecidedAtUtc.Should().NotBeNull();
 
         // ---- STEP 11: close the period ----
 
@@ -172,7 +181,7 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "ops-user",
                 Rationale: "Closing May 2026 accounting period",
                 ReportPackId: "report-pack-may-2026",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(approved.Workflow)));
 
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed,
@@ -183,6 +192,8 @@ public sealed class FundOpsCloseLaneScenarioTests
         closed.Workflow.ClosePackage!.ReportPackId.Should().Be("report-pack-may-2026");
         closed.Workflow.ClosePackage.EvidenceHash.Should().MatchRegex("^[a-f0-9]{64}$");
         closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().HaveCount(6);
+        closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().BeEquivalentTo(
+            RequiredChecklistControlApprovals(approved.Workflow));
         AssertAccountingRecordAuditReady(closed.Workflow, "report-pack-may-2026");
 
         closed.Workflow.Gates.Should().OnlyContain(
@@ -194,6 +205,8 @@ public sealed class FundOpsCloseLaneScenarioTests
         var timeline = await auditStore.GetTimelineAsync(workflowId);
 
         timeline.Should().NotBeEmpty("every workflow step produces an audit event");
+        timeline.Where(entry => entry.EventType == "checklist-task-acknowledged")
+            .Should().HaveCount(4).And.OnlyContain(entry => entry.Actor == "ops-user");
         timeline.Select(e => e.EventType).Should().ContainInOrder(
             "workflow-started",
             "broker-imported");
@@ -299,21 +312,22 @@ public sealed class FundOpsCloseLaneScenarioTests
             new OperationsGatePostureRequestDto(
                 resolved.Workflow!.Version, "ops-user",
                 ReportPackReady: true, ReportPackId: "report-pack-break-test"));
+        var acknowledged = await AcknowledgeChecklistAsync(service, posture.Workflow!);
         var submitted = await service.SubmitForApprovalAsync(workflowId,
             new OperationsSubmitApprovalRequestDto(
-                posture.Workflow!.Version, "ops-user", "controller",
+                acknowledged.Version, "ops-user", "controller",
                 "Break resolved — submitting for close", "report-pack-break-test",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(acknowledged)));
         var approved = await service.ApproveWorkflowAsync(workflowId,
             new OperationsApprovalDecisionRequestDto(
                 submitted.Workflow!.Version, "controller", "controller",
                 "Reviewed resolution evidence — approved", "report-pack-break-test",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(submitted.Workflow!)));
         var closed = await service.CloseWorkflowAsync(workflowId,
             new OperationsCloseWorkflowRequestDto(
                 approved.Workflow!.Version, "ops-user",
                 "Period closed after break resolution", "report-pack-break-test",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(approved.Workflow!)));
 
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
@@ -365,16 +379,18 @@ public sealed class FundOpsCloseLaneScenarioTests
 
         reconciled.Success.Should().BeTrue();
 
+        var acknowledged = await AcknowledgeChecklistAsync(service, reconciled.Workflow!);
         // Attempt to submit for approval WITHOUT marking the report pack as ready first.
         // A dummy report-pack ID is provided; the workflow should still block because
         // ReportPackReadiness.IsReady is false in the domain state.
         var blockedSubmit = await service.SubmitForApprovalAsync(workflowId,
             new OperationsSubmitApprovalRequestDto(
-                reconciled.Workflow!.Version,
+                acknowledged.Version,
                 Actor: "ops-user",
                 Reviewer: "controller",
                 Rationale: "Trying to submit without a ready report pack",
-                ReportPackId: "report-pack-not-yet-ready"));
+                ReportPackId: "report-pack-not-yet-ready",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(acknowledged)));
 
         blockedSubmit.Success.Should().BeFalse(
             "submission must be blocked when the report pack has not been marked ready");
@@ -384,11 +400,11 @@ public sealed class FundOpsCloseLaneScenarioTests
 
         var blockedClose = await service.CloseWorkflowAsync(workflowId,
             new OperationsCloseWorkflowRequestDto(
-                reconciled.Workflow.Version,
+                acknowledged.Version,
                 "ops-user",
                 "Attempting to close before report-pack and approval readiness",
                 "report-pack-not-yet-ready",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(acknowledged)));
 
         blockedClose.Success.Should().BeFalse("close execution must fail closed while W4 readiness is incomplete");
         blockedClose.ErrorCode.Should().Be("CLOSE_READINESS_FAILED");
@@ -435,14 +451,15 @@ public sealed class FundOpsCloseLaneScenarioTests
         posture.Workflow.ReportPackReadiness.ReportPackId.Should().Be("report-pack-rp-gate");
 
         // Submission now succeeds.
+        acknowledged = await AcknowledgeChecklistAsync(service, posture.Workflow);
         var submitted = await service.SubmitForApprovalAsync(workflowId,
             new OperationsSubmitApprovalRequestDto(
-                posture.Workflow.Version,
+                acknowledged.Version,
                 "ops-user",
                 Reviewer: "controller",
                 Rationale: "Report pack confirmed — submitting for approval",
                 ReportPackId: "report-pack-rp-gate",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(acknowledged)));
 
         submitted.Success.Should().BeTrue(
             "submission must succeed once the report pack is marked ready");
@@ -475,7 +492,7 @@ public sealed class FundOpsCloseLaneScenarioTests
             workflow.WorkflowId,
             new OperationsRejectWorkflowRequestDto(
                 workflow.Version,
-                "fund-controller",
+                "controller",
                 Reviewer: "controller",
                 Rationale: "Ledger evidence needs remediation before close approval.",
                 ReasonCode: "LedgerMismatch"));
@@ -527,24 +544,25 @@ public sealed class FundOpsCloseLaneScenarioTests
                 ReportPackReady: true,
                 ReportPackId: "report-pack-recovery-2",
                 Rationale: "Regenerated report pack after ledger remediation."));
+        var acknowledged = await AcknowledgeChecklistAsync(service, posture.Workflow!);
         var resubmitted = await service.SubmitForApprovalAsync(
             workflow.WorkflowId,
             new OperationsSubmitApprovalRequestDto(
-                posture.Workflow!.Version,
+                acknowledged.Version,
                 "ops-user",
                 Reviewer: "controller",
                 Rationale: "Remediated evidence is ready for controller approval.",
                 ReportPackId: "report-pack-recovery-2",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(acknowledged)));
         var approved = await service.ApproveWorkflowAsync(
             workflow.WorkflowId,
             new OperationsApprovalDecisionRequestDto(
                 resubmitted.Workflow!.Version,
-                "fund-controller",
+                "controller",
                 Reviewer: "controller",
                 Rationale: "Reviewed remediated ledger evidence and approved close.",
                 ReportPackId: "report-pack-recovery-2",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(resubmitted.Workflow!)));
         var closed = await service.CloseWorkflowAsync(
             workflow.WorkflowId,
             new OperationsCloseWorkflowRequestDto(
@@ -552,7 +570,7 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "ops-user",
                 Rationale: "Close recovered period after remediation.",
                 ReportPackId: "report-pack-recovery-2",
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(approved.Workflow!)));
 
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
@@ -644,15 +662,41 @@ public sealed class FundOpsCloseLaneScenarioTests
             new RecordingLedgerJournalStore());
     }
 
-    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
-    [
-        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
-        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
-        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
-        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
-        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
-        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
-    ];
+    private static async Task<OperationsContinuityWorkflowDto> AcknowledgeChecklistAsync(
+        OperationsContinuityWorkflowService service, OperationsContinuityWorkflowDto workflow)
+    {
+        foreach (var taskId in workflow.CloseChecklist
+                     .Where(task => task.Gate != OperationsGateKeyDto.Approval && task.AcknowledgedAtUtc is null)
+                     .Select(task => task.TaskId))
+        {
+            var acknowledged = await service.AcknowledgeChecklistTaskAsync(
+                workflow.WorkflowId, taskId,
+                new OperationsChecklistAcknowledgeRequestDto(
+                    workflow.Version, "ops-user", "Reviewed retained gate evidence for this close cycle."));
+            acknowledged.Success.Should().BeTrue(acknowledged.ErrorMessage);
+            workflow = acknowledged.Workflow!;
+        }
+
+        return workflow;
+    }
+
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals(
+        OperationsContinuityWorkflowDto workflow)
+    {
+        var controls = workflow.CloseChecklist
+            .Where(task => task.Gate != OperationsGateKeyDto.Approval && task.AcknowledgedAtUtc.HasValue)
+            .Select(task => new OperationsChecklistControlApprovalDto(
+                task.TaskId, task.AcknowledgedBy!, task.AcknowledgedAtUtc!.Value))
+            .ToList();
+        if (workflow.ApprovalState == OperationsApprovalStateDto.Approved)
+        {
+            var approval = workflow.Approvals.Last(row => row.Status == OperationsApprovalStateDto.Approved);
+            controls.Add(new("close-gate-approval", approval.Operator!, approval.SubmittedAtUtc!.Value));
+            controls.Add(new("close-gate-approval", approval.Reviewer!, approval.DecidedAtUtc!.Value));
+        }
+
+        return controls;
+    }
 
     private static async Task<OperationsContinuityWorkflowDto> CreateApprovalSubmittedCloseWorkflowAsync(
         OperationsContinuityWorkflowService service,
@@ -703,15 +747,16 @@ public sealed class FundOpsCloseLaneScenarioTests
                 ReportPackReady: true,
                 ReportPackId: reportPackId,
                 Rationale: "Report pack is ready"));
+        var acknowledged = await AcknowledgeChecklistAsync(service, posture.Workflow!);
         var submitted = await service.SubmitForApprovalAsync(
             workflowId,
             new OperationsSubmitApprovalRequestDto(
-                posture.Workflow!.Version,
+                acknowledged.Version,
                 "ops-user",
                 Reviewer: "controller",
                 Rationale: "Submit clean close evidence.",
                 ReportPackId: reportPackId,
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(acknowledged)));
 
         submitted.Success.Should().BeTrue();
         return submitted.Workflow!;

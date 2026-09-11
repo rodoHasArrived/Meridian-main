@@ -842,6 +842,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 workflow.SubmitForApproval(request, evidence, now);
                 return null;
             },
+            auditPrecondition: (workflow, timeline) => ValidateRetainedChecklistControls(workflow, timeline, request.ChecklistControlApprovals),
             ct: ct).ConfigureAwait(false);
     }
 
@@ -871,6 +872,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 workflow.Approve(request, evidence, now);
                 return null;
             },
+            auditPrecondition: (workflow, timeline) => ValidateRetainedChecklistControls(workflow, timeline, request.ChecklistControlApprovals),
             ct: ct).ConfigureAwait(false);
     }
 
@@ -932,6 +934,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 return null;
             },
             requireIntactAuditChain: true,
+            auditPrecondition: (workflow, timeline) => ValidateRetainedChecklistControls(workflow, timeline, request.ChecklistControlApprovals),
             ct: ct).ConfigureAwait(false);
 
         return result with { CloseReadiness = result.Workflow?.CloseReadiness };
@@ -974,6 +977,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
 
     public async Task<OperationsTransitionResultDto> AcknowledgeChecklistTaskAsync(Guid workflowId, string taskId, OperationsChecklistAcknowledgeRequestDto request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
         var checklist = await GetChecklistAsync(workflowId, ct).ConfigureAwait(false);
         var task = checklist.FirstOrDefault(item => string.Equals(item.TaskId, taskId, StringComparison.OrdinalIgnoreCase));
         if (task is null)
@@ -988,31 +992,32 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
             ]);
         }
 
+        var timeline = await GetTimelineAsync(workflowId, ct).ConfigureAwait(false);
+        var evidence = OrderChecklistTimeline(timeline)
+            .LastOrDefault(entry => CompletesChecklistGate(entry, task.Gate)) is { } completion
+                ? ChecklistCompletionEvidence(completion, task.Gate)
+                : null;
+
         return await ApplyCommandAsync(
             workflowId,
             request.ExpectedVersion,
             request.Actor,
             request.Rationale,
             request.CorrelationId,
-            evidenceLinks: null,
+            evidenceLinks: evidence is null ? [] : [evidence],
             "checklist-task-acknowledged",
             task.Gate,
-            command: (workflow, _, now) =>
+            command: (workflow, _, _) =>
             {
                 var gate = GetGate(workflow, task.Gate);
-                if (gate.Status != OperationsGateStatusDto.Passed)
+                if (gate.Status != OperationsGateStatusDto.Passed || evidence is null)
                 {
                     return new OperationsWorkflowBlockerDto("CHECKLIST_GATE_NOT_COMPLETE", "Checklist tasks can only be acknowledged when the gate is complete.", task.Gate, "Error", []);
                 }
 
-                workflow.ReplaceGate(gate.WithStatus(
-                    gate.Status,
-                    gate.Blockers,
-                    gate.NextActions,
-                    gate.CompletedAtUtc ?? now,
-                    request.Actor.Trim()));
                 return null;
             },
+            requireIntactAuditChain: true,
             ct: ct).ConfigureAwait(false);
     }
 

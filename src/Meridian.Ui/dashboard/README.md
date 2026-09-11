@@ -27,6 +27,15 @@ resolution, report run, and analysis export each call `recordActivationOutcome` 
 
 Accounting forwards the entity along with fund/book/account/period when requesting the shared close decision. The close headline requires a complete ready server projection. Legacy metrics remain diagnostic and cannot produce Ready when the shared service is absent. Focused proof: `accounting-screen.close-cockpit.view-model.test.ts`.
 
+Operations Continuity submits checklist controls from the shared workflow's explicit acknowledgment
+actor and time, including the first submission before any close package exists. Missing controls
+block submission. Rejected or reopened workflows can submit a newly reviewed cycle without reusing
+old package approvals. Approval decisions carry retained submission evidence; an assigned reviewer
+is not counted as having approved until the server records the actual decision. Close publication
+uses the current submission and decision history together with current prerequisite acknowledgments.
+Focused proof: `operations-continuity-screen.view-model.test.ts` and
+`operations-continuity-screen.test.tsx`.
+
 ## Purpose
 
 Browser workstation dashboard is the active browser operator workstation.

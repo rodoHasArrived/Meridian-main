@@ -981,6 +981,10 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
 
             workflow = boundaryWorkflow;
             plan = AttachClosingEntriesGate(boundaryPlan, closingGate);
+            // Close-plan sign-offs remain separately validated; only retained Operations evidence
+            // supplies the workflow controls, never caller-built sign-off or timestamp substitutes.
+            var operationsControls = OperationsChecklistControlEvidence.Collect(
+                workflow.CloseChecklist, workflow.Approvals, workflow.ApprovalState);
 
             try
             {
@@ -1036,7 +1040,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                     Actor: resolvedActor,
                     Rationale: RequireText(request.Rationale, "Rationale"),
                     ReportPackId: RequireText(request.ReportPackId, "ReportPackId"),
-                    ChecklistControlApprovals: request.ChecklistControlApprovals,
+                    ChecklistControlApprovals: operationsControls,
                     CorrelationId: request.CorrelationId,
                     EvidenceLinks: ToOperationsEvidenceLinks(request.EvidenceLinks),
                     ClosePackageId: request.ClosePackageId,

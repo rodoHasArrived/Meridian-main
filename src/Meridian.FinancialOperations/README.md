@@ -15,6 +15,22 @@ last_reviewed: 2026-07-27
 
 The Financial Operations command center owns the shared close decision. It requires an explicit fund profile, ledger book, fund account, entity, and period; validates book/profile binding and exact workflow identity; and includes workflow, calendar, version-matched close-plan, and private-capital contributors. Missing, ambiguous, failing, or older-than-five-minute contributor evaluations block. Asset coverage and fund-wide diagnostic metrics do not establish readiness. Focused proof: `FinancialOperationsCommandCenterReadServiceTests`.
 
+Operations Continuity checklist acknowledgments are explicit retained reviewer actions, separate
+from gate execution completion. The checklist uses gate-specific evidence or the successful gate
+completion audit receipt, follows retained audit links, and invalidates acknowledgments when
+prerequisite evidence changes, approval is rejected, or a closed workflow is reopened. Failed
+attempts do not count as acknowledgments or evidence changes. Submission, approval, and close
+validate supplied control identities and timestamps against current retained acknowledgments;
+historical close packages cannot authorize a new close cycle. The assigned independent reviewer
+records the decision at its actual time, preserving the original submitter and submission time.
+Successful prerequisite changes return an active approval to Pending while retaining its history.
+The Accounting Close period-lock bridge derives these same controls from the current workflow,
+not caller-supplied plan sign-off tuples, and checks controls, readiness, report identity, and audit
+integrity again before ledger hard close. A later persistence failure remains an explicit recovery
+state; the bridge does not claim a cross-store atomic transaction.
+Focused proof: `OperationsContinuityWorkflowServiceTests`, `FundOpsCloseLaneScenarioTests`,
+`AccountingCloseServicesTests`, and the Operations Continuity endpoint scenarios.
+
 ## Purpose
 
 Physical bounded-context module project for reconciliation, accounting records, payment approvals,
