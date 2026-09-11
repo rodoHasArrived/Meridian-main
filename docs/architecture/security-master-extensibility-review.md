@@ -5733,3 +5733,30 @@ The documentation validation that did run, on this pass's docs-only diff: `check
 on `main` and unrelated to this pass** — confirmed by re-running the check against a stashed tree,
 which reports the same errors — and this pass touched no source file, so it is recorded here rather
 than repaired, since repairing it would mean regenerating source docs this review did not author.
+
+**Two CI gates this pass tripped, recorded so the next one does not.** Appending a section to this
+document is never a docs-only change in CI's eyes, and the two failures are both mechanical:
+
+1. **`verify-docs` — the whole-repo generated-doc drift check.** `scripts/ci.sh --lane verify-docs`
+   regenerates `docs/status/doc-health-dashboard.{json,md}` and rejects any diff, and those
+   dashboards carry this file's line count and the repo-wide totals it rolls into. Growing this
+   document by 215 lines therefore reds the lane until the dashboards are regenerated **and
+   committed in the same push**. Reproduce CI exactly: run `build/scripts/docs/scan-todos.py
+   --json-output docs/status/todo-scan-results.json` **first** — the artifact is gitignored and CI's
+   TODO-registry step produces it before the drift check, so generating without it yields a
+   different dashboard than CI's — then `run-docs-automation.py --scripts
+   generate-structure-docs,generate-health-dashboard,generate-workflow-manifest`, then
+   `generate-structure-docs.py --workflows-only`, then confirm with `git diff --exit-code` over the
+   five paths `ci.sh` names. This is the same lesson `3be7e20e` recorded for the 2026-09-10 pass,
+   generalized: it is not specific to that pass's TODO-scan artifact.
+2. **`scope-gate` — the roadmap phase gate.** `tools/roadmap/enforce_phase_scope.py` fails closed
+   with "No phase declaration found" unless the PR declares a phase. Every path in a pass like this
+   one is under `docs/**`, so **`PR1`** is the narrowest covering phase (`PR0` covers only
+   `docs/roadmap/**` and `docs/roadmap-governance/**`, which this document is not under). Declare it
+   as `<!-- phase:PR1 -->` in the PR body **when the PR is opened**. The gate reads `PR_BODY` and
+   `PR_LABELS` from `github.event.pull_request.*` — the event payload, frozen at trigger time — and
+   `roadmap-source-docs.yml` declares `pull_request` with no `types:`, so it fires only on
+   `opened`/`synchronize`/`reopened`. Editing the body or adding a `phase:PR1` label afterwards
+   therefore triggers nothing, and re-running the job replays the stale payload: the declaration
+   only takes effect on the next commit pushed to the branch. Adding it up front costs nothing;
+   adding it late costs a push.
