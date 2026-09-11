@@ -49,7 +49,8 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
         var (service, workflow) = CreateService(connector);
         (await service.ValidateAsync(document, connector.Descriptor.ConnectorId)).IsValid.Should().BeFalse();
         (await service.PreviewAsync(document, connector.Descriptor.ConnectorId)).Status.Should().Be("NeedsAttention");
-        await Assert.ThrowsAsync<InvalidDataException>(() => service.CommitAsync(Request(document, connector.Descriptor.ConnectorId, account)));
+        var refusal = await Assert.ThrowsAsync<InvalidDataException>(() => service.CommitAsync(Request(document, connector.Descriptor.ConnectorId, account)));
+        refusal.Message.Should().Contain("CURRENCY");
         Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
         (await workflow.ListImportsAsync()).Should().BeEmpty();
     }
@@ -97,7 +98,7 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
     }
 
     private static StatementImportCommitRequest Request(StatementSourceDocument document, string connectorId, string account)
-        => new(document, connectorId, "bank", "May bank", "FUND-A", account,
+        => new(document, connectorId, "custodian", "May bank", "FUND-A", account,
             new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31), null, "bank-operator");
 
     public void Dispose() => Directory.Delete(_root, recursive: true);
