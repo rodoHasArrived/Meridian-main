@@ -60,8 +60,9 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
         await AssertCaseFeedAsync(feed, committed, ct);
         var breaks = await feed.ListOpenStatementBreaksAsync(AccessScope, ct);
         breaks.Should().HaveCount(3);
+        // References are physical lines in the retained canonical CSV; line one is its header.
         breaks.Select(item => item.StatementReference).Should().BeEquivalentTo(
-            Enumerable.Range(1, 3).Select(row => $"{committed.RunId}:{row}"));
+            Enumerable.Range(2, 3).Select(row => $"{committed.RunId}:{row}"));
         breaks.Should().Contain(item =>
             item.Classification == ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable,
             "missing ledger activity remains an explicit limitation in the workstation feed");
@@ -136,7 +137,7 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
         retainedMatch.MatchGroups.Should().HaveCount(2);
         var split = retainedMatch.MatchGroups!.Should()
             .ContainSingle(group => group.RuleIds.Contains("statement-transaction-split-v1")).Subject;
-        split.StatementEvidenceReferences.Should().Equal($"{committed.RunId}:1");
+        split.StatementEvidenceReferences.Should().Equal($"{committed.RunId}:2");
         split.InternalEvidenceReferences.Should().Equal("internal:journal:leg-a", "internal:journal:leg-b");
 
         // A restarted read/replay must use the retained match, even when the current book is unavailable.
@@ -144,7 +145,7 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
         var feed = await CreateFeedAsync(restarted, externalAccountId, "USD", ct);
         await AssertCaseFeedAsync(feed, committed, ct);
         (await feed.ListOpenStatementBreaksAsync(AccessScope, ct)).Should().ContainSingle()
-            .Which.StatementReference.Should().Be($"{committed.RunId}:3");
+            .Which.StatementReference.Should().Be($"{committed.RunId}:4");
         var duplicate = await CreateImportService(restarted).CommitAsync(request, ct);
         duplicate.Duplicate.Should().BeTrue();
         duplicate.CaseIds.Should().Equal(committed.CaseIds);
