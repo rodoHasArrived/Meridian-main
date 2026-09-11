@@ -56,7 +56,7 @@ jobs:
         uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-quality-gate-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-quality-gate-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', 'NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-quality-gate-
             ${{ runner.os }}-nuget-
@@ -74,12 +74,16 @@ jobs:
             artifacts/test-results/dotnet/
             artifacts/ci-summary/
           if-no-files-found: ignore
+          compression-level: 1
           retention-days: 14
 
   verify-browser:
     name: verify-browser
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      # Reuse cached tarballs; npm still fetches missing packages and enforces the lockfile.
+      npm_config_prefer_offline: "true"
 
     steps:
       - name: Check out repository
@@ -109,9 +113,11 @@ jobs:
         with:
           name: meridian-ci-browser-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
-            src/Meridian.Ui/dashboard/dist/
+            src/Meridian.Ui/wwwroot/workstation/
+            artifacts/build-logs/
             artifacts/ci-summary/
           if-no-files-found: ignore
+          compression-level: 1
           retention-days: 14
 
   verify-docs:
@@ -130,6 +136,8 @@ jobs:
         uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: build/scripts/docs/requirements.txt
 
       # validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
       # hand-rolled subset parser, so this lane needs the dependency installed.
@@ -166,6 +174,7 @@ jobs:
             docs/status/todo-scan-results.json
             artifacts/ci-summary/
           if-no-files-found: ignore
+          compression-level: 1
           retention-days: 14
 
   verify-workflows:
@@ -184,6 +193,8 @@ jobs:
         uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: build/scripts/docs/requirements.txt
 
       # validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
       # hand-rolled subset parser, so this lane needs the dependency installed.
@@ -198,8 +209,11 @@ jobs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: meridian-ci-workflows-${{ github.run_number }}-${{ github.run_attempt }}
-          path: artifacts/ci-summary/
+          path: |
+            artifacts/build-logs/
+            artifacts/ci-summary/
           if-no-files-found: ignore
+          compression-level: 1
           retention-days: 14
 
   quality-gate:

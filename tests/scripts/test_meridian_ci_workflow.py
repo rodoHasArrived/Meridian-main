@@ -41,7 +41,7 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         self.assertIn("artifacts/ci-summary/", self.workflow)
         self.assertIn("artifacts/build-logs/", self.workflow)
         self.assertIn("artifacts/test-results/dotnet/", self.workflow)
-        self.assertIn("src/Meridian.Ui/dashboard/dist/", self.workflow)
+        self.assertIn("src/Meridian.Ui/wwwroot/workstation/", self.workflow)
 
     def test_browser_lane_runs_full_dashboard_contract_checks(self) -> None:
         self.assertIn("bash scripts/ci.sh --lane verify-browser", self.workflow)

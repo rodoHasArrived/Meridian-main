@@ -9,6 +9,24 @@ scope.
 
 ## Active Workflows
 
+## Dependency caches and artifacts
+
+`meridian-ci.yml` caches NuGet packages using project files, nested shared build/package
+properties and targets, lockfiles, the case-sensitive `NuGet.Config`, and `global.json`.
+Restore still runs after every cache hit so cached packages never replace dependency validation.
+The browser lane prefers cached npm tarballs while retaining `npm ci`, optional packages,
+lockfile integrity checks, and npm's normal audit behavior. The docs and workflow lanes share
+a pip download cache keyed by `build/scripts/docs/requirements.txt`; both still install the
+pinned requirements on every run.
+
+Lane artifacts use compression level 1 to reduce compression CPU time, with a possible increase
+in archive size. Browser evidence includes the actual Vite output in
+`src/Meridian.Ui/wwwroot/workstation/` plus build logs; workflow evidence also retains its hygiene
+log. Every lane still runs on every applicable trigger, uploads evidence on success or failure,
+and must succeed before the stable `quality-gate` can pass. Cache savings depend on cache warmth
+and network conditions; compare lane durations in `artifacts/ci-summary/` and Actions step timings
+before claiming an end-to-end speedup.
+
 ## Canonical lane mapping
 
 | Lane | Workflow alignment |
