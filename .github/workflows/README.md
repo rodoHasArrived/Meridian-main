@@ -19,6 +19,10 @@ lockfile integrity checks, and npm's normal audit behavior. The docs and workflo
 a pip download cache keyed by `build/scripts/docs/requirements.txt`; both still install the
 pinned requirements on every run.
 
+Publish Smoke installs Node.js and restores npm's cache
+only for `web-workstation`, the publish path that actually builds the browser bundle;
+collector and desktop publication still run their publish and release-evidence steps.
+
 Lane artifacts use compression level 1 to reduce compression CPU time, with a possible increase
 in archive size. Browser evidence includes the actual Vite output in
 `src/Meridian.Ui/wwwroot/workstation/` plus build logs; workflow evidence also retains its hygiene
@@ -45,9 +49,20 @@ before claiming an end-to-end speedup.
 | `verify-release` | `Publish Smoke` (`publish-smoke.yml`) and `Desktop Installer Packaging` (`desktop-installer-packaging.yml`). |
 | `production-certification` | `Production Certification` (`production-certification.yml`) for PostgreSQL integrations, zero-skip coverage, dependency scans, encrypted recovery drill, and same-commit docs evidence. |
 
+`verify-dotnet` retains the web-host build, then builds all unique default test projects in
+one ordinary MSBuild solution-filter invocation for the standard `Release` configuration.
+The filter is derived from the validated test roster, so shared dependencies are traversed
+within one build instead of restarting MSBuild for
+every test project. Normal project-reference traversal and worker-payload copy targets remain
+enabled. The generated filter and grouped build log are retained with the test evidence. If the
+grouped build fails, serial project builds collect diagnostics; the original failure remains
+fatal even if those diagnostic builds pass, and no test shards start. The runner checks that
+the solution enables every selected project in `Release` without remapping its configuration.
+Explicit `--project` overrides and other configurations keep the serial build path.
+
 `verify-dotnet` sets `MERIDIAN_CI_TEST_MAX_PARALLEL=2` on its hosted runner. Restore,
-formatting, static checks, and builds retain their existing order; only the already-built
-test shards overlap. The runner defaults to one process locally and accepts an explicit
+formatting, static checks, the web-host build, and test-project build retain their order; only
+the already-built test shards overlap. The runner defaults to one test process locally and accepts an explicit
 `--max-parallel` override. Each shard writes separate TRX and console logs; its temporary
 fixture files are isolated outside uploaded results and removed after the process exits.
 The JSON/Markdown summaries retain every result in roster order and include elapsed durations.
