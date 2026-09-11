@@ -802,6 +802,15 @@
       "sha256": "71b59aca8301298b74d42a0eb0cbd12e7def512f444d5752e6156e4400ec042f"
     },
     {
+      "filename": "005_tenant_backfill_receipts.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
+      "schema": "fund_structure",
+      "sha256": "48ec5104e8fc5e6c5ab076e4d2e56afb951f546d9b2042dd4e810ef6602a1eed"
+    },
+    {
       "filename": "001_fund_accounts.sql",
       "immutable": true,
       "migration_set_id": "fund-accounts",
@@ -1001,7 +1010,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "1a58de3ce729b19880e7ac381ef20dd4c19982a77de13b441f111f443d42aa6c",
+  "fingerprint": "ef41e6112c1cee8f2244cf9837965bf851ad4309b00e5a4cd4317778f4246314",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1239,12 +1248,19 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 111,
+    "files": 112,
     "migration_sets": 10,
-    "waivers": 7,
+    "waivers": 8,
     "warnings": 0
   },
   "waivers": [
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
+      "reason": "The lexical TRUNCATE match is the BEFORE TRUNCATE trigger that rejects removal of immutable tenant-backfill receipts. The migration truncates no data; FundStructureTenantBackfillPostgresTests verifies denial and retained receipt count.",
+      "review_after": "2027-03-11",
+      "rule_id": "migration-truncate"
+    },
     {
       "category": "destructive_changes",
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",

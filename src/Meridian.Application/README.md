@@ -11,6 +11,14 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Application
 
+`FundStructureTenantBackfillRunner` provides explicit operator preview/apply through
+`--fund-tenant-backfill`. It derives tenant attribution from retained ledger books and the fund
+tenancy registry, preserving CompanyId separately. Conflicting ownership components and their
+dependent rows remain quarantined; apply rederives the exact reviewed code/schema/evidence
+fingerprint under store locks. It never activates strict reads or runs as a startup backfill.
+See [the operator procedure](../../docs/operators/fund-structure-tenant-backfill.md) and
+`FundStructureTenantBackfillTests` / `FundStructureTenantBackfillPostgresTests` for the proof lane.
+
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
 the publisher. The outbox worker publishes retained state and retries failures; missing publisher

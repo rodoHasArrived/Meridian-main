@@ -2,9 +2,9 @@
 
 # `fund_structure` schema
 
-- Relations: 14
-- Functions/procedures: 0
-- Triggers: 0
+- Relations: 15
+- Functions/procedures: 1
+- Triggers: 2
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -86,6 +86,16 @@ erDiagram
         text filename PK
         text checksum
         timestamp_with_time_zone applied_at
+    }
+    fund_structure_fund_structure_tenant_backfill_receipt {
+        uuid run_id PK
+        text plan_hash
+        text operator_id
+        text review_reference
+        timestamp_with_time_zone applied_at_utc
+        integer stamped_rows
+        integer quarantined_rows
+        jsonb plan
     }
     fund_structure_fund_structure_tenant_quarantine {
         uuid node_id PK
@@ -203,6 +213,7 @@ erDiagram
 | `fund_structure_legacy_import_receipt` | table | 3 | `source_hash` | 0 | 1 | - |
 | `fund_structure_linked_account` | table | 3 | `account_id` | 0 | 2 | - |
 | `fund_structure_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
+| `fund_structure_tenant_backfill_receipt` | table | 8 | `run_id` | 0 | 1 | - |
 | `fund_structure_tenant_quarantine` | table | 8 | `node_id` | 0 | 2 | Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason. |
 | `investment_portfolio` | table | 17 | `investment_portfolio_id` | 0 | 2 | - |
 | `legal_entity` | table | 17 | `entity_id` | 0 | 2 | - |

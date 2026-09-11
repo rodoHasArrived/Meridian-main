@@ -1,11 +1,11 @@
 {
-  "total_files": 665,
-  "total_lines": 143066,
+  "total_files": 666,
+  "total_lines": 143198,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 263,
-  "average_lines": 215.1,
+  "average_lines": 215.0,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2560,7 +2560,7 @@
     },
     {
       "path": "docs/generated/database/modules/fund_structure.md",
-      "line_count": 212,
+      "line_count": 223,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2672,7 +2672,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10916,
+      "line_count": 10924,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2815,6 +2815,14 @@
       "stale": false
     },
     {
+      "path": "docs/operators/fund-structure-tenant-backfill.md",
+      "line_count": 119,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operators/governed-reporting-operations.md",
       "line_count": 365,
       "has_heading": true,
@@ -2888,7 +2896,7 @@
     },
     {
       "path": "docs/operators/README.md",
-      "line_count": 195,
+      "line_count": 197,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5200,7 +5208,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 704,
+      "line_count": 712,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5464,7 +5472,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 611,
+      "line_count": 619,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
