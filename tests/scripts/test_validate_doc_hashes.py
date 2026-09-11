@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 
 
-DOCS_SCRIPT_DIR = Path(__file__).resolve().parents[1]
+DOCS_SCRIPT_DIR = Path(__file__).resolve().parents[2] / "build" / "scripts" / "docs"
 sys.path.insert(0, str(DOCS_SCRIPT_DIR))
 spec = importlib.util.spec_from_file_location(
     "validate_doc_hashes_under_test", DOCS_SCRIPT_DIR / "validate-doc-hashes.py"
