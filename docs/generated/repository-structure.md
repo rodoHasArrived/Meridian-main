@@ -2288,6 +2288,7 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
+│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── ui-route-wiring-report.json
 │   │   ├── ui-route-wiring-report.md
@@ -3425,7 +3426,8 @@ Meridian-main
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
 │   │   │   ├── SecurityMasterStartup.cs
 │   │   │   ├── ServiceCompositionRoot.cs
-│   │   │   └── StartupRefusedException.cs
+│   │   │   ├── StartupRefusedException.cs
+│   │   │   └── TenantScopeServiceRegistration.cs
 │   │   ├── Config
 │   │   │   ├── Credentials
 │   │   │   │   ├── CredentialTestingService.cs
@@ -9095,6 +9097,7 @@ Meridian-main
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs
+│   │   │   │   ├── HostTenantScopeCompositionTests.cs
 │   │   │   │   ├── LedgerFeatureRegistrationTests.cs
 │   │   │   │   ├── LegacySnapshotStartupTests.cs
 │   │   │   │   ├── MaintenanceFeatureRegistrationTests.cs
@@ -10696,7 +10699,8 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
-│   │   └── TestAssemblyConfiguration.cs
+│   │   ├── TestAssemblyConfiguration.cs
+│   │   └── xunit.runner.json
 │   ├── scripts
 │   │   ├── fixtures
 │   │   │   └── roadmap
