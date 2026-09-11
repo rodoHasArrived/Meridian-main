@@ -38,24 +38,28 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
         new(true, false, true, false, false);
 
     [LedgerDatabaseFact]
-    public async Task CashDividend_AttachApprovePost_ReloadsOneBalancedJournalAndReplaysReceipt()
+    public async Task RetainedCashDividendBinding_AttachApprovePost_ReloadsOneBalancedJournalAndReplaysReceipt()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         var ct = timeout.Token;
         await using var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING", ct: ct);
         var ledgerOptions = new LedgerJournalStoreOptions
         {
-            ConnectionString = server.ConnectionString, SchemaName = server.CreateSchemaName("ca_ledger"),
-            RequireGovernedPostingCommand = true, RequireExpectedVersion = true
+            ConnectionString = server.ConnectionString,
+            SchemaName = server.CreateSchemaName("ca_ledger"),
+            RequireGovernedPostingCommand = true,
+            RequireExpectedVersion = true
         };
         var securityOptions = new SecurityMasterOptions
         {
-            ConnectionString = server.ConnectionString, Schema = server.CreateSchemaName("ca_security"),
+            ConnectionString = server.ConnectionString,
+            Schema = server.CreateSchemaName("ca_security"),
             PreloadProjectionCache = false
         };
         var assetOptions = new AssetOperationsOptions
         {
-            ConnectionString = server.ConnectionString, Schema = server.CreateSchemaName("ca_asset")
+            ConnectionString = server.ConnectionString,
+            Schema = server.CreateSchemaName("ca_asset")
         };
         await new LedgerMigrationRunner(ledgerOptions).EnsureMigratedAsync(ct);
         await new SecurityMasterMigrationRunner(securityOptions).EnsureMigratedAsync(ct);
@@ -101,7 +105,8 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
         var positionId = Guid.NewGuid();
         var eventId = processingCase.CorporateActionId;
         var dimensions = new LedgerDimensionSetDto(FundId: Fund, EntityId: Company,
-            InstrumentId: securityId, BookId: bookId.ToString("D")) { PositionId = positionId };
+            InstrumentId: securityId, BookId: bookId.ToString("D"))
+        { PositionId = positionId };
         var sourceHash = CorporateActionEconomicFingerprint.Compute(
             (await operations.GetSourceProposalAsync(processingCase.ProposalId, ct))!.ProposedAction);
         var observedAt = DateTimeOffset.UtcNow;
@@ -113,12 +118,15 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
         var economicEvent = new EconomicEventReferenceDto(eventId, "AssetAccounting.CorporateAction", 1,
             EffectiveDate, observedAt, "test-custodian", $"dividend:{eventId:D}", SourceContentHash: sourceHash)
         {
-            SecurityId = securityId, BookPositionId = positionId, RetainedEvidence = [retainedEvidence]
+            SecurityId = securityId,
+            BookPositionId = positionId,
+            RetainedEvidence = [retainedEvidence]
         };
         var lineage = new ProjectionLineageDto(Guid.NewGuid(), null, "cash-dividend", "v1", "test-fixture-v1",
             "base", EffectiveDate, DateTimeOffset.UtcNow, "test-custodian", $"dividend:{eventId:D}", economicEvent)
         {
-            BookPositionId = positionId, RetainedEvidence = [retainedEvidence]
+            BookPositionId = positionId,
+            RetainedEvidence = [retainedEvidence]
         };
         var bookContext = new AccountingBookContextDto(bookId, Fund, ownerId, FundStructureNodeKindDto.Fund,
             "Dividend GAAP book", "USD", AccountingBasisKindDto.Gaap, Policy, "v1", periodId, dimensions);
@@ -157,8 +165,15 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
         var accounting = new CorporateActionCaseAccountingService(operations, assets, posting, books);
         var policyDecision = JsonSerializer.SerializeToElement(new
         {
-            policyId = Policy, policyVersion = "v1", rulePackId = "corpact-pack", rulePackVersion = "v1",
-            selectedRuleId = Rule, selectedRuleVersion = "v1", eventId, bookId, periodId,
+            policyId = Policy,
+            policyVersion = "v1",
+            rulePackId = "corpact-pack",
+            rulePackVersion = "v1",
+            selectedRuleId = Rule,
+            selectedRuleVersion = "v1",
+            eventId,
+            bookId,
+            periodId,
             draftedCandidateFingerprint = drafted.DraftedCandidateFingerprint
         });
         var policyEvidence = await preparation.AddEvidenceAsync(new AddCorporateActionEvidenceRequestDto(
@@ -239,8 +254,16 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
         var service = new SecurityMasterService(events, snapshots, store, rebuilder, options,
             NullLogger<SecurityMasterService>.Instance);
         await service.CreateAsync(new CreateSecurityRequest(securityId, "Equity",
-            JsonSerializer.SerializeToElement(new { displayName = "Dividend test equity", currency = "USD",
-                countryOfRisk = "US", issuerName = "Fixture issuer", exchange = "XNYS", lotSize = 1, tickSize = 0.01m }),
+            JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Dividend test equity",
+                currency = "USD",
+                countryOfRisk = "US",
+                issuerName = "Fixture issuer",
+                exchange = "XNYS",
+                lotSize = 1,
+                tickSize = 0.01m
+            }),
             JsonSerializer.SerializeToElement(new { shareClass = "Common" }),
             [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "DIV" + securityId.ToString("N"), true,
                 new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero))],
