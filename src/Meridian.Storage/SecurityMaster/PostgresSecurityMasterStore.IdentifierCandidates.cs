@@ -1,5 +1,4 @@
 using Meridian.Contracts.SecurityMaster;
-using NpgsqlTypes;
 
 namespace Meridian.Storage.SecurityMaster;
 
@@ -37,6 +36,13 @@ public sealed partial class PostgresSecurityMasterStore
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        // The exclusion is a pure set subtraction on the returned ids, so it is applied
+        // client-side rather than shipped as a query parameter: during a full projection warm
+        // the exclusion set is the entire security universe, and resending that N-element
+        // UUID array with every 200-key chunk made the warm quadratic in transfer and
+        // allocation. Each chunk returns at most its keys' owners, so filtering here is
+        // linear in the rows actually read.
+        var excluded = excludedSecurityIds as IReadOnlySet<Guid> ?? new HashSet<Guid>(excludedSecurityIds);
         var candidateIds = new HashSet<Guid>();
         const int keysPerQuery = 200;
         for (var offset = 0; offset < keys.Length; offset += keysPerQuery)
@@ -62,18 +68,17 @@ public sealed partial class PostgresSecurityMasterStore
                 $"""
                 select distinct i.security_id
                 from {Qualified("security_identifiers")} i
-                where ({string.Join(" or ", predicates)})
-                  and not (i.security_id = any(@excluded_security_ids));
+                where {string.Join(" or ", predicates)};
                 """;
-            command.Parameters.AddWithValue(
-                "excluded_security_ids",
-                NpgsqlDbType.Array | NpgsqlDbType.Uuid,
-                excludedSecurityIds.ToArray());
 
             await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
             while (await reader.ReadAsync(ct).ConfigureAwait(false))
             {
-                candidateIds.Add(reader.GetGuid(0));
+                var securityId = reader.GetGuid(0);
+                if (!excluded.Contains(securityId))
+                {
+                    candidateIds.Add(securityId);
+                }
             }
         }
 
