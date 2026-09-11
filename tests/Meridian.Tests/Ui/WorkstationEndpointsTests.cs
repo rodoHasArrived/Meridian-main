@@ -773,6 +773,7 @@ public sealed partial class WorkstationEndpointsTests
                 "report-pack-1",
                 ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(submitted.Workflow!)));
         closeAuthority.Workflow = approved.Workflow;
+        client.DefaultRequestHeaders.Remove("X-Meridian-Test-User");
         var closeRoute = $"/api/workstation/operations/continuity/{workflowId}/close";
         var closeRequest = new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user",
             "Close period", "report-pack-1", ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(approved.Workflow!), CloseScope: scope);
