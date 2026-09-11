@@ -30,6 +30,13 @@ This layer owns external integration details while depending on lower contracts 
 
 Use this module for provider implementation, external service integration, and adapter behavior.
 
+`ProviderCapabilityDescriptorCatalog` records runtime adapter families and their implemented
+capabilities, including Synthetic, Polygon, NYSE compatibility data sources, and OpenFIGI symbol
+resolution. Explicit exclusions distinguish hosted corporate-action ingestion, mapper-only,
+template-only, and orchestration families from advertised runtime capabilities. Catalog tests
+check the adapter-folder inventory, interface conformance, and exclusion reasons; catalog presence
+alone does not establish live-provider readiness.
+
 The legacy IB Flex broker importer streams XML and materializes only supported trade, position,
 and cash rows. Its existing 32 MiB source-byte and 100,000-row ceilings are joined by independent
 64-level nesting, 500,000 parse-node (including attributes), 50,000 per-row node, and 64 KiB scalar

@@ -413,14 +413,22 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
     private static string GetCapabilityInventory(ProviderCapabilityDescriptor descriptor)
     {
         var capabilities = new List<string>();
-        if (descriptor.HasStreaming) capabilities.Add("streaming");
-        if (descriptor.HasHistorical) capabilities.Add("historical");
-        if (descriptor.HasSearch) capabilities.Add("search");
-        if (descriptor.HasCorporateActions) capabilities.Add("corporate-actions");
-        if (descriptor.HasOptions) capabilities.Add("options");
-        if (descriptor.HasBrokerage) capabilities.Add("brokerage");
-        if (descriptor.HasSymbolResolver) capabilities.Add("symbol-resolution");
-        if (descriptor.HasCompatibilityDataSource) capabilities.Add("data-source-compatibility");
+        if (descriptor.HasStreaming)
+            capabilities.Add("streaming");
+        if (descriptor.HasHistorical)
+            capabilities.Add("historical");
+        if (descriptor.HasSearch)
+            capabilities.Add("search");
+        if (descriptor.HasCorporateActions)
+            capabilities.Add("corporate-actions");
+        if (descriptor.HasOptions)
+            capabilities.Add("options");
+        if (descriptor.HasBrokerage)
+            capabilities.Add("brokerage");
+        if (descriptor.HasSymbolResolver)
+            capabilities.Add("symbol-resolution");
+        if (descriptor.HasCompatibilityDataSource)
+            capabilities.Add("data-source-compatibility");
         return string.Join(',', capabilities);
     }
 
