@@ -3843,7 +3843,9 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             repository,
             auditStore,
             derivation,
-            new RecordingLedgerJournalStore());
+            new RecordingLedgerJournalStore(),
+            securityMasterQueryService: new StaticSecurityMasterQueryService(DefaultAuthoritativeSecurityStatuses()),
+            closeReadinessGuard: new StateMachineCloseReadinessFixture());
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
@@ -3852,6 +3854,9 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "Approved close",
             "report-pack-1",
             ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
+        approved.Success.Should().BeTrue();
+        var retainedApprovals = await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId);
+        var closeScope = await StateMachineCloseScopeAsync(service, workflow.WorkflowId);
         var appendCountBefore = auditStore.AppendCount;
         auditStore.TimelineTransform = timeline => timeline
             .Select((entry, index) => index == 1 ? entry with { PreviousHash = "tampered" } : entry)
@@ -3862,8 +3867,8 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow",
             "report-pack-1",
-            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
-            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
+            ChecklistControlApprovals: retainedApprovals,
+            CloseScope: closeScope));
 
         close.Success.Should().BeFalse();
         close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
