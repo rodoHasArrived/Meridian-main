@@ -841,6 +841,8 @@ Meridian-main
 │   │   ├── simulated-user-panel-agent.md
 │   │   ├── software-engineer-agent-v1.agent.md
 │   │   └── test-writer-agent.md
+│   ├── codeql
+│   │   └── codeql-config.yml
 │   ├── instructions
 │   │   ├── csharp.instructions.md
 │   │   ├── docs.instructions.md
@@ -10793,6 +10795,7 @@ Meridian-main
 │   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_validate_agent_definitions.py
+│   │   ├── test_validate_doc_hashes.py
 │   │   ├── test_validate_npm_audit.py
 │   │   ├── test_validate_observability_contract.py
 │   │   ├── test_validate_screenshot_captures.py
