@@ -6,10 +6,13 @@ using Xunit;
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// The registered <see cref="SecurityAssetSpecificTermsUpcasterPipeline"/> is the single choke point the
-/// projection store promotes <c>schema_version</c> through. It must compose the full migrate-on-read chain
-/// (v0 stamping plus cross-family economic-terms v2 -> v1 flattening) so the store never promotes a version
-/// the mapping guard would reject, while preserving unknown future versions.
+/// The registered <see cref="SecurityAssetSpecificTermsUpcasterPipeline"/> is the injectable
+/// <see cref="Meridian.Contracts.Schema.ISchemaUpcaster{T}"/> form of the asset-specific-terms
+/// migrate-on-read chain. It must compose the full chain (v0 stamping plus cross-family
+/// economic-terms v2 -> v1 flattening) so a caller resolving upcasters through that seam reads the
+/// same normalized payload the chain produces, while preserving unknown future versions. The
+/// projection store's <c>schema_version</c> column is no longer derived from it: that column records
+/// the version stamped on the stored blob, so a v2 document in the slot is selectable by audit queries.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityAssetSpecificTermsUpcasterPipelineTests

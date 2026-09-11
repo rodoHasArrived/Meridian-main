@@ -1035,6 +1035,13 @@ public sealed partial class OperationsContinuityWorkflow
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        if (ApprovalState is not OperationsApprovalStateDto.Pending and not OperationsApprovalStateDto.Rejected)
+        {
+            return CreateChecklistControlApprovalBlocker(
+                "APPROVAL_ALREADY_SUBMITTED",
+                "Only a pending or rejected workflow can be submitted for approval.");
+        }
+
         if (string.IsNullOrWhiteSpace(request.Reviewer) ||
             string.IsNullOrWhiteSpace(request.Rationale) ||
             string.IsNullOrWhiteSpace(request.ReportPackId))
@@ -1045,6 +1052,13 @@ public sealed partial class OperationsContinuityWorkflow
                 OperationsGateKeyDto.Approval,
                 "Error",
                 []);
+        }
+
+        if (string.Equals(request.Actor?.Trim(), request.Reviewer.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return CreateChecklistControlApprovalBlocker(
+                "APPROVAL_INDEPENDENT_REVIEWER_REQUIRED",
+                "Assign a reviewer who differs from the submitting operator.");
         }
 
         if (BrokerIngestGate.Status != OperationsGateStatusDto.Passed ||
@@ -1171,6 +1185,25 @@ public sealed partial class OperationsContinuityWorkflow
             return CreateReviewerMismatchBlocker(assignedReviewer, request.Reviewer);
         }
 
+        var submission = Approvals.LastOrDefault();
+        if (submission is null ||
+            submission.Status is not OperationsApprovalStateDto.Submitted and not OperationsApprovalStateDto.ReviewerAssigned ||
+            submission.SubmittedAtUtc is null ||
+            string.IsNullOrWhiteSpace(submission.Operator))
+        {
+            return CreateChecklistControlApprovalBlocker(
+                "APPROVAL_SUBMISSION_REQUIRED",
+                "Approval requires the current retained submission and its operator.");
+        }
+
+        if (!string.Equals(request.Actor.Trim(), request.Reviewer.Trim(), StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(submission.Operator.Trim(), request.Actor.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return CreateChecklistControlApprovalBlocker(
+                "APPROVAL_INDEPENDENT_REVIEWER_REQUIRED",
+                "The assigned reviewer must make the decision and must differ from the submitting operator.");
+        }
+
         if (!IsRequestedReportPackReady(request.ReportPackId))
         {
             return CreateReportPackMismatchBlocker(request.ReportPackId);
@@ -1178,7 +1211,7 @@ public sealed partial class OperationsContinuityWorkflow
 
         var checklistBlocker = ValidateChecklistControlApprovals(
             request.ChecklistControlApprovals,
-            includeApprovalGate: true);
+            includeApprovalGate: false);
         if (checklistBlocker is not null)
         {
             return checklistBlocker;
@@ -1196,6 +1229,7 @@ public sealed partial class OperationsContinuityWorkflow
         ArgumentNullException.ThrowIfNull(evidenceLinks);
         EnsureUtc(now);
 
+        var submission = Approvals.Last();
         ApprovalState = OperationsApprovalStateDto.Approved;
         ApprovalGate = ApprovalGate.WithStatus(
             OperationsGateStatusDto.Passed,
@@ -1213,10 +1247,10 @@ public sealed partial class OperationsContinuityWorkflow
         Approvals.Add(new OperationsApprovalDto(
             Guid.NewGuid().ToString("N"),
             OperationsApprovalStateDto.Approved,
-            request.Actor,
+            submission.Operator,
             request.Reviewer,
             request.Rationale,
-            null,
+            submission.SubmittedAtUtc,
             now,
             evidenceLinks));
     }
@@ -1508,7 +1542,9 @@ public sealed partial class OperationsContinuityWorkflow
         }
 
         var requiredGates = Gates
-            .Where(gate => gate.Status == OperationsGateStatusDto.Passed || (includeApprovalGate && gate.GateKey == OperationsGateKeyDto.Approval))
+            .Where(gate => gate.GateKey == OperationsGateKeyDto.Approval
+                ? includeApprovalGate
+                : gate.Status == OperationsGateStatusDto.Passed)
             .Select(gate => gate.GateKey)
             .Distinct()
             .ToArray();
@@ -1517,6 +1553,7 @@ public sealed partial class OperationsContinuityWorkflow
             var requiredTaskId = CloseChecklistTaskId(gate);
             var requiredApprovalCount = gate == OperationsGateKeyDto.Approval ? 2 : 1;
             var validApprovalCount = approvals
+                .Where(static approval => approval is not null)
                 .Where(approval => string.Equals(approval.TaskId?.Trim(), requiredTaskId, StringComparison.OrdinalIgnoreCase))
                 .Where(static approval => !string.IsNullOrWhiteSpace(approval.ApprovedBy))
                 .Where(static approval => approval.ApprovedAtUtc != default)

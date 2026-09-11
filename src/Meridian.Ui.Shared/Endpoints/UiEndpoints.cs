@@ -309,7 +309,7 @@ public static class UiEndpoints
     /// limiting only in explicit development/test hosts outside production, packaged and customer
     /// postures. Rejections expose the fixed-window retry delay through Retry-After.
     /// </summary>
-    public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services)
+    public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false)
     {
         services.TryAddSingleton(new RateLimitBypassPolicy(services));
 
@@ -326,7 +326,7 @@ public static class UiEndpoints
                 return ValueTask.CompletedTask;
             };
 
-            options.AddPolicy(MutationRateLimitPolicy, httpContext => CanBypassRateLimiting(httpContext)
+            options.AddPolicy(MutationRateLimitPolicy, httpContext => !forceEnable && CanBypassRateLimiting(httpContext)
                 ? RateLimitPartition.GetNoLimiter<string>("global")
                 : RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
@@ -338,7 +338,7 @@ public static class UiEndpoints
                         QueueLimit = 2
                     }));
 
-            options.AddPolicy(DirectLendingMutationRateLimitPolicy, httpContext => CanBypassRateLimiting(httpContext)
+            options.AddPolicy(DirectLendingMutationRateLimitPolicy, httpContext => !forceEnable && CanBypassRateLimiting(httpContext)
                 ? RateLimitPartition.GetNoLimiter<string>("direct-lending-global")
                 : RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: httpContext.User.Identity?.Name is { } actor
