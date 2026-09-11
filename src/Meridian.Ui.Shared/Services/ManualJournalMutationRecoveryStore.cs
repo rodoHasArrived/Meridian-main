@@ -132,8 +132,13 @@ public sealed class FileManualJournalMutationRecoveryStore : IManualJournalMutat
                 ?? throw new InvalidOperationException("Manual journal recovery receipt is empty.");
             if (!string.Equals(envelope.Digest, Sha256Digest.ComputeUtf8(envelope.Json), StringComparison.Ordinal))
                 throw new InvalidOperationException("Manual journal recovery receipt integrity check failed.");
-            return JsonSerializer.Deserialize(envelope.Json, ManualJournalMutationJsonContext.Default.ManualJournalMutationIntent)
+            var intent = JsonSerializer.Deserialize(envelope.Json, ManualJournalMutationJsonContext.Default.ManualJournalMutationIntent)
                 ?? throw new InvalidOperationException("Manual journal recovery receipt is invalid.");
+            var completedLocation = string.Equals(Path.GetFileName(Path.GetDirectoryName(path)), "completed", StringComparison.Ordinal);
+            if (!string.Equals(intent.CommandKey, Path.GetFileNameWithoutExtension(path), StringComparison.Ordinal) ||
+                intent.Completed != completedLocation)
+                throw new InvalidOperationException("Manual journal recovery receipt identity or state disagrees with its location.");
+            return intent;
         }
 
         public ValueTask DisposeAsync() => lease.DisposeAsync();

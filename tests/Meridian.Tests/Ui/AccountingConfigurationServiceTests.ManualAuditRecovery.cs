@@ -156,6 +156,19 @@ public sealed partial class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task ManualAuditRecovery_RenamedValidReceipt_FailsClosedWithoutAuditRepair()
+    {
+        using var fixture = await ManualRecoveryFixture.CreateAsync();
+        var request = new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user", "renamed-receipt");
+        await Assert.ThrowsAsync<IOException>(() => fixture.Service(audit: new RecoveryFailingAudit(fixture.Audit(), "manual-je.save-draft")).SaveDraftAsync(request));
+        var retained = fixture.PendingFiles().Single();
+        File.Move(retained, Path.Combine(Path.GetDirectoryName(retained)!, new string('f', 64) + ".json"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service().SaveDraftAsync(request));
+        (await fixture.Audit().ListAsync()).Should().BeEmpty();
+        fixture.PendingFiles().Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task ManualAuditRecovery_FileLease_ExcludesIndependentInstancesAndHonorsCancellation()
     {
         using var fixture = await ManualRecoveryFixture.CreateAsync();
