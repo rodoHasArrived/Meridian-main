@@ -24,3 +24,8 @@ roadmap traceability, TODOs, diagrams, and validation commands.
 When editing `src/**`, assistants must read the nearest source README, identify
 the module ID, update registry records when ownership or behavior changes, and
 report the narrow validation command used.
+
+Source and README hashes use LF-normalized UTF-8 content and ordinal repository-relative POSIX
+path ordering, so Windows and Linux checkouts produce the same reviewed baseline. Non-UTF-8 files
+retain byte-for-byte hashing. A changed hash after that normalization still requires review;
+refresh only the reviewed module entries with `validate-doc-hashes.py --write-module <MODULE_ID>`.
