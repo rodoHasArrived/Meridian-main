@@ -410,6 +410,51 @@ public sealed class WorkstationPrimitiveControlsTests
         });
     }
 
+    [Fact]
+    public void DataConfidenceIndicator_WithoutACommand_LeavesPointerInputForTheHostingRow()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var indicator = new Meridian.Wpf.Controls.DataConfidenceIndicator();
+            var window = Show(indicator);
+            try
+            {
+                // A commandless badge inside a selectable row must not consume the press:
+                // ButtonBase would capture the mouse and mark the event handled, so the row
+                // would never receive the click that selects it. The element stays
+                // hit-testable, so the explanation tooltip keeps working.
+                var button = indicator.FindName("ExplanationButton").Should().BeAssignableTo<Button>().Which;
+
+                var readOnlyPress = new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                {
+                    RoutedEvent = UIElement.MouseLeftButtonDownEvent
+                };
+                button.RaiseEvent(readOnlyPress);
+                readOnlyPress.Handled.Should().BeFalse(
+                    "a read-only badge must let the press bubble to a hosting row or card");
+
+                indicator.ExplanationCommand = new RoutedCommand();
+                var commandedPress = new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                {
+                    RoutedEvent = UIElement.MouseLeftButtonDownEvent
+                };
+                button.RaiseEvent(commandedPress);
+                commandedPress.Handled.Should().BeTrue(
+                    "a bound command restores normal button click handling");
+                button.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                {
+                    RoutedEvent = UIElement.MouseLeftButtonUpEvent
+                });
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     private static Window Show(FrameworkElement element)
     {
         var window = new Window
