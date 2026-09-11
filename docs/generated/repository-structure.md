@@ -10794,6 +10794,7 @@ Meridian-main
 │   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_validate_agent_definitions.py
+│   │   ├── test_validate_doc_hashes.py
 │   │   ├── test_validate_npm_audit.py
 │   │   ├── test_validate_observability_contract.py
 │   │   ├── test_validate_screenshot_captures.py
