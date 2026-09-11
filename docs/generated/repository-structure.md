@@ -2288,7 +2288,6 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
-│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── ui-route-wiring-report.json
 │   │   ├── ui-route-wiring-report.md
@@ -4566,10 +4565,12 @@ Meridian-main
 │   │   │   ├── FinancialOperationsCommandCenterReadService.cs
 │   │   │   ├── FinancialOperationsCommandCenterReadService.OutputEvidence.cs
 │   │   │   ├── OperationsApprovalPolicyMatrixService.cs
+│   │   │   ├── OperationsChecklistControlEvidence.cs
 │   │   │   ├── OperationsCloseCalendarService.cs
 │   │   │   ├── OperationsContinuityRepositories.cs
 │   │   │   ├── OperationsContinuityWorkflow.cs
 │   │   │   ├── OperationsContinuityWorkflow.Reconciliation.cs
+│   │   │   ├── OperationsContinuityWorkflowService.ChecklistControls.cs
 │   │   │   ├── OperationsContinuityWorkflowService.CloseReadiness.cs
 │   │   │   ├── OperationsContinuityWorkflowService.cs
 │   │   │   ├── OperationsContinuityWorkflowService.Projection.cs
