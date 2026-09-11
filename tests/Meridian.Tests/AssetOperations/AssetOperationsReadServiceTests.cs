@@ -278,6 +278,18 @@ public sealed class AssetOperationsReadServiceTests
             [cash],
             [reconciliationRun],
             new Dictionary<Guid, IReadOnlyList<ReconciliationResultDto>> { [reconciliationRunId] = [reconciliationResult] });
+        var replay = AssetOperationsProjectionBuilder.FromDirectLending(
+            contract,
+            [projectionRun],
+            new Dictionary<Guid, IReadOnlyList<ProjectedCashFlowDto>> { [projectionRunId] = [flow] },
+            [cash],
+            [reconciliationRun],
+            new Dictionary<Guid, IReadOnlyList<ReconciliationResultDto>> { [reconciliationRunId] = [reconciliationResult] });
+        replay.TermsHistory.Select(row => row.TermsVersionId).Should().Equal(projection.TermsHistory.Select(row => row.TermsVersionId));
+        replay.LifecycleEvents.Select(row => row.LifecycleEventId).Should().Equal(projection.LifecycleEvents.Select(row => row.LifecycleEventId));
+        replay.LedgerProjections.Select(row => row.LedgerProjectionId).Should().Equal(projection.LedgerProjections.Select(row => row.LedgerProjectionId));
+        replay.LedgerProjections.Should().OnlyContain(row => row.AccountingDate == projectionRun.ProjectionAsOf);
+
 
         projection.Subject.SecurityId.Should().Be(securityId);
         projection.TermsHistory.Should().ContainSingle(static row => row.SourceDomain == "DirectLending");

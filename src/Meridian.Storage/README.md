@@ -11,6 +11,36 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
+transaction as the run and its details. HTTP requests return the committed run without calling
+the publisher. The outbox worker publishes retained state and retries failures; missing publisher
+configuration for a Security Master-backed loan remains a failed delivery. Identified replays
+retain one message per run. Integration tests cover concurrent retries and enqueue-failure rollback.
+
+
+The lending cash reader uses `cash_transaction_id`, matching both the authoritative operations
+migration and the transaction writer; reconciliation exercises that persisted read path.
+
+
+Migration 009 reconciles the historical `projected_flow_id` column with the cash-flow
+identity name consumed by the store. It adds and backfills the current column names while retaining legacy IDs and foreign keys.
+A trigger synchronizes writes through either name and rejects conflicting IDs during rollout.
+
+
+Direct-lending projection and reconciliation persistence serializes matching run identities with
+a PostgreSQL transaction advisory lock. A committed identity returns its existing run before any
+detail-row deletion, insertion, or superseding update. Concurrent retries retain the first saved
+flows and reconciliation results. `DirectLendingPostgresIntegrationTests` covers both paths;
+hosted database validation is required before treating this as release evidence.
+
+Audit-chain appends stream and validate retained entry hashes and predecessor links while holding
+the cross-process append lock. An unreadable, malformed, empty, or broken retained chain fails
+without replacing its history. Payload-file verification remains the separate full verification
+operation. `AuditChainServiceTests` covers fail-closed retention; `AuditChainProcessTests` starts
+three independent writers together and verifies that all 36 files occur once in one chain.
+`WriteAheadLogProcessTests` observes an idle delayed flush, terminates the writer without disposal,
+and recovers the single retained record through a fresh WAL instance.
+
 ## Shared close and lot convergence
 
 Migration `V_ledger_034__open_lot_acquisition.sql` adds nullable retained acquisition facts to the existing tax-lot record, without backfilling legacy rows. Canonical identity and acquisition economics cannot be rewritten; ordinary partial relief preserves acquisition evidence. `LedgerOpenLotProjection` refuses missing evidence or unexplained basis drift and translates the legacy per-100 face convention into explicit face quantity. Atomic fingerprints include populated acquisition facts while absent fields preserve legacy fingerprints. Focused proof: `OpenLotConvergenceTests`, `OpenLotPostgresTests`, and `AtomicTaxLotJournalStoreTests`.
@@ -20,6 +50,18 @@ Migration `V_ledger_034__open_lot_acquisition.sql` adds nullable retained acquis
 Durable disposal now uses the canonical decimal relief guard. Missing identity, quantity basis, or acquisition FX blocks relief and authoritative reporting until repaired. Reporting carries canonical lot evidence alongside retained disposal history; current market FX never substitutes for acquisition FX. Durable AverageCost posting remains refused until remaining-lot basis redistribution has its own atomic proof.
 
 ## Purpose
+
+`Coordination/SharedStorageCoordinationStore.ExecuteUnderLeaseAsync` checks the retained owner,
+lease version, and expiry under the same file lock used for acquisition, renewal, and release.
+It holds that lock until the action returns, preventing transfer between validation and the
+side effect. Callbacks must not reenter the same resource's coordination operations.
+
+Catalog reads allow the JSONL sink's append handle to stay open, including on Windows. Reads
+are bounded to captured file sizes; size/mtime changes or metadata-read failures reject the
+candidate and retain the previous catalog. `StorageCatalogServiceTests` covers live append
+handles and mutation before commit, while `EtlCrashRetentionTests` exercises the real sink and
+catalog through ETL process-termination boundaries. Default rebuilds exclude internal `_dedup`
+ledger files alongside WAL and catalog metadata, so durability records are not counted as data.
 
 `src/Meridian.Storage` is Meridian's record-keeping layer. When market data, accounting entries,
 loan events, exports, or operator evidence need to survive a restart, this project decides where and

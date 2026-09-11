@@ -1382,7 +1382,7 @@ items:
     health: green
     priority: high
     evidence_posture: in_progress
-    current_summary: Implemented one shared valuation freshness policy with default blocking, required observation dates, complete coverage, minimum confidence and future-mark rejection. Position assessments expose observation date, age, policy version and review reason in browser and WPF. Read-only preview reports affected positions before draft intake; retained mark evidence remains bound through journal submission, approval and posting. Unknown historical mark observation dates remain review required. Hosted acceptance and the full integration gate remain pending; no standing override is admitted.
+    current_summary: Implemented one shared valuation freshness policy with default blocking, required observation dates, complete coverage, minimum confidence and future-mark rejection. Position assessments expose observation date, age, policy version and review reason in browser and WPF. Read-only preview reports affected positions before draft intake; retained mark evidence remains bound through journal submission, approval and posting. Unknown historical mark observation dates remain review required. Hosted CI and Windows automated acceptance passed at d49fbc8e7; broader Production Certification remains failed. Live WPF rendering and population-wide preview are not certified; no standing override is admitted.
     exit_criteria:
       - A valuation cannot rest on a mark whose age or observation date falls outside policy, and the default posture blocks rather than accepts.
       - Freshness is governed by one policy owner rather than two independently configured controls, and consolidation preserves every non-age gate the stricter control enforces today - minimum confidence, complete coverage, and a required observation date - rather than collapsing to age alone.
@@ -1414,7 +1414,7 @@ items:
         path: tests/Meridian.Tests/Application/Accounting/ValuationFreshnessAcceptanceTests.cs
       - type: test
         path: tests/Meridian.Wpf.Tests/ViewModels/MarkFreshnessPresentationTests.cs
-    last_reviewed: 2026-09-04
+    last_reviewed: 2026-09-05
 
   - id: W10-RECON-001
     title: Durable break lineage identity and run-over-run break diff
@@ -1591,7 +1591,7 @@ items:
     health: green
     priority: high
     evidence_posture: in_progress
-    current_summary: Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. WPF Accounting Close uses the governed server HTTP client for retained plans and commands. Browser and WPF selections invalidate old decisions and delayed responses. Private-capital statement and allocation support must belong to selected events and period/entity scope; cumulative balances and foreign evidence remain diagnostic. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit, including mixed-period and mixed-entity subledgers. Hosted acceptance and integration proof remain required before certification.
+    current_summary: Close acceptance binds declared book/account/entity ownership to authoritative records, stamps the real close plan with workflow and retained-evidence versions, and rechecks contributor snapshots before returning readiness. Hard close and workflow publication require that shared authority before mutation. WPF Accounting Close uses the governed server HTTP client for retained plans and commands. Browser and WPF selections invalidate old decisions and delayed responses. Private-capital statement and allocation support must belong to selected events and period/entity scope; cumulative balances and foreign evidence remain diagnostic. Missing, stale, mismatched and concurrently changed evidence has refusal-and-repair scenarios through the actual workflow, calendar, retained plan and cockpit, including mixed-period and mixed-entity subledgers. Hosted CI and Windows automated acceptance passed at d49fbc8e7; live operator certification remains open and broader Production Certification remains failed.
     exit_criteria:
       - One close-readiness projection is the shared source both workstation lanes consume rather than each lane deriving its own, and the caller or an explicit operator selection establishes the complete close scope - fund profile, ledger book, fund account, entity, and period - rather than the projection inferring any dimension from whichever workflow it happened to select; every contribution answers for that declared scope, and a dimension that is missing, ambiguous, or mismatched blocks the projection rather than being merged into it.
       - Every blocker names its type, count, severity, owner, and the records causing it.
@@ -1785,7 +1785,7 @@ items:
     health: green
     priority: critical
     evidence_posture: in_progress
-    current_summary: Governed legacy backfill now retains hashed acquisition facts, requires independent review plus authoritative security/book-position validation, and resolves durable exceptions only through atomic versioned receipts. Both open and fully disposed legacy rows can be repaired without invented identity, quantity basis or acquisition FX. Production durable disposal and Reporting consume canonical lot evidence and fail closed on unresolved facts. Acquisition writer convergence, AverageCost basis redistribution, amortization, corporate-action successors, advance refunding and shadow-operation acceptance remain open; hosted validation is pending.
+    current_summary: Governed legacy backfill now retains hashed acquisition facts, requires independent review plus authoritative security/book-position validation, and resolves durable exceptions only through atomic versioned receipts. Both open and fully disposed legacy rows can be repaired without invented identity, quantity basis or acquisition FX. Production durable disposal and Reporting consume canonical lot evidence and fail closed on unresolved facts. Acquisition writer convergence, AverageCost basis redistribution, amortization, corporate-action successors, advance refunding and shadow-operation acceptance remain open. Hosted CI passed at d49fbc8e7, and six PostgreSQL lot cases passed without skips in Production Certification run 33956884001; that broader run still failed six other tests and its dependency gate.
     exit_criteria:
       - Every authoritative open lot requires SecurityId and BookPositionId, uses decimal original/open quantity, and declares Units or Face quantity basis; symbols remain effective-dated display evidence only.
       - Acquisition currency, functional currency, transaction-to-functional acquisition FX, transaction basis, and functional basis are retained and restatable without using a current market FX rate.
