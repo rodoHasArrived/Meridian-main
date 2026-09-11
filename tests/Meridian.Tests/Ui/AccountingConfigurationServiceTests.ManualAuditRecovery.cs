@@ -47,6 +47,52 @@ public sealed partial class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task ManualAuditRecovery_ReusedCorrelationId_AllowsLaterDraftEdit()
+    {
+        using var fixture = await ManualRecoveryFixture.CreateAsync();
+        const string correlationId = "manual-je-save";
+        var first = await fixture.Service().SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            BalancedManualJournalEntry(), "ops-user", correlationId));
+
+        var second = await fixture.Service().SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            first with { Memo = "Second close adjustment" }, "ops-user", correlationId));
+
+        second.Version.Should().Be(first.Version + 1);
+        second.Memo.Should().Be("Second close adjustment");
+        (await fixture.Audit().ListAsync()).Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task ManualAuditRecovery_ScopedRetry_RepairsUnscopedLifecycleReceipt()
+    {
+        using var fixture = await ManualRecoveryFixture.CreateAsync();
+        const string tenantId = "tenant-alpha";
+        const string companyId = "company-alpha";
+        var saved = await fixture.Service().SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            BalancedManualJournalEntry() with { TenantId = tenantId, CompanyId = companyId },
+            "ops-user", "prepare-scoped-command", TenantId: tenantId, CompanyId: companyId));
+        var unscoped = new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId, saved.FundProfileId, "controller", saved.Version,
+            Notes: "Submit scoped close adjustment.", CorrelationId: "submit-scoped-command",
+            LedgerBookId: saved.LedgerBookId);
+
+        await Assert.ThrowsAsync<IOException>(() => fixture.Service(
+            audit: new RecoveryFailingAudit(fixture.Audit(), "manual-je.submit-approval"))
+            .SubmitApprovalAsync(unscoped));
+        (await fixture.Audit().ListAsync()).Should().ContainSingle(x => x.Action == "manual-je.save-draft");
+
+        var repaired = await fixture.Service().SubmitApprovalAsync(unscoped with
+        {
+            TenantId = tenantId,
+            CompanyId = companyId
+        });
+
+        repaired.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        (await fixture.Audit().ListAsync()).Should().ContainSingle(x => x.Action == "manual-je.submit-approval");
+        fixture.PendingFiles().Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task ManualAuditRecovery_PostCommittedBeforeFailure_RestartVerifiesWithoutPostingAgain()
     {
         using var fixture = await ManualRecoveryFixture.CreateAsync();

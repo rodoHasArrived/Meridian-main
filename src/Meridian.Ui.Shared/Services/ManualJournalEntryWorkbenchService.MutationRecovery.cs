@@ -40,8 +40,12 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var scope = RecoveryScope(fund, tenant, company);
         var requestHash = FingerprintRequest(JsonSerializer.SerializeToElement(request,
             typeof(TRequest), ManualJournalMutationJsonContext.Default), fingerprintSalt);
-        var identity = NormalizeOptional(correlationId)?.ToUpperInvariant()
-            ?? $"version:{version}:{requestHash}";
+        // Correlation IDs identify one client attempt, but legacy workstation clients reuse a
+        // stable value across edits. Bind every receipt to the optimistic version and canonical
+        // request as well, so a later edit cannot collide with an earlier completed command while
+        // an exact retry still resolves the same receipt.
+        var identity = NormalizeOptional(correlationId)?.ToUpperInvariant() ?? "NO-CORRELATION";
+        identity = $"{identity}|version:{version}|request:{requestHash}";
         var key = Sha256Digest.ComputeUtf8($"{scope}|{journalEntryId:D}|{operation}|{identity}");
         await using var session = await _mutationRecovery.OpenSessionAsync(ct).ConfigureAwait(false);
         var command = new MutationCommand(key, requestHash, scope, journalEntryId, operation.StartsWith("lifecycle-", StringComparison.Ordinal));
@@ -52,7 +56,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
 
         foreach (var pending in await session.ListPendingAsync(ct).ConfigureAwait(false))
         {
-            if (pending.ScopeKey != scope ||
+            if (!PendingMatchesScope(pending, scope, journalEntryId) ||
                 (pending.JournalEntryId != journalEntryId && !pending.After.Any(x => x.JournalEntryId == journalEntryId)))
                 continue;
             var applied = await RecoverMutationAsync(pending, session, ct).ConfigureAwait(false);
@@ -102,6 +106,22 @@ public sealed partial class ManualJournalEntryWorkbenchService
             _mutationCommand = null;
             _mutationSession = null;
         }
+    }
+
+    private static bool PendingMatchesScope(ManualJournalMutationIntent pending, string requestedScope, Guid journalEntryId)
+    {
+        if (string.Equals(pending.ScopeKey, requestedScope, StringComparison.Ordinal))
+            return true;
+
+        // Older WPF lifecycle requests did not carry tenant/company even though the retained
+        // draft did. Trust the before/after images retained under the command lease, not the
+        // incomplete request scope, when a browser retry supplies the authenticated scope.
+        return pending.After
+            .Where(draft => draft.JournalEntryId == journalEntryId || pending.JournalEntryId == journalEntryId)
+            .Any(draft => string.Equals(
+                RecoveryScope(draft.FundProfileId, draft.TenantId, draft.CompanyId),
+                requestedScope,
+                StringComparison.Ordinal));
     }
 
     private async Task PersistMutationAsync<T>(
