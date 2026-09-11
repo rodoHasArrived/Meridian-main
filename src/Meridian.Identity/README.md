@@ -40,6 +40,14 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
 
+`UserProfileRegistry.GetConfiguredCompanyIds()` exposes the company identifiers from the same
+effective account source used for authentication: governed accounts take precedence over
+`MDC_USERS`, with `MDC_DEMO_USERS` considered only in development-like environments. The snapshot
+contains no credential material, normalizes company identifiers, and includes disabled accounts.
+The shared fund-structure startup guard consumes it so environment-backed browser and WPF users
+cannot bypass the refusal to serve one unpartitioned graph to multiple configured companies.
+`InMemoryFundStructureTenancyGuardTests` proves authentication fallback and source precedence.
+
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`

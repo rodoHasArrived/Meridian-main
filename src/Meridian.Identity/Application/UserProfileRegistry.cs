@@ -41,6 +41,20 @@ public sealed class UserProfileRegistry
     public bool IsConfigured => LoadAccounts().Length > 0;
 
     /// <summary>
+    /// Companies configured by the same effective account source used for authentication.
+    /// Includes disabled accounts so re-enabling one cannot silently change a deployment's scope.
+    /// Governed accounts retain precedence over environment and demo fallbacks; no credential
+    /// material is exposed to deployment guards.
+    /// </summary>
+    public IReadOnlyList<string> GetConfiguredCompanyIds()
+        => LoadAccounts()
+            .Select(account => account.CompanyId)
+            .Where(companyId => !string.IsNullOrWhiteSpace(companyId))
+            .Select(companyId => companyId!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    /// <summary>
     /// Validates <paramref name="username"/> and <paramref name="password"/> against the
     /// configured user accounts.
     /// </summary>

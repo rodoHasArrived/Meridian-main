@@ -481,7 +481,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
-            if (options.EnableProcessWideHostedServices)
+            // These workers enumerate loans across the process and the retained direct-lending
+            // model does not yet carry a tenant authority per loan. Registering them under a
+            // fail-closed ledger posture would make every ledger read fail and leave accruals and
+            // outbox deliveries retrying forever. Withhold them until that attribution exists.
+            if (options.EnableProcessWideHostedServices
+                && services.AllowsUnattributedProcessWideWorkers())
             {
                 services.AddHostedService<DirectLendingOutboxDispatcher>();
                 services.AddHostedService<DailyAccrualWorker>();

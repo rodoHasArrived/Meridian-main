@@ -3428,7 +3428,8 @@ Meridian-main
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
 │   │   │   ├── SecurityMasterStartup.cs
 │   │   │   ├── ServiceCompositionRoot.cs
-│   │   │   └── StartupRefusedException.cs
+│   │   │   ├── StartupRefusedException.cs
+│   │   │   └── TenantScopeServiceRegistration.cs
 │   │   ├── Config
 │   │   │   ├── Credentials
 │   │   │   │   ├── CredentialTestingService.cs
@@ -9098,6 +9099,7 @@ Meridian-main
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs
+│   │   │   │   ├── HostTenantScopeCompositionTests.cs
 │   │   │   │   ├── LedgerFeatureRegistrationTests.cs
 │   │   │   │   ├── LegacySnapshotStartupTests.cs
 │   │   │   │   ├── MaintenanceFeatureRegistrationTests.cs
