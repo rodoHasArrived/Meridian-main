@@ -1,11 +1,11 @@
 {
   "total_files": 665,
-  "total_lines": 143070,
+  "total_lines": 143075,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 263,
-  "average_lines": 215.1,
+  "average_lines": 215.2,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2288,7 +2288,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 317,
+      "line_count": 322,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

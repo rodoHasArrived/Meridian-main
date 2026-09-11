@@ -226,7 +226,7 @@ def parse_args() -> argparse.Namespace:
         "--max-parallel",
         type=positive_integer,
         default=os.environ.get("MERIDIAN_CI_TEST_MAX_PARALLEL", "1"),
-        help="Maximum concurrent test processes (MERIDIAN_CI_TEST_MAX_PARALLEL; default: 1). Builds stay serial.",
+        help="Maximum concurrent test processes (MERIDIAN_CI_TEST_MAX_PARALLEL; default: 1). Tests start after builds finish.",
     )
     parser.add_argument(
         "--filter",
@@ -361,6 +361,95 @@ def get_unique_build_projects(projects: Sequence[TestProject]) -> list[TestProje
     return unique_projects
 
 
+def write_build_solution_filter(
+    projects: Sequence[TestProject], *, repo_root: Path, filter_path: Path,
+) -> None:
+    """Select Release build roots, retaining normal project-reference traversal."""
+    solution_path = (repo_root / "Meridian.sln").resolve()
+    solution_text = solution_path.read_text(encoding="utf-8-sig")
+    solution_projects = {
+        path.replace("\\", "/"): (path, project_id)
+        for path, project_id in re.findall(
+            r'^Project\("[^"]+"\)\s*=\s*"[^"]+",\s*"([^"]+)",\s*"([^"]+)"',
+            solution_text, re.MULTILINE,
+        )
+    }
+    selected_paths = []
+    for project in get_unique_build_projects(projects):
+        solution_project = solution_projects.get(project.path.replace("\\", "/"))
+        if solution_project is None:
+            raise ValueError(f"Default test project is missing from Meridian.sln: {project.path}")
+        solution_project_path, project_id = solution_project
+        for mapping in ("ActiveCfg", "Build.0"):
+            values = re.findall(
+                rf'^\s*{re.escape(project_id)}\.Release\|Any CPU\.{re.escape(mapping)}\s*=\s*([^\r\n]+)',
+                solution_text, re.MULTILINE,
+            )
+            if [value.strip() for value in values] != ["Release|Any CPU"]:
+                raise ValueError(
+                    f"Default test project requires Release|Any CPU.{mapping} = Release|Any CPU "
+                    f"in Meridian.sln: {project.path}"
+                )
+        selected_paths.append(solution_project_path)
+
+    # MSBuild resolves the solution relative to the filter, and project entries relative
+    # to the solution. Keep the latter exactly as declared in Meridian.sln.
+    try:
+        relative_solution = os.path.relpath(solution_path, filter_path.resolve().parent)
+    except ValueError:
+        # A custom results directory can live on another Windows drive.
+        relative_solution = str(solution_path)
+    filter_path.parent.mkdir(parents=True, exist_ok=True)
+    filter_path.write_text(json.dumps({
+        "solution": {"path": relative_solution, "projects": selected_paths},
+    }, indent=2) + "\n", encoding="utf-8")
+
+
+def run_default_build(
+    projects: Sequence[TestProject], *, repo_root: Path, configuration: str,
+    results_dir: Path, dry_run: bool,
+) -> TestResult:
+    """Build all default roots once, streaming output to a persistent log."""
+    filter_path = results_dir.resolve() / "ci-dotnet-test-build.slnf"
+    log_path = filter_path.parent / "dotnet-build.log"
+    project = TestProject("default-roster", str(filter_path))
+    command = build_dotnet_build_command(project, configuration=configuration)
+    print(f"Starting default test build; log: {log_path}", flush=True)
+    print(" ".join(command), flush=True)
+    started = time.perf_counter()
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with log_path.open("w", encoding="utf-8") as log:
+            log.write(" ".join(command) + "\n")
+            log.flush()
+            try:
+                write_build_solution_filter(projects, repo_root=repo_root, filter_path=filter_path)
+                if dry_run:
+                    exit_code = 0
+                else:
+                    completed = subprocess.run(command, check=False, stdout=log, stderr=subprocess.STDOUT)
+                    exit_code = completed.returncode
+            except (OSError, ValueError) as exc:
+                log.write(f"Unable to prepare or launch default test build: {exc}\n")
+                exit_code = 127
+    except OSError as exc:
+        print(f"Unable to prepare build log: {exc}", file=sys.stderr, flush=True)
+        exit_code = 127
+    duration = round(time.perf_counter() - started, 3)
+    result = TestResult(f"build:{project.name}", project.path, exit_code, command, duration, str(log_path))
+    print(f"Finished default test build: {result.status} (exit {exit_code}, {duration:.3f}s)", flush=True)
+    if exit_code != 0:
+        print(f"Last 16 KiB of {log_path}:", flush=True)
+        try:
+            with log_path.open("rb") as log:
+                log.seek(0, os.SEEK_END)
+                log.seek(max(0, log.tell() - 16 * 1024))
+                print(log.read(16 * 1024).decode("utf-8", errors="replace"), flush=True)
+        except OSError as exc:
+            print(f"Unable to read build log: {exc}", file=sys.stderr, flush=True)
+    return result
+
+
 def run_builds(
     projects: Sequence[TestProject],
     *,
@@ -467,7 +556,10 @@ def run_tests(
         return list(executor.map(run_project, projects))
 
 
-def write_summaries(results: Sequence[TestResult], *, summary_output: Path, json_output: Path) -> None:
+def write_summaries(
+    results: Sequence[TestResult], *, summary_output: Path, json_output: Path,
+    build_results: Sequence[TestResult] = (),
+) -> None:
     summary_output.parent.mkdir(parents=True, exist_ok=True)
     json_output.parent.mkdir(parents=True, exist_ok=True)
 
@@ -478,6 +570,9 @@ def write_summaries(results: Sequence[TestResult], *, summary_output: Path, json
         "failed": len(failed),
         "results": [asdict(result) | {"status": result.status} for result in results],
     }
+    if build_results:
+        # Keep successful test totals and results compatible with artifact consumers.
+        payload["build_results"] = [asdict(result) | {"status": result.status} for result in build_results]
     json_output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     lines = [
@@ -497,6 +592,13 @@ def write_summaries(results: Sequence[TestResult], *, summary_output: Path, json
             f"| `{result.name}` | `{result.path}` | {icon} {result.status} | "
             f"{result.exit_code} | {result.duration_seconds:.3f} | {log} |"
         )
+    if build_results:
+        lines.extend(["", "#### Build evidence", "", "| Build | Status | Duration (s) | Log |",
+                      "| --- | --- | ---: | --- |"])
+        for result in build_results:
+            lines.append(
+                f"| `{result.name}` | {result.status} | {result.duration_seconds:.3f} | `{result.log_path}` |"
+            )
     summary_output.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -526,13 +628,20 @@ def main() -> int:
             return 2
 
     results_dir = Path(args.results_dir)
-    results_dir.mkdir(parents=True, exist_ok=True)
-
-    build_results = run_builds(
-        projects,
-        configuration=args.configuration,
-        dry_run=args.dry_run,
-    )
+    use_group_build = not args.project and args.configuration == "Release"
+    if not use_group_build:
+        # Overrides may target projects or configurations absent from Meridian.sln.
+        build_results = run_builds(projects, configuration=args.configuration, dry_run=args.dry_run)
+    else:
+        group_result = run_default_build(
+            projects, repo_root=repo_root, configuration=args.configuration,
+            results_dir=results_dir, dry_run=args.dry_run,
+        )
+        build_results = [group_result]
+        if group_result.exit_code != 0:
+            print("Default test build failed; building each project once for diagnostics.", file=sys.stderr)
+            # Diagnostic retries cannot turn the original failure green or permit tests.
+            build_results.extend(run_builds(projects, configuration=args.configuration, dry_run=args.dry_run))
     build_failures = [result for result in build_results if result.exit_code != 0]
     if build_failures:
         write_summaries(build_results, summary_output=Path(args.summary_output), json_output=Path(args.json_output))
@@ -549,7 +658,10 @@ def main() -> int:
         dry_run=args.dry_run,
         max_parallel=args.max_parallel,
     )
-    write_summaries(results, summary_output=Path(args.summary_output), json_output=Path(args.json_output))
+    write_summaries(
+        results, summary_output=Path(args.summary_output), json_output=Path(args.json_output),
+        build_results=build_results if use_group_build else (),
+    )
 
     failed = [result for result in results if result.exit_code != 0]
     if failed:
