@@ -49,6 +49,16 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- This suite's test classes share process-wide singletons (NotificationService.Instance,
+       shell/workspace context) and on-disk history paths, so parallel test collections produce
+       intermittent single-test failures. Swap the shared tests/xunit.runner.json (which enables
+       collection parallelism) for a project-local copy that serializes collections. -->
+  <ItemGroup>
+    <Content Remove="..\xunit.runner.json" />
+    <Content Include="xunit.runner.json"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <!-- Windows-only test libraries and project references -->
   <ItemGroup Condition="'$(IsWindows)' == 'true'">
     <PackageReference Include="FluentAssertions" />
