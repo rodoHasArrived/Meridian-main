@@ -60,6 +60,14 @@ and UI presentation concerns in their owning layers.
 Runtime health, readiness, status, and Prometheus responses are served only through the ASP.NET
 Core workstation host. Do not introduce a second listener or independent monitoring state.
 
+`AddMarketDataServices` registers the tenant read posture for core-only and workstation hosts.
+`MERIDIAN_TENANT_SCOPE_ENFORCEMENT=fail-closed` therefore rejects reads without caller authority
+in worker hosts too. Workers use an explicit `FundScopeTenantAuthority` scope; the workstation
+adapter resolves HTTP authority whenever a request exists. Host-supplied options and accessors
+take precedence. An absent setting retains the deployment-boundary default until operators finish
+evidence-backed attribution and review the backfill exceptions. Focused proof:
+`HostTenantScopeCompositionTests` and `TenantReadPredicateTests`.
+
 ## Key folders and files
 
 - `Tenancy/` - the authoritative multi-tenant scope fan-out authority. `AuthoritativeScopeFanOutService`

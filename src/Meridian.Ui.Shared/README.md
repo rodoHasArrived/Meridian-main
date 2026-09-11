@@ -75,6 +75,14 @@ This module owns cross-surface operator-facing projection types and shared endpo
 compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, and
 `src/Meridian.Wpf`.
 
+The workstation tenant accessor replaces only the core worker fallback and preserves a host's
+explicit accessor. An HTTP request without tenant identity never borrows ambient worker authority;
+background work without an HTTP context can use its retained `FundScopeTenantAuthority` scope.
+`InMemoryFundStructureTenancyGuard` uses the effective `UserProfileRegistry` account source,
+including environment and development demo accounts, before either workstation serves an
+unpartitioned fund graph. Stored-account precedence matches authentication. Focused proof:
+`HostTenantScopeCompositionTests` and `InMemoryFundStructureTenancyGuardTests`.
+
 ## Key folders and files
 
 - `Services/HostStartupEscalation` - the rule a host uses to decide whether a fault raised while

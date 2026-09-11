@@ -130,9 +130,9 @@ public static class WorkstationServiceCollectionExtensions
         // This accessor retains only singleton IHttpContextAccessor and rereads its AsyncLocal
         // request each time, so singleton accounting guards can consume it without capturing a scope.
         services.TryAddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
-        // SEC-005 slice 4c-ii: ambient caller-tenant accessor consumed by the singleton Postgres ledger
-        // store for tenant read predicates. Singleton + IHttpContextAccessor-backed (no captive scope).
-        services.TryAddSingleton<IFundScopeTenantAccessor, WorkstationFundScopeTenantAccessor>();
+        // Replace only the core worker fallback. Preserve an explicitly supplied host accessor;
+        // otherwise HTTP scope must take precedence over any ambient background authority.
+        services.AddFundScopeTenantServices<WorkstationFundScopeTenantAccessor>();
         // SEC-005 slice 4c-iii: fund-scoped write tenant gate switch. Off by default (detection-first) so
         // the tenantless legacy admin still writes; a shared multi-tenant deployment opts into fail-closed
         // enforcement via MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true.
@@ -141,14 +141,6 @@ public static class WorkstationServiceCollectionExtensions
                 Environment.GetEnvironmentVariable("MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"),
                 "true",
                 StringComparison.OrdinalIgnoreCase)));
-        // W9-GOV-008 criterion 2: read-side posture, the counterpart of the write gate above. Kept on
-        // the deployment-boundary default because fail-closed over a graph whose tenant attribution
-        // has not run hides the retained structure from every caller rather than closing a leak -- a
-        // deployment attributes first (FundStructureTenantAttribution, migration 004), reviews what
-        // the attribution quarantined, and then sets MERIDIAN_TENANT_SCOPE_ENFORCEMENT=fail-closed.
-        services.TryAddSingleton(TenantScopeEnforcementOptions.FromEnvironmentValue(
-            Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable),
-            TenantScopeEnforcementOptions.DeploymentBoundary));
         // W9-GOV-008 criterion 2: the fund-structure implementation with no tenant partition must not
         // serve a deployment configured for more than one company. Checked once at startup rather
         // than per call; see InMemoryFundStructureTenancyGuard for why that is the safer shape.
