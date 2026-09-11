@@ -161,6 +161,88 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         )
         self.assertLess(len(unique_projects), len(projects))
 
+    def test_solution_filter_contains_exactly_default_roots_with_solution_relative_paths(self):
+        projects = MODULE.parse_project_entries([])
+        repo_root = SCRIPT_PATH.parents[3]
+        with tempfile.TemporaryDirectory(prefix="meridian build results ") as tmp:
+            filter_path = Path(tmp) / "custom results" / "test build.slnf"
+            MODULE.write_build_solution_filter(projects, repo_root=repo_root, filter_path=filter_path)
+            solution = json.loads(filter_path.read_text(encoding="utf-8"))["solution"]
+            resolved_solution = (filter_path.parent / solution["path"]).resolve()
+            self.assertEqual(resolved_solution, repo_root / "Meridian.sln")
+            self.assertEqual(solution["projects"], [
+                project.path.replace("/", "\\") for project in MODULE.get_unique_build_projects(projects)
+            ])
+            self.assertEqual(len(solution["projects"]), 9)
+            self.assertTrue(all((resolved_solution.parent / path.replace("\\", "/")).is_file()
+                                for path in solution["projects"]))
+
+    def test_solution_filter_preserves_spaces_and_resolves_relative_results_directory(self):
+        with tempfile.TemporaryDirectory(prefix="meridian repo ") as tmp:
+            repo_root = Path(tmp) / "source tree"
+            repo_root.mkdir()
+            project_path = "tests/My Tests/My Tests.csproj"
+            solution_entry = project_path.replace("/", "\\")
+            (repo_root / "Meridian.sln").write_text(
+                f'Project("{{type}}") = "My Tests", "{solution_entry}", "{{project}}"\nEndProject\n'
+                '{project}.Release|Any CPU.ActiveCfg = Release|Any CPU\n'
+                '{project}.Release|Any CPU.Build.0 = Release|Any CPU\n',
+                encoding="utf-8",
+            )
+            projects = [MODULE.TestProject("my-tests", project_path)]
+            absolute_filter = Path(tmp) / "nested results" / "build.slnf"
+            # Exercise a relative --results-dir without changing the test process cwd.
+            filter_path = Path(os.path.relpath(absolute_filter))
+            MODULE.write_build_solution_filter(projects, repo_root=repo_root, filter_path=filter_path)
+            solution = json.loads(filter_path.read_text(encoding="utf-8"))["solution"]
+            self.assertFalse(Path(solution["path"]).is_absolute())
+            self.assertEqual((filter_path.parent / solution["path"]).resolve(), repo_root / "Meridian.sln")
+            self.assertEqual(solution["projects"], [solution_entry])
+
+    def test_solution_filter_uses_absolute_solution_when_results_are_on_another_drive(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            filter_path = Path(tmp) / "build.slnf"
+            with patch.object(MODULE.os.path, "relpath", side_effect=ValueError("different drives")):
+                MODULE.write_build_solution_filter(
+                    MODULE.parse_project_entries([]), repo_root=SCRIPT_PATH.parents[3], filter_path=filter_path,
+                )
+            solution = json.loads(filter_path.read_text(encoding="utf-8"))["solution"]
+            self.assertEqual(Path(solution["path"]), SCRIPT_PATH.parents[3] / "Meridian.sln")
+
+    def test_solution_filter_rejects_missing_roots_before_writing_filter(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            filter_path = Path(tmp) / "build.slnf"
+            with self.assertRaisesRegex(ValueError, "missing from Meridian.sln"):
+                MODULE.write_build_solution_filter(
+                    [MODULE.TestProject("missing", "tests/Missing.csproj")],
+                    repo_root=SCRIPT_PATH.parents[3], filter_path=filter_path,
+                )
+            self.assertFalse(filter_path.exists())
+
+    def test_solution_filter_rejects_disabled_missing_or_remapped_release_builds(self):
+        valid_mappings = {
+            "ActiveCfg": "Release|Any CPU",
+            "Build.0": "Release|Any CPU",
+        }
+        for invalid_mapping in valid_mappings:
+            for value in (None, "Debug|Any CPU", "Release|x64"):
+                with self.subTest(mapping=invalid_mapping, value=value), tempfile.TemporaryDirectory() as tmp:
+                    repo_root = Path(tmp)
+                    mappings = valid_mappings | {invalid_mapping: value}
+                    (repo_root / "Meridian.sln").write_text(
+                        'Project("{type}") = "Tests", "tests\\Tests.csproj", "{project}"\nEndProject\n' +
+                        "".join(f"{{project}}.Release|Any CPU.{name} = {target}\n"
+                                for name, target in mappings.items() if target is not None),
+                        encoding="utf-8",
+                    )
+                    filter_path = repo_root / "results" / "build.slnf"
+                    with self.assertRaisesRegex(ValueError, "requires Release"):
+                        MODULE.write_build_solution_filter(
+                            [MODULE.TestProject("tests", "tests/Tests.csproj")],
+                            repo_root=repo_root, filter_path=filter_path,
+                        )
+                    self.assertFalse(filter_path.exists())
+
     def test_build_dotnet_test_command_combines_project_filter(self):
         project = MODULE.TestProject(
             "core-application",
@@ -412,6 +494,170 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         self.assertTrue(all(kind == "test" for kind, _ in events[2:]))
         self.assertEqual(len(events), 5)
 
+    def test_default_roster_builds_once_before_every_unchanged_parallel_test_slice(self):
+        projects = MODULE.parse_project_entries([])
+        commands = []
+
+        def complete(command, **kwargs):
+            commands.append(command)
+            return subprocess.CompletedProcess(command, 0)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            args = self.main_args(tmp, project=[])
+            with patch.object(MODULE, "parse_args", return_value=args):
+                with patch.object(MODULE.subprocess, "run", side_effect=complete):
+                    with patch.object(MODULE, "run_tests", wraps=MODULE.run_tests) as tests:
+                        self.assertEqual(MODULE.main(), 0)
+            self.assertEqual(tests.call_args.kwargs["max_parallel"], 2)
+            filter_path = Path(args.results_dir).resolve() / "ci-dotnet-test-build.slnf"
+            self.assertEqual(commands[0], [
+                "dotnet", "build", str(filter_path), "-c", "Release", "--no-restore",
+                "/p:EnableWindowsTargeting=true",
+            ])
+            self.assertEqual(len(commands), 1 + len(projects))
+            expected = [MODULE.build_dotnet_test_command(
+                project, configuration="Release", test_filter=args.filter,
+                results_dir=Path(args.results_dir).resolve() / project.name,
+            ) for project in projects]
+            self.assertCountEqual(commands[1:], expected)
+            payload = json.loads(Path(args.json_output).read_text(encoding="utf-8"))
+            self.assertEqual(payload["total"], len(projects))
+            self.assertEqual(payload["passed"], len(projects))
+            self.assertEqual([row["name"] for row in payload["results"]], [p.name for p in projects])
+            self.assertEqual(len(payload["build_results"]), 1)
+            build = payload["build_results"][0]
+            self.assertEqual(build["status"], "passed")
+            self.assertGreaterEqual(build["duration_seconds"], 0)
+            self.assertEqual(Path(build["log_path"]), filter_path.parent / "dotnet-build.log")
+            self.assertTrue(Path(build["log_path"]).is_file())
+            self.assertIn("Build evidence", Path(args.summary_output).read_text(encoding="utf-8"))
+
+    def test_default_group_failure_keeps_original_failure_after_all_diagnostic_builds_pass(self):
+        projects = MODULE.parse_project_entries([])
+        roots = MODULE.get_unique_build_projects(projects)
+        for failure in (7, OSError("dotnet executable missing")):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as tmp:
+                args = self.main_args(tmp, project=[])
+                commands = []
+
+                def complete(command, **kwargs):
+                    commands.append(command)
+                    if command[2].endswith(".slnf"):
+                        if isinstance(failure, OSError):
+                            raise failure
+                        kwargs["stdout"].write("group build failure evidence\n")
+                        return subprocess.CompletedProcess(command, failure)
+                    return subprocess.CompletedProcess(command, 0)
+
+                with patch.object(MODULE, "parse_args", return_value=args):
+                    with patch.object(MODULE.subprocess, "run", side_effect=complete):
+                        with patch.object(MODULE, "run_tests") as tests, redirect_stderr(io.StringIO()):
+                            self.assertEqual(MODULE.main(), 1)
+                tests.assert_not_called()
+                self.assertEqual([command[2] for command in commands[1:]], [root.path for root in roots])
+                self.assertTrue(all(command[1] == "build" for command in commands))
+                payload = json.loads(Path(args.json_output).read_text(encoding="utf-8"))
+                self.assertEqual(payload["total"], 1 + len(roots))
+                self.assertEqual(payload["failed"], 1)
+                self.assertEqual(payload["results"][0]["exit_code"], 127 if isinstance(failure, OSError) else failure)
+                self.assertTrue(all(result["exit_code"] == 0 for result in payload["results"][1:]))
+                log = Path(payload["results"][0]["log_path"]).read_text(encoding="utf-8")
+                self.assertIn(str(failure) if isinstance(failure, OSError) else "group build failure evidence", log)
+
+    def test_default_non_release_configuration_builds_serially_without_solution_filter(self):
+        projects = MODULE.parse_project_entries([])
+        roots = MODULE.get_unique_build_projects(projects)
+        with tempfile.TemporaryDirectory() as tmp:
+            args = self.main_args(tmp, project=[])
+            args.configuration = "CustomConfiguration"
+            with patch.object(MODULE, "parse_args", return_value=args):
+                with patch.object(MODULE, "write_build_solution_filter") as write_filter:
+                    with patch.object(MODULE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run:
+                        self.assertEqual(MODULE.main(), 0)
+            write_filter.assert_not_called()
+            commands = [call.args[0] for call in run.call_args_list]
+            self.assertEqual([command[2] for command in commands[:len(roots)]], [root.path for root in roots])
+            self.assertTrue(all(command[1] == "build" for command in commands[:len(roots)]))
+            self.assertTrue(all(command[1] == "test" for command in commands[len(roots):]))
+            self.assertEqual(len(commands), len(roots) + len(projects))
+            self.assertTrue(all(command[command.index("-c") + 1] == args.configuration for command in commands))
+
+    def test_invalid_release_mapping_retains_failure_after_serial_diagnostics_and_never_tests(self):
+        roots = MODULE.get_unique_build_projects(MODULE.parse_project_entries([]))
+        with tempfile.TemporaryDirectory() as tmp:
+            args = self.main_args(tmp, project=[])
+            with patch.object(MODULE, "parse_args", return_value=args):
+                with patch.object(MODULE, "write_build_solution_filter", side_effect=ValueError("invalid Release mapping")):
+                    with patch.object(MODULE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run:
+                        with patch.object(MODULE, "run_tests") as tests, redirect_stderr(io.StringIO()):
+                            self.assertEqual(MODULE.main(), 1)
+            tests.assert_not_called()
+            self.assertEqual([call.args[0][2] for call in run.call_args_list], [root.path for root in roots])
+            payload = json.loads(Path(args.json_output).read_text(encoding="utf-8"))
+            self.assertEqual(payload["total"], len(roots) + 1)
+            self.assertEqual(payload["failed"], 1)
+            self.assertEqual(payload["results"][0]["exit_code"], 127)
+            self.assertIn("invalid Release mapping", Path(payload["results"][0]["log_path"]).read_text(encoding="utf-8"))
+
+    def test_default_group_and_diagnostic_launch_failures_attempt_all_builds_and_never_tests(self):
+        roots = MODULE.get_unique_build_projects(MODULE.parse_project_entries([]))
+        with tempfile.TemporaryDirectory() as tmp:
+            args = self.main_args(tmp, project=[])
+            with patch.object(MODULE, "parse_args", return_value=args):
+                with patch.object(MODULE.subprocess, "run", side_effect=OSError("dotnet missing")) as run:
+                    with patch.object(MODULE, "run_tests") as tests, redirect_stderr(io.StringIO()):
+                        self.assertEqual(MODULE.main(), 1)
+            tests.assert_not_called()
+            self.assertEqual(run.call_count, len(roots) + 1)
+            payload = json.loads(Path(args.json_output).read_text(encoding="utf-8"))
+            self.assertEqual(payload["failed"], len(roots) + 1)
+            self.assertTrue(all(result["exit_code"] == 127 for result in payload["results"]))
+
+    def test_default_build_filter_error_produces_failed_result_and_evidence_without_launch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.object(MODULE.subprocess, "run") as run:
+                result = MODULE.run_default_build(
+                    [MODULE.TestProject("missing", "tests/Missing.csproj")],
+                    repo_root=SCRIPT_PATH.parents[3], configuration="Release", results_dir=Path(tmp), dry_run=False,
+                )
+            run.assert_not_called()
+            self.assertEqual(result.exit_code, 127)
+            self.assertIn("missing from Meridian.sln", Path(result.log_path).read_text(encoding="utf-8"))
+
+    def test_noisy_group_failure_keeps_full_log_and_prints_only_bounded_tail(self):
+        def noisy_failure(command, **kwargs):
+            self.assertEqual(kwargs["stderr"], subprocess.STDOUT)
+            self.assertNotIn("capture_output", kwargs)
+            self.assertNotIn("cwd", kwargs)
+            kwargs["stdout"].write("x" * 100_000 + "\nlast build error\n")
+            return subprocess.CompletedProcess(command, 1)
+
+        with tempfile.TemporaryDirectory() as tmp, patch.object(MODULE.subprocess, "run", side_effect=noisy_failure):
+            output = io.StringIO()
+            with redirect_stdout(output):
+                result = MODULE.run_default_build(
+                    MODULE.parse_project_entries([]), repo_root=SCRIPT_PATH.parents[3],
+                    configuration="Release", results_dir=Path(tmp), dry_run=False,
+                )
+            self.assertGreater(Path(result.log_path).stat().st_size, 100_000)
+            self.assertLess(len(output.getvalue()), 18_000)
+            self.assertIn("last build error", output.getvalue())
+
+    def test_default_dry_run_writes_filter_log_and_all_test_evidence_without_processes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = self.main_args(tmp, project=[])
+            args.dry_run = True
+            with patch.object(MODULE, "parse_args", return_value=args):
+                with patch.object(MODULE.subprocess, "run") as run:
+                    self.assertEqual(MODULE.main(), 0)
+            run.assert_not_called()
+            payload = json.loads(Path(args.json_output).read_text(encoding="utf-8"))
+            self.assertEqual(payload["total"], len(MODULE.DEFAULT_TEST_PROJECTS))
+            build = payload["build_results"][0]
+            self.assertTrue(Path(build["path"]).is_file())
+            self.assertTrue(Path(build["log_path"]).is_file())
+            self.assertTrue(all(Path(result["log_path"]).is_file() for result in payload["results"]))
+
     def main_args(self, tmp, *, project, max_parallel=2):
         return MODULE.argparse.Namespace(
             project=project, configuration="Release", filter="Category!=Integration&Category!=Performance",
@@ -443,8 +689,10 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             args = self.main_args(tmp, project=[])
             with patch.object(MODULE, "parse_args", return_value=args):
                 with patch.object(MODULE, "verify_test_project_coverage", return_value=["tests/Orphan.csproj"]):
-                    with patch.object(MODULE.subprocess, "run") as run, redirect_stderr(io.StringIO()):
-                        self.assertEqual(MODULE.main(), 2)
+                    with patch.object(MODULE, "write_build_solution_filter") as write_filter:
+                        with patch.object(MODULE.subprocess, "run") as run, redirect_stderr(io.StringIO()):
+                            self.assertEqual(MODULE.main(), 2)
+                    write_filter.assert_not_called()
                     run.assert_not_called()
 
     def test_write_summaries_records_all_project_statuses(self):
