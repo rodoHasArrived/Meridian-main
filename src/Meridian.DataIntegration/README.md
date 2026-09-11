@@ -11,6 +11,10 @@ last_reviewed: 2026-08-05
 
 # src/Meridian.DataIntegration
 
+## Credential migration recovery
+
+Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Vault reads and mutations share a bounded, cancellable file lock across store instances; reads with no vault remain available without writing to a read-only data root. Audit failure retains the sidecar for retry.
+
 ## Purpose
 
 ETL runs acquire a unique execution lease before admission. Staging, audit/reject writes, and

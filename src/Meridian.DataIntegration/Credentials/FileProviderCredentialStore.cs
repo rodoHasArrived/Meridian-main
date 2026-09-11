@@ -10,7 +10,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.Credentials;
 
-public sealed class FileProviderCredentialStore : IProviderCredentialStore
+public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILegacyProviderCredentialImporter
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
 
@@ -64,10 +64,15 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-            if (vault.Providers.TryGetValue(descriptor.ProviderId, out var localRecord))
+            // An absent vault can be read without creating a directory or writable lock.
+            if (File.Exists(VaultPath) || File.Exists(_vaultBackupPath))
             {
-                return ToReadResult(descriptor, localRecord, ProviderCredentialSourceDto.LocalEncryptedStore);
+                using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+                var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+                if (vault.Providers.TryGetValue(descriptor.ProviderId, out var localRecord))
+                {
+                    return ToReadResult(descriptor, localRecord, ProviderCredentialSourceDto.LocalEncryptedStore);
+                }
             }
         }
         finally
@@ -91,57 +96,11 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             vault.Providers.TryGetValue(descriptor.ProviderId, out var existing);
 
-            var fields = new Dictionary<string, string>(existing?.Fields ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
-            foreach (var (key, value) in normalizedCredentials)
-            {
-                if (string.IsNullOrWhiteSpace(key))
-                {
-                    continue;
-                }
-
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    fields.Remove(key.Trim());
-                    continue;
-                }
-
-                fields[key.Trim()] = value.Trim();
-            }
-
-            var environment = descriptor.NormalizeEnvironment(request.Environment ?? existing?.Environment);
-            var metadata = new Dictionary<string, string>(existing?.Metadata ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
-            if (request.Metadata is not null)
-            {
-                foreach (var (key, value) in request.Metadata)
-                {
-                    if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
-                    {
-                        metadata[key.Trim()] = value.Trim();
-                    }
-                }
-            }
-            metadata["lastRotatedAt"] = now.ToString("O");
-            metadata["rotationDueAt"] = now.AddDays(DefaultRotationWindowDays).ToString("O");
-            metadata["verificationRequired"] = "true";
-            metadata["credentialStore"] = "local-encrypted-vault";
-
-            var updated = new ProviderCredentialVaultRecord
-            {
-                ProviderId = descriptor.ProviderId,
-                Fields = fields,
-                Environment = string.IsNullOrWhiteSpace(environment) ? null : environment,
-                SavedAt = existing?.SavedAt ?? now,
-                UpdatedAt = now,
-                LastVerifiedAt = null,
-                LastSuccessfulAt = existing?.LastSuccessfulAt,
-                LastFailureAt = existing?.LastFailureAt,
-                LastError = null,
-                ExternalAccountId = null,
-                Metadata = metadata
-            };
+            var updated = CreateUpdatedRecord(descriptor, request, normalizedCredentials, existing, now);
 
             vault.Providers[descriptor.ProviderId] = updated;
             await WriteVaultAsync(vault, ct).ConfigureAwait(false);
@@ -150,12 +109,165 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
                 "save",
                 request.Actor,
                 BuildStatus(descriptor, ToReadResult(descriptor, updated, ProviderCredentialSourceDto.LocalEncryptedStore)),
-                fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(),
+                updated.Fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(),
                 ct).ConfigureAwait(false);
         }
         finally
         {
             _gate.Release();
+        }
+    }
+
+    private static ProviderCredentialVaultRecord CreateUpdatedRecord(
+        ProviderCredentialCatalogEntry descriptor,
+        ProviderCredentialSaveRequest request,
+        IReadOnlyDictionary<string, string?> normalizedCredentials,
+        ProviderCredentialVaultRecord? existing,
+        DateTimeOffset now)
+    {
+        var fields = new Dictionary<string, string>(existing?.Fields ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in normalizedCredentials)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                fields.Remove(key.Trim());
+                continue;
+            }
+
+            fields[key.Trim()] = value.Trim();
+        }
+
+        var environment = descriptor.NormalizeEnvironment(request.Environment ?? existing?.Environment);
+        var metadata = new Dictionary<string, string>(existing?.Metadata ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+        if (request.Metadata is not null)
+        {
+            foreach (var (key, value) in request.Metadata)
+            {
+                if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
+                {
+                    metadata[key.Trim()] = value.Trim();
+                }
+            }
+        }
+        metadata["lastRotatedAt"] = now.ToString("O");
+        metadata["rotationDueAt"] = now.AddDays(DefaultRotationWindowDays).ToString("O");
+        metadata["verificationRequired"] = "true";
+        metadata["credentialStore"] = "local-encrypted-vault";
+
+        return new ProviderCredentialVaultRecord
+        {
+            ProviderId = descriptor.ProviderId,
+            Fields = fields,
+            Environment = string.IsNullOrWhiteSpace(environment) ? null : environment,
+            SavedAt = existing?.SavedAt ?? now,
+            UpdatedAt = now,
+            LastVerifiedAt = null,
+            LastSuccessfulAt = existing?.LastSuccessfulAt,
+            LastFailureAt = existing?.LastFailureAt,
+            LastError = null,
+            ExternalAccountId = null,
+            Metadata = metadata
+        };
+    }
+
+    /// <summary>Imports one validated legacy snapshot without replacing retained vault records.</summary>
+    public async Task ImportLegacyAsync(IReadOnlyList<ProviderCredentialSaveRequest> requests, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(requests);
+        // Validate the entire input before any durable mutation, including providers already present.
+        var prepared = requests.Select(request =>
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            var descriptor = RequireDescriptor(request.ProviderId);
+            return (Descriptor: descriptor, Request: request,
+                Fields: NormalizeCredentialFields(descriptor, request.Credentials));
+        }).GroupBy(item => item.Descriptor.ProviderId, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                var first = group.First();
+                var fields = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+                string? environment = null;
+                foreach (var item in group)
+                {
+                    var candidateEnvironment = NormalizeOptional(item.Request.Environment);
+                    if (candidateEnvironment is not null)
+                    {
+                        candidateEnvironment = item.Descriptor.NormalizeEnvironment(candidateEnvironment);
+                        if (environment is not null && !environment.Equals(candidateEnvironment, StringComparison.OrdinalIgnoreCase))
+                            throw new InvalidOperationException("Legacy provider aliases contain conflicting environments.");
+                        environment = candidateEnvironment;
+                    }
+                    foreach (var (key, value) in item.Fields)
+                    {
+                        var normalized = NormalizeOptional(value);
+                        if (normalized is null)
+                            continue;
+                        if (fields.TryGetValue(key, out var existing) && !string.Equals(existing, normalized, StringComparison.Ordinal))
+                            throw new InvalidOperationException("Legacy provider aliases contain conflicting credential fields.");
+                        fields[key] = normalized;
+                    }
+                }
+                return (first.Descriptor, Request: first.Request with { Environment = environment }, Fields: fields);
+            }).ToArray();
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
+            var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
+            var changed = false;
+            foreach (var item in prepared)
+            {
+                // The marker survives deletion and is committed with the first import. Audit
+                // retries must never interpret an operator deletion as a missing legacy import.
+                if (!vault.LegacyImportedProviderIds.Add(item.Descriptor.ProviderId))
+                    continue;
+                changed = true;
+                if (vault.Providers.ContainsKey(item.Descriptor.ProviderId))
+                    continue;
+                var record = CreateUpdatedRecord(item.Descriptor, item.Request, item.Fields, null, DateTimeOffset.UtcNow);
+                vault.Providers.Add(item.Descriptor.ProviderId, record);
+            }
+
+            if (changed)
+                await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            // Record every attempted provider, including retries after an audit-write failure.
+            // The sidecar is retained until all these audit appends succeed.
+            foreach (var item in prepared)
+            {
+                vault.Providers.TryGetValue(item.Descriptor.ProviderId, out var record);
+                await AppendAuditAsync(item.Descriptor, "legacy-import-or-preserve", "credential-vault-migration",
+                    BuildStatus(item.Descriptor, record is null ? null : ToReadResult(item.Descriptor, record, ProviderCredentialSourceDto.LocalEncryptedStore)),
+                    record is null ? [] : record.Fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(), ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private async Task<FileStream> AcquireVaultLockAsync(CancellationToken ct)
+    {
+        EnsureVaultDirectory();
+        var started = System.Diagnostics.Stopwatch.StartNew();
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                // Keep this file in place: unlinking a lock file permits a second lock identity.
+                return new FileStream(VaultPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException ex) when ((ex.HResult & 0xffff) is 11 or 32 or 33 && started.Elapsed < TimeSpan.FromSeconds(30))
+            {
+                await Task.Delay(25, ct).ConfigureAwait(false);
+            }
         }
     }
 
@@ -166,9 +278,11 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             vault.Providers.Remove(descriptor.ProviderId);
-            await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            vault.LegacyImportedProviderIds.Add(descriptor.ProviderId);
+            await WriteVaultAsync(vault, ct, discardPreviousGeneration: true).ConfigureAwait(false);
             await AppendAuditAsync(
                 descriptor,
                 "delete",
@@ -192,6 +306,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             if (!vault.Providers.TryGetValue(descriptor.ProviderId, out var record))
             {
@@ -604,7 +719,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         return vault ?? new ProviderCredentialVault();
     }
 
-    private async Task WriteVaultAsync(ProviderCredentialVault vault, CancellationToken ct)
+    private async Task WriteVaultAsync(ProviderCredentialVault vault, CancellationToken ct, bool discardPreviousGeneration = false)
     {
         EnsureVaultDirectory();
         vault.Version = VaultVersion;
@@ -619,7 +734,12 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         // Roll the current (readable) vault to the last-known-good backup before replacing
         // it, so a corrupting write can always fall back one generation in LoadVaultAsync.
         // Callers hold _gate, so the copy/write pair cannot interleave with another writer.
-        if (File.Exists(VaultPath))
+        if (discardPreviousGeneration)
+        {
+            // Deletion must remove every recoverable copy before it can be acknowledged.
+            File.Delete(_vaultBackupPath);
+        }
+        else if (File.Exists(VaultPath))
         {
             try
             {
@@ -632,6 +752,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         }
 
         await AtomicFileWriter.WriteAsync(VaultPath, envelopeJson, ct).ConfigureAwait(false);
+        if (discardPreviousGeneration)
+            await AtomicFileWriter.WriteAsync(_vaultBackupPath, envelopeJson, CancellationToken.None).ConfigureAwait(false);
     }
 
     private async Task<(string Protection, byte[] ProtectedBytes)> ProtectAsync(byte[] plainBytes, CancellationToken ct)
@@ -830,6 +952,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         public int Version { get; set; } = VaultVersion;
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
         public Dictionary<string, ProviderCredentialVaultRecord> Providers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> LegacyImportedProviderIds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
     private sealed class ProviderCredentialVaultRecord
