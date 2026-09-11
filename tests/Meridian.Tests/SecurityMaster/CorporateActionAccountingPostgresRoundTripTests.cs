@@ -45,7 +45,8 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
         await using var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING", ct: ct);
         var ledgerOptions = new LedgerJournalStoreOptions
         {
-            ConnectionString = server.ConnectionString, SchemaName = server.CreateSchemaName("ca_ledger")
+            ConnectionString = server.ConnectionString, SchemaName = server.CreateSchemaName("ca_ledger"),
+            RequireGovernedPostingCommand = true, RequireExpectedVersion = true
         };
         var securityOptions = new SecurityMasterOptions
         {
