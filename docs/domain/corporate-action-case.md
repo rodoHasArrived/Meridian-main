@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** accounting-and-ledger
-**Reviewed:** 2026-08-31
+**Reviewed:** 2026-09-11
 
 ## Definition
 
@@ -173,6 +173,57 @@ fresh exact-version binding — a superseded binding can never be posted twice.
 The Asset Accounting Event Spine remains the only route to candidate preparation, policy and
 evidence validation, maker-checker approval, optimistic-concurrency checks, and durable posting.
 Neither the projector nor the mapper can append a journal directly.
+
+## Open Authority Review and Acceptance Evidence
+
+Source review at `ba9ba1d30` on 2026-09-11 confirms that the dedicated attach, approval, and
+posting commands above exist. The earlier registry statement that every `ReadyForApproval`
+transition is unconditionally refused is stale. This is a source correction, not proof that the
+end-to-end authority requirements are satisfied. `W9-CORPACT-011` remains `in_progress`, red,
+with `evidence_posture: in_progress` under the [post-merge review gate, issue 2894](https://github.com/rodoHasArrived/Meridian-main/issues/2894).
+
+`CorporateActionCaseAccountingService.BuildProjectionBinding` checks the retained candidate's
+fingerprint, security, tenant/company, balanced result, rule-pack fields, period version, evidence
+presence, and book/period/basis/fund/currency congruence. It nevertheless copies the request's
+policy-decision and lot-snapshot identities and versions, projection/posting hashes, and posting
+idempotency key into the persisted binding. It sets `HasAuthoritativeLotResolution` to `true`
+without resolving the asserted lot snapshot. It also does not bind the supplied accounting event
+back to the case's canonical source event or compare its full account/portfolio/position scope.
+Those gaps require disposition against server-owned authorities; successful shape validation or
+a balanced candidate does not settle them.
+
+The unchanged exit criteria have the following evidence posture:
+
+| Exit criterion | Current evidence and remaining review |
+| --- | --- |
+| 1. Exact canonical source and case scope; separate source, treatment, and consequence authorities | Scoped case and spine contracts exist. The attach authority gap above still prevents an exact-binding claim. |
+| 2. Persisted provider release gate rechecked at acceptance | The ingest and acceptance paths implement the release gate. Issue 2894's Alpaca payload retention and response-symbol concerns still require disposition; the release flag alone does not prove retained source authority. |
+| 3. Durable attributed, versioned, idempotent transitions and recoverable failures | Durable store commands and service recovery branches exist. Live database concurrency, interrupted posting, and replay proof remain required, together with review of case mutations that advance version without transition records. |
+| 4. Refuse posting without exact scope, approved policy, open period, balanced journals, valid lots, retained evidence, and maker-checker; immutable corrections | Dedicated attach, approval, and spine-posting paths replace the earlier universal refusal. Authority resolution, live PostgreSQL attach/approve/post with rejection and recovery cases, and independent Accounting/security review remain open. |
+| 5. Golden ledger/price examples and durable-store migration/contract coverage | Golden ledger and backtest adjustment tests and migration/contract tests exist. They do not replace the migration 031 and live accounting-lane review required by issue 2894. |
+
+`CorporateActionCaseAccountingServiceTests` substitutes the operations store, spine store,
+posting service, and period service. It provides targeted service evidence, including stale
+projection, permission, maker-checker, locked-period, and posting recovery behavior, but is not a
+PostgreSQL round trip. The 2026-09-11 reassessment did not execute a live database scenario;
+no local PostgreSQL service, Docker runtime, or test connection was available, and local reads
+encountered memory exhaustion. No passing hosted database run is asserted here.
+
+The issue's review checklist remains open:
+
+- Obtain independent Accounting/data-integrity review of the combined behavior.
+- Review PostgreSQL schema, migration 031, concurrency, and crash/retry semantics, including the
+  additional migration, lineage, fingerprint, and immutability concerns recorded on the issue.
+- Review tenancy, authorization, maker-checker, and security, including the issue's global
+  proposal-read and authenticated tenant-mapping concerns.
+- Resolve or explicitly reject the caller-asserted-authority finding with source evidence.
+- Exercise a disposable PostgreSQL database through exact case/source/policy/lot attach,
+  approval, and posting; prove stale and foreign authority rejection, maker-checker refusal,
+  locked-period refusal, idempotent retries, and recovery after journal commit before case receipt.
+- Reassess all five unchanged exit criteria using that evidence before an operator decision.
+
+These are review and proof requirements, not a record of human approval. The prior operator
+reopening decision `DEC-W9-ACCEPTANCE-002` remains in force.
 
 ## Future Expansion Notes
 
