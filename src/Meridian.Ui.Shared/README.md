@@ -40,6 +40,23 @@ checklist reflects finished work rather than page visits.
 
 ## Shared close and lot convergence
 
+Manual-journal commands retain a durable intent before changing drafts or appending a journal.
+The receipt includes the original actor, before/after drafts, exact posting write, deterministic
+audit identifiers, and the command result. A retry repairs the audit before returning success.
+Reversal and rebook retain both draft outcomes and both audit events in one command receipt.
+If posting already committed, recovery verifies that exact immutable entry and completes only
+the draft/audit handoff. If nothing committed, recovery re-enters current validation, approval,
+version, and period gates before a new write. Conflicting state remains blocked.
+
+Browser and WPF composition use `FileManualJournalMutationRecoveryStore` beside
+`manual-journal-drafts.json`. Its exclusive operating-system file lease covers the entire
+read/validate/write/audit cycle across service instances and processes. Every writer sharing
+that draft snapshot must use the same `.mutations` directory; direct snapshot edits and
+uncoordinated legacy writers are outside this protocol. Completed receipts are durable replay
+evidence and must be backed up with the draft and audit stores. Old lifecycle rows without a
+receipt are not retroactively assigned a posting actor. Focused crash/restart evidence lives in
+`AccountingConfigurationServiceTests.ManualAuditRecovery.cs`.
+
 The tenant-guarded Financial Operations command-center endpoint now exposes the server-owned close projection to the browser. Its dependency graph includes ledger-book and close-plan authorities. Fund-wide workspace queries cannot attest period close readiness because they lack the complete declared close scope. Focused proof: `WorkstationEndpointsTests.CloseReadiness`.
 
 The ledger open-lot maintenance routes expose survey, exception queue, retained source inspection, independent review, and versioned application under explicit administrative permission and exact registered tenant/company book ownership. Actors and governed action origins come from the authenticated session. Unknown ownership is blocking. Review and application use retained source identities, never replacement request-side acquisition facts.

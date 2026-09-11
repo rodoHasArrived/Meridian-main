@@ -835,35 +835,6 @@ public sealed partial class ManualJournalEntryWorkbenchService
             "fair-value|",
             StringComparison.OrdinalIgnoreCase) == true;
 
-    private async Task AppendAuditAsync(
-        ManualJournalEntryDraftDto draft,
-        string action,
-        string actor,
-        string? correlationId,
-        IReadOnlyList<string> evidenceLinks,
-        IReadOnlyList<string>? reportGroupPrincipalIds,
-        CancellationToken ct)
-    {
-        var hash = Hash(draft);
-        await _auditStore.AppendAsync(
-            new AccountingActionAuditEventDto(
-                Guid.NewGuid(),
-                DateTimeOffset.UtcNow,
-                RequireText(actor, nameof(actor)),
-                action,
-                draft.FundProfileId,
-                draft.LedgerBookId,
-                NormalizeOptional(correlationId),
-                hash,
-                hash,
-                draft.ValidationIssues,
-                evidenceLinks,
-                draft.CompanyId,
-                NormalizePrincipalIds(reportGroupPrincipalIds),
-                draft.TenantId),
-            ct).ConfigureAwait(false);
-    }
-
     private static AccountingConfigurationValidationIssueDto Issue(
         string code,
         AccountingConfigurationValidationSeverityDto severity,
