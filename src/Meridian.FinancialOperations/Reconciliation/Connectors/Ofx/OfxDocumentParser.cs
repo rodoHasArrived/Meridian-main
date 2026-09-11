@@ -242,6 +242,13 @@ public static class OfxDocumentParser
                 [AggregateColumn] = node.Name.ToUpperInvariant()
             };
             FlattenLeaves(node, entry);
+            // A row may repeat its containing header, but cannot replace missing/ambiguous
+            // header authority or authorize itself under a contradictory account.
+            if (entry.TryGetValue("ACCTID", out var rowAccount)
+                && !string.Equals(rowAccount.Trim(), accountId, StringComparison.OrdinalIgnoreCase))
+            {
+                entry["ACCTID"] = string.Empty;
+            }
             // Currency belongs to the containing statement, never the first statement in the file.
             // A row-level currency remains authoritative, including an explicitly blank value.
             if (!entry.ContainsKey("CURSYM") && !entry.ContainsKey("CURDEF"))

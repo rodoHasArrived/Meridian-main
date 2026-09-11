@@ -44,7 +44,8 @@ Private-capital close evidence is selected by fund event, period, and ledger ent
 
 ## Purpose
 
-OFX duplicate account or currency tags cannot overwrite conflicting evidence. Account identity
+OFX duplicate account or currency tags cannot overwrite conflicting evidence. A row account may
+repeat its valid containing header, but cannot contradict or replace missing/ambiguous header identity. Account identity
 comparisons use the same case-insensitive equality as the authorization boundary. Currency
 validation omits source row numbers when a connector does not provide them, avoiding false
 locations based on the retained-record index.
@@ -53,6 +54,8 @@ Bank statement currency is source evidence. BAI2 requires an explicit account or
 currency before converting minor units, and each group resets inherited currency. camt.053 uses
 explicit amount currency or an explicit account currency when the attribute is absent; a blank
 amount attribute remains invalid. Neither parser supplies USD when all currency evidence is missing.
+IB Flex preserves absent account, activity, lot and borrow currency as unknown instead of
+supplying USD; canonical activity rows without currency fail before artifact retention.
 
 Canonical CSV connector validation rejects blank required amounts, ambiguous grouped decimals, malformed nonblank fees,
 and missing or invalid currency before rendering financial values. Statement import preview,
