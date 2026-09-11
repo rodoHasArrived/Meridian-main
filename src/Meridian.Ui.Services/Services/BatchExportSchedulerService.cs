@@ -114,16 +114,33 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             IncrementalMode = request.IncrementalMode,
             Priority = request.Priority,
             CreatedAt = DateTime.UtcNow,
-            Status = ExportJobStatus.Pending
+            Status = request.Schedule == null ? ExportJobStatus.Queued : ExportJobStatus.Pending
         };
 
-        lock (_stateGate)
+        // Use the same lock order as other writers. Do not publish or enqueue a job
+        // until its first durable save succeeds: the caller has no job ID on failure.
+        _saveGate.Wait();
+        try
         {
-            _jobs.TryAdd(job.Id, job);
-            if (request.Schedule == null)
-                QueueJobNoLock(job);
+            lock (_stateGate)
+            {
+                var json = JsonSerializer.Serialize(_jobs.Values.Append(job).ToList(), DesktopJsonOptions.PrettyPrint);
+                AtomicFileWriter.Write(_jobStorePath, json);
+                _jobs.TryAdd(job.Id, job);
+                if (request.Schedule == null)
+                    _queue.Enqueue((job, ++job.QueueVersion));
+            }
+            LastPersistenceError = null;
         }
-        SaveJobs();
+        catch (Exception ex)
+        {
+            LastPersistenceError = ex;
+            throw;
+        }
+        finally
+        {
+            _saveGate.Release();
+        }
 
         return job;
     }
@@ -251,6 +268,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
         {
             StartedAt = job.LastRunAt!.Value
         };
+        EventHandler<ExportJobEventArgs>? terminalEvent = null;
 
         try
         {
@@ -316,7 +334,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
                 job.TotalBytesExported += totalBytes;
             }
 
-            JobCompleted?.Invoke(this, new ExportJobEventArgs(job, run));
+            terminalEvent = JobCompleted;
         }
         catch (OperationCanceledException)
         {
@@ -334,7 +352,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             lock (_stateGate)
                 job.Status = ExportJobStatus.Failed;
 
-            JobFailed?.Invoke(this, new ExportJobEventArgs(job, run));
+            terminalEvent = JobFailed;
         }
         finally
         {
@@ -345,6 +363,10 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             }
             await SaveJobsAsync().ConfigureAwait(false);
         }
+
+        // The execution marker and durable history must be finalized before a
+        // subscriber synchronously queues a retry or repeat of this job.
+        terminalEvent?.Invoke(this, new ExportJobEventArgs(job, run));
     }
 
     private List<string> GetSourceFiles(ExportJob job)
@@ -882,4 +904,3 @@ public sealed class ExportJobProgressEventArgs : EventArgs
         CurrentFile = currentFile;
     }
 }
-

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -19,7 +18,8 @@ public sealed class BackfillCheckpointService
 {
     private static readonly Lazy<BackfillCheckpointService> _instance = new(() => new BackfillCheckpointService());
     private readonly string _checkpointDir;
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _jobGates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, JobGate> _jobGates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _jobGateSync = new();
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         WriteIndented = true,
@@ -55,8 +55,7 @@ public sealed class BackfillCheckpointService
         DateTime toDate,
         CancellationToken ct = default)
     {
-        var gate = _jobGates.GetOrAdd(jobId, _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync(ct).ConfigureAwait(false);
+        var gate = await AcquireJobGateAsync(jobId, ct).ConfigureAwait(false);
         try
         {
             var checkpoint = new BackfillCheckpoint
@@ -81,7 +80,7 @@ public sealed class BackfillCheckpointService
         }
         finally
         {
-            gate.Release();
+            gate.Dispose();
         }
     }
 
@@ -97,8 +96,7 @@ public sealed class BackfillCheckpointService
         string? errorMessage = null,
         CancellationToken ct = default)
     {
-        var gate = _jobGates.GetOrAdd(jobId, _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync(ct).ConfigureAwait(false);
+        var gate = await AcquireJobGateAsync(jobId, ct).ConfigureAwait(false);
         try
         {
             var checkpoint = await LoadCheckpointAsync(jobId, ct);
@@ -149,7 +147,7 @@ public sealed class BackfillCheckpointService
         }
         finally
         {
-            gate.Release();
+            gate.Dispose();
         }
     }
 
@@ -161,8 +159,7 @@ public sealed class BackfillCheckpointService
         string errorMessage,
         CancellationToken ct = default)
     {
-        var gate = _jobGates.GetOrAdd(jobId, _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync(ct).ConfigureAwait(false);
+        var gate = await AcquireJobGateAsync(jobId, ct).ConfigureAwait(false);
         try
         {
             var checkpoint = await LoadCheckpointAsync(jobId, ct);
@@ -177,7 +174,7 @@ public sealed class BackfillCheckpointService
         }
         finally
         {
-            gate.Release();
+            gate.Dispose();
         }
     }
 
@@ -308,6 +305,73 @@ public sealed class BackfillCheckpointService
         }
 
         return Task.CompletedTask;
+    }
+
+    internal int ActiveJobGateCount
+    {
+        get
+        {
+            lock (_jobGateSync)
+                return _jobGates.Count;
+        }
+    }
+
+    internal async Task<IDisposable> AcquireJobGateAsync(string jobId, CancellationToken ct = default)
+    {
+        JobGate gate;
+        lock (_jobGateSync)
+        {
+            if (!_jobGates.TryGetValue(jobId, out gate!))
+            {
+                gate = new JobGate();
+                _jobGates.Add(jobId, gate);
+            }
+            // Waiters own a reference before they wait, including cancellable waiters.
+            gate.References++;
+        }
+
+        try
+        {
+            await gate.Semaphore.WaitAsync(ct).ConfigureAwait(false);
+            return new JobGateLease(this, jobId, gate);
+        }
+        catch
+        {
+            ReleaseJobGateReference(jobId, gate);
+            throw;
+        }
+    }
+
+    private void ReleaseJobGateReference(string jobId, JobGate gate)
+    {
+        lock (_jobGateSync)
+        {
+            if (--gate.References == 0)
+            {
+                _jobGates.Remove(jobId);
+                gate.Semaphore.Dispose();
+            }
+        }
+    }
+
+    private sealed class JobGate
+    {
+        public SemaphoreSlim Semaphore { get; } = new(1, 1);
+        public int References { get; set; }
+    }
+
+    private sealed class JobGateLease(BackfillCheckpointService owner, string jobId, JobGate gate) : IDisposable
+    {
+        private BackfillCheckpointService? _owner = owner;
+
+        public void Dispose()
+        {
+            var currentOwner = Interlocked.Exchange(ref _owner, null);
+            if (currentOwner == null)
+                return;
+            gate.Semaphore.Release();
+            currentOwner.ReleaseJobGateReference(jobId, gate);
+        }
     }
 
     private string GetCheckpointPath(string jobId) =>

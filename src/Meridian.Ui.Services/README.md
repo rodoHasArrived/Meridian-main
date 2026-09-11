@@ -13,7 +13,7 @@ last_reviewed: 2026-09-05
 
 ## Purpose
 
-Batch exports reject duplicate queue entries, skip cancelled attempts, and serialize atomic job-store writes with observable failures. Raw, JSONL, and CSV are supported; Parquet is rejected until a physical writer exists. JSONL accounting uses the actual decompressed artifact path. CSV discovers all columns, quotes every cell, and fails with rejected row numbers before replacing an artifact. Backfill checkpoint mutations serialize per job. Activity-feed persistence coalesces pending snapshots while preserving waiter completion and shutdown draining.
+Batch exports reject duplicate queue entries, skip cancelled attempts, and serialize atomic job-store writes with observable failures. Initial creation persists before publishing or queueing the job; completion and failure notifications follow durable history and execution cleanup so subscribers can queue a repeat or retry. Raw, JSONL, and CSV are supported; Parquet is rejected until a physical writer exists. JSONL accounting uses the actual decompressed artifact path. CSV discovers all columns, quotes every cell, and fails with rejected row numbers before replacing an artifact. Backfill checkpoint mutations serialize per job and reclaim locks after the last holder or waiter leaves, including cancellation and persistence failures. Activity-feed persistence coalesces pending snapshots while preserving waiter completion and shutdown draining.
 
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
 

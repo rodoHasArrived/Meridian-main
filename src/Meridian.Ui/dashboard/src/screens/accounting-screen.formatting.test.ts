@@ -9,6 +9,11 @@ describe("formatCurrencyWithCode", () => {
     [-100, "EUR", true, "-€100.00 EUR"],
     [0, "EUR", true, "€0 EUR"],
     [100, "USD", false, "$100 USD"],
+    [100, "AED", false, "AED\u00a0100"],
+    [-100, "AED", true, "-AED\u00a0100.00"],
+    [100, "??", false, "?? 100"],
+    [-0, "USD", true, "$0 USD"],
+    [-0, "EUR", false, "€0 EUR"],
     [100, "", false, "$100"],
     [Number.NaN, "EUR", true, "— EUR"]
   ])("formats %s in %s (signed: %s)", (value, currency, signed, expected) => {

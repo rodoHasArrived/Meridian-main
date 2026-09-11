@@ -126,6 +126,83 @@ public sealed class BatchExportSchedulerServiceTests : IDisposable
         }
         await service.SaveJobsAsync();
         service.LastPersistenceError.Should().BeNull();
+        service.Jobs.Keys.Should().BeEquivalentTo(jobs.Select(job => job.Id));
+    }
+
+    [Fact]
+    public async Task CreateJob_WhenInitialPersistenceFails_DoesNotPublishOrExecuteTheJob()
+    {
+        await using var service = new BatchExportSchedulerService(jobStorePath: Store, queuePollIntervalMs: 5);
+        await File.WriteAllTextAsync(Path.Combine(Source, "trades.jsonl"), "{\"symbol\":\"AAPL\"}");
+        var started = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        service.JobStarted += (_, args) => started.Enqueue(args.Job.Id);
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        service.JobCompleted += (_, _) => completed.TrySetResult();
+        await service.StartAsync();
+
+        Directory.CreateDirectory(Store);
+        var hiddenDestination = Path.Combine(_root, "failed-creation-output");
+        try
+        {
+            var create = () => service.CreateJob(Request() with { DestinationPath = hiddenDestination });
+            create.Should().Throw<Exception>();
+            service.LastPersistenceError.Should().NotBeNull();
+            service.Jobs.Should().BeEmpty();
+        }
+        finally
+        {
+            Directory.Delete(Store);
+        }
+
+        var accepted = service.CreateJob(Request());
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await service.StopAsync();
+        started.Should().ContainSingle().Which.Should().Be(accepted.Id);
+        Directory.Exists(hiddenDestination).Should().BeFalse();
+        (await service.ReadPersistedJobsAsync()).Should().ContainSingle().Which.Id.Should().Be(accepted.Id);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TerminalHandler_CanSynchronouslyQueueARepeatOrRepairedRetry(bool failFirstRun)
+    {
+        var source = Path.Combine(Source, "trades.jsonl");
+        await File.WriteAllTextAsync(source, failFirstRun ? "not-json" : "{\"symbol\":\"AAPL\"}");
+        await using var service = new BatchExportSchedulerService(jobStorePath: Store, queuePollIntervalMs: 5);
+        var requeued = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var repeated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var notificationCount = 0;
+        var historyCountAtFirstNotification = 0;
+        void OnTerminal(object? sender, ExportJobEventArgs args)
+        {
+            if (Interlocked.Increment(ref notificationCount) == 1)
+            {
+                historyCountAtFirstNotification = service.GetJobHistory(args.Job.Id).Count;
+                File.WriteAllText(source, "{\"symbol\":\"AAPL\"}");
+                requeued.TrySetResult(service.QueueJob(args.Job.Id));
+            }
+            else
+            {
+                repeated.TrySetResult();
+            }
+        }
+        service.JobCompleted += OnTerminal;
+        service.JobFailed += OnTerminal;
+        var job = service.CreateJob(Request(ExportFormat.Csv));
+
+        await service.StartAsync();
+        (await requeued.Task.WaitAsync(TimeSpan.FromSeconds(10))).Should().BeTrue();
+        await repeated.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await service.StopAsync();
+
+        historyCountAtFirstNotification.Should().Be(1);
+        var history = service.GetJobHistory(job.Id);
+        history.Should().HaveCount(2);
+        history[0].Success.Should().BeTrue();
+        history[1].Success.Should().Be(!failFirstRun);
+        job.Status.Should().Be(ExportJobStatus.Completed);
+        (await service.ReadPersistedJobsAsync()).Should().ContainSingle().Which.RunHistory.Should().HaveCount(2);
     }
 
     private ExportJobRequest Request(ExportFormat format = ExportFormat.Raw) => new()

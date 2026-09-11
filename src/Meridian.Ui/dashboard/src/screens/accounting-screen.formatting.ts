@@ -34,9 +34,10 @@ export function formatCurrency(value: number) {
 
 export function formatCurrencyWithCode(value: number, currency: string, signed = false): string {
   const code = currency.trim().toUpperCase();
-  const amount = formatCurrencyAmount(value, { currency: code || "USD", minimumFractionDigits: signed && value !== 0 ? 2 : 0 });
+  const normalizedValue = value === 0 ? 0 : value;
+  const amount = formatCurrencyAmount(normalizedValue, { currency: code || "USD", minimumFractionDigits: signed && normalizedValue !== 0 ? 2 : 0 });
   const prefix = signed && value > 0 && Number.isFinite(value) ? "+" : "";
-  return code ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
+  return code && !amount.includes(code) ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
 }
 
 export function formatCurrencyForCode(value: number, currency: string): string {

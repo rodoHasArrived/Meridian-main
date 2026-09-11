@@ -27,6 +27,91 @@ public sealed class BackfillCheckpointServiceTests
             checkpoint.TotalBarsDownloaded.Should().Be(400);
             checkpoint.Status.Should().Be(CheckpointStatus.Failed);
             checkpoint.ErrorMessage.Should().Be("provider offline");
+            service.ActiveJobGateCount.Should().Be(0);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task FinishedCheckpointOperations_ReclaimGatesAcrossManyJobLifecycles()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "checkpoint-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var service = new BackfillCheckpointService(root);
+            await Task.WhenAll(Enumerable.Range(0, 64).Select(async index =>
+            {
+                var jobId = $"job-{index}";
+                await service.CreateCheckpointAsync(jobId, "test", ["AAPL"], DateTime.Today.AddDays(-1), DateTime.Today);
+                await service.UpdateSymbolProgressAsync(jobId, "AAPL", SymbolCheckpointStatus.Completed, 10);
+            }));
+            service.ActiveJobGateCount.Should().Be(0);
+            await service.CleanupOldCheckpointsAsync(retentionDays: -1);
+            Directory.EnumerateFiles(root, "*.json").Should().BeEmpty();
+            service.ActiveJobGateCount.Should().Be(0);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task CancelledWaiter_DoesNotRetireGateWhileOtherUpdatesAreWaiting()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "checkpoint-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var service = new BackfillCheckpointService(root);
+            await service.CreateCheckpointAsync("job", "test", ["AAPL", "MSFT"], DateTime.Today.AddDays(-1), DateTime.Today);
+            using var held = await service.AcquireJobGateAsync("job");
+            using var cancellation = new CancellationTokenSource();
+            var cancelledUpdate = service.UpdateSymbolProgressAsync("job", "AAPL", SymbolCheckpointStatus.Downloading, 99, ct: cancellation.Token);
+            var firstUpdate = service.UpdateSymbolProgressAsync("job", "AAPL", SymbolCheckpointStatus.Downloading, 10);
+            cancellation.Cancel();
+            var cancelled = () => cancelledUpdate;
+            await cancelled.Should().ThrowAsync<OperationCanceledException>();
+
+            var secondUpdate = service.UpdateSymbolProgressAsync("job", "MSFT", SymbolCheckpointStatus.Downloading, 20);
+            firstUpdate.IsCompleted.Should().BeFalse();
+            secondUpdate.IsCompleted.Should().BeFalse();
+            service.ActiveJobGateCount.Should().Be(1);
+            held.Dispose();
+            await Task.WhenAll(firstUpdate, secondUpdate).WaitAsync(TimeSpan.FromSeconds(10));
+
+            var checkpoint = await service.LoadCheckpointAsync("job");
+            checkpoint!.TotalBarsDownloaded.Should().Be(30);
+            service.ActiveJobGateCount.Should().Be(0);
+            await service.MarkJobFailedAsync("job", "provider offline");
+            (await service.LoadCheckpointAsync("job"))!.ErrorMessage.Should().Be("provider offline");
+            service.ActiveJobGateCount.Should().Be(0);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task FailedPersistenceAndPreCancelledOperations_ReleaseTheirGateReferences()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "checkpoint-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var service = new BackfillCheckpointService(root);
+            Directory.CreateDirectory(Path.Combine(root, "job.json"));
+            var create = () => service.CreateCheckpointAsync("job", "test", ["AAPL"], DateTime.Today.AddDays(-1), DateTime.Today);
+            await create.Should().ThrowAsync<Exception>();
+            service.ActiveJobGateCount.Should().Be(0);
+
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+            var cancelled = () => service.MarkJobFailedAsync("job", "cancelled", cancellation.Token);
+            await cancelled.Should().ThrowAsync<OperationCanceledException>();
+            service.ActiveJobGateCount.Should().Be(0);
         }
         finally
         {

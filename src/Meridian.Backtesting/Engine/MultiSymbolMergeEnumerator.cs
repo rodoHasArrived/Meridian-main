@@ -47,18 +47,27 @@ internal static class MultiSymbolMergeEnumerator
         var heap = new PriorityQueue<int, (long TimestampMs, int StreamIndex)>(
             streams.Count,
             Comparer<(long TimestampMs, int StreamIndex)>.Default);
+        Exception? initializationError = null;
 
         try
         {
-            for (var i = 0; i < streams.Count; i++)
+            try
             {
-                enumerators[i] = streams[i].GetAsyncEnumerator(ct);
-                if (await enumerators[i].MoveNextAsync().ConfigureAwait(false))
+                for (var i = 0; i < streams.Count; i++)
                 {
-                    heap.Enqueue(
-                        i,
-                        (enumerators[i].Current.Timestamp.ToUnixTimeMilliseconds(), i));
+                    enumerators[i] = streams[i].GetAsyncEnumerator(ct);
+                    if (await enumerators[i].MoveNextAsync().ConfigureAwait(false))
+                    {
+                        heap.Enqueue(
+                            i,
+                            (enumerators[i].Current.Timestamp.ToUnixTimeMilliseconds(), i));
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                initializationError = ex;
+                throw;
             }
 
             while (heap.Count > 0)
@@ -93,7 +102,11 @@ internal static class MultiSymbolMergeEnumerator
                 }
             }
             if (disposalErrors is not null)
+            {
+                if (initializationError is not null)
+                    disposalErrors.Insert(0, initializationError);
                 throw new AggregateException("Failed to dispose merged streams.", disposalErrors);
+            }
         }
     }
 }

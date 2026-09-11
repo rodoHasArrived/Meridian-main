@@ -34,6 +34,25 @@ public sealed class MultiSymbolMergeEnumeratorTests
         second.DisposeCount.Should().Be(1);
     }
 
+    [Theory]
+    [InlineData(true, "creation")]
+    [InlineData(false, "read")]
+    public async Task MergeAsync_InitializationAndDisposalFailure_PreservesBothCauses(bool failCreation, string expectedCause)
+    {
+        var first = new FaultingStream { FailDispose = true };
+        var failing = new FaultingStream { FailCreation = failCreation, FailRead = !failCreation };
+        await using var merged = MultiSymbolMergeEnumerator.MergeAsync([first, failing]).GetAsyncEnumerator();
+        var act = async () => await merged.MoveNextAsync();
+
+        var failure = await act.Should().ThrowAsync<AggregateException>();
+
+        failure.Which.InnerExceptions.Should().HaveCount(2);
+        failure.Which.InnerExceptions[0].Should().BeOfType<InvalidOperationException>().Which.Message.Should().Be(expectedCause);
+        failure.Which.InnerExceptions[1].Should().BeOfType<IOException>();
+        first.DisposeCount.Should().Be(1);
+        failing.DisposeCount.Should().Be(failCreation ? 0 : 1);
+    }
+
     private sealed class FaultingStream : IAsyncEnumerable<MarketEvent>, IAsyncEnumerator<MarketEvent>
     {
         public bool FailCreation { get; init; }
