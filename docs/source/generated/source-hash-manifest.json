@@ -1,8 +1,8 @@
 {
-  "contract": "Hash drift means code or README content changed after the last source-doc hash refresh.",
+  "contract": "Hash drift means code or README content changed after the last source-doc hash refresh. Source paths use ordinal POSIX ordering; UTF-8 text uses LF-normalized content hashes.",
   "generator": {
     "name": "build/scripts/docs/validate-doc-hashes.py",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "modules": [
     {
@@ -16,8 +16,8 @@
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "012e66ea847e900fc3a6b4200538580d4eda9e3756eb643801b946ad4c246acd",
-      "source_hash": "1aede108c1d9f2fc5bced9e2e588a2e1cf3a9ced7d78e94e1c0f85691d2cc418"
+      "readme_hash": "3e36b1c35d0c1577740274c5234793ada12bd122888ef3d5e08b404f88d48def",
+      "source_hash": "8146cfd810fb9d86e72d7cbe4178703e043adeed886ac063fb342bf0b0806162"
     },
     {
       "id": "SRC-BACKTESTING-SDK",
@@ -135,8 +135,8 @@
       "id": "SRC-EXECUTION",
       "path": "src/Meridian.Execution",
       "readme": "src/Meridian.Execution/README.md",
-      "readme_hash": "555e8bc041e3720eb24ea662c7e74f1a6d93096bc4c78abd178280859b046ca4",
-      "source_hash": "93d618737fc475154f1e8295e1feac6dce7cffa93dac8d95cfb9f8f169c2967a"
+      "readme_hash": "316d85aab34609619411d0190ada7fd4859f38ae67cba0eda14474cc77d43a95",
+      "source_hash": "eb3c82fd674aa2058438242b2614ca3d037ba7aaa0b4bffca40bc5bc2035b333"
     },
     {
       "id": "SRC-EXECUTION-SDK",
@@ -261,22 +261,22 @@
       "id": "SRC-UI",
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
-      "readme_hash": "f38cef5e746955ff8f7773dacd08a89238835b99b538f245d3704eddcc70de0e",
-      "source_hash": "c5a095baf5207020f87b1c7e45095fc3b69e407fc8b55d29688684e6fd03f55b"
+      "readme_hash": "c515d3ad73a8b9c42a884c07aac3b33d039007c0dfef12aeede341e97d19e249",
+      "source_hash": "19c7514cf3192653f6b09f8674467bf26b263bd7ad953684205adca0efeefd43"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
-      "readme_hash": "fa1e640ac0789a81119766b111d353181bfa1d6f7f49c70f376f3221590450ea",
-      "source_hash": "904c6d3fc080a80368133ab64c5f77afc2f3a86cd6b634b808dff2202f1c0982"
+      "readme_hash": "0e42c2e86e21cb8dcacc78504070a241678689a2b1c58a9d5218a744afa05910",
+      "source_hash": "19c7514cf3192653f6b09f8674467bf26b263bd7ad953684205adca0efeefd43"
     },
     {
       "id": "SRC-UI-SERVICES",
       "path": "src/Meridian.Ui.Services",
       "readme": "src/Meridian.Ui.Services/README.md",
-      "readme_hash": "62c869ddd0a1efa83332f1b39e2d42f1ec200213f72f1b52e6ffbf246d4cfb1b",
-      "source_hash": "2e321497a43d53db0a21356a11a72b85a16c5cb6b5f270a718401c4e8aab7aa8"
+      "readme_hash": "b5614ba9e3b475c2810d169f206864975bb337bbc1189359e38eac15195d4335",
+      "source_hash": "4cf5e968e0a07654a3d5db39f12caa850a8461c140cec4e9f1686a2b4f0b68b3"
     },
     {
       "id": "SRC-UI-SHARED",

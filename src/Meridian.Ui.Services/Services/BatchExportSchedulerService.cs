@@ -148,24 +148,55 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
     /// <summary>
     /// Queues a job for immediate execution.
     /// </summary>
-    public bool QueueJob(string jobId)
-    {
-        lock (_stateGate)
-        {
-            if (!_jobs.TryGetValue(jobId, out var job) || !QueueJobNoLock(job))
-                return false;
-        }
-        SaveJobs();
-        return true;
-    }
+    public bool QueueJob(string jobId) => QueueJobsDurably(() =>
+        _jobs.TryGetValue(jobId, out var job) ? new[] { job } : Array.Empty<ExportJob>());
 
-    private bool QueueJobNoLock(ExportJob job)
+    private bool QueueJobsDurably(Func<IEnumerable<ExportJob>> selectJobs)
     {
-        if (job.Status is ExportJobStatus.Running or ExportJobStatus.Queued || job.CancellationSource != null)
-            return false;
-        job.Status = ExportJobStatus.Queued;
-        _queue.Enqueue((job, ++job.QueueVersion));
-        return true;
+        _saveGate.Wait();
+        try
+        {
+            lock (_stateGate)
+            {
+                var jobs = selectJobs()
+                    .Where(job => job.Status is not (ExportJobStatus.Running or ExportJobStatus.Queued)
+                        && job.CancellationSource == null)
+                    .Select(job => (Job: job, PreviousStatus: job.Status))
+                    .ToArray();
+                if (jobs.Length == 0)
+                    return false;
+
+                foreach (var entry in jobs)
+                    entry.Job.Status = ExportJobStatus.Queued;
+                try
+                {
+                    var json = JsonSerializer.Serialize(_jobs.Values.ToList(), DesktopJsonOptions.PrettyPrint);
+                    AtomicFileWriter.Write(_jobStorePath, json);
+                }
+                catch
+                {
+                    foreach (var entry in jobs)
+                        entry.Job.Status = entry.PreviousStatus;
+                    throw;
+                }
+
+                // Workers acquire _stateGate; publish no queue entry or version
+                // until the complete manual or scheduled admission is durable.
+                foreach (var entry in jobs)
+                    _queue.Enqueue((entry.Job, ++entry.Job.QueueVersion));
+                LastPersistenceError = null;
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            LastPersistenceError = ex;
+            throw;
+        }
+        finally
+        {
+            _saveGate.Release();
+        }
     }
 
     /// <summary>Cancels a running or queued job.</summary>
@@ -576,19 +607,10 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
     {
         try
         {
-            var changed = false;
-            lock (_stateGate)
-            {
-                if (_cts.IsCancellationRequested)
-                    return;
-                foreach (var job in _jobs.Values)
-                {
-                    if (job.Status != ExportJobStatus.Cancelled && ShouldRunScheduledJob(job, DateTime.UtcNow))
-                        changed |= QueueJobNoLock(job);
-                }
-            }
-            if (changed)
-                SaveJobs();
+            QueueJobsDurably(() => _cts.IsCancellationRequested
+                ? Array.Empty<ExportJob>()
+                : _jobs.Values.Where(job => job.Status != ExportJobStatus.Cancelled
+                    && ShouldRunScheduledJob(job, DateTime.UtcNow)));
         }
         catch (Exception ex)
         {
@@ -637,8 +659,8 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
                         {
                             if (_jobs.TryAdd(job.Id, job) && job.Status == ExportJobStatus.Queued)
                             {
-                                job.Status = ExportJobStatus.Pending;
-                                QueueJobNoLock(job);
+                                // This admission was already persisted by the previous process.
+                                _queue.Enqueue((job, ++job.QueueVersion));
                             }
                         }
                     }

@@ -162,6 +162,98 @@ public sealed class BatchExportSchedulerServiceTests : IDisposable
         (await service.ReadPersistedJobsAsync()).Should().ContainSingle().Which.Id.Should().Be(accepted.Id);
     }
 
+    [Fact]
+    public async Task Restart_LoadsPersistedQueuedAdmissionAndExecutesItOnce()
+    {
+        string jobId;
+        await using (var creator = new BatchExportSchedulerService(jobStorePath: Store))
+            jobId = creator.CreateJob(Request()).Id;
+
+        await using var restarted = new BatchExportSchedulerService(jobStorePath: Store, queuePollIntervalMs: 5);
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        restarted.JobCompleted += (_, _) => completed.TrySetResult();
+        await restarted.StartAsync();
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await restarted.StopAsync();
+        restarted.GetJobHistory(jobId).Should().ContainSingle(run => run.Success);
+        (await restarted.ReadPersistedJobsAsync()).Should().ContainSingle().Which.Id.Should().Be(jobId);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QueueJob_WhenRequeuePersistenceFails_DoesNotPublishAnotherAttempt(bool completeFirstRun)
+    {
+        await using var service = new BatchExportSchedulerService(maxConcurrentJobs: 1, jobStorePath: Store, queuePollIntervalMs: 5);
+        await File.WriteAllTextAsync(Path.Combine(Source, "trades.jsonl"), "{\"symbol\":\"AAPL\"}");
+        var job = service.CreateJob(Request());
+        var firstCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        service.JobCompleted += (_, args) => { if (args.Job.Id == job.Id) firstCompleted.TrySetResult(); };
+        if (!completeFirstRun)
+            service.CancelJob(job.Id).Should().BeTrue();
+        await service.StartAsync();
+        if (completeFirstRun)
+            await firstCompleted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        var previousStatus = job.Status;
+        var previousVersion = job.QueueVersion;
+        File.Delete(Store);
+        Directory.CreateDirectory(Store);
+        try
+        {
+            var requeue = () => service.QueueJob(job.Id);
+            requeue.Should().Throw<Exception>();
+            service.LastPersistenceError.Should().NotBeNull();
+            job.Status.Should().Be(previousStatus);
+            job.QueueVersion.Should().Be(previousVersion);
+        }
+        finally
+        {
+            Directory.Delete(Store);
+        }
+
+        var recoveryCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        service.JobCompleted += (_, args) => { if (args.Job.Name == "recovery") recoveryCompleted.TrySetResult(); };
+        service.CreateJob(Request() with { Name = "recovery", DestinationPath = Path.Combine(_root, "recovery-output") });
+        await recoveryCompleted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await service.StopAsync();
+        service.GetJobHistory(job.Id).Should().HaveCount(completeFirstRun ? 1 : 0);
+        job.Status.Should().Be(previousStatus);
+        service.LastPersistenceError.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ScheduledAdmission_WhenPersistenceFails_RemainsPendingAndCanRecover()
+    {
+        await using var service = new BatchExportSchedulerService(maxConcurrentJobs: 1, jobStorePath: Store, queuePollIntervalMs: 5);
+        var job = service.CreateJob(Request() with { Schedule = new ExportSchedule { Frequency = ScheduleFrequency.Hourly } });
+        File.Delete(Store);
+        Directory.CreateDirectory(Store);
+        try
+        {
+            await service.StartAsync();
+            var deadline = DateTime.UtcNow.AddSeconds(10);
+            while (service.LastPersistenceError == null && DateTime.UtcNow < deadline)
+                await Task.Delay(10);
+            service.LastPersistenceError.Should().NotBeNull("the immediate scheduler tick must attempt the due admission");
+            job.Status.Should().Be(ExportJobStatus.Pending);
+            job.QueueVersion.Should().Be(0);
+            service.GetJobHistory(job.Id).Should().BeEmpty();
+        }
+        finally
+        {
+            Directory.Delete(Store);
+        }
+
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        service.JobCompleted += (_, _) => completed.TrySetResult();
+        service.QueueJob(job.Id).Should().BeTrue();
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await service.StopAsync();
+        service.GetJobHistory(job.Id).Should().ContainSingle(run => run.Success);
+        service.LastPersistenceError.Should().BeNull();
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
