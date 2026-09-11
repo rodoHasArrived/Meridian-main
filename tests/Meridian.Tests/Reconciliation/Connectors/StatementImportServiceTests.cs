@@ -101,6 +101,9 @@ public sealed class StatementImportServiceTests : IDisposable
     [InlineData("cash-comma")]
     [InlineData("fees-comma")]
     [InlineData("fees-invalid")]
+    [InlineData("quantity-blank")]
+    [InlineData("price-blank")]
+    [InlineData("cash-blank")]
     public async Task MonthEndCanonicalUpload_MalformedEvidenceFailsBeforeRetention(string defect)
     {
         var columns = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission".Split(',').ToList();
@@ -115,6 +118,9 @@ public sealed class StatementImportServiceTests : IDisposable
             case "cash-comma": values[4] = "1,25"; break;
             case "fees-comma": values[9] = "1,25"; break;
             case "fees-invalid": values[9] = "unknown"; break;
+            case "quantity-blank": values[2] = " "; break;
+            case "price-blank": values[3] = " "; break;
+            case "cash-blank": values[4] = " "; break;
         }
 
         var content = string.Join(',', columns) + "\n" + string.Join(',', values.Select(value => "\"" + value + "\"")) + "\n";
@@ -145,6 +151,23 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task MonthEndOfxUpload_MixedRowAndStatementCurrenciesSurviveCanonicalMapping()
+    {
+        var content = "<OFX><STMTRS><CURDEF>USD</CURDEF><BANKACCTFROM><ACCTID>FUND-A</ACCTID></BANKACCTFROM>"
+            + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT><FITID>USD-1</FITID></STMTTRN>"
+            + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260603</DTPOSTED><TRNAMT>-10</TRNAMT><CURSYM>GBP</CURSYM><FITID>GBP-2</FITID></STMTTRN>"
+            + "</STMTRS></OFX>";
+        var document = new StatementSourceDocument("mixed-currencies.ofx", Encoding.UTF8.GetBytes(content));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeTrue();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("ReadyToImport");
+        var result = await _service.CommitAsync(CommitRequest(document));
+        var canonical = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
+        canonical.Should().Contain(",USD,,USD-1");
+        canonical.Should().Contain(",GBP,,GBP-2");
+    }
+
+    [Fact]
     public async Task MonthEndAlpacaSnapshot_FillsRetainAccountCurrencyThroughCommit()
     {
         var document = FixtureDocument("alpaca-combined-snapshot.json");
@@ -154,6 +177,37 @@ public sealed class StatementImportServiceTests : IDisposable
         var canonical = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
         canonical.Should().Contain(",USD,1.05,fill-1001");
         canonical.Should().Contain(",USD,1.02,fill-1002");
+    }
+
+    [Fact]
+    public async Task MonthEndAlpacaSnapshot_PositionsWithoutRowCurrencyCannotBorrowAccountCurrency()
+    {
+        var snapshot = System.Text.Json.Nodes.JsonNode.Parse(StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"))!;
+        foreach (var position in snapshot["portfolio"]!["positions"]!.AsArray())
+        {
+            position!.AsObject().Remove("currency");
+        }
+
+        var document = new StatementSourceDocument("fetched-positions.json", Encoding.UTF8.GetBytes(snapshot.ToJsonString()));
+        (await _service.ValidateAsync(document, AlpacaActivityStatementConnector.ConnectorId)).IsValid.Should().BeFalse();
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document,
+            externalAccountId: "PA3ALPACA01", connectorId: AlpacaActivityStatementConnector.ConnectorId)));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task MonthEndAlpacaSnapshot_ExplicitBlankPositionCurrencyCannotBorrowAccountCurrency(string currency)
+    {
+        var snapshot = System.Text.Json.Nodes.JsonNode.Parse(StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"))!;
+        snapshot["portfolio"]!["positions"]![0]!["currency"] = currency;
+        var document = new StatementSourceDocument("blank-position-currency.json", Encoding.UTF8.GetBytes(snapshot.ToJsonString()));
+
+        (await _service.ValidateAsync(document, AlpacaActivityStatementConnector.ConnectorId)).IsValid.Should().BeFalse();
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document,
+            externalAccountId: "PA3ALPACA01", connectorId: AlpacaActivityStatementConnector.ConnectorId)));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
     }
 
     [Fact]

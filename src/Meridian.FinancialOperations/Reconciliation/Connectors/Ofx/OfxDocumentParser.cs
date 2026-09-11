@@ -292,6 +292,13 @@ public static class OfxDocumentParser
     /// </summary>
     private static void NormalizeEntry(Dictionary<string, string> entry, string? accountId)
     {
+        // Document-wide column mapping claims Currency once. Every row must expose the same
+        // exact key even when some rows supply CURSYM and others inherit CURDEF.
+        if (!entry.ContainsKey("CURSYM") && entry.TryGetValue("CURDEF", out var currency))
+        {
+            entry["CURSYM"] = currency;
+        }
+
         foreach (var tag in DateTags)
         {
             if (entry.TryGetValue(tag, out var raw))
