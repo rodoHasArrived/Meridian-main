@@ -13,7 +13,6 @@ using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.NYSE;
-using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Synthetic;
@@ -82,22 +81,22 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
     [Fact]
     public void Descriptors_and_exclusions_cover_every_direct_adapter_folder()
     {
-        string[] expectedProviderIds =
-        [
-            "alpaca", "alphavantage", "edgar", "finnhub", "fred", "ibkr", "nasdaq", "nyse",
-            "openfigi", "polygon", "robinhood", "stooq", "synthetic", "tiingo", "twelvedata", "yahoo"
-        ];
-        string[] expectedExcludedFolders =
-        [
-            "Core", "Failover", "Plaid", "Templates", "TradeStation", "Tradier"
-        ];
-
-        ProviderCapabilityDescriptorCatalog.Descriptors
-            .Select(static descriptor => descriptor.ProviderId)
-            .Should().BeEquivalentTo(expectedProviderIds);
-        ProviderCapabilityDescriptorCatalog.ExcludedAdapterFamilies
-            .Select(static exclusion => exclusion.FolderName)
-            .Should().BeEquivalentTo(expectedExcludedFolders);
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !Directory.Exists(Path.Combine(repository.FullName, "src", "Meridian.Infrastructure", "Adapters")))
+            repository = repository.Parent;
+        repository.Should().NotBeNull("source inventory validation requires the repository checkout");
+        var adapterRoot = Path.Combine(repository!.FullName, "src", "Meridian.Infrastructure", "Adapters");
+        var actualFolders = Directory.GetDirectories(adapterRoot).Select(Path.GetFileName).ToArray();
+        const string adapterNamespace = "Meridian.Infrastructure.Adapters.";
+        var declaredFolders = ProviderCapabilityDescriptorCatalog.Descriptors
+            .SelectMany(static descriptor => descriptor.Implementations())
+            .Select(implementation => implementation.Namespace![adapterNamespace.Length..].Split('.')[0])
+            .Distinct(StringComparer.Ordinal)
+            .Concat(ProviderCapabilityDescriptorCatalog.ExcludedAdapterFamilies.Select(static exclusion => exclusion.FolderName))
+            .ToArray();
+        declaredFolders.Should().OnlyHaveUniqueItems("a family must be either catalogued or explicitly excluded");
+        declaredFolders.Should().BeEquivalentTo(actualFolders,
+            "adding or removing a source adapter family must update the audited inventory");
         ProviderCapabilityDescriptorCatalog.ExcludedAdapterFamilies.Should().OnlyContain(
             static exclusion => !string.IsNullOrWhiteSpace(exclusion.Reason),
             "every non-provider adapter folder must retain an explicit exclusion reason");
@@ -112,7 +111,6 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             ["ibkr"] = "streaming,historical,brokerage",
             ["nasdaq"] = "historical,search,corporate-actions",
             ["nyse"] = "streaming,data-source-compatibility",
-            ["openfigi"] = "symbol-resolution",
             ["polygon"] = "streaming,historical,search,options",
             ["robinhood"] = "streaming,historical,search,options,brokerage",
             ["stooq"] = "historical",
@@ -162,9 +160,9 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         nyse.Historical.Should().BeNull(
             "NYSE historical access remains on its IDataSource compatibility adapter rather than IHistoricalDataProvider");
 
-        var openFigi = descriptors["openfigi"];
-        openFigi.SymbolResolver.Should().Be(typeof(OpenFigiSymbolResolver));
-        openFigi.Implementations().Should().ContainSingle().Which.Should().Be(typeof(OpenFigiSymbolResolver));
+        descriptors.Should().NotContainKey("openfigi");
+        ProviderCapabilityDescriptorCatalog.ExcludedAdapterFamilies.Should().ContainSingle(exclusion =>
+            exclusion.FolderName == "OpenFigi" && exclusion.Reason.Contains(nameof(ISymbolResolver), StringComparison.Ordinal));
     }
 
     [Fact]
@@ -178,6 +176,7 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             KeyId: "AKTESTDESCRIPTOR0001",
             SecretKey: "descriptor-secret-for-di-tests"));
         services.AddSingleton(new IBOptions());
+        services.AddSingleton(new NYSEOptions());
         services.AddSingleton<IMarketEventPublisher, TestMarketEventPublisher>();
         services.AddSingleton<QuoteCollector>();
         services.AddSingleton<TradeDataCollector>();
@@ -203,6 +202,7 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             AssertResolvable(provider, descriptor.ProviderId, descriptor.Options, typeof(IOptionsChainProvider));
             AssertResolvable(provider, descriptor.ProviderId, descriptor.Brokerage, typeof(IBrokerageGateway));
             AssertResolvable(provider, descriptor.ProviderId, descriptor.SymbolResolver, typeof(ISymbolResolver));
+            AssertResolvable(provider, descriptor.ProviderId, descriptor.CompatibilityDataSource, typeof(IDataSource));
         }
     }
 
@@ -406,6 +406,10 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             if (descriptor.SymbolResolver is not null)
             {
                 services.AddSingleton(typeof(ISymbolResolver), sp => sp.GetRequiredService(descriptor.SymbolResolver));
+            }
+            if (descriptor.CompatibilityDataSource is not null)
+            {
+                services.AddSingleton(typeof(IDataSource), sp => sp.GetRequiredService(descriptor.CompatibilityDataSource));
             }
         }
     }

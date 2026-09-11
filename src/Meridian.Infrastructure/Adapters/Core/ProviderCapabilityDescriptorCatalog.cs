@@ -16,7 +16,6 @@ using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.NYSE;
-using Meridian.Infrastructure.Adapters.OpenFigi;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -36,7 +35,8 @@ public static class ProviderCapabilityDescriptorCatalog
             [
                 new(nameof(ICorporateActionProvider), "SyntheticHistoricalDataProvider emits historical corporate-action evidence through ICorporateActionSource; it is not an on-demand ICorporateActionProvider.")
             ],
-            InstrumentTypes: [InstrumentType.Equity]),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption],
+            StreamingInstrumentTypes: [InstrumentType.Equity]),
         new("ibkr", Streaming: typeof(IBMarketDataClient), Historical: typeof(IBHistoricalDataProvider), Brokerage: typeof(IBBrokerageGateway),
             ExecutionMode: IBProviderCapabilityExecutionMode.SimulationWhenVendorSdkUnavailable,
             InstrumentTypes:
@@ -52,11 +52,10 @@ public static class ProviderCapabilityDescriptorCatalog
             [
                 new(nameof(ICorporateActionProvider), "PolygonCorporateActionFetcher is a hosted Security Master ingestion workflow; it does not implement the on-demand ICorporateActionProvider contract.")
             ],
-            InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Forex, InstrumentType.Crypto, InstrumentType.Index]),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Forex, InstrumentType.Crypto, InstrumentType.Index],
+            StreamingInstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption]),
         new("nyse", Streaming: typeof(NyseMarketDataClient), CompatibilityDataSource: typeof(NYSEDataSource),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Index]),
-        new("openfigi", SymbolResolver: typeof(OpenFigiSymbolResolver),
-            InstrumentTypes: [InstrumentType.Equity]),
         new(
             "robinhood",
             typeof(RobinhoodMarketDataClient),
@@ -91,6 +90,7 @@ public static class ProviderCapabilityDescriptorCatalog
     [
         new("Core", "Shared provider primitives and orchestration, not a vendor adapter family."),
         new("Failover", "Composite streaming orchestration over catalogued providers, not an independent provider family."),
+        new("OpenFigi", "Symbol resolution remains available through ISymbolResolver; the operator capability matrix does not expose a symbol-resolution surface."),
         new("Plaid", "Runtime financial-connectivity adapters implement Plaid-specific Contracts ports, not market-data provider capabilities."),
         new("Templates", "Copy-only provider and brokerage scaffolds are not runtime registrations."),
         new("TradeStation", "Mapper-only brokerage assets; no concrete shared-contract runtime adapter exists."),
@@ -111,7 +111,8 @@ public sealed record ProviderCapabilityDescriptor(
     IBProviderCapabilityExecutionMode ExecutionMode = IBProviderCapabilityExecutionMode.NotApplicable,
     IReadOnlyList<InstrumentType>? InstrumentTypes = null,
     IReadOnlyList<MarketDataAssetClass>? StreamingAssetClasses = null,
-    IReadOnlyList<ProviderCapabilityExclusion>? Exclusions = null)
+    IReadOnlyList<ProviderCapabilityExclusion>? Exclusions = null,
+    IReadOnlyList<InstrumentType>? StreamingInstrumentTypes = null)
 {
     /// <summary>
     /// Instrument types this provider is declared to cover. Declared here, next to the adapter
@@ -121,6 +122,9 @@ public sealed record ProviderCapabilityDescriptor(
     public IReadOnlyList<InstrumentType> SupportedInstrumentTypes { get; } = InstrumentTypes ?? [InstrumentType.Equity];
 
     public IReadOnlyList<MarketDataAssetClass> SupportedStreamingAssetClasses { get; } = StreamingAssetClasses ?? [];
+
+    /// <summary>Streaming coverage can be narrower than historical or reference-data coverage.</summary>
+    public IReadOnlyList<InstrumentType> SupportedStreamingInstrumentTypes { get; } = StreamingInstrumentTypes ?? InstrumentTypes ?? [InstrumentType.Equity];
 
     public IReadOnlyList<ProviderCapabilityExclusion> ExplicitExclusions { get; } = Exclusions ?? [];
 
@@ -149,6 +153,8 @@ public sealed record ProviderCapabilityDescriptor(
             yield return Brokerage;
         if (SymbolResolver is not null)
             yield return SymbolResolver;
+        if (CompatibilityDataSource is not null)
+            yield return CompatibilityDataSource;
     }
 }
 

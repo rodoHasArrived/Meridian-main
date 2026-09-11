@@ -31,11 +31,14 @@ This layer owns external integration details while depending on lower contracts 
 Use this module for provider implementation, external service integration, and adapter behavior.
 
 `ProviderCapabilityDescriptorCatalog` records runtime adapter families and their implemented
-capabilities, including Synthetic, Polygon, NYSE compatibility data sources, and OpenFIGI symbol
-resolution. Explicit exclusions distinguish hosted corporate-action ingestion, mapper-only,
-template-only, and orchestration families from advertised runtime capabilities. Catalog tests
-check the adapter-folder inventory, interface conformance, and exclusion reasons; catalog presence
-alone does not establish live-provider readiness.
+capabilities, including Synthetic, Polygon and NYSE compatibility data sources. OpenFIGI remains
+explicitly excluded from the matrix-backed inventory until that UI contract exposes symbol
+resolution; the resolver itself remains available. Streaming instrument coverage is independently
+declared, so Polygon's Forex/Crypto/Index historical coverage does not advertise unsupported
+streams and synthetic option-chain coverage does not imply option streaming. Explicit exclusions
+also distinguish hosted ingestion, mapper-only, template-only and orchestration families.
+Catalog tests enumerate the actual adapter folders, check interfaces and resolve the compatibility
+data-source slot; catalog presence alone does not establish live-provider readiness.
 
 The legacy IB Flex broker importer streams XML and materializes only supported trade, position,
 and cash rows. Its existing 32 MiB source-byte and 100,000-row ceilings are joined by independent

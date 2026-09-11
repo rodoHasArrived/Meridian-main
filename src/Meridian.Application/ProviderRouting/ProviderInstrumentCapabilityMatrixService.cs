@@ -86,7 +86,7 @@ public sealed class ProviderInstrumentCapabilityMatrixService : IProviderInstrum
         return new ProviderInstrumentCapabilityCellDto(
             InstrumentType: instrument.InstrumentType.ToString(),
             Supported: supported,
-            Stream: supported && provider.HasStreaming,
+            Stream: supported && provider.HasStreaming && provider.SupportedStreamingInstrumentTypes.Contains(instrument.InstrumentType),
             Backfill: supported && provider.HasHistorical,
             CorporateActions: supported && provider.HasCorporateActions && carriesCorporateActions,
             SymbolSearch: supported && provider.HasSearch,
