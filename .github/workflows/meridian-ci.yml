@@ -30,6 +30,10 @@ jobs:
     name: verify-dotnet
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      # Build shared projects once, then overlap two isolated test processes.
+      # Local runs remain sequential unless explicitly configured.
+      MERIDIAN_CI_TEST_MAX_PARALLEL: "2"
 
     steps:
       - name: Check out repository

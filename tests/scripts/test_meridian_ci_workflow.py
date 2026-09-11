@@ -28,6 +28,15 @@ class MeridianCiWorkflowTests(unittest.TestCase):
             with self.subTest(lane=lane):
                 self.assertIn(f"bash scripts/ci.sh --lane {lane}", self.workflow)
 
+    def test_dotnet_lane_uses_bounded_test_concurrency_without_changing_gate(self) -> None:
+        dotnet_job = self.workflow.split("  verify-dotnet:\n", 1)[1].split("  verify-browser:\n", 1)[0]
+        self.assertIn('MERIDIAN_CI_TEST_MAX_PARALLEL: "2"', dotnet_job)
+        self.assertIn("bash scripts/ci.sh --lane verify-dotnet", dotnet_job)
+        self.assertNotIn("continue-on-error", dotnet_job)
+        gate = self.workflow.split("  quality-gate:\n", 1)[1]
+        self.assertIn("- verify-dotnet", gate)
+        self.assertIn('if [[ "$result" != "success" ]]', gate)
+
     def test_lane_artifacts_are_uploaded(self) -> None:
         self.assertIn("artifacts/ci-summary/", self.workflow)
         self.assertIn("artifacts/build-logs/", self.workflow)
