@@ -187,6 +187,35 @@ public sealed class StatementImportServiceTests : IDisposable
         (await _service.CommitAsync(CommitRequest(document))).RecordCount.Should().Be(2);
     }
 
+    [Theory]
+    [InlineData("FUND-A", "OTHER", "OTHER")]
+    [InlineData("", "FUND-A", "FUND-A")]
+    [InlineData("FUND-A</ACCTID><ACCTID>OTHER", "OTHER", "OTHER")]
+    public async Task MonthEndOfxUpload_RowAccountCannotReplaceContainingHeader(string headerAccount, string rowAccount, string authorizedAccount)
+    {
+        var content = $"<OFX><STMTRS><CURDEF>USD</CURDEF><BANKACCTFROM><ACCTID>{headerAccount}</ACCTID></BANKACCTFROM>"
+            + $"<STMTTRN><ACCTID>{rowAccount}</ACCTID><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT>"
+            + "</STMTTRN></STMTRS></OFX>";
+        var document = new StatementSourceDocument("contradictory-account.ofx", Encoding.UTF8.GetBytes(content));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document, externalAccountId: authorizedAccount)));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task MonthEndOfxUpload_RowMayRepeatAuthoritativeHeaderWithEquivalentCasing()
+    {
+        const string content = "<OFX><STMTRS><CURDEF>USD</CURDEF><BANKACCTFROM><ACCTID>FUND-A</ACCTID></BANKACCTFROM>"
+            + "<STMTTRN><ACCTID>fund-a</ACCTID><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT>"
+            + "</STMTTRN></STMTRS></OFX>";
+        var document = new StatementSourceDocument("matching-account.ofx", Encoding.UTF8.GetBytes(content));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeTrue();
+        (await _service.CommitAsync(CommitRequest(document))).RecordCount.Should().Be(1);
+    }
+
     [Fact]
     public async Task MonthEndOfxUpload_MixedRowAndStatementCurrenciesSurviveCanonicalMapping()
     {
@@ -262,6 +291,56 @@ public sealed class StatementImportServiceTests : IDisposable
         await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(
             CommitRequest(document, externalAccountId: "PA3ALPACA01", connectorId: AlpacaActivityStatementConnector.ConnectorId)));
         Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task MonthEndFlexActivity_MissingCurrencyCannotBecomeUsd(string? currency)
+    {
+        var attribute = currency is null ? string.Empty : $" currency=\"{currency}\"";
+        var content = "<FlexQueryResponse><FlexStatements><FlexStatement accountId=\"FUND-A\">"
+            + "<AccountInformation accountId=\"FUND-A\" baseCurrency=\"USD\" />"
+            + $"<InterestDetail accountId=\"FUND-A\" amount=\"-25\" dateTime=\"20260602\"{attribute} />"
+            + "</FlexStatement></FlexStatements></FlexQueryResponse>";
+        var document = new StatementSourceDocument("missing-interest-currency.xml", Encoding.UTF8.GetBytes(content));
+
+        (await _service.ValidateAsync(document, IbFlexStatementConnector.ConnectorId)).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, IbFlexStatementConnector.ConnectorId)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document,
+            connectorId: IbFlexStatementConnector.ConnectorId)));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task MonthEndFlexActivity_ExplicitCurrencyCommitsWithoutChangingAmount()
+    {
+        const string content = "<FlexQueryResponse><FlexStatements><FlexStatement accountId=\"FUND-A\">"
+            + "<InterestDetail accountId=\"FUND-A\" amount=\"-25\" dateTime=\"20260602\" currency=\"GBP\" transactionID=\"INT-1\" />"
+            + "</FlexStatement></FlexStatements></FlexQueryResponse>";
+        var document = new StatementSourceDocument("interest-currency.xml", Encoding.UTF8.GetBytes(content));
+
+        (await _service.ValidateAsync(document, IbFlexStatementConnector.ConnectorId)).IsValid.Should().BeTrue();
+        var result = await _service.CommitAsync(CommitRequest(document, connectorId: IbFlexStatementConnector.ConnectorId));
+        result.RecordCount.Should().Be(1);
+        (await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath))).Should().Contain(",GBP,-25,INT-1");
+    }
+
+    [Fact]
+    public async Task MonthEndFlexSidecars_AbsentAccountLotAndBorrowCurrenciesRemainUnknown()
+    {
+        const string content = "<FlexQueryResponse><FlexStatements><FlexStatement accountId=\"FUND-A\">"
+            + "<AccountInformation accountId=\"FUND-A\" accountType=\"Margin\" />"
+            + "<OpenLot accountId=\"FUND-A\" symbol=\"AAPL\" quantity=\"10\" costBasis=\"800\" lotID=\"LOT-1\" acquiredDate=\"20260601\" />"
+            + "<SecurityBorrowed accountId=\"FUND-A\" symbol=\"GME\" quantity=\"-10\" feeRate=\"18\" feeAmount=\"2\" />"
+            + "</FlexStatement></FlexStatements></FlexQueryResponse>";
+        var parsed = await new IbFlexStatementConnector(_catalog).ParseAsync(
+            new StatementSourceDocument("missing-sidecar-currency.xml", Encoding.UTF8.GetBytes(content)));
+
+        parsed.AccountSnapshots.Should().ContainSingle().Which.Currency.Should().BeEmpty();
+        parsed.TaxLots.Should().ContainSingle().Which.Currency.Should().BeEmpty();
+        parsed.BorrowPositions.Should().ContainSingle().Which.Currency.Should().BeEmpty();
     }
 
     [Fact]
