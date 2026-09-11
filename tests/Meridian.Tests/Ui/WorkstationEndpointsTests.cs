@@ -775,7 +775,7 @@ public sealed partial class WorkstationEndpointsTests
         closeAuthority.Workflow = approved.Workflow;
         var closeRoute = $"/api/workstation/operations/continuity/{workflowId}/close";
         var closeRequest = new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user",
-            "Close period", "report-pack-1", ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(), CloseScope: scope);
+            "Close period", "report-pack-1", ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(approved.Workflow!), CloseScope: scope);
         using var missingScope = await client.PostAsJsonAsync(closeRoute, closeRequest with { CloseScope = null }, ServerJsonOptions);
         missingScope.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var refusal = await missingScope.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
@@ -791,7 +791,7 @@ public sealed partial class WorkstationEndpointsTests
         wrongScope.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         (await wrongScope.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions))!.Success.Should().BeFalse();
 
-        var closed = await PostTransitionAsync(client, closeRoute, closeRequest with { ChecklistControlApprovals = RequiredOperationsChecklistControlApprovals(submitted.Workflow!) });
+        var closed = await PostTransitionAsync(client, closeRoute, closeRequest);
         closeAuthority.Requests.Last().Scope.Should().Be(scope);
         closeAuthority.Requests.Should().OnlyContain(request => request.TenantId == "tenant-test" && request.CompanyId == "tenant-test");
 

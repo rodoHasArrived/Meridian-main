@@ -3835,11 +3835,7 @@
       ]
     }
   ],
-<<<<<<< HEAD
-  "fingerprint": "92d2403d311bee7255327d1dbbe956de570401a9678cc16687cf3c92647d6bf4",
-=======
-  "fingerprint": "1e02c32e34c5cb352d8e35e1b3797da9cf5edcb2c2ec384c869bf104290f97d3",
->>>>>>> codex/finops-web-launch
+  "fingerprint": "bab8930ffb39e165c861396f3475a16abe960eaeedc2311c9e7c8df1e31117ac",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6164,11 +6160,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-<<<<<<< HEAD
-      "fingerprint": "1b98bf1f5c7947ec6cc22aa05bbf364df4b9b553f5b5ba68ee98cfb0ff2ebc77",
-=======
-      "fingerprint": "f05e403dcd47dcafd6745a497c8bf4dcfc058421481cc8741176f17f6653cf7b",
->>>>>>> codex/finops-web-launch
+      "fingerprint": "8a841c0cd91cc1270bf338d2a1c991e821b305dee42c1f50520d56d7c7a0608f",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
