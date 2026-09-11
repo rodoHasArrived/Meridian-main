@@ -5,10 +5,10 @@
 
 ## Overall Coverage
 
-**1382 / 9117** items documented (**15.2%**) &mdash; Grade: **F**
+**1371 / 9116** items documented (**15.0%**) &mdash; Grade: **F**
 
 ```text
-[===-----------------] 15.2%
+[===-----------------] 15.0%
 ```
 
 ## Coverage by Category
@@ -19,7 +19,7 @@
 | API Endpoints | 88 | 328 | 26.8% | F |
 | Configuration Options | 1 | 132 | 0.8% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
-| ADR Implementations | 11 | 11 | 100.0% | A |
+| ADR Implementations | 0 | 11 | 0.0% | F |
 
 ## Undocumented Items
 
@@ -191,11 +191,28 @@
 | `Backfill.EnableRateLimitRotation` | `config/appsettings.sample.json` |
 | ... and 81 more | |
 
+### ADR Implementations (11 undocumented)
+
+| Item | Location |
+| ------ | ---------- |
+| `ADR-001` | `src/Meridian.Application/Backfill/BackfillCoordinator.cs:33` |
+| `ADR-007` | `src/Meridian.Application/Pipeline/DeadLetterSink.cs:26` |
+| `ADR-010` | `src/Meridian.Application/Services/ConnectivityProbeService.cs:16` |
+| `ADR-006` | `src/Meridian.Domain/Collectors/OptionDataCollector.cs:15` |
+| `ADR-015` | `src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs:29` |
+| `ADR-013` | `src/Meridian.Execution/OrderManagementSystem.cs:22` |
+| `ADR-004` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:40` |
+| `ADR-005` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:41` |
+| `ADR-014` | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:45` |
+| `ADR-002` | `src/Meridian.Storage/Packaging/PortableDataPackager.cs:19` |
+| `ADR-016` | `src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:15` |
+
 ## Recommendations
 
 1. **Public Classes / Interfaces**: 7364 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
 2. **API Endpoints**: 240 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 131 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
+4. **ADR Implementations**: Referenced ADR(s) ADR-001, ADR-007, ADR-010, ADR-006, ADR-015, ADR-013, ADR-004, ADR-005, ADR-014, ADR-002, ADR-016 have no corresponding file in `docs/adr/`. Create the missing ADR document(s) using `docs/adr/_template.md`.
 
 ---
 
