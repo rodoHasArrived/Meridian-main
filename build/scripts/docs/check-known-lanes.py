@@ -12,7 +12,7 @@ LANE_MANIFEST_PATH = REPO_ROOT / "build" / "ci" / "lane-manifest.json"
 
 FILES = [
     pathlib.Path("README.md"),
-    pathlib.Path("archive/docs/developer/build-test-run.md"),
+    pathlib.Path("docs/engineering/README.md"),
     pathlib.Path(".github/workflows/README.md"),
 ]
 
