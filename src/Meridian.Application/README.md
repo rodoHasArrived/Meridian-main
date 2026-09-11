@@ -67,8 +67,8 @@ reasons; default runtime routing and tenant-aware operational history remain sep
 environment with the external account. Scope resolution uses that retained ownership, returns no scope
 to another tenant, and refuses incomplete records. Owned connections cannot be reassigned or modified
 through legacy mutation methods; legacy connections require an explicit ownership migration. Shared
-configuration and API DTOs preserve the fields on reload. These service operations still require HTTP
-and default runtime wiring, and do not make configuration writes a multi-process transaction.
+configuration and API DTOs preserve the fields on reload. Default runtime ownership propagation and
+remaining whole-configuration snapshot callers still require integration; external editors do not honor the sidecar transaction.
 
 `StoredProviderCredentialResolver` uses the credential store as the complete authority for catalog-managed
 providers, including the store's permitted environment fallback. Missing records remain unconfigured;
@@ -83,7 +83,9 @@ legacy setup route still use provider-wide resolution until authorized scope is 
 this constructor alone does not establish end-to-end tenant isolation.
 
 `OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
-only that owner's OAuth tokens, including refresh responses, and leave unassigned legacy sidecars alone.
+only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
+and leave unassigned legacy sidecars alone. Initialization is asynchronous in both ownership modes;
+completed remote rotations commit independently of lifecycle cancellation while preserving scope.
 Default host registration still needs connection ownership propagation before scoped services replace
 the provider-wide OAuth runtime.
 ## Provider setup attribution
@@ -144,10 +146,14 @@ Core workstation host. Do not introduce a second listener or independent monitor
   refresh-loop and token-persistence logs record the exception type without exception details.
   Malformed token JSON can include secrets in exception paths. Provider response bodies, reason phrases,
   and exception messages can contain secrets and must not enter failure events or returned errors.
-  Refresh failure retains the prior token so a later retry can recover. The optional logger permits
+  Transport failure retains the prior token; completed rotations commit replacements independently
+  of lifecycle cancellation. The optional logger permits
   isolated verification of this boundary. OAuth tokens now persist through the Data Integration-owned
-  encrypted vault. Startup imports legacy JSON without replacing retained tokens, removes the source
-  only after vault and audit success, and refuses startup on failure. Disposal never rewrites a cached
+  encrypted vault. Await `InitializeAsync` before synchronous token inspection; asynchronous mutations
+  initialize automatically and construction never blocks a desktop synchronization context. Initialization
+  imports legacy JSON without replacing retained tokens, renames completed imports before erasure,
+  resumes interrupted cleanup, and fails closed on unreadable evidence. After an audit failure the cache
+  reloads the committed token or evicts it if recovery is unavailable. Disposal never rewrites a cached
   token snapshot. Non-Windows key protection and credential scoping remain open PRD-002 requirements.
   Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider

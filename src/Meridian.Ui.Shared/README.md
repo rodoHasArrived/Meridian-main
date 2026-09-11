@@ -21,8 +21,8 @@ using the authenticated workstation tenant. Binding failover IDs are limited to 
 connection set. Each service applies ownership against its captured configuration before returning
 bindings or evaluating trust; foreign connections do not trigger health queries. Request headers and
 query parameters cannot select another tenant. Route preview uses the same authenticated tenant
-before candidate selection and failover expansion. Default setup ownership and atomic configuration
-updates remain separate integration work.
+before candidate selection and failover expansion. Default setup ownership and remaining whole-configuration
+snapshot callers still require integration.
 
 Rejected mutation leases return HTTP 429 with a positive `Retry-After` delay. The lending
 runtime test exhausts the shared projection/reconciliation budget and verifies rejection

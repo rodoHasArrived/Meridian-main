@@ -187,6 +187,70 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Migration_AuditFailureThenDeleteAndBackupRecoveryDoesNotResurrectSecret()
+    {
+        var legacyPath = Path.Combine(_dataRoot, "provider-credentials.json");
+        await File.WriteAllTextAsync(legacyPath, JsonSerializer.Serialize(new Dictionary<string, Dictionary<string, string>>
+        {
+            ["alpaca"] = new() { ["keyId"] = "legacy-key", ["secretKey"] = "deleted-legacy-secret" },
+            ["polygon"] = new() { ["apiKey"] = "retained-polygon-secret" }
+        }));
+        var auditPath = Path.Combine(_dataRoot, ".mdc", "provider-credentials.audit.jsonl");
+        Directory.CreateDirectory(auditPath);
+        var adapter = new ProviderCredentialStore(_dataRoot);
+        var failure = await Record.ExceptionAsync(() => adapter.GetCredentialsAsync("alpaca"));
+        (failure is IOException or UnauthorizedAccessException).Should().BeTrue();
+        File.Exists(legacyPath).Should().BeTrue();
+
+        Directory.Delete(auditPath);
+        var vault = new FileProviderCredentialStore(_dataRoot);
+        await vault.DeleteAsync("alpaca", "operator-delete");
+        // Recovery after deletion must retain the migration marker and the deliberate absence.
+        await File.WriteAllTextAsync(vault.VaultPath, "corrupt-primary");
+        var reopened = new ProviderCredentialStore(_dataRoot);
+        (await reopened.GetCredentialsAsync("alpaca")).Should().BeEmpty();
+        (await reopened.GetCredentialsAsync("polygon"))["ApiKey"].Should().Be("retained-polygon-secret");
+        File.Exists(legacyPath).Should().BeFalse();
+        (await File.ReadAllTextAsync(auditPath)).Should().NotContain("deleted-legacy-secret");
+    }
+
+    [Fact]
+    public async Task Migration_CompatibleProviderAliasesCoalesceBeforePublication()
+    {
+        var legacyPath = Path.Combine(_dataRoot, "provider-credentials.json");
+        await File.WriteAllTextAsync(legacyPath, JsonSerializer.Serialize(new Dictionary<string, Dictionary<string, string>>
+        {
+            ["alpaca"] = new() { ["keyId"] = "alias-key" },
+            ["alpaca-options"] = new() { ["secretKey"] = "alias-secret" }
+        }));
+
+        var result = await new ProviderCredentialStore(_dataRoot).GetCredentialsAsync("alpaca");
+
+        result["KeyId"].Should().Be("alias-key");
+        result["SecretKey"].Should().Be("alias-secret");
+        File.Exists(legacyPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Migration_ConflictingProviderAliasesRetainSidecarWithoutPublishing()
+    {
+        var legacyPath = Path.Combine(_dataRoot, "provider-credentials.json");
+        var legacy = JsonSerializer.Serialize(new Dictionary<string, Dictionary<string, string>>
+        {
+            ["polygon"] = new() { ["apiKey"] = "must-not-publish" },
+            ["alpaca"] = new() { ["keyId"] = "first-key" },
+            ["alpaca-options"] = new() { ["keyId"] = "conflicting-key" }
+        });
+        await File.WriteAllTextAsync(legacyPath, legacy);
+
+        var migrate = () => new ProviderCredentialStore(_dataRoot).GetCredentialsAsync("alpaca");
+        await migrate.Should().ThrowAsync<InvalidOperationException>();
+
+        (await File.ReadAllTextAsync(legacyPath)).Should().Be(legacy);
+        File.Exists(Path.Combine(_dataRoot, ".mdc", "provider-credentials.vault")).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task ConcurrentVaultInstances_MergeFieldsWithoutLosingAnAcknowledgedSave()
     {
         var first = new FileProviderCredentialStore(_dataRoot);

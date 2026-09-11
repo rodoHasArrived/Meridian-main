@@ -20,6 +20,7 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         await using (var service = new OAuthTokenRefreshService(_root))
             await service.StoreTokenAsync("custom-provider", SampleToken());
         await using var reopened = new OAuthTokenRefreshService(_root);
+        await reopened.InitializeAsync();
         reopened.GetToken("custom-provider")!.AccessToken.Should().Be("access-secret");
         reopened.GetToken("custom-provider")!.RefreshToken.Should().Be("refresh-secret");
         File.Exists(TokenPath).Should().BeFalse();
@@ -45,6 +46,7 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         await using (var firstService = new OAuthTokenRefreshService(_root, ownershipScope: first))
         await using (var secondService = new OAuthTokenRefreshService(_root, ownershipScope: second))
         {
+            await Task.WhenAll(firstService.InitializeAsync(), secondService.InitializeAsync());
             firstService.GetToken("provider").Should().BeNull();
             secondService.GetToken("provider").Should().BeNull();
             await Task.WhenAll(firstService.StoreTokenAsync("provider", SampleToken("first-access")),
@@ -53,14 +55,17 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         await using (var firstService = new OAuthTokenRefreshService(_root, ownershipScope: first))
         await using (var secondService = new OAuthTokenRefreshService(_root, ownershipScope: second))
         {
+            await Task.WhenAll(firstService.InitializeAsync(), secondService.InitializeAsync());
             firstService.GetToken("provider")!.AccessToken.Should().Be("first-access");
             secondService.GetToken("provider")!.AccessToken.Should().Be("second-access");
             await firstService.StoreTokenAsync("provider", SampleToken("rotated-access"));
             (await vault.ReadScopedOAuthTokensAsync(first))["provider"].AccessToken.Should().Be("rotated-access");
             await firstService.RemoveTokenAsync("provider");
         }
+        await File.WriteAllTextAsync(vault.VaultPath, "corrupt-primary-after-scoped-deletion");
         await using var removed = new OAuthTokenRefreshService(_root, ownershipScope: first);
         await using var retained = new OAuthTokenRefreshService(_root, ownershipScope: second);
+        await Task.WhenAll(removed.InitializeAsync(), retained.InitializeAsync());
         removed.GetToken("provider").Should().BeNull();
         retained.GetToken("provider")!.AccessToken.Should().Be("second-access");
         (await vault.ReadOAuthTokensAsync()).Should().ContainSingle().Which.Value.AccessToken.Should().Be("legacy-access");
@@ -77,6 +82,7 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         await File.WriteAllTextAsync(TokenPath, legacy);
         await using var scoped = new OAuthTokenRefreshService(_root,
             ownershipScope: new ProviderCredentialScope("tenant", "connection", "account", "paper"));
+        await scoped.InitializeAsync();
         scoped.GetToken("provider").Should().BeNull();
         await scoped.StoreTokenAsync("provider", SampleToken("owned-access"));
         (await File.ReadAllTextAsync(TokenPath)).Should().Be(legacy);
@@ -96,6 +102,7 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         if (!OperatingSystem.IsWindows())
             File.SetUnixFileMode(TokenPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.OtherRead);
         await using var service = new OAuthTokenRefreshService(_root);
+        await service.InitializeAsync();
         service.GetToken("custom-provider")!.AccessToken.Should().Be("rotated-secret");
         service.GetToken("another-provider")!.AccessToken.Should().Be("access-secret");
         File.Exists(TokenPath).Should().BeFalse();
@@ -111,6 +118,7 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         await second.RemoveTokenAsync("first");
         await first.DisposeAsync();
         await using var reopened = new OAuthTokenRefreshService(_root);
+        await reopened.InitializeAsync();
         reopened.GetToken("first").Should().BeNull();
         reopened.GetToken("second").Should().NotBeNull();
     }
@@ -123,12 +131,119 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         await File.WriteAllTextAsync(TokenPath, legacy);
         var auditPath = Path.Combine(_root, ".mdc", "provider-credentials.audit.jsonl");
         Directory.CreateDirectory(auditPath);
-        var construct = () => new OAuthTokenRefreshService(_root);
-        construct.Should().Throw<InvalidOperationException>().WithMessage("Encrypted OAuth persistence could not be initialized.");
+        await using var failed = new OAuthTokenRefreshService(_root);
+        var initialize = () => failed.InitializeAsync();
+        await initialize.Should().ThrowAsync<InvalidOperationException>().WithMessage("Encrypted OAuth persistence could not be initialized.");
         (await File.ReadAllTextAsync(TokenPath)).Should().Be(legacy);
         Directory.Delete(auditPath);
         await using var recovered = new OAuthTokenRefreshService(_root);
+        await recovered.InitializeAsync();
         recovered.GetToken("provider")!.RefreshToken.Should().Be("refresh-secret");
+        File.Exists(TokenPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task InterruptedLegacyErasure_RestartsFromVaultAndFinishesCleanup()
+    {
+        var vault = new FileProviderCredentialStore(_root);
+        await vault.SaveOAuthTokenAsync("provider", SampleToken());
+        // Persisted state after import, rename, and interrupted zero-fill of the old source.
+        await File.WriteAllBytesAsync(TokenPath + ".migrated", new byte[300]);
+
+        await using var service = new OAuthTokenRefreshService(_root);
+        await service.InitializeAsync();
+
+        service.GetToken("provider")!.AccessToken.Should().Be("access-secret");
+        File.Exists(TokenPath).Should().BeFalse();
+        File.Exists(TokenPath + ".migrated").Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task AuditFailures_ReconcileCommittedStoreAndDeleteWithRunningCache()
+    {
+        await using var service = new OAuthTokenRefreshService(_root);
+        await service.InitializeAsync();
+        var auditPath = Path.Combine(_root, ".mdc", "provider-credentials.audit.jsonl");
+        Directory.CreateDirectory(auditPath);
+
+        var store = () => service.StoreTokenAsync("provider", SampleToken());
+        var storeFailure = await Record.ExceptionAsync(store);
+        (storeFailure is IOException or UnauthorizedAccessException).Should().BeTrue();
+        service.GetToken("provider")!.AccessToken.Should().Be("access-secret");
+
+        var remove = () => service.RemoveTokenAsync("provider");
+        var deleteFailure = await Record.ExceptionAsync(remove);
+        (deleteFailure is IOException or UnauthorizedAccessException).Should().BeTrue();
+        service.GetToken("provider").Should().BeNull();
+        // The recovery generation must also respect the committed deletion.
+        var vault = new FileProviderCredentialStore(_root);
+        await File.WriteAllTextAsync(vault.VaultPath, "corrupt-primary");
+        (await vault.ReadOAuthTokensAsync()).Should().NotContainKey("provider");
+    }
+
+    [Fact]
+    public async Task ScopedAuditFailure_ReconcilesOnlyTheOwnedCacheWithoutLegacyFallback()
+    {
+        var scope = new ProviderCredentialScope("tenant", "connection", "account", "paper");
+        var other = new ProviderCredentialScope("other-tenant", "connection", "account", "paper");
+        var vault = new FileProviderCredentialStore(_root);
+        await vault.SaveOAuthTokenAsync("provider", SampleToken("unassigned-access"));
+        await vault.SaveScopedOAuthTokenAsync("provider", SampleToken("other-tenant-access"), other);
+        await using var service = new OAuthTokenRefreshService(_root, ownershipScope: scope);
+        await service.InitializeAsync();
+        var auditPath = Path.Combine(_root, ".mdc", "provider-credentials.audit.jsonl");
+        File.Delete(auditPath);
+        Directory.CreateDirectory(auditPath);
+
+        var storeFailure = await Record.ExceptionAsync(() => service.StoreTokenAsync("provider", SampleToken("owned-access")));
+        (storeFailure is IOException or UnauthorizedAccessException).Should().BeTrue();
+        service.GetToken("provider")!.AccessToken.Should().Be("owned-access");
+        var deleteFailure = await Record.ExceptionAsync(() => service.RemoveTokenAsync("provider"));
+        (deleteFailure is IOException or UnauthorizedAccessException).Should().BeTrue();
+        service.GetToken("provider").Should().BeNull();
+        (await vault.ReadScopedOAuthTokensAsync(other))["provider"].AccessToken.Should().Be("other-tenant-access");
+        (await vault.ReadOAuthTokensAsync())["provider"].AccessToken.Should().Be("unassigned-access");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task TruncatedPrimary_RecoversTokensWithoutOverwritingUsableBackup(string truncated)
+    {
+        var vault = new FileProviderCredentialStore(_root);
+        await vault.SaveOAuthTokenAsync("retained", SampleToken());
+        await vault.SaveOAuthTokenAsync("later", SampleToken("later-access"));
+        await File.WriteAllTextAsync(vault.VaultPath, truncated);
+
+        await using var service = new OAuthTokenRefreshService(_root);
+        await service.InitializeAsync();
+        service.GetToken("retained")!.AccessToken.Should().Be("access-secret");
+        await service.StoreTokenAsync("new", SampleToken("new-access"));
+        await File.WriteAllTextAsync(vault.VaultPath, "corrupt-again");
+
+        (await vault.ReadOAuthTokensAsync())["retained"].AccessToken.Should().Be("access-secret");
+    }
+
+    [Fact]
+    public async Task FailedLegacyAuditThenDeletion_RetryDoesNotResurrectOAuthToken()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(TokenPath)!);
+        await File.WriteAllTextAsync(TokenPath, JsonSerializer.Serialize(new Dictionary<string, OAuthToken>
+        {
+            ["provider"] = SampleToken()
+        }));
+        var auditPath = Path.Combine(_root, ".mdc", "provider-credentials.audit.jsonl");
+        Directory.CreateDirectory(auditPath);
+        await using var failed = new OAuthTokenRefreshService(_root);
+        var initialize = () => failed.InitializeAsync();
+        await initialize.Should().ThrowAsync<InvalidOperationException>();
+        Directory.Delete(auditPath);
+        await new FileProviderCredentialStore(_root).SaveOAuthTokenAsync("provider", null);
+
+        await using var recovered = new OAuthTokenRefreshService(_root);
+        await recovered.InitializeAsync();
+
+        recovered.GetToken("provider").Should().BeNull();
         File.Exists(TokenPath).Should().BeFalse();
     }
 
