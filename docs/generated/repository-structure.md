@@ -1137,7 +1137,6 @@ Meridian-main
 │       │   │   ├── test_pilot_readiness_dashboard.py
 │       │   │   ├── test_run_docs_automation_pilot_optin.py
 │       │   │   ├── test_scan_todos.py
-│       │   │   ├── test_validate_doc_hashes.py
 │       │   │   └── test_validate_docs_structure.py
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
@@ -10789,6 +10788,7 @@ Meridian-main
 │   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_validate_agent_definitions.py
+│   │   ├── test_validate_doc_hashes.py
 │   │   ├── test_validate_npm_audit.py
 │   │   ├── test_validate_observability_contract.py
 │   │   ├── test_validate_screenshot_captures.py
