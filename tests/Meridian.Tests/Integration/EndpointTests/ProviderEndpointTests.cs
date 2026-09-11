@@ -19,6 +19,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     private readonly HttpClient _providerReadClient;
     private readonly HttpClient _providerMutationClient;
     private readonly HttpClient _credentialMutationClient;
+    private readonly HttpClient _actorlessCredentialMutationClient;
 
     public ProviderEndpointTests(EndpointTestFixture fixture)
     {
@@ -29,8 +30,11 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         // Deliberately holds neither ManageProviders nor AdminMaintenance: the provider reads
         // declare an any-of set, so a platform operator who can only look must still get through.
         _providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
-        _providerMutationClient = fixture.CreatePermittedClient(UserPermission.ManageProviders);
-        _credentialMutationClient = fixture.CreatePermittedClient(
+        _providerMutationClient = fixture.CreateSessionClient(UserPermission.ManageProviders);
+        _credentialMutationClient = fixture.CreateSessionClient(
+            UserPermission.ManageProviders,
+            UserPermission.ManageCredentials);
+        _actorlessCredentialMutationClient = fixture.CreatePermittedClient(
             UserPermission.ManageProviders,
             UserPermission.ManageCredentials);
     }
@@ -41,6 +45,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         _providerReadClient.Dispose();
         _providerMutationClient.Dispose();
         _credentialMutationClient.Dispose();
+        _actorlessCredentialMutationClient.Dispose();
     }
 
     #region GET /api/providers/catalog
@@ -197,6 +202,37 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     #endregion
 
     #region POST /api/providers/configure
+
+    [Theory]
+    [InlineData("alpaca", "test-key", "test-secret")]
+    [InlineData("yahoo", null, null)]
+    public async Task ConfigureProvider_WithActorlessPermissions_RejectsCredentialsAndPreservesConfiguration(
+        string provider,
+        string? apiKey,
+        string? apiSecret)
+    {
+        using var beforeResponse = await _dataSourceReadClient.GetAsync("/api/config/datasources");
+        beforeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var before = await DeserializeAsync(beforeResponse);
+        var payload = new
+        {
+            Kind = provider,
+            DisplayName = $"Actorless Setup {Guid.NewGuid():N}",
+            ApiKey = apiKey,
+            ApiSecret = apiSecret,
+            Endpoint = (string?)null,
+            Capabilities = new[] { "backfill" }
+        };
+        using var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        using var response = await _actorlessCredentialMutationClient.PostAsync("/api/providers/configure", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        using var afterResponse = await _dataSourceReadClient.GetAsync("/api/config/datasources");
+        afterResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var after = await DeserializeAsync(afterResponse);
+        after["sources"].GetRawText().Should().Be(before["sources"].GetRawText());
+    }
 
     [Fact]
     public async Task ConfigureProvider_WithValidPolygonPayload_ReturnsSetupResult()
