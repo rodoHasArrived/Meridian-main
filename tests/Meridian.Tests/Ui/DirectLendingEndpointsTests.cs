@@ -27,6 +27,8 @@ public sealed class DirectLendingEndpointsTests
     [Fact]
     public async Task DerivedWrites_ExhaustOwnedLimiter_Return429WithRetryAfterWithoutExtraMutation()
     {
+        using var quiet = new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
+        using var bypass = new Meridian.Tests.Application.Composition.EnvironmentVariableScope("MDC_DISABLE_RATE_LIMIT", "true");
         var service = new InMemoryDirectLendingService();
         await using var app = await CreateAppAsync(services => services.AddSingleton<IDirectLendingService>(service),
             forceRateLimit: true);
@@ -638,6 +640,7 @@ public sealed class DirectLendingEndpointsTests
     [InlineData("packaged", false)]
     [InlineData("customer", false)]
     [InlineData("staging", false)]
+    [InlineData("missing-policy", false)]
     [InlineData("development", true)]
     [InlineData("Test", true)]
     public async Task GlobalApiLimiter_UsesTheSameDeploymentOverridePolicy(string mode, bool shouldBypass)
@@ -655,7 +658,8 @@ public sealed class DirectLendingEndpointsTests
         });
         builder.WebHost.UseTestServer();
         builder.Services.AddMeridianApiProblemDetails();
-        builder.Services.AddMutationRateLimiter();
+        if (mode != "missing-policy")
+            builder.Services.AddMutationRateLimiter();
         // Deliberately declare posture after registering the limiter: late composition must not
         // preserve a development bypass captured earlier in startup.
         if (mode == "production-posture")
