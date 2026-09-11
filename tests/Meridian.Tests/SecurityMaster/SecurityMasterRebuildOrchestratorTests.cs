@@ -224,6 +224,73 @@ public sealed class SecurityMasterRebuildOrchestratorTests
     }
 
     /// <summary>
+    /// The batch is durably committed before conflict detection runs, and a cancellation escapes
+    /// the scan's failure boundary by design. The cache must therefore already hold the committed
+    /// batch when the scan starts: with the checkpoint advanced, the next rebuild takes the
+    /// checkpoint-current path and would never revisit these records, leaving a nonempty cache
+    /// permanently stale.
+    /// </summary>
+    [Fact]
+    public async Task RebuildAsync_WhenCancelledDuringConflictDetection_CacheAlreadyHoldsTheCommittedBatch()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var cache = new SecurityMasterProjectionCache();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var projectionService = new SecurityMasterProjectionService(store, cache, rebuilder, NullLogger<SecurityMasterProjectionService>.Instance);
+        var options = new SecurityMasterOptions { PreloadProjectionCache = true, ProjectionReplayBatchSize = 10 };
+
+        cache.Upsert(CreateProjection(Guid.NewGuid(), "Existing", 1));
+
+        var projection = CreateProjection(securityId, "Tail Name", 3);
+
+        store.GetCheckpointAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(5L);
+        eventStore.GetLatestSequenceAsync(Arg.Any<CancellationToken>()).Returns(7L);
+        eventStore.LoadSinceSequenceAsync(5L, 10, Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                new SecurityMasterEventEnvelope(
+                    6,
+                    securityId,
+                    3,
+                    "TermsAmended",
+                    DateTimeOffset.UtcNow,
+                    "codex",
+                    null,
+                    null,
+                    JsonSerializer.SerializeToElement(projection, Meridian.Core.Serialization.SecurityMasterJsonContext.Default.SecurityProjectionRecord),
+                    JsonSerializer.SerializeToElement(new { sourceSystem = "test" }))
+            });
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(projection);
+        snapshotStore.LoadAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns((SecuritySnapshotRecord?)null);
+        conflictService.RecordConflictsForProjectionsAsync(
+                Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromException(new OperationCanceledException()));
+
+        var orchestrator = new SecurityMasterRebuildOrchestrator(
+            eventStore,
+            store,
+            cache,
+            rebuilder,
+            projectionService,
+            options,
+            NullLogger<SecurityMasterRebuildOrchestrator>.Instance,
+            conflictService);
+
+        var act = () => orchestrator.RebuildAsync();
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        cache.Get(securityId).Should().NotBeNull(
+            "the committed batch must reach the cache before the cancellable conflict scan");
+    }
+
+    /// <summary>
     /// The replay checkpoint is persisted before conflict detection runs, so a batch whose
     /// detection fails would otherwise never be rescanned: the next rebuild takes the
     /// checkpoint-current path. A transient failure must therefore be retried after replay

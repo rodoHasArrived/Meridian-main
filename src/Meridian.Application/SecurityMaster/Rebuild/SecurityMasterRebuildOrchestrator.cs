@@ -52,8 +52,12 @@ public sealed class SecurityMasterRebuildOrchestrator
         {
             var rebuiltRecords = await _projectionService.BuildWarmSetAsync(ct).ConfigureAwait(false);
             await _store.PersistProjectionBatchAsync(ProjectionName, latestSequence, rebuiltRecords, ct).ConfigureAwait(false);
-            var deferredWarmSecurityIds = await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+            // The cache must catch up with the committed batch before the cancellable conflict
+            // scan: the checkpoint has already advanced, so a cancellation escaping the scan
+            // would otherwise leave a nonempty cache permanently stale — the next rebuild takes
+            // the checkpoint-current path and never revisits these records.
             _cache.ReplaceAll(rebuiltRecords);
+            var deferredWarmSecurityIds = await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
             await RetryDeferredConflictDetectionAsync(deferredWarmSecurityIds, ct).ConfigureAwait(false);
             _logger.LogInformation(
                 "Security master rebuild performed full warm and checkpointed sequence {Sequence}",
@@ -93,11 +97,16 @@ public sealed class SecurityMasterRebuildOrchestrator
             }
 
             await _store.PersistProjectionBatchAsync(ProjectionName, cursor, rebuiltRecords, ct).ConfigureAwait(false);
-            deferredConflictSecurityIds.UnionWith(await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false));
+            // The cache must catch up with the committed batch before the cancellable conflict
+            // scan: the checkpoint has already advanced, so a cancellation escaping the scan
+            // would otherwise leave these records permanently stale in a nonempty cache — the
+            // next rebuild takes the checkpoint-current path and never revisits them.
             foreach (var rebuilt in rebuiltRecords)
             {
                 _cache.Upsert(rebuilt);
             }
+
+            deferredConflictSecurityIds.UnionWith(await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false));
         }
 
         await RetryDeferredConflictDetectionAsync(deferredConflictSecurityIds, ct).ConfigureAwait(false);
