@@ -59,6 +59,17 @@ Provider setup passes the server-resolved actor into credential persistence. Pla
 require an authenticated actor and never fall back to a request identity; signed webhook authentication
 remains independent of operator sessions.
 
+## Portfolio cash-ladder currency evidence
+
+`PortfolioCashLadderReadService` requires currency evidence for every opening cash balance and
+every contribution selected by `PortfolioCashLadderEngine`. Validation follows the engine's
+latest projection run, date window, held quantity, and recognized capital activity before any
+amount scaling or scenario arithmetic, including future principal pulled into an early-call
+scenario. An unused historical or out-of-window flow, or an excluded capital kind, cannot block otherwise
+complete cash evidence. A contributing amount with missing currency, or a foreign-currency
+amount without an authoritative FX source, returns the shared blocked result with no buckets
+or breach flags. Browser and WPF consumers receive the same decision state.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser

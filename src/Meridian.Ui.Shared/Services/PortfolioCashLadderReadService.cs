@@ -87,17 +87,6 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
             decisionBlockers.Add("An opening cash balance is missing currency evidence.");
         }
 
-        if (positions.SelectMany(static position => position.Operations.ProjectedCashFlows)
-            .Any(static flow => string.IsNullOrWhiteSpace(flow.Currency)))
-        {
-            decisionBlockers.Add("A projected cash flow is missing currency evidence.");
-        }
-
-        if (capitalActivity.Any(static activity => string.IsNullOrWhiteSpace(activity.Currency)))
-        {
-            decisionBlockers.Add("A capital activity is missing currency evidence.");
-        }
-
         var cashCurrencies = cashBalances
             .Select(static balance => balance.Currency)
             .Where(static currency => !string.IsNullOrWhiteSpace(currency))
@@ -115,23 +104,6 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
             decisionBlockers.Add("Cash balances do not identify a base currency.");
         }
 
-        if (baseCurrency != UnknownBaseCurrency)
-        {
-            var foreignFlowCurrencies = positions
-                .SelectMany(static position => position.Operations.ProjectedCashFlows)
-                .Select(static flow => flow.Currency)
-                .Concat(capitalActivity.Select(static row => row.Currency))
-                .Where(currency => !string.IsNullOrWhiteSpace(currency) &&
-                    !string.Equals(currency, baseCurrency, StringComparison.OrdinalIgnoreCase))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-            if (foreignFlowCurrencies.Length > 0)
-            {
-                decisionBlockers.Add(
-                    $"Projected flows include {string.Join(", ", foreignFlowCurrencies)} while the base currency is {baseCurrency}; no authoritative FX conversion source is registered.");
-            }
-        }
-
         var inputs = new PortfolioCashLadderInputs(
             asOfDate,
             horizonDays,
@@ -142,11 +114,29 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
             query.MinimumCashThreshold ?? 0m,
             Math.Max(1, query.BucketDays))
         {
-            PositionSourceNotices = positionNotices,
-            DecisionBlockers = decisionBlockers
+            PositionSourceNotices = positionNotices
         };
 
-        return PortfolioCashLadderEngine.Build(inputs, query.ScenarioId);
+        // Validate raw currencies before any amount arithmetic, using the engine's own run,
+        // horizon, position, and capital-kind selection. Excluded provider rows cannot affect cash.
+        var contributionCurrencies = PortfolioCashLadderEngine.GetContributionCurrencies(inputs, query.ScenarioId).ToArray();
+        if (contributionCurrencies.Any(static currency => string.IsNullOrWhiteSpace(currency)))
+        {
+            decisionBlockers.Add("A contributing cash flow or capital activity is missing currency evidence.");
+        }
+
+        var foreignFlowCurrencies = contributionCurrencies
+            .Where(currency => !string.IsNullOrWhiteSpace(currency) &&
+                !string.Equals(currency, baseCurrency, StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (baseCurrency != UnknownBaseCurrency && foreignFlowCurrencies.Length > 0)
+        {
+            decisionBlockers.Add(
+                $"Projected flows include {string.Join(", ", foreignFlowCurrencies)} while the base currency is {baseCurrency}; no authoritative FX conversion source is registered.");
+        }
+
+        return PortfolioCashLadderEngine.Build(inputs with { DecisionBlockers = decisionBlockers }, query.ScenarioId);
     }
 
     private async Task<(IReadOnlyList<PortfolioCashLadderPositionDto> Positions, IReadOnlyList<string> Notices)> LoadPositionsAsync(
