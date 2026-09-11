@@ -238,9 +238,49 @@ public sealed class BrokerageConnectionEndpointsTests
         }
     }
 
+    [Fact]
+    public async Task AlpacaConnectAndRevoke_RetainAuthenticatedAuditActor()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(_ => { }, new StringContent("""{"account_number":"PA-AUDIT"}""", Encoding.UTF8, "application/json")))));
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/brokerage-connections/alpaca/connect", JsonContent(new
+        {
+            keyId = "audit-key",
+            secretKey = "audit-secret",
+            environment = "paper",
+            requestedBy = "forged-operator"
+        }));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.DeleteAsync("/api/brokerage-connections/alpaca")).StatusCode.Should().Be(HttpStatusCode.OK);
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var path = Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl");
+        var audit = (await File.ReadAllLinesAsync(path)).Select(line => JsonSerializer.Deserialize<JsonElement>(line)).ToArray();
+        audit.Should().HaveCount(3);
+        audit.Should().OnlyContain(entry => entry.GetProperty("actor").GetString() == "brokerage-test-operator");
+    }
+
+    [Fact]
+    public async Task AlpacaMutation_WithoutActorRejectsConnectAndRevoke()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        await using var app = await CreateAppAsync(_ => { }, includeActor: false);
+        var client = app.GetTestClient();
+        (await client.PostAsync("/api/brokerage-connections/alpaca/connect", JsonContent(new
+        {
+            keyId = "audit-key",
+            secretKey = "audit-secret",
+            requestedBy = "forged-operator"
+        }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.DeleteAsync("/api/brokerage-connections/alpaca")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        File.Exists(app.Services.GetRequiredService<IProviderCredentialStore>().VaultPath).Should().BeFalse();
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
-        UserPermission permissions = UserPermission.ViewTrades | UserPermission.ManageCredentials)
+        UserPermission permissions = UserPermission.ViewTrades | UserPermission.ManageCredentials,
+        bool includeActor = true)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -258,7 +298,8 @@ public sealed class BrokerageConnectionEndpointsTests
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "brokerage-test-operator";
+            if (includeActor)
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "brokerage-test-operator";
             await next();
         });
         app.MapBrokerageConnectionEndpoints(new JsonSerializerOptions

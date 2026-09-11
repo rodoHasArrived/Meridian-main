@@ -35,7 +35,41 @@ Subprocess tests cover interrupted serialization, restart after acknowledged pub
 and concurrent writers claiming one complete import. These are process-crash tests; they do
 not certify physical power-loss behavior on every filesystem or storage device.
 
+Alpaca Trading API portfolio snapshots explicitly bind `us_equity` and `us_option` position
+values to USD only when the authenticated account response explicitly supplies USD. The
+[provider Trading API models](https://alpaca.markets/sdks/python/api_reference/trading/models.html)
+define the account and position dollar-value contract. Unknown assets, crypto quote denominations,
+non-USD accounts, and missing account currency remain unbound; statement intake rejects those
+missing position currencies rather than inferring them from account base currency. The gateway
+preserves missing account currency as missing evidence instead of supplying USD.
+
+Canonical CSV import requires the currency column in the header and at least one data row.
+Header-only statements cannot validate or persist as empty imports; every admitted row retains
+explicit currency and invariant decimal evidence.
+
+Canonical CSV statement imports require an explicit three-letter currency on every row.
+Older seven-column files must be regenerated with source-backed currency evidence; the
+importer does not supply USD. Quantity, price, cash and nonblank fees use invariant decimal
+notation without grouping separators. Missing optional fees remain absent, while malformed
+fees fail validation and import before persistence. Quoted fields and explicit zero amounts
+remain supported.
+
 Use this module for provider implementation, external service integration, and adapter behavior.
+
+The legacy IB Flex broker importer streams XML and materializes only supported trade, position,
+and cash rows. Its existing 32 MiB source-byte and 100,000-row ceilings are joined by independent
+64-level nesting, 500,000 parse-node (including attributes), 50,000 per-row node, and 64 KiB scalar
+limits, enforced while reading rather than after building a full document. Unrelated Flex sections
+are scanned under those quotas but not retained in a parse tree. DTDs remain prohibited; nested
+statements and element/text-based row payloads are rejected.
+
+Validation and import share the same field rules. Account identity must come from the row or
+statement; currency must be explicitly supplied as a three-letter code; required numeric fields
+must contain invariant decimals without grouping separators. Missing values no longer become USD
+or zero. Explicit zero values and source-provided statement account/date fallbacks remain valid.
+Row checksums keep their existing uppercase SHA-256 identities, including retained row comments;
+source/canonical artifact hashes and atomic import uniqueness remain owned by the existing snapshot
+and canonical-store path. Cancellation propagates during XML reading and canonical row mapping.
 
 Backfill worker shutdown closes intake, cancels and observes every admitted provider attempt,
 atomically releases queue ownership, and retains a restart-safe job transition before owned

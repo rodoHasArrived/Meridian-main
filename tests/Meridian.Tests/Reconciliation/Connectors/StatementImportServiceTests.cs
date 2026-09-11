@@ -92,6 +92,178 @@ public sealed class StatementImportServiceTests : IDisposable
         preview.ProfileSuggestions[0].Score.Should().Be(1.0m);
     }
 
+    [Theory]
+    [InlineData("missing-currency")]
+    [InlineData("blank-currency")]
+    [InlineData("invalid-currency")]
+    [InlineData("quantity-comma")]
+    [InlineData("price-comma")]
+    [InlineData("cash-comma")]
+    [InlineData("fees-comma")]
+    [InlineData("fees-invalid")]
+    [InlineData("quantity-blank")]
+    [InlineData("price-blank")]
+    [InlineData("cash-blank")]
+    public async Task MonthEndCanonicalUpload_MalformedEvidenceFailsBeforeRetention(string defect)
+    {
+        var columns = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission".Split(',').ToList();
+        var values = new List<string> { "FUND-A", "SPY", "10", "500", "-5000", "trade", "2026-06-02", "", "USD", "1.5" };
+        switch (defect)
+        {
+            case "missing-currency": columns.RemoveRange(7, 3); values.RemoveRange(7, 3); break;
+            case "blank-currency": values[8] = " "; break;
+            case "invalid-currency": values[8] = "???"; break;
+            case "quantity-comma": values[2] = "1,25"; break;
+            case "price-comma": values[3] = "1,25"; break;
+            case "cash-comma": values[4] = "1,25"; break;
+            case "fees-comma": values[9] = "1,25"; break;
+            case "fees-invalid": values[9] = "unknown"; break;
+            case "quantity-blank": values[2] = " "; break;
+            case "price-blank": values[3] = " "; break;
+            case "cash-blank": values[4] = " "; break;
+        }
+
+        var content = string.Join(',', columns) + "\n" + string.Join(',', values.Select(value => "\"" + value + "\"")) + "\n";
+        var document = new StatementSourceDocument("month-end.csv", Encoding.UTF8.GetBytes(content));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("<CURSYM></CURSYM>")]
+    [InlineData("<CURSYM>  </CURSYM>")]
+    [InlineData("<CURSYM/>")]
+    public async Task MonthEndOfxUpload_ExplicitBlankCurrencyCannotBorrowStatementCurrency(string currencyTag)
+    {
+        var content = "<OFX><STMTRS><CURDEF>USD</CURDEF><BANKACCTFROM><ACCTID>FUND-A</ACCTID></BANKACCTFROM>"
+            + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT><FITID>BANK-1</FITID>"
+            + currencyTag + "</STMTTRN></STMTRS></OFX>";
+        var document = new StatementSourceDocument("blank-currency.ofx", Encoding.UTF8.GetBytes(content));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("CURDEF", "EUR")]
+    [InlineData("CURDEF", "")]
+    [InlineData("CURDEF", " ")]
+    [InlineData("CURSYM", "EUR")]
+    [InlineData("CURSYM", "")]
+    [InlineData("CURSYM", " ")]
+    public async Task MonthEndOfxUpload_ConflictingCurrencyTagsFailBeforeRetention(string tag, string conflicting)
+    {
+        var tags = $"<{tag}>USD</{tag}><{tag}>{conflicting}</{tag}><{tag}>USD</{tag}>";
+        var content = "<OFX><STMTRS><BANKACCTFROM><ACCTID>FUND-A</ACCTID></BANKACCTFROM>"
+            + (tag == "CURDEF" ? tags : "<CURDEF>USD</CURDEF>")
+            + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT>"
+            + (tag == "CURSYM" ? tags : string.Empty) + "</STMTTRN></STMTRS></OFX>";
+        var document = new StatementSourceDocument("conflicting-currency.ofx", Encoding.UTF8.GetBytes(content));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task MonthEndOfxUpload_EquivalentAccountCasingPreservesAuthorizedImport()
+    {
+        static string Statement(string account, string id) => "<STMTRS><CURDEF>USD</CURDEF>"
+            + $"<BANKACCTFROM><ACCTID>{account}</ACCTID><ACCTID>{account.ToLowerInvariant()}</ACCTID></BANKACCTFROM>"
+            + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT>"
+            + $"<FITID>{id}</FITID></STMTTRN></STMTRS>";
+        var document = new StatementSourceDocument("account-casing.ofx",
+            Encoding.UTF8.GetBytes("<OFX>" + Statement("FUND-A", "1") + Statement("fund-a", "2") + "</OFX>"));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeTrue();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("ReadyToImport");
+        (await _service.CommitAsync(CommitRequest(document))).RecordCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task MonthEndOfxUpload_MixedRowAndStatementCurrenciesSurviveCanonicalMapping()
+    {
+        var content = "<OFX><STMTRS><CURDEF>USD</CURDEF><BANKACCTFROM><ACCTID>FUND-A</ACCTID></BANKACCTFROM>"
+            + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT><FITID>USD-1</FITID></STMTTRN>"
+            + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260603</DTPOSTED><TRNAMT>-10</TRNAMT><CURSYM>GBP</CURSYM><FITID>GBP-2</FITID></STMTTRN>"
+            + "</STMTRS></OFX>";
+        var document = new StatementSourceDocument("mixed-currencies.ofx", Encoding.UTF8.GetBytes(content));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeTrue();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("ReadyToImport");
+        var result = await _service.CommitAsync(CommitRequest(document));
+        var canonical = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
+        canonical.Should().Contain(",USD,,USD-1");
+        canonical.Should().Contain(",GBP,,GBP-2");
+    }
+
+    [Fact]
+    public async Task MonthEndAlpacaSnapshot_FillsRetainAccountCurrencyThroughCommit()
+    {
+        var document = FixtureDocument("alpaca-combined-snapshot.json");
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeTrue();
+        var result = await _service.CommitAsync(CommitRequest(document, externalAccountId: "PA3ALPACA01"));
+        result.RecordCount.Should().Be(8);
+        var canonical = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
+        canonical.Should().Contain(",USD,1.05,fill-1001");
+        canonical.Should().Contain(",USD,1.02,fill-1002");
+    }
+
+    [Fact]
+    public async Task MonthEndAlpacaSnapshot_PositionsWithoutRowCurrencyCannotBorrowAccountCurrency()
+    {
+        var snapshot = System.Text.Json.Nodes.JsonNode.Parse(StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"))!;
+        foreach (var position in snapshot["portfolio"]!["positions"]!.AsArray())
+        {
+            position!.AsObject().Remove("currency");
+        }
+
+        var document = new StatementSourceDocument("fetched-positions.json", Encoding.UTF8.GetBytes(snapshot.ToJsonString()));
+        var validation = await _service.ValidateAsync(document, AlpacaActivityStatementConnector.ConnectorId);
+        validation.IsValid.Should().BeFalse();
+        var preview = await _service.PreviewAsync(document, AlpacaActivityStatementConnector.ConnectorId);
+        preview.Issues.Should().Contain(issue => issue.Code == "ROW_INVALID_CURRENCY" && issue.RowNumber == null);
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document,
+            externalAccountId: "PA3ALPACA01", connectorId: AlpacaActivityStatementConnector.ConnectorId)));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task MonthEndAlpacaSnapshot_ExplicitBlankPositionCurrencyCannotBorrowAccountCurrency(string currency)
+    {
+        var snapshot = System.Text.Json.Nodes.JsonNode.Parse(StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"))!;
+        snapshot["portfolio"]!["positions"]![0]!["currency"] = currency;
+        var document = new StatementSourceDocument("blank-position-currency.json", Encoding.UTF8.GetBytes(snapshot.ToJsonString()));
+
+        (await _service.ValidateAsync(document, AlpacaActivityStatementConnector.ConnectorId)).IsValid.Should().BeFalse();
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document,
+            externalAccountId: "PA3ALPACA01", connectorId: AlpacaActivityStatementConnector.ConnectorId)));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task MonthEndAlpacaSnapshot_MissingAccountCurrencyFailsBeforeRetention()
+    {
+        var snapshot = System.Text.Json.Nodes.JsonNode.Parse(StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"))!;
+        snapshot["portfolio"]!["account"]!["currency"] = null;
+        var document = new StatementSourceDocument("missing-account-currency.json", Encoding.UTF8.GetBytes(snapshot.ToJsonString()));
+
+        (await _service.ValidateAsync(document, AlpacaActivityStatementConnector.ConnectorId)).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, AlpacaActivityStatementConnector.ConnectorId)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(
+            CommitRequest(document, externalAccountId: "PA3ALPACA01", connectorId: AlpacaActivityStatementConnector.ConnectorId)));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
     [Fact]
     public async Task Preview_FlexXml_AutoDetectsIbFlexConnector()
     {
@@ -182,12 +354,28 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Commit_MultiStatementOfxAccounts_RefusesBeforeRetainingEvidence()
+    {
+        const string row = "<STMTTRN><TRNTYPE>CREDIT</TRNTYPE><DTPOSTED>20260601</DTPOSTED><TRNAMT>10</TRNAMT></STMTTRN>";
+        var content = "<OFX><STMTRS><CURDEF>USD</CURDEF><BANKACCTFROM><ACCTID>FUND-A</ACCTID></BANKACCTFROM>" + row
+            + "</STMTRS><STMTRS><CURDEF>USD</CURDEF><BANKACCTFROM><ACCTID>FUND-B</ACCTID></BANKACCTFROM>" + row + "</STMTRS></OFX>";
+        var document = new StatementSourceDocument("mixed.ofx", Encoding.UTF8.GetBytes(content), ExternalAccountId: "FUND-A");
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        var commit = () => _service.CommitAsync(CommitRequest(document));
+        await commit.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*OFX_MULTIPLE_ACCOUNTS*");
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Commit_MixedParsedAccounts_FailsBeforeEvidenceRetentionOrMatching()
     {
         const string source =
-            "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
-            "FUND-A,AAPL,1,100,-100,trade,2026-06-02\n" +
-            "FUND-B,MSFT,1,200,-200,trade,2026-06-03\n";
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\n" +
+            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,USD\n" +
+            "FUND-B,MSFT,1,200,-200,trade,2026-06-03,,USD\n";
         var document = new StatementSourceDocument(
             "mixed-accounts.csv",
             Encoding.UTF8.GetBytes(source),
@@ -217,7 +405,8 @@ public sealed class StatementImportServiceTests : IDisposable
                 Price: 100m,
                 CashAmount: -100m,
                 ActivityType: "trade",
-                TradeDate: new DateOnly(2026, 6, 2)));
+                TradeDate: new DateOnly(2026, 6, 2),
+                Currency: "USD"));
         var service = new StatementImportService(
             new StatementConnectorRegistry([connector]),
             _catalog,
@@ -490,13 +679,13 @@ public sealed class StatementImportServiceTests : IDisposable
     public async Task Scenario_UpgradeAfterCanonicalOnlyImport_ReimportReturnsTheRetainedLegacyRun()
     {
         const string source =
-            "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
-            "FUND-A,AAPL,1,100,-100,trade,2026-06-02\n";
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\n" +
+            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,USD\n";
         // The pre-upgrade run is keyed by the hash of the canonical rendering, so this constant has
         // to be the exact artifact the writer produces today — including every trailing column.
         const string canonical =
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId,activityCategory,activitySubtype,providerActivityCode,relatedTransactionId,orderId,description\n" +
-            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,,,,,,,,,\n";
+            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,USD,,,,,,,,\n";
         var document = new StatementSourceDocument("legacy-import.csv", Encoding.UTF8.GetBytes(source));
         var canonicalHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
         var rawHash = Convert.ToHexString(SHA256.HashData(document.Content.Span));
@@ -1051,8 +1240,8 @@ public sealed class StatementImportServiceTests : IDisposable
         {
             LastRequest = request;
             const string content =
-                "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
-                "EXT-001,AAPL,5,100,-500,trade,2026-06-20\n";
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\n" +
+                "EXT-001,AAPL,5,100,-500,trade,2026-06-20,,USD\n";
             return Task.FromResult(new StatementSourceDocument("fetched.fake", Encoding.UTF8.GetBytes(content)));
         }
 

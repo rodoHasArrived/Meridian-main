@@ -16,7 +16,93 @@ namespace Meridian.Tests.Application.DirectLending;
 public sealed class PostgresDirectLendingCommandServiceTests
 {
     [Fact]
-    public async Task RequestProjectionAsync_PublishesSecurityMasterBackedAssetOperationsProjection()
+    public async Task ServiceFacade_DerivedRuns_PreserveRetryMetadata()
+    {
+        var loanId = Guid.NewGuid();
+        var metadata = new DirectLendingCommandMetadataDto(Guid.NewGuid(), null, null, "test", false);
+        var commands = Substitute.For<IDirectLendingCommandService>();
+        commands.RequestProjectionAsync(loanId, null, metadata, Arg.Any<CancellationToken>())
+            .Returns(DirectLendingCommandResult<ProjectionRunDto>.Failure(DirectLendingErrorCode.NotFound, "Missing loan"));
+        commands.ReconcileAsync(loanId, metadata, Arg.Any<CancellationToken>())
+            .Returns(DirectLendingCommandResult<ReconciliationRunDto>.Failure(DirectLendingErrorCode.NotFound, "Missing loan"));
+        var service = new PostgresDirectLendingService(commands, Substitute.For<IDirectLendingQueryService>());
+        var projection = () => service.RequestProjectionAsync(loanId, metadata: metadata);
+        await projection.Should().ThrowAsync<DirectLendingCommandException>();
+        var reconciliation = () => service.ReconcileAsync(loanId, metadata: metadata);
+        await reconciliation.Should().ThrowAsync<DirectLendingCommandException>();
+        await commands.Received(1).RequestProjectionAsync(loanId, null, metadata, Arg.Any<CancellationToken>());
+        await commands.Received(1).ReconcileAsync(loanId, metadata, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RequestProjectionAsync_RetryAfterPublicationFailure_RetainsCommittedRunAndFlows()
+    {
+        var loanId = Guid.NewGuid();
+        var commandId = Guid.NewGuid();
+        var contract = BuildContract(loanId);
+        var runs = new List<ProjectionRunDto>();
+        var savedFlows = new Dictionary<Guid, IReadOnlyList<ProjectedCashFlowDto>>();
+        var operations = Substitute.For<IDirectLendingOperationsStore>();
+        operations.GetProjectionRunsAsync(loanId, Arg.Any<CancellationToken>()).Returns(_ => runs.ToArray());
+        operations.GetProjectedCashFlowsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(call => savedFlows[call.ArgAt<Guid>(0)]);
+        operations.GetCashTransactionsAsync(loanId, Arg.Any<CancellationToken>()).Returns([]);
+        operations.GetReconciliationRunsAsync(loanId, Arg.Any<CancellationToken>()).Returns([]);
+        operations.SaveProjectionRunAsync(Arg.Any<ProjectionRunDto>(), Arg.Any<IReadOnlyList<ProjectedCashFlowDto>>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var run = call.ArgAt<ProjectionRunDto>(0);
+                if (runs.Any(existing => existing.ProjectionRunId == run.ProjectionRunId))
+                    return runs.Single(existing => existing.ProjectionRunId == run.ProjectionRunId);
+                runs.Add(run);
+                savedFlows.Add(run.ProjectionRunId, call.ArgAt<IReadOnlyList<ProjectedCashFlowDto>>(1));
+                return run;
+            });
+        var query = Substitute.For<IDirectLendingQueryService>();
+        query.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, contract, BuildServicing(loanId)));
+        query.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns([
+            new LoanEventLineageDto(Guid.NewGuid(), 7, "loan.daily-accrual-posted", 3,
+                new DateOnly(2026, 3, 24), DateTimeOffset.UtcNow, "{}", null, null, commandId, "test", false)]);
+        var assetOperations = Substitute.For<IAssetOperationsCommandService>();
+        var publications = 0;
+        assetOperations.UpsertProjectionAsync(Arg.Any<AssetOperationsProjectionDto>(),
+                Arg.Any<AssetOperationsWriteApprovalDto>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                if (++publications == 1)
+                    throw new IOException("publication failed after run commit");
+                var projection = call.ArgAt<AssetOperationsProjectionDto>(0);
+                return new AssetOperationsDetailDto(projection.Subject, projection.TermsHistory,
+                    projection.LifecycleEvents, projection.CashFlowProjectionRuns, projection.ProjectedCashFlows,
+                    projection.ActualActivity, projection.ReconciliationRuns, projection.ReconciliationResults,
+                    projection.LedgerProjections, projection.Readiness, projection.WorkflowAudit);
+            });
+        PostgresDirectLendingCommandService CreateService() => new(Substitute.For<IDirectLendingStateStore>(),
+            operations, query, new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions(), assetOperations);
+        var metadata = new DirectLendingCommandMetadataDto(commandId, null, null, "test", true);
+        var accepted = await CreateService().RequestProjectionAsync(loanId, new DateOnly(2026, 6, 30), metadata);
+        accepted.IsSuccess.Should().BeTrue();
+        publications.Should().Be(0, "committed requests leave publication to the durable worker");
+        await FluentActions.Awaiting(() => CreateService().PublishAssetOperationsAsync(loanId, metadata))
+            .Should().ThrowAsync<IOException>();
+        var committed = runs.Should().ContainSingle().Subject;
+        var committedFlowIds = savedFlows[committed.ProjectionRunId].Select(flow => flow.ProjectedCashFlowId).ToArray();
+
+        var retried = await CreateService().RequestProjectionAsync(loanId, new DateOnly(2026, 6, 30), metadata);
+
+        retried.IsSuccess.Should().BeTrue();
+        retried.Value!.ProjectionRunId.Should().Be(committed.ProjectionRunId);
+        runs.Should().ContainSingle("publication retry must reuse the committed projection");
+        savedFlows[committed.ProjectionRunId].Select(flow => flow.ProjectedCashFlowId).Should().Equal(committedFlowIds);
+        publications.Should().Be(1, "request retries must not publish synchronously");
+        (await CreateService().PublishAssetOperationsAsync(loanId, metadata)).IsSuccess.Should().BeTrue();
+        publications.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task PublicationWorker_PublishesCommittedSecurityMasterBackedAssetOperationsProjection()
     {
         var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         var commandId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -25,14 +111,23 @@ public sealed class PostgresDirectLendingCommandServiceTests
         AssetOperationsProjectionDto? capturedProjection = null;
         AssetOperationsWriteApprovalDto? capturedApproval = null;
 
+        ProjectionRunDto? committedRun = null;
+        IReadOnlyList<ProjectedCashFlowDto> committedFlows = [];
         var operationsStore = Substitute.For<IDirectLendingOperationsStore>();
         operationsStore.GetProjectionRunsAsync(loanId, Arg.Any<CancellationToken>())
-            .Returns([]);
+            .Returns(_ => committedRun is null ? [] : new[] { committedRun });
+        operationsStore.GetProjectedCashFlowsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(_ => committedFlows);
         operationsStore.SaveProjectionRunAsync(
                 Arg.Any<ProjectionRunDto>(),
                 Arg.Any<IReadOnlyList<ProjectedCashFlowDto>>(),
                 Arg.Any<CancellationToken>())
-            .Returns(call => call.ArgAt<ProjectionRunDto>(0));
+            .Returns(call =>
+            {
+                committedRun = call.ArgAt<ProjectionRunDto>(0);
+                committedFlows = call.ArgAt<IReadOnlyList<ProjectedCashFlowDto>>(1);
+                return committedRun;
+            });
         operationsStore.GetCashTransactionsAsync(loanId, Arg.Any<CancellationToken>())
             .Returns([]);
         operationsStore.GetReconciliationRunsAsync(loanId, Arg.Any<CancellationToken>())
@@ -96,6 +191,9 @@ public sealed class PostgresDirectLendingCommandServiceTests
             new DirectLendingCommandMetadataDto(commandId, null, null, "unit-test", false));
 
         result.IsSuccess.Should().BeTrue();
+        capturedProjection.Should().BeNull("publication is not part of the request response");
+        (await service.PublishAssetOperationsAsync(loanId,
+            new DirectLendingCommandMetadataDto(commandId, null, null, "unit-test", true))).IsSuccess.Should().BeTrue();
         capturedProjection.Should().NotBeNull();
         capturedProjection!.Subject.SecurityId.Should().Be(Guid.Parse("99999999-9999-9999-9999-999999999999"));
         capturedProjection.Subject.AssetClass.Should().Be("DirectLoan");

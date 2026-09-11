@@ -11,6 +11,20 @@ last_reviewed: 2026-09-05
 
 # src/Meridian.FinancialOperations
 
+OFX account identity is scoped to the containing bank, credit-card or investment statement.
+The parser does not borrow an account from a sibling statement or unrelated row. Missing,
+blank or conflicting statement headers cannot supply account evidence. The document-level
+account summary is populated only when every emitted row shares one nonblank account;
+connector validation and import authorization retain responsibility for rejecting invalid rows
+and mixed-account imports before evidence retention. Conflicting repeated account tags remain
+invalid even when a later tag repeats the first value. The tokenizer recognizes all XML whitespace
+before attributes, and mixed accounts produce a blocking connector issue during preview and
+validation as well as import.
+
+OFX canonical rows retain the containing statement's `CURDEF` currency when no row-level
+currency is supplied. The parser does not borrow currency from another statement; explicit
+row evidence takes precedence. Missing currency remains absent for downstream refusal.
+
 Operations Continuity forwards the journal candidate's typed provenance to the governed posting
 command. PostgreSQL round-trip coverage verifies that seeded origins retain the `SEEDED` journal
 tag and that fixture evidence marked as real cannot commit a journal or a successful posting audit.
@@ -23,20 +37,27 @@ Close acceptance additionally proves account/entity/book subject ownership indep
 
 Hard close and workflow publication re-evaluate shared readiness before mutation, including callers outside the workstation HTTP route. Complete subject scope, authenticated tenant/company, exact workflow revision, and current retained prerequisites are required. Close packages, locks, and published exports are outputs of that transition; they do not create circular prerequisites. Historical approval decisions stay visible while the current decision controls readiness. The retained close plan proves each task's required sign-offs; calendar reviewer totals describe a different approval dimension.
 
-Private-capital close evidence is selected by fund event, period, and ledger entity. Partner
-statements must reference a selected event in the same month and match the capital account,
-investor, and currency. Each selected expense or fee event must retain allocation support;
-management-company evidence signals also come from selected event records. Cumulative
-capital-account balances, history, and evidence remain available as diagnostics, but prior-period
-or other-entity statement and allocation evidence cannot satisfy the selected close.
-`PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for
-mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support,
-and restores readiness by repairing that support while preserving cumulative balances and history.
-A separate scenario rejects a foreign-period statement even when it carries the selected event ID.
-These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending
-the required hosted integration evidence.
+Operations Continuity checklist acknowledgments are explicit retained reviewer actions, separate from gate execution completion. The checklist uses gate-specific evidence or the successful gate completion audit receipt, follows retained audit links, and invalidates acknowledgments when prerequisite evidence changes, approval is rejected, or a closed workflow is reopened. Failed attempts do not count as acknowledgments or evidence changes. Submission, approval, and close validate supplied control identities and timestamps against current retained acknowledgments; historical close packages cannot authorize a new close cycle. The assigned independent reviewer records the decision at its actual time, preserving the original submitter and submission time. Successful prerequisite changes return an active approval to Pending while retaining its history.
+
+Private-capital close evidence is selected by fund event, period, and ledger entity. Partner statements must reference a selected event in the same month and match the capital account, investor, and currency. Each selected expense or fee event must retain allocation support; management-company evidence signals also come from selected event records. Cumulative capital-account balances, history, and evidence remain available as diagnostics, but prior-period or other-entity statement and allocation evidence cannot satisfy the selected close.
+`PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support, and restores readiness by repairing that support while preserving cumulative balances and history. A separate scenario rejects a foreign-period statement even when it carries the selected event ID. These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending the required hosted integration evidence.
 
 ## Purpose
+
+OFX duplicate account or currency tags cannot overwrite conflicting evidence. Account identity
+comparisons use the same case-insensitive equality as the authorization boundary. Currency
+validation omits source row numbers when a connector does not provide them, avoiding false
+locations based on the retained-record index.
+
+Canonical CSV connector validation rejects blank required amounts, ambiguous grouped decimals, malformed nonblank fees,
+and missing or invalid currency before rendering financial values. Statement import preview,
+validation, and commit all require explicit three-letter currency before retaining artifacts.
+OFX statement currency fills only absent row currency; explicit blank or self-closing row tags
+remain invalid; mixed explicit and inherited currency rows map through the same canonical key.
+Alpaca legacy fills use the account currency verified against the snapshot identity. Position
+currency must be supplied by the gateway; missing or blank row currency cannot borrow the account
+currency. Missing account currency remains a refusal. Month-end upload regressions
+in `StatementImportServiceTests` exercise these rules through the actual retention boundary.
 
 Physical bounded-context module project for reconciliation, accounting records, payment approvals,
 bank-transaction records, accounting-basis policy, ledger text-journal reporting, close workflows,
