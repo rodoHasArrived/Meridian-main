@@ -81,7 +81,14 @@ public sealed record DataConfidenceIndicatorModel(
             _ when freshness.IsStale => DataConfidenceLevel.Stale,
             // Current is asserted only when the evidence carries an as-of instant; the DTO
             // permits a missing timestamp, and "Current · As of unavailable" contradicts itself.
-            EvidenceStatusDto.Ready when freshness.AsOf is not null => DataConfidenceLevel.Current,
+            // The instant must also not sit ahead of the local clock beyond plausible skew:
+            // evidence freshness ages one-sidedly upstream (EvidenceContributionHelpers.Node),
+            // so a malformed future timestamp arrives non-stale and would otherwise read
+            // Current until wall-clock time caught up with it.
+            EvidenceStatusDto.Ready when freshness.AsOf is { } asOf
+                => asOf - DateTimeOffset.UtcNow > MaximumForwardClockSkew
+                    ? DataConfidenceLevel.Stale
+                    : DataConfidenceLevel.Current,
             _ => DataConfidenceLevel.Unknown
         };
 
@@ -317,9 +324,9 @@ public sealed record DataConfidenceIndicatorModel(
         _ => DataConfidenceLabels.Unknown
     };
 
-    // Providers stamp received-at instants with their own clocks; small skew against this
-    // workstation is normal, but anything further ahead is malformed diagnostics rather
-    // than evidence of fresh data.
+    // Providers and evidence contributors stamp as-of instants with their own clocks; small
+    // skew against this workstation is normal, but anything further ahead is malformed
+    // diagnostics rather than evidence of fresh data.
     private static readonly TimeSpan MaximumForwardClockSkew = TimeSpan.FromMinutes(1);
 
     private static bool HasDegradedStream(

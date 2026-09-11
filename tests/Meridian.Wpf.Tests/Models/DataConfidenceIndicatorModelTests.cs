@@ -351,6 +351,28 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromEvidence_ReadyWithAFutureAsOfInstant_ReadsAsStale()
+    {
+        // Evidence freshness ages one-sidedly upstream (EvidenceContributionHelpers.Node
+        // computes UtcNow - asOf against a seven-day window), so a malformed future as-of
+        // arrives here as a non-stale Ready DTO; the badge must apply the same forward-skew
+        // guard as the provider path instead of reporting Current until wall-clock time
+        // catches up. Small forward skew stays within tolerance.
+        var futureModel = DataConfidenceIndicatorModel.FromEvidence(
+            EvidenceStatusDto.Ready,
+            new EvidenceFreshnessDto(DateTimeOffset.UtcNow.AddHours(6), IsStale: false, Reason: null),
+            sourceSystem: "Ledger");
+        var skewedModel = DataConfidenceIndicatorModel.FromEvidence(
+            EvidenceStatusDto.Ready,
+            new EvidenceFreshnessDto(DateTimeOffset.UtcNow.AddSeconds(10), IsStale: false, Reason: null),
+            sourceSystem: "Ledger");
+
+        futureModel.ConfidenceLabel.Should().Be(DataConfidenceLabels.Stale);
+        futureModel.Tone.Should().Be(WorkspaceTone.Warning);
+        skewedModel.ConfidenceLabel.Should().Be(DataConfidenceLabels.Current);
+    }
+
+    [Fact]
     public void WithUpdatedFields_TheExplanationDescribesTheCurrentValues()
     {
         // Explanation is computed from the record's current fields: a `with` update must
