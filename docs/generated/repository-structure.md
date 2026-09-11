@@ -1137,6 +1137,7 @@ Meridian-main
 │       │   │   ├── test_pilot_readiness_dashboard.py
 │       │   │   ├── test_run_docs_automation_pilot_optin.py
 │       │   │   ├── test_scan_todos.py
+│       │   │   ├── test_validate_doc_hashes.py
 │       │   │   └── test_validate_docs_structure.py
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
