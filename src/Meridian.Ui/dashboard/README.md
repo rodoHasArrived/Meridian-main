@@ -39,6 +39,8 @@ Focused proof: `operations-continuity-screen.view-model.test.ts` and `operations
 
 ## Purpose
 
+Accounting balances and materiality labels format amounts using the supplied currency code, including signed values. Currency codes appear once even when the formatter emits the code as its symbol, and negative zero renders as zero.
+
 Browser workstation dashboard is the active browser operator workstation.
 
 ## Layer responsibility

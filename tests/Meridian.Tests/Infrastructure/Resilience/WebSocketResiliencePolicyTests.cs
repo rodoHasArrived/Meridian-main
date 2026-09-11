@@ -103,7 +103,8 @@ public class WebSocketResiliencePolicyTests
         {
             await pipeline.ExecuteAsync(async ct =>
             {
-                await Task.Delay(TimeSpan.FromSeconds(1), ct);
+                // Only the pipeline timeout can finish this operation, even under scheduler load.
+                await Task.Delay(Timeout.InfiniteTimeSpan, ct);
             });
         });
     }

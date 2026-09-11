@@ -34,6 +34,24 @@ sys.modules[spec.name] = wiring
 spec.loader.exec_module(wiring)
 
 
+class SourceDiscoveryTests(unittest.TestCase):
+    def test_generated_and_dependency_sources_do_not_enter_the_route_inventory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            authored = root / "App" / "Routes.cs"
+            authored.parent.mkdir()
+            authored.write_text('class Routes { public const string Kept = "/kept"; }', encoding="utf-8")
+            for excluded in ("bin", "obj", "node_modules"):
+                generated = root / "App" / excluded / "Nested" / "Routes.cs"
+                generated.parent.mkdir(parents=True)
+                generated.write_text('class Generated { public const string Ignored = "/ignored"; }', encoding="utf-8")
+            with mock.patch.object(wiring, "SRC_ROOT", root):
+                self.assertEqual([authored], list(wiring.source_files(root, {".cs"})))
+                constants = wiring.load_route_constants()
+            self.assertEqual("/kept", constants["Routes.Kept"])
+            self.assertNotIn("Ignored", constants)
+
+
 class SourceTraversalTests(unittest.TestCase):
     def setUp(self) -> None:
         self.root = Path(self.enterContext(tempfile.TemporaryDirectory()))
