@@ -28,6 +28,25 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Alpaca Trading API portfolio snapshots explicitly bind `us_equity` and `us_option` position
+values to USD only when the authenticated account response explicitly supplies USD. The
+[provider Trading API models](https://alpaca.markets/sdks/python/api_reference/trading/models.html)
+define the account and position dollar-value contract. Unknown assets, crypto quote denominations,
+non-USD accounts, and missing account currency remain unbound; statement intake rejects those
+missing position currencies rather than inferring them from account base currency. The gateway
+preserves missing account currency as missing evidence instead of supplying USD.
+
+Canonical CSV import requires the currency column in the header and at least one data row.
+Header-only statements cannot validate or persist as empty imports; every admitted row retains
+explicit currency and invariant decimal evidence.
+
+Canonical CSV statement imports require an explicit three-letter currency on every row.
+Older seven-column files must be regenerated with source-backed currency evidence; the
+importer does not supply USD. Quantity, price, cash and nonblank fees use invariant decimal
+notation without grouping separators. Missing optional fees remain absent, while malformed
+fees fail validation and import before persistence. Quoted fields and explicit zero amounts
+remain supported.
+
 Use this module for provider implementation, external service integration, and adapter behavior.
 
 The legacy IB Flex broker importer streams XML and materializes only supported trade, position,

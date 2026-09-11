@@ -1024,7 +1024,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             Rationale: "Close accounting period",
             ReportPackId: "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             CloseScope: await StateMachineCloseScopeAsync(service, workflowId)));
 
         closed.Success.Should().BeTrue();
@@ -1856,7 +1856,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "assistant-agent",
             "Assistant attempted close-package publication",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             ActionOrigin: OperationsActionOriginDto.AutomationSuggestion,
             CloseScope: await StateMachineCloseScopeAsync(service, approvalReady.WorkflowId)));
 
@@ -3545,7 +3545,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow with caller-supplied hash",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             ClosePackageEvidenceHash: callerSuppliedHash,
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
@@ -3696,7 +3696,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         var denied = await service.ReopenWorkflowAsync(workflow.WorkflowId, new OperationsReopenWorkflowRequestDto(
@@ -3821,7 +3821,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close using a mismatched report pack",
             "report-pack-different",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeFalse();
@@ -3862,7 +3862,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeFalse();
@@ -4289,16 +4289,6 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             [Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1")] = SecurityStatusDto.Active
         };
 
-    internal static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
-    [
-        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
-        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
-        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
-        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
-        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
-        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
-    ];
-
     private static async Task<OperationsContinuityWorkflowDto> AcknowledgePrerequisiteChecklistAsync(
         OperationsContinuityWorkflowService service,
         OperationsContinuityWorkflowDto workflow)
@@ -4314,7 +4304,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         return workflow;
     }
 
-    private static async Task<IReadOnlyList<OperationsChecklistControlApprovalDto>> ReadChecklistControlApprovalsAsync(
+    internal static async Task<IReadOnlyList<OperationsChecklistControlApprovalDto>> ReadChecklistControlApprovalsAsync(
         OperationsContinuityWorkflowService service,
         Guid workflowId)
     {
@@ -4586,7 +4576,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
     internal static async Task<OperationsContinuityWorkflowDto> CreateApprovalSubmittedWorkflowAsync(
         OperationsContinuityWorkflowService service, Guid? ledgerBookId = null, string periodId = "2026-05")
     {
-        var workflow = await CreateReviewedApprovalReadyWorkflowAsync(service);
+        var workflow = await CreateReviewedApprovalReadyWorkflowAsync(service, ledgerBookId, periodId);
         var submitted = await service.SubmitForApprovalAsync(workflow.WorkflowId, new OperationsSubmitApprovalRequestDto(
             workflow.Version,
             "ops-user",
@@ -4599,9 +4589,9 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
     }
 
     private static async Task<OperationsContinuityWorkflowDto> CreateReviewedApprovalReadyWorkflowAsync(
-        OperationsContinuityWorkflowService service)
+        OperationsContinuityWorkflowService service, Guid? ledgerBookId = null, string periodId = "2026-05")
     {
-        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service, ledgerBookId, periodId);
         var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(workflow.Version, "ops-user", BreakCases: []));
         var posture = await service.RefreshGatePostureAsync(workflow.WorkflowId, new OperationsGatePostureRequestDto(
             reconciled.Workflow!.Version,
@@ -4622,13 +4612,15 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "Approved close",
             "report-pack-1",
             ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
+        approved.Success.Should().BeTrue();
         var closed = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
             approved.Workflow!.Version,
             "ops-user",
             "Close workflow",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
+        closed.Success.Should().BeTrue();
         return closed.Workflow!;
     }
 

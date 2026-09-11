@@ -69,7 +69,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
         var records = new List<StatementCanonicalRecord>();
 
-        var groupCurrency = "USD";
+        var groupCurrency = string.Empty;
         DateOnly? asOfDate = null;
         string? account = null;
         var accountCurrency = groupCurrency;
@@ -172,7 +172,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 case "02":
                     groupCount++;
                     asOfDate = ParseBaiDate(FieldAt(fields, 4)) ?? asOfDate;
-                    groupCurrency = NormalizeCurrency(FieldAt(fields, 6), groupCurrency);
+                    groupCurrency = NormalizeCurrency(FieldAt(fields, 6), string.Empty);
                     accountCurrency = groupCurrency;
                     break;
 
@@ -191,6 +191,12 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
                     account = string.IsNullOrWhiteSpace(accountId) ? null : accountId.Trim();
                     accountCurrency = NormalizeCurrency(FieldAt(fields, 2), groupCurrency);
+                    if (accountCurrency.Length != 3 || accountCurrency.Any(static value => value is < 'A' or > 'Z'))
+                    {
+                        issues.Add(StatementParseIssue.Error("BAI2_INVALID_CURRENCY",
+                            "Account or containing group must supply explicit three-letter currency before minor-unit conversion."));
+                        return Task.FromResult(EmptyResult(issues));
+                    }
                     if (account is { } identifiedAccount &&
                         TryResolveClosingBalance(fields, out var balanceMinorUnits) &&
                         asOfDate is { } balanceDate)

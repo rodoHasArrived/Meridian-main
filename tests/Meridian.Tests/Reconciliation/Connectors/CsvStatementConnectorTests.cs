@@ -113,9 +113,9 @@ public sealed class CsvStatementConnectorTests : IDisposable
     [Fact]
     public async Task Parse_UnknownActivityCode_WarnsOncePerCodeAndTreatsRowsAsTransactions()
     {
-        var content = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
-                      "FUND-A,AAPL,1,10,-10,XYZ,2026-06-01\n" +
-                      "FUND-A,MSFT,1,10,-10,XYZ,2026-06-02\n";
+        var content = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n" +
+                      "FUND-A,AAPL,1,10,-10,XYZ,2026-06-01,USD\n" +
+                      "FUND-A,MSFT,1,10,-10,XYZ,2026-06-02,USD\n";
         var document = new StatementSourceDocument("unknown-codes.csv", Encoding.UTF8.GetBytes(content));
 
         var result = await _connector.ParseAsync(document);
@@ -144,8 +144,8 @@ public sealed class CsvStatementConnectorTests : IDisposable
     [Fact]
     public async Task Parse_PositionRowWithoutSymbol_IsRejectedWithRowError()
     {
-        var content = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
-                      "FUND-A,,100,10,1000,position,2026-06-01\n";
+        var content = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n" +
+                      "FUND-A,,100,10,1000,position,2026-06-01,USD\n";
         var document = new StatementSourceDocument("position-no-symbol.csv", Encoding.UTF8.GetBytes(content));
 
         var result = await _connector.ParseAsync(document);

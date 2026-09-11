@@ -11,6 +11,20 @@ last_reviewed: 2026-09-05
 
 # src/Meridian.FinancialOperations
 
+OFX account identity is scoped to the containing bank, credit-card or investment statement.
+The parser does not borrow an account from a sibling statement or unrelated row. Missing,
+blank or conflicting statement headers cannot supply account evidence. The document-level
+account summary is populated only when every emitted row shares one nonblank account;
+connector validation and import authorization retain responsibility for rejecting invalid rows
+and mixed-account imports before evidence retention. Conflicting repeated account tags remain
+invalid even when a later tag repeats the first value. The tokenizer recognizes all XML whitespace
+before attributes, and mixed accounts produce a blocking connector issue during preview and
+validation as well as import.
+
+OFX canonical rows retain the containing statement's `CURDEF` currency when no row-level
+currency is supplied. The parser does not borrow currency from another statement; explicit
+row evidence takes precedence. Missing currency remains absent for downstream refusal.
+
 Operations Continuity forwards the journal candidate's typed provenance to the governed posting
 command. PostgreSQL round-trip coverage verifies that seeded origins retain the `SEEDED` journal
 tag and that fixture evidence marked as real cannot commit a journal or a successful posting audit.
@@ -29,6 +43,29 @@ Private-capital close evidence is selected by fund event, period, and ledger ent
 `PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support, and restores readiness by repairing that support while preserving cumulative balances and history. A separate scenario rejects a foreign-period statement even when it carries the selected event ID. These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending the required hosted integration evidence.
 
 ## Purpose
+
+OFX duplicate account or currency tags cannot overwrite conflicting evidence. A row account may
+repeat its valid containing header, but cannot contradict or replace missing/ambiguous header identity. Account identity
+comparisons use the same case-insensitive equality as the authorization boundary. Currency
+validation omits source row numbers when a connector does not provide them, avoiding false
+locations based on the retained-record index.
+
+Bank statement currency is source evidence. BAI2 requires an explicit account or containing-group
+currency before converting minor units, and each group resets inherited currency. camt.053 uses
+explicit amount currency or an explicit account currency when the attribute is absent; a blank
+amount attribute remains invalid. Neither parser supplies USD when all currency evidence is missing.
+IB Flex preserves absent account, activity, lot and borrow currency as unknown instead of
+supplying USD; canonical activity rows without currency fail before artifact retention.
+
+Canonical CSV connector validation rejects blank required amounts, ambiguous grouped decimals, malformed nonblank fees,
+and missing or invalid currency before rendering financial values. Statement import preview,
+validation, and commit all require explicit three-letter currency before retaining artifacts.
+OFX statement currency fills only absent row currency; explicit blank or self-closing row tags
+remain invalid; mixed explicit and inherited currency rows map through the same canonical key.
+Alpaca legacy fills use the account currency verified against the snapshot identity. Position
+currency must be supplied by the gateway; missing or blank row currency cannot borrow the account
+currency. Missing account currency remains a refusal. Month-end upload regressions
+in `StatementImportServiceTests` exercise these rules through the actual retention boundary.
 
 Physical bounded-context module project for reconciliation, accounting records, payment approvals,
 bank-transaction records, accounting-basis policy, ledger text-journal reporting, close workflows,
