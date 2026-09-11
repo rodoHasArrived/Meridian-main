@@ -3837,7 +3837,7 @@
       ]
     }
   ],
-  "fingerprint": "28de0f9ea3ba3207e2de52915d178d330cd15011a6742c66f43f5b3dc78abbf5",
+  "fingerprint": "e421d4d5f2c5bf3f29717e8449a8aaa8adb6f85bfedd1930829bcc413910e973",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6163,7 +6163,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "1b98bf1f5c7947ec6cc22aa05bbf364df4b9b553f5b5ba68ee98cfb0ff2ebc77",
+      "fingerprint": "8a841c0cd91cc1270bf338d2a1c991e821b305dee42c1f50520d56d7c7a0608f",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -309916,23 +309916,23 @@
         {
           "explicit_value": true,
           "name": "Resolved",
-          "source_line": 460,
+          "source_line": 461,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Waived",
-          "source_line": 461,
+          "source_line": 462,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Superseded",
-          "source_line": 462,
+          "source_line": 463,
           "value": "2"
         }
       ],
-      "fingerprint": "4e414054ebc5e6046dde25bec754a9765d8dfb84dad27e8408b4b6e45945a2d7",
+      "fingerprint": "96a741ce81e55489f0f8169e067e3e698d8859e1ecc805aafbba950ea6baf5ab",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto",
       "id": "Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto",
       "kind": "enum",
@@ -309944,12 +309944,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto",
       "references": [],
       "source": {
-        "line": 458,
+        "line": 459,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 458,
+          "line": 459,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -310259,7 +310259,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0d4d425a58e8c60f3094016e81fa97feb2cf76be2ca32e4bfcc95cd522d48bb6",
+      "fingerprint": "57cfa32fc477abdf546b0a2b9c44e4d164585d6da86b716cbaa500246092f38b",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBreakExplanationDto",
       "id": "Meridian.Contracts.Workstation.ReconciliationBreakExplanationDto",
       "kind": "record",
@@ -310276,7 +310276,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 615,
+          "source_line": 616,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -310290,7 +310290,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 613,
+          "source_line": 614,
           "type": "string"
         },
         {
@@ -310304,7 +310304,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 612,
+          "source_line": 613,
           "type": "string"
         },
         {
@@ -310318,7 +310318,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 611,
+          "source_line": 612,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -310332,7 +310332,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 614,
+          "source_line": 615,
           "type": "string"
         },
         {
@@ -310346,7 +310346,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 610,
+          "source_line": 611,
           "type": "string"
         }
       ],
@@ -310356,12 +310356,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationBreakExplanationDto",
       "references": [],
       "source": {
-        "line": 609,
+        "line": 610,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 609,
+          "line": 610,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -310377,7 +310377,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "7407bed857d1cb0ca0f1df6700a4b06cad464d579d94a665e74c6c03568a15da",
+      "fingerprint": "7158a9498e810c435511ee72ab46a3d8483fb8b1523bc89f22fa95b1f7e44b7b",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto",
       "id": "Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto",
       "kind": "record",
@@ -310394,7 +310394,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 451,
+          "source_line": 452,
           "type": "decimal?"
         },
         {
@@ -310408,7 +310408,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 450,
+          "source_line": 451,
           "type": "decimal?"
         },
         {
@@ -310422,7 +310422,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationBreakMeasureKindDto",
-          "source_line": 449,
+          "source_line": 450,
           "type": "ReconciliationBreakMeasureKindDto"
         },
         {
@@ -310436,7 +310436,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 453,
+          "source_line": 454,
           "type": "decimal?"
         },
         {
@@ -310451,7 +310451,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 455,
+          "source_line": 456,
           "type": "string?"
         },
         {
@@ -310465,7 +310465,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 454,
+          "source_line": 455,
           "type": "string"
         },
         {
@@ -310479,7 +310479,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 452,
+          "source_line": 453,
           "type": "decimal?"
         }
       ],
@@ -310491,12 +310491,12 @@
         "Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto"
       ],
       "source": {
-        "line": 448,
+        "line": 449,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 448,
+          "line": 449,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -310517,23 +310517,23 @@
         {
           "explicit_value": true,
           "name": "Value",
-          "source_line": 439,
+          "source_line": 440,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Quantity",
-          "source_line": 440,
+          "source_line": 441,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "CostBasis",
-          "source_line": 441,
+          "source_line": 442,
           "value": "2"
         }
       ],
-      "fingerprint": "436f1c31cbb8b03d57f85893947847224be6785c1af0913cde3074eaffccc8d8",
+      "fingerprint": "9f784cdc8c967201884b9951937ac469fb292833978a506580d9ad7aeb338a65",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto",
       "id": "Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto",
       "kind": "enum",
@@ -310545,12 +310545,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto",
       "references": [],
       "source": {
-        "line": 437,
+        "line": 438,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 437,
+          "line": 438,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -310566,7 +310566,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "4cb2d1f68312668658a19bb4217650d742c9ed243da5de5e049f71f832d810e0",
+      "fingerprint": "52cf7d59c80ac8c5f7383f62a3effec84a981b0826497a585e7aa70186670cf9",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBreakQueueItem",
       "id": "Meridian.Contracts.Workstation.ReconciliationBreakQueueItem",
       "kind": "record",
@@ -310584,7 +310584,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 559,
+          "source_line": 560,
           "type": "string?"
         },
         {
@@ -310599,7 +310599,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 526,
+          "source_line": 527,
           "type": "string?"
         },
         {
@@ -310614,7 +310614,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 560,
+          "source_line": 561,
           "type": "DateOnly?"
         },
         {
@@ -310628,7 +310628,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 487,
+          "source_line": 488,
           "type": "string?"
         },
         {
@@ -310643,7 +310643,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 520,
+          "source_line": 521,
           "type": "string?"
         },
         {
@@ -310658,7 +310658,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 519,
+          "source_line": 520,
           "type": "string?"
         },
         {
@@ -310673,7 +310673,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 558,
+          "source_line": 559,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -310688,7 +310688,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationBreakExplanationDto?",
-          "source_line": 548,
+          "source_line": 549,
           "type": "ReconciliationBreakExplanationDto?"
         },
         {
@@ -310702,7 +310702,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 480,
+          "source_line": 481,
           "type": "string"
         },
         {
@@ -310717,7 +310717,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "double",
-          "source_line": 527,
+          "source_line": 528,
           "type": "double"
         },
         {
@@ -310731,7 +310731,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationBreakCategory",
-          "source_line": 483,
+          "source_line": 484,
           "type": "ReconciliationBreakCategory"
         },
         {
@@ -310746,7 +310746,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 539,
+          "source_line": 540,
           "type": "int"
         },
         {
@@ -310761,7 +310761,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<ReconciliationCaseComment>?",
-          "source_line": 537,
+          "source_line": 538,
           "type": "IReadOnlyList<ReconciliationCaseComment>?"
         },
         {
@@ -310775,7 +310775,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 573,
+          "source_line": 574,
           "type": "string?"
         },
         {
@@ -310790,7 +310790,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 515,
+          "source_line": 516,
           "type": "string?"
         },
         {
@@ -310805,7 +310805,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 509,
+          "source_line": 510,
           "type": "string?"
         },
         {
@@ -310820,7 +310820,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 561,
+          "source_line": 562,
           "type": "string?"
         },
         {
@@ -310831,229 +310831,6 @@
           "json_name": null,
           "key_type": null,
           "name": "DetectedAt",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset",
-          "source_line": 488,
-          "type": "DateTimeOffset"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "DisposedAt",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 557,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Disposition",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "ReconciliationBreakDispositionDto?",
-          "source_line": 551,
-          "type": "ReconciliationBreakDispositionDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "DispositionApprovalReference",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 555,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "DispositionApprovedBy",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 554,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "DispositionEvidenceHash",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 556,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "DispositionReason",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 552,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "0",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EvidenceCount",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "int",
-          "source_line": 540,
-          "type": "int"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "default": "null",
-          "element_type": "string",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EvidenceLinks",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<string>?",
-          "source_line": 538,
-          "type": "IReadOnlyList<string>?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ExceptionRoute",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 496,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ExplainabilitySummary",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 502,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ExternalAccountId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 508,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "FundAccountId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 501,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "FundProfileId",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "string?",
-          "source_line": 579,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LastActivityAt",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 541,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LastUpdatedAt",
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
@@ -311068,11 +310845,11 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "LastUpstreamSyncAt",
+          "name": "DisposedAt",
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 511,
+          "source_line": 558,
           "type": "DateTimeOffset?"
         },
         {
@@ -311083,12 +310860,12 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "LedgerBookId",
+          "name": "Disposition",
           "nullable": true,
           "origin": "positional_parameter",
-          "raw_type": "Guid?",
-          "source_line": 549,
-          "type": "Guid?"
+          "raw_type": "ReconciliationBreakDispositionDto?",
+          "source_line": 552,
+          "type": "ReconciliationBreakDispositionDto?"
         },
         {
           "collection": false,
@@ -311098,85 +310875,11 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "LifecycleRationale",
+          "name": "DispositionApprovalReference",
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 507,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "ReconciliationCaseLifecycleState.Open",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LifecycleState",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "ReconciliationCaseLifecycleState",
-          "source_line": 506,
-          "type": "ReconciliationCaseLifecycleState"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "default": "null",
-          "element_type": "ReconciliationBreakMeasureDto",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Measures",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<ReconciliationBreakMeasureDto>?",
-          "source_line": 550,
-          "type": "IReadOnlyList<ReconciliationBreakMeasureDto>?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "ReconciliationCasePriority.Normal",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Priority",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "ReconciliationCasePriority",
-          "source_line": 521,
-          "type": "ReconciliationCasePriority"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Reason",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 486,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RecommendedAction",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 505,
+          "source_line": 556,
           "type": "string?"
         },
         {
@@ -311187,26 +310890,11 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "ReopenedAt",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 534,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ReopenedBy",
+          "name": "DispositionApprovedBy",
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 533,
+          "source_line": 555,
           "type": "string?"
         },
         {
@@ -311217,11 +310905,11 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "ReopenReason",
+          "name": "DispositionEvidenceHash",
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 535,
+          "source_line": 557,
           "type": "string?"
         },
         {
@@ -311232,499 +310920,7 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "RequiredSignoffRole",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 499,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ResolutionCode",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 529,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ResolutionNote",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 494,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ResolvedAt",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 493,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ResolvedBy",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 492,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ReviewedAt",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 491,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ReviewedBy",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 490,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RootCauseCode",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 528,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RoutingDetail",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 504,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RoutingTarget",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 503,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RunId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 481,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Score",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "ReconciliationBreakScore?",
-          "source_line": 516,
-          "type": "ReconciliationBreakScore?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "ReconciliationBreakSeverity.Medium",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Severity",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "ReconciliationBreakSeverity",
-          "source_line": 495,
-          "type": "ReconciliationBreakSeverity"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SignedOffAt",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 531,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SignedOffBy",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 530,
-          "type": "string?"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "default": "null",
-          "element_type": "ReconciliationCaseSignoffRecord",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SignoffHistory",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<ReconciliationCaseSignoffRecord>?",
-          "source_line": 512,
-          "type": "IReadOnlyList<ReconciliationCaseSignoffRecord>?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SignOffNote",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 532,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SignoffStatus",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 500,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "false",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaBreached",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "bool",
-          "source_line": 518,
-          "type": "bool"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaBreachedAt",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 524,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaDueAt",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 517,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaPolicyId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 522,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "ReconciliationCaseSlaState.OnTrack",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaState",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "ReconciliationCaseSlaState",
-          "source_line": 525,
-          "type": "ReconciliationCaseSlaState"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SlaWarningAt",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset?",
-          "source_line": 523,
-          "type": "DateTimeOffset?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceBreakId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 546,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceFingerprint",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 547,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceImportId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 545,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceReference",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 544,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceSystem",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 543,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceType",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 542,
-          "type": "string?"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "default": "null",
-          "element_type": "ReconciliationCaseStateTransition",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "StateTransitions",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "IReadOnlyList<ReconciliationCaseStateTransition>?",
-          "source_line": 513,
-          "type": "IReadOnlyList<ReconciliationCaseStateTransition>?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Status",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "ReconciliationBreakQueueStatus",
-          "source_line": 484,
-          "type": "ReconciliationBreakQueueStatus"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "StrategyName",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 482,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SupersedingBreakId",
+          "name": "DispositionReason",
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
@@ -311734,31 +310930,32 @@
         {
           "collection": false,
           "collection_kind": null,
-          "default": "null",
+          "default": "0",
           "element_type": null,
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "Team",
+          "name": "EvidenceCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 541,
+          "type": "int"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceLinks",
           "nullable": true,
           "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 514,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "TenantId",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "string?",
-          "source_line": 567,
-          "type": "string?"
+          "raw_type": "IReadOnlyList<string>?",
+          "source_line": 539,
+          "type": "IReadOnlyList<string>?"
         },
         {
           "collection": false,
@@ -311768,22 +310965,7 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "ToleranceBand",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "decimal?",
-          "source_line": 498,
-          "type": "decimal?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ToleranceProfileId",
+          "name": "ExceptionRoute",
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
@@ -311798,11 +310980,829 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
+          "name": "ExplainabilitySummary",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 503,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExternalAccountId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 509,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundAccountId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 502,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundProfileId",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "string?",
+          "source_line": 580,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LastActivityAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 542,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LastUpdatedAt",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 490,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LastUpstreamSyncAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 512,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerBookId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 550,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LifecycleRationale",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 508,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ReconciliationCaseLifecycleState.Open",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LifecycleState",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ReconciliationCaseLifecycleState",
+          "source_line": 507,
+          "type": "ReconciliationCaseLifecycleState"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "ReconciliationBreakMeasureDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Measures",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ReconciliationBreakMeasureDto>?",
+          "source_line": 551,
+          "type": "IReadOnlyList<ReconciliationBreakMeasureDto>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ReconciliationCasePriority.Normal",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Priority",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ReconciliationCasePriority",
+          "source_line": 522,
+          "type": "ReconciliationCasePriority"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reason",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 487,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecommendedAction",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 506,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReopenedAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 535,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReopenedBy",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 534,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReopenReason",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 536,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RequiredSignoffRole",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 500,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResolutionCode",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 530,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResolutionNote",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 495,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResolvedAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 494,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResolvedBy",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 493,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReviewedAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 492,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReviewedBy",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 491,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RootCauseCode",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 529,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RoutingDetail",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 505,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RoutingTarget",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 504,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RunId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 482,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Score",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "ReconciliationBreakScore?",
+          "source_line": 517,
+          "type": "ReconciliationBreakScore?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ReconciliationBreakSeverity.Medium",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Severity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ReconciliationBreakSeverity",
+          "source_line": 496,
+          "type": "ReconciliationBreakSeverity"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SignedOffAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 532,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SignedOffBy",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 531,
+          "type": "string?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "ReconciliationCaseSignoffRecord",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SignoffHistory",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ReconciliationCaseSignoffRecord>?",
+          "source_line": 513,
+          "type": "IReadOnlyList<ReconciliationCaseSignoffRecord>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SignOffNote",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 533,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SignoffStatus",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 501,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "false",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SlaBreached",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 519,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SlaBreachedAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 525,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SlaDueAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 518,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SlaPolicyId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 523,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ReconciliationCaseSlaState.OnTrack",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SlaState",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ReconciliationCaseSlaState",
+          "source_line": 526,
+          "type": "ReconciliationCaseSlaState"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SlaWarningAt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 524,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceBreakId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 547,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceFingerprint",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 548,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceImportId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 546,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceReference",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 545,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceSystem",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 544,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceType",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 543,
+          "type": "string?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "null",
+          "element_type": "ReconciliationCaseStateTransition",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StateTransitions",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ReconciliationCaseStateTransition>?",
+          "source_line": 514,
+          "type": "IReadOnlyList<ReconciliationCaseStateTransition>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ReconciliationBreakQueueStatus",
+          "source_line": 485,
+          "type": "ReconciliationBreakQueueStatus"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StrategyName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 483,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SupersedingBreakId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 554,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Team",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 515,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TenantId",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "string?",
+          "source_line": 568,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ToleranceBand",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 499,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ToleranceProfileId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 498,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
           "name": "UpstreamSyncCursor",
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 510,
+          "source_line": 511,
           "type": "string?"
         },
         {
@@ -311816,7 +311816,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 485,
+          "source_line": 486,
           "type": "decimal"
         },
         {
@@ -311831,7 +311831,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 536,
+          "source_line": 537,
           "type": "long"
         }
       ],
@@ -311855,12 +311855,12 @@
         "Meridian.Contracts.Workstation.ReconciliationCaseStateTransition"
       ],
       "source": {
-        "line": 479,
+        "line": 480,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 479,
+          "line": 480,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -312428,7 +312428,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "75f78395b95ca3f2e623e99378ecb466915a56647def83bbfe2911e2eee9d62e",
+      "fingerprint": "924585e8b30e372a3cc23bc47ff7b38c20b0e359c02571e7acfa740296fb43ea",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBreakQueueScope",
       "id": "Meridian.Contracts.Workstation.ReconciliationBreakQueueScope",
       "kind": "record",
@@ -312445,7 +312445,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 599,
+          "source_line": 600,
           "type": "string"
         },
         {
@@ -312459,7 +312459,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 597,
+          "source_line": 598,
           "type": "string"
         }
       ],
@@ -312469,12 +312469,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationBreakQueueScope",
       "references": [],
       "source": {
-        "line": 587,
+        "line": 588,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 587,
+          "line": 588,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -312495,35 +312495,35 @@
         {
           "explicit_value": true,
           "name": "Open",
-          "source_line": 366,
+          "source_line": 367,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "InReview",
-          "source_line": 367,
+          "source_line": 368,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Resolved",
-          "source_line": 368,
+          "source_line": 369,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Dismissed",
-          "source_line": 369,
+          "source_line": 370,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "SignedOff",
-          "source_line": 370,
+          "source_line": 371,
           "value": "4"
         }
       ],
-      "fingerprint": "00259b1244e0baee3ae2da4bf81eb2945eead5686cc20fa8185aa6ed243c15b8",
+      "fingerprint": "ca1f6c30970939b52df90215bce66a1c6f708fc31022fdf9165eda59b1aa7277",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus",
       "id": "Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus",
       "kind": "enum",
@@ -312535,12 +312535,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus",
       "references": [],
       "source": {
-        "line": 364,
+        "line": 365,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 364,
+          "line": 365,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -312556,7 +312556,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "c748728276cc8449b0d024473e07824dca5d932047f5088946f2ecfa56048c4d",
+      "fingerprint": "9717d3104d90f81bbfb3c524ff64b6b1c2deedf48f06c515343406dd8163e31d",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBreakScore",
       "id": "Meridian.Contracts.Workstation.ReconciliationBreakScore",
       "kind": "record",
@@ -312573,7 +312573,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "double",
-          "source_line": 923,
+          "source_line": 924,
           "type": "double"
         },
         {
@@ -312587,7 +312587,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 924,
+          "source_line": 925,
           "type": "int"
         },
         {
@@ -312601,7 +312601,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 926,
+          "source_line": 927,
           "type": "bool"
         },
         {
@@ -312615,7 +312615,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 922,
+          "source_line": 923,
           "type": "decimal"
         },
         {
@@ -312629,7 +312629,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 921,
+          "source_line": 922,
           "type": "int"
         },
         {
@@ -312643,7 +312643,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 925,
+          "source_line": 926,
           "type": "int"
         },
         {
@@ -312657,7 +312657,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 920,
+          "source_line": 921,
           "type": "int"
         },
         {
@@ -312672,7 +312672,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 928,
+          "source_line": 929,
           "type": "DateTimeOffset?"
         },
         {
@@ -312687,7 +312687,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 927,
+          "source_line": 928,
           "type": "DateTimeOffset?"
         }
       ],
@@ -312697,12 +312697,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationBreakScore",
       "references": [],
       "source": {
-        "line": 919,
+        "line": 920,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 919,
+          "line": 920,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -312850,7 +312850,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "a576edbc1887346170b3c1bae17b5c677a9ff7fb7c64d1aaef51e19d26f05f2f",
+      "fingerprint": "2e5e9fab3b486ba7b6a349b49c03ab31cdce8daac67eca91354fc08d9ed73f99",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBulkCaseworkCaseResult",
       "id": "Meridian.Contracts.Workstation.ReconciliationBulkCaseworkCaseResult",
       "kind": "record",
@@ -312867,7 +312867,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 751,
+          "source_line": 752,
           "type": "string"
         },
         {
@@ -312881,7 +312881,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 754,
+          "source_line": 755,
           "type": "string?"
         },
         {
@@ -312895,7 +312895,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationBreakQueueItem?",
-          "source_line": 755,
+          "source_line": 756,
           "type": "ReconciliationBreakQueueItem?"
         },
         {
@@ -312909,7 +312909,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 752,
+          "source_line": 753,
           "type": "bool"
         },
         {
@@ -312923,7 +312923,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 753,
+          "source_line": 754,
           "type": "bool"
         }
       ],
@@ -312935,12 +312935,12 @@
         "Meridian.Contracts.Workstation.ReconciliationBreakQueueItem"
       ],
       "source": {
-        "line": 750,
+        "line": 751,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 750,
+          "line": 751,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -312956,7 +312956,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "1f0fb66344ae864545b8329b4ad34c8eba807af24f38c534c124fc2cfc919368",
+      "fingerprint": "5ab9c5b494d8b667a8a71d95178a8a3537eb829b09f41d23bdf065ab452fa0fb",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBulkCaseworkRequest",
       "id": "Meridian.Contracts.Workstation.ReconciliationBulkCaseworkRequest",
       "kind": "record",
@@ -312973,7 +312973,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseworkAction",
-          "source_line": 728,
+          "source_line": 729,
           "type": "ReconciliationCaseworkAction"
         },
         {
@@ -312988,7 +312988,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OperationsActionOriginDto",
-          "source_line": 744,
+          "source_line": 745,
           "type": "OperationsActionOriginDto"
         },
         {
@@ -313002,7 +313002,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 729,
+          "source_line": 730,
           "type": "string"
         },
         {
@@ -313016,7 +313016,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 735,
+          "source_line": 736,
           "type": "bool"
         },
         {
@@ -313031,7 +313031,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 746,
+          "source_line": 747,
           "type": "string?"
         },
         {
@@ -313046,7 +313046,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 747,
+          "source_line": 748,
           "type": "string?"
         },
         {
@@ -313061,7 +313061,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 737,
+          "source_line": 738,
           "type": "string?"
         },
         {
@@ -313075,7 +313075,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 727,
+          "source_line": 728,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -313089,7 +313089,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 730,
+          "source_line": 731,
           "type": "string"
         },
         {
@@ -313103,7 +313103,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 731,
+          "source_line": 732,
           "type": "string"
         },
         {
@@ -313117,7 +313117,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 734,
+          "source_line": 735,
           "type": "bool"
         },
         {
@@ -313132,7 +313132,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 745,
+          "source_line": 746,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -313146,7 +313146,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 733,
+          "source_line": 734,
           "type": "string"
         },
         {
@@ -313161,7 +313161,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 743,
+          "source_line": 744,
           "type": "int"
         },
         {
@@ -313176,7 +313176,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 740,
+          "source_line": 741,
           "type": "string?"
         },
         {
@@ -313191,7 +313191,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCasePriority?",
-          "source_line": 738,
+          "source_line": 739,
           "type": "ReconciliationCasePriority?"
         },
         {
@@ -313206,7 +313206,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 736,
+          "source_line": 737,
           "type": "string?"
         },
         {
@@ -313221,7 +313221,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 742,
+          "source_line": 743,
           "type": "string?"
         },
         {
@@ -313236,7 +313236,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 741,
+          "source_line": 742,
           "type": "string?"
         },
         {
@@ -313250,7 +313250,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 732,
+          "source_line": 733,
           "type": "string"
         },
         {
@@ -313265,7 +313265,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseLifecycleState?",
-          "source_line": 739,
+          "source_line": 740,
           "type": "ReconciliationCaseLifecycleState?"
         },
         {
@@ -313280,7 +313280,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 748,
+          "source_line": 749,
           "type": "string?"
         }
       ],
@@ -313295,12 +313295,12 @@
         "Meridian.Contracts.Workstation.ReconciliationCaseworkAction"
       ],
       "source": {
-        "line": 726,
+        "line": 727,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 726,
+          "line": 727,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -313316,7 +313316,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "10f11d457f8cf25465df0241a7dd8d99d1d57c74c59ce0fec19643867ef32e83",
+      "fingerprint": "e7141e690ba3ac9e1f34973a9e3b6bebbab3da6464bedde0010d617c0346cd85",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationBulkCaseworkResult",
       "id": "Meridian.Contracts.Workstation.ReconciliationBulkCaseworkResult",
       "kind": "record",
@@ -313333,7 +313333,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 758,
+          "source_line": 759,
           "type": "string"
         },
         {
@@ -313347,7 +313347,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 760,
+          "source_line": 761,
           "type": "bool"
         },
         {
@@ -313361,7 +313361,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 763,
+          "source_line": 764,
           "type": "int"
         },
         {
@@ -313375,7 +313375,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 759,
+          "source_line": 760,
           "type": "string"
         },
         {
@@ -313389,7 +313389,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 767,
+          "source_line": 768,
           "type": "string"
         },
         {
@@ -313403,7 +313403,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "VerifiedOperationOutcome",
-          "source_line": 779,
+          "source_line": 780,
           "type": "VerifiedOperationOutcome"
         },
         {
@@ -313417,7 +313417,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 761,
+          "source_line": 762,
           "type": "int"
         },
         {
@@ -313431,7 +313431,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<ReconciliationBulkCaseworkCaseResult>",
-          "source_line": 764,
+          "source_line": 765,
           "type": "IReadOnlyList<ReconciliationBulkCaseworkCaseResult>"
         },
         {
@@ -313445,7 +313445,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 762,
+          "source_line": 763,
           "type": "int"
         }
       ],
@@ -313458,12 +313458,12 @@
         "Meridian.Contracts.Workstation.ReconciliationBulkCaseworkCaseResult"
       ],
       "source": {
-        "line": 757,
+        "line": 758,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 757,
+          "line": 758,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -313479,7 +313479,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "20848ac4e13edd88320676b4332552464fdffbefb6d031adc1f933e949e34640",
+      "fingerprint": "c2a51b028965390b010964f8517a584f88cf8cc6bde8985b42b39d04870dd0bd",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCalibrationProfileSummaryDto",
       "id": "Meridian.Contracts.Workstation.ReconciliationCalibrationProfileSummaryDto",
       "kind": "record",
@@ -313496,7 +313496,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 972,
+          "source_line": 973,
           "type": "int"
         },
         {
@@ -313510,7 +313510,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 965,
+          "source_line": 966,
           "type": "string"
         },
         {
@@ -313524,7 +313524,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationBreakSeverity",
-          "source_line": 966,
+          "source_line": 967,
           "type": "ReconciliationBreakSeverity"
         },
         {
@@ -313538,7 +313538,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 970,
+          "source_line": 971,
           "type": "int"
         },
         {
@@ -313552,7 +313552,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 975,
+          "source_line": 976,
           "type": "DateTimeOffset"
         },
         {
@@ -313566,7 +313566,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 967,
+          "source_line": 968,
           "type": "decimal?"
         },
         {
@@ -313580,7 +313580,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 969,
+          "source_line": 970,
           "type": "int"
         },
         {
@@ -313594,7 +313594,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 973,
+          "source_line": 974,
           "type": "int"
         },
         {
@@ -313608,7 +313608,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 971,
+          "source_line": 972,
           "type": "int"
         },
         {
@@ -313622,7 +313622,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 974,
+          "source_line": 975,
           "type": "int"
         },
         {
@@ -313636,7 +313636,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 964,
+          "source_line": 965,
           "type": "string"
         },
         {
@@ -313650,7 +313650,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 968,
+          "source_line": 969,
           "type": "int"
         }
       ],
@@ -313662,12 +313662,12 @@
         "Meridian.Contracts.Workstation.ReconciliationBreakSeverity"
       ],
       "source": {
-        "line": 963,
+        "line": 964,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 963,
+          "line": 964,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -313688,23 +313688,23 @@
         {
           "explicit_value": true,
           "name": "Ready",
-          "source_line": 471,
+          "source_line": 472,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "ReviewRequired",
-          "source_line": 472,
+          "source_line": 473,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Blocked",
-          "source_line": 473,
+          "source_line": 474,
           "value": "2"
         }
       ],
-      "fingerprint": "d8adeb710603e5fd7c7f98bb02c3af2a08fae7483cd7bd4ab7b8e00e8eeae06d",
+      "fingerprint": "9a5922143a8f4aa56873fa05a4cc758c3ae1cd7bc5a02d1585a877839ab6597c",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCalibrationStatusDto",
       "id": "Meridian.Contracts.Workstation.ReconciliationCalibrationStatusDto",
       "kind": "enum",
@@ -313716,12 +313716,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationCalibrationStatusDto",
       "references": [],
       "source": {
-        "line": 469,
+        "line": 470,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 469,
+          "line": 470,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -313737,7 +313737,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "f5c525ae85a480b73b432aecdf1959b44843ca801b6414a410a03867f00454c0",
+      "fingerprint": "5c96f2c0cc156348b06315695dbd87a96c449668a14eced20b097b3f57731492",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCalibrationSummaryDto",
       "id": "Meridian.Contracts.Workstation.ReconciliationCalibrationSummaryDto",
       "kind": "record",
@@ -313754,7 +313754,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 985,
+          "source_line": 986,
           "type": "int"
         },
         {
@@ -313768,7 +313768,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 981,
+          "source_line": 982,
           "type": "DateTimeOffset"
         },
         {
@@ -313782,7 +313782,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 997,
+          "source_line": 998,
           "type": "decimal"
         },
         {
@@ -313796,7 +313796,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 1000,
+          "source_line": 1001,
           "type": "decimal"
         },
         {
@@ -313810,7 +313810,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "int",
-          "source_line": 999,
+          "source_line": 1000,
           "type": "int"
         },
         {
@@ -313824,7 +313824,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "int",
-          "source_line": 996,
+          "source_line": 997,
           "type": "int"
         },
         {
@@ -313838,7 +313838,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 990,
+          "source_line": 991,
           "type": "int"
         },
         {
@@ -313852,7 +313852,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 989,
+          "source_line": 990,
           "type": "int"
         },
         {
@@ -313866,7 +313866,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 987,
+          "source_line": 988,
           "type": "int"
         },
         {
@@ -313880,7 +313880,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 993,
+          "source_line": 994,
           "type": "int"
         },
         {
@@ -313894,7 +313894,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 986,
+          "source_line": 987,
           "type": "int"
         },
         {
@@ -313908,7 +313908,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 991,
+          "source_line": 992,
           "type": "int"
         },
         {
@@ -313922,7 +313922,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<ReconciliationCalibrationProfileSummaryDto>",
-          "source_line": 994,
+          "source_line": 995,
           "type": "IReadOnlyList<ReconciliationCalibrationProfileSummaryDto>"
         },
         {
@@ -313936,7 +313936,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 988,
+          "source_line": 989,
           "type": "int"
         },
         {
@@ -313950,7 +313950,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 992,
+          "source_line": 993,
           "type": "int"
         },
         {
@@ -313964,7 +313964,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCalibrationStatusDto",
-          "source_line": 982,
+          "source_line": 983,
           "type": "ReconciliationCalibrationStatusDto"
         },
         {
@@ -313978,7 +313978,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 983,
+          "source_line": 984,
           "type": "string"
         },
         {
@@ -313992,7 +313992,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 998,
+          "source_line": 999,
           "type": "decimal"
         },
         {
@@ -314006,7 +314006,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 1001,
+          "source_line": 1002,
           "type": "decimal"
         },
         {
@@ -314020,7 +314020,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 984,
+          "source_line": 985,
           "type": "int"
         }
       ],
@@ -314033,12 +314033,12 @@
         "Meridian.Contracts.Workstation.ReconciliationCalibrationStatusDto"
       ],
       "source": {
-        "line": 980,
+        "line": 981,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 980,
+          "line": 981,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -314054,7 +314054,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "7e5c32a8bf3f0d99867d387d7712ecbf4bccb012430a8b869a9a46558323e0a3",
+      "fingerprint": "9e3eeed884810529270b9be9ce3973c5671e18e5fee342295914158f1ccf55f9",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseComment",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseComment",
       "kind": "record",
@@ -314071,7 +314071,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 622,
+          "source_line": 623,
           "type": "string"
         },
         {
@@ -314085,7 +314085,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 621,
+          "source_line": 622,
           "type": "string"
         },
         {
@@ -314099,7 +314099,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 624,
+          "source_line": 625,
           "type": "string"
         },
         {
@@ -314113,7 +314113,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 619,
+          "source_line": 620,
           "type": "string"
         },
         {
@@ -314127,7 +314127,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 626,
+          "source_line": 627,
           "type": "DateTimeOffset"
         },
         {
@@ -314142,7 +314142,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 628,
+          "source_line": 629,
           "type": "DateTimeOffset?"
         },
         {
@@ -314157,7 +314157,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 629,
+          "source_line": 630,
           "type": "string?"
         },
         {
@@ -314172,7 +314172,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 634,
+          "source_line": 635,
           "type": "string?"
         },
         {
@@ -314187,7 +314187,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 627,
+          "source_line": 628,
           "type": "DateTimeOffset?"
         },
         {
@@ -314202,7 +314202,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 633,
+          "source_line": 634,
           "type": "string?"
         },
         {
@@ -314216,7 +314216,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 625,
+          "source_line": 626,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -314231,7 +314231,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 631,
+          "source_line": 632,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -314246,7 +314246,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 630,
+          "source_line": 631,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -314260,7 +314260,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 620,
+          "source_line": 621,
           "type": "string?"
         },
         {
@@ -314275,7 +314275,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 632,
+          "source_line": 633,
           "type": "string?"
         },
         {
@@ -314290,7 +314290,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseLifecycleState?",
-          "source_line": 635,
+          "source_line": 636,
           "type": "ReconciliationCaseLifecycleState?"
         },
         {
@@ -314304,7 +314304,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseCommentVisibility",
-          "source_line": 623,
+          "source_line": 624,
           "type": "ReconciliationCaseCommentVisibility"
         }
       ],
@@ -314317,12 +314317,12 @@
         "Meridian.Contracts.Workstation.ReconciliationCaseLifecycleState"
       ],
       "source": {
-        "line": 618,
+        "line": 619,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 618,
+          "line": 619,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -314343,23 +314343,23 @@
         {
           "explicit_value": true,
           "name": "Internal",
-          "source_line": 412,
+          "source_line": 413,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "CloseEvidence",
-          "source_line": 413,
+          "source_line": 414,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "ExternalSummary",
-          "source_line": 414,
+          "source_line": 415,
           "value": "2"
         }
       ],
-      "fingerprint": "74db5d668801de5bdb5c51d9041955cfd3bb82ea74ed85f3984f0c39e56c72d1",
+      "fingerprint": "8521612d48ea3432cf1b40ec4b2fe89cfaddc77855f0f44c4e712d40ed99826f",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseCommentVisibility",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseCommentVisibility",
       "kind": "enum",
@@ -314371,12 +314371,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationCaseCommentVisibility",
       "references": [],
       "source": {
-        "line": 410,
+        "line": 411,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 410,
+          "line": 411,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -314397,71 +314397,71 @@
         {
           "explicit_value": true,
           "name": "Open",
-          "source_line": 376,
+          "source_line": 377,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "InReview",
-          "source_line": 377,
+          "source_line": 378,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "AwaitingApproval",
-          "source_line": 378,
+          "source_line": 379,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Approved",
-          "source_line": 379,
+          "source_line": 380,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "Posted",
-          "source_line": 380,
+          "source_line": 381,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "Reopened",
-          "source_line": 381,
+          "source_line": 382,
           "value": "5"
         },
         {
           "explicit_value": true,
           "name": "Superseded",
-          "source_line": 382,
+          "source_line": 383,
           "value": "6"
         },
         {
           "explicit_value": true,
           "name": "Investigating",
-          "source_line": 383,
+          "source_line": 384,
           "value": "7"
         },
         {
           "explicit_value": true,
           "name": "AwaitingEvidence",
-          "source_line": 384,
+          "source_line": 385,
           "value": "8"
         },
         {
           "explicit_value": true,
           "name": "Resolved",
-          "source_line": 385,
+          "source_line": 386,
           "value": "9"
         },
         {
           "explicit_value": true,
           "name": "SignedOff",
-          "source_line": 386,
+          "source_line": 387,
           "value": "10"
         }
       ],
-      "fingerprint": "df837ed4870d3141745c5f75d395e4d2980fdd4e2a21a60a3fc596c453661455",
+      "fingerprint": "179c7761fe6322f016a7cba18c2146abce7b235330ee35a60885b940d909a21d",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseLifecycleState",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseLifecycleState",
       "kind": "enum",
@@ -314473,12 +314473,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationCaseLifecycleState",
       "references": [],
       "source": {
-        "line": 374,
+        "line": 375,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 374,
+          "line": 375,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -314499,29 +314499,29 @@
         {
           "explicit_value": true,
           "name": "Low",
-          "source_line": 392,
+          "source_line": 393,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Normal",
-          "source_line": 393,
+          "source_line": 394,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "High",
-          "source_line": 394,
+          "source_line": 395,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Critical",
-          "source_line": 395,
+          "source_line": 396,
           "value": "3"
         }
       ],
-      "fingerprint": "342932972dd7cb9f023a59b334b0061bb13735fc05f5bec7dc7af57113993229",
+      "fingerprint": "6c2e7486cef79660db2cfc7bf67ebe4b4fefe38193316b583630cbd0765a0297",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCasePriority",
       "id": "Meridian.Contracts.Workstation.ReconciliationCasePriority",
       "kind": "enum",
@@ -314533,12 +314533,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationCasePriority",
       "references": [],
       "source": {
-        "line": 390,
+        "line": 391,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 390,
+          "line": 391,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -314554,7 +314554,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "737938a1c1b3b1be71d5dc716d890142fe5b55987ef65aed119a438c62c01f27",
+      "fingerprint": "aeee5490e8215525d45d5781bdd4bda235f2237b073291273575ecf935f1c3ea",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseSignoffRecord",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseSignoffRecord",
       "kind": "record",
@@ -314571,7 +314571,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 909,
+          "source_line": 910,
           "type": "string"
         },
         {
@@ -314585,7 +314585,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 911,
+          "source_line": 912,
           "type": "string"
         },
         {
@@ -314600,7 +314600,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 915,
+          "source_line": 916,
           "type": "DateTimeOffset?"
         },
         {
@@ -314615,7 +314615,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 914,
+          "source_line": 915,
           "type": "string?"
         },
         {
@@ -314629,7 +314629,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 912,
+          "source_line": 913,
           "type": "string?"
         },
         {
@@ -314643,7 +314643,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 910,
+          "source_line": 911,
           "type": "string"
         },
         {
@@ -314657,7 +314657,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 913,
+          "source_line": 914,
           "type": "DateTimeOffset"
         }
       ],
@@ -314667,12 +314667,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationCaseSignoffRecord",
       "references": [],
       "source": {
-        "line": 908,
+        "line": 909,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 908,
+          "line": 909,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -314693,41 +314693,41 @@
         {
           "explicit_value": true,
           "name": "NotStarted",
-          "source_line": 401,
+          "source_line": 402,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "OnTrack",
-          "source_line": 402,
+          "source_line": 403,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Warning",
-          "source_line": 403,
+          "source_line": 404,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Breached",
-          "source_line": 404,
+          "source_line": 405,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "Paused",
-          "source_line": 405,
+          "source_line": 406,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "Stopped",
-          "source_line": 406,
+          "source_line": 407,
           "value": "5"
         }
       ],
-      "fingerprint": "88d9542055f8d17c03d61b01398f4fd7b17a679340cf9a662fad68e45f19cd9e",
+      "fingerprint": "0bf4aa602cd5a99942b9ef62f9ce135d2a45a874734309b2ad6f2c83620a90c8",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseSlaState",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseSlaState",
       "kind": "enum",
@@ -314739,12 +314739,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationCaseSlaState",
       "references": [],
       "source": {
-        "line": 399,
+        "line": 400,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 399,
+          "line": 400,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -314760,7 +314760,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "9973d5398575d602528feadb027896e03c5f345bc73e272d940385931840c9ac",
+      "fingerprint": "e4673b6d035f2cadce93b5c3cbcfa1a7fa5846d3a333bca5480f4565cbc56922",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseStateTransition",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseStateTransition",
       "kind": "record",
@@ -314777,7 +314777,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 934,
+          "source_line": 935,
           "type": "string"
         },
         {
@@ -314792,7 +314792,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 939,
+          "source_line": 940,
           "type": "string?"
         },
         {
@@ -314807,7 +314807,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 937,
+          "source_line": 938,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -314821,7 +314821,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseLifecycleState",
-          "source_line": 932,
+          "source_line": 933,
           "type": "ReconciliationCaseLifecycleState"
         },
         {
@@ -314835,7 +314835,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 936,
+          "source_line": 937,
           "type": "DateTimeOffset"
         },
         {
@@ -314850,7 +314850,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 938,
+          "source_line": 939,
           "type": "string?"
         },
         {
@@ -314864,7 +314864,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 935,
+          "source_line": 936,
           "type": "string?"
         },
         {
@@ -314878,7 +314878,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseLifecycleState",
-          "source_line": 933,
+          "source_line": 934,
           "type": "ReconciliationCaseLifecycleState"
         },
         {
@@ -314892,7 +314892,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 931,
+          "source_line": 932,
           "type": "string"
         }
       ],
@@ -314904,12 +314904,12 @@
         "Meridian.Contracts.Workstation.ReconciliationCaseLifecycleState"
       ],
       "source": {
-        "line": 930,
+        "line": 931,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 930,
+          "line": 931,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -314930,41 +314930,41 @@
         {
           "explicit_value": true,
           "name": "StartReview",
-          "source_line": 943,
+          "source_line": 944,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "RequestApproval",
-          "source_line": 944,
+          "source_line": 945,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Approve",
-          "source_line": 945,
+          "source_line": 946,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Post",
-          "source_line": 946,
+          "source_line": 947,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "Reopen",
-          "source_line": 947,
+          "source_line": 948,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "Supersede",
-          "source_line": 948,
+          "source_line": 949,
           "value": "5"
         }
       ],
-      "fingerprint": "e4248422a90f8604505540bc3bf8c0d4f0c0707ffc5eb41e306cb0e22ed578e0",
+      "fingerprint": "d03a78745ab7fbb88e54c88cb0e73bf63a58f74575497b6ff6785982341a6096",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseTransitionAction",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseTransitionAction",
       "kind": "enum",
@@ -314976,12 +314976,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationCaseTransitionAction",
       "references": [],
       "source": {
-        "line": 941,
+        "line": 942,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 941,
+          "line": 942,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -314997,7 +314997,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "a16283dfc657db5d9d74e0eaddcf8011ca2fcc6955d45ce170535af2dc5c6125",
+      "fingerprint": "5a9fe8c5bc7d08c802c1d302ab8c30f462161dbc937f217e7a282dfdb9080e6a",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseTransitionCommand",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseTransitionCommand",
       "kind": "record",
@@ -315014,7 +315014,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseTransitionAction",
-          "source_line": 953,
+          "source_line": 954,
           "type": "ReconciliationCaseTransitionAction"
         },
         {
@@ -315028,7 +315028,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 954,
+          "source_line": 955,
           "type": "string"
         },
         {
@@ -315042,7 +315042,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 952,
+          "source_line": 953,
           "type": "string"
         },
         {
@@ -315056,7 +315056,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 956,
+          "source_line": 957,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -315070,7 +315070,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 955,
+          "source_line": 956,
           "type": "string"
         },
         {
@@ -315085,7 +315085,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 957,
+          "source_line": 958,
           "type": "string?"
         },
         {
@@ -315100,7 +315100,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 958,
+          "source_line": 959,
           "type": "string?"
         }
       ],
@@ -315112,12 +315112,12 @@
         "Meridian.Contracts.Workstation.ReconciliationCaseTransitionAction"
       ],
       "source": {
-        "line": 951,
+        "line": 952,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 951,
+          "line": 952,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -315138,89 +315138,89 @@
         {
           "explicit_value": true,
           "name": "Assign",
-          "source_line": 420,
+          "source_line": 421,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "ChangePriority",
-          "source_line": 421,
+          "source_line": 422,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "TransitionStatus",
-          "source_line": 422,
+          "source_line": 423,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "AddComment",
-          "source_line": 423,
+          "source_line": 424,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "EditComment",
-          "source_line": 424,
+          "source_line": 425,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "DeleteComment",
-          "source_line": 425,
+          "source_line": 426,
           "value": "5"
         },
         {
           "explicit_value": true,
           "name": "SetRootCause",
-          "source_line": 426,
+          "source_line": 427,
           "value": "6"
         },
         {
           "explicit_value": true,
           "name": "SetResolution",
-          "source_line": 427,
+          "source_line": 428,
           "value": "7"
         },
         {
           "explicit_value": true,
           "name": "LinkEvidence",
-          "source_line": 428,
+          "source_line": 429,
           "value": "8"
         },
         {
           "explicit_value": true,
           "name": "SignOff",
-          "source_line": 429,
+          "source_line": 430,
           "value": "9"
         },
         {
           "explicit_value": true,
           "name": "Reopen",
-          "source_line": 430,
+          "source_line": 431,
           "value": "10"
         },
         {
           "explicit_value": true,
           "name": "Resolve",
-          "source_line": 431,
+          "source_line": 432,
           "value": "11"
         },
         {
           "explicit_value": true,
           "name": "Waive",
-          "source_line": 432,
+          "source_line": 433,
           "value": "12"
         },
         {
           "explicit_value": true,
           "name": "Supersede",
-          "source_line": 433,
+          "source_line": 434,
           "value": "13"
         }
       ],
-      "fingerprint": "684c786380bf9a7f02a5ab693a69e683c17e9b388083a03062ca7e0d70a0b906",
+      "fingerprint": "415f21783c70ee9f9c7d2ccdc20ca56b0c201facc5829d2a34eb9896e3734318",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseworkAction",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseworkAction",
       "kind": "enum",
@@ -315232,12 +315232,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationCaseworkAction",
       "references": [],
       "source": {
-        "line": 418,
+        "line": 419,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 418,
+          "line": 419,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -315253,7 +315253,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "797ec7182237e610768809b05f00c1c691b08d819b2e037640cf352e93420f5c",
+      "fingerprint": "67c5a399788e469b869527b8192451150023872d2ced2e28c4173d8e8561a4b7",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto",
       "kind": "record",
@@ -315270,7 +315270,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 723,
+          "source_line": 724,
           "type": "Guid"
         },
         {
@@ -315284,7 +315284,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 724,
+          "source_line": 725,
           "type": "DateOnly"
         },
         {
@@ -315298,7 +315298,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 721,
+          "source_line": 722,
           "type": "string"
         },
         {
@@ -315312,7 +315312,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 722,
+          "source_line": 723,
           "type": "Guid"
         }
       ],
@@ -315322,12 +315322,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto",
       "references": [],
       "source": {
-        "line": 720,
+        "line": 721,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 720,
+          "line": 721,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -315343,7 +315343,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "9775649a71b088e59b9a92d667ff19e24264b86bb0d304d397d1755a77b56514",
+      "fingerprint": "ff697f2fd96fa7165ba950cd85e201a55654a39d5604fdbf8a7ddafa281b1327",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseworkCommand",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseworkCommand",
       "kind": "record",
@@ -315360,7 +315360,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseworkAction",
-          "source_line": 682,
+          "source_line": 683,
           "type": "ReconciliationCaseworkAction"
         },
         {
@@ -315375,7 +315375,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OperationsActionOriginDto",
-          "source_line": 703,
+          "source_line": 704,
           "type": "OperationsActionOriginDto"
         },
         {
@@ -315386,108 +315386,6 @@
           "json_name": null,
           "key_type": null,
           "name": "Actor",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 683,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ApprovalActor",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 704,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ApprovalReference",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 705,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Assignee",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 689,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BreakId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 681,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CausationId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 695,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CloseScope",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "ReconciliationCaseworkCloseScopeDto?",
-          "source_line": 712,
-          "type": "ReconciliationCaseworkCloseScopeDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CommandId",
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
@@ -315502,7 +315400,66 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "CommentId",
+          "name": "ApprovalActor",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 705,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ApprovalReference",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 706,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Assignee",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 690,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BreakId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 682,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CausationId",
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
@@ -315516,11 +315473,54 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "CorrelationId",
+          "name": "CloseScope",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "ReconciliationCaseworkCloseScopeDto?",
+          "source_line": 713,
+          "type": "ReconciliationCaseworkCloseScopeDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CommandId",
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
           "source_line": 685,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CommentId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 697,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrelationId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 686,
           "type": "string"
         },
         {
@@ -315535,7 +315535,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 699,
+          "source_line": 700,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -315549,7 +315549,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 687,
+          "source_line": 688,
           "type": "long"
         },
         {
@@ -315564,7 +315564,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 702,
+          "source_line": 703,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -315579,7 +315579,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 692,
+          "source_line": 693,
           "type": "string?"
         },
         {
@@ -315594,7 +315594,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 697,
+          "source_line": 698,
           "type": "string?"
         },
         {
@@ -315609,7 +315609,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCasePriority?",
-          "source_line": 690,
+          "source_line": 691,
           "type": "ReconciliationCasePriority?"
         },
         {
@@ -315624,7 +315624,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 700,
+          "source_line": 701,
           "type": "bool"
         },
         {
@@ -315639,7 +315639,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 688,
+          "source_line": 689,
           "type": "string?"
         },
         {
@@ -315654,7 +315654,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 694,
+          "source_line": 695,
           "type": "string?"
         },
         {
@@ -315669,7 +315669,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 693,
+          "source_line": 694,
           "type": "string?"
         },
         {
@@ -315683,7 +315683,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 686,
+          "source_line": 687,
           "type": "string"
         },
         {
@@ -315698,7 +315698,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseLifecycleState?",
-          "source_line": 691,
+          "source_line": 692,
           "type": "ReconciliationCaseLifecycleState?"
         },
         {
@@ -315713,7 +315713,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseLifecycleState?",
-          "source_line": 701,
+          "source_line": 702,
           "type": "ReconciliationCaseLifecycleState?"
         },
         {
@@ -315728,7 +315728,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 706,
+          "source_line": 707,
           "type": "string?"
         },
         {
@@ -315743,7 +315743,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseCommentVisibility",
-          "source_line": 698,
+          "source_line": 699,
           "type": "ReconciliationCaseCommentVisibility"
         }
       ],
@@ -315760,12 +315760,12 @@
         "Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto"
       ],
       "source": {
-        "line": 680,
+        "line": 681,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 680,
+          "line": 681,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -315781,7 +315781,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "295147ad10a594e838fc62a330a93fca235da2f544fed8d66e4e8a5dbc66df3c",
+      "fingerprint": "e987307a36b91a4791626cb6a355732411c2e66f4578069b824c0792a3fa5205",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult",
       "id": "Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult",
       "kind": "record",
@@ -315799,7 +315799,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 904,
+          "source_line": 905,
           "type": "string?"
         },
         {
@@ -315814,7 +315814,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 905,
+          "source_line": 906,
           "type": "string?"
         },
         {
@@ -315828,7 +315828,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationBreakQueueItem?",
-          "source_line": 902,
+          "source_line": 903,
           "type": "ReconciliationBreakQueueItem?"
         },
         {
@@ -315842,7 +315842,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "VerifiedOperationOutcome",
-          "source_line": 903,
+          "source_line": 904,
           "type": "VerifiedOperationOutcome"
         },
         {
@@ -315856,7 +315856,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 901,
+          "source_line": 902,
           "type": "string"
         },
         {
@@ -315871,7 +315871,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 906,
+          "source_line": 907,
           "type": "IReadOnlyList<string>?"
         }
       ],
@@ -315884,12 +315884,12 @@
         "Meridian.Contracts.Workstation.ReconciliationBreakQueueItem"
       ],
       "source": {
-        "line": 900,
+        "line": 901,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 900,
+          "line": 901,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -315905,7 +315905,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "a928849ef5b76d73aceaa91710df039cf34c38623b8a42ded496c595f66eeece",
+      "fingerprint": "872aaccb6b629d231baa774dbbca93db1e217bcc8a87825b71a742fd7e12c914",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationCorrelationContext",
       "id": "Meridian.Contracts.Workstation.ReconciliationCorrelationContext",
       "kind": "record",
@@ -315923,7 +315923,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1046,
+          "source_line": 1047,
           "type": "string?"
         },
         {
@@ -315937,7 +315937,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1044,
+          "source_line": 1045,
           "type": "string?"
         },
         {
@@ -315951,7 +315951,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1043,
+          "source_line": 1044,
           "type": "string"
         },
         {
@@ -315965,7 +315965,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1042,
+          "source_line": 1043,
           "type": "string"
         },
         {
@@ -315979,7 +315979,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1045,
+          "source_line": 1046,
           "type": "string"
         }
       ],
@@ -315989,12 +315989,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationCorrelationContext",
       "references": [],
       "source": {
-        "line": 1041,
+        "line": 1042,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 1041,
+          "line": 1042,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -316010,7 +316010,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "7df781a48b2e92b704da213c6d69d41fac380c0c36a66c9ded715f8c73fdd99a",
+      "fingerprint": "b370783abc93a1cedfe1dda5bb681a48a8fda914d52a1f25fd6ed90e927c5373",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationJobControl",
       "id": "Meridian.Contracts.Workstation.ReconciliationJobControl",
       "kind": "record",
@@ -316027,7 +316027,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1067,
+          "source_line": 1068,
           "type": "int"
         },
         {
@@ -316041,7 +316041,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1074,
+          "source_line": 1075,
           "type": "string"
         },
         {
@@ -316055,7 +316055,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1069,
+          "source_line": 1070,
           "type": "bool"
         },
         {
@@ -316069,7 +316069,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1070,
+          "source_line": 1071,
           "type": "string?"
         },
         {
@@ -316083,7 +316083,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 1071,
+          "source_line": 1072,
           "type": "DateTimeOffset"
         },
         {
@@ -316097,7 +316097,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1066,
+          "source_line": 1067,
           "type": "string"
         },
         {
@@ -316111,7 +316111,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1065,
+          "source_line": 1066,
           "type": "string"
         },
         {
@@ -316125,7 +316125,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 1072,
+          "source_line": 1073,
           "type": "DateTimeOffset?"
         },
         {
@@ -316139,7 +316139,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1068,
+          "source_line": 1069,
           "type": "int"
         },
         {
@@ -316153,7 +316153,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 1073,
+          "source_line": 1074,
           "type": "DateTimeOffset?"
         }
       ],
@@ -316163,12 +316163,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationJobControl",
       "references": [],
       "source": {
-        "line": 1064,
+        "line": 1065,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 1064,
+          "line": 1065,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -316435,7 +316435,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "dfc405c6c73e6c2bb7e373b92ead798bf07bfad5d27740bfef395f3828063e2d",
+      "fingerprint": "df8b32cc33eaa1f752ee6e149fe12d2bb0c2d570d2c437911432995ce6108261",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationPayloadEnvelope",
       "id": "Meridian.Contracts.Workstation.ReconciliationPayloadEnvelope",
       "kind": "record",
@@ -316452,7 +316452,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCorrelationContext",
-          "source_line": 1054,
+          "source_line": 1055,
           "type": "ReconciliationCorrelationContext"
         },
         {
@@ -316466,7 +316466,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 1055,
+          "source_line": 1056,
           "type": "DateTimeOffset"
         },
         {
@@ -316480,7 +316480,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1057,
+          "source_line": 1058,
           "type": "string"
         },
         {
@@ -316494,7 +316494,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1058,
+          "source_line": 1059,
           "type": "string?"
         },
         {
@@ -316508,7 +316508,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "TPayload",
-          "source_line": 1059,
+          "source_line": 1060,
           "type": "TPayload"
         },
         {
@@ -316522,7 +316522,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1052,
+          "source_line": 1053,
           "type": "string"
         },
         {
@@ -316536,7 +316536,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1056,
+          "source_line": 1057,
           "type": "string"
         },
         {
@@ -316550,7 +316550,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationSchemaVersion",
-          "source_line": 1053,
+          "source_line": 1054,
           "type": "ReconciliationSchemaVersion"
         }
       ],
@@ -316563,12 +316563,12 @@
         "Meridian.Contracts.Workstation.ReconciliationSchemaVersion"
       ],
       "source": {
-        "line": 1051,
+        "line": 1052,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 1051,
+          "line": 1052,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -316586,7 +316586,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "5e159bde9b36ac74634f9f7bc27e969c5c3775e414b31b431819a32ec566b0e9",
+      "fingerprint": "209d975fffb2e02fe3e16b12fecfd308dbb47417ce9723bf4332df75e2e74051",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationProcessingTelemetry",
       "id": "Meridian.Contracts.Workstation.ReconciliationProcessingTelemetry",
       "kind": "record",
@@ -316603,7 +316603,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "double",
-          "source_line": 1081,
+          "source_line": 1082,
           "type": "double"
         },
         {
@@ -316617,7 +316617,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "double",
-          "source_line": 1080,
+          "source_line": 1081,
           "type": "double"
         },
         {
@@ -316631,7 +316631,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "double",
-          "source_line": 1083,
+          "source_line": 1084,
           "type": "double"
         },
         {
@@ -316645,7 +316645,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "double",
-          "source_line": 1084,
+          "source_line": 1085,
           "type": "double"
         },
         {
@@ -316659,7 +316659,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "double",
-          "source_line": 1085,
+          "source_line": 1086,
           "type": "double"
         },
         {
@@ -316673,7 +316673,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1082,
+          "source_line": 1083,
           "type": "int"
         }
       ],
@@ -316683,12 +316683,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationProcessingTelemetry",
       "references": [],
       "source": {
-        "line": 1079,
+        "line": 1080,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 1079,
+          "line": 1080,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -316704,7 +316704,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "deb97d6843622d02ecd6a3f6f5e81f0c811222fd315112e748290ae013b217b3",
+      "fingerprint": "6a8d8163f3d18774c70907ebe61d9d2113a0a6ee1cf589bd0b06a0f00d1bd81a",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationRolloutFlags",
       "id": "Meridian.Contracts.Workstation.ReconciliationRolloutFlags",
       "kind": "record",
@@ -316721,7 +316721,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1096,
+          "source_line": 1097,
           "type": "bool"
         },
         {
@@ -316735,7 +316735,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1095,
+          "source_line": 1096,
           "type": "bool"
         },
         {
@@ -316749,7 +316749,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 1092,
+          "source_line": 1093,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -316763,7 +316763,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 1094,
+          "source_line": 1095,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -316777,7 +316777,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1091,
+          "source_line": 1092,
           "type": "bool"
         },
         {
@@ -316791,7 +316791,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 1093,
+          "source_line": 1094,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -316801,12 +316801,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationRolloutFlags",
       "references": [],
       "source": {
-        "line": 1090,
+        "line": 1091,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 1090,
+          "line": 1091,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -317413,7 +317413,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "f8d78ee4d3424fd23fd6e28da364954b7dde070eaa5c6ab2a89451907a90e23f",
+      "fingerprint": "9c210a1eaeeb0664e83811919b1f95296fd08a84af8cc2f509a1981397d9833c",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationSchemaVersion",
       "id": "Meridian.Contracts.Workstation.ReconciliationSchemaVersion",
       "kind": "record",
@@ -317431,7 +317431,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1036,
+          "source_line": 1037,
           "type": "string"
         },
         {
@@ -317445,7 +317445,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1032,
+          "source_line": 1033,
           "type": "string"
         },
         {
@@ -317459,7 +317459,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1033,
+          "source_line": 1034,
           "type": "int"
         },
         {
@@ -317473,7 +317473,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1034,
+          "source_line": 1035,
           "type": "int"
         },
         {
@@ -317487,7 +317487,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1035,
+          "source_line": 1036,
           "type": "int"
         }
       ],
@@ -317497,12 +317497,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationSchemaVersion",
       "references": [],
       "source": {
-        "line": 1031,
+        "line": 1032,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 1031,
+          "line": 1032,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -317655,7 +317655,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "4f43c2b4f2d8906878522b74ca19df5daa9cfd2bf187cad895cedcf3aa21fc78",
+      "fingerprint": "fbf4d685eb5f6d5bbd596a7b08124ebbbf87599fa6c7f5a9cc6d7add9ff7f75b",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationSlaComputationResult",
       "id": "Meridian.Contracts.Workstation.ReconciliationSlaComputationResult",
       "kind": "record",
@@ -317672,7 +317672,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 664,
+          "source_line": 665,
           "type": "string"
         },
         {
@@ -317686,7 +317686,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 662,
+          "source_line": 663,
           "type": "DateTimeOffset?"
         },
         {
@@ -317700,7 +317700,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "double",
-          "source_line": 665,
+          "source_line": 666,
           "type": "double"
         },
         {
@@ -317714,7 +317714,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 660,
+          "source_line": 661,
           "type": "DateTimeOffset"
         },
         {
@@ -317728,7 +317728,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 659,
+          "source_line": 660,
           "type": "string"
         },
         {
@@ -317742,7 +317742,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCaseSlaState",
-          "source_line": 663,
+          "source_line": 664,
           "type": "ReconciliationCaseSlaState"
         },
         {
@@ -317756,7 +317756,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 661,
+          "source_line": 662,
           "type": "DateTimeOffset"
         }
       ],
@@ -317768,12 +317768,12 @@
         "Meridian.Contracts.Workstation.ReconciliationCaseSlaState"
       ],
       "source": {
-        "line": 658,
+        "line": 659,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 658,
+          "line": 659,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -317789,7 +317789,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "dff06db87cd733e74c6560847afa07def45a1d068e2a7bf2a6701c5a859d5bf7",
+      "fingerprint": "8d4175e69da5490547cb9d0048ea4769bee9eccf0efbf3573c8650ffab8bac0f",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationSlaPolicy",
       "id": "Meridian.Contracts.Workstation.ReconciliationSlaPolicy",
       "kind": "record",
@@ -317806,7 +317806,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 640,
+          "source_line": 641,
           "type": "string?"
         },
         {
@@ -317820,7 +317820,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 641,
+          "source_line": 642,
           "type": "string?"
         },
         {
@@ -317835,7 +317835,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 652,
+          "source_line": 653,
           "type": "string?"
         },
         {
@@ -317849,7 +317849,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "TimeOnly",
-          "source_line": 646,
+          "source_line": 647,
           "type": "TimeOnly"
         },
         {
@@ -317863,7 +317863,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "TimeOnly",
-          "source_line": 645,
+          "source_line": 646,
           "type": "TimeOnly"
         },
         {
@@ -317877,7 +317877,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 647,
+          "source_line": 648,
           "type": "int"
         },
         {
@@ -317892,7 +317892,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 656,
+          "source_line": 657,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -317906,7 +317906,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 639,
+          "source_line": 640,
           "type": "string?"
         },
         {
@@ -317921,7 +317921,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 653,
+          "source_line": 654,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -317936,7 +317936,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 651,
+          "source_line": 652,
           "type": "bool"
         },
         {
@@ -317951,7 +317951,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 654,
+          "source_line": 655,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -317965,7 +317965,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 638,
+          "source_line": 639,
           "type": "string"
         },
         {
@@ -317979,7 +317979,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationCasePriority",
-          "source_line": 643,
+          "source_line": 644,
           "type": "ReconciliationCasePriority"
         },
         {
@@ -317993,7 +317993,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationBreakSeverity",
-          "source_line": 642,
+          "source_line": 643,
           "type": "ReconciliationBreakSeverity"
         },
         {
@@ -318008,7 +318008,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 649,
+          "source_line": 650,
           "type": "bool"
         },
         {
@@ -318023,7 +318023,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 650,
+          "source_line": 651,
           "type": "bool"
         },
         {
@@ -318038,7 +318038,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 655,
+          "source_line": 656,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -318052,7 +318052,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 644,
+          "source_line": 645,
           "type": "string"
         },
         {
@@ -318066,7 +318066,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 648,
+          "source_line": 649,
           "type": "int"
         }
       ],
@@ -318079,12 +318079,12 @@
         "Meridian.Contracts.Workstation.ReconciliationCasePriority"
       ],
       "source": {
-        "line": 637,
+        "line": 638,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 637,
+          "line": 638,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -318326,7 +318326,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "4c2fce4060a6bf103aa03f7bdd7bf9e19d5d03e73fdb5441ce55018c817301c8",
+      "fingerprint": "07ae4e4d36743bccf18b155f3957e7d84cfc1eb31a911a676416c153b5d1a3ff",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationTaxonomySnapshot",
       "id": "Meridian.Contracts.Workstation.ReconciliationTaxonomySnapshot",
       "kind": "record",
@@ -318343,7 +318343,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<ReconciliationTaxonomyValue>",
-          "source_line": 678,
+          "source_line": 679,
           "type": "IReadOnlyList<ReconciliationTaxonomyValue>"
         },
         {
@@ -318357,7 +318357,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<ReconciliationTaxonomyValue>",
-          "source_line": 677,
+          "source_line": 678,
           "type": "IReadOnlyList<ReconciliationTaxonomyValue>"
         },
         {
@@ -318371,7 +318371,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 676,
+          "source_line": 677,
           "type": "int"
         }
       ],
@@ -318383,12 +318383,12 @@
         "Meridian.Contracts.Workstation.ReconciliationTaxonomyValue"
       ],
       "source": {
-        "line": 675,
+        "line": 676,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 675,
+          "line": 676,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -318404,7 +318404,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "334797d017fae5c6db8965a65cd15332c66ca51ae2a4621f2c7a282c28ef5f60",
+      "fingerprint": "0a5c097c8bd0f5480d42c10b72d03238a097fc48524c0be06d965ed28119ad6e",
       "full_name": "Meridian.Contracts.Workstation.ReconciliationTaxonomyValue",
       "id": "Meridian.Contracts.Workstation.ReconciliationTaxonomyValue",
       "kind": "record",
@@ -318421,7 +318421,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 669,
+          "source_line": 670,
           "type": "string"
         },
         {
@@ -318435,7 +318435,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 670,
+          "source_line": 671,
           "type": "string"
         },
         {
@@ -318449,7 +318449,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 672,
+          "source_line": 673,
           "type": "bool"
         },
         {
@@ -318464,7 +318464,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 673,
+          "source_line": 674,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -318478,7 +318478,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 671,
+          "source_line": 672,
           "type": "int"
         }
       ],
@@ -318488,12 +318488,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReconciliationTaxonomyValue",
       "references": [],
       "source": {
-        "line": 668,
+        "line": 669,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 668,
+          "line": 669,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -333428,7 +333428,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0a3de9be0d0bc5da431d457dd7915aea5ef7b89bc725be099781d6397a7a19e8",
+      "fingerprint": "1bdf99b5e15750152c1ecfc38f60deeff6d1d7aef9e0be929bddc56330ec5df7",
       "full_name": "Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest",
       "id": "Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest",
       "kind": "record",
@@ -333446,7 +333446,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OperationsActionOriginDto",
-          "source_line": 1026,
+          "source_line": 1027,
           "type": "OperationsActionOriginDto"
         },
         {
@@ -333460,7 +333460,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1021,
+          "source_line": 1022,
           "type": "string"
         },
         {
@@ -333474,7 +333474,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1025,
+          "source_line": 1026,
           "type": "string"
         },
         {
@@ -333488,7 +333488,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1024,
+          "source_line": 1025,
           "type": "string"
         },
         {
@@ -333502,7 +333502,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1023,
+          "source_line": 1024,
           "type": "string"
         },
         {
@@ -333516,7 +333516,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ReconciliationBreakQueueStatus",
-          "source_line": 1022,
+          "source_line": 1023,
           "type": "ReconciliationBreakQueueStatus"
         }
       ],
@@ -333529,12 +333529,12 @@
         "Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus"
       ],
       "source": {
-        "line": 1020,
+        "line": 1021,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 1020,
+          "line": 1021,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
@@ -333868,7 +333868,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "9e4ff64a515a83cfcaf38f8f3b981c32e5bef1d79e12ba71e1ad1991d38ecee6",
+      "fingerprint": "e3737a2115084793f4da1492cd9460d97a2ba9bf922113642a38190213fb7c7a",
       "full_name": "Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest",
       "id": "Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest",
       "kind": "record",
@@ -333885,7 +333885,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1012,
+          "source_line": 1013,
           "type": "string"
         },
         {
@@ -333899,7 +333899,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1011,
+          "source_line": 1012,
           "type": "string"
         },
         {
@@ -333913,7 +333913,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1013,
+          "source_line": 1014,
           "type": "string"
         },
         {
@@ -333928,7 +333928,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1014,
+          "source_line": 1015,
           "type": "string?"
         },
         {
@@ -333943,7 +333943,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1015,
+          "source_line": 1016,
           "type": "string?"
         }
       ],
@@ -333953,12 +333953,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest",
       "references": [],
       "source": {
-        "line": 1010,
+        "line": 1011,
         "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
       },
       "sources": [
         {
-          "line": 1010,
+          "line": 1011,
           "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs"
         }
       ],
