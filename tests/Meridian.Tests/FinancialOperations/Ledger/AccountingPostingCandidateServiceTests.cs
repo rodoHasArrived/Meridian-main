@@ -940,6 +940,7 @@ public sealed class AccountingPostingCandidateServiceTests
         appended.PostingCommand.LedgerBookId.Should().Be(ledgerBookId);
         appended.PostingCommand.SourceEventId.Should().Be(sourceEventId);
         appended.PostingCommand.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Approved);
+        appended.PostingCommand.Actor.Should().Be("reviewer@meridian.local");
         appended.PostingCommand.Evidence.Should().Contain(evidence =>
             evidence.Kind == AccountingPostingEvidenceKindDto.Approval &&
             evidence.EvidenceId == "approval-generated-interest-202605");

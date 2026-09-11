@@ -435,6 +435,7 @@ public static class AccountingPostingCommandValidator
         };
 
         AddTag(tags, "approvalId", command.ApprovalId);
+        AddTag(tags, "postingActor", command.Actor);
         AddTag(tags, "dataProvenance", command.Provenance.Label());
         AddTag(tags, "sourceEventId", (command.EconomicEvent?.EventId ?? command.SourceEventId)?.ToString("D"));
         AddTag(tags, "sourceEventType", command.EconomicEvent?.EventType ?? command.SourceEventType);

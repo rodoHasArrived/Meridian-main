@@ -191,7 +191,7 @@ public static partial class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerPeriods, async (CreateLedgerPeriodRequest request, HttpContext context) =>
         {
-            if (!HasLedgerMutationPermission(context))
+            if (!TryGetLedgerCloseActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -204,7 +204,7 @@ public static partial class LedgerEndpoints
 
             try
             {
-                var period = await service.CreatePeriodAsync(request, context.RequestAborted).ConfigureAwait(false);
+                var period = await service.CreatePeriodAsync(request with { CreatedBy = actor }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(period, jsonOptions, statusCode: StatusCodes.Status201Created);
             }
             catch (LedgerBookServiceException ex)

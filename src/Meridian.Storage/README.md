@@ -11,6 +11,20 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+Ledger migration `036` adds a separate ledger-event audit chain. Journal posting (including atomic
+lot acquisition/disposal and reversals), period creation, close, and reopen retain an audit in the
+same transaction. Verification scans the chain and its retained journal/leg, period, and close-event
+facts before further writes; an audit failure rolls back the mutation. A locked head serializes
+appenders, and Serializable callers retain the existing whole-transaction retry requirement.
+This deliberately costs a full history scan per append and requires volume validation before
+production acceptance. The hashed genesis inventory identifies pre-upgrade facts without claiming
+their old contents were protected. Whole-database rollback still requires an external checkpoint.
+`LedgerEventAuditPostgresTests` exercises these boundaries; hosted PostgreSQL proof is required.
+
+Audit actors come from validated posting commands or period transitions. Missing legacy attribution
+remains null. The period-creation endpoint stamps the authenticated creator; generated candidate
+posts retain the actual posting actor in command metadata, preserving old unattributed retries.
+
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
 the publisher. The outbox worker publishes retained state and retries failures; missing publisher

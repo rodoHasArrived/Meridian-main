@@ -2288,6 +2288,7 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
+│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── ui-route-wiring-report.json
 │   │   ├── ui-route-wiring-report.md
@@ -5639,7 +5640,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_032__accounting_audit_chain.sql
 │   │   │   │   ├── V_ledger_033__tax_lot_face_terms.sql
 │   │   │   │   ├── V_ledger_034__open_lot_acquisition.sql
-│   │   │   │   └── V_ledger_035__open_lot_backfill.sql
+│   │   │   │   ├── V_ledger_035__open_lot_backfill.sql
+│   │   │   │   └── V_ledger_036__ledger_event_audit_chain.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5664,6 +5666,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   ├── PostgresLedgerCurrencyBackfill.cs
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
+│   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
 │   │   │   ├── PostgresLedgerJournalStore.OpenLotBackfill.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
@@ -10040,6 +10043,7 @@ Meridian-main
 │   │   │   ├── LedgerBookServiceTests.cs
 │   │   │   ├── LedgerCurrencyBackfillTests.cs
 │   │   │   ├── LedgerDatabaseFactAttribute.cs
+│   │   │   ├── LedgerEventAuditPostgresTests.cs
 │   │   │   ├── LedgerJournalStoreHydrationTests.cs
 │   │   │   ├── LedgerJournalStoreTests.cs
 │   │   │   ├── LedgerPostgresTestDatabase.cs
@@ -10337,6 +10341,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.IBResults.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs
 │   │   │   ├── WorkstationEndpointsTests.JournalAutomation.cs
+│   │   │   ├── WorkstationEndpointsTests.LedgerAuditActor.cs
 │   │   │   ├── WorkstationEndpointsTests.LedgerRoleReachability.cs
 │   │   │   ├── WorkstationEndpointsTests.MarkPreview.cs
 │   │   │   ├── WorkstationEndpointsTests.OpenLotBackfill.cs
