@@ -3,8 +3,8 @@
 # `security_master` schema
 
 - Relations: 88
-- Functions/procedures: 1
-- Triggers: 1
+- Functions/procedures: 2
+- Triggers: 3
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -735,6 +735,7 @@ erDiagram
         numeric_12_8_ annual_rate
         jsonb formula_trace_json
         timestamp_with_time_zone created_at
+        uuid projected_cash_flow_id
     }
     security_master_projection_checkpoint {
         text projection_name PK
@@ -791,6 +792,7 @@ erDiagram
         jsonb tolerance_json
         text[] notes
         timestamp_with_time_zone created_at
+        uuid projected_cash_flow_id
     }
     security_master_reconciliation_run {
         uuid reconciliation_run_id PK
@@ -1286,12 +1288,12 @@ erDiagram
 | `option_series_projection` | table | 6 | `option_chain_id`, `contract_symbol` | 1 | 1 | - |
 | `outbox_message` | table | 10 | `outbox_message_id` | 0 | 4 | - |
 | `payment_allocation` | table | 10 | `allocation_id` | 3 | 3 | - |
-| `projected_cash_flow` | table | 14 | `projected_flow_id` | 2 | 3 | - |
+| `projected_cash_flow` | table | 15 | `projected_flow_id` | 2 | 3 | - |
 | `projection_checkpoint` | table | 3 | `projection_name` | 0 | 1 | - |
 | `projection_run` | table | 13 | `projection_run_id` | 3 | 3 | - |
 | `read_model_checkpoint` | table | 6 | `projection_name` | 0 | 1 | - |
 | `reconciliation_exception` | table | 9 | `exception_id` | 1 | 2 | - |
-| `reconciliation_result` | table | 15 | `reconciliation_result_id` | 4 | 2 | - |
+| `reconciliation_result` | table | 16 | `reconciliation_result_id` | 4 | 2 | - |
 | `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
 | `securities` | table | 21 | `security_id` | 0 | 4 | - |
