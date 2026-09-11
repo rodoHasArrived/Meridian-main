@@ -2288,6 +2288,7 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
+│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── ui-route-wiring-report.json
 │   │   ├── ui-route-wiring-report.md
@@ -9709,6 +9710,7 @@ Meridian-main
 │   │   │   ├── GracefulShutdownIntegrationTests.cs
 │   │   │   ├── ProviderGoldenPathScenarioGenerator.cs
 │   │   │   ├── ProviderGoldenPathTransactionLedgerReconciliationTests.cs
+│   │   │   ├── StatementImportCaseworkEvidenceTests.cs
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
 │   │   ├── Ledger
 │   │   │   ├── AutomatedJournalPostingTargetTests.cs
@@ -10696,7 +10698,8 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
-│   │   └── TestAssemblyConfiguration.cs
+│   │   ├── TestAssemblyConfiguration.cs
+│   │   └── xunit.runner.json
 │   ├── scripts
 │   │   ├── fixtures
 │   │   │   └── roadmap
