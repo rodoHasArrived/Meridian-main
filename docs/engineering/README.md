@@ -54,6 +54,9 @@ contracts that stop two independently-written designs from colliding.
 
 Prefer the narrowest proof lane for the files you change.
 
+For hosted CI cache behavior, artifact locations, and timing comparisons, see
+[dependency caches and artifacts](../../.github/workflows/README.md#dependency-caches-and-artifacts).
+
 For completed PR-ready work, use the canonical repository gate:
 
 ```powershell
