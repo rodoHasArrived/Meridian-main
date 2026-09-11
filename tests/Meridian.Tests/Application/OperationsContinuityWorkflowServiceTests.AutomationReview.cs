@@ -17,8 +17,8 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         var submitted = await CreateApprovalSubmittedWorkflowAsync(service);
         submitted.ReviewedAutomation!.RequiresHumanReview.Should().BeTrue();
         var approved = await service.ApproveWorkflowAsync(submitted.WorkflowId, new OperationsApprovalDecisionRequestDto(
-            submitted.Version, "ops-user", "reviewer", "Review current retained support", "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            submitted.Version, "reviewer", "reviewer", "Review current retained support", "report-pack-1",
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, submitted.WorkflowId)));
         approved.Success.Should().BeTrue();
         approved.Workflow!.ClosePackage.Should().BeNull();
         approved.Workflow.ReviewedAutomation!.Status.Should().Be(EvidenceStatusDto.Ready);

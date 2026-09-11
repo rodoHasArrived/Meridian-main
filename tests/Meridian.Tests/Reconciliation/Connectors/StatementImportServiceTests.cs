@@ -110,17 +110,40 @@ public sealed class StatementImportServiceTests : IDisposable
         var values = new List<string> { "FUND-A", "SPY", "10", "500", "-5000", "trade", "2026-06-02", "", "USD", "1.5" };
         switch (defect)
         {
-            case "missing-currency": columns.RemoveRange(7, 3); values.RemoveRange(7, 3); break;
-            case "blank-currency": values[8] = " "; break;
-            case "invalid-currency": values[8] = "???"; break;
-            case "quantity-comma": values[2] = "1,25"; break;
-            case "price-comma": values[3] = "1,25"; break;
-            case "cash-comma": values[4] = "1,25"; break;
-            case "fees-comma": values[9] = "1,25"; break;
-            case "fees-invalid": values[9] = "unknown"; break;
-            case "quantity-blank": values[2] = " "; break;
-            case "price-blank": values[3] = " "; break;
-            case "cash-blank": values[4] = " "; break;
+            case "missing-currency":
+                columns.RemoveRange(7, 3);
+                values.RemoveRange(7, 3);
+                break;
+            case "blank-currency":
+                values[8] = " ";
+                break;
+            case "invalid-currency":
+                values[8] = "???";
+                break;
+            case "quantity-comma":
+                values[2] = "1,25";
+                break;
+            case "price-comma":
+                values[3] = "1,25";
+                break;
+            case "cash-comma":
+                values[4] = "1,25";
+                break;
+            case "fees-comma":
+                values[9] = "1,25";
+                break;
+            case "fees-invalid":
+                values[9] = "unknown";
+                break;
+            case "quantity-blank":
+                values[2] = " ";
+                break;
+            case "price-blank":
+                values[3] = " ";
+                break;
+            case "cash-blank":
+                values[4] = " ";
+                break;
         }
 
         var content = string.Join(',', columns) + "\n" + string.Join(',', values.Select(value => "\"" + value + "\"")) + "\n";
