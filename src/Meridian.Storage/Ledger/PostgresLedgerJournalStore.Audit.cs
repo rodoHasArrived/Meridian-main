@@ -220,8 +220,8 @@ public sealed partial class PostgresLedgerJournalStore
                 left join lateral (select * from {events} e where e.subject_kind = 'period' and e.subject_id = p.period_id
                                    order by subject_version desc limit 1) a on true
                 left join {genesis} g on g.subject_kind = 'period' and g.subject_id = p.period_id
-                where (a.subject_id is null and (g.subject_id is null or g.subject_version <> p.version))
-                   or (a.subject_id is not null and (a.subject_version <> p.version
+                where (a.subject_id is null and (g.subject_id is null or g.subject_version <> p.optimistic_version))
+                   or (a.subject_id is not null and (a.subject_version <> p.optimistic_version
                        or {RetainedAuditColumnsSql("p", "a.fact_snapshot::jsonb")} <> a.fact_snapshot::jsonb))
                 union all
                 select 1 from {events} a left join {Qualified("accounting_periods")} p on p.period_id = a.subject_id

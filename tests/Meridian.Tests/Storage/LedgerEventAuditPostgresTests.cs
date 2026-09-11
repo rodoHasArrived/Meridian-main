@@ -200,6 +200,7 @@ public sealed class LedgerEventAuditPostgresTests
         var ct = timeout.Token;
         await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
         var (book, period) = await CreatePeriodAsync(database, ct);
+        period = await database.JournalStore.SavePeriodAsync(period with { Label = "Reviewed May period" }, period.Version, ct: ct);
         await GovernedStore(database).AppendAsync(Write(book, period, "legacy-poster"), ct);
         // Reproduce a pre-036 database shape in this disposable schema only.
         await SqlAsync(database, "drop table {schema}.ledger_event_audit_events, {schema}.ledger_event_audit_genesis, {schema}.ledger_event_audit_head", ct);
@@ -207,6 +208,8 @@ public sealed class LedgerEventAuditPostgresTests
         var genesis = await database.JournalStore.VerifyLedgerEventAuditAsync(ct);
         genesis.ChainedEvents.Should().Be(0);
         genesis.UnprotectedGenesisFacts.Should().Be(2);
+        (await SqlScalarAsync(database, "select subject_version from {schema}.ledger_event_audit_genesis where subject_kind = 'period'", ct))
+            .Should().Be(period.Version);
         await GovernedStore(database).AppendAsync(Write(book, period, "new-poster"), ct);
         await ReapplyAuditMigrationAsync(database, ct);
         var rerun = await database.JournalStore.VerifyLedgerEventAuditAsync(ct);

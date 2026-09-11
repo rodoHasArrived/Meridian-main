@@ -36,7 +36,7 @@ create table if not exists __SCHEMA__.ledger_event_audit_events (
 create unique index if not exists ux_ledger_event_audit_close_event
     on __SCHEMA__.ledger_event_audit_events (close_event_id) where close_event_id is not null;
 
--- The runner replays scripts. Only the first head insertion captures genesis identities;
+-- On explicit reruns, only the first head insertion captures genesis identities;
 -- startup must never convert newly uncovered facts into exempt legacy history.
 lock table __SCHEMA__.journal_entries, __SCHEMA__.accounting_periods,
     __SCHEMA__.period_close_events in share row exclusive mode;
@@ -58,7 +58,7 @@ begin
     if inserted = 1 then
         insert into __SCHEMA__.ledger_event_audit_genesis (subject_kind, subject_id, subject_version)
         select 'journal', journal_entry_id, 1 from __SCHEMA__.journal_entries
-        union all select 'period', period_id, version from __SCHEMA__.accounting_periods
+        union all select 'period', period_id, optimistic_version from __SCHEMA__.accounting_periods
         union all select 'period-close', event_id, period_version from __SCHEMA__.period_close_events;
         -- Protect the boundary inventory, not the pre-upgrade economic contents.
         update __SCHEMA__.ledger_event_audit_head set genesis_hash = (
