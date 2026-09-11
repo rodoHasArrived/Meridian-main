@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 240,
-    "warning": 240
+    "total": 241,
+    "warning": 241
   },
   "failed": false,
   "findings": [
@@ -344,6 +344,16 @@
       },
       "message": "Business table fund_structure.fund_structure_linked_account does not have a table comment.",
       "object": "fund_structure.fund_structure_linked_account",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "fund_structure_tenant_backfill_receipt"
+      },
+      "message": "Business table fund_structure.fund_structure_tenant_backfill_receipt does not have a table comment.",
+      "object": "fund_structure.fund_structure_tenant_backfill_receipt",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2625,5 +2635,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "c56ab176cae549bb952b0b133170ef2f91f83f6bc4f94df8c04e28f95194e037"
+  "fingerprint": "bd22486789feb6923a4614d979fd702aed57f42fa76d73d8b6d269db6baa8bb4"
 }

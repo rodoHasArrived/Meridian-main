@@ -35,15 +35,107 @@
       "target_kind": "table column",
       "target_name": "fund_structure_legacy_import_receipt",
       "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "cf048410639a7193c3d82ba8bed37b250bcb30af41b401b61a4aa8ebc6ab35c2",
+      "kind": "normal",
+      "source": "fund_structure.fund_structure_tenant_backfill_receipt_operator_id_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_tenant_backfill_receipt.operator_id",
+      "target_kind": "table column",
+      "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "6a843065e81390efa133632ecd7849d59ac1569e4364d2e8c44843b374c030df",
+      "kind": "normal",
+      "source": "fund_structure.fund_structure_tenant_backfill_receipt_plan_hash_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_tenant_backfill_receipt.plan_hash",
+      "target_kind": "table column",
+      "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "13fa1e25c69e0e0498a352c670804d8d4c79a55031853a3747fe1f48cd998f0e",
+      "kind": "normal",
+      "source": "fund_structure.fund_structure_tenant_backfill_receipt_quarantined_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_tenant_backfill_receipt.quarantined_rows",
+      "target_kind": "table column",
+      "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "5f30a63ca4b2bd8d98bd0f750c3d98dcb154a282b45811fff4fe9d4631a16a95",
+      "kind": "normal",
+      "source": "fund_structure.fund_structure_tenant_backfill_receipt_review_reference_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_tenant_backfill_receipt.review_reference",
+      "target_kind": "table column",
+      "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "0ce64cb27da07e090b5b4116254a6f7c9eef5713f9ec7d6c635409b3627e539c",
+      "kind": "normal",
+      "source": "fund_structure.fund_structure_tenant_backfill_receipt_stamped_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows",
+      "target_kind": "table column",
+      "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
     }
   ],
   "domains": [],
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "4f123aa32d6e44178f3f199fd913b862bd56ffea352d457f413a3670bae3a299",
+  "fingerprint": "3a70d3772b8efeb51d636558745437451904f7d7314b7211b723fe45bd76671e",
   "foreign_tables": [],
-  "functions": [],
+  "functions": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "8930e49c001ae6594bb80b7d751d6d9d84ab5fc7c694ec4a1025a1c3f94f581b",
+      "fingerprint": "03d592d1bf9dc640987bceed7724230c10cf4fc3db2a226e2e392fe591fb9deb",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_tenant_backfill_receipt_rewrite",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "fund_structure",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_tenant_backfill_receipt_rewrite()",
+      "strict": false,
+      "volatility": "volatile"
+    }
+  ],
   "logical_modules": [
     "fund-structure"
   ],
@@ -1995,6 +2087,384 @@
       "security_labels": [],
       "sequence": null,
       "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "66c824549f2011b4f851fb3d09083d1da6f8ddabf47b3e3ec1b39dd0f28affc4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "run_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "76d03799caab7cab1ba1357cad824bb91ffbe9f5ae5c12047865a677b612139b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "plan_hash",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "4be263855732d80031022f92cc864823fa94c85d882e01bbb6f53f248eb18d42",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "operator_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "1f9ebb04e3e50e50b983a2cf0cedaaaa64fbfb2f62ae572c5621d56ce114bd13",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "review_reference",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "770f96e912cac49025e2e383f144437f0075e4e537c85a8c33e0a1bb96fe86cb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "applied_at_utc",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "fd1180b3c9378a155ab197c1a68723124f86532dcce17a8f214cb721d6372430",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "stamped_rows",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "d22f41163ee6190e53cbcd4f9eb16edceb10ddc751bfe2e701d37c9ed35f13ce",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "quarantined_rows",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "9e9a48b89fed5cdb085b9706b699014a379536643ff29fa0c60ac8178c37da05",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "plan",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "operator_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM operator_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "c869ecd0776a35a49da093c926454831aac8fc4108cf7b54f8d55707713f1761",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_operator_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "plan_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (plan_hash ~ '^[a-f0-9]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "a1bf6e1f7e3b911a2f58fe70f684c60a7a7a1049714d06dbd61d9fafde586687",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_plan_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "quarantined_rows"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (quarantined_rows >= 0)",
+          "delete_action": null,
+          "fingerprint": "ca3f1f97635d82b2be7703d9a1192963aca2f5cf5798140ff10d508727f0581f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_quarantined_rows_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "review_reference"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM review_reference)) > 0)",
+          "delete_action": null,
+          "fingerprint": "eb84502ace883b09ab062b8de503f8aea9387728755962ad6bc3aeb691d2472f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_review_reference_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "stamped_rows"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (stamped_rows >= 0)",
+          "delete_action": null,
+          "fingerprint": "39c83917043b976e6c3e7b0ef100123ae9f6d011a61316b706339e331ed9e035",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_stamped_rows_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "run_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (run_id)",
+          "delete_action": null,
+          "fingerprint": "9c9342be378f44f38f360bf1367b648d36cc6ba615f84c353b7dd62c6fc7e8ee",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "dffff2f8fa2345e820e3359552e16fdae66027fcf9639f53c028e9f7c889684b",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX fund_structure_tenant_backfill_receipt_pkey ON fund_structure.fund_structure_tenant_backfill_receipt USING btree (run_id)",
+          "expression": null,
+          "fingerprint": "e41784435e77fd06e867856be27f575a28e42530228174fadcda961ca87a85a9",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "run_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "fund_structure_tenant_backfill_receipt_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "fund_structure_tenant_backfill_receipt",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tenant_backfill_receipt_immutable BEFORE DELETE OR UPDATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+          "definition_hash": "5e31bb81952e884754d3894a36fcbdbe8fef29ee70183a12e8c669a0334d2b22",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "6be12fecda9f01b9aca65221d9e8a9b8914b6f83af0670e3980d3308ce5251fc",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+          "level": "row",
+          "name": "tenant_backfill_receipt_immutable",
+          "relation": "fund_structure_tenant_backfill_receipt",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tenant_backfill_receipt_no_truncate BEFORE TRUNCATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+          "definition_hash": "8b44b9a6aec4e7c3ec0732e72de05d5f9b11b809c355f39f8eb8aff150211085",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "d8e90953f763c77fa8a87b2f1a65e604ee5da8cf3c613e63bf5e55a29ea35caf",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+          "level": "statement",
+          "name": "tenant_backfill_receipt_no_truncate",
+          "relation": "fund_structure_tenant_backfill_receipt",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -4509,6 +4979,14 @@
     },
     {
       "enabled": false,
+      "fingerprint": "b16cdd32cb2b1efeeba23fbe5c9f9d782e81b35f73de5725cf5028c37bb2202a",
+      "forced": false,
+      "policies": [],
+      "relation": "fund_structure_tenant_backfill_receipt",
+      "schema": "fund_structure"
+    },
+    {
+      "enabled": false,
       "fingerprint": "f4bcb7504269eb497456459ec99db932ad909d55284f97bf2c6dd100af05b413",
       "forced": false,
       "policies": [],
@@ -6508,6 +6986,384 @@
       "security_labels": [],
       "sequence": null,
       "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "66c824549f2011b4f851fb3d09083d1da6f8ddabf47b3e3ec1b39dd0f28affc4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "run_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "76d03799caab7cab1ba1357cad824bb91ffbe9f5ae5c12047865a677b612139b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "plan_hash",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "4be263855732d80031022f92cc864823fa94c85d882e01bbb6f53f248eb18d42",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "operator_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "1f9ebb04e3e50e50b983a2cf0cedaaaa64fbfb2f62ae572c5621d56ce114bd13",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "review_reference",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "770f96e912cac49025e2e383f144437f0075e4e537c85a8c33e0a1bb96fe86cb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "applied_at_utc",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "fd1180b3c9378a155ab197c1a68723124f86532dcce17a8f214cb721d6372430",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "stamped_rows",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "d22f41163ee6190e53cbcd4f9eb16edceb10ddc751bfe2e701d37c9ed35f13ce",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "quarantined_rows",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "9e9a48b89fed5cdb085b9706b699014a379536643ff29fa0c60ac8178c37da05",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "plan",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "operator_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM operator_id)) > 0)",
+          "delete_action": null,
+          "fingerprint": "c869ecd0776a35a49da093c926454831aac8fc4108cf7b54f8d55707713f1761",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_operator_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "plan_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (plan_hash ~ '^[a-f0-9]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "a1bf6e1f7e3b911a2f58fe70f684c60a7a7a1049714d06dbd61d9fafde586687",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_plan_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "quarantined_rows"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (quarantined_rows >= 0)",
+          "delete_action": null,
+          "fingerprint": "ca3f1f97635d82b2be7703d9a1192963aca2f5cf5798140ff10d508727f0581f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_quarantined_rows_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "review_reference"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM review_reference)) > 0)",
+          "delete_action": null,
+          "fingerprint": "eb84502ace883b09ab062b8de503f8aea9387728755962ad6bc3aeb691d2472f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_review_reference_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "stamped_rows"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (stamped_rows >= 0)",
+          "delete_action": null,
+          "fingerprint": "39c83917043b976e6c3e7b0ef100123ae9f6d011a61316b706339e331ed9e035",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_stamped_rows_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "run_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (run_id)",
+          "delete_action": null,
+          "fingerprint": "9c9342be378f44f38f360bf1367b648d36cc6ba615f84c353b7dd62c6fc7e8ee",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_tenant_backfill_receipt_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "dffff2f8fa2345e820e3359552e16fdae66027fcf9639f53c028e9f7c889684b",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX fund_structure_tenant_backfill_receipt_pkey ON fund_structure.fund_structure_tenant_backfill_receipt USING btree (run_id)",
+          "expression": null,
+          "fingerprint": "e41784435e77fd06e867856be27f575a28e42530228174fadcda961ca87a85a9",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "run_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "fund_structure_tenant_backfill_receipt_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "fund_structure_tenant_backfill_receipt",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tenant_backfill_receipt_immutable BEFORE DELETE OR UPDATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+          "definition_hash": "5e31bb81952e884754d3894a36fcbdbe8fef29ee70183a12e8c669a0334d2b22",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "6be12fecda9f01b9aca65221d9e8a9b8914b6f83af0670e3980d3308ce5251fc",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+          "level": "row",
+          "name": "tenant_backfill_receipt_immutable",
+          "relation": "fund_structure_tenant_backfill_receipt",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tenant_backfill_receipt_no_truncate BEFORE TRUNCATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+          "definition_hash": "8b44b9a6aec4e7c3ec0732e72de05d5f9b11b809c355f39f8eb8aff150211085",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "d8e90953f763c77fa8a87b2f1a65e604ee5da8cf3c613e63bf5e55a29ea35caf",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+          "level": "statement",
+          "name": "tenant_backfill_receipt_no_truncate",
+          "relation": "fund_structure_tenant_backfill_receipt",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -8963,6 +9819,42 @@
       "triggers": []
     }
   ],
-  "triggers": [],
+  "triggers": [
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER tenant_backfill_receipt_immutable BEFORE DELETE OR UPDATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+      "definition_hash": "5e31bb81952e884754d3894a36fcbdbe8fef29ee70183a12e8c669a0334d2b22",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "6be12fecda9f01b9aca65221d9e8a9b8914b6f83af0670e3980d3308ce5251fc",
+      "function_schema": "fund_structure",
+      "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+      "level": "row",
+      "name": "tenant_backfill_receipt_immutable",
+      "relation": "fund_structure_tenant_backfill_receipt",
+      "schema": "fund_structure",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER tenant_backfill_receipt_no_truncate BEFORE TRUNCATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
+      "definition_hash": "8b44b9a6aec4e7c3ec0732e72de05d5f9b11b809c355f39f8eb8aff150211085",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "d8e90953f763c77fa8a87b2f1a65e604ee5da8cf3c613e63bf5e55a29ea35caf",
+      "function_schema": "fund_structure",
+      "function_signature": "reject_tenant_backfill_receipt_rewrite()",
+      "level": "statement",
+      "name": "tenant_backfill_receipt_no_truncate",
+      "relation": "fund_structure_tenant_backfill_receipt",
+      "schema": "fund_structure",
+      "timing": "before"
+    }
+  ],
   "views": []
 }

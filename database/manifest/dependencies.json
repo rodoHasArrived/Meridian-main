@@ -41111,6 +41111,36 @@
       "target": "database:fund_structure.fund_structure_legacy_import_receipt.source_hash"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_operator_id_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.operator_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_plan_hash_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.plan_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_quarantined_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.quarantined_rows"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_review_reference_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.review_reference"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_stamped_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows"
+    },
+    {
       "declared": true,
       "kind": "logical-reference",
       "label": "entity_id",
@@ -45997,6 +46027,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:fund_structure",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
       "target": "database:fund_structure.fund_structure_tenant_quarantine"
     },
     {
@@ -46997,7 +47033,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e2bc1d4f9448096a5139d204f6a9476bc082369f1ee2e727da4a68821adb16cd",
+  "fingerprint": "3b63a620e62db9f04bc6a7898b2611afdda7d9e70dbb8e940d024c5a215f249d",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -64067,6 +64103,62 @@
       "schema": "fund_structure"
     },
     {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-table",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt.operator_id",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt.operator_id"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt.plan_hash",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt.plan_hash"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt.quarantined_rows",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt.quarantined_rows"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt.review_reference",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt.review_reference"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt_operator_id_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt_operator_id_check on fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt_plan_hash_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt_plan_hash_check on fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt_quarantined_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt_quarantined_rows_check on fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt_review_reference_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt_review_reference_check on fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt_stamped_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt_stamped_rows_check on fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
       "id": "database:fund_structure.fund_structure_tenant_quarantine",
       "kind": "database-table",
       "label": "fund_structure.fund_structure_tenant_quarantine",
@@ -68752,9 +68844,9 @@
   "summary": {
     "contract_references": 3097,
     "contract_set_memberships": 3673,
-    "edges": 7808,
+    "edges": 7814,
     "foreign_keys": 132,
     "logical_references": 6,
-    "nodes": 3765
+    "nodes": 3776
   }
 }
