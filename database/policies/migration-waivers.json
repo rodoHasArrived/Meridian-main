@@ -1,6 +1,12 @@
 {
   "destructive_changes": [
     {
+      "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE match is the BEFORE TRUNCATE trigger that rejects removal of immutable tenant-backfill receipts. The migration truncates no data; FundStructureTenantBackfillPostgresTests verifies denial and retained receipt count.",
+      "review_after": "2027-03-11"
+    },
+    {
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",
       "rule_id": "migration-drop-table-member",
       "reason": "Deliberate hardening, not data loss: the unnamed on-delete-cascade FK from journal_legs to journal_entries is dropped and immediately re-created as a plain NO ACTION FK in the same transaction, so an entry delete can no longer vaporize legs. No column or data is removed.",

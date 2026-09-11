@@ -17,12 +17,10 @@ begin
 end;
 $$;
 
-drop trigger if exists tenant_backfill_receipt_immutable on __SCHEMA__.fund_structure_tenant_backfill_receipt;
-create trigger tenant_backfill_receipt_immutable
+create or replace trigger tenant_backfill_receipt_immutable
 before update or delete on __SCHEMA__.fund_structure_tenant_backfill_receipt
 for each row execute function __SCHEMA__.reject_tenant_backfill_receipt_rewrite();
 
-drop trigger if exists tenant_backfill_receipt_no_truncate on __SCHEMA__.fund_structure_tenant_backfill_receipt;
-create trigger tenant_backfill_receipt_no_truncate
+create or replace trigger tenant_backfill_receipt_no_truncate
 before truncate on __SCHEMA__.fund_structure_tenant_backfill_receipt
 for each statement execute function __SCHEMA__.reject_tenant_backfill_receipt_rewrite();

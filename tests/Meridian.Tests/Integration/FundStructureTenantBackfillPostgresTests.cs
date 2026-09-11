@@ -41,6 +41,9 @@ public sealed class FundStructureTenantBackfillPostgresTests
 
         var rewrite = () => data.ExecuteAsync($"UPDATE {data.FundSchema}.fund_structure_tenant_backfill_receipt SET operator_id = 'other'");
         await rewrite.Should().ThrowAsync<PostgresException>().WithMessage("*immutable*");
+        var truncate = () => data.ExecuteAsync($"TRUNCATE {data.FundSchema}.fund_structure_tenant_backfill_receipt");
+        await truncate.Should().ThrowAsync<PostgresException>().WithMessage("*immutable*");
+        (await data.CountAsync("fund_structure_tenant_backfill_receipt")).Should().Be(1);
     }
 
     [FundAccountDatabaseFact]

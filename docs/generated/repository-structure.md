@@ -1856,6 +1856,7 @@ Meridian-main
 │   │   ├── deployment-packaging.md
 │   │   ├── failover-and-recovery.md
 │   │   ├── fund-ops-persistence-cutover.md
+│   │   ├── fund-structure-tenant-backfill.md
 │   │   ├── governed-reporting-operations.md
 │   │   ├── ledger-currency-backfill.md
 │   │   ├── operator-runbook.md
@@ -2288,6 +2289,7 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
+│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── ui-route-wiring-report.json
 │   │   ├── ui-route-wiring-report.md
@@ -3342,6 +3344,7 @@ Meridian-main
 │   │   │   ├── DiagnosticsCommands.cs
 │   │   │   ├── DryRunCommand.cs
 │   │   │   ├── EtlCommands.cs
+│   │   │   ├── FundStructureTenantBackfillCommand.cs
 │   │   │   ├── GenerateLoaderCommand.cs
 │   │   │   ├── HelpCommand.cs
 │   │   │   ├── ICliCommand.cs
@@ -3460,6 +3463,8 @@ Meridian-main
 │   │   │   └── PostgresDirectLendingService.cs
 │   │   ├── FundStructure
 │   │   │   ├── FundStructureTenantAttribution.cs
+│   │   │   ├── FundStructureTenantBackfillPlanner.cs
+│   │   │   ├── FundStructureTenantBackfillRunner.cs
 │   │   │   ├── FundStructureTenantScope.cs
 │   │   │   ├── GovernanceSharedDataAccessService.cs
 │   │   │   ├── InMemoryFundStructureService.cs
@@ -5585,14 +5590,17 @@ Meridian-main
 │   │   │   │   ├── 001_fund_structure.sql
 │   │   │   │   ├── 002_legacy_import_receipts.sql
 │   │   │   │   ├── 003_linked_accounts.sql
-│   │   │   │   └── 004_fund_structure_tenant_columns.sql
+│   │   │   │   ├── 004_fund_structure_tenant_columns.sql
+│   │   │   │   └── 005_tenant_backfill_receipts.sql
 │   │   │   ├── FundStructureMigrationRunner.cs
 │   │   │   ├── FundStructureStoreOptions.cs
 │   │   │   ├── IFundStructureStateStore.cs
 │   │   │   ├── IFundStructureStore.cs
+│   │   │   ├── IFundStructureTenantBackfillStore.cs
 │   │   │   ├── InMemoryFundStructureStateStore.cs
 │   │   │   ├── JsonFileFundStructureStateStore.cs
-│   │   │   └── PostgresFundStructureStore.cs
+│   │   │   ├── PostgresFundStructureStore.cs
+│   │   │   └── PostgresFundStructureTenantBackfillStore.cs
 │   │   ├── Integrations
 │   │   │   └── FileProviderIntegrationManifestStore.cs
 │   │   ├── Interfaces
@@ -9134,6 +9142,8 @@ Meridian-main
 │   │   │   │   └── PostgresDirectLendingCommandServiceTests.cs
 │   │   │   ├── FundStructure
 │   │   │   │   ├── FundStructureTenantAttributionTests.cs
+│   │   │   │   ├── FundStructureTenantBackfillCommandTests.cs
+│   │   │   │   ├── FundStructureTenantBackfillTests.cs
 │   │   │   │   └── LedgerGroupIdTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
@@ -9706,6 +9716,7 @@ Meridian-main
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
 │   │   │   ├── EndpointStubDetectionTests.cs
 │   │   │   ├── FixtureProviderTests.cs
+│   │   │   ├── FundStructureTenantBackfillPostgresTests.cs
 │   │   │   ├── GracefulShutdownIntegrationTests.cs
 │   │   │   ├── ProviderGoldenPathScenarioGenerator.cs
 │   │   │   ├── ProviderGoldenPathTransactionLedgerReconciliationTests.cs
@@ -10696,7 +10707,8 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
-│   │   └── TestAssemblyConfiguration.cs
+│   │   ├── TestAssemblyConfiguration.cs
+│   │   └── xunit.runner.json
 │   ├── scripts
 │   │   ├── fixtures
 │   │   │   └── roadmap
@@ -10789,6 +10801,7 @@ Meridian-main
 │   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_validate_agent_definitions.py
+│   │   ├── test_validate_doc_hashes.py
 │   │   ├── test_validate_npm_audit.py
 │   │   ├── test_validate_observability_contract.py
 │   │   ├── test_validate_screenshot_captures.py
