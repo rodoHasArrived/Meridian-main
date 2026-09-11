@@ -102,7 +102,10 @@ public sealed partial class SecurityMasterViewModel
         return false;
     }
 
-    private void OnAuthenticationSessionSignedOut(object? sender, EventArgs e)
+    // One handler serves both SignedOut and SignedIn: either transition changes what
+    // TryAuthorize answers, and a journal-restored page must re-enable for a newly
+    // authorized operator just as it disables on sign-out.
+    private void OnAuthenticationSessionAuthenticationChanged(object? sender, EventArgs e)
     {
         CreateNewCommand.NotifyCanExecuteChanged();
         EditSelectedCommand.NotifyCanExecuteChanged();

@@ -1640,13 +1640,19 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             // A weak subscription keeps the singleton session from rooting this transient
             // view model: the page's Unloaded calls only Stop() and nothing disposes
             // resolved instances, so a strong handler would accumulate every unloaded
-            // instance in the SignedOut invocation list — while a journal-restored page
-            // must still observe sign-outs, so the handler cannot simply be removed on
-            // unload. Dispose still removes it deterministically.
+            // instance in the invocation lists — while a journal-restored page must still
+            // observe sign-outs AND sign-ins (the shell reuses the frame journal across a
+            // logout, so this instance can be restored for a newly authorized operator), so
+            // the handlers cannot simply be removed on unload. Dispose still removes them
+            // deterministically.
             WeakEventManager<WpfServices.DesktopAuthenticationSession, EventArgs>.AddHandler(
                 _authenticationSession,
                 nameof(WpfServices.DesktopAuthenticationSession.SignedOut),
-                OnAuthenticationSessionSignedOut);
+                OnAuthenticationSessionAuthenticationChanged);
+            WeakEventManager<WpfServices.DesktopAuthenticationSession, EventArgs>.AddHandler(
+                _authenticationSession,
+                nameof(WpfServices.DesktopAuthenticationSession.SignedIn),
+                OnAuthenticationSessionAuthenticationChanged);
         }
 
         StartWorkflowPolling();
@@ -3528,7 +3534,11 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             WeakEventManager<WpfServices.DesktopAuthenticationSession, EventArgs>.RemoveHandler(
                 _authenticationSession,
                 nameof(WpfServices.DesktopAuthenticationSession.SignedOut),
-                OnAuthenticationSessionSignedOut);
+                OnAuthenticationSessionAuthenticationChanged);
+            WeakEventManager<WpfServices.DesktopAuthenticationSession, EventArgs>.RemoveHandler(
+                _authenticationSession,
+                nameof(WpfServices.DesktopAuthenticationSession.SignedIn),
+                OnAuthenticationSessionAuthenticationChanged);
         }
 
         Stop();

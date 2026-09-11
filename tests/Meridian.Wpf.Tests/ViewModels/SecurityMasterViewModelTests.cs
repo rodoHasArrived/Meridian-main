@@ -1532,6 +1532,39 @@ public sealed class SecurityMasterViewModelTests
     }
 
     [Fact]
+    public void SignedIn_RefreshesMutationCommandsThroughTheWeakSubscription()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopReadOnlyUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null)
+            .Set("MDC_ANONYMOUS_ROLE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-viewer", "pw").Succeeded.Should().BeTrue();
+
+        WpfTestThread.Run(() =>
+        {
+            using var viewModel = CreateViewModel(
+                CreateNavigationService(),
+                new StubWorkstationSecurityMasterApiClient(),
+                authenticationSession: session);
+
+            // The shell reuses the frame journal across a logout, so a restored page's
+            // commands went disabled on SignedOut and must re-enable when the next operator
+            // signs in — signing in raises no other signal the view model could observe.
+            session.SignOut();
+            var canExecuteRefreshed = false;
+            viewModel.CreateNewCommand.CanExecuteChanged += (_, _) => canExecuteRefreshed = true;
+
+            session.SignIn("desktop-viewer", "pw").Succeeded.Should().BeTrue();
+
+            canExecuteRefreshed.Should().BeTrue(
+                "signing back in must refresh the mutation commands of a journal-restored view model");
+        });
+    }
+
+    [Fact]
     public void UnloadedViewModel_IsNotRootedByTheAuthenticationSessionSubscription()
     {
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()

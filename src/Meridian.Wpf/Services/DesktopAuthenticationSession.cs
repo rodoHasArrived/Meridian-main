@@ -44,6 +44,15 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
 
     public event EventHandler? SignedOut;
 
+    /// <summary>
+    /// Raised after a successful credentialed sign-in or after the explicit anonymous
+    /// local-development session is established. Surfaces that gate on the session (command
+    /// enablement, authorization badges) re-evaluate on both transitions: a journal-restored
+    /// page that observed <see cref="SignedOut"/> would otherwise stay disabled for the newly
+    /// authorized operator, because signing in raises no other signal.
+    /// </summary>
+    public event EventHandler? SignedIn;
+
     public bool IsConfigured => loginSessionService.IsConfigured;
 
     public bool CanContinueWithoutCredentials =>
@@ -183,9 +192,13 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
         _sessionToken = token;
         IsAnonymousDevelopmentSession = false;
         var profile = loginSessionService.GetSessionProfile(token);
-        return profile is null
-            ? DesktopSignInResult.Failed("Meridian created a desktop session but could not resolve the user profile.")
-            : DesktopSignInResult.SignedIn(profile);
+        if (profile is null)
+        {
+            return DesktopSignInResult.Failed("Meridian created a desktop session but could not resolve the user profile.");
+        }
+
+        SignedIn?.Invoke(this, EventArgs.Empty);
+        return DesktopSignInResult.SignedIn(profile);
     }
 
     public DesktopSignInResult ContinueWithoutCredentials()
@@ -197,6 +210,7 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
 
         _sessionToken = null;
         IsAnonymousDevelopmentSession = true;
+        SignedIn?.Invoke(this, EventArgs.Empty);
         return DesktopSignInResult.AnonymousDevelopment();
     }
 
