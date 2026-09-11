@@ -10698,7 +10698,8 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
-│   │   └── TestAssemblyConfiguration.cs
+│   │   ├── TestAssemblyConfiguration.cs
+│   │   └── xunit.runner.json
 │   ├── scripts
 │   │   ├── fixtures
 │   │   │   └── roadmap
