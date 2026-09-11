@@ -153,9 +153,9 @@ public static class OfxDocumentParser
 
                 var decoded = DecodeEntities(value);
                 var leaves = stack.Peek().Leaves;
-                // A conflicting duplicate account cannot become authoritative by overwriting its predecessor.
-                leaves[name] = name == "ACCTID" && leaves.TryGetValue(name, out var previous)
-                    && !string.Equals(previous.Trim(), decoded.Trim(), StringComparison.Ordinal)
+                // Conflicting account or currency evidence cannot become authoritative by overwriting its predecessor.
+                leaves[name] = name is "ACCTID" or "CURDEF" or "CURSYM" && leaves.TryGetValue(name, out var previous)
+                    && !string.Equals(previous.Trim(), decoded.Trim(), StringComparison.OrdinalIgnoreCase)
                         ? string.Empty
                         : decoded;
             }
@@ -207,7 +207,7 @@ public static class OfxDocumentParser
             bound = OfxParseBound.TooManyEntries;
         }
 
-        var accounts = entries.Select(entry => entry.GetValueOrDefault("ACCTID")?.Trim()).Distinct(StringComparer.Ordinal).ToArray();
+        var accounts = entries.Select(entry => entry.GetValueOrDefault("ACCTID")?.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var accountId = accounts.Length == 1 && !string.IsNullOrWhiteSpace(accounts[0]) ? accounts[0] : null;
         return new OfxDocument(accountId, entries);
     }
@@ -302,6 +302,13 @@ public static class OfxDocumentParser
     /// </summary>
     private static void NormalizeEntry(Dictionary<string, string> entry, string? accountId)
     {
+        // Document-wide column mapping claims Currency once. Every row must expose the same
+        // exact key even when some rows supply CURSYM and others inherit CURDEF.
+        if (!entry.ContainsKey("CURSYM") && entry.TryGetValue("CURDEF", out var currency))
+        {
+            entry["CURSYM"] = currency;
+        }
+
         foreach (var tag in DateTags)
         {
             if (entry.TryGetValue(tag, out var raw))
@@ -382,7 +389,7 @@ public static class OfxDocumentParser
                 identities.Add(header.Leaves.TryGetValue("ACCTID", out var account) ? account.Trim() : string.Empty);
         }
         // Conflicting or blank header identities cannot supply authoritative account evidence.
-        var distinct = identities.Distinct(StringComparer.Ordinal).ToArray();
+        var distinct = identities.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         return distinct.Length == 1 && distinct[0].Length > 0 ? distinct[0] : null;
     }
 

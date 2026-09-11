@@ -172,7 +172,7 @@ public sealed class OfxStatementConnector(
             }
         }
 
-        if (records.Select(static record => record.Account.Trim()).Distinct(StringComparer.Ordinal).Skip(1).Any())
+        if (records.Select(static record => record.Account.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Skip(1).Any())
         {
             issues.Add(StatementParseIssue.Error(
                 "OFX_MULTIPLE_ACCOUNTS", "An OFX import must contain one authoritative account; split statements by account before importing."));

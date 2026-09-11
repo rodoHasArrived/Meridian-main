@@ -184,6 +184,14 @@ internal static class StatementRecordMapper
         var value = GetValue(values, field);
         if (string.IsNullOrWhiteSpace(value))
         {
+            if (string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(StatementParseIssue.Error(
+                    "ROW_INVALID_NUMBER", $"Canonical rows require an explicit {field} value; a missing amount cannot become zero.",
+                    rowNumber, field.ToString()));
+                return false;
+            }
+
             return true;
         }
 

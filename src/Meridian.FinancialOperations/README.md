@@ -44,12 +44,19 @@ Private-capital close evidence is selected by fund event, period, and ledger ent
 
 ## Purpose
 
-Canonical CSV connector validation rejects ambiguous grouped decimals, malformed nonblank fees,
+OFX duplicate account or currency tags cannot overwrite conflicting evidence. Account identity
+comparisons use the same case-insensitive equality as the authorization boundary. Currency
+validation omits source row numbers when a connector does not provide them, avoiding false
+locations based on the retained-record index.
+
+Canonical CSV connector validation rejects blank required amounts, ambiguous grouped decimals, malformed nonblank fees,
 and missing or invalid currency before rendering financial values. Statement import preview,
 validation, and commit all require explicit three-letter currency before retaining artifacts.
 OFX statement currency fills only absent row currency; explicit blank or self-closing row tags
-remain invalid. Alpaca fill rows use the currency of the account already verified against the
-snapshot identity, and missing account currency remains a refusal. Month-end upload regressions
+remain invalid; mixed explicit and inherited currency rows map through the same canonical key.
+Alpaca legacy fills use the account currency verified against the snapshot identity. Position
+currency must be supplied by the gateway; missing or blank row currency cannot borrow the account
+currency. Missing account currency remains a refusal. Month-end upload regressions
 in `StatementImportServiceTests` exercise these rules through the actual retention boundary.
 
 Physical bounded-context module project for reconciliation, accounting records, payment approvals,

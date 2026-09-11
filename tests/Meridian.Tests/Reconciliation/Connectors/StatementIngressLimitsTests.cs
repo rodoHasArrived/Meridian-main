@@ -415,7 +415,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
             Enumerable.Range(0, 3).Select(static row => $"ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-0{row + 1},USD"));
         var connector = new CsvStatementConnector(
             Catalog(),
-            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 100, MaxDocumentLines = 4 });
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 100, MaxDocumentLines = 4, MaxLineBytes = 128 });
 
         var withNewline = await connector.ParseAsync(
             new StatementSourceDocument("trailing.csv", Encoding.UTF8.GetBytes(header + rows + "\n")));
@@ -441,7 +441,8 @@ public sealed class StatementIngressLimitsTests : IDisposable
             {
                 MaxDocumentBytes = 1024 * 1024,
                 MaxRecords = 100,
-                MaxDocumentLines = int.MaxValue
+                MaxDocumentLines = int.MaxValue,
+                MaxLineBytes = 128
             });
         var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n"
             + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01,USD\n";

@@ -514,7 +514,7 @@ public sealed class StatementImportService(
                 return parse with
                 {
                     Issues = [.. parse.Issues, StatementParseIssue.Error(
-                        "ROW_INVALID_CURRENCY", "Rows require explicit three-letter currency evidence before import.", index + 1, "Currency")]
+                        "ROW_INVALID_CURRENCY", "Rows require explicit three-letter currency evidence before import.", field: "Currency")]
                 };
             }
         }
