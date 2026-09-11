@@ -122,12 +122,9 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-  pilot-acceptance:
-    name: Pilot Acceptance Evidence
+  pilot-harness:
+    name: Pilot Acceptance Harness
     runs-on: ubuntu-latest
-    needs:
-      - browser-w4-parity
-      - wpf-w4-acceptance
     timeout-minutes: 35
 
     steps:
@@ -188,3 +185,35 @@ jobs:
             artifacts/test-results/pilot-acceptance/
           if-no-files-found: ignore
           retention-days: 30
+
+  pilot-acceptance:
+    name: Pilot Acceptance Evidence
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
+      - browser-w4-parity
+      - wpf-w4-acceptance
+      - pilot-harness
+    timeout-minutes: 5
+
+    steps:
+      - name: Require all golden path evidence
+        env:
+          BROWSER_RESULT: ${{ needs.browser-w4-parity.result }}
+          WPF_RESULT: ${{ needs.wpf-w4-acceptance.result }}
+          PILOT_RESULT: ${{ needs.pilot-harness.result }}
+        shell: python
+        run: |
+          import os
+          import sys
+
+          results = {
+              "Browser W4 Parity": os.environ.get("BROWSER_RESULT", ""),
+              "WPF W4 Acceptance": os.environ.get("WPF_RESULT", ""),
+              "Pilot Acceptance Harness": os.environ.get("PILOT_RESULT", ""),
+          }
+          for name, result in results.items():
+              print(f"{name}: {result or 'unknown'}")
+          if any(result != "success" for result in results.values()):
+              print("::error::Every golden path evidence job must succeed.")
+              sys.exit(1)
