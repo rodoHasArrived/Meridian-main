@@ -109,6 +109,26 @@ public sealed class FundStructureTenantBackfillTests
         store.Commits.Should().Be(0);
     }
 
+    [Theory]
+    [InlineData("tenant-b", false)]
+    [InlineData(null, false)]
+    [InlineData("tenant-a", true)]
+    public void Preview_RetainedResolution_MustAgreeWithAuthoritativeEvidence(string? resolvedTenant, bool compatible)
+    {
+        var snapshot = MakeSnapshot();
+        var fund = snapshot.Rows.Single(row => row.Kind == "Fund");
+        var plan = FundStructureTenantBackfillPlanner.Create(snapshot with
+        {
+            RetainedQuarantine = [JsonSerializer.SerializeToElement(new
+            {
+                node_id = fund.Id, resolved_at_utc = "2026-09-01T00:00:00Z", resolved_tenant_id = resolvedTenant
+            })]
+        });
+
+        plan.AttributionComplete.Should().Be(compatible);
+        if (!compatible) plan.BlockingReasons.Should().ContainMatch("*resolution conflicts*");
+    }
+
     [Fact]
     public async Task Apply_ChangedEvidenceOrGraph_RejectsReviewedFingerprintWithoutWrites()
     {

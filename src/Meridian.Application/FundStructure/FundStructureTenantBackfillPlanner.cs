@@ -195,6 +195,18 @@ public static class FundStructureTenantBackfillPlanner
             .Select(row => row.GetProperty("node_id").GetGuid()).ToHashSet();
         if (exceptions.Any(item => resolvedQuarantine.Contains(item.NodeId)))
             blockers.Add("An existing quarantine resolution conflicts with the current evidence; review it separately.");
+        foreach (var retained in snapshot.RetainedQuarantine.Where(row => resolvedQuarantine.Contains(row.GetProperty("node_id").GetGuid())))
+        {
+            var id = retained.GetProperty("node_id").GetGuid();
+            var row = snapshot.Rows.FirstOrDefault(item => item.Id == id);
+            var resolution = retained.TryGetProperty("resolved_tenant_id", out var resolvedTenant) && resolvedTenant.ValueKind == JsonValueKind.String
+                ? NormalizeTenant(resolvedTenant.GetString()) : null;
+            Guid[] dependencies = row is null ? [] : row.IsNode ? new[] { row.Id } : row.Parents.Concat(row.Children).ToArray();
+            if (resolution is null || dependencies.Length == 0 || dependencies.Any(nodeId =>
+                    !derived.Attributions.TryGetValue(nodeId, out var tenant) ||
+                    !string.Equals(tenant, resolution, StringComparison.OrdinalIgnoreCase)))
+                blockers.Add("An existing quarantine resolution conflicts with the current evidence; review it separately.");
+        }
         var currentExceptionIds = exceptions.Select(item => item.NodeId).ToHashSet();
         if (snapshot.RetainedQuarantine.Any(row =>
                 !resolvedQuarantine.Contains(row.GetProperty("node_id").GetGuid()) &&
@@ -209,7 +221,7 @@ public static class FundStructureTenantBackfillPlanner
         var counts = tenantIds.Select(tenant => new FundStructureTenantReadCount(tenant,
             CountVisible(nodes.Keys, before, tenant), CountVisible(nodes.Keys, after, tenant))).ToArray();
         var plan = new FundStructureTenantBackfillPlan(AlgorithmVersion,
-            typeof(FundStructureTenantBackfillPlanner).Module.ModuleVersionId.ToString("D"), SchemaVersion, "", snapshot,
+            $"{typeof(FundStructureTenantBackfillPlanner).Module.ModuleVersionId:D}/{typeof(IFundStructureTenantBackfillStore).Module.ModuleVersionId:D}", SchemaVersion, "", snapshot,
             stamps.OrderBy(row => row.Table, StringComparer.Ordinal).ThenBy(row => row.Id).ToArray(),
             exceptions.OrderBy(row => row.NodeId).ToArray(), counts, blockers.Distinct().Order().ToArray(),
             exceptions.Count == 0 && blockers.Count == 0);

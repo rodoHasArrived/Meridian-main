@@ -107,6 +107,26 @@ public sealed class FundStructureTenantBackfillPostgresTests
     }
 
     [FundAccountDatabaseFact]
+    public async Task Apply_PriorResolutionDisagreesWithRegistry_PreservesResolutionAndRefusesStamp()
+    {
+        await using var data = await TestData.CreateAsync();
+        await data.ExecuteAsync($"""
+            INSERT INTO {data.FundSchema}.fund_structure_tenant_quarantine
+                (node_id, node_kind, reason, candidate_tenant_ids, resolved_at_utc, resolved_tenant_id, resolution_note)
+            VALUES ('{data.FundId}', 'Fund', 'PriorMissingEvidence', '[]', now(), 'tenant-b', 'Retained prior review');
+            """);
+        var runner = data.Runner();
+        var preview = await runner.PreviewAsync();
+
+        preview.BlockingReasons.Should().ContainMatch("*resolution conflicts*");
+        preview.Evidence.RetainedQuarantine.Single().GetProperty("resolved_tenant_id").GetString().Should().Be("tenant-b");
+        var apply = () => runner.ApplyAsync(Guid.NewGuid(), preview.PlanHash, "operator", "review/prior-resolution");
+        await apply.Should().ThrowAsync<InvalidOperationException>().WithMessage("*blockers*");
+        (await data.Store.GetNodeTenantsAsync()).NodeTenants.Should().BeEmpty();
+        (await data.CountAsync("fund_structure_tenant_backfill_receipt")).Should().Be(0);
+    }
+
+    [FundAccountDatabaseFact]
     public async Task Apply_ConcurrentRetries_RetainOneReceipt()
     {
         await using var data = await TestData.CreateAsync();

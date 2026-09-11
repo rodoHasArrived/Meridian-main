@@ -29,7 +29,7 @@ Independent components with unambiguous evidence may be stamped while exceptions
 Existing nonblank tenant values are never reassigned. Only SQL NULL or whitespace-only values
 are eligible for first attribution.
 
-The JSON plan carries the algorithm version, application module version, schema fingerprint,
+The JSON plan carries the algorithm version, application and storage module versions, schema fingerprint,
 database identity fingerprint, complete retained evidence, proposed stamps, exception queue,
 and projected strict-read node counts. The database fingerprint includes the connected server,
 database, role, and server start identity; a restart or changed target requires another preview.
