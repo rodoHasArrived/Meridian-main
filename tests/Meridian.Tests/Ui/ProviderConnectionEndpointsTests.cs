@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -282,10 +283,115 @@ public sealed class ProviderConnectionEndpointsTests
         rawConnections.Should().NotContain("qbo-refresh-token");
     }
 
+    [Fact]
+    public async Task CredentialMutationAudit_UsesAuthenticatedActorForSaveVerifyAndDelete()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        var client = app.GetTestClient();
+        var save = await client.PutAsync("/api/providers/polygon/credentials", new StringContent(
+            """{"credentials":{"apiKey":"audit-test-key"},"requestedBy":"forged-operator"}""", Encoding.UTF8, "application/json"));
+        save.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.PostAsync("/api/providers/polygon/verify", null)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.DeleteAsync("/api/providers/polygon/credentials")).StatusCode.Should().Be(HttpStatusCode.OK);
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var auditPath = Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl");
+        var entries = (await File.ReadAllLinesAsync(auditPath)).Select(line => JsonSerializer.Deserialize<JsonElement>(line)).ToArray();
+        entries.Should().HaveCount(3);
+        entries.Should().OnlyContain(entry => entry.GetProperty("actor").GetString() == "provider-ops");
+        entries.Select(entry => entry.GetProperty("action").GetString()).Should().Equal("save", "verify-success", "delete");
+    }
+
+    [Fact]
+    public async Task CredentialSave_WithoutAuthenticatedActorCannotUseRequestedByAsIdentity()
+    {
+        await using var app = await CreateAppAsync(_ => { }, includeActor: false);
+        var response = await app.GetTestClient().PutAsync("/api/providers/polygon/credentials", new StringContent(
+            """{"credentials":{"apiKey":"audit-test-key"},"requestedBy":"forged-operator"}""", Encoding.UTF8, "application/json"));
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        File.Exists(app.Services.GetRequiredService<IProviderCredentialStore>().VaultPath).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("http")]
+    [InlineData("transport")]
+    [InlineData("json")]
+    [InlineData("missing-account")]
+    public async Task VerificationFailure_RedactsProviderDetailsRejectsMissingIdentityAndCanRetry(string failureKind)
+    {
+        using var env = AlpacaEnvScope.Clear();
+        const string secret = "provider-echoed-secret";
+        var logger = new VerificationLogger();
+        using var handler = new VerificationRecoveryHandler(failureKind, secret);
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IHttpClientFactory>(new StubHttpClientFactory(handler));
+            services.AddSingleton<ILogger<ProviderConnectionLifecycleService>>(logger);
+        });
+        var client = app.GetTestClient();
+        (await client.PutAsync("/api/providers/alpaca/credentials", JsonContent(new
+        {
+            credentials = new { KeyId = "verify-key", SecretKey = "verify-secret" },
+            environment = "paper"
+        }))).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var failedResponse = await client.PostAsync("/api/providers/alpaca/verify", null);
+        var failedJson = await failedResponse.Content.ReadAsStringAsync();
+        failedJson.Should().NotContain(secret);
+        var failed = await ReadAsync<ProviderCredentialVerificationResultDto>(failedResponse);
+        failed.Success.Should().BeFalse();
+        failed.VerificationState.Should().Be(ProviderVerificationStateDto.Failed);
+        failed.Health.Should().Be(ProviderContinuityHealthDto.Blocked);
+        failed.LastError.Should().Be("Alpaca account verification failed.");
+        failed.ExternalAccountId.Should().BeNull();
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var retained = await store.ReadForProviderAsync("alpaca");
+        retained!.LastError.Should().Be(failed.LastError);
+        retained.ExternalAccountId.Should().BeNull();
+        logger.Messages.Should().NotBeEmpty().And.OnlyContain(message => !message.Contains(secret));
+        logger.Exceptions.Should().OnlyContain(exception => exception == null);
+
+        var recovered = await ReadAsync<ProviderCredentialVerificationResultDto>(await client.PostAsync("/api/providers/alpaca/verify", null));
+        recovered.Success.Should().BeTrue();
+        recovered.ExternalAccountId.Should().Be("PA-RECOVERED");
+        (await store.GetStatusAsync("alpaca")).AuditMetadata["lastVerifiedBy"].Should().Be("provider-ops");
+    }
+
+    private sealed class VerificationRecoveryHandler(string failureKind, string secret) : HttpMessageHandler
+    {
+        private int _calls;
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            if (Interlocked.Increment(ref _calls) > 1)
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                { Content = new StringContent("""{"account_number":"PA-RECOVERED"}""", Encoding.UTF8, "application/json") });
+            if (failureKind == "transport")
+                throw new HttpRequestException(secret, new IOException(secret));
+            return Task.FromResult(new HttpResponseMessage(failureKind == "http" ? HttpStatusCode.Unauthorized : HttpStatusCode.OK)
+            {
+                ReasonPhrase = secret,
+                Content = new StringContent(failureKind == "json" ? "{\"id\":{\"" + secret + "\":1}}" : "{}", Encoding.UTF8, "application/json")
+            });
+        }
+    }
+
+    private sealed class VerificationLogger : ILogger<ProviderConnectionLifecycleService>
+    {
+        public List<string> Messages { get; } = [];
+        public List<Exception?> Exceptions { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            Messages.Add(formatter(state, exception));
+            Exceptions.Add(exception);
+        }
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ManageCredentials,
-        bool includeTenantScope = true)
+        bool includeTenantScope = true,
+        bool includeActor = true)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-connection-endpoints", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -311,7 +417,8 @@ public sealed class ProviderConnectionEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-ops";
+            if (includeActor)
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-ops";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             if (includeTenantScope)
             {
