@@ -61,7 +61,7 @@ public sealed class SecurityMasterViewModelTests
             await viewModel.BackfillTradingParamsCommand.ExecuteAsync(null);
 
             backfillService.Verify(
-                service => service.BackfillAllAsync(),
+                service => service.BackfillAllAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
             securityService.VerifyNoOtherCalls();
             importService.VerifyNoOtherCalls();
@@ -107,7 +107,7 @@ public sealed class SecurityMasterViewModelTests
             await viewModel.BackfillTradingParamsCommand.ExecuteAsync(null);
 
             backfillService.Verify(
-                service => service.BackfillAllAsync(),
+                service => service.BackfillAllAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         });
     }
@@ -128,7 +128,7 @@ public sealed class SecurityMasterViewModelTests
         {
             var backfillService = new Mock<ITradingParametersBackfillService>(MockBehavior.Strict);
             backfillService
-                .Setup(service => service.BackfillAllAsync(It.IsAny<CancellationToken>()))
+                .Setup(service => service.BackfillAllAsync("backfill-operator", It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
             using var viewModel = CreateViewModel(
                 CreateNavigationService(),
@@ -149,8 +149,10 @@ public sealed class SecurityMasterViewModelTests
 
             await viewModel.BackfillTradingParamsCommand.ExecuteAsync(null);
 
+            // The strict mock's exact-actor setup doubles as the attribution assertion: the
+            // operator who pressed the button, not the automation, reaches the service.
             backfillService.Verify(
-                service => service.BackfillAllAsync(It.IsAny<CancellationToken>()),
+                service => service.BackfillAllAsync("backfill-operator", It.IsAny<CancellationToken>()),
                 Times.Once);
         });
     }

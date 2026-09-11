@@ -2241,7 +2241,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             return;
 
         if (_authenticationSession is null ||
-            !_authenticationSession.TryAuthorize(UserPermission.TriggerBackfill, out _))
+            !_authenticationSession.TryAuthorize(UserPermission.TriggerBackfill, out var initiatedBy))
         {
             const string message = "Sign in with backfill permission to backfill trading parameters.";
             StatusText = message;
@@ -2256,7 +2256,10 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             IsBackfillingTradingParams = true;
             BackfillStatus = "Starting trading parameters backfill…";
 
-            await _backfillService.BackfillAllAsync().ConfigureAwait(false);
+            // The resolved operator rides into every amendment's UpdatedBy: a backfill can
+            // amend up to 1,000 securities, and the audit trail must name who pressed the
+            // button rather than the automation that acted for them.
+            await _backfillService.BackfillAllAsync(initiatedBy).ConfigureAwait(false);
 
             BackfillStatus = "Trading parameters backfill completed successfully.";
             _notificationService.ShowNotification("Security Master",
