@@ -21,6 +21,7 @@ public sealed partial class OperationsContinuityWorkflowService
         bool allowClosedWorkflow = false,
         bool requireIntactAuditChain = false,
         Func<OperationsContinuityWorkflow, CancellationToken, Task<IReadOnlyList<OperationsWorkflowBlockerDto>>>? boundaryPrecondition = null,
+        Func<OperationsContinuityWorkflow, IReadOnlyList<OperationsWorkflowAuditDto>, OperationsWorkflowBlockerDto?>? auditPrecondition = null,
         CancellationToken ct = default)
     {
         if (workflowId == Guid.Empty)
@@ -105,7 +106,7 @@ public sealed partial class OperationsContinuityWorkflowService
                 ct).ConfigureAwait(false);
         }
 
-        if (requireIntactAuditChain)
+        if (requireIntactAuditChain || auditPrecondition is not null)
         {
             var auditTimeline = await _auditStore.GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
             if (!OperationsWorkflowAuditHashing.TryValidateChain(auditTimeline, out var auditBlockerCode, out var auditMessage))
@@ -136,6 +137,23 @@ public sealed partial class OperationsContinuityWorkflowService
                     workflow: null,
                     [blocker],
                     []);
+            }
+
+            if (auditPrecondition?.Invoke(workflow, auditTimeline) is { } auditPreconditionBlocker)
+            {
+                return await PersistBlockedAttemptAsync(
+                    workflow,
+                    expectedVersion,
+                    actor,
+                    rationale,
+                    correlationId,
+                    eventType,
+                    gate,
+                    "INVALID_STATE_TRANSITION",
+                    auditPreconditionBlocker.Message,
+                    [auditPreconditionBlocker],
+                    evidence,
+                    ct).ConfigureAwait(false);
             }
         }
 
@@ -189,6 +207,19 @@ public sealed partial class OperationsContinuityWorkflowService
                 [commandBlocker],
                 evidence,
                 ct).ConfigureAwait(false);
+        }
+
+        // A decision applies to the evidence reviewed in that submission, not later gate changes.
+        if (eventType == "gate-posture-refreshed" ||
+            (gate is not null and not OperationsGateKeyDto.Approval &&
+             eventType is not "checklist-task-acknowledged" and not "workflow-reopened"))
+        {
+            if (workflowForCommit.ApprovalState is OperationsApprovalStateDto.Submitted or
+                OperationsApprovalStateDto.ReviewerAssigned or OperationsApprovalStateDto.Approved)
+            {
+                workflowForCommit.ApprovalState = OperationsApprovalStateDto.Pending;
+                workflowForCommit.ApprovalGate = OperationsGateState.Create(OperationsGateKeyDto.Approval);
+            }
         }
 
         var toStatus = _statusDerivation.Derive(workflowForCommit);

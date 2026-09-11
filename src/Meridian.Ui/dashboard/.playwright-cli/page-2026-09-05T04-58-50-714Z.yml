@@ -1,0 +1,33 @@
+- generic [ref=f1e2]:
+  - main [ref=f1e36]:
+    - generic [ref=f1e13]:
+      - generic [ref=f1e14]:
+        - generic [ref=f1e15]: Meridian
+        - list "Setup progress" [ref=f1e19]:
+          - listitem [ref=f1e20]: Welcome
+          - listitem [ref=f1e21]: Your goal
+          - listitem [ref=f1e22]: Starting data
+          - listitem [ref=f1e23]: Review
+          - listitem [ref=f1e24]: Ready
+      - generic [ref=f1e25]:
+        - heading "What do you want Meridian to help with?" [level=1] [ref=f1e39]
+        - generic [ref=f1e40]:
+          - button "Monitor investments Track holdings, watchlists, and portfolio changes." [ref=f1e41] [cursor=pointer]:
+            - strong [ref=f1e42]: Monitor investments
+            - generic [ref=f1e43]: Track holdings, watchlists, and portfolio changes.
+          - button "Operate a fund Run daily controls, approvals, and operational evidence." [active] [pressed] [ref=f1e44] [cursor=pointer]:
+            - strong [ref=f1e45]: Operate a fund
+            - generic [ref=f1e46]: Run daily controls, approvals, and operational evidence.
+          - button "Reconcile accounts and statements Import statements, investigate breaks, and close with evidence." [ref=f1e47] [cursor=pointer]:
+            - strong [ref=f1e48]: Reconcile accounts and statements
+            - generic [ref=f1e49]: Import statements, investigate breaks, and close with evidence.
+          - button "Research and test strategies Research, backtest, and paper-trade governed strategies." [ref=f1e50] [cursor=pointer]:
+            - strong [ref=f1e51]: Research and test strategies
+            - generic [ref=f1e52]: Research, backtest, and paper-trade governed strategies.
+          - button "Collect trusted market data Connect, validate, and monitor trusted market data." [ref=f1e53] [cursor=pointer]:
+            - strong [ref=f1e54]: Collect trusted market data
+            - generic [ref=f1e55]: Connect, validate, and monitor trusted market data.
+      - generic [ref=f1e56]:
+        - button "Back" [ref=f1e57] [cursor=pointer]
+        - button "Continue" [ref=f1e60] [cursor=pointer]
+  - region "Notifications"

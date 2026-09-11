@@ -181,6 +181,72 @@ public sealed class OfxStatementConnectorTests : IDisposable
         result.Records.Should().ContainSingle().Which.Account.Should().Be("A");
     }
 
+    [Theory]
+    [InlineData("USD")]
+    [InlineData("EUR")]
+    public async Task StatementCurrency_IsPreservedOnEveryCanonicalRow(string currency)
+    {
+        var content = System.Text.Encoding.UTF8.GetString(StatementConnectorTestData.ReadFixture("ofx-102-bank.ofx"))
+            .Replace("<CURDEF>USD", "<CURDEF>" + currency, StringComparison.Ordinal);
+        var result = await _connector.ParseAsync(new StatementSourceDocument("currency.ofx", System.Text.Encoding.UTF8.GetBytes(content)));
+        result.HasErrors.Should().BeFalse();
+        result.Records.Should().HaveCount(4);
+        result.Records.Should().OnlyContain(record => record.Currency == currency);
+    }
+
+    [Fact]
+    public void StatementCurrency_DoesNotCrossSiblingsOrOverrideRowEvidence()
+    {
+        const string content = "<OFX><STMTRS><CURDEF>USD</CURDEF><STMTTRN><FITID>1</FITID><CURSYM>GBP</CURSYM></STMTTRN></STMTRS>"
+            + "<STMTRS><CURDEF>CAD</CURDEF><STMTTRN><FITID>2</FITID></STMTTRN></STMTRS>"
+            + "<STMTRS><STMTTRN><FITID>3</FITID></STMTTRN></STMTRS></OFX>";
+        var entries = OfxDocumentParser.Parse(content).Entries;
+        entries.Should().HaveCount(3);
+        entries[0]["CURSYM"].Should().Be("GBP");
+        entries[0].Should().NotContainKey("CURDEF");
+        entries[1]["CURDEF"].Should().Be("CAD");
+        entries[2].Should().NotContainKey("CURDEF");
+    }
+
+    [Theory]
+    [InlineData("STMTRS", "BANKACCTFROM", "ACCOUNT-B")]
+    [InlineData("STMTRS", "BANKACCTFROM", " ")]
+    [InlineData("CCSTMTRS", "CCACCTFROM", "ACCOUNT-B")]
+    [InlineData("CCSTMTRS", "CCACCTFROM", " ")]
+    [InlineData("INVSTMTRS", "INVACCTFROM", "ACCOUNT-B")]
+    [InlineData("INVSTMTRS", "INVACCTFROM", " ")]
+    public async Task MonthEndOfx_DuplicateConflictingAccountTagsCannotOverwriteAuthority(string statement, string header, string duplicate)
+    {
+        var content = $"<OFX><{statement}><CURDEF>USD</CURDEF><{header}><ACCTID>ACCOUNT-A</ACCTID>"
+            + $"<ACCTID>{duplicate}</ACCTID><ACCTID>ACCOUNT-A</ACCTID></{header}>"
+            + "<STMTTRN><TRNTYPE>CREDIT</TRNTYPE><DTPOSTED>20260601</DTPOSTED><TRNAMT>10</TRNAMT></STMTTRN>"
+            + $"</{statement}></OFX>";
+
+        var result = await _connector.ParseAsync(new StatementSourceDocument("ambiguous-account.ofx", System.Text.Encoding.UTF8.GetBytes(content)));
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().Contain(issue => issue.Code == "ROW_MISSING_ACCOUNT");
+    }
+
+    [Theory]
+    [InlineData("\t")]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task MonthEndOfx_XmlWhitespaceBeforeAttributesPreservesAccountIdentity(string whitespace)
+    {
+        var content = $"<OFX><STMTRS{whitespace}xmlns=\"urn:ofx\"><CURDEF>USD</CURDEF>"
+            + "<BANKACCTFROM><ACCTID>ACCOUNT-A</ACCTID><ACCTID>ACCOUNT-A</ACCTID></BANKACCTFROM>"
+            + "<STMTTRN><TRNTYPE>CREDIT</TRNTYPE><DTPOSTED>20260601</DTPOSTED><TRNAMT>10</TRNAMT></STMTTRN>"
+            + "</STMTRS></OFX>";
+
+        var result = await _connector.ParseAsync(new StatementSourceDocument("formatted-account.ofx", System.Text.Encoding.UTF8.GetBytes(content)));
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Should().ContainSingle().Which.Account.Should().Be("ACCOUNT-A");
+        result.Records[0].Currency.Should().Be("USD");
+    }
+
     public void Dispose()
     {
         try

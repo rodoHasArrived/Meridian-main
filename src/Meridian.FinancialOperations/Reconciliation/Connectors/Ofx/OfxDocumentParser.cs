@@ -96,7 +96,7 @@ public static class OfxDocumentParser
 
             var rawTag = body[(open + 1)..close].Trim();
             index = close + 1;
-            if (rawTag.Length == 0 || rawTag[0] is '?' or '!' || rawTag.EndsWith("/", StringComparison.Ordinal))
+            if (rawTag.Length == 0 || rawTag[0] is '?' or '!')
             {
                 continue;
             }
@@ -122,10 +122,11 @@ public static class OfxDocumentParser
                 continue;
             }
 
-            var name = NormalizeTagName(rawTag);
+            var selfClosing = rawTag.EndsWith("/", StringComparison.Ordinal);
+            var name = NormalizeTagName(selfClosing ? rawTag[..^1] : rawTag);
             var valueEnd = body.IndexOf('<', index);
-            var value = (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
-            if (value.Length > 0)
+            var value = selfClosing ? string.Empty : (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
+            if (value.Length > 0 || name is "CURSYM" or "CURDEF" or "ACCTID")
             {
                 // The same depth comparison the aggregate branch below makes, so a leaf is refused exactly
                 // where a child aggregate in its place would be. Only aggregates were checked, so a leaf
@@ -150,10 +151,21 @@ public static class OfxDocumentParser
                     break;
                 }
 
-                stack.Peek().Leaves[name] = DecodeEntities(value);
+                var decoded = DecodeEntities(value);
+                var leaves = stack.Peek().Leaves;
+                // A conflicting duplicate account cannot become authoritative by overwriting its predecessor.
+                leaves[name] = name == "ACCTID" && leaves.TryGetValue(name, out var previous)
+                    && !string.Equals(previous.Trim(), decoded.Trim(), StringComparison.Ordinal)
+                        ? string.Empty
+                        : decoded;
             }
             else
             {
+                if (selfClosing)
+                {
+                    continue;
+                }
+
                 // stack carries the synthetic OFX-ROOT pushed before the walk, so its Count is one more
                 // than the aggregate depth the document actually declares. Comparing Count directly
                 // refused a document nested at exactly MaxNestingDepth, one level earlier than the camt
@@ -230,6 +242,20 @@ public static class OfxDocumentParser
                 [AggregateColumn] = node.Name.ToUpperInvariant()
             };
             FlattenLeaves(node, entry);
+            // Currency belongs to the containing statement, never the first statement in the file.
+            // A row-level currency remains authoritative, including an explicitly blank value.
+            if (!entry.ContainsKey("CURSYM") && !entry.ContainsKey("CURDEF"))
+            {
+                for (var parent = node.Parent; parent is not null; parent = parent.Parent)
+                {
+                    if (parent.Name is "STMTRS" or "CCSTMTRS" or "INVSTMTRS")
+                    {
+                        if (parent.Leaves.TryGetValue("CURDEF", out var currency))
+                            entry["CURDEF"] = currency;
+                        break;
+                    }
+                }
+            }
             NormalizeEntry(entry, accountId);
             entries.Add(entry);
             if (entries.Count > maxEntries)
@@ -368,8 +394,8 @@ public static class OfxDocumentParser
 
     private static string NormalizeTagName(string rawTag)
     {
-        // XML tags may carry attributes; OFX tag names never contain spaces.
-        var space = rawTag.IndexOf(' ');
+        // XML allows spaces, tabs, CR and LF between an element name and its attributes.
+        var space = rawTag.IndexOfAny([' ', '\t', '\r', '\n']);
         return (space < 0 ? rawTag : rawTag[..space]).Trim().ToUpperInvariant();
     }
 
