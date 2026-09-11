@@ -165,6 +165,12 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     .ConfigureAwait(false);
                 candidateForReplay = replayWrite.Candidate;
                 EnsureRetainedJournalIsThisPosting(existing, replayWrite, ledgerBookId, sourceEventId, approvalId, request);
+                candidateForReplay = candidateForReplay with
+                {
+                    PostingCommand = candidateForReplay.PostingCommand is { } replayCommand
+                        ? replayCommand with { Actor = RetainedPostingActor(existing) }
+                        : null
+                };
             }
             var journalImpact = BuildJournalImpact(existing, ledgerBook.BaseCurrency);
             if (assetAuthority is not null)
@@ -1688,10 +1694,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
     }
 
     private static string? RetainedPostingActor(LedgerJournalEntryRecord retained)
-    {
-        return retained.Entry.Metadata.Tags is { } tags && tags.TryGetValue("postingActor", out var actor)
-            ? actor : null;
-    }
+        => AccountingPostingCommandValidator.ReadRetainedPostingActor(retained.Entry.Metadata);
 
     private static async Task<LedgerJournalEntryRecord?> FindExistingPostingAsync(
         ILedgerJournalStore journalStore,

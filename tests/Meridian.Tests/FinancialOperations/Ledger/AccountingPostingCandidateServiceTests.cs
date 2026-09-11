@@ -14,7 +14,7 @@ namespace Meridian.Tests.FinancialOperations.Ledger;
 /// Guards the fund-accounting source-event scenario where promoted posting rules may draft
 /// journal impact, but posting remains behind retained evidence and approval gates.
 /// </summary>
-public sealed class AccountingPostingCandidateServiceTests
+public sealed partial class AccountingPostingCandidateServiceTests
 {
     [Fact]
     public async Task Scenario_AccountingRulesStudio_SourceEventBuildsApprovalGatedJournalCandidate()

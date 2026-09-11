@@ -12,7 +12,7 @@ last_reviewed: 2026-09-05
 # src/Meridian.FinancialOperations
 
 Generated candidate posts retain the validated posting actor in the approved command. Replays
-use the journal's retained `postingActor`; journals predating that field remain unattributed rather
+use the journal's versioned, command-normalized `postingActor`; unversioned legacy metadata remains unattributed rather
 than acquiring the identity of a later caller. Durable mutation/audit atomicity is owned by the
 PostgreSQL journal store, including the atomic tax-lot posting path.
 

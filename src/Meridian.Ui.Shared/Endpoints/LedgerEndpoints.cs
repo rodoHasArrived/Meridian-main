@@ -1772,7 +1772,8 @@ public static partial class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryLifecycleAction, async (JournalEntryLifecycleActionRequestDto request, HttpContext context) =>
         {
-            if (!HasManualJournalLifecycleActionPermission(context, request.Action))
+            if (!HasManualJournalLifecycleActionPermission(context, request.Action) ||
+                !EndpointAuthorization.TryResolveActor(context, out var actor) || string.IsNullOrWhiteSpace(actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1789,7 +1790,7 @@ public static partial class LedgerEndpoints
                 var result = await service
                     .ApplyLifecycleActionAsync(request with
                     {
-                        Actor = ResolveMutationActor(context, request.Actor),
+                        Actor = actor,
                         TenantId = tenantContext.TenantId,
                         CompanyId = tenantContext.CompanyId,
                         ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
