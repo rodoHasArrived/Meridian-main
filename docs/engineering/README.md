@@ -68,8 +68,13 @@ happen on `main` when the user explicitly requests it or the checkout is intenti
 there. Do not bypass GitHub branch protections; for PR-ready publishing, use a
 `codex/<short-task-name>` branch and a pull request targeting `main`.
 
-The hosted .NET lane builds its shared projects sequentially, then runs at most two test
-shards concurrently. Local `scripts/ci.sh` runs retain the sequential default; set
+The .NET lane builds the web host, then all unique default test projects in one generated
+solution-filter build for the standard `Release` configuration. The filter follows shared
+dependencies and verifies that the solution enables each selected test project in `Release`.
+A grouped build failure remains fatal and triggers serial builds for project-specific diagnostics
+before stopping. Explicit `--project` overrides and other configurations retain separate builds.
+The hosted lane then runs at most two test shards concurrently. Local `scripts/ci.sh` runs retain
+the sequential test default; set
 `MERIDIAN_CI_TEST_MAX_PARALLEL=2` only when local capacity permits. Each shard uses isolated
 temporary files and retains its logs, TRX results, and duration under
 `artifacts/test-results/dotnet/`; temporary fixture files are removed after the shard exits.
