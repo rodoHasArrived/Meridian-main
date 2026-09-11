@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Core.Logging;
 using Meridian.Infrastructure.Http;
-using Meridian.Storage.Archival;
 using Serilog;
 
 namespace Meridian.Application.Config.Credentials;
@@ -22,7 +21,9 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     private readonly ConcurrentDictionary<string, OAuthToken> _tokens = new();
     private readonly ConcurrentDictionary<string, OAuthProviderConfig> _providerConfigs = new();
     private readonly string _tokenPersistencePath;
+    private readonly IOAuthTokenVault _vault;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private readonly Lazy<Task> _initialization;
 
     private CancellationTokenSource? _cts;
     private Task? _refreshLoop;
@@ -36,13 +37,25 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         string dataRoot,
         CredentialExpirationConfig? config = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        IOAuthTokenVault? vault = null)
     {
         _log = logger ?? LoggingSetup.ForContext<OAuthTokenRefreshService>();
+        _vault = vault ?? new FileProviderCredentialStore(dataRoot);
         _config = config ?? new CredentialExpirationConfig();
         _httpClient = httpClient ?? CreateDefaultHttpClient();
         _tokenPersistencePath = Path.Combine(dataRoot, ".mdc", "oauth_tokens.json");
-        LoadPersistedTokens();
+        _initialization = new Lazy<Task>(LoadPersistedTokensAsync);
+    }
+
+    /// <summary>Loads and migrates retained tokens asynchronously before synchronous token inspection.</summary>
+    public Task InitializeAsync(CancellationToken ct = default)
+        => _initialization.Value.WaitAsync(ct);
+
+    private void RequireInitialized()
+    {
+        if (!_initialization.IsValueCreated || !_initialization.Value.IsCompletedSuccessfully)
+            throw new InvalidOperationException("Await InitializeAsync before inspecting OAuth tokens.");
     }
 
     private static HttpClient CreateDefaultHttpClient()
@@ -106,8 +119,8 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     public async Task StoreTokenAsync(string providerName, OAuthToken token, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(token);
-        _tokens[providerName] = token;
-        await PersistTokensAsync(ct);
+        await InitializeAsync(ct).ConfigureAwait(false);
+        await PersistTokenAsync(providerName, token, ct).ConfigureAwait(false);
         _log.Debug("Stored OAuth token for {Provider}, expires at {ExpiresAt}", providerName, token.ExpiresAt);
     }
 
@@ -116,6 +129,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     /// </summary>
     public OAuthToken? GetToken(string providerName)
     {
+        RequireInitialized();
         return _tokens.TryGetValue(providerName, out var token) ? token : null;
     }
 
@@ -124,6 +138,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     /// </summary>
     public IReadOnlyDictionary<string, (OAuthToken Token, TokenStatus Status)> GetAllTokens()
     {
+        RequireInitialized();
         return _tokens.ToDictionary(
             kvp => kvp.Key,
             kvp => (kvp.Value, GetTokenStatus(kvp.Value))
@@ -135,6 +150,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     /// </summary>
     public async Task<OAuthRefreshResult> RefreshTokenAsync(string providerName, CancellationToken ct = default)
     {
+        await InitializeAsync(ct).ConfigureAwait(false);
         if (!_tokens.TryGetValue(providerName, out var currentToken))
         {
             return new OAuthRefreshResult(false, Error: $"No token stored for provider: {providerName}");
@@ -153,13 +169,44 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     /// </summary>
     public async Task RemoveTokenAsync(string providerName, CancellationToken ct = default)
     {
-        _tokens.TryRemove(providerName, out _);
-        await PersistTokensAsync(ct);
+        await InitializeAsync(ct).ConfigureAwait(false);
+        await PersistTokenAsync(providerName, null, ct).ConfigureAwait(false);
         _log.Information("Removed OAuth token for {Provider}", providerName);
+    }
+
+    private async Task PersistTokenAsync(string providerName, OAuthToken? token, CancellationToken ct)
+    {
+        await _refreshLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            try
+            {
+                await _vault.SaveOAuthTokenAsync(providerName, token, ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Audit can fail after the encrypted mutation commits. Match the durable
+                // record before propagating failure, and evict if recovery cannot be read.
+                _tokens.TryRemove(providerName, out _);
+                var retained = await _vault.ReadOAuthTokensAsync(CancellationToken.None).ConfigureAwait(false);
+                if (retained.TryGetValue(providerName, out var persisted))
+                    _tokens[providerName] = persisted;
+                throw;
+            }
+            if (token is null)
+                _tokens.TryRemove(providerName, out _);
+            else
+                _tokens[providerName] = token;
+        }
+        finally
+        {
+            _refreshLock.Release();
+        }
     }
 
     private async Task RefreshLoopAsync(CancellationToken ct)
     {
+        await InitializeAsync(ct).ConfigureAwait(false);
         while (!ct.IsCancellationRequested)
         {
             try
@@ -238,6 +285,11 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         await _refreshLock.WaitAsync(ct);
         try
         {
+            // A removal or manual replacement may have completed while this refresh waited.
+            if (!_tokens.TryGetValue(providerName, out currentToken))
+                return new OAuthRefreshResult(false, Error: $"No token stored for provider: {providerName}");
+            if (!currentToken.CanRefresh)
+                return new OAuthRefreshResult(false, Error: "Token cannot be refreshed (no refresh token or refresh token expired)");
             // Build refresh request
             var tokenEndpoint = providerConfig.TokenEndpoint;
             if (string.IsNullOrEmpty(tokenEndpoint))
@@ -275,7 +327,9 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
                 return new OAuthRefreshResult(false, Error: error, RefreshedAt: DateTimeOffset.UtcNow);
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync(ct);
+            // Once rotation succeeds remotely, lifecycle cancellation must not discard the
+            // response or cancel the replacement token's durable commit.
+            var responseContent = await response.Content.ReadAsStringAsync(CancellationToken.None).ConfigureAwait(false);
             var tokenResponse = JsonSerializer.Deserialize<OAuthTokenResponse>(responseContent);
 
             if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
@@ -292,8 +346,10 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
                 IssuedAt: DateTimeOffset.UtcNow
             );
 
+            // The provider may already have invalidated the old refresh token. Retain the new
+            // token in memory even if durable storage fails, but never acknowledge that failure as success.
             _tokens[providerName] = newToken;
-            await PersistTokensAsync();
+            await _vault.SaveOAuthTokenAsync(providerName, newToken, CancellationToken.None).ConfigureAwait(false);
 
             OnTokenRefreshed?.Invoke(providerName, newToken);
             _log.Information("Successfully refreshed OAuth token for {Provider}, new expiration: {ExpiresAt}",
@@ -363,61 +419,61 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         }
     }
 
-    private void LoadPersistedTokens()
+    private async Task LoadPersistedTokensAsync()
     {
         try
         {
-            if (!File.Exists(_tokenPersistencePath))
-                return;
-
-            RestrictExistingTokenFile();
-
-            var json = File.ReadAllText(_tokenPersistencePath);
-            var tokens = JsonSerializer.Deserialize<Dictionary<string, OAuthToken>>(json);
-
-            if (tokens != null)
+            // Completed imports move out of the discovery path before erasure. A process
+            // interruption during cleanup cannot turn a wiped file into startup input.
+            var cleanupPath = _tokenPersistencePath + ".migrated";
+            if (File.Exists(cleanupPath))
+                SecurelyRemoveMigratedTokens(cleanupPath);
+            if (File.Exists(_tokenPersistencePath))
             {
-                foreach (var kvp in tokens)
-                {
-                    _tokens[kvp.Key] = kvp.Value;
-                }
+                RestrictExistingTokenFile();
+                var json = await File.ReadAllTextAsync(_tokenPersistencePath).ConfigureAwait(false);
+                var tokens = JsonSerializer.Deserialize<Dictionary<string, OAuthToken>>(json)
+                    ?? throw new InvalidOperationException("Legacy OAuth token snapshot is invalid.");
+                await _vault.ImportOAuthTokensAsync(tokens).ConfigureAwait(false);
+                File.Move(_tokenPersistencePath, cleanupPath);
+                SecurelyRemoveMigratedTokens(cleanupPath);
             }
-
-            _log.Debug("Loaded OAuth tokens for {Count} providers", _tokens.Count);
+            foreach (var pair in await _vault.ReadOAuthTokensAsync().ConfigureAwait(false))
+                _tokens[pair.Key] = pair.Value;
         }
         catch (Exception ex)
         {
-            _log.Warning("Failed to load persisted OAuth tokens ({FailureType})", ex.GetType().Name);
+            _log.Warning("Failed to initialize encrypted OAuth persistence ({ExceptionType})", ex.GetType().Name);
+            throw new InvalidOperationException("Encrypted OAuth persistence could not be initialized.");
         }
     }
 
-    private async Task PersistTokensAsync(CancellationToken ct = default)
+    private static void SecurelyRemoveMigratedTokens(string path)
     {
-        try
+        using (var stream = new FileStream(path, FileMode.Open, FileAccess.Write, FileShare.None))
         {
-            var directory = Path.GetDirectoryName(_tokenPersistencePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-
-            var tokens = _tokens.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-            var json = JsonSerializer.Serialize(tokens, new JsonSerializerOptions { WriteIndented = true });
-
-            // Access and refresh tokens are bearer secrets held in cleartext here, so unlike the
-            // provider vault there is no encryption behind the file mode - the mode is the whole
-            // of the protection. Owner-only from creation, never chmod'ed after the bytes land.
-            await AtomicFileWriter.WriteAsync(_tokenPersistencePath, json, OwnerOnlyFileMode, ct);
-            _log.Debug("Persisted OAuth tokens for {Count} providers", tokens.Count);
+            var zeros = new byte[64 * 1024];
+            var remaining = stream.Length;
+            while (remaining > 0)
+            {
+                var count = (int)Math.Min(remaining, zeros.Length);
+                stream.Write(zeros, 0, count);
+                remaining -= count;
+            }
+            stream.Flush(flushToDisk: true);
         }
-        catch (Exception ex)
-        {
-            _log.Warning("Failed to persist OAuth tokens ({FailureType})", ex.GetType().Name);
-        }
+        File.Delete(path);
     }
 
     public async ValueTask DisposeAsync()
     {
         await StopAsync();
-        await PersistTokensAsync();
+        if (_initialization.IsValueCreated)
+        {
+            try
+            { await _initialization.Value.ConfigureAwait(false); }
+            catch (InvalidOperationException) when (_initialization.Value.IsFaulted) { }
+        }
         _refreshLock.Dispose();
         _httpClient.Dispose();
     }
