@@ -34,6 +34,11 @@ Private-capital close evidence is selected by fund event, period, and ledger ent
 
 ## Purpose
 
+Bank statement currency is source evidence. BAI2 requires an explicit account or containing-group
+currency before converting minor units, and each group resets inherited currency. camt.053 uses
+explicit amount currency or an explicit account currency when the attribute is absent; a blank
+amount attribute remains invalid. Neither parser supplies USD when all currency evidence is missing.
+
 Canonical CSV connector validation rejects blank required amounts, ambiguous grouped decimals, malformed nonblank fees,
 and missing or invalid currency before rendering financial values. Statement import preview,
 validation, and commit all require explicit three-letter currency before retaining artifacts.
