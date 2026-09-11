@@ -62,7 +62,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
 
 `AddMarketDataServices` registers the tenant read posture for core-only and workstation hosts.
 `MERIDIAN_TENANT_SCOPE_ENFORCEMENT=fail-closed` therefore rejects reads without caller authority
-in worker hosts too. Workers use an explicit `FundScopeTenantAuthority` scope; the workstation
+in worker hosts too. Workers use an explicit `FundScopeTenantAuthority` scope; process-wide
+direct-lending accrual and outbox workers are withheld in that posture because the retained loan
+model does not yet provide per-loan tenant authority. The workstation
 adapter resolves HTTP authority whenever a request exists. Host-supplied options and accessors
 take precedence. An absent setting retains the deployment-boundary default until operators finish
 evidence-backed attribution and review the backfill exceptions. Focused proof:

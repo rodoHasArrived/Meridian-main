@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
+using Meridian.Contracts.Tenancy;
 using Meridian.Core.Config;
 using Meridian.Storage;
 using Meridian.Testing;
@@ -75,6 +76,24 @@ public sealed class ProcessWideHostedServiceRegistrationTests
         }
     }
 
+    [Fact]
+    public async Task AddMarketDataServices_FailClosedPosture_WithholdsUnattributedDirectLendingWorkers()
+    {
+        using var environment = CompositionRegistrationTestEnvironment.Enable();
+        environment.Set(TenantScopeEnforcementOptions.EnvironmentVariable, "fail-closed");
+        using var artifacts = TestArtifactDirectory.Create(nameof(ProcessWideHostedServiceRegistrationTests));
+
+        var hostedServices = await ResolveHostedServiceNamesAsync(
+            WriteConfig(artifacts.RootPath),
+            enableProcessWideHostedServices: true);
+
+        hostedServices.Should().NotContain("DirectLendingOutboxDispatcher");
+        hostedServices.Should().NotContain("DailyAccrualWorker");
+        hostedServices.Should().Contain(
+            "ProjectionReconciliationHostedService",
+            "strict tenancy should withhold only workers that lack per-unit tenant attribution");
+    }
+
     private static async Task<HashSet<string>> ResolveHostedServiceNamesAsync(
         string configPath,
         bool enableProcessWideHostedServices)
@@ -130,6 +149,7 @@ public sealed class ProcessWideHostedServiceRegistrationTests
             "MERIDIAN_MODE",
             "MERIDIAN_API_DEPLOYMENT_MODE",
             "MERIDIAN_USE_INMEMORY_GOVERNANCE",
+            TenantScopeEnforcementOptions.EnvironmentVariable,
             MeridianDatabaseEnvironment.UnifiedVariable,
             .. MeridianDatabaseEnvironment.PropagatedConnectionStringVariables,
             ScopedAccessConnectionStringVariable,
@@ -173,6 +193,12 @@ public sealed class ProcessWideHostedServiceRegistrationTests
         }
 
         public static CompositionRegistrationTestEnvironment Enable() => new();
+
+        public CompositionRegistrationTestEnvironment Set(string name, string? value)
+        {
+            Environment.SetEnvironmentVariable(name, value);
+            return this;
+        }
 
         public void Dispose()
         {

@@ -40,6 +40,19 @@ public static class TenantScopeServiceRegistration
         services.TryAddSingleton<IFundScopeTenantAccessor, TAccessor>();
         return services;
     }
+
+    /// <summary>
+    /// Returns whether process-wide work that cannot identify a tenant may be registered for the
+    /// configured read posture. Unknown/factory-backed postures are treated conservatively.
+    /// </summary>
+    internal static bool AllowsUnattributedProcessWideWorkers(this IServiceCollection services)
+    {
+        var descriptor = services.LastOrDefault(
+            candidate => candidate.ServiceType == typeof(TenantScopeEnforcementOptions));
+
+        return descriptor?.ImplementationInstance is TenantScopeEnforcementOptions options
+            && !options.IsFailClosed;
+    }
 }
 
 /// <summary>Resolves only explicitly established worker authority, without an HTTP dependency.</summary>
