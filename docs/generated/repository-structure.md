@@ -9477,6 +9477,7 @@ Meridian-main
 │   │   │   │   ├── AccountingJournalDraftServiceTests.cs
 │   │   │   │   ├── AccountingPolicyClockTests.cs
 │   │   │   │   ├── AccountingPolicyServiceTests.cs
+│   │   │   │   ├── AccountingPostingCandidateServiceTests.ActorAttribution.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
 │   │   │   │   └── AssetAccountingLifecycleSeparationTests.cs
@@ -10032,6 +10033,7 @@ Meridian-main
 │   │   │   ├── FundScopedWriteTenantGateTests.cs
 │   │   │   ├── FundScopeTenantAuthorityTests.cs
 │   │   │   ├── FundScopeTenantColumnMigrationTests.cs
+│   │   │   ├── GovernedLedgerPostingTargetTests.ActorAttribution.cs
 │   │   │   ├── GovernedLedgerPostingTargetTests.cs
 │   │   │   ├── JsonFileIBDataResultStoreTests.cs
 │   │   │   ├── JsonFileSnapshotStoreTests.cs
@@ -10345,6 +10347,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.LedgerRoleReachability.cs
 │   │   │   ├── WorkstationEndpointsTests.MarkPreview.cs
 │   │   │   ├── WorkstationEndpointsTests.OpenLotBackfill.cs
+│   │   │   ├── WorkstationEndpointsTests.PostingActorBoundary.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpointsTests.StrategyTenantScope.cs
 │   │   │   ├── WorkstationEndpointsTests.TradingTenantScope.cs
