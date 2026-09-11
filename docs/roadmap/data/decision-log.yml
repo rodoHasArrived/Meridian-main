@@ -115,3 +115,11 @@ decisions:
     related_roadmap_items:
       - W9-ALPACA-004
       - W9-SAFETY-007
+  - id: DEC-W9-ACCEPTANCE-004
+    title: Accept W9-SAFETY-007 with OCO reservation and deferred risk-journal work
+    status: accepted
+    decided_on: 2026-09-11
+    owner_lane: Core Team
+    summary: Operator Andrew James Rowden explicitly answered Accept with these reservations on 2026-09-11 to the bounded W9-SAFETY-007 acceptance question. The question stated that all four exit criteria were evidenced, current source included the browser breaker control, acceptance would retain the OCO worse-limb reservation and release-on-sibling-cancel follow-up plus the deferred pre-trade decision journal and WPF parity work, and it would not mark the row done or certify a release. This decision records exactly that acceptance. The OCO reservation arithmetic, pre-trade decision journal, risk-decisions read surface, and corresponding WPF parity remain follow-up work, not completed scope. Browser breaker implementation is evidenced by trading-screen.execution-controls-header.tsx and trading-screen.execution-controls.ts, which render the control and derive verdicts from shared server breaker/sweep state; the earlier missing-control caveat is superseded. The existing Windows evidence remains Targeted Test run 33596174759 at head 0891ca6ca, recorded as passed on 2026-09-02, not a new test execution. Only W9-SAFETY-007 advances from ready_for_acceptance to accepted with evidence_posture complete. W9-CORPACT-011 remains in_progress and red under issue 2894 and DEC-W9-ACCEPTANCE-002, and W9-GOV-008 receives no acceptance decision. No row moves to done, no release is certified, and the P0 release-certification gate remains open.
+    related_roadmap_items:
+      - W9-SAFETY-007
