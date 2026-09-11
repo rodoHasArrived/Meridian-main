@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Text.Json;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Api;
 
 namespace Meridian.Ui.Services;
 
@@ -14,13 +15,15 @@ public sealed class SetupWizardService
     private readonly ConfigService _configService;
     private readonly CredentialService _credentialService;
     private readonly int _tcpConnectTimeoutMs;
+    private readonly ApiClientService _apiClient;
 
-    public SetupWizardService(ConnectivityProbeOptions? probeOptions = null)
+    public SetupWizardService(ConnectivityProbeOptions? probeOptions = null, ApiClientService? apiClient = null)
     {
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.SetupWizard);
         _configService = new ConfigService();
         _credentialService = new CredentialService();
+        _apiClient = apiClient ?? ApiClientService.Instance;
         var tcpConnectTimeoutMs = (probeOptions ?? new ConnectivityProbeOptions()).TcpConnectTimeoutMs;
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(tcpConnectTimeoutMs, nameof(probeOptions));
         _tcpConnectTimeoutMs = tcpConnectTimeoutMs;
@@ -631,59 +634,48 @@ public sealed class SetupWizardService
     /// <summary>
     /// Saves provider credentials securely.
     /// </summary>
-    public async Task SaveCredentialsAsync(string provider, Dictionary<string, string> credentials, CancellationToken ct = default)
+    public async Task SaveCredentialsAsync(string provider, Dictionary<string, string> credentials, CancellationToken ct = default, string? connectionId = null)
     {
-        if (string.IsNullOrWhiteSpace(provider) || credentials.Count == 0)
-        {
+        ArgumentException.ThrowIfNullOrWhiteSpace(provider);
+        ArgumentNullException.ThrowIfNull(credentials);
+        if (connectionId is not null)
+            ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
+        // TWS/Gateway connectivity uses host/port settings, not a provider secret saved by this wizard.
+        if (provider.Trim().Equals("IB", StringComparison.OrdinalIgnoreCase) || provider.Trim().Equals("INTERACTIVEBROKERS", StringComparison.OrdinalIgnoreCase))
             return;
-        }
-
-        var normalizedProvider = provider.Trim().ToUpperInvariant();
-        var config = await _configService.LoadConfigAsync() ?? new AppConfig();
-
-        switch (normalizedProvider)
+        var providerId = provider.Trim().ToLowerInvariant() switch
         {
-            case "ALPACA":
-                SaveEnvironmentVariable("ALPACA__KEYID", credentials.GetValueOrDefault("keyId"));
-                SaveEnvironmentVariable("ALPACA__SECRETKEY", credentials.GetValueOrDefault("secretKey"));
-
-                config.Alpaca ??= new AlpacaOptions();
-                config.Alpaca.KeyId = credentials.GetValueOrDefault("keyId");
-                config.Alpaca.SecretKey = credentials.GetValueOrDefault("secretKey");
-                config.Alpaca.UseSandbox = bool.TryParse(credentials.GetValueOrDefault("useSandbox"), out var useSandbox) && useSandbox;
-                break;
-
-            case "POLYGON":
-                SaveEnvironmentVariable("POLYGON__APIKEY", credentials.GetValueOrDefault("apiKey"));
-
-                config.Polygon ??= new PolygonOptions();
-                config.Polygon.ApiKey = credentials.GetValueOrDefault("apiKey");
-                break;
-
-            case "TIINGO":
-                SaveEnvironmentVariable("TIINGO__TOKEN", credentials.GetValueOrDefault("token"));
-                break;
-
-            case "FINNHUB":
-                SaveEnvironmentVariable("FINNHUB__APIKEY", credentials.GetValueOrDefault("apiKey"));
-                break;
-
-            case "ALPHAVANTAGE":
-            case "ALPHA VANTAGE":
-                SaveEnvironmentVariable("ALPHAVANTAGE__APIKEY", credentials.GetValueOrDefault("apiKey"));
-                break;
+            "alpha vantage" => "alphavantage",
+            "alpaca" or "polygon" or "tiingo" or "finnhub" or "alphavantage" => provider.Trim().ToLowerInvariant(),
+            _ => throw new NotSupportedException("Provider is not supported by the credential setup wizard.")
+        };
+        var input = new Dictionary<string, string>(credentials, StringComparer.OrdinalIgnoreCase);
+        var fields = new Dictionary<string, string?>();
+        string? environment = null;
+        if (providerId == "alpaca")
+        {
+            fields["KeyId"] = input.GetValueOrDefault("keyId");
+            fields["SecretKey"] = input.GetValueOrDefault("secretKey");
+            var sandbox = true;
+            if (input.TryGetValue("useSandbox", out var sandboxValue) && !bool.TryParse(sandboxValue, out sandbox))
+                throw new ArgumentException("Alpaca setup environment must be explicit and valid.", nameof(credentials));
+            environment = sandbox ? "paper" : "live";
         }
-
-        await _configService.SaveConfigAsync(config);
+        else
+        {
+            fields["ApiKey"] = input.GetValueOrDefault(providerId == "tiingo" ? "token" : "apiKey");
+        }
+        var route = UiApiRoutes.WithParam(UiApiRoutes.ProviderCredentialMutation, "providerId", providerId);
+        if (connectionId is not null)
+            route = UiApiRoutes.WithQuery(route, "connectionId=" + Uri.EscapeDataString(connectionId));
+        var response = await _apiClient.PutWithResponseAsync<ProviderCredentialMutationResultDto>(route,
+            new ProviderCredentialUpsertRequestDto(fields, environment), ct).ConfigureAwait(false);
+        if (!response.Success || response.Data is null)
+            throw new InvalidOperationException("Credential persistence was not acknowledged by the authenticated service.");
+        if (response.Data.CredentialState is ProviderCredentialStateDto.Missing or ProviderCredentialStateDto.Partial)
+            throw new InvalidOperationException("Provider credential setup is incomplete.");
     }
 
-    private static void SaveEnvironmentVariable(string variableName, string? value)
-    {
-        var normalizedValue = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
-        Environment.SetEnvironmentVariable(variableName, normalizedValue);
-        Environment.SetEnvironmentVariable(variableName, normalizedValue, EnvironmentVariableTarget.User);
-    }
 }
 
 /// <summary>

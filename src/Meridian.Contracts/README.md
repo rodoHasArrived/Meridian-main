@@ -11,6 +11,11 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Contracts
 
+Provider connection API and configuration DTOs retain optional `TenantId` and `CredentialEnvironment`
+alongside connection and external-account identity. These additive fields preserve server-owned
+credential scope across both workstation lanes. They are not accepted as tenant authority in the
+connection creation request; absent fields remain unassigned legacy ownership.
+
 Lifecycle route contracts distinguish sanitized unauthenticated readiness/liveness probes from
 authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
 single monitoring transport owner.

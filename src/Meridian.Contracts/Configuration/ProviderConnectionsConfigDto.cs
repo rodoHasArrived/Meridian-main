@@ -25,6 +25,12 @@ public sealed class ProviderConnectionsConfigDto
 
 public sealed class ProviderConnectionConfigDto
 {
+    [JsonPropertyName("tenantId")]
+    public string? TenantId { get; set; }
+
+    [JsonPropertyName("credentialEnvironment")]
+    public string? CredentialEnvironment { get; set; }
+
     [JsonPropertyName("connectionId")]
     public string ConnectionId { get; set; } = string.Empty;
 

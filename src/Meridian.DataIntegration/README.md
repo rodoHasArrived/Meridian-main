@@ -11,7 +11,34 @@ last_reviewed: 2026-08-05
 
 # src/Meridian.DataIntegration
 
+## OAuth token ownership
+
+`IOAuthTokenVault` stores refreshable tokens in the same encrypted vault and under the same file lock
+as provider credentials. Mutations update only the named provider token; legacy imports preserve
+existing tokens and audit every attempted provider. Durable import markers and sanitized recovery
+generations prevent deletion reversal; empty primaries recover from the retained backup. Refresh audit
+records append under the vault lock without copying the accumulated history. The service never writes plaintext OAuth JSON.
+Scoped deletion sanitizes recovery generations while retaining other owners and unassigned records.
+The existing non-Windows local key file remains a production-hardening gap; this does not certify PRD-002.
+
+`IScopedOAuthTokenVault` isolates tokens by the same four ownership dimensions as provider secrets.
+Scoped token records retain and validate their provider and ownership context; legacy token enumeration
+cannot return scoped tokens. `OAuthTokenRefreshService` accepts trusted `ownershipScope` for loading,
+saving, refresh rotation and deletion. Scoped services never claim or erase an unassigned legacy OAuth
+sidecar. Host callers must supply authorized scope; the default service remains a legacy compatibility path.
+
+## Credential migration recovery
+
+Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Vault reads and mutations share a bounded, cancellable file lock across store instances; reads with no vault remain available without writing to a read-only data root. Audit failure retains the sidecar for retry.
+
 ## Purpose
+
+`IScopedProviderCredentialStore` binds provider secrets to explicit tenant, connection, external
+account and environment identities. Scoped operations use independent encrypted records, validate
+persisted scope, and never fall back to provider-wide or process-environment credentials. Rotation,
+verification and deletion operate on one scope; audit entries retain the corresponding scope.
+The provider-only API remains a legacy compatibility surface. Runtime consumer and OAuth routing
+must be migrated to trusted scoped context before PRD-002 can claim end-to-end isolation.
 
 ETL runs acquire a unique execution lease before admission. Staging, audit/reject writes, and
 event publication use guarded actions; flush, catalog/export commit, checkpoint, source cleanup,
