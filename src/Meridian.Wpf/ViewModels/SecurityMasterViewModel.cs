@@ -243,14 +243,14 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     public SecurityMasterEditViewModel? EditVm
     {
         get => _editVm;
-        private set => SetProperty(ref _editVm, value);
+        internal set => SetProperty(ref _editVm, value);
     }
 
     private SecurityMasterDeactivateViewModel? _deactivateVm;
     public SecurityMasterDeactivateViewModel? DeactivateVm
     {
         get => _deactivateVm;
-        private set => SetProperty(ref _deactivateVm, value);
+        internal set => SetProperty(ref _deactivateVm, value);
     }
 
     private int _selectedDetailTab;

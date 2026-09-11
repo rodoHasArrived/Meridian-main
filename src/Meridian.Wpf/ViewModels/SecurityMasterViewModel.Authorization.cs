@@ -104,7 +104,9 @@ public sealed partial class SecurityMasterViewModel
 
     // One handler serves both SignedOut and SignedIn: either transition changes what
     // TryAuthorize answers, and a journal-restored page must re-enable for a newly
-    // authorized operator just as it disables on sign-out.
+    // authorized operator just as it disables on sign-out. Open mutation dialogs gate
+    // on the same session, so their commands refresh too — an edit or deactivate panel
+    // left open across a logout must not stay visually enabled for the next operator.
     private void OnAuthenticationSessionAuthenticationChanged(object? sender, EventArgs e)
     {
         CreateNewCommand.NotifyCanExecuteChanged();
@@ -112,5 +114,7 @@ public sealed partial class SecurityMasterViewModel
         DeactivateSelectedCommand.NotifyCanExecuteChanged();
         BackfillTradingParamsCommand.NotifyCanExecuteChanged();
         ImportFromFileCommand.NotifyCanExecuteChanged();
+        EditVm?.SaveCommand.NotifyCanExecuteChanged();
+        DeactivateVm?.ConfirmCommand.NotifyCanExecuteChanged();
     }
 }

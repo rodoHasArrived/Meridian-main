@@ -1553,14 +1553,34 @@ public sealed class SecurityMasterViewModelTests
             // The shell reuses the frame journal across a logout, so a restored page's
             // commands went disabled on SignedOut and must re-enable when the next operator
             // signs in — signing in raises no other signal the view model could observe.
+            // Open mutation dialogs gate on the same session, so their commands must
+            // refresh with the parent's.
+            var editService = new Mock<Meridian.Ui.Services.ISecurityMasterService>().Object;
+            viewModel.EditVm = SecurityMasterEditViewModel.CreateNew(
+                LoggingService.Instance,
+                NotificationService.Instance,
+                editService);
+            viewModel.DeactivateVm = new SecurityMasterDeactivateViewModel(
+                LoggingService.Instance,
+                NotificationService.Instance,
+                editService);
+
             session.SignOut();
             var canExecuteRefreshed = false;
+            var editSaveRefreshed = false;
+            var deactivateConfirmRefreshed = false;
             viewModel.CreateNewCommand.CanExecuteChanged += (_, _) => canExecuteRefreshed = true;
+            viewModel.EditVm.SaveCommand.CanExecuteChanged += (_, _) => editSaveRefreshed = true;
+            viewModel.DeactivateVm.ConfirmCommand.CanExecuteChanged += (_, _) => deactivateConfirmRefreshed = true;
 
             session.SignIn("desktop-viewer", "pw").Succeeded.Should().BeTrue();
 
             canExecuteRefreshed.Should().BeTrue(
                 "signing back in must refresh the mutation commands of a journal-restored view model");
+            editSaveRefreshed.Should().BeTrue(
+                "an open edit panel's save command gates on the session and must refresh with the parent");
+            deactivateConfirmRefreshed.Should().BeTrue(
+                "an open deactivate panel's confirm command gates on the session and must refresh with the parent");
         });
     }
 
