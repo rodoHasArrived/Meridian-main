@@ -189,4 +189,6 @@ public sealed class InMemoryManualJournalMutationRecoveryStore : IManualJournalM
 [JsonSerializable(typeof(JournalEntryLifecycleActionResultDto))]
 [JsonSerializable(typeof(ManualJournalEntryDraftDto))]
 [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]
-internal partial class ManualJournalMutationJsonContext : JsonSerializerContext;
+internal partial class ManualJournalMutationJsonContext : JsonSerializerContext
+{
+}

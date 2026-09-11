@@ -67,6 +67,14 @@ public sealed partial class ManualJournalEntryWorkbenchService
         if (retained is not null)
         {
             await VerifyCommittedPostingAsync(retained, requirePresent: true, ct).ConfigureAwait(false);
+            foreach (var expected in retained.After)
+            {
+                var current = await _draftStore.GetAsync(expected.FundProfileId, expected.JournalEntryId, ct,
+                    expected.TenantId, expected.CompanyId).ConfigureAwait(false);
+                if (current is null || current.Version < expected.Version || current.LedgerBookId != expected.LedgerBookId ||
+                    (current.Version == expected.Version && !DraftMatches(current, expected)))
+                    throw new InvalidOperationException("The completed manual journal receipt conflicts with retained draft state.");
+            }
             foreach (var audit in retained.AuditEvents)
                 await _auditStore.AppendAsync(audit, ct).ConfigureAwait(false);
             if (!replayThroughValidation)
