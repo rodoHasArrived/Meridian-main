@@ -23,6 +23,7 @@ env:
   DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
   DOTNET_NOLOGO: "true"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  DOTNET_VERSION: '10.0.x'
 
 jobs:
   analyze:
@@ -49,7 +50,7 @@ jobs:
         if: matrix.language == 'csharp'
         uses: actions/setup-dotnet@v5.4.0
         with:
-          global-json-file: global.json
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       # Restore runs before init: it produces no compiler invocations for CodeQL to
       # observe, so keeping it outside the traced window avoids tracing overhead.
