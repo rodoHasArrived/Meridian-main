@@ -128,10 +128,9 @@ public sealed class Camt053StatementConnector : IStatementConnector
         // case. Both kinds have skip branches that warn and continue without reaching the record cap, so
         // bounding only the one that was reported would leave the other open - which is exactly how this
         // shape survived from BAI2 to Ntry to Bal across three rounds.
-        // Seeded alongside the identity, and for the same reason: a Bal or Ntry ahead of Acct whose Amt
-        // omits Ccy would otherwise fall back to USD even when the account declares another currency.
-        // Seeding only the identity last round left this half-done.
-        var accountCurrency = scan.FirstAccountCurrency ?? "USD";
+        // Seed alongside identity so a Bal or Ntry before Acct can inherit explicit account
+        // currency when Amt omits Ccy. Absence of all currency evidence stays invalid.
+        var accountCurrency = scan.FirstAccountCurrency ?? string.Empty;
 
         try
         {
@@ -239,7 +238,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                                 return Task.FromResult(EmptyResult(issues));
                             }
 
-                            accountCurrency = Value(accountElement, "Ccy") ?? "USD";
+                            accountCurrency = Value(accountElement, "Ccy") ?? string.Empty;
                             break;
                         }
 
@@ -279,7 +278,9 @@ public sealed class Camt053StatementConnector : IStatementConnector
                             var balanceAmount = TrySignedAmount(balance, accountCurrency, out var balanceValue, out var balanceCurrency);
                             if (balanceAmount != CamtAmountResult.Ok)
                             {
-                                var (code, message) = balanceAmount == CamtAmountResult.BadDirection
+                                var (code, message) = balanceAmount == CamtAmountResult.BadCurrency
+                                    ? ("CAMT_BALANCE_BAD_CURRENCY", "Closing balance requires explicit three-letter amount or account currency.")
+                                    : balanceAmount == CamtAmountResult.BadDirection
                                     ? ("CAMT_BALANCE_BAD_DIRECTION",
                                         "Closing balance has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
                                     : ("CAMT_BALANCE_BAD_AMOUNT",
@@ -356,7 +357,9 @@ public sealed class Camt053StatementConnector : IStatementConnector
                             var entryAmount = TrySignedAmount(entry, accountCurrency, out var entryValue, out var entryCurrency);
                             if (entryAmount != CamtAmountResult.Ok)
                             {
-                                var (code, message) = entryAmount == CamtAmountResult.BadDirection
+                                var (code, message) = entryAmount == CamtAmountResult.BadCurrency
+                                    ? ("CAMT_ENTRY_BAD_CURRENCY", "Entry requires explicit three-letter amount or account currency.")
+                                    : entryAmount == CamtAmountResult.BadDirection
                                     ? ("CAMT_ENTRY_BAD_DIRECTION",
                                         "Entry has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
                                     : ("CAMT_ENTRY_BAD_AMOUNT",
@@ -774,19 +777,21 @@ public sealed class Camt053StatementConnector : IStatementConnector
         Ok,
         BadAmount,
         BadDirection,
+        BadCurrency,
     }
 
     // Resolves the signed monetary amount and currency. Returns a non-Ok result when the Amt element is
     // missing or non-numeric (BadAmount) or the credit/debit direction is missing or unrecognized
-    // (BadDirection): a manufactured 0 amount or a wrong-signed value could exact-match an internal
+    // (BadDirection), or currency evidence is missing/invalid (BadCurrency). A manufactured amount or wrong-signed value could exact-match an internal
     // balance or transaction and leave a malformed statement apparently reconciled, so the caller must
     // reject the record instead.
     private static CamtAmountResult TrySignedAmount(XElement element, string fallbackCurrency, out decimal signed, out string currency)
     {
         signed = 0m;
         var amountElement = Element(element, "Amt");
-        var rawCurrency = amountElement?.Attribute("Ccy")?.Value?.Trim().ToUpperInvariant();
-        currency = string.IsNullOrWhiteSpace(rawCurrency) ? fallbackCurrency.Trim().ToUpperInvariant() : rawCurrency;
+        var currencyAttribute = amountElement?.Attribute("Ccy");
+        currency = currencyAttribute is null ? fallbackCurrency.Trim().ToUpperInvariant()
+            : currencyAttribute.Value.Trim().ToUpperInvariant();
         if (amountElement is null
             || !decimal.TryParse(amountElement.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var magnitude))
         {
@@ -796,6 +801,11 @@ public sealed class Camt053StatementConnector : IStatementConnector
         if (!TryResolveDirection(element, out var negative))
         {
             return CamtAmountResult.BadDirection;
+        }
+
+        if (currency.Length != 3 || currency.Any(static value => value is < 'A' or > 'Z'))
+        {
+            return CamtAmountResult.BadCurrency;
         }
 
         signed = negative ? -magnitude : magnitude;
