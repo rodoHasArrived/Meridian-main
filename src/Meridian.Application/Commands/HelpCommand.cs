@@ -427,6 +427,7 @@ COMMANDS:
     --show-config           Display current configuration summary
     --error-codes           Show error code reference guide
     --check-schemas         Check stored data schema compatibility
+    --fund-tenant-backfill  Review/apply retained fund tenant evidence (--mode preview|apply)
     --wal-repair            Scan WAL files for corruption and rewrite only valid records
     --simulate-feed         Emit a synthetic event for smoke testing
     --selftest              Run comprehensive system self-tests

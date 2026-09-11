@@ -11,6 +11,14 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+`PostgresFundStructureTenantBackfillStore` locks retained ledger ownership evidence and the full
+fund graph for explicit maintenance. Co-located schemas use one transaction for NULL/blank-only
+tenant stamps, the exception queue, and immutable migration-005 receipts. Separate databases
+permit preview but block apply. Connections close in finally paths even when transaction cleanup
+fails. `FundStructureTenantBackfillPostgresTests` covers stale evidence, concurrent retries,
+receipt-failure rollback, cancellation, and source disconnect; hosted database proof is required.
+See [the operator procedure](../../docs/operators/fund-structure-tenant-backfill.md).
+
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
 the publisher. The outbox worker publishes retained state and retries failures; missing publisher
