@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Net;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
@@ -9,11 +10,14 @@ using Meridian.Contracts.Api;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.NYSE;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Configuration;
 
 namespace Meridian.Tests.Application.Composition;
 
@@ -137,6 +141,62 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
 
         provider.GetRequiredService<ProviderRegistry>().Should().NotBeNull();
         selectorResolutionCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Register_PolygonStreamingRetainsConfiguredCredentialsAndFeed()
+    {
+        var services = CreateServices(WriteConfig(new AppConfig(
+            Polygon: new PolygonOptions(ApiKey: "catalog-configured-polygon-key", Feed: "options", UseDelayed: true))));
+        await using var provider = services.BuildServiceProvider();
+        await using var client = provider.GetRequiredService<ProviderRegistry>().CreateStreamingClient("polygon");
+
+        var polygon = client.Should().BeOfType<PolygonMarketDataClient>().Subject;
+        polygon.HasValidCredentials.Should().BeTrue();
+        polygon.Feed.Should().Be("options");
+        polygon.UseDelayed.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("NYSE")]
+    [InlineData("DataSources:Sources:nyse:NYSE")]
+    public async Task Register_NyseStreamingUsesConfiguredAuthenticationOptions(string section)
+    {
+        var services = CreateServices(WriteConfig(new AppConfig()));
+        services.AddNYSEDataSource(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [$"{section}:ApiKey"] = "catalog-nyse-key",
+            [$"{section}:ApiSecret"] = "catalog-nyse-secret",
+            [$"{section}:ClientId"] = "catalog-client",
+            [$"{section}:BaseUrl"] = "https://nyse-catalog.test"
+        }).Build());
+        using var handler = new RefusedNyseAuthenticationHandler();
+        services.AddSingleton<IHttpClientFactory>(new NyseTestHttpClientFactory(handler));
+        await using var provider = services.BuildServiceProvider();
+        await using var client = provider.GetRequiredService<ProviderRegistry>().CreateStreamingClient("nyse");
+
+        var failure = await Record.ExceptionAsync(() => client.ConnectAsync());
+
+        failure.Should().NotBeNull("the fake endpoint refuses authentication before opening any socket");
+        handler.RequestUri.Should().Be(new Uri("https://nyse-catalog.test/oauth/token"));
+        handler.RequestBody.Should().Contain("client_id=catalog-client").And.Contain("client_secret=catalog-nyse-secret");
+    }
+
+    private sealed class NyseTestHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
+    }
+
+    private sealed class RefusedNyseAuthenticationHandler : HttpMessageHandler
+    {
+        public Uri? RequestUri { get; private set; }
+        public string? RequestBody { get; private set; }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            RequestUri = request.RequestUri;
+            RequestBody = await request.Content!.ReadAsStringAsync(ct);
+            return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+        }
     }
 
     [Fact]

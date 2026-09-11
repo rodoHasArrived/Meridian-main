@@ -72,6 +72,35 @@ public sealed class ProviderInstrumentCapabilityMatrixServiceTests
     }
 
     [Fact]
+    public void GetMatrix_PolygonRetainsHistoricalCoverageWithoutUnsupportedStreamingClaims()
+    {
+        var polygon = new ProviderInstrumentCapabilityMatrixService().GetMatrix().Providers.Single(row => row.ProviderId == "polygon");
+        foreach (var instrument in new[] { "Forex", "Crypto", "Index" })
+        {
+            var cell = polygon.Cells.Single(cell => cell.InstrumentType == instrument);
+            cell.Backfill.Should().BeTrue();
+            cell.Stream.Should().BeFalse("the current Polygon client handles stock/option channel messages only");
+        }
+        polygon.Cells.Single(cell => cell.InstrumentType == "Equity").Stream.Should().BeTrue();
+        polygon.Cells.Single(cell => cell.InstrumentType == "EquityOption").Stream.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetMatrix_SyntheticOptionsRemainVisibleWithoutClaimingOptionStreaming()
+    {
+        var matrix = new ProviderInstrumentCapabilityMatrixService().GetMatrix();
+        var synthetic = matrix.Providers.Single(row => row.ProviderId == "synthetic");
+        foreach (var instrument in new[] { "EquityOption", "IndexOption" })
+        {
+            var cell = synthetic.Cells.Single(cell => cell.InstrumentType == instrument);
+            cell.OptionsChain.Should().BeTrue();
+            cell.Stream.Should().BeFalse();
+        }
+        matrix.Providers.Should().NotContain(row => row.ProviderId == "openfigi",
+            "the matrix has no symbol-resolution surface and must not render a misleading empty row");
+    }
+
+    [Fact]
     public void GetMatrix_ReferenceOnlyProviderStaysScopedToDeclaredTypes()
     {
         var matrix = new ProviderInstrumentCapabilityMatrixService().GetMatrix();
