@@ -1,5 +1,9 @@
 # Reporting Workstation Model
 
+**Status:** Active
+**Owner:** Workstation Platform
+**Reviewed:** 2026-09-12
+
 The reporting workstation treats Reporting as a production environment rather than a page that
 lists reports. Its purpose is to convert governed analytical state into controlled institutional
 communication, so the surface is organised around a pipeline and a controlled vocabulary instead of
