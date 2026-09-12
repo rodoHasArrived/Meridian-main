@@ -1,0 +1,1 @@
+import{E as e,c as t,s as n,w as r}from"./button-DEBIrLG7.js";var i=e(r(),1),a=n(),o=(0,i.forwardRef)(({className:e,...n},r)=>(0,a.jsx)(`label`,{ref:r,className:t(`text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground`,e),...n}));o.displayName=`Label`;export{o as t};
