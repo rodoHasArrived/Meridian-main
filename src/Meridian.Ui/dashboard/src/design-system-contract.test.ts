@@ -566,7 +566,7 @@ describe("dashboard design-system contract", () => {
     const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
     const wpfThemeTokens = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeTokens.xaml");
     const wpfThemeSurfaces = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeSurfaces.xaml");
-    const designDocs = readRepositoryFile("archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md");
+    const designDocs = readRepositoryFile("docs/screenshots/README.md");
     const screenshotDocs = readRepositoryFile("docs/screenshots/README.md");
     const screenshotValidator = readRepositoryFile("scripts/dev/validate-screenshot-captures.py");
 

@@ -104,7 +104,9 @@
       "Bash(git -C \"D:/Meridian-main\" worktree list --porcelain)",
       "Bash(cd \"D:/Meridian-repository-defect-sweep\" *)",
       "Bash(dotnet test *)",
-      "Bash(git ls-tree *)"
+      "Bash(git ls-tree *)",
+      "PowerShell($os = Get-CimInstance Win32_OperatingSystem; \"FreeMB=$\\([int]\\($os.FreePhysicalMemory/1024\\)\\) TotalMB=$\\([int]\\($os.TotalVisibleMemorySize/1024\\)\\)\"; gh pr list --repo rodoHasArrived/Meridian-main --state all --limit 400 --json number,state,headRefName,headRefOid,mergedAt --jq '.[] | select\\(.headRefName | test\\(\"accounting-ui-phase-e|asset-accounting-event-spine|shared-close-readiness-open-lots|fix-trading-calendar-provenance|p0-certification-repair|p0-etl-ownership|p0-provider-egress|complete-postgres-test-harness|reconciliation-break-resolution|stabilize-oms-fill|robustness-high-impact|service-robustness-fixes|deepen-broker-statement|close-lots-marks|finops-web-launch\"\\)\\) | \"\\\\\\(.headRefName\\) #\\\\\\(.number\\) \\\\\\(.state\\) head=\\\\\\(.headRefOid[0:9]\\) merged=\\\\\\(.mergedAt\\)\"')",
+      "PowerShell(Get-Process | Sort-Object WorkingSet64 -Descending | Select-Object -First 12 Id, ProcessName, @{n='MB';e={[int]\\($_.WorkingSet64/1MB\\)}}, StartTime | Format-Table -AutoSize | Out-String -Width 200)"
     ]
   }
 }

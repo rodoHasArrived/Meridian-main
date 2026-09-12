@@ -754,14 +754,16 @@ public sealed partial class WorkstationEndpointsTests
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
             new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
+        var acknowledged = await AcknowledgeOperationsChecklistAsync(client, posture.Workflow!);
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
             new OperationsSubmitApprovalRequestDto(
-                posture.Workflow!.Version,
+                acknowledged.Version,
                 "spoofed-user",
-                "ops-user",
+                "independent-reviewer",
                 "Submit evidence",
                 "report-pack-1",
-                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(acknowledged)));
+        client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "independent-reviewer");
         var approved = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
             new OperationsApprovalDecisionRequestDto(
                 submitted.Workflow!.Version,
@@ -769,11 +771,12 @@ public sealed partial class WorkstationEndpointsTests
                 "spoofed-reviewer",
                 "Approve close",
                 "report-pack-1",
-                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(submitted.Workflow!)));
         closeAuthority.Workflow = approved.Workflow;
+        client.DefaultRequestHeaders.Remove("X-Meridian-Test-User");
         var closeRoute = $"/api/workstation/operations/continuity/{workflowId}/close";
         var closeRequest = new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user",
-            "Close period", "report-pack-1", ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(), CloseScope: scope);
+            "Close period", "report-pack-1", ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(approved.Workflow!), CloseScope: scope);
         using var missingScope = await client.PostAsJsonAsync(closeRoute, closeRequest with { CloseScope = null }, ServerJsonOptions);
         missingScope.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var refusal = await missingScope.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
@@ -798,7 +801,9 @@ public sealed partial class WorkstationEndpointsTests
         closed.Workflow.Approvals.Should().Contain(approval =>
             approval.Status == OperationsApprovalStateDto.Approved &&
             approval.Operator == "ops-user" &&
-            approval.Reviewer == "ops-user");
+            approval.Reviewer == "independent-reviewer");
+        closed.Workflow.Timeline.Should().Contain(entry =>
+            entry.EventType == "approval-approved" && entry.Actor == "independent-reviewer");
     }
 
     [Fact]
@@ -838,14 +843,15 @@ public sealed partial class WorkstationEndpointsTests
             new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
 
         const string assignedReviewer = "independent-reviewer";
+        var acknowledged = await AcknowledgeOperationsChecklistAsync(client, posture.Workflow!);
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
             new OperationsSubmitApprovalRequestDto(
-                posture.Workflow!.Version,
+                acknowledged.Version,
                 "spoofed-user",
                 assignedReviewer,
                 "Submit evidence",
                 "report-pack-1",
-                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(acknowledged)));
 
         submitted.Workflow!.Approvals.Should().Contain(approval =>
             approval.Status == OperationsApprovalStateDto.Submitted &&
@@ -8132,15 +8138,42 @@ public sealed partial class WorkstationEndpointsTests
         return result;
     }
 
-    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredOperationsChecklistControlApprovals() =>
-    [
-        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
-        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
-        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
-        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
-        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
-        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
-    ];
+    private static async Task<OperationsContinuityWorkflowDto> AcknowledgeOperationsChecklistAsync(
+        HttpClient client, OperationsContinuityWorkflowDto workflow)
+    {
+        foreach (var taskId in workflow.CloseChecklist
+                     .Where(task => task.Gate != OperationsGateKeyDto.Approval)
+                     .Select(task => task.TaskId))
+        {
+            var acknowledged = await PostTransitionAsync(client,
+                $"/api/workstation/operations/continuity/{workflow.WorkflowId}/checklist/{taskId}/acknowledge",
+                new OperationsChecklistAcknowledgeRequestDto(
+                    workflow.Version, "spoofed-user", "Reviewed retained gate evidence."));
+            workflow = acknowledged.Workflow!;
+        }
+
+        workflow.CloseChecklist.Where(task => task.Gate != OperationsGateKeyDto.Approval)
+            .Should().OnlyContain(task => task.AcknowledgedBy == "ops-user" && task.AcknowledgedAtUtc != null);
+        return workflow;
+    }
+
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredOperationsChecklistControlApprovals(
+        OperationsContinuityWorkflowDto workflow)
+    {
+        var controls = workflow.CloseChecklist
+            .Where(task => task.Gate != OperationsGateKeyDto.Approval && task.AcknowledgedAtUtc.HasValue)
+            .Select(task => new OperationsChecklistControlApprovalDto(
+                task.TaskId, task.AcknowledgedBy!, task.AcknowledgedAtUtc!.Value))
+            .ToList();
+        if (workflow.ApprovalState == OperationsApprovalStateDto.Approved)
+        {
+            var approval = workflow.Approvals.Last(row => row.Status == OperationsApprovalStateDto.Approved);
+            controls.Add(new("close-gate-approval", approval.Operator!, approval.SubmittedAtUtc!.Value));
+            controls.Add(new("close-gate-approval", approval.Reviewer!, approval.DecidedAtUtc!.Value));
+        }
+
+        return controls;
+    }
 
     private static OperationsBreakCaseDto CreateOperationsContinuityOpenBreak(Guid fundAccountId, string breakId) =>
         new(
