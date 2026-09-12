@@ -1557,7 +1557,7 @@ public sealed class SecurityMasterViewModelTests
             // signs in — signing in raises no other signal the view model could observe.
             // Open mutation dialogs gate on the same session, so their commands must
             // refresh with the parent's.
-            var editService = new Mock<Meridian.Ui.Services.ISecurityMasterService>().Object;
+            var editService = new Mock<ISmService>().Object;
             viewModel.EditVm = SecurityMasterEditViewModel.CreateNew(
                 LoggingService.Instance,
                 NotificationService.Instance,

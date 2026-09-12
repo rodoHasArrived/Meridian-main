@@ -7,7 +7,7 @@ namespace Meridian.Wpf.ViewModels;
 /// <summary>
 /// The Security Master mutation gate, split out of the main view-model file like the bulk-import
 /// flow so the authorization posture reads in one piece. The desktop lane reaches
-/// <see cref="Meridian.Ui.Services.ISecurityMasterService"/> in-process with no endpoint filter in
+/// <see cref="Meridian.Contracts.SecurityMaster.ISecurityMasterService"/> in-process with no endpoint filter in
 /// between, so these members are the only place the ModifySecurityMaster grant every HTTP mutation
 /// route requires can be enforced.
 /// </summary>
