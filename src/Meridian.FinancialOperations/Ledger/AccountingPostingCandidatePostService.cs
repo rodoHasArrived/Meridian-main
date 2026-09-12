@@ -147,6 +147,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     actor,
                     ledgerBookId,
                     sourceEventId,
+                    RetainedPostingActor(existing),
                     existing.CreatedAt);
             }
             else
@@ -164,6 +165,12 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     .ConfigureAwait(false);
                 candidateForReplay = replayWrite.Candidate;
                 EnsureRetainedJournalIsThisPosting(existing, replayWrite, ledgerBookId, sourceEventId, approvalId, request);
+                candidateForReplay = candidateForReplay with
+                {
+                    PostingCommand = candidateForReplay.PostingCommand is { } replayCommand
+                        ? replayCommand with { Actor = RetainedPostingActor(existing) }
+                        : null
+                };
             }
             var journalImpact = BuildJournalImpact(existing, ledgerBook.BaseCurrency);
             if (assetAuthority is not null)
@@ -241,6 +248,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         }
         var approvedCommand = command with
         {
+            Actor = actor,
             AggregateId = ledgerBookId,
             LedgerBookId = ledgerBookId,
             SourceEventId = sourceEventId,
@@ -849,6 +857,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         string actor,
         Guid ledgerBookId,
         Guid sourceEventId,
+        string? retainedActor,
         DateTimeOffset recordedAtUtc)
     {
         var retained = authority.Drafted.Projection.DraftedCandidateResult
@@ -857,6 +866,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             ?? throw new InvalidOperationException("The retained Drafted candidate is missing its pending posting command.");
         var approved = pending with
         {
+            Actor = retainedActor,
             AggregateId = ledgerBookId,
             LedgerBookId = ledgerBookId,
             SourceEventId = sourceEventId,
@@ -1639,6 +1649,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                 ? null
                 : rebuiltCommand with
                 {
+                    Actor = RetainedPostingActor(existing),
                     AggregateId = ledgerBookId,
                     LedgerBookId = ledgerBookId,
                     SourceEventId = sourceEventId,
@@ -1681,6 +1692,9 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             "and this posting was not appended; post a correction against the retained journal, or submit this posting " +
             "under its own source event.");
     }
+
+    private static string? RetainedPostingActor(LedgerJournalEntryRecord retained)
+        => AccountingPostingCommandValidator.ReadRetainedPostingActor(retained.Entry.Metadata);
 
     private static async Task<LedgerJournalEntryRecord?> FindExistingPostingAsync(
         ILedgerJournalStore journalStore,
