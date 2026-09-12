@@ -521,9 +521,20 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         // The vendor re-sends the full current ranked list every refresh cycle; the first row
         // after a batch delimiter therefore REPLACES the accumulated results, so the read model
         // reports the current scan instead of an ever-growing union of every cycle.
-        var startsNewBatch = _scannerBatchClosed.TryRemove(requestId, out _);
+        //
+        // The marker is consumed INSIDE the transition rather than before it. Callback sources
+        // that dispatch on several threads can deliver two rows of one cycle concurrently: read
+        // outside the gate, the first row could claim the marker and stall before publishing
+        // while the second row, seeing no marker, appended to the cycle the first was about to
+        // replace — and the first's replacement then discarded it. Consuming it under the same
+        // per-request gate that serializes the publication makes "claimed the marker" and
+        // "replaced the batch" one step. The delegate can be re-entered if the underlying
+        // dictionary retries the update, so the answer is computed once and reused.
+        bool? batchDelimiterClaimed = null;
         UpdateReadModel(requestId, current =>
         {
+            batchDelimiterClaimed ??= _scannerBatchClosed.TryRemove(requestId, out _);
+            var startsNewBatch = batchDelimiterClaimed.Value;
             var enriched = result with { Provenance = CreateObservationProvenance(current, result.ProviderContractId ?? $"{result.Symbol}:{result.Rank}", result.Provenance.SourceTimestamp) };
             return current with
             {
