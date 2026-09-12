@@ -162,6 +162,7 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_AccountingPostingCommandDto["AccountingPostingCommandDto"] {
         +OperationsActionOriginDto ActionOrigin
+        +string? Actor
         +Guid AggregateId
         +string? ApprovalId
         +AccountingPostingApprovalStateDto ApprovalState
@@ -172,7 +173,6 @@ classDiagram
         +Guid? CorrelationId
         +EconomicEventReferenceDto? EconomicEvent
         +DateOnly EffectiveDate
-        +IReadOnlyList~AccountingPostingEvidenceReferenceDto~ Evidence
     }
     class Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto["AccountingPostingEvidenceKindDto"] {
     }

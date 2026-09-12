@@ -2003,25 +2003,25 @@
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/projection-sets",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:532",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:533",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/tests",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:575",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:576",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/activate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:616",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:617",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/accounting-configuration/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:651",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:652",
       "documented": true
     },
     {
@@ -6620,197 +6620,197 @@
     },
     {
       "name": "ReconciliationBreakQueueStatus",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:364",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:365",
       "documented": false
     },
     {
       "name": "ReconciliationCaseLifecycleState",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:374",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:375",
       "documented": false
     },
     {
       "name": "ReconciliationCasePriority",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:390",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:391",
       "documented": false
     },
     {
       "name": "ReconciliationCaseSlaState",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:399",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:400",
       "documented": false
     },
     {
       "name": "ReconciliationCaseCommentVisibility",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:410",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:411",
       "documented": false
     },
     {
       "name": "ReconciliationCaseworkAction",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:418",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:419",
       "documented": false
     },
     {
       "name": "ReconciliationBreakMeasureKindDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:437",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:438",
       "documented": false
     },
     {
       "name": "ReconciliationBreakMeasureDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:448",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:449",
       "documented": false
     },
     {
       "name": "ReconciliationBreakDispositionDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:458",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:459",
       "documented": false
     },
     {
       "name": "ReconciliationCalibrationStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:469",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:470",
       "documented": false
     },
     {
       "name": "ReconciliationBreakQueueItem",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:479",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:480",
       "documented": false
     },
     {
       "name": "ReconciliationBreakQueueScope",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:587",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:588",
       "documented": false
     },
     {
       "name": "ReconciliationBreakExplanationDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:608",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:609",
       "documented": false
     },
     {
       "name": "ReconciliationCaseComment",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:616",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:617",
       "documented": false
     },
     {
       "name": "ReconciliationSlaPolicy",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:636",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:637",
       "documented": false
     },
     {
       "name": "ReconciliationSlaComputationResult",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:657",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:658",
       "documented": false
     },
     {
       "name": "ReconciliationTaxonomyValue",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:666",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:667",
       "documented": false
     },
     {
       "name": "ReconciliationTaxonomySnapshot",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:674",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:675",
       "documented": false
     },
     {
       "name": "ReconciliationCaseworkCommand",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:679",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:680",
       "documented": false
     },
     {
       "name": "ReconciliationCaseworkCloseScopeDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:720",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:721",
       "documented": true
     },
     {
       "name": "ReconciliationBulkCaseworkRequest",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:725",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:726",
       "documented": false
     },
     {
       "name": "ReconciliationBulkCaseworkCaseResult",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:749",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:750",
       "documented": false
     },
     {
       "name": "ReconciliationBulkCaseworkResult",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:756",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:757",
       "documented": false
     },
     {
       "name": "ReconciliationCaseworkOperationResult",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:900",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:901",
       "documented": false
     },
     {
       "name": "ReconciliationCaseSignoffRecord",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:907",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:908",
       "documented": false
     },
     {
       "name": "ReconciliationBreakScore",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:916",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:917",
       "documented": false
     },
     {
       "name": "ReconciliationCaseStateTransition",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:929",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:930",
       "documented": false
     },
     {
       "name": "ReconciliationCaseTransitionAction",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:940",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:941",
       "documented": false
     },
     {
       "name": "ReconciliationCaseTransitionCommand",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:950",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:951",
       "documented": false
     },
     {
       "name": "ReconciliationCalibrationProfileSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:963",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:964",
       "documented": false
     },
     {
       "name": "ReconciliationCalibrationSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:980",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:981",
       "documented": false
     },
     {
       "name": "ReviewReconciliationBreakRequest",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1010",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1011",
       "documented": false
     },
     {
       "name": "ResolveReconciliationBreakRequest",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1020",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1021",
       "documented": false
     },
     {
       "name": "ReconciliationSchemaVersion",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1031",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1032",
       "documented": false
     },
     {
       "name": "ReconciliationCorrelationContext",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1041",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1042",
       "documented": false
     },
     {
       "name": "ReconciliationPayloadEnvelope",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1051",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1052",
       "documented": false
     },
     {
       "name": "ReconciliationJobControl",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1064",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1065",
       "documented": false
     },
     {
       "name": "ReconciliationProcessingTelemetry",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1079",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1080",
       "documented": false
     },
     {
       "name": "ReconciliationRolloutFlags",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1090",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1091",
       "documented": false
     },
     {

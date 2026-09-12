@@ -1423,7 +1423,7 @@ describe("OperationsContinuityScreen", () => {
     expect(await screen.findByText("Checklist task acknowledged.")).toBeInTheDocument();
   });
 
-  it("submits approval from the command spine with retained report-pack evidence", async () => {
+  it.each(["Pending", "Rejected"] as const)("submits a %s approval cycle from the command spine with retained checklist and report-pack evidence", async (approvalState) => {
     const reportPackEvidence = {
       evidenceId: "report-pack-submit-evidence",
       label: "Report-pack readiness evidence",
@@ -1432,13 +1432,15 @@ describe("OperationsContinuityScreen", () => {
       capturedAtUtc: "2026-05-08T16:00:00Z"
     };
     const approvalReadyDetail: OperationsContinuityWorkflow = {
-      ...detail,
+      ...createApprovalDecisionReadyDetail(reportPackEvidence),
       breakCases: detail.breakCases.map((breakCase) => ({
         ...breakCase,
         status: "Resolved"
       })),
-      approvals: [],
-      approvalState: "Pending",
+      approvals: approvalState === "Rejected"
+        ? [{ ...detail.approvals[0]!, status: "Rejected" }]
+        : [],
+      approvalState,
       reportPackReadiness: {
         isReady: true,
         reportPackId: "report-pack-2026-05",
@@ -1465,7 +1467,13 @@ describe("OperationsContinuityScreen", () => {
           reportPackId: "report-pack-2026-05",
           correlationId: "browser-approval-submit:approve-results",
           evidenceLinks: expect.arrayContaining([reportPackEvidence]),
-          checklistControlApprovals: [],
+          checklistControlApprovals: approvalReadyDetail.closeChecklist
+            .filter((task) => task.gate !== "Approval")
+            .map((task) => ({
+              taskId: task.taskId,
+              approvedBy: task.acknowledgedBy,
+              approvedAtUtc: task.acknowledgedAtUtc
+            })),
           actionOrigin: "HumanOperator"
         })
       );
@@ -1473,9 +1481,40 @@ describe("OperationsContinuityScreen", () => {
     expect(await screen.findByText("Workflow approval submitted.")).toBeInTheDocument();
   });
 
+  it("keeps submission disabled until the current checklist acknowledgment is retained", async () => {
+    const workflow = createApprovalDecisionReadyDetail({
+      evidenceId: "report-pack-submit-evidence",
+      label: "Report-pack retained evidence",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T17:25:00Z"
+    });
+    workflow.approvalState = "Pending";
+    workflow.approvals = [];
+    workflow.closeChecklist[0] = {
+      ...workflow.closeChecklist[0]!,
+      canAcknowledge: true,
+      acknowledgedAtUtc: null,
+      acknowledgedBy: null
+    };
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(workflow);
+
+    renderScreen();
+
+    expect(await screen.findByRole("button", { name: "Submit workflow approval for 2026-05" })).toBeDisabled();
+    expect(submitOperationsContinuityApproval).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Acknowledge close checklist task Broker ingest close gate" })).toBeEnabled();
+  });
+
   it("surfaces command-spine approval submission failures", async () => {
     const approvalReadyDetail: OperationsContinuityWorkflow = {
-      ...detail,
+      ...createApprovalDecisionReadyDetail({
+        evidenceId: "report-pack-submit-evidence",
+        label: "Report-pack retained evidence",
+        route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+        source: "operations-continuity",
+        capturedAtUtc: "2026-05-10T17:25:00Z"
+      }),
       breakCases: detail.breakCases.map((breakCase) => ({
         ...breakCase,
         status: "Resolved"
@@ -1537,7 +1576,7 @@ describe("OperationsContinuityScreen", () => {
             },
             {
               taskId: "close-gate-approval",
-              approvedBy: "fund-controller",
+              approvedBy: "ops-user",
               approvedAtUtc: "2026-05-10T17:30:00Z"
             }
           ]),
@@ -1546,6 +1585,8 @@ describe("OperationsContinuityScreen", () => {
       );
     });
     expect(await screen.findByText("Workflow approval approved.")).toBeInTheDocument();
+    expect(vi.mocked(approveOperationsContinuityWorkflow).mock.calls[0]![1].checklistControlApprovals)
+      .not.toContainEqual(expect.objectContaining({ approvedBy: "fund-controller" }));
   });
 
   it("rejects workflow approval history rows with reviewer evidence and reason code", async () => {
@@ -1602,7 +1643,7 @@ describe("OperationsContinuityScreen", () => {
     expect(within(alert).getByText("Approval decision version conflict.")).toBeInTheDocument();
   });
 
-  it("publishes the close package from the command spine with retained checklist-control approvals", async () => {
+  it.each([false, true])("publishes the close package with current controls when an old package is retained: %s", async (hasHistoricalPackage) => {
     const reportPackEvidence = {
       evidenceId: "report-pack-close-evidence",
       label: "Report-pack retained manifest",
@@ -1611,6 +1652,14 @@ describe("OperationsContinuityScreen", () => {
       capturedAtUtc: "2026-05-10T18:00:00Z"
     };
     const readyDetail = createCloseReadyDetail(reportPackEvidence);
+    if (hasHistoricalPackage) {
+      readyDetail.closePackage = detail.closePackage;
+      const currentApproval = readyDetail.approvals[0]!;
+      readyDetail.approvals = [
+        { ...currentApproval, approvalId: "current-submission", status: "Submitted", decidedAtUtc: null },
+        { ...currentApproval, submittedAtUtc: null }
+      ];
+    }
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(readyDetail);
 
     const user = userEvent.setup();
