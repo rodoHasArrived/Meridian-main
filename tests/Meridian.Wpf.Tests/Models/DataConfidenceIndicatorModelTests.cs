@@ -376,10 +376,13 @@ public sealed class DataConfidenceIndicatorModelTests
     public void WithUpdatedFields_TheExplanationDescribesTheCurrentValues()
     {
         // Explanation is computed from the record's current fields: a `with` update must
-        // never leave the tooltip and accessible text describing the replaced values.
+        // never leave the tooltip and accessible text describing the replaced values. The
+        // update carries an as-of instant alongside the level, the only way Current is a
+        // state the model will actually report.
         var updated = DataConfidenceIndicatorModel.Unknown() with
         {
             ConfidenceLevel = DataConfidenceLevel.Current,
+            FreshnessTimestamp = new DateTimeOffset(2026, 6, 15, 12, 30, 0, TimeSpan.Zero),
             Notes = "Feed restored."
         };
 
@@ -387,6 +390,34 @@ public sealed class DataConfidenceIndicatorModelTests
         updated.Explanation.Should().Contain("Feed restored.");
         updated.Explanation.Should().NotContain(DataConfidenceLabels.Unknown + " value",
             "the pre-update confidence level must not survive in the explanation");
+    }
+
+    [Fact]
+    public void WithCurrentConfidenceButNoTimestamp_DegradesRatherThanContradictingItself()
+    {
+        // FromEvidence refuses to assert Current without an as-of instant, but the level and
+        // the timestamp are independent record fields: a `with` update can set one alone and
+        // reach a state no factory produces. The badge must not then claim Current beside
+        // "As of unavailable", nor read as a reassuring success once reconciled.
+        var contradictory = DataConfidenceIndicatorModel.Unknown() with
+        {
+            ConfidenceLevel = DataConfidenceLevel.Current,
+            ReconciliationStatus = DataConfidenceReconciliationStatus.Reconciled
+        };
+
+        contradictory.FreshnessLabel.Should().Be("As of unavailable");
+        contradictory.ConfidenceLabel.Should().Be(DataConfidenceLabels.Unknown);
+        contradictory.Explanation.Should().NotContain(DataConfidenceLabels.Current);
+        contradictory.Tone.Should().Be(WorkspaceTone.Neutral);
+
+        // Supplying the instant the level claims restores it through the same property.
+        var evidenced = contradictory with
+        {
+            FreshnessTimestamp = new DateTimeOffset(2026, 6, 15, 12, 30, 0, TimeSpan.Zero)
+        };
+
+        evidenced.ConfidenceLabel.Should().Be(DataConfidenceLabels.Current);
+        evidenced.Tone.Should().Be(WorkspaceTone.Success);
     }
 
     [Fact]

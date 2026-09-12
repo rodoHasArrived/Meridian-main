@@ -47,12 +47,26 @@ public sealed record DataConfidenceIndicatorModel(
     string? ProviderStatus = null)
 {
     /// <summary>
+    /// The confidence this record can actually evidence. <see cref="FromEvidence"/> refuses to
+    /// assert <see cref="DataConfidenceLevel.Current"/> without an as-of instant, but the level
+    /// and the timestamp are independent record fields, so a <c>with</c> update can set one
+    /// without the other and reach a state no factory produces. Every presentation member reads
+    /// this instead of the raw level, so the badge can never pair "Current" with
+    /// "As of unavailable" — it degrades to Unknown, the same answer the factory gives ready
+    /// evidence that carries no instant.
+    /// </summary>
+    public DataConfidenceLevel EffectiveConfidenceLevel
+        => ConfidenceLevel == DataConfidenceLevel.Current && FreshnessTimestamp is null
+            ? DataConfidenceLevel.Unknown
+            : ConfidenceLevel;
+
+    /// <summary>
     /// Computed from the current field values rather than captured at construction: a
     /// record <c>with</c> update must never leave the tooltip and accessible text
     /// describing the fields the update replaced.
     /// </summary>
     public string Explanation
-        => BuildExplanation(ConfidenceLevel, ReconciliationStatus, SourceName, FreshnessTimestamp, Notes);
+        => BuildExplanation(EffectiveConfidenceLevel, ReconciliationStatus, SourceName, FreshnessTimestamp, Notes);
 
     public static DataConfidenceIndicatorModel Unknown(string sourceName = "Not reported", string? notes = null)
         => new(
@@ -229,7 +243,7 @@ public sealed record DataConfidenceIndicatorModel(
             status);
     }
 
-    public string ConfidenceLabel => ConfidenceLevel switch
+    public string ConfidenceLabel => EffectiveConfidenceLevel switch
     {
         DataConfidenceLevel.Current => DataConfidenceLabels.Current,
         DataConfidenceLevel.Stale => DataConfidenceLabels.Stale,
@@ -257,22 +271,22 @@ public sealed record DataConfidenceIndicatorModel(
 
     public string SummaryLabel => $"{ConfidenceLabel} · {ReconciliationLabel}";
 
-    public string Tone => this switch
+    public string Tone => (EffectiveConfidenceLevel, ReconciliationStatus) switch
     {
         // Missing and blocked values are the strongest signals; an unreconciled posture
         // outranks any reassuring confidence level so a reconciliation exception is never
         // visually suppressed by a "Current" badge; estimated reconciliation reads as
         // informational.
-        { ConfidenceLevel: DataConfidenceLevel.Missing or DataConfidenceLevel.Blocked } => WorkspaceTone.Danger,
-        { ReconciliationStatus: DataConfidenceReconciliationStatus.Unreconciled } => WorkspaceTone.Warning,
-        { ConfidenceLevel: DataConfidenceLevel.ProviderDegraded or DataConfidenceLevel.Stale or DataConfidenceLevel.Partial } => WorkspaceTone.Warning,
-        { ConfidenceLevel: DataConfidenceLevel.Estimated } => WorkspaceTone.Info,
-        { ReconciliationStatus: DataConfidenceReconciliationStatus.Estimated } => WorkspaceTone.Info,
-        { ConfidenceLevel: DataConfidenceLevel.Current, ReconciliationStatus: DataConfidenceReconciliationStatus.Reconciled } => WorkspaceTone.Success,
+        (DataConfidenceLevel.Missing or DataConfidenceLevel.Blocked, _) => WorkspaceTone.Danger,
+        (_, DataConfidenceReconciliationStatus.Unreconciled) => WorkspaceTone.Warning,
+        (DataConfidenceLevel.ProviderDegraded or DataConfidenceLevel.Stale or DataConfidenceLevel.Partial, _) => WorkspaceTone.Warning,
+        (DataConfidenceLevel.Estimated, _) => WorkspaceTone.Info,
+        (_, DataConfidenceReconciliationStatus.Estimated) => WorkspaceTone.Info,
+        (DataConfidenceLevel.Current, DataConfidenceReconciliationStatus.Reconciled) => WorkspaceTone.Success,
         _ => WorkspaceTone.Neutral
     };
 
-    public string IconGlyph => ConfidenceLevel switch
+    public string IconGlyph => EffectiveConfidenceLevel switch
     {
         DataConfidenceLevel.Current => "\uE73E",
         DataConfidenceLevel.ProviderDegraded => "\uE7BA",
