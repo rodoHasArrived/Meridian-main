@@ -70,6 +70,7 @@ public sealed partial class PostgresLedgerJournalStore
                     "Atomic tax-lot posting identity collision: the retained batch does not match the complete canonical fingerprint.");
             }
 
+            _ = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
             var replay = await LoadAtomicTaxLotResultAsync(
                     connection,
                     transaction,

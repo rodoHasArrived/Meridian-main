@@ -473,7 +473,8 @@ public static partial class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts, async (PostPostingRuleJournalCandidateRequestDto request, HttpContext context) =>
         {
-            if (!HasLedgerCertificationPermission(context))
+            if (!HasLedgerCertificationPermission(context) ||
+                !EndpointAuthorization.TryResolveActor(context, out var actor) || string.IsNullOrWhiteSpace(actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -503,7 +504,7 @@ public static partial class LedgerEndpoints
                 var result = await service
                     .PostCandidateAsync(request with
                     {
-                        Actor = ResolveMutationActor(context, request.Actor),
+                        Actor = actor,
                         TenantId = tenantContext.TenantId,
                         CompanyId = tenantContext.CompanyId,
                         ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
