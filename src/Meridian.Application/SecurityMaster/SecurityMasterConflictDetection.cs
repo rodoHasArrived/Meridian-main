@@ -232,10 +232,40 @@ internal static class SecurityMasterConflictDetection
         => (!leftTo.HasValue || rightFrom < leftTo.Value)
            && (!rightTo.HasValue || leftFrom < rightTo.Value);
 
+    /// <summary>
+    /// The canonical identity text hashed into a deterministic conflict id. Provider-scoped
+    /// identities join scope and value with <c>|</c>, and both components survive normalization
+    /// with <c>|</c> and <c>\</c> intact, so a naive join is ambiguous: scope <c>A|B</c> claiming
+    /// <c>C</c> and scope <c>A</c> claiming <c>B|C</c> would both render <c>A|B|C</c>, collapse to
+    /// one conflict id for the same security pair, and the id-keyed stores would retain only one of
+    /// two real ambiguities. Escaping the components (<c>\\</c>, <c>\|</c>) makes the join
+    /// reversible while leaving every delimiter-free identity byte-identical — conflict ids are
+    /// persisted, so the encoding MUST NOT re-key rows whose components carry no delimiter (which
+    /// rules out length-prefixing); rows for previously colliding identities re-key to distinct
+    /// ids and the ordinary supersession sweep retires their old shared row. Scope-less kinds hash
+    /// the value alone: with no join there is nothing to disambiguate, and escaping would re-key
+    /// their stored ids for nothing.
+    /// </summary>
     private static string CanonicalConflictIdentity(IdentifierKey key)
-        => key.IdentityScope.Length == 0
-            ? key.NormalizedValue
-            : $"{key.IdentityScope}|{key.NormalizedValue}";
+    {
+        if (!SecurityIdentifierNormalizer.IsProviderScoped(key.Kind))
+        {
+            return key.NormalizedValue;
+        }
+
+        var value = EscapeCanonicalIdentityComponent(key.NormalizedValue);
+        return key.IdentityScope.Length == 0
+            ? value
+            : $"{EscapeCanonicalIdentityComponent(key.IdentityScope)}|{value}";
+    }
+
+    // A provider-less symbol (empty scope, escaped value, never an unescaped '|') can never render
+    // the same text as a scoped identity (exactly one unescaped '|', the join), so the two arms
+    // above stay disjoint. Backslashes escape first or escaping would not round-trip.
+    private static string EscapeCanonicalIdentityComponent(string component)
+        => component
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("|", "\\|", StringComparison.Ordinal);
 
     /// <summary>
     /// Canonical text form of a contractual principal schedule for conflict comparison and the

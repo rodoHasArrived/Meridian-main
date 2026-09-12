@@ -292,6 +292,56 @@ public sealed class SecurityMasterConflictServiceTests
     }
 
     [Fact]
+    public async Task GetOpenConflictsAsync_DelimiterInScopeOrSymbol_KeepsBothAmbiguities()
+    {
+        // Provider names and ProviderSymbol values both survive normalization with '|' intact,
+        // so scope "A|B" claiming "C" and scope "A" claiming "B|C" are two different identities.
+        // Their conflict ids must differ or the id-keyed stores retain only one of two real
+        // ambiguities for the same security pair.
+        var crossedIdentifier = new SecurityIdentifierDto(
+            SecurityIdentifierKind.ProviderSymbol,
+            "B|C",
+            IsPrimary: false,
+            ValidFrom: DateTimeOffset.UtcNow.AddDays(-30),
+            Provider: "A");
+        var first = MakeProjection(Guid.NewGuid(), "ProviderSymbol", "C", "A|B");
+        var second = MakeProjection(Guid.NewGuid(), "ProviderSymbol", "C", "A|B");
+        first = first with { Identifiers = [first.Identifiers[0], crossedIdentifier] };
+        second = second with { Identifiers = [second.Identifiers[0], crossedIdentifier] };
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { first, second });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        conflicts.Should().HaveCount(2, "scope A|B claiming C and scope A claiming B|C are distinct identities");
+        conflicts.Select(conflict => conflict.ConflictId).Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public async Task GetOpenConflictsAsync_ScopedIdentityWithoutDelimiter_KeepsHistoricalConflictId()
+    {
+        // Conflict rows are persisted under this derivation: a scoped identity whose components
+        // carry no delimiter must keep producing the exact historical scope|value id, or an
+        // encoding change would silently orphan every stored ProviderSymbol conflict.
+        var securityA = Guid.NewGuid();
+        var securityB = Guid.NewGuid();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeProjection(securityA, "ProviderSymbol", "SYM", "polygon"),
+            MakeProjection(securityB, "ProviderSymbol", "SYM", "polygon")
+        });
+        var service = new SecurityMasterConflictService(store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflict = (await service.GetOpenConflictsAsync(CancellationToken.None))
+            .Should().ContainSingle().Subject;
+
+        conflict.ConflictId.Should().Be(SecurityMasterConflictDetection.DeterministicConflictId(
+            "ProviderSymbol", "POLYGON|SYM", securityA, securityB));
+    }
+
+    [Fact]
     public async Task GetOpenConflictsAsync_SameTickerFromDifferentFeeds_Conflicts()
     {
         // Ticker Provider values carry the ingest feed (polygon, edgar), not a listing venue,
