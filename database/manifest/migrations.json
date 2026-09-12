@@ -397,6 +397,15 @@
       "sha256": "379a1f18e73605d31c910a6de81b9a6be4d6f929ba8ddfba2ec3916d0d57bc3c"
     },
     {
+      "filename": "009_direct_lending_cash_flow_identity.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/009_direct_lending_cash_flow_identity.sql",
+      "schema": "security_master",
+      "sha256": "ecf4860c90bdc362b06f70b1c7a7f33779174d35e04ba83d337e5963d30ff506"
+    },
+    {
       "filename": "001_asset_operations.sql",
       "immutable": true,
       "migration_set_id": "asset-operations",
@@ -757,6 +766,15 @@
       "sha256": "c93bed68afbf0f861cbe570568348b6f9df3ec2c7fbdca8ddd6a95d43c0bb5a6"
     },
     {
+      "filename": "V_ledger_036__ledger_event_audit_chain.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_036__ledger_event_audit_chain.sql",
+      "schema": "ledger",
+      "sha256": "c085d7e99a17c3d2c12d1e5e6dd937aca7b1fa7d5bd9cd1d471fd1af539178f9"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -992,7 +1010,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "cf57b5aaeeb1588a029f5ef1e3673716e1f210f5fdbba64b6d38d7d7dd73df51",
+  "fingerprint": "66681e2c359aa906e306329ecf48bab0d259cca1dbe9c36fb6625c23dd3ec2bb",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1230,7 +1248,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 110,
+    "files": 112,
     "migration_sets": 10,
     "waivers": 7,
     "warnings": 0

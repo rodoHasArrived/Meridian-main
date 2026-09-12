@@ -17,6 +17,259 @@ namespace Meridian.Tests.Application;
 
 public sealed partial class OperationsContinuityWorkflowServiceTests
 {
+    [Theory]
+    [InlineData("fabricated")]
+    [InlineData("actor")]
+    [InlineData("timestamp")]
+    [InlineData("stale")]
+    public async Task SubmitForApprovalAsync_UnretainedMonthEndReviewClaims_AreBlocked(string variation)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var service = CreateService(out _, out _);
+        var workflow = await CreateReviewedApprovalReadyWorkflowAsync(service);
+        var controls = (await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)).ToArray();
+        if (variation == "fabricated")
+        {
+            controls = controls.Select(control => control with
+            {
+                ApprovedBy = "invented-controller",
+                ApprovedAtUtc = new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)
+            }).ToArray();
+        }
+        else if (variation == "actor")
+        {
+            controls[0] = controls[0] with { ApprovedBy = "different-reviewer" };
+        }
+        else if (variation == "timestamp")
+        {
+            controls[0] = controls[0] with { ApprovedAtUtc = controls[0].ApprovedAtUtc.AddTicks(1) };
+        }
+        else
+        {
+            var refreshed = await service.RefreshGatePostureAsync(workflow.WorkflowId,
+                new OperationsGatePostureRequestDto(workflow.Version, "ops-user", ReportPackReady: true, ReportPackId: "report-pack-1"), timeout.Token);
+            refreshed.Success.Should().BeTrue();
+            workflow = refreshed.Workflow!;
+        }
+
+        var submitted = await service.SubmitForApprovalAsync(workflow.WorkflowId,
+            new OperationsSubmitApprovalRequestDto(workflow.Version, "ops-user", "reviewer", "Month-end sign-off", "report-pack-1",
+                ChecklistControlApprovals: controls), timeout.Token);
+
+        submitted.Success.Should().BeFalse();
+        submitted.Blockers.Should().Contain(blocker => blocker.Code == "CLOSE_CHECKLIST_CONTROL_APPROVAL_NOT_RETAINED");
+        (await service.GetAsync(workflow.WorkflowId, timeout.Token))!.Approvals.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ApproveWorkflowAsync_SubmitterClaimsAssignedReviewerDecision_IsBlocked()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var service = CreateService(out _, out _);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+
+        var result = await service.ApproveWorkflowAsync(workflow.WorkflowId,
+            new OperationsApprovalDecisionRequestDto(workflow.Version, "ops-user", "reviewer", "Self-approve month-end", "report-pack-1",
+                ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)), timeout.Token);
+
+        result.Success.Should().BeFalse();
+        result.Blockers.Should().Contain(blocker => blocker.Code == "APPROVAL_INDEPENDENT_REVIEWER_REQUIRED");
+        (await service.GetAsync(workflow.WorkflowId, timeout.Token))!.Approvals.Should().NotContain(approval => approval.Status == OperationsApprovalStateDto.Approved);
+    }
+
+    [Fact]
+    public async Task SubmitForApprovalAsync_DuplicateMonthEndSubmission_DoesNotReplaceAssignedReviewer()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var service = CreateService(out _, out _);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+
+        var result = await service.SubmitForApprovalAsync(workflow.WorkflowId,
+            new OperationsSubmitApprovalRequestDto(workflow.Version, "ops-user", "another-reviewer", "Replace current review", "report-pack-1",
+                ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)), timeout.Token);
+
+        result.Success.Should().BeFalse();
+        (await service.GetAsync(workflow.WorkflowId, timeout.Token))!.Approvals.Should().BeEquivalentTo(workflow.Approvals);
+    }
+
+    [Fact]
+    public async Task CloseChecklist_PostedMonthEndActivity_DoesNotInventReviewerAcknowledgments()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+
+        var completed = workflow.CloseChecklist.Where(task => task.Status == "Done").ToArray();
+        completed.Should().NotBeEmpty();
+        completed.Should().OnlyContain(task => task.AcknowledgedBy == null && task.AcknowledgedAtUtc == null);
+        completed.Should().OnlyContain(task => task.EvidencePointer != null && task.CanAcknowledge);
+        completed.Select(task => task.EvidencePointer).Should().OnlyHaveUniqueItems();
+        var resolution = workflow.Timeline.Single(entry => entry.EventType == "security-master-resolved");
+        workflow.CloseChecklist.Single(task => task.Gate == OperationsGateKeyDto.BrokerIngest).EvidencePointer
+            .Should().Be($"operations-audit:{resolution.AuditId:D}:brokeringest");
+        workflow.CloseChecklist.Single(task => task.Gate == OperationsGateKeyDto.SecurityMaster).EvidencePointer
+            .Should().Be($"operations-audit:{resolution.AuditId:D}:securitymaster");
+        workflow.Gates.Where(gate => gate.Status == OperationsGateStatusDto.Passed)
+            .Should().OnlyContain(gate => gate.CompletedBy == "ops-user" && gate.CompletedAtUtc != null);
+    }
+
+    [Fact]
+    public async Task CloseChecklist_SecurityMappingRerun_InvalidatesBothIntakeAndIdentityReviews()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var service = CreateService(out _, out _);
+        var workflow = await CreateReviewedApprovalReadyWorkflowAsync(service);
+
+        var rerun = await service.ResolveSecurityMasterMappingsAsync(workflow.WorkflowId,
+            new OperationsSecurityMasterResolveRequestDto(workflow.Version, "security-master-operator"), timeout.Token);
+
+        rerun.Success.Should().BeTrue();
+        var tasks = rerun.Workflow!.CloseChecklist.Where(task => task.Gate is OperationsGateKeyDto.BrokerIngest or OperationsGateKeyDto.SecurityMaster).ToArray();
+        tasks.Should().OnlyContain(task => task.AcknowledgedAtUtc == null && task.AcknowledgedBy == null && task.CanAcknowledge);
+        tasks.Select(task => task.EvidencePointer).Should().OnlyHaveUniqueItems();
+        foreach (var task in tasks)
+        {
+            task.EvidencePointer.Should().NotBe(workflow.CloseChecklist.Single(previous => previous.TaskId == task.TaskId).EvidencePointer);
+        }
+    }
+
+    [Fact]
+    public async Task AcknowledgeChecklistTaskAsync_ControllerReviewsPostedActivity_PreservesExecutionProvenance()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+        var gateBefore = workflow.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.LedgerPosting);
+        var taskBefore = workflow.CloseChecklist.Single(task => task.Gate == gateBefore.GateKey);
+
+        var acknowledged = await service.AcknowledgeChecklistTaskAsync(workflow.WorkflowId, taskBefore.TaskId,
+            new OperationsChecklistAcknowledgeRequestDto(workflow.Version, "controller", "Reviewed posted month-end interest"), timeout.Token);
+
+        acknowledged.Success.Should().BeTrue();
+        var task = acknowledged.Workflow!.CloseChecklist.Single(item => item.TaskId == taskBefore.TaskId);
+        task.AcknowledgedBy.Should().Be("controller");
+        task.AcknowledgedAtUtc.Should().NotBeNull();
+        task.CanAcknowledge.Should().BeFalse();
+        task.EvidencePointer.Should().Be(taskBefore.EvidencePointer);
+        acknowledged.Workflow.Gates.Single(gate => gate.GateKey == gateBefore.GateKey).Should().BeEquivalentTo(gateBefore);
+        var receipt = (await auditStore.GetTimelineAsync(workflow.WorkflowId, timeout.Token))
+            .Single(entry => entry.EventType == "checklist-task-acknowledged");
+        receipt.References.Should().ContainSingle(link => link.EvidenceId == task.EvidencePointer);
+        receipt.OccurredAtUtc.Should().Be(task.AcknowledgedAtUtc);
+    }
+
+    [Fact]
+    public async Task CloseChecklist_CustodianRerun_InvalidatesReconciliationReviewButRetainsIntakeReview()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var service = CreateService(out _, out _);
+        var posted = await CreateLedgerPostedWorkflowAsync(service);
+        var reconciled = await service.RunReconciliationAsync(posted.WorkflowId,
+            new OperationsReconciliationRunRequestDto(posted.Version, "ops-user", BreakCases: []), timeout.Token);
+        var reviewed = await AcknowledgePrerequisiteChecklistAsync(service, reconciled.Workflow!);
+
+        var rerun = await service.RunReconciliationAsync(reviewed.WorkflowId,
+            new OperationsReconciliationRunRequestDto(reviewed.Version, "ops-user", BreakCases: []), timeout.Token);
+
+        rerun.Success.Should().BeTrue();
+        var reconciliation = rerun.Workflow!.CloseChecklist.Single(task => task.Gate == OperationsGateKeyDto.Reconciliation);
+        reconciliation.AcknowledgedBy.Should().BeNull();
+        reconciliation.AcknowledgedAtUtc.Should().BeNull();
+        reconciliation.CanAcknowledge.Should().BeTrue();
+        reconciliation.EvidencePointer.Should().NotBe(reviewed.CloseChecklist.Single(task => task.Gate == reconciliation.Gate).EvidencePointer);
+        rerun.Workflow.CloseChecklist.Single(task => task.Gate == OperationsGateKeyDto.BrokerIngest)
+            .AcknowledgedBy.Should().Be("checklist-reviewer");
+    }
+
+    [Fact]
+    public async Task CloseChecklist_BlockedCustodianRerun_DoesNotInvalidateRetainedReview()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var service = CreateService(out _, out _);
+        var posted = await CreateLedgerPostedWorkflowAsync(service);
+        var reconciled = await service.RunReconciliationAsync(posted.WorkflowId,
+            new OperationsReconciliationRunRequestDto(posted.Version, "ops-user", BreakCases: []), timeout.Token);
+        var reviewed = await AcknowledgePrerequisiteChecklistAsync(service, reconciled.Workflow!);
+
+        var blocked = await service.RunReconciliationAsync(reviewed.WorkflowId,
+            new OperationsReconciliationRunRequestDto(reviewed.Version - 1, "ops-user", BreakCases: []), timeout.Token);
+
+        blocked.Success.Should().BeFalse();
+        var current = await service.GetAsync(reviewed.WorkflowId, timeout.Token);
+        current!.CloseChecklist.Should().BeEquivalentTo(reviewed.CloseChecklist);
+    }
+
+    [Fact]
+    public async Task CloseChecklist_AuditReaderReturnsReverseOrder_UsesRetainedHashOrderForCurrentReview()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var auditStore = new TamperingAuditStore();
+        var service = new OperationsContinuityWorkflowService(repository,
+            auditStore, derivation, new RecordingLedgerJournalStore(),
+            securityMasterQueryService: new StaticSecurityMasterQueryService(DefaultAuthoritativeSecurityStatuses()));
+        var reviewed = await CreateReviewedApprovalReadyWorkflowAsync(service);
+        auditStore.TimelineTransform = timeline => timeline.Reverse().ToArray();
+        reviewed = (await service.GetAsync(reviewed.WorkflowId, timeout.Token))!;
+        reviewed.CloseChecklist.Where(task => task.Gate != OperationsGateKeyDto.Approval)
+            .Should().OnlyContain(task => task.AcknowledgedBy == "checklist-reviewer");
+
+        var rerun = await service.RunReconciliationAsync(reviewed.WorkflowId,
+            new OperationsReconciliationRunRequestDto(reviewed.Version, "ops-user", BreakCases: []), timeout.Token);
+
+        rerun.Success.Should().BeTrue();
+        rerun.Workflow!.CloseChecklist.Single(task => task.Gate == OperationsGateKeyDto.Reconciliation).AcknowledgedAtUtc.Should().BeNull();
+        rerun.Workflow.CloseChecklist.Single(task => task.Gate == OperationsGateKeyDto.BrokerIngest).AcknowledgedAtUtc.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task AcknowledgeChecklistTaskAsync_TamperedCompletionEvidence_BlocksWithoutAppendingReview()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var auditStore = new TamperingAuditStore();
+        var service = new OperationsContinuityWorkflowService(repository, auditStore, derivation, new RecordingLedgerJournalStore(),
+            securityMasterQueryService: new StaticSecurityMasterQueryService(DefaultAuthoritativeSecurityStatuses()));
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+        var task = workflow.CloseChecklist.Single(item => item.Gate == OperationsGateKeyDto.LedgerPosting);
+        var appendCount = auditStore.AppendCount;
+        auditStore.TimelineTransform = timeline => timeline.Select(entry => entry.EventType == "ledger-posted"
+            ? entry with { Actor = "altered-operator" }
+            : entry).ToArray();
+
+        var result = await service.AcknowledgeChecklistTaskAsync(workflow.WorkflowId, task.TaskId,
+            new OperationsChecklistAcknowledgeRequestDto(workflow.Version, "controller", "Review month-end posting"), timeout.Token);
+
+        result.Success.Should().BeFalse();
+        result.Blockers.Should().Contain(blocker => blocker.Code == "AUDIT_CHAIN_INVALID");
+        auditStore.AppendCount.Should().Be(appendCount);
+        (await service.GetAsync(workflow.WorkflowId, timeout.Token))!.CloseChecklist
+            .Should().OnlyContain(item => item.AcknowledgedBy == null && item.AcknowledgedAtUtc == null);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CloseChecklist_NewReviewCycle_InvalidatesAllPriorAcknowledgments(bool reopen)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var service = CreateService(out _, out _);
+        var workflow = reopen ? await CreateClosedWorkflowAsync(service) : await CreateApprovalSubmittedWorkflowAsync(service);
+        workflow.CloseChecklist.Should().Contain(task => task.AcknowledgedBy != null);
+
+        var result = reopen
+            ? await service.ReopenWorkflowAsync(workflow.WorkflowId, new OperationsReopenWorkflowRequestDto(
+                workflow.Version, "controller", "Custodian restatement", "INC-RESTATED-CASH", true,
+                Justification: "Correct the retained cash support", ApprovalReference: "controller-reopen-1",
+                ImpactSummary: "Cash reconciliation and close package need renewed review"), timeout.Token)
+            : await service.RejectWorkflowAsync(workflow.WorkflowId, new OperationsRejectWorkflowRequestDto(
+                workflow.Version, "reviewer", "reviewer", "Custodian evidence requires revision", "SUPPORT_INCOMPLETE"), timeout.Token);
+
+        result.Success.Should().BeTrue();
+        result.Workflow!.CloseChecklist.Should().OnlyContain(task => task.AcknowledgedBy == null && task.AcknowledgedAtUtc == null);
+    }
+
     [Fact]
     public void OperationsContinuityContractMatrix_ShouldContainAllRequiredStatusesAndCodes_AndBeSerializable()
     {
@@ -740,13 +993,14 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             package.CompleteCategoryCount == 1 &&
             package.RequiredCategoryCount == 2 &&
             package.RequiredActions.Contains("Close the workflow and retain the period-lock package before evidence release."));
+        var reviewedChecklist = await AcknowledgePrerequisiteChecklistAsync(service, posture.Workflow!);
         var submitted = await service.SubmitForApprovalAsync(workflowId, new OperationsSubmitApprovalRequestDto(
-            posture.Workflow!.Version,
+            reviewedChecklist.Version,
             "ops-user",
             Reviewer: "reviewer",
             Rationale: "Submit clean workflow",
             ReportPackId: "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflowId)));
         submitted.Workflow!.ReviewedAutomation.Should().NotBeNull();
         submitted.Workflow.ReviewedAutomation!.Stage.Should().Be("Reviewer approval required");
         submitted.Workflow.ReviewedAutomation.RequiredActions.Should().Contain("Complete reviewer approval before close evidence can be released.");
@@ -760,17 +1014,17 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         submittedApproveMetric.RequiredActions.Should().NotContain("Complete workflow approval and checklist-control approvals.");
         var approved = await service.ApproveWorkflowAsync(workflowId, new OperationsApprovalDecisionRequestDto(
             submitted.Workflow.Version,
-            "ops-user",
+            "reviewer",
             Reviewer: "reviewer",
             Rationale: "Approved close evidence",
             ReportPackId: "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflowId)));
         var closed = await service.CloseWorkflowAsync(workflowId, new OperationsCloseWorkflowRequestDto(
             approved.Workflow!.Version,
             "ops-user",
             Rationale: "Close accounting period",
             ReportPackId: "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             CloseScope: await StateMachineCloseScopeAsync(service, workflowId)));
 
         closed.Success.Should().BeTrue();
@@ -1282,6 +1536,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             OverrideRequestCount: 1));
         security.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
+        var intakeCompletion = security.Workflow.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.BrokerIngest);
 
         var approved = await service.ApproveSecurityMasterOverrideAsync(start.Workflow.WorkflowId, "override-1", new OperationsSecurityMasterOverrideApprovalRequestDto(
             security.Workflow.Version,
@@ -1301,7 +1556,57 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         draft.Success.Should().BeTrue();
 
         var timeline = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
-        timeline.Select(entry => entry.EventType).Should().Contain("security-master-override-approved");
+        var overrideReceipt = timeline.Single(entry => entry.EventType == "security-master-override-approved");
+        approved.Workflow.CloseChecklist.Single(task => task.Gate == OperationsGateKeyDto.BrokerIngest).EvidencePointer
+            .Should().Be($"operations-audit:{overrideReceipt.AuditId:D}:brokeringest");
+        approved.Workflow.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.BrokerIngest)
+            .Should().BeEquivalentTo(intakeCompletion);
+
+        var validated = await service.ValidateLedgerDraftAsync(start.Workflow.WorkflowId,
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "ops-user", true, true));
+        var posted = await service.PostLedgerEntriesAsync(start.Workflow.WorkflowId,
+            new OperationsLedgerPostRequestDto(validated.Workflow!.Version, "ops-user", "ledger-batch-override", "period-close", true,
+                JournalCandidate: CreateJournalCandidate(start.Workflow.FundAccountId)));
+        posted.Success.Should().BeTrue();
+        var reconciled = await service.RunReconciliationAsync(start.Workflow.WorkflowId,
+            new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "ops-user", BreakCases: []));
+        var posture = await service.RefreshGatePostureAsync(start.Workflow.WorkflowId,
+            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "ops-user", ReportPackReady: true, ReportPackId: "report-pack-override"));
+        posture.Workflow!.CloseChecklist.Where(task => task.Gate != OperationsGateKeyDto.Approval)
+            .Should().OnlyContain(task => task.CanAcknowledge && task.AcknowledgedAtUtc == null && task.EvidencePointer != null);
+        var reviewed = await AcknowledgePrerequisiteChecklistAsync(service, posture.Workflow);
+        var submitted = await service.SubmitForApprovalAsync(start.Workflow.WorkflowId,
+            new OperationsSubmitApprovalRequestDto(reviewed.Version, "ops-user", "reviewer", "Submit governed override close", "report-pack-override",
+                ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, start.Workflow.WorkflowId)));
+
+        submitted.Success.Should().BeTrue();
+        submitted.Workflow!.CloseChecklist.Where(task => task.Gate != OperationsGateKeyDto.Approval)
+            .Should().OnlyContain(task => task.AcknowledgedBy == "checklist-reviewer" && task.AcknowledgedAtUtc != null);
+    }
+
+    [Fact]
+    public async Task ApproveSecurityMasterOverrideAsync_UnresolvedCustodianIdentity_DoesNotCreateIntakeCompletionEvidence()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var service = CreateService(out _, out _);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(Guid.NewGuid(), "2026-05", null, "custodian", "ops-user"), timeout.Token);
+        var imported = await service.ImportBrokerDataAsync(start.Workflow!.WorkflowId,
+            new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"), timeout.Token);
+        var normalized = await service.NormalizeBrokerTransactionsAsync(start.Workflow.WorkflowId,
+            new OperationsTransitionRequestDto(imported.Workflow!.Version, "ops-user"), timeout.Token);
+        var resolved = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId,
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "ops-user", UnresolvedInstrumentCount: 1, OverrideRequestCount: 1), timeout.Token);
+
+        var approved = await service.ApproveSecurityMasterOverrideAsync(start.Workflow.WorkflowId, "override-unresolved",
+            new OperationsSecurityMasterOverrideApprovalRequestDto(resolved.Workflow!.Version, "controller", "override-unresolved",
+                "Approve accounting mapping only", "policy-sm-override-v1", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30))), timeout.Token);
+
+        approved.Success.Should().BeTrue("the override approval is recorded without clearing the unresolved identity blocker");
+        approved.Workflow!.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.SecurityMaster).Status.Should().Be(OperationsGateStatusDto.Blocked);
+        var intake = approved.Workflow.CloseChecklist.Single(task => task.Gate == OperationsGateKeyDto.BrokerIngest);
+        intake.EvidencePointer.Should().BeNull();
+        intake.CanAcknowledge.Should().BeFalse();
+        intake.AcknowledgedAtUtc.Should().BeNull();
     }
 
     [Fact]
@@ -1534,24 +1839,24 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "reviewer",
             "Assistant attempted to approve close evidence",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approvalReady.WorkflowId),
             ActionOrigin: OperationsActionOriginDto.AssistantDraft));
 
         AssertAutomationMaterialActionRejected(approvalDecision, OperationsGateKeyDto.Approval);
 
         var approved = await service.ApproveWorkflowAsync(approvalReady.WorkflowId, new OperationsApprovalDecisionRequestDto(
             approvalReady.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Human approval",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approvalReady.WorkflowId)));
         var close = await service.CloseWorkflowAsync(approvalReady.WorkflowId, new OperationsCloseWorkflowRequestDto(
             approved.Workflow!.Version,
             "assistant-agent",
             "Assistant attempted close-package publication",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             ActionOrigin: OperationsActionOriginDto.AutomationSuggestion,
             CloseScope: await StateMachineCloseScopeAsync(service, approvalReady.WorkflowId)));
 
@@ -2344,13 +2649,14 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             ReportPackReady: true,
             ReportPackId: "report-pack-1"));
+        var reviewedChecklist = await AcknowledgePrerequisiteChecklistAsync(service, posture.Workflow!);
         var submit = await service.SubmitForApprovalAsync(workflow.WorkflowId, new OperationsSubmitApprovalRequestDto(
-            posture.Workflow!.Version,
+            reviewedChecklist.Version,
             "ops-user",
             Reviewer: "reviewer",
             Rationale: "Submit after critical break cleared",
             ReportPackId: "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
 
         resolved.Workflow!.ReconciliationState.Should().Be(OperationsReconciliationStateDto.Complete);
         resolved.Workflow.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
@@ -3110,7 +3416,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
 
         var result = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             Reviewer: "",
             Rationale: "",
             ReportPackId: ""));
@@ -3128,7 +3434,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
 
         var result = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Approve against a different report pack",
             "report-pack-different"));
@@ -3151,7 +3457,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
 
         var result = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "other-reviewer",
             "Approve with mismatched reviewer",
             "report-pack-1"));
@@ -3174,18 +3480,12 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
 
         var result = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
             "reviewer",
-            "Approve with missing approval-gate control evidence",
+            "reviewer",
+            "Approve with missing reconciliation control evidence",
             "report-pack-1",
-            ChecklistControlApprovals:
-            [
-                new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
-                new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
-                new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
-                new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
-                new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero))
-            ]));
+            ChecklistControlApprovals: (await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId))
+                .Where(approval => approval.TaskId != "close-gate-reconciliation").ToArray()));
 
         result.Success.Should().BeFalse();
         result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
@@ -3203,11 +3503,11 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Approved close",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
         var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
 
         var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
@@ -3233,11 +3533,11 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Approved close",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
         var callerSuppliedHash = new string('a', 64);
 
         var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
@@ -3245,7 +3545,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow with caller-supplied hash",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             ClosePackageEvidenceHash: callerSuppliedHash,
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
@@ -3262,11 +3562,11 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Approved close",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
         var closeDocument = CreateCloseVaultDocument(
             workflow.PeriodId,
             workflow.FundAccountId.ToString("D"),
@@ -3279,7 +3579,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow with vault binder support",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId),
             DocumentSnapshots: [closeDocument],
             ManifestSnapshot: manifestSnapshot,
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
@@ -3386,17 +3686,17 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Approved close",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
         var closed = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
             approved.Workflow!.Version,
             "ops-user",
             "Close workflow",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         var denied = await service.ReopenWorkflowAsync(workflow.WorkflowId, new OperationsReopenWorkflowRequestDto(
@@ -3509,11 +3809,11 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Approved close",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
         var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
 
         var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
@@ -3521,7 +3821,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close using a mismatched report pack",
             "report-pack-different",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
 
         close.Success.Should().BeFalse();
@@ -3543,15 +3843,20 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             repository,
             auditStore,
             derivation,
-            new RecordingLedgerJournalStore());
+            new RecordingLedgerJournalStore(),
+            securityMasterQueryService: new StaticSecurityMasterQueryService(DefaultAuthoritativeSecurityStatuses()),
+            closeReadinessGuard: new StateMachineCloseReadinessFixture());
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Approved close",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
+        approved.Success.Should().BeTrue();
+        var retainedApprovals = await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId);
+        var closeScope = await StateMachineCloseScopeAsync(service, workflow.WorkflowId);
         var appendCountBefore = auditStore.AppendCount;
         auditStore.TimelineTransform = timeline => timeline
             .Select((entry, index) => index == 1 ? entry with { PreviousHash = "tampered" } : entry)
@@ -3562,8 +3867,8 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
-            CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
+            ChecklistControlApprovals: retainedApprovals,
+            CloseScope: closeScope));
 
         close.Success.Should().BeFalse();
         close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
@@ -3989,15 +4294,39 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             [Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1")] = SecurityStatusDto.Active
         };
 
-    internal static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
-    [
-        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
-        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
-        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
-        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
-        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
-        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
-    ];
+    private static async Task<OperationsContinuityWorkflowDto> AcknowledgePrerequisiteChecklistAsync(
+        OperationsContinuityWorkflowService service,
+        OperationsContinuityWorkflowDto workflow)
+    {
+        foreach (var task in workflow.CloseChecklist.Where(task => task.Gate != OperationsGateKeyDto.Approval && task.CanAcknowledge))
+        {
+            var result = await service.AcknowledgeChecklistTaskAsync(workflow.WorkflowId, task.TaskId,
+                new OperationsChecklistAcknowledgeRequestDto(workflow.Version, "checklist-reviewer", $"Reviewed {task.Label}"));
+            result.Success.Should().BeTrue($"the reviewer has current completion evidence for {task.TaskId}");
+            workflow = result.Workflow!;
+        }
+
+        return workflow;
+    }
+
+    internal static async Task<IReadOnlyList<OperationsChecklistControlApprovalDto>> ReadChecklistControlApprovalsAsync(
+        OperationsContinuityWorkflowService service,
+        Guid workflowId)
+    {
+        var workflow = (await service.GetAsync(workflowId))!;
+        var approvals = workflow.CloseChecklist
+            .Where(task => task.Gate != OperationsGateKeyDto.Approval && task.AcknowledgedAtUtc.HasValue && task.AcknowledgedBy != null)
+            .Select(task => new OperationsChecklistControlApprovalDto(task.TaskId, task.AcknowledgedBy!, task.AcknowledgedAtUtc!.Value))
+            .ToList();
+        var decision = workflow.Approvals.LastOrDefault();
+        if (decision?.Status == OperationsApprovalStateDto.Approved && workflow.ApprovalState == OperationsApprovalStateDto.Approved)
+        {
+            approvals.Add(new OperationsChecklistControlApprovalDto("close-gate-approval", decision.Operator, decision.SubmittedAtUtc!.Value));
+            approvals.Add(new OperationsChecklistControlApprovalDto("close-gate-approval", decision.Reviewer!, decision.DecidedAtUtc!.Value));
+        }
+
+        return approvals;
+    }
 
     private static OperationsBreakCaseDto CreateOpenCriticalBreak(OperationsContinuityWorkflowDto workflow, string breakId) =>
         new(
@@ -4094,11 +4423,11 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Approved close",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
         var closeDocument = CreateCloseVaultDocument(
             workflow.PeriodId,
             workflow.FundAccountId.ToString("D"),
@@ -4110,7 +4439,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow with vault binder support",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId),
             ClosePackageEvidenceHash: new string('a', 64),
             DocumentSnapshots: [closeDocument],
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
@@ -4125,11 +4454,11 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Approved close",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
         var closeDocument = CreateCloseVaultDocument(
             workflow.PeriodId,
             workflow.FundAccountId.ToString("D"),
@@ -4142,7 +4471,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             "Close workflow with vault manifest support",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId),
             ClosePackageEvidenceHash: new string('a', 64),
             DocumentSnapshots: [closeDocument],
             ManifestSnapshot: manifestSnapshot,
@@ -4252,6 +4581,21 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
     internal static async Task<OperationsContinuityWorkflowDto> CreateApprovalSubmittedWorkflowAsync(
         OperationsContinuityWorkflowService service, Guid? ledgerBookId = null, string periodId = "2026-05")
     {
+        var workflow = await CreateReviewedApprovalReadyWorkflowAsync(service, ledgerBookId, periodId);
+        var submitted = await service.SubmitForApprovalAsync(workflow.WorkflowId, new OperationsSubmitApprovalRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Submit for approval",
+            "report-pack-1",
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
+        submitted.Success.Should().BeTrue();
+        return submitted.Workflow!;
+    }
+
+    private static async Task<OperationsContinuityWorkflowDto> CreateReviewedApprovalReadyWorkflowAsync(
+        OperationsContinuityWorkflowService service, Guid? ledgerBookId = null, string periodId = "2026-05")
+    {
         var workflow = await CreateLedgerPostedWorkflowAsync(service, ledgerBookId, periodId);
         var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(workflow.Version, "ops-user", BreakCases: []));
         var posture = await service.RefreshGatePostureAsync(workflow.WorkflowId, new OperationsGatePostureRequestDto(
@@ -4259,14 +4603,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             "ops-user",
             ReportPackReady: true,
             ReportPackId: "report-pack-1"));
-        var submitted = await service.SubmitForApprovalAsync(workflow.WorkflowId, new OperationsSubmitApprovalRequestDto(
-            posture.Workflow!.Version,
-            "ops-user",
-            "reviewer",
-            "Submit for approval",
-            "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
-        return submitted.Workflow!;
+        return await AcknowledgePrerequisiteChecklistAsync(service, posture.Workflow!);
     }
 
     private static async Task<OperationsContinuityWorkflowDto> CreateClosedWorkflowAsync(
@@ -4275,18 +4612,20 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
-            "ops-user",
+            "reviewer",
             "reviewer",
             "Approved close",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, workflow.WorkflowId)));
+        approved.Success.Should().BeTrue();
         var closed = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
             approved.Workflow!.Version,
             "ops-user",
             "Close workflow",
             "report-pack-1",
-            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ChecklistControlApprovals: await ReadChecklistControlApprovalsAsync(service, approved.Workflow!.WorkflowId),
             CloseScope: await StateMachineCloseScopeAsync(service, workflow.WorkflowId)));
+        closed.Success.Should().BeTrue();
         return closed.Workflow!;
     }
 

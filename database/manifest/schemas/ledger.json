@@ -26,6 +26,12 @@
       "fingerprint": "662387c5ef335ca3a3bb6e0725e799c48edddff894143d6884c1c4ef37b4e94f",
       "object": "ledger.journal_leg_currency_affirmations",
       "object_type": "table"
+    },
+    {
+      "comment": "Ledger facts and actor attribution, hash chained in the same transaction as journal and period mutations. Null actor explicitly means unattributed; it is never synthesized from an approver. Verification checks covered facts as well as links. Coherent rollback of the head, suffix and corresponding facts requires an external retained checkpoint to detect.",
+      "fingerprint": "44b720d50c12bb400c8c18e7efa0a9088be5e1e90f1dd60a86710e6b3e096c30",
+      "object": "ledger.ledger_event_audit_events",
+      "object_type": "table"
     }
   ],
   "composite_types": [],
@@ -1483,6 +1489,162 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "f5fea08fd2b8a43e86558e5bff73681944b1a267ed601cd89b51210462bf4644",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_events_chain_sequence_check on ledger.ledger_event_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_events.chain_sequence",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "55b8134e7a1ac9f555ebb7abb2c1cd31eb319986a13cb520bc0b0db9e4aad29d",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_events_check on ledger.ledger_event_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_events.close_event_id",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "98e60012525cec7d58ca06f1cfd08e5b7cd42b791c001c59b5573787d15d79d4",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_events_check on ledger.ledger_event_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_events.close_event_snapshot",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "0b3ee9ef3f4e3e0a8a1a8094d820a066217a8da9a338a28a8a960284d12dcc2a",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_events_entry_hash_check on ledger.ledger_event_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_events.entry_hash",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "7efaea1e1eaabe0f74f08134f66e3da3be42f78a6b4e3c98d395b918661ecad7",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_events_payload_hash_check on ledger.ledger_event_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_events.payload_hash",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "380086c2f768d1149f7ff1126aa551ebbc9a781628ec19c72f1d98287ef8b956",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_events_previous_hash_check on ledger.ledger_event_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_events.previous_hash",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "0ffc7598f6a32eb48f7ce99d6e86f79256316988e3ef16dd0e7fa7f666bd9de2",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_events_subject_kind_check on ledger.ledger_event_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_events.subject_kind",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "8ddd250e4b2719db224331f12500f36654cc9719372b522316a00a1e0e79b16d",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_events_subject_version_check on ledger.ledger_event_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_events.subject_version",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "08126b6cc1b635eb4c9de8b6fa621807609f9dc261a0facc02c25c995a4881a6",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_genesis_subject_kind_check on ledger.ledger_event_audit_genesis",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_genesis.subject_kind",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_genesis",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "80f42f336433263d7fb958f8c6068d95365601d8d9740502441c11bdebac9c82",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_head_chain_id_check on ledger.ledger_event_audit_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_head.chain_id",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "813974c6a7cc2f759ae5d66c692610ca9cffb38287e4f792f8add8d9cee72429",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_head_genesis_hash_check on ledger.ledger_event_audit_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_head.genesis_hash",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "52f257f4a7cecb0cf66fe677ef6d74c02b977bea2645ebc60b160ce3004467bf",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_head_last_hash_check on ledger.ledger_event_audit_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_head.last_hash",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "647f1fb9bb55bfc6d097922dabc6328f128ec50b2698c022c84945402c768004",
+      "kind": "normal",
+      "source": "ledger.ledger_event_audit_head_next_sequence_check on ledger.ledger_event_audit_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_event_audit_head.next_sequence",
+      "target_kind": "table column",
+      "target_name": "ledger_event_audit_head",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "f1f00f9505d893a5c219e3cabd4434ad74ebb8ba5bf27ec2beb53ee1eae8bc11",
       "kind": "normal",
       "source": "ledger.open_lot_backfill_evidence_content_check on ledger.open_lot_backfill_evidence",
@@ -2135,7 +2297,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "151bad37c3aef0dde4364c294100ef52a8cca80c3a89c59144d9d6172a35ab51",
+  "fingerprint": "4df230856be1beae662d225f083b629c28d9a9d7f5f20ab9e9d123ff6481e919",
   "foreign_tables": [],
   "functions": [
     {
@@ -10380,6 +10542,1011 @@
       ],
       "columns": [
         {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "d3f4abd91cc1bb9f40eec9ceb8ab9eb76128554ce4c345c4da3f4fbf92977756",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "chain_sequence",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "800737e451960e4b2bb67cb324aaab10c9d2295bb5bdbb866400b587d7cfb61f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_kind",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "9153578825e77fe65855234af5df498a2ee260848313d75c15e6c9d8d110b604",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "6c41a773c36c4c93754ac73880227478721c768c573c7a8edf0db1cff45ceaa7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_version",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "0b10141caaea794d4e3a84db8a70c9a6bc4af830bb9a71659d8fe2743e3b0a09",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "action",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "83316898484884b578734bf2186a4cd59bafafc2852478d78ef46cbe72e08760",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "actor",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "edf0d8ed2cd17b5f104cd1688b994c5006c15aa693c25b6bdf26271e1d03e23f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at_utc",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f63068a5e9895e04489e86f4dd21aa4880647ee529ced252604c8fb601e32342",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "fact_snapshot",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "2663aea4e9ec049b5525967114ed3e24bd58625e618b15a9d608db5ce38eca8a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "close_event_id",
+          "nullable": true,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b0ca3897e18d425ed129ecd0ca40d524c45b19b5150d1c78e235e2ce21cd1623",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "close_event_snapshot",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "dfa15a28944eabdd93280c9db52ecc6ed2f026f00c66b7a173bdd44637592148",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_hash",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "41671b86f22c4e394753a464d4876a6adb2ce5c14c2a16e6cd5877fa8eb47c83",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "previous_hash",
+          "nullable": true,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b94a9ea5e05e35856f67c4a08d2f2ac535cadfb4d021ab5941101940db725971",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entry_hash",
+          "nullable": false,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Ledger facts and actor attribution, hash chained in the same transaction as journal and period mutations. Null actor explicitly means unattributed; it is never synthesized from an approver. Verification checks covered facts as well as links. Coherent rollback of the head, suffix and corresponding facts requires an external retained checkpoint to detect.",
+      "constraints": [
+        {
+          "columns": [
+            "chain_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (chain_sequence > 0)",
+          "delete_action": null,
+          "fingerprint": "dcf1200ea7d0774e5d4b8434df8d2d8e114baf37069ddeb80b0085a82de406a6",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_chain_sequence_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "close_event_id",
+            "close_event_snapshot"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK ((close_event_id IS NULL) = (close_event_snapshot IS NULL))",
+          "delete_action": null,
+          "fingerprint": "f2d42399ac7880691c3bbbb53b541aaddeca0afc2b1aec005ef54ae7ba1805cf",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "entry_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (entry_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "c34ad8274a0beba5f6a19d69a2844d631244a09ad5401378f870a6fc2c8109af",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_entry_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "payload_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (payload_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "eaf527e41ba4b564cc7f80fcc3fb54e854fd315185d3e674c3100f9655da8c9d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_payload_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "previous_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (previous_hash IS NULL OR previous_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "9b3daa4e977f94d645a9a9efebb78b5d69c3c0d7ff3b3c4fe844f066685b2cca",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_previous_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "subject_kind"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (subject_kind = ANY (ARRAY['journal'::text, 'period'::text]))",
+          "delete_action": null,
+          "fingerprint": "3399b99550f6ef0c4c4439f85512e046e2c784446b52b4d769fdb9993df00d84",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_subject_kind_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "subject_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (subject_version > 0)",
+          "delete_action": null,
+          "fingerprint": "f31cff6b3c0d6990cd34883ded7f63f1dcb03c73e8b80314a4d034197baa6f1c",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_subject_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "chain_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (chain_sequence)",
+          "delete_action": null,
+          "fingerprint": "d43884ea7612a4a6c55398f4becfc84b7126afde2e2413b197d84d72c7dbb6c1",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "subject_kind",
+            "subject_id",
+            "subject_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (subject_kind, subject_id, subject_version)",
+          "delete_action": null,
+          "fingerprint": "e4a65758cf6466b36754841189428dd3375a2bb05e8d8beea1f18776c38187f8",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_subject_kind_subject_id_subject_v_key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "7bbec7c59e4682a5d571991a21acfd92c37ad215195359c7584d9854de822b1a",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ledger_event_audit_events_pkey ON ledger.ledger_event_audit_events USING btree (chain_sequence)",
+          "expression": null,
+          "fingerprint": "4c1bb5e8daee207de50da9054c9241ac58280b47a71f9f7b711a0db17d0556fc",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "chain_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ledger_event_audit_events_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ledger_event_audit_events_subject_kind_subject_id_subject_v_key ON ledger.ledger_event_audit_events USING btree (subject_kind, subject_id, subject_version)",
+          "expression": null,
+          "fingerprint": "8ddf33dbe0a969f3e59405f513fbb13d6d5ee39181c4f53fec68648eef9f6cd0",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "subject_kind",
+            "subject_id",
+            "subject_version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ledger_event_audit_events_subject_kind_subject_id_subject_v_key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_ledger_event_audit_close_event ON ledger.ledger_event_audit_events USING btree (close_event_id) WHERE (close_event_id IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "6093c2d115cb772a785340fee686afff98bd2d4f6b15f71ed0edade04a254e09",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "close_event_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_ledger_event_audit_close_event",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "close_event_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "ledger_event_audit_events",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "bf67090bb998bf66e2aa70fd09a0ac3df4e775c765e9c583cd6a6f415b87187f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_kind",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "1111137083566067e9cf788d174806ff356cbf96ef7e7567daca278fc1f3a49f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "91176a54176ad6aed17f7dbff6e4a26b8928d6a01f5107358e2d8d90fab9fd58",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_version",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "subject_kind"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (subject_kind = ANY (ARRAY['journal'::text, 'period'::text, 'period-close'::text]))",
+          "delete_action": null,
+          "fingerprint": "2380915f17c69d994465267e793a7d71e6c35aaa77e6a338d2b757a1029fb53d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_genesis_subject_kind_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "subject_kind",
+            "subject_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (subject_kind, subject_id)",
+          "delete_action": null,
+          "fingerprint": "a0317f6bc3befacefbd4fe1039c40428b118f55cdb55cfe092b5dfb01cf8912d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_genesis_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "08daa29af9628f2845990012ca0792761f436b2f952f6a13f84590a202778f8a",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ledger_event_audit_genesis_pkey ON ledger.ledger_event_audit_genesis USING btree (subject_kind, subject_id)",
+          "expression": null,
+          "fingerprint": "3840d39efabf3c3ad1290cbb7048a4a63280cc75cf47e32824c4e2850b1e3d1c",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "subject_kind",
+            "subject_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ledger_event_audit_genesis_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "ledger_event_audit_genesis",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "smallint",
+          "default": null,
+          "fingerprint": "26cc88022f5330bd61f4471361a84b62040bb5df1c8b9de22079e06fbcc284d2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "chain_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "int2",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": "1",
+          "fingerprint": "2307ae89bd57fae444ec6410db4b429a75054b03485e7bf2078762ce4d202baf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "schema_version",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "1",
+          "fingerprint": "b090dd16c9fc9874cf22dc9cf56609ca4b40df64d10294fb9313da811d1bac68",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "next_sequence",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f9bff6096628fa4a5d7be9ed79f699761bc5445964a8eb938434b6bcaac01c32",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "last_hash",
+          "nullable": true,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "''::text",
+          "fingerprint": "7834868e1caac9baa896504e0e48b6ef438d278e378110d3fd8336ba0a9e7be1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "genesis_hash",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "fee6c216a3287835977b75d38694c010e786daef82b8d7a55d68f81b9b0c5ee4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "genesis_at_utc",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "chain_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (chain_id = 1)",
+          "delete_action": null,
+          "fingerprint": "2d92a3dea5dfc56162d8ad6e40ad3fd1354900719e668cebbab6eb43fd2ffcc2",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_head_chain_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "genesis_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (genesis_hash = ''::text OR genesis_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "47c0de164da90abc461bb1bbba96a8dbc8ed421b1c4fd166f8bb6ef8c5d39929",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_head_genesis_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "last_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (last_hash IS NULL OR last_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "37af5bfd410da9a5546b41d8a10e1644d951b032c3172c0249365cb6f36e78ac",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_head_last_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "next_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (next_sequence > 0)",
+          "delete_action": null,
+          "fingerprint": "58894633dce6ac68b05796c18dcf0679e7a6333d6fd6e537c1f30ea1f032c308",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_head_next_sequence_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "chain_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (chain_id)",
+          "delete_action": null,
+          "fingerprint": "316fdc4ba0ad690e7ea67796177f9138226f6172e630a028f4780ef188c63044",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_head_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "95da85608e769d382ea18eac5bee6b8253007995cd44de3e1e7c852aa11bea85",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ledger_event_audit_head_pkey ON ledger.ledger_event_audit_head USING btree (chain_id)",
+          "expression": null,
+          "fingerprint": "910ca55fbaadd9c8b72198028e16b5ea4e4a4356076ac134c2c0ca4d21e31c33",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "chain_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ledger_event_audit_head_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "ledger_event_audit_head",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
           "collation": "pg_catalog.default",
           "comment": null,
           "data_type": "text",
@@ -16497,6 +17664,30 @@
       "forced": false,
       "policies": [],
       "relation": "ledger_books",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "d0415d1c66078055670768570e0fbae89ad68fe3079854ac309cece264e7fa2a",
+      "forced": false,
+      "policies": [],
+      "relation": "ledger_event_audit_events",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "89dce39f8b656ab4e3b61ff04a9ba523f8b1442c61a9f46ea5b631fc4e162f94",
+      "forced": false,
+      "policies": [],
+      "relation": "ledger_event_audit_genesis",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "c8549e81d2722b258c9c8ec17adfa052e64a119ecf9053626f7c79ec5794aeef",
+      "forced": false,
+      "policies": [],
+      "relation": "ledger_event_audit_head",
       "schema": "ledger"
     },
     {
@@ -24109,6 +25300,1011 @@
       "is_partition": false,
       "kind": "table",
       "name": "ledger_books",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "d3f4abd91cc1bb9f40eec9ceb8ab9eb76128554ce4c345c4da3f4fbf92977756",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "chain_sequence",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "800737e451960e4b2bb67cb324aaab10c9d2295bb5bdbb866400b587d7cfb61f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_kind",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "9153578825e77fe65855234af5df498a2ee260848313d75c15e6c9d8d110b604",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "6c41a773c36c4c93754ac73880227478721c768c573c7a8edf0db1cff45ceaa7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_version",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "0b10141caaea794d4e3a84db8a70c9a6bc4af830bb9a71659d8fe2743e3b0a09",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "action",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "83316898484884b578734bf2186a4cd59bafafc2852478d78ef46cbe72e08760",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "actor",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "edf0d8ed2cd17b5f104cd1688b994c5006c15aa693c25b6bdf26271e1d03e23f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at_utc",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f63068a5e9895e04489e86f4dd21aa4880647ee529ced252604c8fb601e32342",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "fact_snapshot",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "2663aea4e9ec049b5525967114ed3e24bd58625e618b15a9d608db5ce38eca8a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "close_event_id",
+          "nullable": true,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b0ca3897e18d425ed129ecd0ca40d524c45b19b5150d1c78e235e2ce21cd1623",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "close_event_snapshot",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "dfa15a28944eabdd93280c9db52ecc6ed2f026f00c66b7a173bdd44637592148",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_hash",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "41671b86f22c4e394753a464d4876a6adb2ce5c14c2a16e6cd5877fa8eb47c83",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "previous_hash",
+          "nullable": true,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b94a9ea5e05e35856f67c4a08d2f2ac535cadfb4d021ab5941101940db725971",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entry_hash",
+          "nullable": false,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Ledger facts and actor attribution, hash chained in the same transaction as journal and period mutations. Null actor explicitly means unattributed; it is never synthesized from an approver. Verification checks covered facts as well as links. Coherent rollback of the head, suffix and corresponding facts requires an external retained checkpoint to detect.",
+      "constraints": [
+        {
+          "columns": [
+            "chain_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (chain_sequence > 0)",
+          "delete_action": null,
+          "fingerprint": "dcf1200ea7d0774e5d4b8434df8d2d8e114baf37069ddeb80b0085a82de406a6",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_chain_sequence_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "close_event_id",
+            "close_event_snapshot"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK ((close_event_id IS NULL) = (close_event_snapshot IS NULL))",
+          "delete_action": null,
+          "fingerprint": "f2d42399ac7880691c3bbbb53b541aaddeca0afc2b1aec005ef54ae7ba1805cf",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "entry_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (entry_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "c34ad8274a0beba5f6a19d69a2844d631244a09ad5401378f870a6fc2c8109af",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_entry_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "payload_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (payload_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "eaf527e41ba4b564cc7f80fcc3fb54e854fd315185d3e674c3100f9655da8c9d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_payload_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "previous_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (previous_hash IS NULL OR previous_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "9b3daa4e977f94d645a9a9efebb78b5d69c3c0d7ff3b3c4fe844f066685b2cca",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_previous_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "subject_kind"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (subject_kind = ANY (ARRAY['journal'::text, 'period'::text]))",
+          "delete_action": null,
+          "fingerprint": "3399b99550f6ef0c4c4439f85512e046e2c784446b52b4d769fdb9993df00d84",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_subject_kind_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "subject_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (subject_version > 0)",
+          "delete_action": null,
+          "fingerprint": "f31cff6b3c0d6990cd34883ded7f63f1dcb03c73e8b80314a4d034197baa6f1c",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_subject_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "chain_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (chain_sequence)",
+          "delete_action": null,
+          "fingerprint": "d43884ea7612a4a6c55398f4becfc84b7126afde2e2413b197d84d72c7dbb6c1",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "subject_kind",
+            "subject_id",
+            "subject_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (subject_kind, subject_id, subject_version)",
+          "delete_action": null,
+          "fingerprint": "e4a65758cf6466b36754841189428dd3375a2bb05e8d8beea1f18776c38187f8",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_events_subject_kind_subject_id_subject_v_key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "7bbec7c59e4682a5d571991a21acfd92c37ad215195359c7584d9854de822b1a",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ledger_event_audit_events_pkey ON ledger.ledger_event_audit_events USING btree (chain_sequence)",
+          "expression": null,
+          "fingerprint": "4c1bb5e8daee207de50da9054c9241ac58280b47a71f9f7b711a0db17d0556fc",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "chain_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ledger_event_audit_events_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ledger_event_audit_events_subject_kind_subject_id_subject_v_key ON ledger.ledger_event_audit_events USING btree (subject_kind, subject_id, subject_version)",
+          "expression": null,
+          "fingerprint": "8ddf33dbe0a969f3e59405f513fbb13d6d5ee39181c4f53fec68648eef9f6cd0",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "subject_kind",
+            "subject_id",
+            "subject_version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ledger_event_audit_events_subject_kind_subject_id_subject_v_key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_ledger_event_audit_close_event ON ledger.ledger_event_audit_events USING btree (close_event_id) WHERE (close_event_id IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "6093c2d115cb772a785340fee686afff98bd2d4f6b15f71ed0edade04a254e09",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "close_event_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_ledger_event_audit_close_event",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "close_event_id IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "ledger_event_audit_events",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "bf67090bb998bf66e2aa70fd09a0ac3df4e775c765e9c583cd6a6f415b87187f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_kind",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "1111137083566067e9cf788d174806ff356cbf96ef7e7567daca278fc1f3a49f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "91176a54176ad6aed17f7dbff6e4a26b8928d6a01f5107358e2d8d90fab9fd58",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "subject_version",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "subject_kind"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (subject_kind = ANY (ARRAY['journal'::text, 'period'::text, 'period-close'::text]))",
+          "delete_action": null,
+          "fingerprint": "2380915f17c69d994465267e793a7d71e6c35aaa77e6a338d2b757a1029fb53d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_genesis_subject_kind_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "subject_kind",
+            "subject_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (subject_kind, subject_id)",
+          "delete_action": null,
+          "fingerprint": "a0317f6bc3befacefbd4fe1039c40428b118f55cdb55cfe092b5dfb01cf8912d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_genesis_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "08daa29af9628f2845990012ca0792761f436b2f952f6a13f84590a202778f8a",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ledger_event_audit_genesis_pkey ON ledger.ledger_event_audit_genesis USING btree (subject_kind, subject_id)",
+          "expression": null,
+          "fingerprint": "3840d39efabf3c3ad1290cbb7048a4a63280cc75cf47e32824c4e2850b1e3d1c",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "subject_kind",
+            "subject_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ledger_event_audit_genesis_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "ledger_event_audit_genesis",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "smallint",
+          "default": null,
+          "fingerprint": "26cc88022f5330bd61f4471361a84b62040bb5df1c8b9de22079e06fbcc284d2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "chain_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "int2",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": "1",
+          "fingerprint": "2307ae89bd57fae444ec6410db4b429a75054b03485e7bf2078762ce4d202baf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "schema_version",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "1",
+          "fingerprint": "b090dd16c9fc9874cf22dc9cf56609ca4b40df64d10294fb9313da811d1bac68",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "next_sequence",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f9bff6096628fa4a5d7be9ed79f699761bc5445964a8eb938434b6bcaac01c32",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "last_hash",
+          "nullable": true,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "''::text",
+          "fingerprint": "7834868e1caac9baa896504e0e48b6ef438d278e378110d3fd8336ba0a9e7be1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "genesis_hash",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "fee6c216a3287835977b75d38694c010e786daef82b8d7a55d68f81b9b0c5ee4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "genesis_at_utc",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "chain_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (chain_id = 1)",
+          "delete_action": null,
+          "fingerprint": "2d92a3dea5dfc56162d8ad6e40ad3fd1354900719e668cebbab6eb43fd2ffcc2",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_head_chain_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "genesis_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (genesis_hash = ''::text OR genesis_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "47c0de164da90abc461bb1bbba96a8dbc8ed421b1c4fd166f8bb6ef8c5d39929",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_head_genesis_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "last_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (last_hash IS NULL OR last_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "37af5bfd410da9a5546b41d8a10e1644d951b032c3172c0249365cb6f36e78ac",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_head_last_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "next_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (next_sequence > 0)",
+          "delete_action": null,
+          "fingerprint": "58894633dce6ac68b05796c18dcf0679e7a6333d6fd6e537c1f30ea1f032c308",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_head_next_sequence_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "chain_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (chain_id)",
+          "delete_action": null,
+          "fingerprint": "316fdc4ba0ad690e7ea67796177f9138226f6172e630a028f4780ef188c63044",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ledger_event_audit_head_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "95da85608e769d382ea18eac5bee6b8253007995cd44de3e1e7c852aa11bea85",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ledger_event_audit_head_pkey ON ledger.ledger_event_audit_head USING btree (chain_id)",
+          "expression": null,
+          "fingerprint": "910ca55fbaadd9c8b72198028e16b5ea4e4a4356076ac134c2c0ca4d21e31c33",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "chain_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ledger_event_audit_head_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "ledger_event_audit_head",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",

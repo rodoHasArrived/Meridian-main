@@ -11,6 +11,50 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+Ledger migration `036` adds a separate ledger-event audit chain. Journal posting (including atomic
+lot acquisition/disposal and reversals), period creation, close, and reopen retain an audit in the
+same transaction. Verification scans the chain and its retained journal/leg, period, and close-event
+facts before further writes; an audit failure rolls back the mutation. A locked head serializes
+appenders, and Serializable callers retain the existing whole-transaction retry requirement.
+Each append scans all prior events and covered facts: N new writes recheck at least N(N-1)/2
+prior events, in addition to existing history. This requires volume validation before production
+acceptance. The hashed genesis inventory identifies pre-upgrade facts without claiming their old
+contents were protected. A coherent rollback of the audit head, suffix, and corresponding facts
+requires an external checkpoint to detect, even when the rest of the database remains unchanged.
+The same limitation applies to coordinated rewriting of facts, their event hashes, and the database
+head; a locally recomputed chain is not independent authentication of its history.
+Coverage permits new SQL columns but compares retained column values, including nested JSON, exactly.
+`LedgerEventAuditPostgresTests` exercises these boundaries; hosted PostgreSQL proof is required.
+
+Audit actors come from validated posting commands or period transitions. Missing legacy attribution
+remains null. The period-creation endpoint stamps the authenticated creator; generated candidate
+posts retain the actual posting actor in command metadata, preserving old unattributed retries.
+The normalizer reserves `postingActor` and `postingActorAttribution`: either tag requires an actor
+on the typed command, and retained attribution must carry the supported `command-v1` marker.
+Unversioned legacy metadata never supplies an actor; inconsistent or unknown markers fail closed.
+
+Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
+transaction as the run and its details. HTTP requests return the committed run without calling
+the publisher. The outbox worker publishes retained state and retries failures; missing publisher
+configuration for a Security Master-backed loan remains a failed delivery. Identified replays
+retain one message per run. Integration tests cover concurrent retries and enqueue-failure rollback.
+
+
+The lending cash reader uses `cash_transaction_id`, matching both the authoritative operations
+migration and the transaction writer; reconciliation exercises that persisted read path.
+
+
+Migration 009 reconciles the historical `projected_flow_id` column with the cash-flow
+identity name consumed by the store. It adds and backfills the current column names while retaining legacy IDs and foreign keys.
+A trigger synchronizes writes through either name and rejects conflicting IDs during rollout.
+
+
+Direct-lending projection and reconciliation persistence serializes matching run identities with
+a PostgreSQL transaction advisory lock. A committed identity returns its existing run before any
+detail-row deletion, insertion, or superseding update. Concurrent retries retain the first saved
+flows and reconciliation results. `DirectLendingPostgresIntegrationTests` covers both paths;
+hosted database validation is required before treating this as release evidence.
+
 Audit-chain appends stream and validate retained entry hashes and predecessor links while holding
 the cross-process append lock. An unreadable, malformed, empty, or broken retained chain fails
 without replacing its history. Payload-file verification remains the separate full verification

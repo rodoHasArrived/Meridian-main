@@ -11,6 +11,27 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Ui.Shared
 
+Period creation requires a resolved authenticated actor and overwrites any client-supplied
+`CreatedBy` before calling the shared ledger service. The actor is retained in the same-transaction
+PostgreSQL ledger audit. `WorkstationEndpointsTests.LedgerAuditActor` exercises spoofed client
+attribution against the real period service and PostgreSQL store.
+Generated-candidate posting and manual journal lifecycle routes also require a resolved authenticated
+actor; permission alone cannot authorize use of a client-supplied posting identity.
+
+Rejected mutation leases return HTTP 429 with a positive `Retry-After` delay. The lending
+runtime test exhausts the shared projection/reconciliation budget and verifies rejection
+before mutation; `forceEnable` allows this test to exercise the real limiter without changing
+process-wide environment settings.
+
+
+Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
+shared service into committed run identity handling. Repeating a command on the same loan
+returns the retained run; reusing a projection command with a different explicit date returns
+409. In-memory workflows follow the same retry rule. The two HTTP write routes require a non-empty UUID in `X-Command-Id` and return 400
+before mutation when it is missing or invalid. Internal calls without an identity retain
+legacy new-run behavior and must not be treated as safe automatic retries.
+
+
 The shared workstation graph owns first-run state, the curated starter catalog,
 versioned sample provisioning, and outcome-based activation evidence. Browser and WPF
 clients consume these endpoints instead of defining client-only setup policy. Initial
@@ -31,6 +52,19 @@ The tenant-guarded Financial Operations command-center endpoint now exposes the 
 The ledger open-lot maintenance routes expose survey, exception queue, retained source inspection, independent review, and versioned application under explicit administrative permission and exact registered tenant/company book ownership. Actors and governed action origins come from the authenticated session. Unknown ownership is blocking. Review and application use retained source identities, never replacement request-side acquisition facts.
 
 Journal automation exposes a read-only valuation freshness preview and retains dated mark evidence through journal review. The same policy decisions feed browser and desktop position read models; absent observation history stays review required. Close subject ownership is resolved from authoritative book, account, and entity records through `CloseReadinessSubjectSource`.
+
+## Credential audit identity
+
+Canonical and compatibility credential routes require an authenticated actor in addition to tenant
+scope and credential-management permission. Saves replace caller-supplied `RequestedBy` with that
+actor; delete and verification pass the same identity into the vault audit. Accounting-provider
+verification retains the initiating actor after any provider-internal verification event.
+Alpaca verification requires a provider-returned account identity and reports fixed failure text;
+response reason phrases, JSON paths and exception details never enter its returned errors or logs.
+The Alpaca brokerage connect/revoke routes apply the same identity and verification rules.
+Provider setup passes the server-resolved actor into credential persistence. Plaid operator mutations
+require an authenticated actor and never fall back to a request identity; signed webhook authentication
+remains independent of operator sessions.
 
 ## Purpose
 

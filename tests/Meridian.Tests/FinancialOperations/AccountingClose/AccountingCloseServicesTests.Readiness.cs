@@ -16,7 +16,7 @@ public sealed partial class AccountingCloseServicesTests
     [InlineData("AuthorityUnavailable")]
     public async Task SharedCloseEvidence_BlocksBeforeLedgerMutation_AndRepairAllowsSameScope(string failure)
     {
-        var workflow = BuildCloseWorkflow(Guid.NewGuid(), firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var workflow = BuildApprovedCloseWorkflow(Guid.NewGuid());
         var bookId = workflow.LedgerBookId!.Value;
         var scope = new CloseReadinessScopeDto("fund-alpha", bookId, workflow.FundAccountId, "entity-alpha", workflow.PeriodId);
         var workflows = Substitute.For<IOperationsContinuityWorkflowService>();
