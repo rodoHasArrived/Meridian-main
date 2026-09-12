@@ -1,16 +1,26 @@
 # Security Master Identifier Conflict Detection
 
-Security Master identifier resolution and ambiguity detection use the same canonical identity:
-`SecurityIdentifierKind` plus the value produced by `SecurityIdentifierNormalizer`. For the
+Security Master identifier resolution and ambiguity detection normalize identifier values the same
+way: `SecurityIdentifierKind` plus the value produced by `SecurityIdentifierNormalizer`. For the
 canonical kinds the normalizer strips to alphanumerics (ISIN, CUSIP, SEDOL, FIGI, OCC option
 symbol, LEI, WKN, CIK — and Valoren to digits), so punctuation and whitespace are never separate
 identities there. The punctuation-preserving kinds (`Ticker`, `ProviderSymbol`, `Ric`, and the
 fallback kinds) normalize case and trim but deliberately retain internal punctuation — `VOD.L`
-and `VOD-L` remain distinct RICs. Identity scoping is a separate axis: only `ProviderSymbol`
-also includes the normalized provider namespace. Every other kind — `Ticker` included, whose
-`Provider` carries the ingest feed rather than a listing venue — is provider-independent and
-retains provider only as provenance, so the same ticker claimed by different feeds still
-collides.
+and `VOD-L` remain distinct RICs.
+
+Identity scoping is a separate axis, and it governs **ambiguity detection only**: only
+`ProviderSymbol` carries the normalized provider namespace into its identity. For ambiguity
+detection every other kind — `Ticker` included, whose `Provider` carries the ingest feed rather
+than a listing venue — is provider-independent and retains provider only as provenance, so the
+same ticker claimed by different feeds still collides.
+
+Durable point lookups do not inherit that provider-independence. `GetByIdentifierAsync` matches the
+stored `normalized_provider` exactly for every kind across all three of its passes (identifier
+rows, aliases, and the primary-identifier fallback), so a caller resolving a stored ISIN must pass
+the provider it was ingested with: the same ISIN queried with no provider, or with a different one,
+resolves to nothing. `SecurityMasterPostgresRoundTripTests.GetByIdentifierAsync_ResolvesNormalizedIdentifierAndProviderValues`
+pins that behavior. Widening resolution to honor `IsProviderScoped` the way detection does would be
+a deliberate behavior change to that contract, not an implementation detail.
 
 An ambiguity exists only when two different `SecurityId` values claim the same canonical
 identifier during overlapping half-open validity windows (`[ValidFrom, ValidTo)`). Adjacent
