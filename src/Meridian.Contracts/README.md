@@ -11,6 +11,11 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Contracts
 
+Ledger commands add optional `AccountingPostingCommandDto.Actor` and
+`CreateLedgerPeriodRequest.CreatedBy`. Public command boundaries stamp authenticated identities;
+callers cannot use these fields to replace that identity. Absent values stay explicitly unattributed
+and are omitted from JSON, preserving the serialized shape of legacy posting fingerprints.
+
 Lifecycle route contracts distinguish sanitized unauthenticated readiness/liveness probes from
 authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
 single monitoring transport owner.
@@ -40,6 +45,10 @@ dashboard, and WPF.
 This module owns stable transport payloads, compatibility-safe DTOs, and shared schema objects.
 Consumers depend on contracts; contracts should not depend on host, UI, application orchestration,
 or provider implementations.
+
+Reconciliation break-queue statuses serialize as text (`Open`, `InReview`, `Resolved`,
+`Dismissed`, and `SignedOff`) for browser and desktop consumers. The shared enum converter also
+accepts older numeric status payloads; persisted queue records already use text statuses.
 
 ## Key folders and files
 
