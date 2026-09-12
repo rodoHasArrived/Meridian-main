@@ -71,6 +71,7 @@ This directory contains documentation about the system's design, architectural d
 | [Core Extensibility Model](core-extensibility-model.md) | Stable financial operations core objects, configurable tenant layers, governed foundations, and current contract/service seams |
 | [Workflow Library](workflow-library.md) | Reusable workstation workflow and action registry architecture |
 | [Evidence Workflow Fabric](evidence-workflow-fabric.md) | Cross-workflow evidence packets, lineage, validation, and manifest-only export architecture |
+| [Reporting Workstation Model](reporting-workstation-model.md) | Reporting production pipeline, controlled state vocabularies, reporting period, health gates, and change-since-review |
 | [Stakeholder Product Charter](../product/meridian-design-document.md) | Product-facing strategy and capability model used for current direction framing |
 | [Trading Workstation Migration Blueprint (Archived)](../../archive/docs/plans/trading-workstation-migration-blueprint.md) | Historical migration model retained for reference; active architecture execution posture is now under canonical product/engineering documentation |
 | [Current Direction and Status (Archived)](../../archive/docs/plans/current-direction-and-status.md) | Historical planning interpretation retained for context; active direction now in `docs/product/` |
