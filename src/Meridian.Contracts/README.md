@@ -11,6 +11,11 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Contracts
 
+Ledger commands add optional `AccountingPostingCommandDto.Actor` and
+`CreateLedgerPeriodRequest.CreatedBy`. Public command boundaries stamp authenticated identities;
+callers cannot use these fields to replace that identity. Absent values stay explicitly unattributed
+and are omitted from JSON, preserving the serialized shape of legacy posting fingerprints.
+
 Lifecycle route contracts distinguish sanitized unauthenticated readiness/liveness probes from
 authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
 single monitoring transport owner.

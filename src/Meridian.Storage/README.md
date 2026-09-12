@@ -11,6 +11,28 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+Ledger migration `036` adds a separate ledger-event audit chain. Journal posting (including atomic
+lot acquisition/disposal and reversals), period creation, close, and reopen retain an audit in the
+same transaction. Verification scans the chain and its retained journal/leg, period, and close-event
+facts before further writes; an audit failure rolls back the mutation. A locked head serializes
+appenders, and Serializable callers retain the existing whole-transaction retry requirement.
+Each append scans all prior events and covered facts: N new writes recheck at least N(N-1)/2
+prior events, in addition to existing history. This requires volume validation before production
+acceptance. The hashed genesis inventory identifies pre-upgrade facts without claiming their old
+contents were protected. A coherent rollback of the audit head, suffix, and corresponding facts
+requires an external checkpoint to detect, even when the rest of the database remains unchanged.
+The same limitation applies to coordinated rewriting of facts, their event hashes, and the database
+head; a locally recomputed chain is not independent authentication of its history.
+Coverage permits new SQL columns but compares retained column values, including nested JSON, exactly.
+`LedgerEventAuditPostgresTests` exercises these boundaries; hosted PostgreSQL proof is required.
+
+Audit actors come from validated posting commands or period transitions. Missing legacy attribution
+remains null. The period-creation endpoint stamps the authenticated creator; generated candidate
+posts retain the actual posting actor in command metadata, preserving old unattributed retries.
+The normalizer reserves `postingActor` and `postingActorAttribution`: either tag requires an actor
+on the typed command, and retained attribution must carry the supported `command-v1` marker.
+Unversioned legacy metadata never supplies an actor; inconsistent or unknown markers fail closed.
+
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
 the publisher. The outbox worker publishes retained state and retries failures; missing publisher
