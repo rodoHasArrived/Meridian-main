@@ -51,14 +51,30 @@ public sealed record DataConfidenceIndicatorModel(
     /// assert <see cref="DataConfidenceLevel.Current"/> without an as-of instant, but the level
     /// and the timestamp are independent record fields, so a <c>with</c> update can set one
     /// without the other and reach a state no factory produces. Every presentation member reads
-    /// this instead of the raw level, so the badge can never pair "Current" with
-    /// "As of unavailable" — it degrades to Unknown, the same answer the factory gives ready
-    /// evidence that carries no instant.
+    /// this instead of the raw level, so a Current badge always answers for the instant behind
+    /// it: no timestamp degrades to Unknown, and an instant beyond
+    /// <see cref="MaximumForwardClockSkew"/> ahead of the local clock degrades to Stale. Both are
+    /// the answers the factories already give the same evidence.
     /// </summary>
     public DataConfidenceLevel EffectiveConfidenceLevel
-        => ConfidenceLevel == DataConfidenceLevel.Current && FreshnessTimestamp is null
-            ? DataConfidenceLevel.Unknown
-            : ConfidenceLevel;
+    {
+        get
+        {
+            if (ConfidenceLevel != DataConfidenceLevel.Current)
+            {
+                return ConfidenceLevel;
+            }
+
+            if (FreshnessTimestamp is not { } asOf)
+            {
+                return DataConfidenceLevel.Unknown;
+            }
+
+            return asOf - DateTimeOffset.UtcNow > MaximumForwardClockSkew
+                ? DataConfidenceLevel.Stale
+                : DataConfidenceLevel.Current;
+        }
+    }
 
     /// <summary>
     /// Computed from the current field values rather than captured at construction: a
@@ -91,8 +107,13 @@ public sealed record DataConfidenceIndicatorModel(
             // Blocked evidence is a hard failure (rejected approval, failed delivery) that the
             // workstation presents as a danger state, distinct from routine review.
             EvidenceStatusDto.Blocked => DataConfidenceLevel.Blocked,
-            EvidenceStatusDto.ReviewRequired => DataConfidenceLevel.Partial,
+            // Stale freshness outranks review-required, and this arm must stay above it: the two
+            // travel together whenever a packet is both past its freshness policy and carrying a
+            // warning, and EvidencePacketValidationService — the shared posture both workstations
+            // read — resolves that pair to Stale. Reporting Partial here would fork the shared
+            // state and hide a freshness breach behind the generic review label.
             _ when freshness.IsStale => DataConfidenceLevel.Stale,
+            EvidenceStatusDto.ReviewRequired => DataConfidenceLevel.Partial,
             // Current is asserted only when the evidence carries an as-of instant; the DTO
             // permits a missing timestamp, and "Current · As of unavailable" contradicts itself.
             // The instant must also not sit ahead of the local clock beyond plausible skew:

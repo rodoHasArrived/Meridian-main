@@ -56,14 +56,18 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
-    public void FromEvidence_WithReviewRequiredStaleEvidence_SurfacesPartialAndNotes()
+    public void FromEvidence_WithReviewRequiredStaleEvidence_SurfacesStaleAndNotes()
     {
+        // Evidence past its freshness policy while also carrying a review warning reaches the
+        // badge as ReviewRequired with IsStale set. EvidencePacketValidationService resolves that
+        // pair to Stale, so the badge must too: the generic Partial label would hide the
+        // freshness breach and fork the posture the browser workstation reports.
         var model = DataConfidenceIndicatorModel.FromEvidence(
             EvidenceStatusDto.ReviewRequired,
             new EvidenceFreshnessDto(new DateTimeOffset(2026, 6, 14, 9, 0, 0, TimeSpan.Zero), IsStale: true, Reason: "Source file is older than policy."),
             "Accounting import");
 
-        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Partial);
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Stale);
         model.ReconciliationLabel.Should().Be(DataConfidenceLabels.Unknown);
         model.Notes.Should().Be("Source file is older than policy.");
         model.Tone.Should().Be(WorkspaceTone.Warning);
@@ -418,6 +422,26 @@ public sealed class DataConfidenceIndicatorModelTests
 
         evidenced.ConfidenceLabel.Should().Be(DataConfidenceLabels.Current);
         evidenced.Tone.Should().Be(WorkspaceTone.Success);
+    }
+
+    [Fact]
+    public void WithCurrentConfidenceAndAFutureTimestamp_DegradesToStale()
+    {
+        // Both factories refuse to report Current for an as-of instant beyond plausible forward
+        // skew, because freshness ages one-sidedly upstream and a malformed future instant would
+        // otherwise read Current until wall-clock time caught up. A record update reaches the
+        // same state directly, so the effective level applies the same rule; small skew stays
+        // inside tolerance.
+        var future = DataConfidenceIndicatorModel.Unknown() with
+        {
+            ConfidenceLevel = DataConfidenceLevel.Current,
+            FreshnessTimestamp = DateTimeOffset.UtcNow.AddHours(6)
+        };
+        var skewed = future with { FreshnessTimestamp = DateTimeOffset.UtcNow.AddSeconds(10) };
+
+        future.ConfidenceLabel.Should().Be(DataConfidenceLabels.Stale);
+        future.Tone.Should().Be(WorkspaceTone.Warning);
+        skewed.ConfidenceLabel.Should().Be(DataConfidenceLabels.Current);
     }
 
     [Fact]
