@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-10 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-11 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-10; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -5280,6 +5280,189 @@ remains the authoritative full run.
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-09-11
+
+Pinned at `e173437e`, which is also `origin/main`. The only Security Master source commits since the
+2026-09-10 pass are that pass's own resolution work — `39b5516a` ("Address the Security Master
+review findings D1-D3 and C4/C5") and its follow-up `3be7e20e`, which reverts the migration-024
+comment edit that schema-control's `migration-immutable-file-modified` rule rejects. Every other
+commit in the range is CI workflow work. So every standing finding not touched by `39b5516a` —
+C1–C3, C6, C7, A1–A4, B1–B7, N4/N5, N6, P1, P3b, P4, A2 and the deferred quartet — stands unchanged
+at the anchors those passes recorded, and this pass did not re-derive them.
+
+This pass did two things: independently re-verified the five closures `39b5516a` claims, and framed
+on the one remaining part of the subsystem with near-zero prior coverage — **the snapshot and
+projection-cache read path, and the data-quality scan that shares its universe-load primitive**.
+Both sit directly in this review's declared scope ("snapshot/projection architecture", "metadata
+validation"); before this pass `WarmAsync`, `SecurityMasterDataQualityService` and the warm path's
+cost appeared zero times in this document, and `SnapshotStore` twice in passing.
+
+The verdict is unchanged. What this pass adds is that the subsystem's **universe-load primitive is
+an N+1 that every full-universe operation rides**, and that the data-quality lane — which is
+otherwise catalog-driven — reverts to naming asset classes by string literal in exactly the rules
+where the catalog already declares the predicate.
+
+### Claimed closures, independently re-verified
+
+All five verify at `e173437e`. Recorded here so the next pass need not re-derive them.
+
+| # | Claim | Verified |
+| --- | --- | --- |
+| C4 | Create is gated on `SecurityKindMappingMode.Write` | Yes. `SecurityMasterMapping.cs:19` passes `Write` from the create path; the fallback arm at `:417` refuses before the `OtherSecurity` degradation at `:423`, which stays intact for read mode. The same gate is applied at `:448`, `:516`, `:599`, `:963` and `:975`, so it is a mapping-wide rule, not a create-path special case. |
+| C5 | The two optional numeric readers check kind before reading | Yes. `PostgresSecurityMasterStore.cs:1834-1846` — both check `ValueKind == JsonValueKind.Number` before `TryGetDecimal` / `TryGetInt32`. `GetOptionalBool` (`:1848-1852`) already had the equivalent guard; no other reader on this path lacks one. |
+| D2 | Version 2 is reserved, and the chain no longer dispatches on the bare integer | Yes. `SecurityMasterSchemaVersions.cs:29` declares `ReservedForEconomicTerms = 2` with the reason at the declaration; `SecurityAssetSpecificTermsUpcasterChain.cs:215` dispatches on `IsEconomicTermsDocument`, which (`:93-99`) requires the economic version **and** an economic-terms module key, so a flat payload stamped 2 passes through with its version preserved instead of being emptied to `{"schemaVersion":1}`. |
+| D3 | `securities.schema_version` has one definition | Yes. `PostgresSecurityMasterStore.cs:318-324` states it — the version stamped on the stored blob — and the upsert binds it at `:346`. Migration 024's backfill implements the same definition. The `ISchemaUpcaster` constructor seam is gone. |
+| D1 (partial) | Comments corrected, marker stamped, coverage test added | Yes, as scoped. The bridge itself is still lossy and the resolution pass says so. |
+
+**A narrowing D1 could not make, and this pass can.** The 2026-09-10 pass wrote that whether events
+carrying a null `legacyAssetSpecificTerms` exist "is a question about deployment history that cannot
+be answered from the repository." For payloads *this codebase writes*, it can be: the lossy fallback
+is unreachable. `SecurityEconomicDefinitionAdapter.ToEconomicRecord` (`:12-36`) ends by passing
+`projection.AssetSpecificTerms` — a non-nullable `JsonElement` — into the `LegacyAssetSpecificTerms`
+slot, unconditionally. Both persisted payload shapes are serialized from that record: the event
+envelope at `SecurityMasterMapping.cs:115-117` and the snapshot at `:140-147`. All three write paths
+that produce either (`SecurityMasterService.cs:131`, `:265`, `:314`) build the record through
+`ToEconomicRecord` before calling `SaveSnapshotIfNeededAsync` (`:174`, `:276`, `:332`). So every
+event and every snapshot written in process carries the retained v1 payload, and
+`ToProjection` takes the authoritative branch rather than the bridge. D1's lossless half therefore
+guards a payload shape no current writer emits — it remains worth doing for imported or
+externally-authored streams and as the codec-generation seam, but it should rank below the standing
+correctness items rather than above them.
+
+### E1 — The universe-load primitive is an N+1, and the startup warm, the periodic re-warm, the full rebuild and the quality scan all ride it
+
+`PostgresSecurityMasterStore.LoadByStatusAsync` (`:218-251`) — reached through `LoadAllAsync`
+(`:212`) and `LoadActiveAsync` (`:215`) — selects **only `security_id`** for the whole universe, then
+loops the ids calling `GetProjectionCoreAsync(connection, id, ct)` (`:243`). That method issues three
+queries per security: the `securities` row (`:511-532`), then `LoadIdentifiersAsync` (`:557`) and
+`LoadAliasesAsync` (`:558`). So the primitive is `1 + 3N` queries, on one shared connection.
+
+`SecurityMasterProjectionService.BuildWarmSetAsync` (`:26-44`) then layers a second N+1 on top. For
+each seed it calls `SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync` (`:33`), which
+performs a snapshot load (`SecurityMasterAggregateRebuilder.cs:33`) and an event load (`:38`) — and
+**each of those opens its own connection**: `PostgresSecurityMasterSnapshotStore.LoadAsync` opens at
+`:19`, `PostgresSecurityMasterEventStore.LoadAsync` opens at `:93`. Neither takes a caller-supplied
+connection; there is no bulk or batched variant of either on the interface.
+
+The composed cost of one warm is therefore **`5N + 1` queries and `2N + 1` connection opens, issued
+serially**. There is no `IN`-list load, no join, no paging, and no parallelism.
+
+Where it fires:
+
+- **Every process start**, when `PreloadProjectionCache` is true — and it defaults to `true`
+  (`SecurityMasterOptions.cs`). The warm is awaited inside `StartAsync`
+  (`SecurityMasterProjectionWarmupService.cs:50`), so it is on the host startup path.
+- **Every `ProjectionCacheRefreshMinutes`**, which is the documented remedy for multi-node cache
+  coherence (`:94`). The tighter the staleness bound an operator asks for, the more often the full
+  `5N + 1` runs.
+- **Every full projection rebuild.** `SecurityMasterRebuildOrchestrator.cs:53` calls
+  `BuildWarmSetAsync`; the store-backed rebuild at `:119-138` repeats the same `LoadAllAsync` shape
+  and adds a per-record `UpsertProjectionAsync` (`:137`), which is the fan-out standing finding N6
+  already describes as writing every asset-class projection table on every upsert. E1 and N6 compose
+  on exactly this path.
+- **Every data-quality scan.** `SecurityMasterDataQualityService.RunQualityChecksAsync` (`:65`)
+  opens with `LoadActiveAsync`, so the scan pays `1 + 3N` before its first rule runs.
+
+`LoadAllAsync` passes `activeOnly: false`, so the warm caches the entire universe including inactive
+and matured securities — the set that only grows.
+
+Two things make this worth filing rather than noting. First, it is **in the shared primitive**, not
+in one caller, so no single call site can be fixed in isolation and four unrelated lanes inherit it.
+Second, the cache's own documentation makes a staleness promise this cost silently weakens: the
+comment at `SecurityMasterProjectionCache.cs:19-24` and the option's own summary both state that
+cross-node staleness is bounded by the refresh interval. The true bound is the interval **plus the
+duration of a `5N + 1` serial warm**, which at institutional universe sizes is not a rounding error
+against a refresh interval an operator would plausibly choose. Nothing measures or logs that
+duration — `WarmAsync` logs only the record count (`SecurityMasterProjectionService.cs:50-52`).
+
+This is a scale finding, not a correctness one, and this review has no benchmark evidence to
+quantify it; the claim is about query count per warm, which is read off the call graph above. The
+remedies are ordinary and independent of each other: give the projection store a batched load (one
+query per table for the universe, joined or `IN`-listed, instead of three per security); give the
+snapshot and event stores connection-accepting or id-batched overloads so the warm reuses the
+connection the projection load already holds; and log the warm's elapsed time alongside its count so
+the staleness bound is observable. Until at least the last of those lands, the documented bound
+should be stated as interval-plus-warm-duration rather than interval.
+
+### E2 — The value-consistency rules name two asset classes by string literal, where the catalog already declares the predicate
+
+`SecurityMasterDataQualityService` is otherwise the catalog-driven surface this review keeps asking
+for. Its minimum-attribute rule reads the predicate off the registry —
+`SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresMaturity` (`:106`) — so a new asset class
+that declares it inherits the check with no edit here.
+
+The consistency rules do not. Both of them match a literal:
+
+- `:216` — `string.Equals(security.AssetClass, "Bond", ...)` gates VC002, "maturity must be after
+  issue date."
+- `:234` — `string.Equals(security.AssetClass, "Option", ...)` gates VC003, "active option has an
+  expiry in the past."
+
+`RequiresMaturity: true` is declared by **five** classes, not one:
+`Bond` (`SecurityAssetClassCatalog.cs:74`), `CertificateOfDeposit` (`:133`), `CommercialPaper`
+(`:149`), `TreasuryBill` (`:165`) and `Swap` (`:233`). VC002 fires for one of them. A CD, a
+commercial-paper note, a T-bill or a swap whose maturity precedes its issue date is caught by the
+minimum-attribute rule (the field must be *present*) and passes the consistency rule (nothing checks
+it is *ordered*) — the rule the catalog has already said applies to them.
+
+This is the fragile pattern the review's standing complaint names, in a lane that had otherwise
+escaped it: the predicate exists, is declared per class, is read three lines away, and the rule that
+needs it re-derives it as a string literal instead. Both rules also carry a field-name fallback pair
+— `"maturity" ?? "maturityDate"` (`:220-221`) and `"expirationDate" ?? "expiry"` (`:236-237`) — which
+is the same symptom C1/D1 describe from the other end: the flat v1 spelling is not canonical, so
+every consumer guesses at it.
+
+The fix is small and needs no design decision: drive VC002 off `RequiresMaturity` as `:106` already
+does, and give the catalog the one descriptor flag VC003 needs (an expiry-bearing predicate, which
+`Option`, `Future`, `Warrant` and the dated derivatives would all set) rather than matching
+`"Option"`. That converts two hand-maintained special cases into two catalog reads and picks up four
+asset classes that are silently unchecked today.
+
+### Smaller notes, not filed as findings
+
+- **`PostgresSecurityMasterSnapshotStore.SaveAsync` has no version fence.** The upsert
+  (`:52-55`) is an unconditional `on conflict (security_id) do update set version = excluded.version`,
+  so a stale concurrent save can regress the stored snapshot version. It is benign today and worth
+  recording as *why* it is benign rather than leaving it to be rediscovered: the only reader,
+  `RebuildEconomicDefinitionAsync`, filters events on `e.StreamVersion > snapshot.Version`
+  (`SecurityMasterAggregateRebuilder.cs:39`) and each payload carries the full definition, so a
+  regressed snapshot causes *over*-replay, which converges to the same state. A snapshot can never be
+  newer than its own payload. The fence becomes necessary only if a reader ever trusts
+  `snapshot.Version` as a high-water mark without replaying past it.
+- **The as-of rebuilds correctly ignore snapshots.** `RebuildAsOfAsync` (`:61-82`) and
+  `RebuildRecordedAsOfAsync` (`:91-113`) fold the event stream alone. That is the right call — the
+  snapshot table is keyed `security_id primary key` (`001_security_master.sql:80-85`), so it holds
+  only the latest state and would be wrong for any historical cutoff. Noted because it is an easy
+  future "optimisation" to get wrong, and nothing in the code says why the snapshot is skipped.
+- **`SecurityMasterProjectionCache` is sound.** The `volatile` field plus whole-dictionary
+  `ReplaceAll` swap (`:47-56`) delivers the atomicity its comment claims, and the comment is accurate
+  about the `Upsert`-racing-`ReplaceAll` case. No finding; recorded so the next pass can skip it.
+- **The warmup service's failure handling is right.** The initial warm is caught and logged rather
+  than failing startup (`:62-66`), the periodic loop starts even when the initial warm failed
+  (`:69-74`) which is what recovers a cold cache, and a failed refresh keeps serving the previous
+  complete set (`:100-104`). Cancellation is distinguished from failure at both sites.
+
+### Priorities from this pass
+
+Read as a delta on the standing lists.
+
+1. **Everything still stays behind the standing correctness items** — the open halves of P1, P3b and
+   P4, and the B-series accounting findings. This pass files no correctness defect and does not
+   displace them.
+2. **Drive VC002/VC003 off the catalog (E2).** The cheapest item in this pass: two catalog reads
+   replacing two string literals, picking up four asset classes that are unchecked today. It needs
+   one new descriptor flag for the expiry predicate.
+3. **Log the warm's elapsed time, and correct the staleness bound (E1).** A stopwatch and a log
+   field, plus two comment corrections — the same shape of fix as D1's cheap half, and it makes a
+   promise the subsystem currently states without measuring into one an operator can verify.
+4. **Batch the universe load (E1).** The durable fix: one query per table for the universe instead
+   of three per security, and connection-accepting overloads on the snapshot and event stores. Larger
+   than the rest of this pass and worth sizing against N6, which it shares a path with.
+5. **Re-rank D1's lossless half downward.** Per the narrowing above, it guards a payload shape no
+   current writer emits. It stays open as the codec-generation seam, not as a live data-loss risk.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -5518,3 +5701,62 @@ with the regenerated `docs/status/` reports correctly recognized as generated-ex
 check on this document, not on the subsystem it reviews, and it is recorded here only so the
 paragraph above is not read as claiming more silence than the pass kept — the same correction the
 2026-09-08 pass had to make after the fact (`4481741f`), made here before it was needed.
+
+The 2026-09-11 pass established the delta with `git log --since=2026-09-09` per anchor directory,
+confirming the only Security Master source commits in the range are the 2026-09-10 resolution work
+and its migration-024 revert. It then re-verified `39b5516a`'s five closures at their cited anchors
+(C4's write-mode gate and its five sibling sites, C5's two readers and the `GetOptionalBool`
+neighbour, D2's reservation and the module-key discriminator, D3's single definition in both
+writers) and — new to this pass — read the snapshot and projection-cache read path end to end:
+`SecurityMasterProjectionCache`, `PostgresSecurityMasterSnapshotStore`,
+`SecurityMasterProjectionWarmupService`, `SecurityMasterProjectionService`,
+`SecurityMasterRebuildOrchestrator`, `PostgresSecurityMasterStore.LoadByStatusAsync` /
+`GetProjectionCoreAsync`, `PostgresSecurityMasterEventStore.LoadAsync`, migration 001's
+`security_snapshots` definition, and `SecurityMasterDataQualityService`.
+
+E1's `5N + 1` is a count read off the call graph — one id query, three per security in
+`GetProjectionCoreAsync`, two more per security in `RebuildEconomicDefinitionAsync` — not a measured
+figure; no benchmark was run and the finding says so. The D1 narrowing was established the way the
+2026-09-10 method note says D1's reachability was: by enumerating every construction site of the
+record and every writer of an event or snapshot payload, and finding all of them route through
+`ToEconomicRecord`. It is a claim about payloads this codebase writes, and it makes no claim about
+payloads written by any other producer or by an earlier version of this one.
+
+No code was changed. No .NET or TypeScript test was run and no reviewed code path was executed — the
+.NET SDK is not present in this pass's environment either — so every claim above is a source claim.
+
+The documentation validation that did run, on this pass's docs-only diff: `check-ai-inventory`
+(pass, 324 items, 0 findings), `check-ai-handoff` (pass), `validate-docs-structure` (pass, with the
+457 pre-existing front-matter warnings this repository already carries) and `validate-examples`
+(1,022 blocks, 0 invalid). `validate-doc-hashes` reports source-hash drift under `src/Meridian`,
+`src/Meridian.Risk`, `src/Meridian.Storage` and `src/Meridian.Ui.Shared`; that drift is **pre-existing
+on `main` and unrelated to this pass** — confirmed by re-running the check against a stashed tree,
+which reports the same errors — and this pass touched no source file, so it is recorded here rather
+than repaired, since repairing it would mean regenerating source docs this review did not author.
+
+**Two CI gates this pass tripped, recorded so the next one does not.** Appending a section to this
+document is never a docs-only change in CI's eyes, and the two failures are both mechanical:
+
+1. **`verify-docs` — the whole-repo generated-doc drift check.** `scripts/ci.sh --lane verify-docs`
+   regenerates `docs/status/doc-health-dashboard.{json,md}` and rejects any diff, and those
+   dashboards carry this file's line count and the repo-wide totals it rolls into. Growing this
+   document by 215 lines therefore reds the lane until the dashboards are regenerated **and
+   committed in the same push**. Reproduce CI exactly: run `build/scripts/docs/scan-todos.py
+   --json-output docs/status/todo-scan-results.json` **first** — the artifact is gitignored and CI's
+   TODO-registry step produces it before the drift check, so generating without it yields a
+   different dashboard than CI's — then `run-docs-automation.py --scripts
+   generate-structure-docs,generate-health-dashboard,generate-workflow-manifest`, then
+   `generate-structure-docs.py --workflows-only`, then confirm with `git diff --exit-code` over the
+   five paths `ci.sh` names. This is the same lesson `3be7e20e` recorded for the 2026-09-10 pass,
+   generalized: it is not specific to that pass's TODO-scan artifact.
+2. **`scope-gate` — the roadmap phase gate.** `tools/roadmap/enforce_phase_scope.py` fails closed
+   with "No phase declaration found" unless the PR declares a phase. Every path in a pass like this
+   one is under `docs/**`, so **`PR1`** is the narrowest covering phase (`PR0` covers only
+   `docs/roadmap/**` and `docs/roadmap-governance/**`, which this document is not under). Declare it
+   as `<!-- phase:PR1 -->` in the PR body **when the PR is opened**. The gate reads `PR_BODY` and
+   `PR_LABELS` from `github.event.pull_request.*` — the event payload, frozen at trigger time — and
+   `roadmap-source-docs.yml` declares `pull_request` with no `types:`, so it fires only on
+   `opened`/`synchronize`/`reopened`. Editing the body or adding a `phase:PR1` label afterwards
+   therefore triggers nothing, and re-running the job replays the stale payload: the declaration
+   only takes effect on the next commit pushed to the branch. Adding it up front costs nothing;
+   adding it late costs a push.
