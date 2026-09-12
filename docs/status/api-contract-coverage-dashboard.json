@@ -2003,25 +2003,25 @@
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/projection-sets",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:532",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:533",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/tests",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:575",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:576",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/activate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:616",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:617",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/accounting-configuration/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:651",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:652",
       "documented": true
     },
     {

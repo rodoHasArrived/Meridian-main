@@ -766,6 +766,15 @@
       "sha256": "c93bed68afbf0f861cbe570568348b6f9df3ec2c7fbdca8ddd6a95d43c0bb5a6"
     },
     {
+      "filename": "V_ledger_036__ledger_event_audit_chain.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_036__ledger_event_audit_chain.sql",
+      "schema": "ledger",
+      "sha256": "c085d7e99a17c3d2c12d1e5e6dd937aca7b1fa7d5bd9cd1d471fd1af539178f9"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1001,7 +1010,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "1a58de3ce729b19880e7ac381ef20dd4c19982a77de13b441f111f443d42aa6c",
+  "fingerprint": "66681e2c359aa906e306329ecf48bab0d259cca1dbe9c36fb6625c23dd3ec2bb",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1239,7 +1248,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 111,
+    "files": 112,
     "migration_sets": 10,
     "waivers": 7,
     "warnings": 0
