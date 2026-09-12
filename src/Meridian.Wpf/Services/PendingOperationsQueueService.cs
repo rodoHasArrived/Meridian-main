@@ -318,7 +318,7 @@ public sealed class PendingOperationsQueueService
     /// <returns>A task representing the async operation.</returns>
     public async Task ProcessAllAsync(CancellationToken ct = default)
     {
-        var count = _queue.Count;
+        var count = PendingCount;
         for (var i = 0; i < count; i++)
         {
             if (!TryDequeueNext(out var op))
