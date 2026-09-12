@@ -11,6 +11,11 @@ last_reviewed: 2026-09-05
 
 # src/Meridian.FinancialOperations
 
+Generated candidate posts retain the validated posting actor in the approved command. Replays
+use the journal's versioned, command-normalized `postingActor`; unversioned legacy metadata remains unattributed rather
+than acquiring the identity of a later caller. Durable mutation/audit atomicity is owned by the
+PostgreSQL journal store, including the atomic tax-lot posting path.
+
 Operations Continuity forwards the journal candidate's typed provenance to the governed posting
 command. PostgreSQL round-trip coverage verifies that seeded origins retain the `SEEDED` journal
 tag and that fixture evidence marked as real cannot commit a journal or a successful posting audit.
@@ -23,18 +28,10 @@ Close acceptance additionally proves account/entity/book subject ownership indep
 
 Hard close and workflow publication re-evaluate shared readiness before mutation, including callers outside the workstation HTTP route. Complete subject scope, authenticated tenant/company, exact workflow revision, and current retained prerequisites are required. Close packages, locks, and published exports are outputs of that transition; they do not create circular prerequisites. Historical approval decisions stay visible while the current decision controls readiness. The retained close plan proves each task's required sign-offs; calendar reviewer totals describe a different approval dimension.
 
-Private-capital close evidence is selected by fund event, period, and ledger entity. Partner
-statements must reference a selected event in the same month and match the capital account,
-investor, and currency. Each selected expense or fee event must retain allocation support;
-management-company evidence signals also come from selected event records. Cumulative
-capital-account balances, history, and evidence remain available as diagnostics, but prior-period
-or other-entity statement and allocation evidence cannot satisfy the selected close.
-`PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for
-mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support,
-and restores readiness by repairing that support while preserving cumulative balances and history.
-A separate scenario rejects a foreign-period statement even when it carries the selected event ID.
-These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending
-the required hosted integration evidence.
+Operations Continuity checklist acknowledgments are explicit retained reviewer actions, separate from gate execution completion. The checklist uses gate-specific evidence or the successful gate completion audit receipt, follows retained audit links, and invalidates acknowledgments when prerequisite evidence changes, approval is rejected, or a closed workflow is reopened. Failed attempts do not count as acknowledgments or evidence changes. Submission, approval, and close validate supplied control identities and timestamps against current retained acknowledgments; historical close packages cannot authorize a new close cycle. The assigned independent reviewer records the decision at its actual time, preserving the original submitter and submission time. Successful prerequisite changes return an active approval to Pending while retaining its history.
+
+Private-capital close evidence is selected by fund event, period, and ledger entity. Partner statements must reference a selected event in the same month and match the capital account, investor, and currency. Each selected expense or fee event must retain allocation support; management-company evidence signals also come from selected event records. Cumulative capital-account balances, history, and evidence remain available as diagnostics, but prior-period or other-entity statement and allocation evidence cannot satisfy the selected close.
+`PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support, and restores readiness by repairing that support while preserving cumulative balances and history. A separate scenario rejects a foreign-period statement even when it carries the selected event ID. These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending the required hosted integration evidence.
 
 ## Purpose
 

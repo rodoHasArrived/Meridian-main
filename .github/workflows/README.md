@@ -9,6 +9,28 @@ scope.
 
 ## Active Workflows
 
+## Dependency caches and artifacts
+
+`meridian-ci.yml` caches NuGet packages using project files, nested shared build/package
+properties and targets, lockfiles, the case-sensitive `NuGet.Config`, and `global.json`.
+Restore still runs after every cache hit so cached packages never replace dependency validation.
+The browser lane prefers cached npm tarballs while retaining `npm ci`, optional packages,
+lockfile integrity checks, and npm's normal audit behavior. The docs and workflow lanes share
+a pip download cache keyed by `build/scripts/docs/requirements.txt`; both still install the
+pinned requirements on every run.
+
+Publish Smoke installs Node.js and restores npm's cache
+only for `web-workstation`, the publish path that actually builds the browser bundle;
+collector and desktop publication still run their publish and release-evidence steps.
+
+Lane artifacts use compression level 1 to reduce compression CPU time, with a possible increase
+in archive size. Browser evidence includes the actual Vite output in
+`src/Meridian.Ui/wwwroot/workstation/` plus build logs; workflow evidence also retains its hygiene
+log. Every lane still runs on every applicable trigger, uploads evidence on success or failure,
+and must succeed before the stable `quality-gate` can pass. Cache savings depend on cache warmth
+and network conditions; compare lane durations in `artifacts/ci-summary/` and Actions step timings
+before claiming an end-to-end speedup.
+
 ## Canonical lane mapping
 
 | Lane | Workflow alignment |
@@ -27,13 +49,39 @@ scope.
 | `verify-release` | `Publish Smoke` (`publish-smoke.yml`) and `Desktop Installer Packaging` (`desktop-installer-packaging.yml`). |
 | `production-certification` | `Production Certification` (`production-certification.yml`) for PostgreSQL integrations, zero-skip coverage, dependency scans, encrypted recovery drill, and same-commit docs evidence. |
 
+`verify-dotnet` retains the web-host build, then builds all unique default test projects in
+one ordinary MSBuild solution-filter invocation for the standard `Release` configuration.
+The filter is derived from the validated test roster, so shared dependencies are traversed
+within one build instead of restarting MSBuild for
+every test project. Normal project-reference traversal and worker-payload copy targets remain
+enabled. The generated filter and grouped build log are retained with the test evidence. If the
+grouped build fails, serial project builds collect diagnostics; the original failure remains
+fatal even if those diagnostic builds pass, and no test shards start. The runner checks that
+the solution enables every selected project in `Release` without remapping its configuration.
+Explicit `--project` overrides and other configurations keep the serial build path.
+
+`verify-dotnet` sets `MERIDIAN_CI_TEST_MAX_PARALLEL=2` on its hosted runner. Restore,
+formatting, static checks, the web-host build, and test-project build retain their order; only
+the already-built test shards overlap. The runner defaults to one test process locally and accepts an explicit
+`--max-parallel` override. Each shard writes separate TRX and console logs; its temporary
+fixture files are isolated outside uploaded results and removed after the process exits.
+The JSON/Markdown summaries retain every result in roster order and include elapsed durations.
+All shards are attempted after a test failure, and the lane fails if any shard fails. The
+test filters, complete project roster, catch-all shard, and hang timeout are unchanged.
+
+Golden Path starts its browser, WPF, and pilot harness jobs independently. The existing
+`Pilot Acceptance Evidence` check waits for all three and rejects failure, cancellation,
+or skipped validation. Uploaded harness artifacts are diagnostic evidence, not a substitute
+for that final gate. These scheduling changes require human governance review. Compare
+hosted job and shard timings separately from runner queue delays before claiming a speedup.
+
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
 | Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports one stable `quality-gate` aggregator result. `Meridian CI / quality-gate` is the required status check for protected `main` merges after repository rulesets are enabled. | Lane summaries, build logs, TRX summaries, docs outputs, and workflow-hygiene evidence |
 | CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | Keeps PR secret scanning separate from the required `Meridian CI / quality-gate`, while legacy dotnet/browser/docs evidence jobs are gated away from normal PR runs. Nightly/manual `main` runs keep verify-full coverage evidence current. | Secret scan SARIF/evidence, .NET build logs, TRX summaries, browser bundle, and coverage artifacts |
 | CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | CodeQL security alerts surfaced in the repository Security tab |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop, WPF route, and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |
-| Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Blocks pilot acceptance on browser `test:w4` parity and Windows `Category=W4Acceptance` desktop coverage before running `PilotAcceptanceHarnessTests`, validating the pilot readiness dashboard renderer, and uploading evidence bundles. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
+| Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Runs browser `test:w4`, Windows `Category=W4Acceptance`, and the pilot harness/dashboard checks in parallel. The stable `Pilot Acceptance Evidence` gate requires all three jobs to succeed; diagnostic evidence remains available on failure. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
 | Demo Smoke | `demo-smoke.yml` | Demo seed/CLI/onboarding changes or manual | Seeds the isolated demo workspace and boots the workstation on it, asserting the reconciliation and strategy screens render populated (HTTP 200, not empty, not 501), that seeded records survive a restart with `Seeded` provenance, and that `--reset-demo` refuses any non-demo root. A broken first-run fails here instead of a first evaluation. | `demo-smoke-evidence` |
 | Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Runs the isolated WPF validation script on Windows, including build-once/test-without-rebuild behavior. Desktop smoke publish runs on `main`, manual request, or PR changes to the WPF/publish graph. | WPF validation bundle and optional desktop smoke publish output |
 | WPF Dev Loop Validation | `wpf-dev-validation.yml` | WPF, WPF dependency, desktop workflow script, or manual changes | Runs `scripts/dev/validate-wpf-dev.ps1` with the desktop workflow script-test default or a manual filter override. | WPF dev-loop evidence |
