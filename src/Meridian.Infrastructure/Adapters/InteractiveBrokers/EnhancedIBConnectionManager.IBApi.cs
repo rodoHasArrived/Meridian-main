@@ -1291,6 +1291,13 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                 // that already finished. A rejected scanner's retention ends with it too, or
                 // the reconnect replay would re-issue a subscription the vendor refused.
                 _scannerSubscriptions.TryRemove(id, out _);
+                // A rejected depth-exchange submission leaves its slot in the shared correlation
+                // FIFO, and no vendor cancel exists for the directory, so the slot would claim the
+                // next successful callback for a request that is already terminal: the payload is
+                // discarded downstream and the live request behind it never completes. The
+                // cancellation and submission-failure paths already end liveness for exactly this
+                // reason; a rejection is the third way a submission dies.
+                _liveDepthExchangeSubmissions.TryRemove(id, out _);
                 RequestRejected?.Invoke(this, (id, errorCode.ToString(CultureInfo.InvariantCulture), errorMsg));
             }
         }
