@@ -28,8 +28,12 @@ public sealed record EuropeanWaterfallInput
             throw new ArgumentOutOfRangeException(nameof(amountToDistribute), amountToDistribute, "Amount to distribute cannot be negative.");
         if (carryRate < 0m || carryRate >= 1m)
             throw new ArgumentOutOfRangeException(nameof(carryRate), carryRate, "Carry rate must be in [0, 1).");
-        if (catchUpRate <= 0m || catchUpRate > 1m)
-            throw new ArgumentOutOfRangeException(nameof(catchUpRate), catchUpRate, "Catch-up rate must be in (0, 1].");
+        // A catch-up rate below the carry rate can never bring the GP to its carry share, so the
+        // tier would silently be skipped and the residual carry rate would overpay the GP.
+        // Equality is the boundary that stays valid: it is how fund terms with no special GP
+        // catch-up are expressed, and the calculation treats it as the no-catch-up case.
+        if (catchUpRate < carryRate || catchUpRate > 1m)
+            throw new ArgumentOutOfRangeException(nameof(catchUpRate), catchUpRate, "Catch-up rate must be at least the carry rate and no more than 1.");
         if (priorReturnOfCapital < 0m || priorPreferredPaid < 0m || priorGpCatchUp < 0m)
             throw new ArgumentOutOfRangeException(nameof(priorReturnOfCapital), "Prior cumulative amounts cannot be negative.");
         if (priorCatchUpPool < 0m)
