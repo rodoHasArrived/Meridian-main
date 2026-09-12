@@ -45,6 +45,17 @@
                         <Setter Property="Cursor" Value="Arrow" />
                         <Setter Property="Focusable" Value="False" />
                     </DataTrigger>
+                    <!-- A bound command reporting CanExecute = false disables the button, and
+                         an inert button advertises just as broken an affordance as a
+                         commandless one: the hand cursor and a tab stop would promise a click
+                         that cannot run. The automation role deliberately stays Button — a
+                         disabled action is still an action, and assistive technology reports
+                         its unavailability through the enabled state rather than the role —
+                         and ShowOnDisabled keeps the explanation tooltip readable. -->
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Cursor" Value="Arrow" />
+                        <Setter Property="Focusable" Value="False" />
+                    </Trigger>
                 </Style.Triggers>
             </Style>
         </Button.Style>

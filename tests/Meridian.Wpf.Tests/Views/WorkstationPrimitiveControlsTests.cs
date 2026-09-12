@@ -878,7 +878,7 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     [Fact]
-    public void DataConfidenceIndicator_WithoutACommand_DoesNotOfferClickAffordance()
+    public void DataConfidenceIndicator_WithoutAnExecutableCommand_DoesNotOfferClickAffordance()
     {
         WpfTestThread.Run(() =>
         {
@@ -899,11 +899,26 @@ public sealed class WorkstationPrimitiveControlsTests
                     "a read-only badge must not advertise an Invoke action to screen readers");
                 peer.GetAutomationControlType().Should().Be(AutomationControlType.Text);
 
-                indicator.ExplanationCommand = new RoutedCommand();
-                button.Cursor.Should().Be(Cursors.Hand, "binding a command restores the click affordance");
+                indicator.ExplanationCommand = new RelayCommand(() => { });
+                button.IsEnabled.Should().BeTrue();
+                button.Cursor.Should().Be(Cursors.Hand, "binding an executable command restores the click affordance");
                 button.Focusable.Should().BeTrue();
                 peer.GetPattern(PatternInterface.Invoke).Should().NotBeNull(
                     "binding a command restores the invokable button role");
+                peer.GetAutomationControlType().Should().Be(AutomationControlType.Button);
+
+                // A command that refuses to execute disables the button, and an inert button
+                // must not promise a click either — but the role stays Button, because a
+                // disabled action is still an action and assistive technology reports its
+                // unavailability through the enabled state.
+                indicator.ExplanationCommand = new RelayCommand(() => { }, () => false);
+                button.IsEnabled.Should().BeFalse();
+                button.Cursor.Should().Be(Cursors.Arrow,
+                    "a command that cannot execute must not advertise a click");
+                button.Focusable.Should().BeFalse(
+                    "a disabled explanation must not take a keyboard tab stop");
+                peer.GetPattern(PatternInterface.Invoke).Should().NotBeNull(
+                    "a disabled action keeps the invokable button role");
                 peer.GetAutomationControlType().Should().Be(AutomationControlType.Button);
 
                 // WPF suppresses tooltips on disabled controls; the explanation must stay
