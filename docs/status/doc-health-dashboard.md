@@ -20,7 +20,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 | Metric | Value |
 | -------- | ------- |
 | Total documentation files | 666 |
-| Total lines | 143,211 |
+| Total lines | 143,218 |
 | Average file size (lines) | 215.0 |
 | Orphaned files | 253 |
 | Files without headings | 148 |
