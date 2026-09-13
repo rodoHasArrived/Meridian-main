@@ -7,6 +7,14 @@ using WpfNotificationService = Meridian.Wpf.Services.NotificationService;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
+[CollectionDefinition("NotificationCenterSerialCollection", DisableParallelization = true)]
+public sealed class NotificationCenterSerialCollection
+{
+}
+
+// Other test collections change the singleton's settings and history. Run these
+// assertions separately so notification delivery and read-state checks stay atomic.
+[Collection("NotificationCenterSerialCollection")]
 public sealed class NotificationCenterViewModelTests
 {
     [Fact]
