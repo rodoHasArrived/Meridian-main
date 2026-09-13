@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
@@ -839,6 +840,180 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("WorkstationDockStripStyle");
         xaml.Should().Contain("<Setter Property=\"CornerRadius\" Value=\"4\" />");
         xaml.Should().Contain("<Setter Property=\"BorderThickness\" Value=\"0,1,0,0\" />");
+    }
+
+    [Fact]
+    public void DataConfidenceIndicator_CommandParameterDefaultsToTheModelsExplanationRoute()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var indicator = new Meridian.Wpf.Controls.DataConfidenceIndicator
+            {
+                Model = DataConfidenceIndicatorModel.Unknown() with { ExplanationRoute = "meridian://providers/polygon" }
+            };
+            var window = Show(indicator);
+            try
+            {
+                // The model's advertised click-through route must reach the command without
+                // the caller redundantly copying it into ExplanationCommandParameter.
+                indicator.EffectiveExplanationCommandParameter.Should().Be("meridian://providers/polygon");
+                var button = indicator.FindName("ExplanationButton").Should().BeAssignableTo<Button>().Which;
+                button.CommandParameter.Should().Be("meridian://providers/polygon");
+
+                indicator.ExplanationCommandParameter = "explicit-parameter";
+                indicator.EffectiveExplanationCommandParameter.Should().Be(
+                    "explicit-parameter", "an explicit parameter overrides the model's route");
+
+                indicator.ExplanationCommandParameter = null;
+                indicator.EffectiveExplanationCommandParameter.Should().Be(
+                    "meridian://providers/polygon", "clearing the explicit parameter restores the route default");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DataConfidenceIndicator_WithoutAnExecutableCommand_DoesNotOfferClickAffordance()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var indicator = new Meridian.Wpf.Controls.DataConfidenceIndicator();
+            var window = Show(indicator);
+            try
+            {
+                // A read-only badge with no bound command must not advertise a click.
+                var button = indicator.FindName("ExplanationButton").Should().BeAssignableTo<Button>().Which;
+                button.Cursor.Should().Be(Cursors.Arrow);
+                button.Focusable.Should().BeFalse();
+
+                // Assistive technology must not see an interactive Button/Invoke role either.
+                var peer = UIElementAutomationPeer.CreatePeerForElement(button);
+                peer.GetPattern(PatternInterface.Invoke).Should().BeNull(
+                    "a read-only badge must not advertise an Invoke action to screen readers");
+                peer.GetAutomationControlType().Should().Be(AutomationControlType.Text);
+
+                indicator.ExplanationCommand = new RelayCommand(() => { });
+                button.IsEnabled.Should().BeTrue();
+                button.Cursor.Should().Be(Cursors.Hand, "binding an executable command restores the click affordance");
+                button.Focusable.Should().BeTrue();
+                peer.GetPattern(PatternInterface.Invoke).Should().NotBeNull(
+                    "binding a command restores the invokable button role");
+                peer.GetAutomationControlType().Should().Be(AutomationControlType.Button);
+
+                // A command that refuses to execute disables the button, and an inert button
+                // must not promise a click either — but the role stays Button, because a
+                // disabled action is still an action and assistive technology reports its
+                // unavailability through the enabled state.
+                indicator.ExplanationCommand = new RelayCommand(() => { }, () => false);
+                button.IsEnabled.Should().BeFalse();
+                button.Cursor.Should().Be(Cursors.Arrow,
+                    "a command that cannot execute must not advertise a click");
+                button.Focusable.Should().BeFalse(
+                    "a disabled explanation must not take a keyboard tab stop");
+                peer.GetPattern(PatternInterface.Invoke).Should().NotBeNull(
+                    "a disabled action keeps the invokable button role");
+                peer.GetAutomationControlType().Should().Be(AutomationControlType.Button);
+
+                // WPF suppresses tooltips on disabled controls; the explanation must stay
+                // readable while a bound command reports CanExecute = false.
+                ToolTipService.GetShowOnDisabled(button).Should().BeTrue(
+                    "the explanation tooltip must remain visible while the command cannot execute");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DataConfidenceIndicator_WithoutACommand_LeavesPointerInputForTheHostingRow()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var indicator = new Meridian.Wpf.Controls.DataConfidenceIndicator();
+            var window = Show(indicator);
+            try
+            {
+                // A commandless badge inside a selectable row must not consume the press:
+                // ButtonBase would capture the mouse and mark the event handled, so the row
+                // would never receive the click that selects it. The element stays
+                // hit-testable, so the explanation tooltip keeps working.
+                var button = indicator.FindName("ExplanationButton").Should().BeAssignableTo<Button>().Which;
+
+                var readOnlyPress = new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                {
+                    RoutedEvent = UIElement.MouseLeftButtonDownEvent
+                };
+                button.RaiseEvent(readOnlyPress);
+                readOnlyPress.Handled.Should().BeFalse(
+                    "a read-only badge must let the press bubble to a hosting row or card");
+
+                indicator.ExplanationCommand = new RoutedCommand();
+                var commandedPress = new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                {
+                    RoutedEvent = UIElement.MouseLeftButtonDownEvent
+                };
+                button.RaiseEvent(commandedPress);
+                commandedPress.Handled.Should().BeTrue(
+                    "a bound command restores normal button click handling");
+                button.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                {
+                    RoutedEvent = UIElement.MouseLeftButtonUpEvent
+                });
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DataConfidenceIndicator_CommandClearedMidPress_StillReleasesMouseCapture()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var indicator = new Meridian.Wpf.Controls.DataConfidenceIndicator();
+            var window = Show(indicator);
+            try
+            {
+                // With an executable command bound, ButtonBase's down handler captures the
+                // mouse; if the click-through trigger then clears the command before the
+                // up, the badge is left commandless while still owning the capture. The
+                // commandless early return must not skip the base up that releases it: a
+                // stranded capture would keep routing pointer input to an inert badge.
+                // The test pins that end state directly — capture engaged, command null.
+                var button = indicator.FindName("ExplanationButton").Should().BeAssignableTo<Button>().Which;
+                button.CaptureMouse().Should().BeTrue("a shown, enabled badge can take mouse capture");
+
+                var release = new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                {
+                    RoutedEvent = UIElement.MouseLeftButtonUpEvent
+                };
+                button.RaiseEvent(release);
+
+                release.Handled.Should().BeTrue(
+                    "a press the base began completes through the base even after the command is cleared");
+                button.IsMouseCaptured.Should().BeFalse(
+                    "completing the press must release the stranded mouse capture");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
     }
 
     private static Window Show(FrameworkElement element)
