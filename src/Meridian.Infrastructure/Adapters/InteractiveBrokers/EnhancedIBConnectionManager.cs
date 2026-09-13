@@ -69,6 +69,7 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, II
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderDividendEarnings Payload)>? DividendEarningsReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderOptionContract Contract)>? OptionContractReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderScannerResult Result)>? ScannerResultReceived;
+    public event EventHandler<int>? ScannerBatchCompleted;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderRealTimeBar Bar)>? RealTimeBarReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderAccountPnl Pnl)>? PnlReceived;
