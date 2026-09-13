@@ -217,10 +217,286 @@ public sealed class SecurityMasterRebuildOrchestratorTests
                 6L,
                 Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records => records.Count == 1 && records[0].SecurityId == securityId),
                 Arg.Any<CancellationToken>());
-            conflictService.RecordConflictsForProjectionAsync(
-                Arg.Is<SecurityProjectionRecord>(record => record.SecurityId == securityId),
+            conflictService.RecordConflictsForProjectionsAsync(
+                Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records => records.Count == 1 && records[0].SecurityId == securityId),
                 Arg.Any<CancellationToken>());
         });
+    }
+
+    /// <summary>
+    /// The batch is durably committed before conflict detection runs, and a cancellation escapes
+    /// the scan's failure boundary by design. The cache must therefore already hold the committed
+    /// batch when the scan starts: with the checkpoint advanced, the next rebuild takes the
+    /// checkpoint-current path and would never revisit these records, leaving a nonempty cache
+    /// permanently stale.
+    /// </summary>
+    [Fact]
+    public async Task RebuildAsync_WhenCancelledDuringConflictDetection_CacheAlreadyHoldsTheCommittedBatch()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var cache = new SecurityMasterProjectionCache();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var projectionService = new SecurityMasterProjectionService(store, cache, rebuilder, NullLogger<SecurityMasterProjectionService>.Instance);
+        var options = new SecurityMasterOptions { PreloadProjectionCache = true, ProjectionReplayBatchSize = 10 };
+
+        cache.Upsert(CreateProjection(Guid.NewGuid(), "Existing", 1));
+
+        var projection = CreateProjection(securityId, "Tail Name", 3);
+
+        store.GetCheckpointAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(5L);
+        eventStore.GetLatestSequenceAsync(Arg.Any<CancellationToken>()).Returns(7L);
+        eventStore.LoadSinceSequenceAsync(5L, 10, Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                new SecurityMasterEventEnvelope(
+                    6,
+                    securityId,
+                    3,
+                    "TermsAmended",
+                    DateTimeOffset.UtcNow,
+                    "codex",
+                    null,
+                    null,
+                    JsonSerializer.SerializeToElement(projection, Meridian.Core.Serialization.SecurityMasterJsonContext.Default.SecurityProjectionRecord),
+                    JsonSerializer.SerializeToElement(new { sourceSystem = "test" }))
+            });
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(projection);
+        snapshotStore.LoadAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns((SecuritySnapshotRecord?)null);
+        conflictService.RecordConflictsForProjectionsAsync(
+                Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromException(new OperationCanceledException()));
+
+        var orchestrator = new SecurityMasterRebuildOrchestrator(
+            eventStore,
+            store,
+            cache,
+            rebuilder,
+            projectionService,
+            options,
+            NullLogger<SecurityMasterRebuildOrchestrator>.Instance,
+            conflictService);
+
+        var act = () => orchestrator.RebuildAsync();
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        cache.Get(securityId).Should().NotBeNull(
+            "the committed batch must reach the cache before the cancellable conflict scan");
+    }
+
+    /// <summary>
+    /// The replay checkpoint is persisted before conflict detection runs, so a batch whose
+    /// detection fails would otherwise never be rescanned: the next rebuild takes the
+    /// checkpoint-current path. A transient failure must therefore be retried after replay
+    /// rather than only logged.
+    /// </summary>
+    [Fact]
+    public async Task RebuildAsync_WhenConflictDetectionFailsForABatch_RetriesThatBatchAfterReplay()
+    {
+        var securityId = Guid.NewGuid();
+        var (orchestrator, conflictService, _) = CreateReplayScenario(securityId);
+        conflictService.RecordConflictsForProjectionsAsync(
+                Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(
+                _ => Task.FromException(new InvalidOperationException("conflict store unavailable")),
+                _ => Task.CompletedTask);
+
+        await orchestrator.RebuildAsync();
+
+        await conflictService.Received(2).RecordConflictsForProjectionsAsync(
+            Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records => records.Count == 1 && records[0].SecurityId == securityId),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RebuildAsync_WhenConflictDetectionFailsTwice_CompletesTheRebuildWithoutThrowing()
+    {
+        var securityId = Guid.NewGuid();
+        var (orchestrator, conflictService, _) = CreateReplayScenario(securityId);
+        conflictService.RecordConflictsForProjectionsAsync(
+                Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromException(new InvalidOperationException("conflict store unavailable")));
+
+        var act = () => orchestrator.RebuildAsync();
+
+        await act.Should().NotThrowAsync();
+        await conflictService.Received(2).RecordConflictsForProjectionsAsync(
+            Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RebuildAsync_WhenDeferredReloadFails_CompletesTheRebuildWithoutThrowing()
+    {
+        var securityId = Guid.NewGuid();
+        var (orchestrator, conflictService, store) = CreateReplayScenario(securityId);
+        conflictService.RecordConflictsForProjectionsAsync(
+                Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromException(new InvalidOperationException("conflict store unavailable")));
+        // First read seeds the replay fold; the second is the deferred retry's reload, where a
+        // transient store failure must degrade to a logged error, not fail the committed rebuild.
+        var projection = (await store.GetProjectionAsync(securityId, CancellationToken.None))!;
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(
+                _ => Task.FromResult<SecurityProjectionRecord?>(projection),
+                _ => Task.FromException<SecurityProjectionRecord?>(new IOException("projection store unavailable")));
+
+        var act = () => orchestrator.RebuildAsync();
+
+        await act.Should().NotThrowAsync();
+        await conflictService.Received(1).RecordConflictsForProjectionsAsync(
+            Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// The deferred retry reloads each security individually, and the projection checkpoints have
+    /// already committed — so one security's transient reload failure must not abandon the scan
+    /// for the rest of the deferred population, or every other deferred ambiguity stays invisible
+    /// until a full conflict refresh.
+    /// </summary>
+    [Fact]
+    public async Task RebuildAsync_WhenOneDeferredReloadFails_StillScansTheRemainingDeferredSecurities()
+    {
+        var firstId = Guid.NewGuid();
+        var secondId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var cache = new SecurityMasterProjectionCache();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var projectionService = new SecurityMasterProjectionService(store, cache, rebuilder, NullLogger<SecurityMasterProjectionService>.Instance);
+        var options = new SecurityMasterOptions { PreloadProjectionCache = true, ProjectionReplayBatchSize = 10 };
+
+        cache.Upsert(CreateProjection(Guid.NewGuid(), "Existing", 1));
+        var firstProjection = CreateProjection(firstId, "First Name", 3);
+        var secondProjection = CreateProjection(secondId, "Second Name", 3);
+
+        store.GetCheckpointAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(5L);
+        eventStore.GetLatestSequenceAsync(Arg.Any<CancellationToken>()).Returns(7L);
+        eventStore.LoadSinceSequenceAsync(5L, 10, Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                new SecurityMasterEventEnvelope(
+                    6,
+                    firstId,
+                    3,
+                    "TermsAmended",
+                    DateTimeOffset.UtcNow,
+                    "codex",
+                    null,
+                    null,
+                    JsonSerializer.SerializeToElement(firstProjection, Meridian.Core.Serialization.SecurityMasterJsonContext.Default.SecurityProjectionRecord),
+                    JsonSerializer.SerializeToElement(new { sourceSystem = "test" })),
+                new SecurityMasterEventEnvelope(
+                    7,
+                    secondId,
+                    3,
+                    "TermsAmended",
+                    DateTimeOffset.UtcNow,
+                    "codex",
+                    null,
+                    null,
+                    JsonSerializer.SerializeToElement(secondProjection, Meridian.Core.Serialization.SecurityMasterJsonContext.Default.SecurityProjectionRecord),
+                    JsonSerializer.SerializeToElement(new { sourceSystem = "test" }))
+            });
+        eventStore.LoadSinceSequenceAsync(7L, 10, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityMasterEventEnvelope>());
+        // First read seeds the replay fold; the second is the deferred retry's reload, which
+        // fails for this security only — the other deferred security must still be scanned.
+        store.GetProjectionAsync(firstId, Arg.Any<CancellationToken>())
+            .Returns(
+                _ => Task.FromResult<SecurityProjectionRecord?>(firstProjection),
+                _ => Task.FromException<SecurityProjectionRecord?>(new IOException("projection store unavailable")));
+        store.GetProjectionAsync(secondId, Arg.Any<CancellationToken>())
+            .Returns(secondProjection);
+        snapshotStore.LoadAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns((SecuritySnapshotRecord?)null);
+        conflictService.RecordConflictsForProjectionsAsync(
+                Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(
+                _ => Task.FromException(new InvalidOperationException("conflict store unavailable")),
+                _ => Task.CompletedTask);
+
+        var orchestrator = new SecurityMasterRebuildOrchestrator(
+            eventStore,
+            store,
+            cache,
+            rebuilder,
+            projectionService,
+            options,
+            NullLogger<SecurityMasterRebuildOrchestrator>.Instance,
+            conflictService);
+
+        var act = () => orchestrator.RebuildAsync();
+
+        await act.Should().NotThrowAsync();
+        await conflictService.Received(1).RecordConflictsForProjectionsAsync(
+            Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records =>
+                records.Count == 1 && records[0].SecurityId == secondId),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>One replayable event past the checkpoint, mirroring the recorded-conflicts scenario.</summary>
+    private static (SecurityMasterRebuildOrchestrator Orchestrator, ISecurityMasterConflictService ConflictService, ISecurityMasterStore Store) CreateReplayScenario(Guid securityId)
+    {
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var cache = new SecurityMasterProjectionCache();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var projectionService = new SecurityMasterProjectionService(store, cache, rebuilder, NullLogger<SecurityMasterProjectionService>.Instance);
+        var options = new SecurityMasterOptions { PreloadProjectionCache = true, ProjectionReplayBatchSize = 10 };
+
+        cache.Upsert(CreateProjection(Guid.NewGuid(), "Existing", 1));
+        var projection = CreateProjection(securityId, "Tail Name", 3);
+
+        store.GetCheckpointAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(5L);
+        eventStore.GetLatestSequenceAsync(Arg.Any<CancellationToken>()).Returns(7L);
+        eventStore.LoadSinceSequenceAsync(5L, 10, Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                new SecurityMasterEventEnvelope(
+                    6,
+                    securityId,
+                    3,
+                    "TermsAmended",
+                    DateTimeOffset.UtcNow,
+                    "codex",
+                    null,
+                    null,
+                    JsonSerializer.SerializeToElement(projection, Meridian.Core.Serialization.SecurityMasterJsonContext.Default.SecurityProjectionRecord),
+                    JsonSerializer.SerializeToElement(new { sourceSystem = "test" }))
+            });
+        eventStore.LoadSinceSequenceAsync(6L, 10, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityMasterEventEnvelope>());
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(projection);
+        snapshotStore.LoadAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns((SecuritySnapshotRecord?)null);
+
+        var orchestrator = new SecurityMasterRebuildOrchestrator(
+            eventStore,
+            store,
+            cache,
+            rebuilder,
+            projectionService,
+            options,
+            NullLogger<SecurityMasterRebuildOrchestrator>.Instance,
+            conflictService);
+        return (orchestrator, conflictService, store);
     }
 
     private static SecurityProjectionRecord CreateProjection(Guid securityId, string displayName, long version)

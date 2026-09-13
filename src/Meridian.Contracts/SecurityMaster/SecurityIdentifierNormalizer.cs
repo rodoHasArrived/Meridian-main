@@ -10,6 +10,50 @@ namespace Meridian.Contracts.SecurityMaster;
 /// </summary>
 public static class SecurityIdentifierNormalizer
 {
+    /// <summary>
+    /// Identifiers whose value is meaningful only inside the supplied provider namespace.
+    /// Provider distinguishes only ProviderSymbol identities, matching validation's duplicate
+    /// rules: on every other kind - tickers included, whose Provider carries the ingest feed
+    /// rather than a listing venue - Provider is provenance, so the same value claimed by
+    /// different feeds still collides.
+    /// </summary>
+    public static bool IsProviderScoped(SecurityIdentifierKind kind)
+        => kind is SecurityIdentifierKind.ProviderSymbol;
+
+    /// <summary>
+    /// Kinds that identify an issuer or legal entity rather than a standalone tradable security —
+    /// per their contract in <see cref="SecurityIdentifierKind"/>, CIK names an EDGAR filer and
+    /// LEI names an ISO 17442 legal entity. Distinct securities of one issuer legitimately share
+    /// these, so they never participate in identifier-ambiguity pairing, and ambiguity-candidate
+    /// lookups skip them rather than loading every sibling security of a large filer.
+    /// </summary>
+    public static bool IsIssuerScopedKind(SecurityIdentifierKind kind)
+        => kind is SecurityIdentifierKind.Cik or SecurityIdentifierKind.Lei;
+
+    /// <summary>
+    /// Kinds excluded from identifier-ambiguity pairing altogether: the issuer-scoped kinds
+    /// above, plus <see cref="SecurityIdentifierKind.Unknown"/> — this node's degraded reading of
+    /// ANY kind minted by a newer node. Two different future kinds degrade to the same Unknown,
+    /// so pairing such claims on value alone would assert an ambiguity this node cannot actually
+    /// compare; the newer nodes that still read the kind own that detection. Conflict detection
+    /// and the ambiguity-candidate lookup share this set so they can never disagree about which
+    /// claims participate.
+    /// </summary>
+    public static bool IsExcludedFromAmbiguityPairing(SecurityIdentifierKind kind)
+        => kind is SecurityIdentifierKind.Unknown || IsIssuerScopedKind(kind);
+
+    /// <summary>
+    /// Returns the normalized namespace that participates in identifier identity. Provider data on
+    /// canonical identifier kinds is provenance, not identity, and therefore returns an empty scope.
+    /// </summary>
+    public static string GetIdentityScope(SecurityIdentifierDto identifier)
+    {
+        ArgumentNullException.ThrowIfNull(identifier);
+        return IsProviderScoped(identifier.Kind)
+            ? GetOrComputeNormalizedProvider(identifier)
+            : string.Empty;
+    }
+
     public static string NormalizeValue(SecurityIdentifierKind kind, string? value)
     {
         var trimmed = NormalizeBasic(value);
@@ -105,12 +149,18 @@ public static class SecurityIdentifierNormalizer
             ? string.Empty
             : value.Trim().ToUpperInvariant();
 
+    // Both strippers must mirror migration 016's SQL backfill character classes exactly
+    // ('[^A-Z0-9]' and '[^0-9]' after upper/trim): the stored normalized columns, the
+    // indexed candidate lookup, and every in-memory computation must give one raw value one
+    // identity. char.IsLetterOrDigit and char.IsDigit would keep non-ASCII letters and
+    // digits the SQL strips, splitting the same raw identifier into two identities on
+    // either side of the backfill.
     private static string StripNonAlphanumeric(string value)
     {
         var builder = new StringBuilder(value.Length);
         foreach (var character in value)
         {
-            if (char.IsLetterOrDigit(character))
+            if (character is (>= 'A' and <= 'Z') or (>= '0' and <= '9'))
             {
                 builder.Append(character);
             }
@@ -124,7 +174,7 @@ public static class SecurityIdentifierNormalizer
         var builder = new StringBuilder(value.Length);
         foreach (var character in value)
         {
-            if (char.IsDigit(character))
+            if (character is >= '0' and <= '9')
             {
                 builder.Append(character);
             }

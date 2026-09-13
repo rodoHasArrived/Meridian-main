@@ -14,6 +14,17 @@ internal static class SecurityMasterConflictDetection
     private const string IdentifierAmbiguityKind = SecurityMasterConflictKinds.IdentifierAmbiguity;
     private const string UnknownProvider = SecurityMasterProvenanceReader.UnknownSource;
 
+    private readonly record struct IdentifierKey(
+        SecurityIdentifierKind Kind,
+        string NormalizedValue,
+        string IdentityScope);
+
+    private sealed record IdentifierClaim(
+        Guid SecurityId,
+        string Provider,
+        DateTimeOffset ValidFrom,
+        DateTimeOffset? ValidTo);
+
     /// <summary>
     /// Detects every identifier-ambiguity conflict across the universe: an identifier that multiple
     /// distinct securities claim from different providers. Every returned conflict has status
@@ -22,61 +33,97 @@ internal static class SecurityMasterConflictDetection
     public static IReadOnlyList<SecurityMasterConflict> DetectAll(
         IReadOnlyList<SecurityProjectionRecord> universe,
         DateTimeOffset detectedAt)
+        => DetectAll(universe, detectedAt, subjectIds: null);
+
+    /// <summary>
+    /// Full-universe detection, optionally restricted to pairs involving at least one subject.
+    /// The indexed candidate lookup deliberately returns every historical claimant of a shared
+    /// identifier, so an unrestricted scan of a batch with many candidates enumerates
+    /// candidate-to-candidate pairs the caller would discard anyway — quadratic in claimants of
+    /// a recycled identifier. The restriction skips those pairs before the overlap check.
+    /// </summary>
+    private static IReadOnlyList<SecurityMasterConflict> DetectAll(
+        IReadOnlyList<SecurityProjectionRecord> universe,
+        DateTimeOffset detectedAt,
+        IReadOnlySet<Guid>? subjectIds)
     {
-        var byIdentifier = new Dictionary<string, List<(Guid SecurityId, string Provider)>>(
-            StringComparer.OrdinalIgnoreCase);
+        var byIdentifier = new Dictionary<IdentifierKey, List<IdentifierClaim>>();
 
         foreach (var record in universe)
         {
             foreach (var id in record.Identifiers)
             {
-                var key = $"{id.Kind}|{id.Value}";
+                if (IsExcludedFromAmbiguityPairing(id.Kind))
+                {
+                    continue;
+                }
+
+                var normalizedValue = SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(id);
+                if (normalizedValue.Length == 0)
+                {
+                    continue;
+                }
+
+                var key = new IdentifierKey(
+                    id.Kind,
+                    normalizedValue,
+                    SecurityIdentifierNormalizer.GetIdentityScope(id));
                 if (!byIdentifier.TryGetValue(key, out var entries))
                 {
-                    entries = new List<(Guid, string)>();
+                    entries = new List<IdentifierClaim>();
                     byIdentifier[key] = entries;
                 }
 
-                var provider = id.Provider ?? UnknownProvider;
-                if (!entries.Any(e => e.SecurityId == record.SecurityId))
-                {
-                    entries.Add((record.SecurityId, provider));
-                }
+                entries.Add(new IdentifierClaim(
+                    record.SecurityId,
+                    id.Provider ?? UnknownProvider,
+                    id.ValidFrom,
+                    id.ValidTo));
             }
         }
 
         var conflicts = new List<SecurityMasterConflict>();
         foreach (var (key, entries) in byIdentifier)
         {
-            if (entries.Count < 2)
+            var claimants = entries
+                .GroupBy(static entry => entry.SecurityId)
+                .OrderBy(static group => group.Key)
+                .ToArray();
+            for (var leftIndex = 0; leftIndex < claimants.Length; leftIndex++)
             {
-                continue;
+                for (var rightIndex = leftIndex + 1; rightIndex < claimants.Length; rightIndex++)
+                {
+                    if (subjectIds is not null
+                        && !subjectIds.Contains(claimants[leftIndex].Key)
+                        && !subjectIds.Contains(claimants[rightIndex].Key))
+                    {
+                        continue;
+                    }
+
+                    var overlap = FindDeterministicOverlap(claimants[leftIndex], claimants[rightIndex]);
+                    if (overlap is null)
+                    {
+                        continue;
+                    }
+
+                    var (left, right) = overlap.Value;
+                    conflicts.Add(new SecurityMasterConflict(
+                        ConflictId: DeterministicConflictId(
+                            key.Kind.ToString(),
+                            CanonicalConflictIdentity(key),
+                            left.SecurityId,
+                            right.SecurityId),
+                        SecurityId: left.SecurityId,
+                        ConflictKind: IdentifierAmbiguityKind,
+                        FieldPath: $"Identifiers.{key.Kind}",
+                        ProviderA: left.Provider,
+                        ValueA: left.SecurityId.ToString(),
+                        ProviderB: right.Provider,
+                        ValueB: right.SecurityId.ToString(),
+                        DetectedAt: detectedAt,
+                        Status: "Open"));
+                }
             }
-
-            var distinctSecurities = entries.DistinctBy(e => e.SecurityId).ToList();
-            if (distinctSecurities.Count < 2)
-            {
-                continue;
-            }
-
-            var parts = key.Split('|', 2);
-            var kind = parts[0];
-            var value = parts.Length > 1 ? parts[1] : string.Empty;
-
-            var a = distinctSecurities[0];
-            var b = distinctSecurities[1];
-
-            conflicts.Add(new SecurityMasterConflict(
-                ConflictId: DeterministicConflictId(kind, value, a.SecurityId, b.SecurityId),
-                SecurityId: a.SecurityId,
-                ConflictKind: IdentifierAmbiguityKind,
-                FieldPath: $"Identifiers.{kind}",
-                ProviderA: a.Provider,
-                ValueA: a.SecurityId.ToString(),
-                ProviderB: b.Provider,
-                ValueB: b.SecurityId.ToString(),
-                DetectedAt: detectedAt,
-                Status: "Open"));
         }
 
         return conflicts;
@@ -91,49 +138,134 @@ internal static class SecurityMasterConflictDetection
         SecurityProjectionRecord projection,
         IReadOnlyList<SecurityProjectionRecord> universe,
         DateTimeOffset detectedAt)
+        => DetectForProjections([projection], universe, detectedAt);
+
+    /// <summary>
+    /// Detects every ambiguity involving at least one subject projection. Subjects are authoritative
+    /// when the candidate set contains an older copy of the same security, and the identifier map is
+    /// built once for the whole batch so rebuild cost is linear in claims plus actual conflicts.
+    /// </summary>
+    public static IReadOnlyList<SecurityMasterConflict> DetectForProjections(
+        IReadOnlyList<SecurityProjectionRecord> projections,
+        IReadOnlyList<SecurityProjectionRecord> candidates,
+        DateTimeOffset detectedAt)
     {
-        var byIdentifier = new Dictionary<string, (Guid SecurityId, string Provider)>(
-            StringComparer.OrdinalIgnoreCase);
-
-        foreach (var existing in universe)
+        if (projections.Count == 0)
         {
-            if (existing.SecurityId == projection.SecurityId)
+            return Array.Empty<SecurityMasterConflict>();
+        }
+
+        var subjectIds = projections.Select(static projection => projection.SecurityId).ToHashSet();
+        var universe = projections
+            .Concat(candidates.Where(candidate => !subjectIds.Contains(candidate.SecurityId)))
+            .ToArray();
+        var results = new List<SecurityMasterConflict>();
+        foreach (var conflict in DetectAll(universe, detectedAt, subjectIds))
+        {
+            if (subjectIds.Contains(conflict.SecurityId))
             {
+                results.Add(conflict);
                 continue;
             }
 
-            foreach (var id in existing.Identifiers)
+            if (Guid.TryParse(conflict.ValueB, out var otherSecurityId) && subjectIds.Contains(otherSecurityId))
             {
-                var key = $"{id.Kind}|{id.Value}";
-                // Track only the first record we encounter for each identifier (deterministic).
-                byIdentifier.TryAdd(key, (existing.SecurityId, id.Provider ?? UnknownProvider));
+                results.Add(conflict with
+                {
+                    SecurityId = otherSecurityId,
+                    ProviderA = conflict.ProviderB,
+                    ValueA = conflict.ValueB,
+                    ProviderB = conflict.ProviderA,
+                    ValueB = conflict.ValueA,
+                });
             }
         }
 
-        var conflicts = new List<SecurityMasterConflict>();
-        foreach (var id in projection.Identifiers)
-        {
-            var key = $"{id.Kind}|{id.Value}";
-            if (!byIdentifier.TryGetValue(key, out var conflicting))
-            {
-                continue;
-            }
-
-            conflicts.Add(new SecurityMasterConflict(
-                ConflictId: DeterministicConflictId(id.Kind.ToString(), id.Value, projection.SecurityId, conflicting.SecurityId),
-                SecurityId: projection.SecurityId,
-                ConflictKind: IdentifierAmbiguityKind,
-                FieldPath: $"Identifiers.{id.Kind}",
-                ProviderA: id.Provider ?? UnknownProvider,
-                ValueA: projection.SecurityId.ToString(),
-                ProviderB: conflicting.Provider,
-                ValueB: conflicting.SecurityId.ToString(),
-                DetectedAt: detectedAt,
-                Status: "Open"));
-        }
-
-        return conflicts;
+        return results;
     }
+
+    /// <summary>
+    /// Issuer-level kinds and Unknown — a newer node's kind this build cannot read — never
+    /// participate in identifier-ambiguity pairing; the shared contract (and its rationale)
+    /// lives in <see cref="SecurityIdentifierNormalizer.IsExcludedFromAmbiguityPairing"/> so the
+    /// candidate lookup and this detection loop can never disagree about the set.
+    /// </summary>
+    private static bool IsExcludedFromAmbiguityPairing(SecurityIdentifierKind kind)
+        => SecurityIdentifierNormalizer.IsExcludedFromAmbiguityPairing(kind);
+
+    /// <summary>
+    /// The identifier-ambiguity field paths this build can authoritatively re-evaluate — one per
+    /// kind its <see cref="SecurityIdentifierKind"/> enum defines. Supersession sweeps are
+    /// restricted to these paths: a conflict persisted by a newer node for a kind this build
+    /// does not know loads its claims as Unknown and never re-enters the detected set here, so
+    /// closing it on that absence would hide a valid ambiguity until a newer instance refreshes
+    /// again — the nodes that still read the kind own that judgment.
+    /// </summary>
+    internal static readonly IReadOnlySet<string> EvaluableIdentifierConflictFieldPaths =
+        Enum.GetValues<SecurityIdentifierKind>()
+            .Select(static kind => $"Identifiers.{kind}")
+            .ToHashSet(StringComparer.Ordinal);
+
+    private static (IdentifierClaim Left, IdentifierClaim Right)? FindDeterministicOverlap(
+        IEnumerable<IdentifierClaim> leftClaims,
+        IEnumerable<IdentifierClaim> rightClaims)
+    {
+        foreach (var left in leftClaims.OrderBy(static claim => claim.ValidFrom).ThenBy(static claim => claim.Provider, StringComparer.Ordinal))
+        {
+            foreach (var right in rightClaims.OrderBy(static claim => claim.ValidFrom).ThenBy(static claim => claim.Provider, StringComparer.Ordinal))
+            {
+                if (WindowsOverlap(left.ValidFrom, left.ValidTo, right.ValidFrom, right.ValidTo))
+                {
+                    return (left, right);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static bool WindowsOverlap(
+        DateTimeOffset leftFrom,
+        DateTimeOffset? leftTo,
+        DateTimeOffset rightFrom,
+        DateTimeOffset? rightTo)
+        => (!leftTo.HasValue || rightFrom < leftTo.Value)
+           && (!rightTo.HasValue || leftFrom < rightTo.Value);
+
+    /// <summary>
+    /// The canonical identity text hashed into a deterministic conflict id. Provider-scoped
+    /// identities join scope and value with <c>|</c>, and both components survive normalization
+    /// with <c>|</c> and <c>\</c> intact, so a naive join is ambiguous: scope <c>A|B</c> claiming
+    /// <c>C</c> and scope <c>A</c> claiming <c>B|C</c> would both render <c>A|B|C</c>, collapse to
+    /// one conflict id for the same security pair, and the id-keyed stores would retain only one of
+    /// two real ambiguities. Escaping the components (<c>\\</c>, <c>\|</c>) makes the join
+    /// reversible while leaving every delimiter-free identity byte-identical — conflict ids are
+    /// persisted, so the encoding MUST NOT re-key rows whose components carry no delimiter (which
+    /// rules out length-prefixing); rows for previously colliding identities re-key to distinct
+    /// ids and the ordinary supersession sweep retires their old shared row. Scope-less kinds hash
+    /// the value alone: with no join there is nothing to disambiguate, and escaping would re-key
+    /// their stored ids for nothing.
+    /// </summary>
+    private static string CanonicalConflictIdentity(IdentifierKey key)
+    {
+        if (!SecurityIdentifierNormalizer.IsProviderScoped(key.Kind))
+        {
+            return key.NormalizedValue;
+        }
+
+        var value = EscapeCanonicalIdentityComponent(key.NormalizedValue);
+        return key.IdentityScope.Length == 0
+            ? value
+            : $"{EscapeCanonicalIdentityComponent(key.IdentityScope)}|{value}";
+    }
+
+    // A provider-less symbol (empty scope, escaped value, never an unescaped '|') can never render
+    // the same text as a scoped identity (exactly one unescaped '|', the join), so the two arms
+    // above stay disjoint. Backslashes escape first or escaping would not round-trip.
+    private static string EscapeCanonicalIdentityComponent(string component)
+        => component
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("|", "\\|", StringComparison.Ordinal);
 
     /// <summary>
     /// Canonical text form of a contractual principal schedule for conflict comparison and the

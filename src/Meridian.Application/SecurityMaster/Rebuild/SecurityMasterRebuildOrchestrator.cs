@@ -52,8 +52,13 @@ public sealed class SecurityMasterRebuildOrchestrator
         {
             var rebuiltRecords = await _projectionService.BuildWarmSetAsync(ct).ConfigureAwait(false);
             await _store.PersistProjectionBatchAsync(ProjectionName, latestSequence, rebuiltRecords, ct).ConfigureAwait(false);
-            await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+            // The cache must catch up with the committed batch before the cancellable conflict
+            // scan: the checkpoint has already advanced, so a cancellation escaping the scan
+            // would otherwise leave a nonempty cache permanently stale — the next rebuild takes
+            // the checkpoint-current path and never revisits these records.
             _cache.ReplaceAll(rebuiltRecords);
+            var deferredWarmSecurityIds = await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+            await RetryDeferredConflictDetectionAsync(deferredWarmSecurityIds, ct).ConfigureAwait(false);
             _logger.LogInformation(
                 "Security master rebuild performed full warm and checkpointed sequence {Sequence}",
                 latestSequence);
@@ -69,6 +74,7 @@ public sealed class SecurityMasterRebuildOrchestrator
         }
 
         var cursor = checkpoint.Value;
+        var deferredConflictSecurityIds = new HashSet<Guid>();
         while (cursor < latestSequence)
         {
             var events = await _eventStore.LoadSinceSequenceAsync(cursor, _options.ProjectionReplayBatchSize, ct).ConfigureAwait(false);
@@ -91,12 +97,19 @@ public sealed class SecurityMasterRebuildOrchestrator
             }
 
             await _store.PersistProjectionBatchAsync(ProjectionName, cursor, rebuiltRecords, ct).ConfigureAwait(false);
-            await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+            // The cache must catch up with the committed batch before the cancellable conflict
+            // scan: the checkpoint has already advanced, so a cancellation escaping the scan
+            // would otherwise leave these records permanently stale in a nonempty cache — the
+            // next rebuild takes the checkpoint-current path and never revisits them.
             foreach (var rebuilt in rebuiltRecords)
             {
                 _cache.Upsert(rebuilt);
             }
+
+            deferredConflictSecurityIds.UnionWith(await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false));
         }
+
+        await RetryDeferredConflictDetectionAsync(deferredConflictSecurityIds, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Security master rebuild replayed events through sequence {Sequence} using batch size {BatchSize}",
@@ -138,7 +151,8 @@ public sealed class SecurityMasterRebuildOrchestrator
             _cache.Upsert(rebuilt);
         }
 
-        await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+        var deferredSecurityIds = await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+        await RetryDeferredConflictDetectionAsync(deferredSecurityIds, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Security master scoped rebuild refreshed {Count} projection(s) for asset class {AssetClass}",
@@ -147,23 +161,102 @@ public sealed class SecurityMasterRebuildOrchestrator
         return rebuiltRecords.Count;
     }
 
-    private async Task TryRecordConflictsAsync(IReadOnlyList<SecurityProjectionRecord> rebuiltRecords, CancellationToken ct)
+    /// <summary>
+    /// Best-effort conflict detection for a persisted batch. The replay checkpoint has already
+    /// advanced when this runs, so a swallowed failure would leave the batch's ambiguities
+    /// undetected by every later rebuild. The failed batch is therefore returned to the caller
+    /// for an end-of-run retry instead of being dropped.
+    /// </summary>
+    private async Task<IReadOnlyCollection<Guid>> TryRecordConflictsAsync(
+        IReadOnlyList<SecurityProjectionRecord> rebuiltRecords,
+        CancellationToken ct)
     {
         if (_conflictService is null || rebuiltRecords.Count == 0)
+        {
+            return Array.Empty<Guid>();
+        }
+
+        try
+        {
+            await _conflictService.RecordConflictsForProjectionsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+            return Array.Empty<Guid>();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Conflict detection failed during projection rebuild for {SecurityCount} securities; the batch is held for one retry after replay",
+                rebuiltRecords.Count);
+
+            // Only the ids are held: the retry reloads each projection as persisted anyway, and
+            // retaining the full records of every failed batch for the length of a large replay
+            // (repeated events included) would defeat ProjectionReplayBatchSize memory bounding
+            // during a conflict-service outage.
+            return rebuiltRecords.Select(static record => record.SecurityId).ToArray();
+        }
+    }
+
+    /// <summary>
+    /// One end-of-run retry for batches whose conflict detection failed mid-replay. The rebuild
+    /// itself stays resilient to a conflict-service outage, but a persistent failure is surfaced
+    /// at error level naming the affected population, because the advanced checkpoint means no
+    /// later replay will re-detect these records without a full conflict refresh.
+    /// </summary>
+    private async Task RetryDeferredConflictDetectionAsync(
+        IReadOnlyCollection<Guid> deferredSecurityIds,
+        CancellationToken ct)
+    {
+        if (_conflictService is null || deferredSecurityIds.Count == 0)
         {
             return;
         }
 
-        foreach (var rebuilt in rebuiltRecords)
+        // A deferred security can have been rebuilt again by a later batch whose scan
+        // succeeded, so only its id was held. Each deferred security is re-read from the
+        // store and the retry scans the projection as persisted now; one that no longer
+        // exists has nothing left to scan. The reloads share the retry's best-effort
+        // boundary — the batch and checkpoint are already committed — but each failure is
+        // contained per security: one transient read aborting the loop would abandon the
+        // scan for records already reloaded and ids not yet read, and no later replay will
+        // re-detect any of them.
+        var records = new List<SecurityProjectionRecord>();
+        foreach (var securityId in deferredSecurityIds.Distinct())
         {
             try
             {
-                await _conflictService.RecordConflictsForProjectionAsync(rebuilt, ct).ConfigureAwait(false);
+                var current = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+                if (current is not null)
+                {
+                    records.Add(current);
+                }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogWarning(ex, "Conflict detection failed during projection rebuild for security {SecurityId}", rebuilt.SecurityId);
+                _logger.LogError(
+                    ex,
+                    "Deferred conflict-detection reload failed for security {SecurityId}; it carries no ambiguity scan and needs a full conflict refresh",
+                    securityId);
             }
+        }
+
+        if (records.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            await _conflictService.RecordConflictsForProjectionsAsync(records, ct).ConfigureAwait(false);
+            _logger.LogInformation(
+                "Deferred conflict detection succeeded on retry for {SecurityCount} securities",
+                records.Count);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(
+                ex,
+                "Conflict detection failed twice during projection rebuild; {SecurityCount} rebuilt securities carry no ambiguity scan and need a full conflict refresh",
+                records.Count);
         }
     }
 }

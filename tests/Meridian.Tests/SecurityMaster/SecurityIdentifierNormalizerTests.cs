@@ -92,4 +92,19 @@ public sealed class SecurityIdentifierNormalizerTests
     public void NormalizeValue_Ric_PreservesPunctuationAndUppercases()
         => SecurityIdentifierNormalizer.NormalizeValue(SecurityIdentifierKind.Ric, " aapl.o ")
             .Should().Be("AAPL.O");
+
+    /// <summary>
+    /// Normalization must mirror migration 016's SQL backfill character classes exactly
+    /// ('[^A-Z0-9]' and '[^0-9]'): keeping non-ASCII letters or digits the SQL strips would
+    /// split the same raw identifier into two identities — one backfilled, one computed —
+    /// and both the indexed candidate lookup and the full detection scan would miss the
+    /// duplicate.
+    /// </summary>
+    [Theory]
+    [InlineData(SecurityIdentifierKind.Wkn, "ÄBC123", "BC123")]      // Non-ASCII letter stripped, as in SQL.
+    [InlineData(SecurityIdentifierKind.Wkn, " ab-12.3c ", "AB123C")] // Uppercased, punctuation stripped.
+    [InlineData(SecurityIdentifierKind.Valoren, "1２3456", "13456")] // Non-ASCII digit stripped, as in SQL.
+    public void NormalizeValue_MatchesTheSqlBackfillCharacterClasses(
+        SecurityIdentifierKind kind, string raw, string expected)
+        => SecurityIdentifierNormalizer.NormalizeValue(kind, raw).Should().Be(expected);
 }
