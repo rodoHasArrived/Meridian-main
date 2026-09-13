@@ -652,6 +652,18 @@ node that could apply the change, so without that exit the row would be permanen
 Verify this lane with `SecurityMasterServiceSnapshotTests` and
 `SecurityAssetTermsSchemaRoundTripTests`.
 
+The file-based Security Master bulk ingest (`--security-master-ingest <file.csv|file.json>`) is
+fail-closed on caller identity: the import runs only when a registered
+`ISecurityMasterCliImportAuthority` resolves a validated operator or workload actor for the
+`importedBy` stamp, and otherwise refuses with `AuthenticationFailed` before the file is read.
+Command-line text and the ambient OS username are not authentication evidence — the former
+`--imported-by`/OS-username/`"meridian-cli"` fallback chain no longer exists — and no default
+authority implementation is registered, so in stock compositions the CLI file path is disabled and
+bulk imports go through the authenticated workstation/API import instead. Provider-workload
+ingests (`--provider polygon`, `--provider edgar`, `--provider corporate-actions`) dispatch before
+this guard and keep their existing provider attribution. Verify this lane with
+`SecurityMasterCommandsEdgarTests`.
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase

@@ -1,5 +1,4 @@
 using Meridian.Storage.SecurityMaster;
-using Npgsql;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -18,7 +17,9 @@ namespace Meridian.Application.SecurityMaster;
 /// contract.
 /// </para>
 /// <para>
-/// Classification is by TYPE and by SQLSTATE, both of which are contractual.
+/// Classification is by the typed Security Master stream conflict. A raw database uniqueness
+/// violation is not sufficient: it may identify a different security claiming the same primary
+/// identifier, or an unrelated integrity defect, and must remain a failure.
 /// </para>
 /// </remarks>
 internal static class SecurityMasterIngestFailureClassifier
@@ -40,11 +41,8 @@ internal static class SecurityMasterIngestFailureClassifier
             // The create raced or repeated: the stream already had events at version 0.
             SecurityMasterStreamVersionConflictException conflict => conflict.IsAlreadyCreated,
 
-            // A unique index rejected the row — the primary-identifier index, or the
-            // (security_id, stream_version) event key. 23505 is the contract, not the message.
-            PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } => true,
-
-            // Providers wrap driver failures; unwrap one level rather than miss the SQLSTATE.
+            // Providers wrap application failures; unwrap one level without broadening a database
+            // integrity error into an "already mastered" result.
             _ => exception.InnerException is { } inner
                  && inner is not OperationCanceledException
                  && IsAlreadyMastered(inner)

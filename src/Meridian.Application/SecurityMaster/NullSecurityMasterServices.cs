@@ -279,9 +279,9 @@ public sealed class NullSecurityMasterImportService : ISecurityMasterImportServi
 /// </summary>
 public sealed class NullTradingParametersBackfillService : Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
 {
-    public Task BackfillAllAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public Task BackfillAllAsync(string initiatedBy, CancellationToken ct = default) => Task.CompletedTask;
 
-    public Task BackfillTickerAsync(string ticker, Guid securityId, CancellationToken ct = default) => Task.CompletedTask;
+    public Task BackfillTickerAsync(string ticker, Guid securityId, string initiatedBy, CancellationToken ct = default) => Task.CompletedTask;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
