@@ -11,6 +11,7 @@ import { humanizeStatus, SeverityBadge } from "@/components/operations";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
+import { ReportingProductionSurface } from "@/components/meridian/reporting-production-surface";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import {
@@ -26,6 +27,7 @@ import {
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { buildReportingHubModel, formatReportingFamilyLabel } from "@/lib/reporting-hub";
+import { buildReportingProductionSurfaceViewModel } from "@/screens/reporting-screen.production-surface";
 import {
   normalizeReportingWorkspace,
   type ReportingWorkspacePayload
@@ -224,6 +226,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
   const hubModel = useMemo(
     () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, reportingData?.dailyWork ?? []),
     [reportingData?.dailyWork, vm.runStatusRows, vm.templateRows]
+  );
+  const productionSurface = useMemo(
+    () => buildReportingProductionSurfaceViewModel(vm.runStatusRows, vm.templateRows, vm.scheduleRows),
+    [vm.runStatusRows, vm.scheduleRows, vm.templateRows]
   );
   // Watch the most recent run over the report-run SSE stream. This is additive — the 30s
   // reporting poll is unchanged and remains the source of truth for the rendered rows. When the
@@ -840,6 +846,13 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         />
       ) : isDailyReportingCockpitLanding && starterKitStatus ? (
         <ReportingCommandStatusView status={starterKitStatus} />
+      ) : null}
+
+      {isDailyReportingCockpitLanding ? (
+        <ReportingProductionSurface
+          model={productionSurface.production}
+          period={productionSurface.period}
+        />
       ) : null}
 
       {isDailyReportingCockpitLanding ? (
