@@ -191,8 +191,8 @@
       "id": "SRC-INFRASTRUCTURE",
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
-      "readme_hash": "2e8ffc2d2a6eee6d784bd597e8524bc951ba7f722ecda3bb280f53508d22c7b2",
-      "source_hash": "31f87881ee0adf45a72df0fc2211f8f33255f4dec425f54405d479495c3b3077"
+      "readme_hash": "2a7b4f1eecdc8375fcf6aa840df9fd192d0e289b17d2a0bb39198cec935015d7",
+      "source_hash": "973bec263facc0d575efa8ff4f0249dafeb50b1677767886b3a95e6f049d78fa"
     },
     {
       "id": "SRC-LAUNCHER",
@@ -227,7 +227,7 @@
       "path": "src/Meridian.ProviderSdk",
       "readme": "src/Meridian.ProviderSdk/README.md",
       "readme_hash": "25b6e5addfd7aa78ac744af3d903da36be9056de105c78629b4c133b8fbfe777",
-      "source_hash": "156054b5ba93b1500adb91e0d0e9561f03403e3dad6574c4924222ee1b24467f"
+      "source_hash": "6ef343bc0f509f2cd384c4a6244c3c486d361b295b970c73f135ec858ad8e38f"
     },
     {
       "id": "SRC-QUANTSCRIPT",
@@ -290,7 +290,7 @@
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
       "readme_hash": "d13f5521b423fe1d598466f77b70a33070e3d15123ca4e3417b210a849b5fbce",
-      "source_hash": "9eaa449071c70ddc982294986410b9d746c4f868191c3cfb28fe799c06cfcbc6"
+      "source_hash": "14215f8c7d935cbbce1b370c5df7159e324886679cf423d019c8e88a525189ef"
     }
   ],
   "schema": {
