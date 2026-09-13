@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
@@ -133,6 +134,41 @@ public partial class WorkstationTableInspectorControl : UserControl
             typeof(WorkstationTableInspectorControl),
             new PropertyMetadata("WorkstationTableInspector"));
 
+    public static readonly DependencyProperty FilterTargetProperty =
+        DependencyProperty.Register(
+            nameof(FilterTarget),
+            typeof(UIElement),
+            typeof(WorkstationTableInspectorControl),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty OpenSelectedDetailsCommandProperty =
+        DependencyProperty.Register(
+            nameof(OpenSelectedDetailsCommand),
+            typeof(ICommand),
+            typeof(WorkstationTableInspectorControl),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty CloseDetailsCommandProperty =
+        DependencyProperty.Register(
+            nameof(CloseDetailsCommand),
+            typeof(ICommand),
+            typeof(WorkstationTableInspectorControl),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty ClearFiltersCommandProperty =
+        DependencyProperty.Register(
+            nameof(ClearFiltersCommand),
+            typeof(ICommand),
+            typeof(WorkstationTableInspectorControl),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty JumpToRelatedRecordsCommandProperty =
+        DependencyProperty.Register(
+            nameof(JumpToRelatedRecordsCommand),
+            typeof(ICommand),
+            typeof(WorkstationTableInspectorControl),
+            new PropertyMetadata(null));
+
     public WorkstationTableInspectorControl()
     {
         InitializeComponent();
@@ -244,5 +280,35 @@ public partial class WorkstationTableInspectorControl : UserControl
     {
         get => (string)GetValue(ControlAutomationIdProperty);
         set => SetValue(ControlAutomationIdProperty, value);
+    }
+
+    public UIElement? FilterTarget
+    {
+        get => (UIElement?)GetValue(FilterTargetProperty);
+        set => SetValue(FilterTargetProperty, value);
+    }
+
+    public ICommand? OpenSelectedDetailsCommand
+    {
+        get => (ICommand?)GetValue(OpenSelectedDetailsCommandProperty);
+        set => SetValue(OpenSelectedDetailsCommandProperty, value);
+    }
+
+    public ICommand? CloseDetailsCommand
+    {
+        get => (ICommand?)GetValue(CloseDetailsCommandProperty);
+        set => SetValue(CloseDetailsCommandProperty, value);
+    }
+
+    public ICommand? ClearFiltersCommand
+    {
+        get => (ICommand?)GetValue(ClearFiltersCommandProperty);
+        set => SetValue(ClearFiltersCommandProperty, value);
+    }
+
+    public ICommand? JumpToRelatedRecordsCommand
+    {
+        get => (ICommand?)GetValue(JumpToRelatedRecordsCommandProperty);
+        set => SetValue(JumpToRelatedRecordsCommandProperty, value);
     }
 }
