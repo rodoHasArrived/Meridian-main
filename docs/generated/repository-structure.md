@@ -1900,6 +1900,7 @@ Meridian-main
 │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   ├── production-readiness-backlog-2026-08.md
 │   │   ├── README.md
+│   │   ├── reporting-operating-model-2026-09.md
 │   │   ├── w10-depth-slate-2026-07.md
 │   │   ├── w9-close-out-delivery-plan-2026-08.md
 │   │   ├── w9-operator-acceptance-2026-08-29.md
