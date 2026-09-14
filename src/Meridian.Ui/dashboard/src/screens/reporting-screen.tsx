@@ -228,8 +228,14 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     [reportingData?.dailyWork, vm.runStatusRows, vm.templateRows]
   );
   const productionSurface = useMemo(
-    () => buildReportingProductionSurfaceViewModel(vm.runStatusRows, vm.templateRows, vm.scheduleRows),
-    [vm.runStatusRows, vm.scheduleRows, vm.templateRows]
+    () => buildReportingProductionSurfaceViewModel(
+      vm.runStatusRows,
+      vm.templateRows,
+      vm.scheduleRows,
+      undefined,
+      reportingData?.dailyWork ?? []
+    ),
+    [reportingData?.dailyWork, vm.runStatusRows, vm.scheduleRows, vm.templateRows]
   );
   // Watch the most recent run over the report-run SSE stream. This is additive — the 30s
   // reporting poll is unchanged and remains the source of truth for the rendered rows. When the

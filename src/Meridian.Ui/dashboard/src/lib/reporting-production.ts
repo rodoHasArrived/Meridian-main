@@ -17,13 +17,19 @@
  */
 import {
   describeReportingWorkflowState,
+  isPublishedWorkflowState,
   normalizeReportClass,
   normalizeReportingWorkflowState,
   reportingWorkflowOrdinal,
   type ReportClass,
   type ReportingWorkflowState
 } from "@/lib/reporting-lifecycle";
-import { formatReportingPeriodLabel, hasRetainedReportingAsOfDateValue } from "@/lib/reporting-periods";
+import {
+  formatReportingPeriodLabel,
+  hasRetainedReportingAsOfDateValue,
+  isIsoDate,
+  reportingRunRequiresPeriodConfirmation
+} from "@/lib/reporting-periods";
 import { workstationRouteWithQuery, type WorkstationRouteKey } from "@/lib/workspace";
 import type { DesignSystemSeverity } from "@/design-system/status";
 
@@ -87,6 +93,8 @@ export interface ReportingProductionRunInput {
   blockingReasons?: readonly string[] | null;
   /** Marks the current attempt for a report; earlier attempts are collapsed away. */
   isLatestGenerated?: boolean | null;
+  /** Publication timestamp, where the source retains one. */
+  publishedAtUtc?: string | null;
 }
 
 export interface ReportingProductionTemplateInput {
@@ -96,11 +104,28 @@ export interface ReportingProductionTemplateInput {
   lifecycleStatus?: string | null;
 }
 
+/**
+ * Structural subset of the shared daily-work projection. This is where due
+ * packages, blocked packages, delivery failures, evidence gaps, owners and
+ * deadlines are retained, so the attention rail must read it rather than
+ * reconstruct urgency from run statuses alone.
+ */
+export interface ReportingDailyWorkInput {
+  workItemId: string;
+  kind: string;
+  title: string;
+  tone: string;
+  dueAtUtc?: string | null;
+  primaryActionHref?: string | null;
+  evidenceGaps?: readonly string[] | null;
+}
+
 /** Signals the register cannot derive from runs alone. */
 export interface ReportingAttentionSignals {
   staleSourceCount?: number | null;
   openCommentCount?: number | null;
   scheduleCount?: number | null;
+  dailyWork?: readonly ReportingDailyWorkInput[] | null;
 }
 
 export interface ReportingProductionRow {
@@ -117,6 +142,18 @@ export interface ReportingProductionRow {
   dueAtUtc: string | null;
   dueLabel: string;
   isOverdue: boolean;
+  /**
+   * True when the source reported a terminal state but retained no reporting
+   * period, so readiness was downgraded rather than presented as canonical.
+   */
+  requiresPeriodConfirmation: boolean;
+  publishedAtUtc: string | null;
+  /**
+   * Position in the source ordering. The shared reporting services return
+   * update-ordered history, so this preserves recency when no explicit
+   * publication timestamp is retained.
+   */
+  sourceOrdinal: number;
   blockingReasons: string[];
   href: string;
   ariaLabel: string;
@@ -166,6 +203,17 @@ const READY_STATES: ReadonlySet<ReportingWorkflowState> = new Set([
 ]);
 
 const REVIEW_STATES: ReadonlySet<ReportingWorkflowState> = new Set(["InReview"]);
+
+/**
+ * States that represent an existing publication. `Restated` is one: the figures
+ * were restated through a controlled process, but a publication record exists,
+ * so it is preserved history rather than active production work.
+ */
+const PUBLICATION_OUTCOMES: ReadonlySet<ReportingWorkflowState> = new Set([
+  "Published",
+  "Restated",
+  "Superseded"
+]);
 const BLOCKED_STATES: ReadonlySet<ReportingWorkflowState> = new Set(["Blocked"]);
 const PREPARING_STATES: ReadonlySet<ReportingWorkflowState> = new Set([
   "NotStarted",
@@ -192,30 +240,87 @@ function formatDue(value: string | null): string {
   return parsed === null ? "—" : DUE_FORMATTER.format(new Date(parsed));
 }
 
-function resolveAsOfLabel(value: string | null | undefined): string {
+const MONTH_TOKEN_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC"
+});
+
+/**
+ * Presents a reporting period.
+ *
+ * Governed report packs carry a free-form period identifier rather than a
+ * calendar date - `ReportPackRunReadService` projects `record.Period`, whose
+ * retained values include month tokens (`2026-06`), period numbers (`2026-P03`)
+ * and relative tokens (`CurrentMonth`). Only sentinel and empty values mean the
+ * period is genuinely unavailable; anything else the source retained is shown as
+ * the operator would recognize it rather than discarded.
+ */
+export function presentReportingPeriodToken(value: string | null | undefined): string {
   const trimmed = value?.trim() ?? "";
   if (!hasRetainedReportingAsOfDateValue(trimmed)) {
     return "As-of unavailable";
   }
-  return formatReportingPeriodLabel(trimmed);
+  if (isIsoDate(trimmed)) {
+    return formatReportingPeriodLabel(trimmed);
+  }
+  if (MONTH_TOKEN_PATTERN.test(trimmed)) {
+    return MONTH_LABEL_FORMATTER.format(new Date(`${trimmed}-01T00:00:00Z`));
+  }
+  return trimmed;
+}
+
+function resolveAsOfLabel(value: string | null | undefined): string {
+  return presentReportingPeriodToken(value);
 }
 
 function pluralize(count: number, singular: string, plural = `${singular}s`): string {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
+/**
+ * Governed runs carry a versioned template identity (`board-pack:v1`) while the
+ * template collection is keyed by the unversioned name, so an exact lookup misses
+ * and every governed pack would fall back to its shared family label. Try the
+ * identity as given, then without its version suffix.
+ */
+function resolveTemplate(
+  templateId: string,
+  templatesById: Map<string, ReportingProductionTemplateInput>
+): ReportingProductionTemplateInput | undefined {
+  const exact = templatesById.get(templateId);
+  if (exact) {
+    return exact;
+  }
+  const unversioned = templateId.replace(/:v\d+$/i, "");
+  return unversioned === templateId ? undefined : templatesById.get(unversioned);
+}
+
 function buildRow(
   run: ReportingProductionRunInput,
   templatesById: Map<string, ReportingProductionTemplateInput>,
-  evaluationAt: number
+  evaluationAt: number,
+  sourceOrdinal: number
 ): ReportingProductionRow {
-  const template = templatesById.get(run.templateId);
+  const template = resolveTemplate(run.templateId, templatesById);
   const reportName = run.reportName?.trim() || template?.name?.trim() || run.family?.trim() || run.templateId;
-  const workflowState = normalizeReportingWorkflowState(run.status);
-  const descriptor = describeReportingWorkflowState(run.status);
+
+  // A terminal approval or publication is not safe to present as current when the
+  // run retained no reporting period. The reporting hub already downgrades the
+  // same input; without this the two surfaces contradict each other and an
+  // undated output can read as canonical.
+  const requiresPeriodConfirmation = reportingRunRequiresPeriodConfirmation(run.status, run.asOfDate);
+  const workflowState = requiresPeriodConfirmation
+    ? "InReview"
+    : normalizeReportingWorkflowState(run.status);
+  const descriptor = requiresPeriodConfirmation
+    ? { label: "Period confirmation required", severity: "action" as const }
+    : describeReportingWorkflowState(run.status);
   const dueAtUtc = run.dueAtUtc?.trim() || null;
   const dueAt = parseTimestamp(dueAtUtc);
-  const isTerminal = workflowState === "Published" || workflowState === "Superseded";
+  const isTerminal = isPublishedWorkflowState(workflowState);
   const asOfLabel = resolveAsOfLabel(run.asOfDate);
 
   return {
@@ -232,6 +337,9 @@ function buildRow(
     dueAtUtc,
     dueLabel: formatDue(dueAtUtc),
     isOverdue: dueAt !== null && !isTerminal && dueAt < evaluationAt,
+    requiresPeriodConfirmation,
+    publishedAtUtc: run.publishedAtUtc?.trim() || null,
+    sourceOrdinal,
     blockingReasons: [...(run.blockingReasons ?? [])],
     href: workstationRouteWithQuery("reportingRunDetail", { runId: run.runId }),
     ariaLabel: `${reportName}, ${descriptor.label}, owner ${run.owner?.trim() || "Unassigned"}, as of ${asOfLabel}`
@@ -245,10 +353,10 @@ function buildLanes(
 ): ReportingLane[] {
   const counts: Record<ReportingLaneKey, number | null> = {
     Library: templates.length,
-    Production: register.filter((row) => row.workflowState !== "Published" && row.workflowState !== "Superseded").length,
+    Production: register.filter((row) => !isPublishedWorkflowState(row.workflowState)).length,
     Builder: register.filter((row) => PREPARING_STATES.has(row.workflowState)).length,
     Review: register.filter((row) => REVIEW_STATES.has(row.workflowState) || row.workflowState === "ReadyForReview").length,
-    Published: register.filter((row) => row.workflowState === "Published").length,
+    Published: register.filter((row) => PUBLICATION_OUTCOMES.has(row.workflowState)).length,
     Schedules: signals.scheduleCount ?? null,
     Templates: templates.length
   };
@@ -268,11 +376,15 @@ function buildLanes(
   });
 }
 
+const BLOCKED_WORK_TONES = new Set(["danger", "blocked", "critical", "error"]);
+
 function buildAttention(
   register: readonly ReportingProductionRow[],
-  signals: ReportingAttentionSignals
+  signals: ReportingAttentionSignals,
+  evaluationAt: number
 ): ReportingAttentionItem[] {
   const items: ReportingAttentionItem[] = [];
+  const dailyWork = signals.dailyWork ?? [];
 
   const blocked = register.filter((row) => BLOCKED_STATES.has(row.workflowState)).length;
   if (blocked > 0) {
@@ -304,6 +416,42 @@ function buildAttention(
     items.push({ key: "approvals", label: pluralize(approvals, "approval due"), count: approvals, severity: "review", href: workstationRouteWithQuery("reportingGovernance", {}) });
   }
 
+  const blockedWork = dailyWork.filter((item) => BLOCKED_WORK_TONES.has(item.tone?.trim().toLowerCase() ?? ""));
+  if (blockedWork.length > 0) {
+    items.push({
+      key: "blockedWork",
+      label: pluralize(blockedWork.length, "blocked package"),
+      count: blockedWork.length,
+      severity: "blocked",
+      href: blockedWork[0].primaryActionHref?.trim() || workstationRouteWithQuery("reportingRunStatus", {})
+    });
+  }
+
+  const evidenceGapWork = dailyWork.filter((item) => (item.evidenceGaps?.length ?? 0) > 0);
+  if (evidenceGapWork.length > 0) {
+    items.push({
+      key: "evidenceGaps",
+      label: pluralize(evidenceGapWork.length, "evidence gap"),
+      count: evidenceGapWork.length,
+      severity: "action",
+      href: workstationRouteWithQuery("reportingEvidence", {})
+    });
+  }
+
+  const overdueWork = dailyWork.filter((item) => {
+    const dueAt = parseTimestamp(item.dueAtUtc);
+    return dueAt !== null && dueAt < evaluationAt;
+  });
+  if (overdueWork.length > 0) {
+    items.push({
+      key: "overdueWork",
+      label: `${overdueWork.length} work ${overdueWork.length === 1 ? "item" : "items"} past due`,
+      count: overdueWork.length,
+      severity: "blocked",
+      href: overdueWork[0].primaryActionHref?.trim() || workstationRouteWithQuery("reportingRunStatus", {})
+    });
+  }
+
   return items;
 }
 
@@ -330,7 +478,8 @@ export function buildReportingProductionModel(input: ReportingProductionInput): 
     }
   }
 
-  const rows = [...latestRunPerTemplate.values()].map((run) => buildRow(run, templatesById, evaluationAt));
+  const rows = [...latestRunPerTemplate.values()].map((run, index) =>
+    buildRow(run, templatesById, evaluationAt, index));
 
   const register = [...rows].sort((left, right) => {
     const leftBlocked = BLOCKED_STATES.has(left.workflowState) ? 0 : 1;
@@ -356,10 +505,29 @@ export function buildReportingProductionModel(input: ReportingProductionInput): 
   const reviewCount = register.filter((row) => REVIEW_STATES.has(row.workflowState)).length;
   const blockedCount = register.filter((row) => BLOCKED_STATES.has(row.workflowState)).length;
   const preparingCount = register.filter((row) => PREPARING_STATES.has(row.workflowState)).length;
-  const publishedCount = register.filter((row) => row.workflowState === "Published").length;
+  const publishedCount = register.filter((row) => PUBLICATION_OUTCOMES.has(row.workflowState)).length;
 
+  // The register is ranked for triage - blocked first, then overdue, then
+  // lifecycle, then name - so slicing it here would return an alphabetical
+  // subset rather than the most recent publications. Order by publication
+  // recency instead, falling back to the source's own update ordering.
   const recentlyPublished = register
-    .filter((row) => row.workflowState === "Published")
+    .filter((row) => PUBLICATION_OUTCOMES.has(row.workflowState))
+    .slice()
+    .sort((left, right) => {
+      const leftAt = parseTimestamp(left.publishedAtUtc);
+      const rightAt = parseTimestamp(right.publishedAtUtc);
+      if (leftAt !== null && rightAt !== null && leftAt !== rightAt) {
+        return rightAt - leftAt;
+      }
+      if (leftAt !== null && rightAt === null) {
+        return -1;
+      }
+      if (leftAt === null && rightAt !== null) {
+        return 1;
+      }
+      return left.sourceOrdinal - right.sourceOrdinal;
+    })
     .slice(0, 5);
 
   const headlineParts = [`${readyCount} / ${register.length} ready`];
@@ -382,7 +550,7 @@ export function buildReportingProductionModel(input: ReportingProductionInput): 
     headlineLabel: register.length === 0 ? "No reports in production" : headlineParts.join("  ·  "),
     lanes: buildLanes(register, templates, signals),
     register,
-    attention: buildAttention(register, signals),
+    attention: buildAttention(register, signals, evaluationAt),
     recentlyPublished,
     isEmpty: register.length === 0
   };

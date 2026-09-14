@@ -29,6 +29,8 @@ describe("reporting workflow vocabulary", () => {
     expect(normalizeReportingWorkflowState("in review")).toBe("InReview");
     expect(normalizeReportingWorkflowState("Rejected")).toBe("ChangesRequested");
     expect(normalizeReportingWorkflowState("Failed")).toBe("Blocked");
+    // ReportPackWorkflowStateDto.Archived is retained history, not preparation.
+    expect(normalizeReportingWorkflowState("Archived")).toBe("Archived");
   });
 
   it("resolves unknown workflow strings to Preparing so nothing reads as publishable", () => {
@@ -48,6 +50,7 @@ describe("reporting workflow vocabulary", () => {
   it("classifies terminal and preparer-owned states", () => {
     expect(isPublishedWorkflowState("Released")).toBe(true);
     expect(isPublishedWorkflowState("Restated")).toBe(true);
+    expect(isPublishedWorkflowState("Archived")).toBe(true);
     expect(isPublishedWorkflowState("Approved")).toBe(false);
     expect(requiresPreparerAction("ChangesRequested")).toBe(true);
     expect(requiresPreparerAction("Blocked")).toBe(true);
@@ -91,8 +94,22 @@ describe("freeze and block vocabularies", () => {
     expect(normalizeReportingFreezeState("soft")).toBe("SoftFrozen");
     expect(normalizeReportingFreezeState("Locked")).toBe("HardFrozen");
     expect(normalizeReportingFreezeState("Released")).toBe("Published");
-    expect(normalizeReportingFreezeState(null)).toBe("Open");
     expect(describeReportingFreezeState("SoftFrozen").severity).toBe("review");
+  });
+
+  it("treats an absent freeze state as unfrozen", () => {
+    // Nothing has frozen the report, so it legitimately tracks its sources.
+    expect(normalizeReportingFreezeState(null)).toBe("Open");
+    expect(normalizeReportingFreezeState(undefined)).toBe("Open");
+    expect(normalizeReportingFreezeState("   ")).toBe("Open");
+  });
+
+  it("holds an unrecognized freeze state instead of auto-admitting change", () => {
+    // The source asserted governance we do not understand. Resolving that to
+    // Open would let upstream change overwrite reviewed values silently.
+    expect(normalizeReportingFreezeState("quarantined")).toBe("SoftFrozen");
+    expect(normalizeReportingFreezeState("some-new-contract-state")).toBe("SoftFrozen");
+    expect(admitsUpstreamChange("some-new-contract-state")).toBe(false);
   });
 
   it("admits silent upstream change only while the report is open", () => {
@@ -117,7 +134,27 @@ describe("report classes", () => {
     expect(normalizeReportClass("Ledger")).toBe("Accounting");
     expect(normalizeReportClass("Statutory")).toBe("Regulatory");
     expect(normalizeReportClass("Committee")).toBe("Management");
-    expect(normalizeReportClass("anything else")).toBe("Analytical");
+    expect(normalizeReportClass("Analysis")).toBe("Analytical");
+  });
+
+  it("maps the families the shared reporting services emit", () => {
+    expect(normalizeReportClass("GovernedReportPack")).toBe("Regulatory");
+    expect(normalizeReportClass("SecFilingPacket")).toBe("Regulatory");
+    expect(normalizeReportClass("InvestorStatement")).toBe("Accounting");
+    expect(normalizeReportClass("CapitalAccountStatement")).toBe("Accounting");
+    expect(normalizeReportClass("ShadowNavPack")).toBe("Accounting");
+    expect(normalizeReportClass("PerformanceReport")).toBe("Portfolio");
+    expect(normalizeReportClass("HoldingsReport")).toBe("Portfolio");
+  });
+
+  it("governs an unknown family conservatively rather than as analytical", () => {
+    // Analytical is the weakest policy - no review, no approval - so an
+    // unrecognized family must not land there.
+    expect(normalizeReportClass("SomeFamilyThisBuildHasNeverSeen")).toBe("Accounting");
+    expect(describeReportClass("SomeFamilyThisBuildHasNeverSeen")).toMatchObject({
+      requiresReconciliation: true,
+      requiresApproval: true
+    });
   });
 
   it("varies governance requirements by class", () => {

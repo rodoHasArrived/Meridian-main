@@ -110,3 +110,119 @@ describe("reporting production surface view-model", () => {
     expect(period).toBeNull();
   });
 });
+
+describe("period scoping", () => {
+  it("keeps only the latest period's runs in the register", () => {
+    const { production, period } = buildReportingProductionSurfaceViewModel(
+      [
+        runRow({ id: "current", templateId: "t1", asOfDateLabel: "2026-09-30" }),
+        runRow({ id: "prior", templateId: "t2", asOfDateLabel: "2026-08-31" }),
+        runRow({ id: "older", templateId: "t3", asOfDateLabel: "2026-07-31" })
+      ],
+      [templateRow()],
+      [],
+      NOW
+    );
+
+    expect(production.register.map((row) => row.runId)).toEqual(["current"]);
+    expect(period?.periodId).toBe("2026-09-30");
+  });
+
+  it("does not let a prior-period run displace the current run for the same template", () => {
+    // isLatestGenerated is scoped per run series, so both can claim it.
+    const { production } = buildReportingProductionSurfaceViewModel(
+      [
+        runRow({ id: "prior", templateId: "shared", asOfDateLabel: "2026-08-31", isLatestGenerated: true }),
+        runRow({ id: "current", templateId: "shared", asOfDateLabel: "2026-09-30", isLatestGenerated: true })
+      ],
+      [templateRow({ id: "shared" })],
+      [],
+      NOW
+    );
+
+    expect(production.register).toHaveLength(1);
+    expect(production.register[0].runId).toBe("current");
+  });
+
+  it("keeps runs that retained no period rather than hiding them", () => {
+    const { production } = buildReportingProductionSurfaceViewModel(
+      [
+        runRow({ id: "current", templateId: "t1", asOfDateLabel: "2026-09-30" }),
+        runRow({ id: "undated", templateId: "t2", asOfDateLabel: "As-of date unavailable" })
+      ],
+      [templateRow()],
+      [],
+      NOW
+    );
+
+    expect(production.register.map((row) => row.runId).sort()).toEqual(["current", "undated"]);
+  });
+
+  it("resolves a month period token to its period end for the milestone strip", () => {
+    const { production, period } = buildReportingProductionSurfaceViewModel(
+      [runRow({ asOfDateLabel: "2026-06" })],
+      [templateRow()],
+      [],
+      NOW
+    );
+
+    expect(period?.periodId).toBe("2026-06-30");
+    expect(production.asOfLabel).toBe("Jun 2026");
+  });
+
+  it("scopes on a non-calendar period token without claiming a milestone strip", () => {
+    const { production, period } = buildReportingProductionSurfaceViewModel(
+      [
+        runRow({ id: "kept", templateId: "t1", asOfDateLabel: "2026-P03" }),
+        runRow({ id: "other", templateId: "t2", asOfDateLabel: "2026-P02" })
+      ],
+      [templateRow()],
+      [],
+      NOW
+    );
+
+    expect(production.register.map((row) => row.runId)).toEqual(["kept"]);
+    expect(production.asOfLabel).toBe("2026-P03");
+    // No calendar period end, so no milestones are asserted.
+    expect(period).toBeNull();
+  });
+
+  it("prefers an orderable period over a relative token", () => {
+    const { period } = buildReportingProductionSurfaceViewModel(
+      [
+        runRow({ id: "relative", templateId: "t1", asOfDateLabel: "CurrentMonth" }),
+        runRow({ id: "dated", templateId: "t2", asOfDateLabel: "2026-09-30" })
+      ],
+      [templateRow()],
+      [],
+      NOW
+    );
+
+    expect(period?.periodId).toBe("2026-09-30");
+  });
+});
+
+describe("daily work reaches the surface", () => {
+  it("projects the shared daily-work items into the attention rail", () => {
+    const { production } = buildReportingProductionSurfaceViewModel(
+      [runRow({ status: "Approved" })],
+      [templateRow()],
+      [],
+      NOW,
+      [
+        {
+          workItemId: "delivery-failure:board",
+          kind: "delivery-failure",
+          title: "Board portal package failed",
+          tone: "danger",
+          primaryActionHref: "/reporting/report-packs?recipient=board",
+          evidenceGaps: ["Delivery rejection lacks retained portal proof."]
+        }
+      ]
+    );
+
+    const keys = production.attention.map((item) => item.key);
+    expect(keys).toContain("blockedWork");
+    expect(keys).toContain("evidenceGaps");
+  });
+});

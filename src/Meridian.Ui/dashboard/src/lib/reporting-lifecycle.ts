@@ -36,7 +36,8 @@ export const REPORTING_WORKFLOW_STATES = [
   "Publishing",
   "Published",
   "Superseded",
-  "Restated"
+  "Restated",
+  "Archived"
 ] as const;
 export type ReportingWorkflowState = typeof REPORTING_WORKFLOW_STATES[number];
 
@@ -120,7 +121,8 @@ const WORKFLOW_DESCRIPTORS: Record<ReportingWorkflowState, ReportingVocabularyDe
   Publishing: { state: "Publishing", label: "Publishing", severity: "review", description: "Publication artifacts are being produced and distributed." },
   Published: { state: "Published", label: "Published", severity: "ready", description: "An immutable publication record exists for this period." },
   Superseded: { state: "Superseded", label: "Superseded", severity: "info", description: "A later version replaced this publication." },
-  Restated: { state: "Restated", label: "Restated", severity: "action", description: "Published figures were restated through a controlled process." }
+  Restated: { state: "Restated", label: "Restated", severity: "action", description: "Published figures were restated through a controlled process." },
+  Archived: { state: "Archived", label: "Archived", severity: "info", description: "Retained as history; no longer in production." }
 };
 
 const DATA_DESCRIPTORS: Record<ReportingDataState, ReportingVocabularyDescriptor<ReportingDataState>> = {
@@ -264,6 +266,16 @@ const BLOCK_LOOKUP = buildLookup(REPORT_BLOCK_STATES, {
 });
 
 const CLASS_LOOKUP = buildLookup(REPORT_CLASSES, {
+  // Families emitted by the shared reporting services. Without these every
+  // governed pack falls through to the unknown default, and an accounting or
+  // regulatory output would be governed as if it were an ad-hoc note.
+  governedreportpack: "Regulatory",
+  secfilingpacket: "Regulatory",
+  investorstatement: "Accounting",
+  capitalaccountstatement: "Accounting",
+  shadownavpack: "Accounting",
+  performancereport: "Portfolio",
+  holdingsreport: "Portfolio",
   ledger: "Accounting",
   close: "Accounting",
   financial: "Accounting",
@@ -300,9 +312,24 @@ export function normalizeReportingControlState(value: string | null | undefined)
   return CONTROL_LOOKUP[normalizeKey(value)] ?? "NotTested";
 }
 
-/** Unrecognized freeze states resolve to `Open`, the least restrictive claim. */
+/**
+ * Normalizes a freeze state, distinguishing "no freeze applied" from "a freeze
+ * state we do not understand".
+ *
+ * An absent value means nothing has frozen the report, so `Open` is correct: an
+ * unfrozen report legitimately tracks its sources. A non-empty value we cannot
+ * recognize is different - the source system asserted some governance state, and
+ * resolving that to `Open` would make {@link admitsUpstreamChange} true and let
+ * `buildChangeSinceReview` silently apply changes over reviewed values. Unknown
+ * governance therefore holds at `SoftFrozen`, where change is detected and put to
+ * an operator rather than applied.
+ */
 export function normalizeReportingFreezeState(value: string | null | undefined): ReportingFreezeState {
-  return FREEZE_LOOKUP[normalizeKey(value)] ?? "Open";
+  const key = normalizeKey(value);
+  if (!key) {
+    return "Open";
+  }
+  return FREEZE_LOOKUP[key] ?? "SoftFrozen";
 }
 
 /** Unrecognized block states resolve to `Stale`, never `Live`. */
@@ -310,9 +337,18 @@ export function normalizeReportBlockState(value: string | null | undefined): Rep
   return BLOCK_LOOKUP[normalizeKey(value)] ?? "Stale";
 }
 
-/** Unrecognized classes resolve to `Analytical`, the least-governed class. */
+/**
+ * Normalizes a report family onto a report class.
+ *
+ * Unrecognized families resolve to `Accounting`, not `Analytical`. The class
+ * selects the publication gate policy, and `Analytical` is the weakest one - it
+ * requires neither review nor approval - so defaulting there would let a family
+ * this build has never seen publish without either. `Accounting` errs toward
+ * harder to publish rather than easier. Families that really are analytical are
+ * mapped explicitly above.
+ */
 export function normalizeReportClass(value: string | null | undefined): ReportClass {
-  return CLASS_LOOKUP[normalizeKey(value)] ?? "Analytical";
+  return CLASS_LOOKUP[normalizeKey(value)] ?? "Accounting";
 }
 
 export function describeReportingWorkflowState(value: string | null | undefined): ReportingVocabularyDescriptor<ReportingWorkflowState> {
@@ -365,10 +401,14 @@ export function reportingWorkflowOrdinal(value: string | null | undefined): numb
   return REPORTING_WORKFLOW_STATES.indexOf(normalizeReportingWorkflowState(value));
 }
 
-/** Whether the workflow state represents an immutable publication outcome. */
+/**
+ * Whether the workflow state is terminal - an immutable publication outcome or
+ * retained history. Terminal reports are not active production work, so lane
+ * counts and the production register must exclude them.
+ */
 export function isPublishedWorkflowState(value: string | null | undefined): boolean {
   const state = normalizeReportingWorkflowState(value);
-  return state === "Published" || state === "Superseded" || state === "Restated";
+  return state === "Published" || state === "Superseded" || state === "Restated" || state === "Archived";
 }
 
 /** Whether the workflow state still expects preparer action before review. */

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildReportingProductionModel,
   REPORTING_LANES,
+  type ReportingDailyWorkInput,
   type ReportingProductionRunInput,
   type ReportingProductionTemplateInput
 } from "@/lib/reporting-production";
@@ -256,5 +257,179 @@ describe("production headline and attention", () => {
     expect(model.headlineLabel).toBe("No reports in production");
     expect(model.attention).toEqual([]);
     expect(model.periodLabel).toBe("Current period");
+  });
+});
+
+describe("period confirmation guard", () => {
+  it("does not present a terminal state as ready when no period was retained", () => {
+    const model = buildReportingProductionModel({
+      runs: [
+        run({ runId: "undated", templateId: "t1", status: "Released", asOfDate: "as-of-date-unavailable" }),
+        run({ runId: "dated", templateId: "t2", status: "Released", asOfDate: "2026-09-30" })
+      ],
+      evaluationAtUtc: NOW
+    });
+
+    const byId = Object.fromEntries(model.register.map((row) => [row.runId, row]));
+    expect(byId.undated.requiresPeriodConfirmation).toBe(true);
+    expect(byId.undated.stateLabel).toBe("Period confirmation required");
+    expect(byId.undated.workflowState).not.toBe("Published");
+    expect(byId.dated.requiresPeriodConfirmation).toBe(false);
+
+    // Only the dated output is canonical.
+    expect(model.recentlyPublished.map((row) => row.runId)).toEqual(["dated"]);
+    expect(model.publishedCount).toBe(1);
+  });
+
+  it("leaves non-terminal undated runs alone", () => {
+    const model = buildReportingProductionModel({
+      runs: [run({ status: "Draft", asOfDate: "as-of-date-unavailable" })],
+      evaluationAtUtc: NOW
+    });
+
+    expect(model.register[0].requiresPeriodConfirmation).toBe(false);
+    expect(model.register[0].stateLabel).toBe("Preparing");
+  });
+});
+
+describe("governed report identity and periods", () => {
+  it("resolves a versioned template identity against the unversioned template key", () => {
+    const model = buildReportingProductionModel({
+      runs: [run({ templateId: "board-pack:v1", family: "GovernedReportPack" })],
+      templates: [template({ templateId: "board-pack", name: "Board Pack", family: "GovernedReportPack" })],
+      evaluationAtUtc: NOW
+    });
+
+    expect(model.register[0].reportName).toBe("Board Pack");
+  });
+
+  it("presents governed period tokens instead of discarding them", () => {
+    const model = buildReportingProductionModel({
+      runs: [
+        run({ runId: "month", templateId: "t1", asOfDate: "2026-06" }),
+        run({ runId: "periodNumber", templateId: "t2", asOfDate: "2026-P03" }),
+        run({ runId: "relative", templateId: "t3", asOfDate: "CurrentMonth" }),
+        run({ runId: "iso", templateId: "t4", asOfDate: "2026-09-30" }),
+        run({ runId: "sentinel", templateId: "t5", asOfDate: "as-of-date-unavailable" })
+      ],
+      evaluationAtUtc: NOW
+    });
+
+    const byId = Object.fromEntries(model.register.map((row) => [row.runId, row.asOfLabel]));
+    expect(byId.month).toBe("Jun 2026");
+    expect(byId.periodNumber).toBe("2026-P03");
+    expect(byId.relative).toBe("CurrentMonth");
+    expect(byId.iso).toBe("Sep 30, 2026");
+    expect(byId.sentinel).toBe("As-of unavailable");
+  });
+});
+
+describe("terminal states and lane counts", () => {
+  it("keeps restatements out of active production and counts them as published", () => {
+    const model = buildReportingProductionModel({
+      runs: [
+        run({ runId: "restated", templateId: "t1", status: "Restated" }),
+        run({ runId: "preparing", templateId: "t2", status: "Draft" })
+      ],
+      evaluationAtUtc: NOW
+    });
+
+    const byKey = Object.fromEntries(model.lanes.map((lane) => [lane.key, lane.count]));
+    expect(byKey.Production).toBe(1);
+    expect(byKey.Published).toBe(1);
+    expect(model.publishedCount).toBe(1);
+  });
+
+  it("treats an archived pack as retained history, not active preparation", () => {
+    const model = buildReportingProductionModel({
+      runs: [run({ runId: "archived", templateId: "t1", status: "Archived" })],
+      evaluationAtUtc: NOW
+    });
+
+    expect(model.register[0].stateLabel).toBe("Archived");
+    const byKey = Object.fromEntries(model.lanes.map((lane) => [lane.key, lane.count]));
+    expect(byKey.Production).toBe(0);
+    expect(byKey.Builder).toBe(0);
+    expect(byKey.Published).toBe(0);
+  });
+
+  it("orders recently published by publication recency rather than report name", () => {
+    const model = buildReportingProductionModel({
+      runs: [
+        run({ runId: "alpha", templateId: "t1", status: "Released", reportName: "Alpha", publishedAtUtc: "2026-10-01T00:00:00Z" }),
+        run({ runId: "zulu", templateId: "t2", status: "Released", reportName: "Zulu", publishedAtUtc: "2026-10-03T00:00:00Z" }),
+        run({ runId: "mike", templateId: "t3", status: "Released", reportName: "Mike", publishedAtUtc: "2026-10-02T00:00:00Z" })
+      ],
+      evaluationAtUtc: NOW
+    });
+
+    expect(model.recentlyPublished.map((row) => row.runId)).toEqual(["zulu", "mike", "alpha"]);
+    // The triage register still ranks alphabetically within a lifecycle position.
+    expect(model.register.map((row) => row.reportName)).toEqual(["Alpha", "Mike", "Zulu"]);
+  });
+
+  it("falls back to the source ordering when no publication timestamp is retained", () => {
+    const model = buildReportingProductionModel({
+      runs: [
+        run({ runId: "newest", templateId: "t1", status: "Released", reportName: "Zulu" }),
+        run({ runId: "oldest", templateId: "t2", status: "Released", reportName: "Alpha" })
+      ],
+      evaluationAtUtc: NOW
+    });
+
+    // The shared services return update-ordered history, newest first.
+    expect(model.recentlyPublished.map((row) => row.runId)).toEqual(["newest", "oldest"]);
+  });
+});
+
+describe("daily work in the attention rail", () => {
+  function work(overrides: Partial<ReportingDailyWorkInput> = {}): ReportingDailyWorkInput {
+    return {
+      workItemId: "w1",
+      kind: "delivery-failure",
+      title: "Board portal package failed",
+      tone: "info",
+      ...overrides
+    };
+  }
+
+  it("surfaces blocked packages, evidence gaps and overdue work from the shared projection", () => {
+    const model = buildReportingProductionModel({
+      runs: [run({ status: "Approved" })],
+      signals: {
+        dailyWork: [
+          work({ workItemId: "blocked", tone: "danger", primaryActionHref: "/reporting/report-packs?recipient=board" }),
+          work({ workItemId: "gap", tone: "info", evidenceGaps: ["Delivery rejection lacks retained portal proof."] }),
+          work({ workItemId: "late", tone: "info", dueAtUtc: "2026-10-01T00:00:00Z" })
+        ]
+      },
+      evaluationAtUtc: NOW
+    });
+
+    const byKey = Object.fromEntries(model.attention.map((item) => [item.key, item]));
+    expect(byKey.blockedWork).toMatchObject({ label: "1 blocked package", severity: "blocked" });
+    expect(byKey.blockedWork.href).toBe("/reporting/report-packs?recipient=board");
+    expect(byKey.evidenceGaps).toMatchObject({ label: "1 evidence gap", severity: "action" });
+    expect(byKey.overdueWork).toMatchObject({ label: "1 work item past due", severity: "blocked" });
+  });
+
+  it("no longer claims nothing needs attention while the server holds urgent work", () => {
+    const model = buildReportingProductionModel({
+      runs: [run({ status: "Approved" })],
+      signals: { dailyWork: [work({ tone: "danger" })] },
+      evaluationAtUtc: NOW
+    });
+
+    expect(model.attention).not.toEqual([]);
+  });
+
+  it("stays quiet when the projection carries no urgent work", () => {
+    const model = buildReportingProductionModel({
+      runs: [run({ status: "Approved" })],
+      signals: { dailyWork: [work({ tone: "success" })] },
+      evaluationAtUtc: NOW
+    });
+
+    expect(model.attention).toEqual([]);
   });
 });
