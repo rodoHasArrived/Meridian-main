@@ -37,6 +37,13 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
     ahead of the W9 close-out because they serve the release gate
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [Reporting Operating Model (2026-09)](reporting-operating-model-2026-09.md) — refined
+    reporting semantics: the `Report`/`Edition`/`Publication` object split, the four-destination
+    consolidation inside the existing Reporting root, the scope contract with separated effective
+    and recorded time, change classification by meaning, four independent status dimensions, and
+    the release-candidate publication boundary. Grounded in current `src/Meridian.Reporting`
+    source evidence with a named gap list, four open decisions, and six acceptance tests
+    (`W4-RPT-001`, `W9-REPORT-005`); changes no behaviour and sets no roadmap status
   - [Adversarial Program Review (2026-08-25)](adversarial-program-review-2026-08-25.md) — latest
     independent whole-program adverse review; re-tests the 2026-08-24 open items against the 39
     commits landed since, then extends into cross-catalog consistency between the authorization
