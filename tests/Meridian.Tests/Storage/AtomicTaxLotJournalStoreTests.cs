@@ -597,6 +597,7 @@ public sealed class AtomicTaxLotJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AppendAssetPostingAsync_AcquisitionReplayDisposalAndRollbackShareOneTransaction()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -691,6 +692,7 @@ public sealed class AtomicTaxLotJournalStoreTests
             .WithMessage("*one exact asset-account debit*");
 
         var acquired = await database.JournalStore.AppendAssetPostingAsync(acquisition);
+        (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(2);
 
         acquired.IsExactReplay.Should().BeFalse();
         acquired.Journal.Entry.JournalEntryId.Should().Be(acquisition.Journal.Entry.JournalEntryId);
@@ -714,6 +716,7 @@ public sealed class AtomicTaxLotJournalStoreTests
         acquisitionReplay.IsExactReplay.Should().BeTrue();
         acquisitionReplay.Mutations[0].MutationRecordId.Should().Be(acquired.Mutations[0].MutationRecordId);
         acquisitionReplay.MutatedLots[0].Version.Should().Be(1);
+        (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(3);
 
         var changedReplay = (acquisition with
         {
@@ -831,6 +834,7 @@ public sealed class AtomicTaxLotJournalStoreTests
         disposalReplay.Mutations[0].MutationRecordId.Should().Be(disposed.Mutations[0].MutationRecordId);
         disposalReplay.MutatedLots[0].Version.Should().Be(2);
         disposalReplay.MutatedLots[0].OpenQuantity.Should().Be(60m);
+        (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(4);
 
         var staleSourceEventId = Guid.NewGuid();
         var staleJournal = BuildJournalWrite(
@@ -919,6 +923,8 @@ public sealed class AtomicTaxLotJournalStoreTests
         openLots[0].Version.Should().Be(2);
         openLots[0].OpenQuantity.Should().Be(60m);
         openLots[0].LastMutationBatchId.Should().Be(disposal.MutationBatchId);
+        (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(4,
+            "failed lot CAS operations must roll back their journal and audit together");
     }
 
     private static AtomicTaxLotJournalCommand BuildAcquisitionCommand(

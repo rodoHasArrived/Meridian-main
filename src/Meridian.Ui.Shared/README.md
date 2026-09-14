@@ -11,6 +11,13 @@ last_reviewed: 2026-08-30
 
 # src/Meridian.Ui.Shared
 
+Period creation requires a resolved authenticated actor and overwrites any client-supplied
+`CreatedBy` before calling the shared ledger service. The actor is retained in the same-transaction
+PostgreSQL ledger audit. `WorkstationEndpointsTests.LedgerAuditActor` exercises spoofed client
+attribution against the real period service and PostgreSQL store.
+Generated-candidate posting and manual journal lifecycle routes also require a resolved authenticated
+actor; permission alone cannot authorize use of a client-supplied posting identity.
+
 Rejected mutation leases return HTTP 429 with a positive `Retry-After` delay. The lending
 runtime test exhausts the shared projection/reconciliation budget and verifies rejection
 before mutation; `forceEnable` allows this test to exercise the real limiter without changing

@@ -191,7 +191,7 @@ public static partial class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerPeriods, async (CreateLedgerPeriodRequest request, HttpContext context) =>
         {
-            if (!HasLedgerMutationPermission(context))
+            if (!TryGetLedgerCloseActor(context, out var actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -204,7 +204,7 @@ public static partial class LedgerEndpoints
 
             try
             {
-                var period = await service.CreatePeriodAsync(request, context.RequestAborted).ConfigureAwait(false);
+                var period = await service.CreatePeriodAsync(request with { CreatedBy = actor }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(period, jsonOptions, statusCode: StatusCodes.Status201Created);
             }
             catch (LedgerBookServiceException ex)
@@ -1772,7 +1772,8 @@ public static partial class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryLifecycleAction, async (JournalEntryLifecycleActionRequestDto request, HttpContext context) =>
         {
-            if (!HasManualJournalLifecycleActionPermission(context, request.Action))
+            if (!HasManualJournalLifecycleActionPermission(context, request.Action) ||
+                !EndpointAuthorization.TryResolveActor(context, out var actor) || string.IsNullOrWhiteSpace(actor))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1789,7 +1790,7 @@ public static partial class LedgerEndpoints
                 var result = await service
                     .ApplyLifecycleActionAsync(request with
                     {
-                        Actor = ResolveMutationActor(context, request.Actor),
+                        Actor = actor,
                         TenantId = tenantContext.TenantId,
                         CompanyId = tenantContext.CompanyId,
                         ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),

@@ -41935,6 +41935,84 @@
       "target": "database:ledger.journal_entries"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_chain_sequence_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.chain_sequence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.close_event_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.close_event_snapshot"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_entry_hash_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.entry_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_payload_hash_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.payload_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_previous_hash_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.previous_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_subject_kind_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.subject_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_subject_version_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.subject_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_genesis_subject_kind_check on ledger.ledger_event_audit_genesis",
+      "target": "database:ledger.ledger_event_audit_genesis.subject_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_head_chain_id_check on ledger.ledger_event_audit_head",
+      "target": "database:ledger.ledger_event_audit_head.chain_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_head_genesis_hash_check on ledger.ledger_event_audit_head",
+      "target": "database:ledger.ledger_event_audit_head.genesis_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_head_last_hash_check on ledger.ledger_event_audit_head",
+      "target": "database:ledger.ledger_event_audit_head.last_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_head_next_sequence_check on ledger.ledger_event_audit_head",
+      "target": "database:ledger.ledger_event_audit_head.next_sequence"
+    },
+    {
       "constraint": "open_lot_backfill_evidence_ledger_book_id_fkey",
       "kind": "foreign-key",
       "label": "ledger_book_id",
@@ -46191,6 +46269,24 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.ledger_event_audit_events"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.ledger_event_audit_genesis"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.ledger_event_audit_head"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.ledger_journal_schema_migrations"
     },
     {
@@ -46997,7 +47093,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e2bc1d4f9448096a5139d204f6a9476bc082369f1ee2e727da4a68821adb16cd",
+  "fingerprint": "2d59733981c98b6522bf7912ac3621d9e0b2070ddbfe9eac74a5592c39bb0c86",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -64775,6 +64871,149 @@
       "label": "ledger.ledger_books_pkey"
     },
     {
+      "id": "database:ledger.ledger_event_audit_events",
+      "kind": "database-table",
+      "label": "ledger.ledger_event_audit_events",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.chain_sequence",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.chain_sequence"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.close_event_id",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.close_event_id"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.close_event_snapshot",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.close_event_snapshot"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.entry_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.entry_hash"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.payload_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.payload_hash"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.previous_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.previous_hash"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.subject_kind",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.subject_kind"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.subject_version",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.subject_version"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_chain_sequence_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_chain_sequence_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_entry_hash_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_entry_hash_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_payload_hash_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_payload_hash_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_previous_hash_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_previous_hash_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_subject_kind_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_subject_kind_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_subject_version_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_subject_version_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_genesis",
+      "kind": "database-table",
+      "label": "ledger.ledger_event_audit_genesis",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_genesis.subject_kind",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_genesis.subject_kind"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_genesis_subject_kind_check on ledger.ledger_event_audit_genesis",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_genesis_subject_kind_check on ledger.ledger_event_audit_genesis"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head",
+      "kind": "database-table",
+      "label": "ledger.ledger_event_audit_head",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head.chain_id",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head.chain_id"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head.genesis_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head.genesis_hash"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head.last_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head.last_hash"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head.next_sequence",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head.next_sequence"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head_chain_id_check on ledger.ledger_event_audit_head",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head_chain_id_check on ledger.ledger_event_audit_head"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head_genesis_hash_check on ledger.ledger_event_audit_head",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head_genesis_hash_check on ledger.ledger_event_audit_head"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head_last_hash_check on ledger.ledger_event_audit_head",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head_last_hash_check on ledger.ledger_event_audit_head"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head_next_sequence_check on ledger.ledger_event_audit_head",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head_next_sequence_check on ledger.ledger_event_audit_head"
+    },
+    {
       "id": "database:ledger.ledger_journal_schema_migrations",
       "kind": "database-table",
       "label": "ledger.ledger_journal_schema_migrations",
@@ -68752,9 +68991,9 @@
   "summary": {
     "contract_references": 3097,
     "contract_set_memberships": 3673,
-    "edges": 7808,
+    "edges": 7824,
     "foreign_keys": 132,
     "logical_references": 6,
-    "nodes": 3765
+    "nodes": 3793
   }
 }

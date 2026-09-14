@@ -121,6 +121,8 @@ Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden
 an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
 together when a flow resets the input.
 
+Reusable value-adjacent confidence badges use `DataConfidenceIndicator` and `DataConfidenceIndicatorModel` so Portfolio, Accounting, Reporting, and Data screens can display the same Current, Stale, Partial, Reconciled, Unreconciled, Estimated, and Provider Degraded labels with source/provider metadata, freshness, reconciliation status, fallback notes, and click-through explanations sourced from shared evidence or provider read models where available.
+
 Desktop configuration is preflighted before the generic host parses `appsettings.json`. Invalid
 configuration is moved to a timestamped retained backup, a valid last-known-good copy is restored
 when available (otherwise safe defaults are written), and a recovery receipt is retained beside the
@@ -331,6 +333,11 @@ posture used by shared workstation continuity endpoints.
 The drill-in uses compact action-strip chrome, shared dense cash-ladder and cash-flow event tables,
 and right-side inspectors for the selected event, ladder bucket, continuity posture, and run actions;
 Security Master remains disabled until a symbol-linked cash-flow event is selected.
+Shared dense workstation grids centralize keyboard behavior in `DenseGridKeyboardCommands` and
+`DenseDataGridControl` rather than per-page key handlers. Grids and table-inspector compositions
+now expose reusable command hooks for Ctrl+F filter focus, Enter selected-row details, Escape detail
+closure, Ctrl+C selected-row copy, Ctrl+Shift+F filter clearing, and Ctrl+J related-record
+navigation; row traversal remains the virtualized list's native Up/Down/Page/Home/End behavior.
 Desktop backtest services register the Backtesting-owned `IBacktestPreflightService` implementation
 and attach it to the singleton `BacktestService`, so WPF strategy runs use the same date-range,
 replay-coverage, execution-model, and optional Security Master preflight checks as shared

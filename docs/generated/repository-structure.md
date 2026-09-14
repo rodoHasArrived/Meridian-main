@@ -1421,6 +1421,7 @@ Meridian-main
 │   │   ├── runtime-component-state-boundaries.md
 │   │   ├── security-lot-convergence-blueprint.md
 │   │   ├── security-master-extensibility-review.md
+│   │   ├── security-master-identifier-conflict-detection.md
 │   │   ├── storage-design.md
 │   │   ├── strategy-builder-integration.md
 │   │   ├── strategy-engine-foundation.md
@@ -5642,7 +5643,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_032__accounting_audit_chain.sql
 │   │   │   │   ├── V_ledger_033__tax_lot_face_terms.sql
 │   │   │   │   ├── V_ledger_034__open_lot_acquisition.sql
-│   │   │   │   └── V_ledger_035__open_lot_backfill.sql
+│   │   │   │   ├── V_ledger_035__open_lot_backfill.sql
+│   │   │   │   └── V_ledger_036__ledger_event_audit_chain.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5667,6 +5669,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   ├── PostgresLedgerCurrencyBackfill.cs
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
+│   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
 │   │   │   ├── PostgresLedgerJournalStore.OpenLotBackfill.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
@@ -5837,6 +5840,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.Aliases.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
+│   │   │   ├── PostgresSecurityMasterStore.IdentifierCandidates.cs
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
 │   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
@@ -7601,6 +7605,9 @@ Meridian-main
 │   │   │   └── IRemoteWorkstationClient.cs
 │   │   ├── Controls
 │   │   │   ├── AutomationLeafBorder.cs
+│   │   │   ├── DataConfidenceExplanationButton.cs
+│   │   │   ├── DataConfidenceIndicator.xaml
+│   │   │   ├── DataConfidenceIndicator.xaml.cs
 │   │   │   ├── EmptyStatePanel.xaml
 │   │   │   ├── EmptyStatePanel.xaml.cs
 │   │   │   ├── EvidenceLinkChip.xaml
@@ -7688,6 +7695,7 @@ Meridian-main
 │   │   │   ├── BackfillModels.cs
 │   │   │   ├── BlotterModels.cs
 │   │   │   ├── DashboardModels.cs
+│   │   │   ├── DataConfidenceIndicatorModel.cs
 │   │   │   ├── DataQualityModels.cs
 │   │   │   ├── FundAccountingRecordModels.cs
 │   │   │   ├── FundLedgerDimensionView.cs
@@ -8261,6 +8269,7 @@ Meridian-main
 │   │   │   │   ├── ActivityLogGridControl.xaml.cs
 │   │   │   │   ├── DenseDataGridControl.xaml
 │   │   │   │   ├── DenseDataGridControl.xaml.cs
+│   │   │   │   ├── DenseGridKeyboardCommands.cs
 │   │   │   │   ├── DiagnosticsChecklistControl.xaml
 │   │   │   │   ├── DiagnosticsChecklistControl.xaml.cs
 │   │   │   │   ├── HealthBadgeControl.xaml
@@ -9477,6 +9486,7 @@ Meridian-main
 │   │   │   │   ├── AccountingJournalDraftServiceTests.cs
 │   │   │   │   ├── AccountingPolicyClockTests.cs
 │   │   │   │   ├── AccountingPolicyServiceTests.cs
+│   │   │   │   ├── AccountingPostingCandidateServiceTests.ActorAttribution.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
 │   │   │   │   └── AssetAccountingLifecycleSeparationTests.cs
@@ -10032,6 +10042,7 @@ Meridian-main
 │   │   │   ├── FundScopedWriteTenantGateTests.cs
 │   │   │   ├── FundScopeTenantAuthorityTests.cs
 │   │   │   ├── FundScopeTenantColumnMigrationTests.cs
+│   │   │   ├── GovernedLedgerPostingTargetTests.ActorAttribution.cs
 │   │   │   ├── GovernedLedgerPostingTargetTests.cs
 │   │   │   ├── JsonFileIBDataResultStoreTests.cs
 │   │   │   ├── JsonFileSnapshotStoreTests.cs
@@ -10043,6 +10054,7 @@ Meridian-main
 │   │   │   ├── LedgerBookServiceTests.cs
 │   │   │   ├── LedgerCurrencyBackfillTests.cs
 │   │   │   ├── LedgerDatabaseFactAttribute.cs
+│   │   │   ├── LedgerEventAuditPostgresTests.cs
 │   │   │   ├── LedgerJournalStoreHydrationTests.cs
 │   │   │   ├── LedgerJournalStoreTests.cs
 │   │   │   ├── LedgerPostgresTestDatabase.cs
@@ -10340,9 +10352,11 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.IBResults.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs
 │   │   │   ├── WorkstationEndpointsTests.JournalAutomation.cs
+│   │   │   ├── WorkstationEndpointsTests.LedgerAuditActor.cs
 │   │   │   ├── WorkstationEndpointsTests.LedgerRoleReachability.cs
 │   │   │   ├── WorkstationEndpointsTests.MarkPreview.cs
 │   │   │   ├── WorkstationEndpointsTests.OpenLotBackfill.cs
+│   │   │   ├── WorkstationEndpointsTests.PostingActorBoundary.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpointsTests.StrategyTenantScope.cs
 │   │   │   ├── WorkstationEndpointsTests.TradingTenantScope.cs
@@ -10486,6 +10500,7 @@ Meridian-main
 │   │   │   ├── FeatureCapabilityGateTests.cs
 │   │   │   └── ServiceCollectionRegistrationAssertions.cs
 │   │   ├── Models
+│   │   │   ├── DataConfidenceIndicatorModelTests.cs
 │   │   │   ├── PaneLayoutTests.cs
 │   │   │   ├── ShellNavigationCatalogTests.cs
 │   │   │   └── WorkspaceShellChromeContributionTests.cs

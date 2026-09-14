@@ -303,7 +303,11 @@ public sealed record LedgerAccountingPeriod(
     string Status,
     DateTimeOffset OpenedAt,
     DateTimeOffset? ClosedAt,
-    long Version);
+    long Version)
+{
+    /// <summary>Actual command actor for this mutation; absent legacy attribution remains explicit.</summary>
+    public string? MutationActor { get; init; }
+}
 
 public sealed record LedgerBookRecord(
     Guid LedgerBookId,

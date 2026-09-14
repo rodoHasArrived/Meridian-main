@@ -243,6 +243,34 @@ erDiagram
         text accounting_policy_version
         text tenant_id
     }
+    ledger_ledger_event_audit_events {
+        bigint chain_sequence PK
+        text subject_kind
+        uuid subject_id
+        bigint subject_version
+        text action
+        text actor
+        timestamp_with_time_zone recorded_at_utc
+        text fact_snapshot
+        uuid close_event_id
+        text close_event_snapshot
+        text payload_hash
+        text previous_hash
+        text entry_hash
+    }
+    ledger_ledger_event_audit_genesis {
+        text subject_kind PK
+        uuid subject_id PK
+        bigint subject_version
+    }
+    ledger_ledger_event_audit_head {
+        smallint chain_id PK
+        integer schema_version
+        bigint next_sequence
+        text last_hash
+        text genesis_hash
+        timestamp_with_time_zone genesis_at_utc
+    }
     ledger_ledger_journal_schema_migrations {
         text filename PK
         text checksum

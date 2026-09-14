@@ -14,7 +14,7 @@ namespace Meridian.Tests.FinancialOperations.Ledger;
 /// Guards the fund-accounting source-event scenario where promoted posting rules may draft
 /// journal impact, but posting remains behind retained evidence and approval gates.
 /// </summary>
-public sealed class AccountingPostingCandidateServiceTests
+public sealed partial class AccountingPostingCandidateServiceTests
 {
     [Fact]
     public async Task Scenario_AccountingRulesStudio_SourceEventBuildsApprovalGatedJournalCandidate()
@@ -940,6 +940,7 @@ public sealed class AccountingPostingCandidateServiceTests
         appended.PostingCommand.LedgerBookId.Should().Be(ledgerBookId);
         appended.PostingCommand.SourceEventId.Should().Be(sourceEventId);
         appended.PostingCommand.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Approved);
+        appended.PostingCommand.Actor.Should().Be("reviewer@meridian.local");
         appended.PostingCommand.Evidence.Should().Contain(evidence =>
             evidence.Kind == AccountingPostingEvidenceKindDto.Approval &&
             evidence.EvidenceId == "approval-generated-interest-202605");
