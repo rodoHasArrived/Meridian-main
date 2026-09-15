@@ -250,13 +250,42 @@ public sealed class DemoWorkspaceSeederTests
         var baseRoot = Path.Combine(artifacts.RootPath, "data");
         var seeder = new DemoWorkspaceSeeder(baseRoot);
 
-        var legacyDirectory = Path.Combine(seeder.DemoRoot, "historical", "SPY");
-        Directory.CreateDirectory(legacyDirectory);
-        await File.WriteAllTextAsync(Path.Combine(legacyDirectory, "seeded-trades.jsonl"), "{}\n");
+        var legacyRoot = Path.Combine(seeder.DemoRoot, "historical");
+        foreach (var symbol in new[] { "SPY", "DELISTED" })
+        {
+            // DELISTED models a symbol the blueprint no longer names: migration keys off the
+            // legacy layout, not the current symbol list, so its file goes too.
+            var legacyDirectory = Path.Combine(legacyRoot, symbol);
+            Directory.CreateDirectory(legacyDirectory);
+            await File.WriteAllTextAsync(Path.Combine(legacyDirectory, "seeded-trades.jsonl"), "{}\n");
+        }
 
         await seeder.SeedAsync();
 
-        Directory.Exists(Path.Combine(seeder.DemoRoot, "historical")).Should().BeFalse();
+        Directory.Exists(legacyRoot).Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Migration removes only the file name the previous seeder owned. Anything else an operator
+    /// filed under the legacy root stays, and the root is kept because it is no longer empty.
+    /// </summary>
+    [Fact]
+    public async Task SeedAsync_WhenLegacyRootHoldsOperatorFiles_KeepsThem()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(SeedAsync_WhenLegacyRootHoldsOperatorFiles_KeepsThem));
+        var baseRoot = Path.Combine(artifacts.RootPath, "data");
+        var seeder = new DemoWorkspaceSeeder(baseRoot);
+
+        var legacyDirectory = Path.Combine(seeder.DemoRoot, "historical", "SPY");
+        Directory.CreateDirectory(legacyDirectory);
+        await File.WriteAllTextAsync(Path.Combine(legacyDirectory, "seeded-trades.jsonl"), "{}\n");
+        var operatorArchive = Path.Combine(legacyDirectory, "SPY-2019-archive.jsonl");
+        await File.WriteAllTextAsync(operatorArchive, "{}\n");
+
+        await seeder.SeedAsync();
+
+        File.Exists(Path.Combine(legacyDirectory, "seeded-trades.jsonl")).Should().BeFalse();
+        File.Exists(operatorArchive).Should().BeTrue("migration removes only the file the seeder wrote");
     }
 
     [Fact]

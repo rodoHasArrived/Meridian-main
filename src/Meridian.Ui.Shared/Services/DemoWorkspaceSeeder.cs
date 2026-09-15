@@ -347,16 +347,19 @@ public sealed class DemoWorkspaceSeeder
 
         try
         {
-            foreach (var symbol in DemoTenantBlueprint.MarketHistorySymbolList)
+            // Keyed off the legacy layout rather than the current symbol list: a workspace seeded
+            // when the blueprint named a different set would otherwise keep that symbol's
+            // unreadable file forever, and the legacy root would never empty out. Only the fixed
+            // file name the old seeder wrote is ever removed, one level under the legacy root.
+            foreach (var directory in Directory.EnumerateDirectories(legacyRoot))
             {
-                var directory = Path.Combine(legacyRoot, symbol.ToUpperInvariant());
                 var file = Path.Combine(directory, LegacyMarketHistoryFileName);
                 if (File.Exists(file))
                 {
                     File.Delete(file);
                 }
 
-                if (Directory.Exists(directory) && !Directory.EnumerateFileSystemEntries(directory).Any())
+                if (!Directory.EnumerateFileSystemEntries(directory).Any())
                 {
                     Directory.Delete(directory);
                 }
