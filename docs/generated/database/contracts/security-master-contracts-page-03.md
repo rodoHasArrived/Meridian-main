@@ -2,11 +2,25 @@
 
 # `security-master-contracts` data objects - page 3 of 4
 
-Objects 161-240 of 257. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 258. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetPackDescriptor["SecurityAssetPackDescriptor"] {
+        +AssetPackAccountingRules AccountingRules
+        +AssetPackAdmissionPolicy AdmissionPolicy
+        +IReadOnlyList~string~ AssetClasses
+        +AssetPackAutomationDepth AutomationDepth
+        +AssetPackContractSchema ContractSchema
+        +string DisplayName
+        +string LedgerExtensionPolicy
+        +IReadOnlyList~AssetPackLifecycleCoverage~ LifecycleCoverage
+        +IReadOnlyList~string~ LifecycleEvents
+        +string PackId
+        +IReadOnlyList~string~ PlannedAssetClasses
+        +AssetPackReportingTaxonomy ReportingTaxonomy
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetPackRegistry["SecurityAssetPackRegistry"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto["SecurityAssetProfileAccountingImpactHintDto"] {
@@ -518,19 +532,6 @@ classDiagram
         +bool IsPostable
         +IReadOnlyList~StructuredCashFlowLedgerPosting~ Postings
         +Guid SecurityId
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
-        +decimal? CurrentIndexRate
-        +string? DayCountConvention
-        +CashFlowLegDirection? Direction
-        +bool ExchangesPrincipal
-        +decimal? FixedRate
-        +string? IndexName
-        +string LegId
-        +decimal? Notional
-        +string? PaymentFrequency
-        +CashFlowLegRateKind RateKind
-        +decimal? SpreadBps
     }
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDateOrderRuleDto
