@@ -1,11 +1,11 @@
 {
-  "total_files": 667,
-  "total_lines": 143992,
+  "total_files": 668,
+  "total_lines": 144273,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 263,
-  "average_lines": 215.9,
+  "average_lines": 216.0,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2688,7 +2688,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10933,
+      "line_count": 10950,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3136,7 +3136,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 366,
+      "line_count": 371,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3144,7 +3144,7 @@
     },
     {
       "path": "docs/product/reporting-operating-model-2026-09.md",
-      "line_count": 755,
+      "line_count": 848,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

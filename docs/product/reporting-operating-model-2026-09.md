@@ -5,6 +5,7 @@
 **Reviewed:** 2026-09-14
 **Scope:** reporting product semantics, object model, navigation, and release boundary
 **Roadmap anchors:** `W4-RPT-001`, `W9-REPORT-005`
+**Reconciled against:** `docs/architecture/reporting-workstation-model.md` (reviewed 2026-09-12, landed in PR #2963)
 
 > This is a **working design input**, not a canonical status source. Live status stays in the
 > roadmap registry (`docs/roadmap/data/roadmap-items.yml`). Every numerical example below is
@@ -84,6 +85,74 @@ readiness, operational scope, access scope, certified snapshot, authoritative so
 dataset rows, and a partners-capital projection all live on one type. Decomposing it is the
 enabling refactor for nearly everything below.
 
+## 2a. Reconciliation with the Landed Reporting Workstation Model
+
+**This section supersedes parts of what follows.** After this document was first drafted, PR #2963
+merged a reporting workstation implementation into `main`, documented in
+`docs/architecture/reporting-workstation-model.md` and owned by Workstation Platform. Several
+proposals below were gaps when written and are now substantially implemented. Leaving them stated as
+gaps would misrepresent current state, so they are corrected here and flagged in place.
+
+### What now exists that this document proposed
+
+| Proposal | Now implemented in | Notes |
+| --- | --- | --- |
+| Four independent status dimensions (Section 9) | `src/Meridian.Ui/dashboard/src/lib/reporting-lifecycle.ts` | Implemented as **four** separate axes, and more developed than proposed |
+| Exception acceptance distinct from passing (Section 10) | same, `REPORTING_CONTROL_STATES` | `Waived` and `WithinTolerance` are both distinct from `Passed` |
+| Change review against the reviewed revision (Section 8) | `lib/report-change-since-review.ts` | `ChangeAdmissionAction` covers review, apply, remain frozen, unfreeze |
+| Governance proportional to the report (Section 5) | `lib/report-health.ts` | Per-class gate policies via `defaultGatePolicyForClass` |
+| Measurable source coverage (Section 10) | `lib/report-health.ts` | `buildSourceCoverage` with a per-bucket breakdown and share |
+| An edition-like period object (Section 3) | `lib/reporting-period-object.ts` | `ReportingPeriodModel` with milestones, snapshots, close state |
+
+The landed work is in several respects **better than this document proposed**, and those choices
+should be treated as settled rather than reopened:
+
+- It carries a **fourth axis this document lacks**: `REPORTING_FREEZE_STATES` of `Open`,
+  `SoftFrozen`, `HardFrozen`, `Published`. `SoftFrozen` detects upstream change without applying it,
+  which is a cleaner expression of the proposed-change-set idea in Section 8 than that section's own
+  wording.
+- Its control axis distinguishes `WithinTolerance` from `Passed`, a distinction Section 10 argues
+  for but does not name.
+- Health is reported per dimension with `percent: number | null`, where null means the dimension
+  does not apply. That satisfies Section 9's requirement that not-applicable stay distinguishable,
+  and it avoids the single overall health percentage Section 9 asks to retire, while keeping a
+  separate pass/fail publication gate.
+
+### What remains genuinely open
+
+The C# contract layer is **unchanged** by that work. Verified against `src/Meridian.Reporting` at
+the merge of `main` at `21788fdf`:
+
+| Finding | Still true |
+| --- | --- |
+| `ReportingOutputManifest` has 32 constructor parameters, 24 optional | yes |
+| `ReportingRunStatus` is one enum mixing lifecycle and outcome | yes |
+| `Revision` means the store concurrency hash, not an edition revision | yes |
+| No `Publication` type exists | yes |
+
+So the four axes, the change model, and the gate policies currently live **only in the browser
+workstation's TypeScript modules**. They are not expressed in the shared contracts, read models, or
+API seam.
+
+**That relocates the remaining work rather than removing it.** `CLAUDE.md` requires both the browser
+and WPF workflows to be backed by shared contracts and API seams so neither client forks product
+state. A vocabulary this load-bearing existing on one client only is exactly that fork. The
+remaining gap is therefore to push these now-proven shapes down into the shared seam, and to
+decompose `ReportingOutputManifest` and settle the `Revision` naming so they can land there. That is
+the Stage 0 work in Section 15, and it is now better justified than when first written, because the
+target vocabulary is no longer speculative.
+
+### Where this document and the landed model disagree
+
+**Navigation.** Section 4 proposes consolidating to Workbench, Reports, Publications and Manage. The
+landed model instead organises Reporting as a seven-lane pipeline of Plan, Prepare, Review, Approve,
+Publish and Preserve. Both are consolidations of the same eight nav subroutes, which are unchanged
+in `workspace-nav.view-model.ts`, but they are different consolidations and cannot both be adopted.
+
+This document does **not** override a just-merged architecture doc owned by another lane. Section 4
+should be read as the alternative it is, and the choice between the two belongs to the owners of
+both documents. It is recorded as an open decision in Section 16.
+
 ## 3. Simplify the Central Object: the Report Edition
 
 The earlier concept used *report*, *instance*, *snapshot*, *version*, *publication*, and *package*
@@ -138,6 +207,10 @@ optimistic-concurrency or atomic-write behaviour while renaming.
 - Keep the run: a run remains the *execution* that produces a revision. It stops being the identity.
 
 ## 4. Reduce Navigation to Three Daily Destinations
+> **Superseded in part by Section 2a.** The landed reporting workstation model consolidates the
+> same eight subroutes into a seven-lane pipeline instead. This section is the alternative
+> proposal, not current direction; the choice is an open decision in Section 16.
+
 
 **Constraint first.** Top-level operator navigation is fixed at `Trading`, `Portfolio`,
 `Accounting`, `Reporting`, `Strategy`, `Data`, `Settings`. That seven-root invariant is normative in
@@ -197,6 +270,10 @@ Selecting a row opens the contextual inspector; the register stays visible.
 problem, not three. The register must group by cause and show the affected editions beneath it.
 
 ## 5. Make Governance Proportional to the Report
+> **Largely implemented.** Per-class publication gate policies now exist in
+> `lib/report-health.ts` via `defaultGatePolicyForClass`. Read this section as the rationale
+> behind that, and see Section 2a for what remains.
+
 
 A research note should not carry the same production ceremony as a controlled external report.
 
@@ -331,6 +408,10 @@ Every block answers three questions:
 That is a more useful starting point than "add a chart".
 
 ## 8. Make Change Review the Signature Interaction
+> **Largely implemented.** `lib/report-change-since-review.ts` now models change against the
+> reviewed revision, and the freeze axis in `lib/reporting-lifecycle.ts` expresses the
+> proposed-change-set idea more cleanly than this section does. See Section 2a.
+
 
 The strongest differentiator is not an elaborate report builder. It is a clear answer to:
 
@@ -394,6 +475,10 @@ policy that checks their content and dependencies. Where impact cannot be establ
 require the broader review.
 
 ## 9. Separate Lifecycle, Data Condition, Controls, and Delivery
+> **Implemented, and extended.** `lib/reporting-lifecycle.ts` now separates four axes, adding a
+> freeze axis this section does not propose. The remaining gap is that the C# contracts still
+> carry one overloaded `ReportingRunStatus`. See Section 2a.
+
 
 One overloaded status cannot describe a reporting edition. Today `ReportingRunStatus` mixes
 lifecycle and outcome in a single enum, with `Failed` sitting beside `Draft`/`InReview`/`Approved`/
@@ -436,6 +521,10 @@ This extends the existing requirement that missing, zero, no-activity, and not-a
 remain distinguishable from each other.
 
 ## 10. Strengthen Controls Without Creating a Parallel Accounting System
+> **Partly implemented.** `Waived` and `WithinTolerance` are already distinct from `Passed`, and
+> `buildSourceCoverage` already reports coverage with a breakdown. The comparison contract and
+> reconciliation bridge below remain proposals. See Section 2a.
+
 
 Reporting exposes and evaluates evidence. It must not offer a shortcut around the systems that
 establish that evidence.
@@ -744,6 +833,8 @@ is a truth-discipline violation.
   touches a durability seam.
 - It does not adopt Section 13, which is blocked on reconciling the five-primitive vocabulary with
   the in-repo design system.
+- It does not override `docs/architecture/reporting-workstation-model.md`. Where the two disagree,
+  Section 2a records the disagreement and leaves the choice to both documents' owners.
 
 ### Open decisions requiring sign-off
 
@@ -753,3 +844,5 @@ is a truth-discipline violation.
 | Whether the design-styles source is checked into `Meridian Design System/` or its primitives restated in `PATTERNS.md` | 1, 13 | Section 13 adoption |
 | Whether `ReportingRunStatus` is decomposed in place or superseded by four dimensions on `Edition` | 9 | Stage 1 |
 | Review-credit carry-forward policy: which unchanged-section conditions permit retaining review credit | 8 | Stage 1 |
+| **Navigation model**: adopt this document's four destinations, the landed seven-lane pipeline, or a reconciliation of both | 4, 2a | Any navigation work |
+| Whether the four axes now in `lib/reporting-lifecycle.ts` are promoted into the shared contract seam, and on what schedule | 2a, 9 | Browser/WPF parity |
