@@ -233,8 +233,8 @@ public sealed class DemoWorkspaceSeeder
             StreamId: DemoTenantBlueprint.MarketHistorySource,
             Venue: DemoTenantBlueprint.MarketHistoryVenue);
 
-        return MarketEvent.Trade(print.Timestamp, symbol, trade, DemoTenantBlueprint.MarketHistorySource)
-            with { ReceivedAtUtc = print.Timestamp };
+        var tradeEvent = MarketEvent.Trade(print.Timestamp, symbol, trade, DemoTenantBlueprint.MarketHistorySource);
+        return tradeEvent with { ReceivedAtUtc = print.Timestamp };
     }
 
     /// <summary>
