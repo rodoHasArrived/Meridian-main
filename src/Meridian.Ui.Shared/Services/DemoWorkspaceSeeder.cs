@@ -1,10 +1,16 @@
-using System.Globalization;
 using System.Text;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Domain;
+using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Serialization;
+using Meridian.Domain.Events;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Operations;
+using Meridian.Storage.Policies;
 using Meridian.Storage.Services;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
@@ -23,8 +29,11 @@ namespace Meridian.Ui.Shared.Services;
 /// introduces throwaway fixtures. Every store is rooted at the dedicated demo root
 /// (<c>{dataRoot}/demo-workspace</c>) using the exact path layout the serving host reads
 /// (<c>{root}/workstation</c> for reconciliation casework, <c>{root}/operations</c> for the
-/// hash-chained strategy case history), so a host started with the demo root active renders the
-/// seeded data end-to-end. Seeding is idempotent: re-running never duplicates casework or runs.
+/// hash-chained strategy case history, and the storage policy's own
+/// <c>{root}/{SYMBOL}/Trade/{date}.jsonl</c> partitions for market history), so a host started
+/// with the demo root active renders the seeded data end-to-end. Seeding is idempotent:
+/// re-running never duplicates casework or runs, and converges the seeded history on the
+/// documented session window.
 /// </para>
 /// <para>
 /// All seeded records carry the Blueprint-1 <see cref="DemoTenantBlueprint.SeededProvenanceLabel"/>
@@ -34,6 +43,19 @@ namespace Meridian.Ui.Shared.Services;
 /// </remarks>
 public sealed class DemoWorkspaceSeeder
 {
+    /// <summary>Records the session files a seed wrote, so the next seed can prune only its own.</summary>
+    private const string MarketHistoryManifestFileName = ".meridian-demo-market-history.json";
+
+    private const string MarketHistoryManifestSchema = "meridian.demo-market-history/v1";
+
+    /// <summary>Demo-only market-history layout written before the seeder moved to the storage policy.</summary>
+    private const string LegacyMarketHistoryFolderName = "historical";
+
+    private const string LegacyMarketHistoryFileName = "seeded-trades.jsonl";
+
+    private static StringComparison PathComparison =>
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
     private readonly string _demoRoot;
     private readonly string _baseDataRoot;
     private readonly ILoggerFactory _loggerFactory;
@@ -122,44 +144,233 @@ public sealed class DemoWorkspaceSeeder
     }
 
     /// <summary>
-    /// Writes deterministic seeded market history as durable trade-event JSONL under
-    /// <c>{demoRoot}/historical/{symbol}/</c> — the exact layout
-    /// <c>HistoricalDataQueryService</c> reads — so the Data desk serves real files that
-    /// survive restart. The whole file is rewritten atomically per symbol, so re-seeding
-    /// on the same day is idempotent.
+    /// Writes deterministic seeded market history as durable trade-event JSONL in the same layout
+    /// the live ingestion path produces, so the Data desk reads it back through the ordinary
+    /// <c>HistoricalDataQueryService</c> discovery rules rather than a demo-only convention.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Paths come from <see cref="JsonlStoragePolicy"/> and lines from
+    /// <see cref="HighPerformanceJson"/> — the very policy and serializer
+    /// <c>JsonlStorageSink</c> uses — so the seeded files are indistinguishable in shape from a
+    /// real capture: <c>{demoRoot}/{SYMBOL}/Trade/{yyyy-MM-dd}.jsonl</c>. That matters beyond
+    /// tidiness. The reader discovers a symbol's files either under <c>{root}/{SYMBOL}</c> or by
+    /// matching the symbol against a <em>file name</em>, and lists available symbols only from
+    /// top-level directories of the data root, so history filed under a demo-only
+    /// <c>{root}/historical/{SYMBOL}/</c> path with a symbol-free file name is invisible to every
+    /// Data desk surface.
+    /// </para>
+    /// <para>
+    /// Events carry <see cref="MarketDataSources.Sample"/> as their source, which is what bar
+    /// aggregation reports as the series' provenance — the seeded history names itself as sample
+    /// data wherever the desk attributes a source (W9-TRUTH-001).
+    /// </para>
+    /// </remarks>
     private async Task<int> SeedMarketHistoryAsync(CancellationToken ct)
     {
         var lastSession = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var policy = new JsonlStoragePolicy(new StorageOptions { RootPath = _demoRoot });
+        var written = new List<string>();
         var totalPrints = 0;
 
         foreach (var symbol in DemoTenantBlueprint.MarketHistorySymbolList)
         {
             ct.ThrowIfCancellationRequested();
-            var prints = DemoTenantBlueprint.BuildMarketHistory(symbol, lastSession);
-            var directory = Path.Combine(_demoRoot, "historical", symbol.ToUpperInvariant());
-            Directory.CreateDirectory(directory);
+            var normalized = symbol.ToUpperInvariant();
+            var sequence = 0L;
 
-            var builder = new StringBuilder(prints.Count * 96);
-            foreach (var print in prints)
+            foreach (var session in DemoTenantBlueprint
+                         .BuildMarketHistory(normalized, lastSession)
+                         .GroupBy(print => DateOnly.FromDateTime(print.Timestamp.UtcDateTime)))
             {
-                builder
-                    .Append("{\"type\":\"Trade\",\"symbol\":\"").Append(symbol.ToUpperInvariant())
-                    .Append("\",\"timestamp\":\"").Append(print.Timestamp.ToString("O", CultureInfo.InvariantCulture))
-                    .Append("\",\"payload\":{\"kind\":\"trade\",\"price\":")
-                    .Append(print.Price.ToString(CultureInfo.InvariantCulture))
-                    .Append(",\"size\":").Append(print.Size.ToString(CultureInfo.InvariantCulture))
-                    .Append("}}\n");
-            }
+                ct.ThrowIfCancellationRequested();
 
-            var path = Path.Combine(directory, "seeded-trades.jsonl");
-            var temp = path + ".tmp";
-            await File.WriteAllTextAsync(temp, builder.ToString(), ct).ConfigureAwait(false);
-            File.Move(temp, path, overwrite: true);
-            totalPrints += prints.Count;
+                var builder = new StringBuilder();
+                string? path = null;
+                foreach (var print in session)
+                {
+                    var tradeEvent = BuildSeededTradeEvent(normalized, print, ++sequence);
+
+                    // One path per session file: every event in the group shares a date and symbol,
+                    // so the policy resolves them all to the same daily partition.
+                    path ??= policy.GetPath(tradeEvent);
+                    builder.Append(HighPerformanceJson.Serialize(tradeEvent)).Append('\n');
+                    totalPrints++;
+                }
+
+                if (path is null)
+                {
+                    continue;
+                }
+
+                await AtomicFileWriter.WriteAsync(path, builder.ToString(), ct).ConfigureAwait(false);
+                written.Add(Path.GetRelativePath(_demoRoot, path));
+            }
         }
 
+        await PruneSupersededMarketHistoryAsync(written, ct).ConfigureAwait(false);
+        RemoveLegacyMarketHistory();
         return totalPrints;
+    }
+
+    /// <summary>
+    /// Builds one seeded trade event. The payload is a real <see cref="Trade"/> rather than a
+    /// hand-shaped JSON object, so the line the serializer emits carries every field a stored
+    /// provider event carries.
+    /// </summary>
+    private static MarketEvent BuildSeededTradeEvent(
+        string symbol,
+        DemoTenantBlueprint.SampleTradePrint print,
+        long sequence)
+    {
+        var trade = new Trade(
+            Timestamp: print.Timestamp,
+            Symbol: symbol,
+            Price: print.Price,
+            Size: print.Size,
+            Aggressor: AggressorSide.Unknown,
+            SequenceNumber: sequence,
+            StreamId: DemoTenantBlueprint.MarketHistorySource,
+            Venue: DemoTenantBlueprint.MarketHistoryVenue);
+
+        return MarketEvent.Trade(print.Timestamp, symbol, trade, DemoTenantBlueprint.MarketHistorySource)
+            with { ReceivedAtUtc = print.Timestamp };
+    }
+
+    /// <summary>
+    /// Deletes seeded session files an earlier seed wrote that this run no longer produces, so the
+    /// seeded window stays exactly the documented session count instead of growing each time the
+    /// demo is re-seeded on a later date.
+    /// </summary>
+    /// <remarks>
+    /// Pruning is driven by the manifest this method rewrites, never by scanning the symbol
+    /// directories: only a file a previous seed recorded as its own is ever removed, so market data
+    /// an operator collected into the demo workspace is left alone.
+    /// </remarks>
+    private async Task PruneSupersededMarketHistoryAsync(IReadOnlyList<string> written, CancellationToken ct)
+    {
+        var manifestPath = Path.Combine(_demoRoot, MarketHistoryManifestFileName);
+        var current = new HashSet<string>(written, StringComparer.Ordinal);
+
+        foreach (var stale in await ReadMarketHistoryManifestAsync(manifestPath, ct).ConfigureAwait(false))
+        {
+            if (current.Contains(stale))
+            {
+                continue;
+            }
+
+            var absolute = Path.GetFullPath(Path.Combine(_demoRoot, stale));
+
+            // A manifest is data on disk; re-check containment before deleting anything it names.
+            if (!absolute.StartsWith(_demoRoot + Path.DirectorySeparatorChar, PathComparison))
+            {
+                _logger.LogWarning(
+                    "Ignoring demo market-history manifest entry {Entry} that resolves outside the demo root.",
+                    stale);
+                continue;
+            }
+
+            try
+            {
+                File.Delete(absolute);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogWarning(ex, "Could not remove superseded seeded market history {Path}.", absolute);
+            }
+        }
+
+        var files = new JsonArray();
+        foreach (var entry in written.Order(StringComparer.Ordinal))
+        {
+            files.Add(entry);
+        }
+
+        var manifest = new JsonObject
+        {
+            ["schema"] = MarketHistoryManifestSchema,
+            ["files"] = files,
+        };
+
+        await AtomicFileWriter.WriteAsync(manifestPath, manifest.ToJsonString(), ct).ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<string>> ReadMarketHistoryManifestAsync(string manifestPath, CancellationToken ct)
+    {
+        if (!File.Exists(manifestPath))
+        {
+            return [];
+        }
+
+        try
+        {
+            var content = await File.ReadAllTextAsync(manifestPath, ct).ConfigureAwait(false);
+            if (JsonNode.Parse(content) is not JsonObject manifest || manifest["files"] is not JsonArray files)
+            {
+                return [];
+            }
+
+            var entries = new List<string>(files.Count);
+            foreach (var node in files)
+            {
+                if (node is JsonValue value
+                    && value.TryGetValue<string>(out var relative)
+                    && !string.IsNullOrWhiteSpace(relative))
+                {
+                    entries.Add(relative);
+                }
+            }
+
+            return entries;
+        }
+        catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException)
+        {
+            // An unreadable manifest costs a prune, not a seed: the current run still writes its
+            // own files and replaces the manifest with a readable one.
+            _logger.LogWarning(ex, "Could not read the demo market-history manifest {Path}.", manifestPath);
+            return [];
+        }
+    }
+
+    /// <summary>
+    /// Removes market history left by seeds that wrote the demo-only
+    /// <c>{demoRoot}/historical/{SYMBOL}/</c> layout, so an already-seeded workspace converges on
+    /// the readable layout instead of keeping an unreadable copy beside it.
+    /// </summary>
+    private void RemoveLegacyMarketHistory()
+    {
+        var legacyRoot = Path.Combine(_demoRoot, LegacyMarketHistoryFolderName);
+        if (!Directory.Exists(legacyRoot))
+        {
+            return;
+        }
+
+        try
+        {
+            foreach (var symbol in DemoTenantBlueprint.MarketHistorySymbolList)
+            {
+                var directory = Path.Combine(legacyRoot, symbol.ToUpperInvariant());
+                var file = Path.Combine(directory, LegacyMarketHistoryFileName);
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+
+                if (Directory.Exists(directory) && !Directory.EnumerateFileSystemEntries(directory).Any())
+                {
+                    Directory.Delete(directory);
+                }
+            }
+
+            if (!Directory.EnumerateFileSystemEntries(legacyRoot).Any())
+            {
+                Directory.Delete(legacyRoot);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "Could not remove the legacy seeded market history under {Path}.", legacyRoot);
+        }
     }
 
     /// <summary>

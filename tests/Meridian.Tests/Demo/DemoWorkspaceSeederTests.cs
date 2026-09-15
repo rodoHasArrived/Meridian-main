@@ -1,9 +1,12 @@
 using System.IO;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Meridian;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.Historical;
 using Meridian.Storage.Operations;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
@@ -134,9 +137,126 @@ public sealed class DemoWorkspaceSeederTests
         pack!.Provenance.DataProvenanceToken.Should().Be(DemoTenantBlueprint.SeededSourceType,
             "the seeded report pack must carry the simulation provenance mark (W9-TRUTH-001)");
 
-        var historyFile = Path.Combine(seeder.DemoRoot, "historical", "SPY", "seeded-trades.jsonl");
-        File.Exists(historyFile).Should().BeTrue("seeded market history must be durable provider data");
-        (await File.ReadAllLinesAsync(historyFile)).Should().HaveCount(DemoTenantBlueprint.MarketHistorySessionCount);
+        // Market history is asserted through the reader rather than by path, because a durable file
+        // the Data desk cannot discover is not seeded provider data. See
+        // SeedAsync_SeedsMarketHistoryTheDataDeskCanRead below for the discovery contract itself.
+        var history = new HistoricalDataQueryService(seeder.DemoRoot);
+        history.GetAvailableSymbols()
+            .Should().Contain(DemoTenantBlueprint.MarketHistorySymbolList);
+    }
+
+    /// <summary>
+    /// The seeded history has to satisfy the discovery rules the Data desk actually applies, not
+    /// merely exist on disk. <c>HistoricalDataQueryService</c> lists symbols from top-level
+    /// directories of the data root and finds a symbol's files under <c>{root}/{SYMBOL}</c> or by
+    /// matching the symbol against a file name — so history written to a demo-only path with a
+    /// symbol-free file name reads as an empty Data desk while every file is present.
+    /// </summary>
+    [Fact]
+    public async Task SeedAsync_SeedsMarketHistoryTheDataDeskCanRead()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(SeedAsync_SeedsMarketHistoryTheDataDeskCanRead));
+        var baseRoot = Path.Combine(artifacts.RootPath, "data");
+        var seeder = new DemoWorkspaceSeeder(baseRoot);
+
+        await seeder.SeedAsync();
+
+        // Restart-modelled: a fresh reader over the same demo root, exactly as the serving host
+        // composes it (HistoricalDataQueryService is registered with the config data root).
+        var history = new HistoricalDataQueryService(seeder.DemoRoot);
+
+        history.GetAvailableSymbols().Should().Contain(DemoTenantBlueprint.MarketHistorySymbolList);
+
+        foreach (var symbol in DemoTenantBlueprint.MarketHistorySymbolList)
+        {
+            var result = await history.QueryAsync(new HistoricalDataQuery(symbol));
+
+            result.Records.Should().HaveCount(
+                DemoTenantBlueprint.MarketHistorySessionCount,
+                "every seeded session for {0} must be readable", symbol);
+            result.Records.Should().OnlyContain(record =>
+                record.Symbol == symbol && record.EventType == nameof(MarketEventType.Trade));
+        }
+
+        // The bar aggregation that powers the Data desk price chart must attribute the seeded
+        // series to the sample source, so a simulated series can never read as provider data.
+        var bars = await history.GetBarsAsync(new HistoricalBarsQuery(
+            Symbol: "SPY",
+            IntervalMinutes: 1440,
+            From: DateOnly.FromDateTime(DateTime.UtcNow.Date).AddDays(-200),
+            To: DateOnly.FromDateTime(DateTime.UtcNow.Date)));
+
+        bars.Success.Should().BeTrue();
+        bars.Bars.Should().HaveCount(DemoTenantBlueprint.MarketHistorySessionCount);
+        bars.Bars.Should().OnlyContain(bar =>
+            bar.Close > 0m && bar.Source == DemoTenantBlueprint.MarketHistorySource);
+        bars.Sources.Should().Equal(DemoTenantBlueprint.MarketHistorySource);
+    }
+
+    /// <summary>
+    /// Re-seeding on a later date must converge on the documented session window instead of
+    /// stacking a new session onto the previous seed's files.
+    /// </summary>
+    [Fact]
+    public async Task SeedAsync_WhenAnEarlierSeedLeftOtherSessions_PrunesOnlyItsOwnFiles()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(SeedAsync_WhenAnEarlierSeedLeftOtherSessions_PrunesOnlyItsOwnFiles));
+        var baseRoot = Path.Combine(artifacts.RootPath, "data");
+        var seeder = new DemoWorkspaceSeeder(baseRoot);
+
+        await seeder.SeedAsync();
+
+        // Model a seed taken on an earlier date: a session file the current run no longer writes,
+        // recorded in the manifest as the seeder's own.
+        var tradeDirectory = Path.Combine(seeder.DemoRoot, "SPY", "Trade");
+        var supersededRelative = Path.Combine("SPY", "Trade", "1999-01-04.jsonl");
+        var superseded = Path.Combine(seeder.DemoRoot, supersededRelative);
+        await File.WriteAllTextAsync(superseded, "{}\n");
+
+        // Data an operator collected into the demo workspace is not the seeder's to remove. A real
+        // readable print, so the assertion below distinguishes "left on disk" from "still served".
+        var operatorCapture = Path.Combine(tradeDirectory, "operator-capture.jsonl");
+        await File.WriteAllTextAsync(
+            operatorCapture,
+            """
+            {"type":"Trade","symbol":"SPY","timestamp":"2026-01-05T15:30:00.0000000+00:00","source":"ALPACA","payload":{"kind":"trade","price":1.23,"size":1}}
+            """);
+
+        var manifestPath = Path.Combine(seeder.DemoRoot, ".meridian-demo-market-history.json");
+        var manifest = JsonNode.Parse(await File.ReadAllTextAsync(manifestPath))!.AsObject();
+        manifest["files"]!.AsArray().Add(supersededRelative);
+        await File.WriteAllTextAsync(manifestPath, manifest.ToJsonString());
+
+        await seeder.SeedAsync();
+
+        File.Exists(superseded).Should().BeFalse("a session the seeder recorded and no longer writes is pruned");
+        File.Exists(operatorCapture).Should().BeTrue("the seeder only prunes files its own manifest claims");
+
+        var history = new HistoricalDataQueryService(seeder.DemoRoot);
+        var result = await history.QueryAsync(new HistoricalDataQuery("SPY"));
+        result.Records.Should().HaveCount(
+            DemoTenantBlueprint.MarketHistorySessionCount + 1,
+            "the seeded window is unchanged and the operator's own print is still served");
+    }
+
+    /// <summary>
+    /// A workspace seeded before the history moved onto the storage policy's layout must converge
+    /// rather than keep an unreadable copy of the same sessions beside the readable one.
+    /// </summary>
+    [Fact]
+    public async Task SeedAsync_WhenTheWorkspaceCarriesLegacyHistory_RemovesIt()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(SeedAsync_WhenTheWorkspaceCarriesLegacyHistory_RemovesIt));
+        var baseRoot = Path.Combine(artifacts.RootPath, "data");
+        var seeder = new DemoWorkspaceSeeder(baseRoot);
+
+        var legacyDirectory = Path.Combine(seeder.DemoRoot, "historical", "SPY");
+        Directory.CreateDirectory(legacyDirectory);
+        await File.WriteAllTextAsync(Path.Combine(legacyDirectory, "seeded-trades.jsonl"), "{}\n");
+
+        await seeder.SeedAsync();
+
+        Directory.Exists(Path.Combine(seeder.DemoRoot, "historical")).Should().BeFalse();
     }
 
     [Fact]
