@@ -46,8 +46,10 @@ public sealed class TradingParametersBackfillService : ITradingParametersBackfil
             log: Serilog.Log.ForContext<TradingParametersBackfillService>());
     }
 
-    public async Task BackfillAllAsync(CancellationToken ct = default)
+    public async Task BackfillAllAsync(string initiatedBy, CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(initiatedBy);
+
         if (string.IsNullOrEmpty(_apiKey))
         {
             _logger.LogWarning("Polygon API key not configured; cannot backfill trading parameters");
@@ -97,7 +99,7 @@ public sealed class TradingParametersBackfillService : ITradingParametersBackfil
 
             try
             {
-                await BackfillTickerAsync(primaryId, security.SecurityId, ct).ConfigureAwait(false);
+                await BackfillTickerAsync(primaryId, security.SecurityId, initiatedBy, ct).ConfigureAwait(false);
                 successCount++;
             }
             catch (Exception ex)
@@ -113,8 +115,10 @@ public sealed class TradingParametersBackfillService : ITradingParametersBackfil
             successCount, failureCount);
     }
 
-    public async Task BackfillTickerAsync(string ticker, Guid securityId, CancellationToken ct = default)
+    public async Task BackfillTickerAsync(string ticker, Guid securityId, string initiatedBy, CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(initiatedBy);
+
         if (string.IsNullOrEmpty(_apiKey))
         {
             _logger.LogWarning("Polygon API key not configured; cannot backfill trading parameters");
@@ -206,7 +210,7 @@ public sealed class TradingParametersBackfillService : ITradingParametersBackfil
                 IdentifiersToExpire: [],
                 EffectiveFrom: DateTimeOffset.UtcNow,
                 SourceSystem: "PolygonBackfill",
-                UpdatedBy: "TradingParametersBackfillService",
+                UpdatedBy: initiatedBy,
                 SourceRecordId: $"polygon:{ticker}",
                 Reason: "Automated trading parameters backfill from Polygon.io");
 
