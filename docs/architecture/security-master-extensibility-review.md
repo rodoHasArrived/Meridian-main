@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-10 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-11 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-10; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -5280,6 +5280,641 @@ remains the authoritative full run.
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-09-11
+
+Pinned at `e173437e`, which is also `origin/main`. The only Security Master source commits since the
+2026-09-10 pass are that pass's own resolution work — `39b5516a` ("Address the Security Master
+review findings D1-D3 and C4/C5") and its follow-up `3be7e20e`, which reverts the migration-024
+comment edit that schema-control's `migration-immutable-file-modified` rule rejects. Every other
+commit in the range is CI workflow work. So every standing finding not touched by `39b5516a` —
+C1–C3, C6, C7, A1–A4, B1–B7, N4/N5, N6, P1, P3b, P4, A2 and the deferred quartet — stands unchanged
+at the anchors those passes recorded, and this pass did not re-derive them.
+
+This pass did two things: independently re-verified the five closures `39b5516a` claims, and framed
+on the one remaining part of the subsystem with near-zero prior coverage — **the snapshot and
+projection-cache read path, and the data-quality scan that shares its universe-load primitive**.
+Both sit directly in this review's declared scope ("snapshot/projection architecture", "metadata
+validation"); before this pass `WarmAsync`, `SecurityMasterDataQualityService` and the warm path's
+cost appeared zero times in this document, and `SnapshotStore` twice in passing.
+
+The verdict is unchanged. What this pass adds is that the subsystem's **universe-load primitive is
+an N+1 that every full-universe operation rides**, that the projection cache **drops a write that
+commits while a warm is in flight** (E3), and that the data-quality lane — which is otherwise
+catalog-driven — reverts to naming asset classes by string literal in exactly the rules where the
+catalog already declares the predicate.
+
+> **Correction, 2026-09-16.** As first written this pass filed E1 and E2 only, called the projection
+> cache sound, told future passes to skip it, and marked D2 and D3 closed without qualification.
+> Review of the pull request showed all of that to be wrong or overstated, along with the stated
+> remedies for E1 and E2. Two findings were hiding behind the dismissals — **E3** (a write that
+> commits during a warm is dropped from the cache) and **E4** (the family discriminator D2 added
+> matches on key presence, so a flat payload carrying `maturity` is still silently emptied). Every
+> correction is marked in place below rather than silently rewritten, and the priorities are
+> re-ordered accordingly.
+>
+> The lesson is B1's procedural rule turned on this document's own output, and it has one shape in
+> both cases: **a mechanism was confirmed to exist and was not tested against the cases it claimed to
+> cover.** The cache's comment conceded the `Upsert`/`ReplaceAll` interleaving and then argued past
+> it, and this pass repeated the argument without asking which interleavings the argument reached.
+> D2's discriminator does require a module key, and this pass confirmed that and stopped, without
+> asking whether a module key can appear in a document that is not an economic-terms document. Both
+> times the verification checked that the code did what it said, not that what it said was enough.
+>
+> **Second review round, same day.** A further five findings landed, all five correct, producing
+> **E5** and a refinement to E1's bound. Three caught *factual* errors in this pass's own
+> corrections, all from one cause: **class-level field claims were read with a fixed-window
+> `grep -A 30` that ran past the end of one schema block into the next.** That produced the false
+> claim that `CertificateOfDeposit`, `CommercialPaper` and `TreasuryBill` declare `startDate` (the
+> field belongs to `Repo`, the block immediately after `TreasuryBill`) and an E4 inventory that both
+> omitted four affected classes and wrongly included `Swap`. A fourth showed E4's `ValueKind.Object`
+> remedy would have broken every all-null economic document. Rule: **enumerate a declaration block,
+> never a line window.**
+>
+> **Third review round, same day — and the worst of the three.** Five more findings, all correct.
+> They establish that **E3 was already fixed on `main` before this pass filed it** (`8b1981293`,
+> *"Close projection cache replacement race"*, arrived in the `origin/main` merge that preceded the
+> filing commit), and that the remedy E3 prescribed would not have closed the race anyway. E3 is
+> withdrawn in full below. They also found a **ninth** colliding class that E4's twice-corrected
+> inventory still missed and that breaks its framing (`PrivateCompanyEquity`, colliding on `issuer`,
+> with no `maturity` at all); that E4's marker remedy rejects every pre-marker document; that E5's
+> remedy cannot retire anything because the registry seed merges rather than replaces; and that
+> `ProjectionCacheRefreshMinutes` **has no production binding at all**, so the periodic re-warm this
+> pass analysed at length is unreachable outside tests.
+>
+> The second process rule, and the one that cost most: **after taking a merge, re-read every file a
+> pending finding rests on.** This pass merged 346 commits, inspected the merge only for *conflicts*,
+> and let conflict-freedom stand in for unchanged-ness. `SecurityMasterProjectionCache.cs` changed by
+> 144 insertions in that merge and conflicted with nothing, because this pass had not touched it.
+> `git diff <pre-merge-head>..HEAD -- <files the findings cite>` would have caught it in one command;
+> it was run only after review forced the question, and it then showed the damage was confined to
+> that one file.
+>
+> **Fourth review round, same day.** Five more findings, all correct, and no new finding — every one
+> corrected something this pass had asserted. Two caught claims made without checking: that the
+> quality scan pays the full warm (it calls `LoadActiveAsync` only, which this same finding states
+> correctly two paragraphs earlier — an internal contradiction), and that
+> `ProjectionCacheRefreshMinutes` is "validated by `SecurityMasterOptionsValidator`" (it is not
+> inspected there at all). One narrowed the refresh-wiring remedy to `StorageFeatureRegistration`,
+> since the WPF composition registers no warmup stack for the setting to drive. One showed E4's
+> compatibility plan cannot retire the legacy discriminator arm, because the event stream is
+> append-only and a backfill cannot reach `security_events`. And one reframed E5 entirely.
+>
+> **A subsystem pattern emerged from these rounds that is worth more than any single E finding.**
+> Three separate capabilities in this lane are *declared and unreachable*:
+> `ProjectionCacheRefreshMinutes` is an option with no binding;
+> `SecurityMasterCanonicalSymbolSeedService` is a service with no registration, so every call site
+> that guards on it is dead; and the options validator omits the one option whose misconfiguration is
+> silent. Each was found only because a reviewer asked "is this wired?" of something whose existence
+> the code asserts. This review had read all three call sites and treated declaration as evidence of
+> operation. The recurring extensibility complaint — *adding a thing means editing N hand-maintained
+> places* — has a sharper corollary here: **when the Nth place is composition, nothing fails; the
+> feature is simply absent, and the code keeps describing it as present.**
+>
+> Taken together the four rounds say something this document should not soften: **of the five
+> findings this pass filed, one was stale, one had a wrong inventory three times over, and every
+> prescription has been corrected at least once.** The findings that survive — E1, E2, E4, E5 —
+> survive on their observations, not on their prescriptions.
+
+### Claimed closures, independently re-verified
+
+All five verify at `e173437e`. Recorded here so the next pass need not re-derive them.
+
+| # | Claim | Verified |
+| --- | --- | --- |
+| C4 | Create is gated on `SecurityKindMappingMode.Write` | Yes. `SecurityMasterMapping.cs:19` passes `Write` from the create path; the fallback arm at `:417` refuses before the `OtherSecurity` degradation at `:423`, which stays intact for read mode. The same gate is applied at `:448`, `:516`, `:599`, `:963` and `:975`, so it is a mapping-wide rule, not a create-path special case. |
+| C5 | The two optional numeric readers check kind before reading | Yes. `PostgresSecurityMasterStore.cs:1834-1846` — both check `ValueKind == JsonValueKind.Number` before `TryGetDecimal` / `TryGetInt32`. `GetOptionalBool` (`:1848-1852`) already had the equivalent guard; no other reader on this path lacks one. |
+| D2 | Version 2 is reserved, and the chain no longer dispatches on the bare integer | **Partly — see E4.** The reservation landed: `SecurityMasterSchemaVersions.cs:29` declares `ReservedForEconomicTerms = 2` with the reason at the declaration, and `SecurityAssetSpecificTermsUpcasterChain.cs:215` dispatches on `IsEconomicTermsDocument` rather than the bare integer. **Corrected 2026-09-16, after review:** this row first read "Yes," on the strength of the discriminator requiring the economic version *and* a module key. That is what the code does and it is not sufficient — the discriminator matches on key **presence**, not shape, and `maturity` is both a bridged module name and a flat-family field name. The total-loss path D2 was filed to close is therefore still open for the flat classes that matter most. E4 below has the detail. |
+| D3 | `securities.schema_version` has one definition | Yes for the divergence D3 named. `PostgresSecurityMasterStore.cs:318-324` states the definition — the version stamped on the stored blob — the upsert binds it at `:346`, migration 024's backfill implements the same rule, and the `ISchemaUpcaster` constructor seam is gone, so the v1-vs-v2 split D3 filed is closed. **Qualified 2026-09-16, after review:** the two writers still disagree on *malformed* numeric versions, so "one definition" holds for well-formed `int32` values only. Migration 024 guards on `jsonb_typeof(...) = 'number'` and then casts `(asset_specific_terms->>'schemaVersion')::integer` (`:14-16`), which accepts any JSON number — a fractional or out-of-int32-range value reaches the cast and **aborts the migration**. `ResolveSchemaVersion` requires `TryGetInt32` (`SecurityAssetSpecificTermsUpcaster.cs:60-71`) and silently falls back to `DefaultAssetSpecificTerms` for the same value. No such row is known to exist, and this review makes no claim that one does; the point is that the closure is narrower than the flat sentence implied, and a follow-up would need either a guarded migration predicate (`jsonb_typeof = 'number' and (payload->>'schemaVersion') ~ '^-?[0-9]+$'`, plus a range check) or the definition stated as "well-formed integer versions" in both places. |
+| D1 (partial) | Comments corrected, marker stamped, coverage test added | Yes, as scoped. The bridge itself is still lossy and the resolution pass says so. |
+
+**A narrowing D1 could not make, and this pass can.** The 2026-09-10 pass wrote that whether events
+carrying a null `legacyAssetSpecificTerms` exist "is a question about deployment history that cannot
+be answered from the repository." For payloads *this codebase writes*, it can be: the lossy fallback
+is unreachable. `SecurityEconomicDefinitionAdapter.ToEconomicRecord` (`:12-36`) ends by passing
+`projection.AssetSpecificTerms` — a non-nullable `JsonElement` — into the `LegacyAssetSpecificTerms`
+slot, unconditionally. Both persisted payload shapes are serialized from that record: the event
+envelope at `SecurityMasterMapping.cs:115-117` and the snapshot at `:140-147`. All three write paths
+that produce either (`SecurityMasterService.cs:131`, `:265`, `:314`) build the record through
+`ToEconomicRecord` before calling `SaveSnapshotIfNeededAsync` (`:174`, `:276`, `:332`). So every
+event and every snapshot written in process carries the retained v1 payload, and
+`ToProjection` takes the authoritative branch rather than the bridge. D1's lossless half therefore
+guards a payload shape no current writer emits — it remains worth doing for imported or
+externally-authored streams and as the codec-generation seam, but it should rank below the standing
+correctness items rather than above them.
+
+### E1 — The universe-load primitive is an N+1, and the startup warm, the periodic re-warm, the full rebuild and the quality scan all ride it
+
+`PostgresSecurityMasterStore.LoadByStatusAsync` (`:218-251`) — reached through `LoadAllAsync`
+(`:212`) and `LoadActiveAsync` (`:215`) — selects **only `security_id`** for the whole universe, then
+loops the ids calling `GetProjectionCoreAsync(connection, id, ct)` (`:243`). That method issues three
+queries per security: the `securities` row (`:511-532`), then `LoadIdentifiersAsync` (`:557`) and
+`LoadAliasesAsync` (`:558`). So the primitive is `1 + 3N` queries, on one shared connection.
+
+`SecurityMasterProjectionService.BuildWarmSetAsync` (`:26-44`) then layers a second N+1 on top. For
+each seed it calls `SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync` (`:33`), which
+performs a snapshot load (`SecurityMasterAggregateRebuilder.cs:33`) and an event load (`:38`) — and
+**each of those opens its own connection**: `PostgresSecurityMasterSnapshotStore.LoadAsync` opens at
+`:19`, `PostgresSecurityMasterEventStore.LoadAsync` opens at `:93`. Neither takes a caller-supplied
+connection; there is no bulk or batched variant of either on the interface.
+
+The composed cost of one warm is therefore **`5N + 1` queries and `2N + 1` connection opens, issued
+serially**. There is no `IN`-list load, no join, no paging, and no parallelism.
+
+Where it fires:
+
+- **Every process start**, when `PreloadProjectionCache` is true — and it defaults to `true`
+  (`SecurityMasterOptions.cs`). The warm is awaited inside `StartAsync`
+  (`SecurityMasterProjectionWarmupService.cs:50`), so it is on the host startup path.
+- **Every `ProjectionCacheRefreshMinutes`**, which is the documented remedy for multi-node cache
+  coherence (`:94`). The tighter the staleness bound an operator asks for, the more often the full
+  `5N + 1` runs.
+- **Every full projection rebuild.** `SecurityMasterRebuildOrchestrator.cs:53` calls
+  `BuildWarmSetAsync`; the store-backed rebuild at `:119-138` repeats the same `LoadAllAsync` shape
+  and adds a per-record `UpsertProjectionAsync` (`:137`), which is the fan-out standing finding N6
+  already describes as writing every asset-class projection table on every upsert. E1 and N6 compose
+  on exactly this path.
+- **Every data-quality scan.** `SecurityMasterDataQualityService.RunQualityChecksAsync` (`:65`)
+  opens with `LoadActiveAsync`, so the scan pays `1 + 3N` before its first rule runs.
+
+`LoadAllAsync` passes `activeOnly: false`, so the warm caches the entire universe including inactive
+and matured securities — the set that only grows.
+
+Two things make this worth filing rather than noting. First, it is **in the shared primitive**, not
+in one caller, so no single call site can be fixed in isolation and four unrelated lanes inherit it.
+Second, the cache's own documentation makes a staleness promise this cost silently weakens: the
+comment at `SecurityMasterProjectionCache.cs:19-24` and the option's own summary both state that
+cross-node staleness is bounded by the refresh interval. The true bound is the interval **plus the
+duration of a `5N + 1` serial warm**, which at institutional universe sizes is not a rounding error
+against a refresh interval an operator would plausibly choose. Nothing measures or logs that
+duration — `WarmAsync` logs only the record count (`SecurityMasterProjectionService.cs:50-52`).
+
+This is a scale finding, not a correctness one, and this review has no benchmark evidence to
+quantify it; the claim is about query count per warm, which is read off the call graph above. The
+remedies are ordinary: give the projection store a batched load (one query per table for the
+universe, joined or `IN`-listed, instead of three per security); batch or pool the snapshot and
+event loads the same way; and log the warm's elapsed time alongside its count so the staleness bound
+is observable. Until at least the last of those lands, the documented bound should be stated as
+interval-plus-warm-duration rather than interval.
+
+**Corrected 2026-09-16, after review: the periodic re-warm cannot be turned on.**
+`ProjectionCacheRefreshMinutes` has **no production binding anywhere in the repository**.
+`StorageFeatureRegistration.CreateSecurityMasterOptions` constructs `SecurityMasterOptions` setting
+`ConnectionString`, `Schema`, `SnapshotIntervalVersions` and `PreloadProjectionCache` — each from an
+environment variable — and never assigns the refresh interval; `StrategyFeatureModule` likewise; and
+there is no configuration-binding call for the type. The property therefore holds its default of `0`
+in every production composition, and the `> 0` guard at
+`SecurityMasterProjectionWarmupService.cs:71` never opens. **`RunPeriodicRefreshAsync` is unreachable
+outside tests.**
+
+That reframes this finding and E5 rather than retiring either. The warm still runs at every process
+start and every full rebuild, so E1's `5N + 1` stands unchanged on the paths that do execute. What is
+not true, and what the option's own summary and the cache's class comment both assert, is that an
+operator can bound cross-node staleness by setting an interval. On a multi-node deployment the actual
+bound is *unbounded* — each node's cache holds what it built at startup plus that node's own writes,
+with no mechanism to converge.
+
+Three corrections to this paragraph's own first wording, all from the fourth review round, and all of
+a kind with each other:
+
+- **The quality scan does not pay the warm.** An earlier sentence here listed it among the paths
+  running `5N + 1`, contradicting the bullet two paragraphs above that correctly has it at `1 + 3N`.
+  `RunQualityChecksAsync` calls `LoadActiveAsync` and never `BuildWarmSetAsync` (`:64`), so it is a
+  consumer of the projection-store N+1 only, with no per-security snapshot or event load. Attributing
+  `2N` extra queries and `2N` connection opens to that lane also mis-scoped the batching priority.
+- **The option is not validated.** An earlier wording called it "documented, validated by
+  `SecurityMasterOptionsValidator`, and not wired." `SecurityMasterOptionsValidator.Validate` checks
+  `ConnectionString`, `Schema`, `SnapshotIntervalVersions` and `ProjectionReplayBatchSize`, and never
+  inspects `ProjectionCacheRefreshMinutes` (`:16-35`). It is documented and not wired; the validation
+  claim was asserted without being checked.
+- **The fix is not "both compositions."** `StrategyFeatureModule` registers the options, stores,
+  rebuilder, service and query service, but not `SecurityMasterProjectionCache`,
+  `SecurityMasterProjectionService` or `SecurityMasterProjectionWarmupService` — those are registered
+  only in `StorageFeatureRegistration` (`:302`, `:303`, `:333`). Parsing the variable in the WPF
+  composition would be dead configuration.
+
+So the corrected remedy is narrower and has a part the first version missed: parse the interval in
+**`StorageFeatureRegistration` alone**, and add a **non-negative guard** to the validator at the same
+time, because `ParseInt` accepts negatives and a `-1` would silently fail the warmup service's `> 0`
+guard and disable convergence with no startup error — reproducing today's failure under a setting the
+operator believes they have turned on. Until both land, the two comments promising the bound should
+say the setting is not currently reachable.
+
+**Refined 2026-09-16, after review.** *Conditional on the setting ever being wired:* even the
+interval-plus-warm bound holds only while a warm finishes inside the interval. `RunPeriodicRefreshAsync` drives a single `PeriodicTimer` (`:84-94`), and
+`WaitForNextTickAsync` does not queue elapsed periods — ticks that pass during a long warm are
+coalesced, so once a warm overruns the interval the next `await` returns immediately and warms run
+effectively back to back. A write committed just after its security was read by warm *N* is not
+installed until warm *N+1* completes, which approaches **two warm durations** rather than one. The
+honest statement is therefore conditional: the bound is interval-plus-warm-duration **while the warm
+stays shorter than the interval**, and degrades toward twice the warm duration once it does not —
+which is the regime E1's `5N + 1` makes reachable on a large universe with a tight refresh setting,
+i.e. exactly the configuration an operator would choose to reduce staleness. That is a second reason
+the elapsed-time log matters: without it, an operator cannot tell which regime they are in.
+
+**Corrected 2026-09-16, after review.** An earlier wording of this paragraph proposed
+"connection-accepting overloads so the warm reuses the connection the projection load already
+holds." There is no such connection to reuse, and the correction matters because it changes what the
+fix has to be. `LoadByStatusAsync` holds its connection in an `await using` scoped to the method
+(`:221`) and disposes it when it returns (`:250`); `BuildWarmSetAsync` awaits `LoadAllAsync` to
+completion before it enters the per-seed loop (`SecurityMasterProjectionService.cs:28-31`), so by
+the time the snapshot and event loads run, the projection load's connection is already gone. Adding
+connection-accepting overloads to those two stores would therefore leave the caller with nothing to
+pass and would not remove a single one of the `2N` opens. Removing them needs either a shared
+session / unit-of-work spanning all three loads, or a genuinely batched store API that fetches
+snapshots and events for a set of ids — not a parameter change.
+
+### E2 — The value-consistency rules name two asset classes by string literal, where the catalog already declares the predicate
+
+`SecurityMasterDataQualityService` is otherwise the catalog-driven surface this review keeps asking
+for. Its minimum-attribute rule reads the predicate off the registry —
+`SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresMaturity` (`:106`) — so a new asset class
+that declares it inherits the check with no edit here.
+
+The consistency rules do not. Both of them match a literal:
+
+- `:216` — `string.Equals(security.AssetClass, "Bond", ...)` gates VC002, "maturity must be after
+  issue date."
+- `:234` — `string.Equals(security.AssetClass, "Option", ...)` gates VC003, "active option has an
+  expiry in the past."
+
+`RequiresMaturity: true` is declared by **five** classes, not one:
+`Bond` (`SecurityAssetClassCatalog.cs:74`), `CertificateOfDeposit` (`:133`), `CommercialPaper`
+(`:149`), `TreasuryBill` (`:165`) and `Swap` (`:233`). VC002 fires for one of them. A CD, a
+commercial-paper note, a T-bill or a swap whose maturity precedes its issue date is caught by the
+minimum-attribute rule (the field must be *present*) and passes the consistency rule (nothing checks
+it is *ordered*) — the rule the catalog has already said applies to them.
+
+This is the fragile pattern the review's standing complaint names, in a lane that had otherwise
+escaped it: the predicate exists, is declared per class, is read three lines away, and the rule that
+needs it re-derives it as a string literal instead. Both rules also carry a field-name fallback pair
+— `"maturity" ?? "maturityDate"` (`:220-221`) and `"expirationDate" ?? "expiry"` (`:236-237`) — which
+is the same symptom C1/D1 describe from the other end: the flat v1 spelling is not canonical, so
+every consumer guesses at it.
+
+The fix has two halves, and only the first is a catalog read: drive VC002's class gate off
+`RequiresMaturity` as `:106` already does, and give the catalog the one descriptor flag VC003 needs
+(an expiry-bearing predicate, which `Option`, `Future`, `Warrant` and the dated derivatives would
+all set) rather than matching `"Option"`.
+
+**Corrected 2026-09-16, after review — twice; the first correction was itself wrong.** The original
+wording called this "two catalog reads" picking up "four asset classes that are silently unchecked
+today." The first correction established that the gate change picks up none of them, which is right,
+and then asserted that `CertificateOfDeposit`, `CommercialPaper` and `TreasuryBill` declare
+`startDate` while `Swap` declares `effectiveDate`. **The `startDate` half of that is false.** It came
+from a `grep -A 30` that ran past the end of the `TreasuryBill` block into the `Repo` block, which is
+the class that actually declares `startDate` (`SecurityAssetTermsSchema.cs:317-320`). The method
+note records this; it is the third claim in this pass produced by reading a window instead of a
+block, and the others are E4's inventory and the Swap entry below.
+
+The verified position. VC002 reads its start date as `issueDate` (`:218-219`), and among the five
+`RequiresMaturity` classes **only `Bond` declares any start-date field at all** — `issueDate`
+itself. `CertificateOfDeposit` declares `issuerName`, `maturity`, `couponRate`, `callableDate`,
+`dayCount`; `CommercialPaper` declares `issuerName`, `maturity`, `discountRate`, `dayCount`,
+`isAssetBacked`; `TreasuryBill` declares `maturity`, `auctionDate`, `cusip`, `discountRate`. None of
+the three has a start date under any spelling. `Swap` alone has one — `effectiveDate`, alongside
+`maturityDate`.
+
+That makes the remedy strictly larger than the first correction claimed. It is not a matter of
+*resolving* each class's start-date spelling, because for three of the four classes there is no
+field to resolve: the contract does not carry the data the rule needs. Closing E2 therefore means
+either **adding** a start-date term to those schemas and mapping it through the F# term records — the
+records at `SecurityMaster.fs` carry no start-date member for them either — or scoping VC002
+honestly to the classes that have one (`Bond` and `Swap`) and saying so, rather than implying the
+rule covers five classes when the data exists for two.
+
+The underlying symptom is unchanged and is the one C1/D1 name from the other end: the flat family's
+spelling is not canonical and not uniform, so a cross-class rule cannot be written against it. Here
+that surfaces not as a wrong guess but as an absent field.
+
+### E3 — WITHDRAWN: the cache replacement race was real, and was already closed before this pass filed it
+
+**Withdrawn 2026-09-16, after review. This finding should never have been filed in the state it was
+filed, and the reason is a process failure worth more than the finding was.**
+
+What the finding said: a write committing during a warm has its `Upsert` land in the outgoing
+dictionary, `ReplaceAll` discards it, `ProjectionCacheRefreshMinutes` defaults to 0 so nothing
+corrects it, and the stale entry propagates into `SecurityProjectionRebuildHandler` and the
+canonical-symbol registry. **All of that was true of the implementation this pass read on
+2026-09-11**, at `e173437e`, and the reasoning in the class comment did argue past the window.
+
+It is not true of the code the finding was filed against. `8b1981293` — *"Close projection cache
+replacement race"* — landed on `main` and reached this branch in the `origin/main` merge
+(`a873f96b4`, 2026-09-16). E3 was filed in `189f961f9`, **after** that merge. The repaired
+implementation was already in the working tree, and this pass described the one it had read five days
+earlier.
+
+The repair closes the race properly, and closes it in a way this pass's proposed remedy would not
+have. `ReplaceAll` (`SecurityMasterProjectionCache.cs:131-182`) takes `_replacementGate`, opens a
+replacement-scoped capture under `_writeGate`, builds the candidate map outside the gate so a lazy
+source cannot deadlock a writer, then — under `_writeGate` — replays every captured upsert into the
+candidate by version (`upsert.Version >= candidate.Version`), swaps the reference and clears the
+capture in the same critical section. `Upsert` (`:70-83`) writes the live map and the capture under
+the same gate.
+
+**This pass proposed "one comparison per key inside `ReplaceAll`, no new synchronisation." That was
+wrong on its own terms**, independently of the finding being stale: a version comparison without a
+gate leaves a write that lands *after* its key is compared and *before* the reference swap still
+discarded. Closing the window requires exactly the capture-and-serialise protocol the repair
+implements. So this pass filed a defect that was already fixed, and prescribed a fix that would not
+have fixed it.
+
+**The process failure.** This pass merged 346 commits from `origin/main` and then wrote findings
+about files it had read before the merge, without re-reading them. The merge diff was inspected only
+for *conflicts* — which were confined to two generated dashboards — and conflict-freedom was allowed
+to stand in for unchanged-ness. Those are different properties: `SecurityMasterProjectionCache.cs`
+changed by 144 insertions in that merge and conflicted with nothing, because this pass had not
+touched it.
+
+The rule, which belongs beside the block-versus-window rule in the method note: **after taking a
+merge, re-read every file a pending finding rests on, and anchor findings to the post-merge tree.**
+A cheap mechanical form is `git diff <pre-merge-head>..HEAD -- <files the findings cite>`; run
+against this pass it would have flagged the cache immediately. It was run only after review forced
+the question, and it showed the damage was confined: of the eight files this pass's findings rest on,
+only the cache changed materially, which is why E1, E2 and E4 stand unaltered by this withdrawal and
+E5 stands on a `SecurityMasterService` diff that touches comments and an alias exception.
+
+What remains true and is not withdrawn: the *consequence* chain the finding described — that a stale
+cache entry propagates through `SecurityProjectionRebuildHandler` (`:51`) and the canonical-symbol
+registry (`:66`) — is unchanged and is why E5 matters independently of this.
+
+### E4 — The family discriminator matches on key presence, and module names collide with flat field names
+
+*Filed 2026-09-16, after review, correcting this pass's own D2 verification row.*
+
+D2's remedy replaced an integer comparison with a shape test. `IsEconomicTermsDocument`
+(`SecurityAssetSpecificTermsUpcasterChain.cs:93-111`) accepts a payload as economic-terms when it is
+an object, resolves to `EconomicTermsSchema.Current`, and carries at least one `EconomicTermsModules`
+key. The test is `payload.TryGetProperty(module, out _)` — **presence, discarding the value** — and
+`EconomicTermsModules` is `BridgedModules ∪ DroppedModules` (`:44-45`, `:52-53`), whose first entry
+is `maturity`.
+
+Module names collide with flat-family field names, where the flat side holds a **scalar** rather than
+the nested object the economic family uses.
+
+**Corrected twice, 2026-09-16, after review.** The first filing named `Bond`,
+`CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill` and `Swap` — wrong in both directions. The
+second corrected that to eight `maturity`-bearing classes but kept framing the defect as a `maturity`
+problem, which understated it. Enumerated properly, by intersecting every flat class's declared
+fields with `EconomicTermsModules`, **nine** classes collide across **two** module names:
+
+| Module name | Flat classes declaring it as a scalar |
+| --- | --- |
+| `maturity` | `Bond`, `Deposit`, `CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill`, `OtherSecurity`, `DirectLoan`, `StructuredCredit` |
+| `issuer` | `PrivateCompanyEquity` |
+
+`Swap` is **not** affected — it declares `effectiveDate` and `maturityDate`, neither a module key.
+
+The `issuer` case is the one that changes the shape of the finding rather than its size.
+`PrivateCompanyEquity` has no `maturity` at all, so a collision framed around maturity would have
+declared it safe; it is misclassified and emptied all the same, via a `DroppedModules` entry. **The
+exposed surface is the whole intersection of `EconomicTermsModules` (fourteen names) with every flat
+class's field set**, and it grows whenever either side gains a name — silently, because nothing tests
+the intersection. `OtherSecurity` remains the most consequential single entry: it is the catch-all
+every unrecognized class degrades to on read.
+
+So for a flat payload stamped with the reserved version 2 and carrying a `maturity` key:
+
+1. `IsEconomicTermsDocument` returns `true` on the first module probe.
+2. `Convert` runs. `GetObject(economicTerms, "maturity")` returns `null` for a scalar, so every
+   `WriteIfPresent` against it returns false (`:139-142`), and the same holds for the other four
+   modules, which the flat document does not carry as objects either.
+3. `Convert` emits exactly `{"schemaVersion":1,"flattenedFromEconomicTermsSchemaVersion":2}`
+   (`:135-137`, `:166`) — stamped `AssetSpecificTermsSchema.Legacy`, accepted by the guard at
+   `SecurityMasterMapping.cs:711-723`, and carrying no economics at all.
+
+That is the total-loss path D2 was filed to close, reopened through the remedy that closed it. D2's
+own resolution note claims "a flat payload stamped 2 passes through with its version preserved for
+the guard's `Unsupported schemaVersion '2'` diagnostic instead of being emptied to
+`{"schemaVersion":1}`" — true only for a flat payload with no module-name collision, and `maturity`
+collides for the five classes above, which are most of the flat family that would ever need a v2.
+
+**The precondition is the same one D2 assumed.** Version 2 is reserved and no flat payload declares
+it today, so nothing is losing data now. The defect is that the guard erected against a future flat
+v2 does not hold for the documents that future would most likely produce — a guard that fails
+exactly when it is first needed. This review flags it as the highest-value item in the E series
+despite being latent, because its cost if it ever fires is every economic term on every affected
+record, silently, with a `schemaVersion: 1` stamp asserting the result is fine.
+
+**The remedy is a family marker, and the obvious cheap alternative does not work.**
+
+*Corrected 2026-09-16, after review.* This finding first recommended discriminating on **shape** —
+requiring at least one matched module key to hold a JSON object — as the cheap fix, with a
+non-colliding family marker offered as the better option. That prioritisation is backwards, because
+the shape check breaks valid economic-terms documents. `BuildEconomicTermsJson`
+(`SecurityEconomicDefinitionAdapter.cs:99-208`) builds an anonymous object whose every module is
+`… is null ? null : new { … }`, serialized with default options, so **null modules are emitted as
+present-but-null keys** rather than omitted. A security whose term modules are all empty —
+`SecurityKind.FxSpot` maps to `SecurityTermModules.empty` — therefore serializes as
+`{"schemaVersion":2,"maturity":null,"coupon":null,…}`. Under the presence test that is correctly
+recognised as economic-terms; under a `ValueKind.Object` test every module fails, the document is
+not recognised, it routes to the flat normalizer with version 2, and the guard rejects it with
+`Unsupported schemaVersion '2'` — turning a read that works today into a read failure for exactly
+the records that carry no economics to lose.
+
+So the fix is the one that cannot collide: **a family marker written by the economic serializer**
+(or separate storage slots). A payload family that must avoid another family's field names is no
+more independent than one that had to avoid its version numbers — the objection D2 itself raised
+about the integer, now recurring one level up. A discriminator that additionally recognises the
+serializer's null-only shape would also work, but it is strictly more fragile than a marker and
+encodes the same coupling.
+
+**The marker needs a compatibility plan, which this finding first omitted.** *Added 2026-09-16, after
+review.* `BuildEconomicTermsJson` persists `schemaVersion` and module keys and nothing else, so no
+economic-terms document written before the marker exists can carry it. A discriminator that *requires*
+the marker therefore rejects every pre-marker v2 document — including the imported and legacy records
+that exercise this path most — routing them to the flat normalizer and failing the guard. That is the
+same failure mode as the `ValueKind.Object` proposal, reached from the other direction: a stricter
+test that breaks the documents already in flight.
+
+So the marker must be additive: recognise a document as economic-terms if it carries the marker **or**
+satisfies the existing presence test.
+
+**The legacy arm cannot then be retired, and an earlier wording of this paragraph was wrong to plan
+on retiring it.** *Corrected 2026-09-16, fourth review round.* That wording prescribed "marker first,
+backfill second, legacy arm removed third." The third step is unreachable: the Security Master event
+stream is append-only, and `PostgresSecurityMasterEventStore` exposes `AppendAsync`, `LoadAsync`,
+`LoadSinceSequenceAsync` and `GetLatestSequenceAsync` with **no payload update of any kind**. A
+backfill can rewrite the mutable projection and snapshot rows; it cannot rewrite `security_events`.
+Pre-marker economic payloads therefore persist in the stream permanently, and any full replay —
+`SecurityMasterAggregateRebuilder`'s three entry points, or a projection rebuild — re-encounters them
+unmarked. Removing the presence arm would break replay for exactly the historical records the
+compatibility plan exists to protect.
+
+That leaves two honest options, and the choice is a design decision this review should not make for
+the implementer. Either **keep the presence arm permanently** as the historical-event path, accepting
+that E4's collision stays live for pre-marker documents and containing it another way — the natural
+one being to discriminate from *enclosing-record context* rather than the payload alone, since
+`FromEconomicPayload` already knows whether it was handed an event payload or a projection. Or
+**version the envelope rather than the payload**, so replay can tell the families apart from metadata
+the stream does carry. What is not available is the clean three-step retirement the first wording
+described.
+
+Regression coverage, now four cases rather than one: a flat document with a scalar `maturity` stamped
+2; a flat `PrivateCompanyEquity` with a scalar `issuer` stamped 2; an all-null economic document; and
+a pre-marker object-valued economic document. The first two must pass through with their version
+intact; the last two must still be recognised as economic-terms. A table-driven case over the
+module-name/flat-field intersection would generate the first two and fail when either side gains a
+colliding name.
+
+### E5 — The canonical symbol registry is seeded at startup and on two write paths, and nowhere else
+
+*Filed 2026-09-16, after review. Distinct from E3: E3 is a write being dropped from the cache during
+a warm; E5 is writes that reach the cache — or the durable store — and never reach the registry at
+all.*
+
+**Reframed 2026-09-16, after the fourth review round: the seeding path is not badly timed, it is
+unwired.** This finding was first written as a timing and call-site problem — seeded at startup, not
+on refresh or alias writes. That understates it. `SecurityMasterCanonicalSymbolSeedService` is
+**never registered in DI**: it appears in the repository only as its own definition and as an
+*optional* constructor parameter defaulting to `null` on `SecurityMasterProjectionWarmupService`
+(`:22`, `:30`) and `SecurityMasterService` (`:33`, `:50`), and `ICanonicalSecurityIdLookup` has no
+`Add*`/`TryAdd*` registration anywhere. `StorageFeatureRegistration` registers the cache, the
+projection service and the warmup hosted service, and not the seed service.
+
+Built-in DI therefore supplies `null` for both optional parameters, `StartAsync`'s
+`if (_seedService is not null)` never fires, and `TryReseedRegistryInBackground` returns immediately
+at its own null check (`:368-370`). **In the normal host composition the canonical symbol registry is
+never seeded from the Security Master at all** — not at startup, not on writes, not ever. The call
+sites enumerated below are real, and every one of them is dead.
+
+That makes registration the first remedy and everything else conditional on it: replace semantics and
+extra reseed calls are both unreachable until something constructs the service. It also means this
+finding's original consequence — *stale* symbol resolution — is the wrong shape; the consequence is
+*absent* Security-Master-derived symbol resolution, with whatever other registry sources exist
+carrying the whole load.
+
+The call-site inventory below is retained because it is what the remedy has to fix once the service
+is registered, not because any of it executes today.
+
+`SecurityMasterCanonicalSymbolSeedService.SeedAsync` rebuilds `_tickerToSecurityId` from
+`_cache.Snapshot()` (`:66`), and `EventCanonicalizer` reads that map concurrently. It is invoked from
+exactly three places:
+
+- `SecurityMasterProjectionWarmupService.StartAsync` (`:55`), after the **initial** warm only.
+- `SecurityMasterService` (`:203` and `:362`, via `TryReseedRegistryInBackground`), on two write
+  paths.
+
+It is **not** invoked by:
+
+- **The periodic re-warm.** `RunPeriodicRefreshAsync` calls `_projectionService.WarmAsync(ct)` and
+  nothing else (`:94`). So on a multi-node deployment the mechanism documented as the bound on
+  cross-node staleness refreshes the projection cache and leaves the registry at its startup
+  contents. An identifier change made on another node never reaches this node's symbol resolution,
+  for the life of the process.
+- **The alias write path.** `UpsertAliasAsync` → `UpsertAliasAsyncCore` (`:1702-1710`) writes through
+  `_store.UpsertAliasAsync` and returns the persisted row. It neither upserts the projection cache
+  nor reseeds the registry — and aliases are precisely the identifier data the registry exists to
+  resolve.
+- **`DeactivateAsync`.** It upserts the cache (`:281`) but has no `TryReseedRegistryInBackground()`
+  beside it, unlike the two paths that do. A deactivated security's ticker therefore keeps resolving
+  until something else reseeds.
+
+The asymmetry is the tell: two write paths were given a background reseed and the others were not,
+which reads as an omission rather than a decision, and nothing in the code says which it is.
+
+The cache-correctness half of this is now closed independently: the projection cache's replacement
+race was repaired on `main` by `8b1981293` (see the withdrawn E3). E5 is unaffected by that, because
+it is about what is derived from the cache and when, not about the cache's own consistency.
+
+**Corrected 2026-09-16, after review: reseeding more often does not fix it.** The first wording
+prescribed "the same `TryReseedRegistryInBackground()` the other two have" for the alias and
+deactivate paths. That remedy cannot retire anything. `SeedAsync` reaches the registry through
+`RegisterBatchAsync` (`SecurityMasterCanonicalSymbolSeedService.cs:176`), which calls
+`ImportSymbolsAsync(entries, merge: true)` (`CanonicalSymbolRegistry.cs:107`), and `MergeEntry`
+(`SymbolRegistryService.cs:845+`) fills null fields and **adds** aliases — it never removes an alias,
+never deactivates an entry, and warns-and-retains on a conflicting `SecurityId` rather than taking the
+incoming one. A security omitted from the seeded snapshot is therefore not deleted from the registry;
+it simply stops being refreshed. So calling the current seed from four call sites instead of two
+propagates *additions* faster and still never retires a superseded ticker or a removed alias — which
+is most of what the deactivate and alias-correction paths need it for.
+
+That makes the remedy structural rather than a matter of call-site parity. The registry needs a
+**source-owned replace** — an operation that treats the seeded snapshot as authoritative over the
+subset it owns, removing or deactivating what the snapshot omits — in the shape `ReplaceAll` already
+has on the projection cache, and for the same reason: a rebuild is authoritative about absence, not
+only about presence. Given that, seeding after every successful warm becomes worth doing; without it,
+the extra invocations mostly add write traffic.
+
+The recurring complaint of this document still applies to the call-site asymmetry — adding a thing
+means editing N hand-maintained places, and one of the N was missed in four spots — but it is the
+smaller half. Making registry seeding a subscriber to cache mutation would fix the asymmetry; only
+replace semantics fixes the staleness.
+
+### Smaller notes, not filed as findings
+
+- **`PostgresSecurityMasterSnapshotStore.SaveAsync` has no version fence.** The upsert
+  (`:52-55`) is an unconditional `on conflict (security_id) do update set version = excluded.version`,
+  so a stale concurrent save can regress the stored snapshot version. It is benign today and worth
+  recording as *why* it is benign rather than leaving it to be rediscovered: the only reader,
+  `RebuildEconomicDefinitionAsync`, filters events on `e.StreamVersion > snapshot.Version`
+  (`SecurityMasterAggregateRebuilder.cs:39`) and each payload carries the full definition, so a
+  regressed snapshot causes *over*-replay, which converges to the same state. A snapshot can never be
+  newer than its own payload. The fence becomes necessary only if a reader ever trusts
+  `snapshot.Version` as a high-water mark without replaying past it.
+- **The as-of rebuilds correctly ignore snapshots.** `RebuildAsOfAsync` (`:61-82`) and
+  `RebuildRecordedAsOfAsync` (`:91-113`) fold the event stream alone. That is the right call — the
+  snapshot table is keyed `security_id primary key` (`001_security_master.sql:80-85`), so it holds
+  only the latest state and would be wrong for any historical cutoff. Noted because it is an easy
+  future "optimisation" to get wrong, and nothing in the code says why the snapshot is skipped.
+- **`SecurityMasterProjectionCache`'s atomicity is sound; its `Upsert`-racing-`ReplaceAll` case is
+  not.** The `volatile` field plus whole-dictionary `ReplaceAll` swap (`:47-56`) does deliver the
+  atomicity its comment claims — a reader never sees an empty or half-filled master. **Withdrawn
+  2026-09-16, after review:** an earlier wording of this note called the whole class sound, said the
+  comment "is accurate about the `Upsert`-racing-`ReplaceAll` case," and told the next pass to skip
+  it. The second clause is wrong and the third compounded it. That race is now filed as E3 below.
+- **The warmup service's failure handling is right.** The initial warm is caught and logged rather
+  than failing startup (`:62-66`), the periodic loop starts even when the initial warm failed
+  (`:69-74`) which is what recovers a cold cache, and a failed refresh keeps serving the previous
+  complete set (`:100-104`). Cancellation is distinguished from failure at both sites.
+
+### Priorities from this pass
+
+Read as a delta on the standing lists.
+
+*Rewritten 2026-09-16, across three review rounds. E4 and E5 did not exist when this list was first
+written, E3 has since been withdrawn as already-fixed, and every remedy the original list named has
+been corrected at least once; all corrections are in place above.*
+
+1. **Everything still stays behind the standing correctness items** — the open halves of P1, P3b and
+   P4, and the B-series accounting findings.
+2. **Close the three composition gaps in this lane — they are one item, not three (E1, E5).**
+   Promoted to the top of the E series, and merged after the fourth round showed a shared shape:
+   `ProjectionCacheRefreshMinutes` is an option with no binding, so the periodic re-warm never runs;
+   `SecurityMasterCanonicalSymbolSeedService` has no DI registration, so the canonical registry is
+   never seeded from the Security Master at all and every call site guarding on it is dead; and
+   `SecurityMasterOptionsValidator` omits the refresh interval, so once it *is* wired a negative value
+   would disable convergence with no startup error. Each is a few lines in
+   `StorageFeatureRegistration` — **not** the WPF composition, which registers no warmup stack — plus
+   a non-negative guard in the validator. Until they land, two code comments and this document's own
+   earlier drafts describe convergence machinery that does not execute.
+3. **Give the payload families a non-colliding marker, additively (E4).** Latent but the largest
+   blast radius: a reserved-version guard that fails on the first documents it would ever protect,
+   across nine flat classes and two module names. Must be additive — marker *or* the existing
+   presence test — with a backfill before the legacy arm retires, or it rejects every pre-marker
+   document. Four regression cases, not one. *Not* the `ValueKind.Object` check this pass first
+   proposed.
+4. **Then give the canonical registry replace semantics, and only then reseed after every warm (E5).**
+   Strictly after item 2 — the service has no registration, so none of this executes yet. Ordered
+   within itself too: the current seed imports with `merge: true` and never retires, so extra
+   invocations propagate additions faster and still leave superseded tickers and removed aliases
+   resolving. Replace semantics first, reseed timing second; reversing them buys write traffic.
+5. **Log the warm's elapsed time (E1).** A stopwatch and a log field. Lower value than before — the
+   bound it makes observable is currently unreachable — but it is what tells an operator which regime
+   they are in once the interval is wired.
+6. **Decide what VC002 can actually check (E2).** Three of the five `RequiresMaturity` classes have
+   no start-date field in the schema or the F# records at all. Either add and map one, or scope the
+   rule to `Bond` and `Swap` and say so. A gate change alone still buys nothing.
+7. **Batch the universe load (E1).** The durable fix: one query per table for the universe instead
+   of three per security, plus batched snapshot and event loads. Needs a shared session or a set-based
+   store API, not a parameter change. Worth sizing against N6, which it shares a path with.
+8. **Re-rank D1's lossless half downward.** Per the narrowing above, it guards a payload shape no
+   current writer emits. It stays open as the codec-generation seam, not as a live data-loss risk.
+
+*E3 is absent from this list because it is withdrawn: the defect it named was closed on `main` by
+`8b1981293` before this pass filed it. No action is outstanding.*
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -5518,3 +6153,62 @@ with the regenerated `docs/status/` reports correctly recognized as generated-ex
 check on this document, not on the subsystem it reviews, and it is recorded here only so the
 paragraph above is not read as claiming more silence than the pass kept — the same correction the
 2026-09-08 pass had to make after the fact (`4481741f`), made here before it was needed.
+
+The 2026-09-11 pass established the delta with `git log --since=2026-09-09` per anchor directory,
+confirming the only Security Master source commits in the range are the 2026-09-10 resolution work
+and its migration-024 revert. It then re-verified `39b5516a`'s five closures at their cited anchors
+(C4's write-mode gate and its five sibling sites, C5's two readers and the `GetOptionalBool`
+neighbour, D2's reservation and the module-key discriminator, D3's single definition in both
+writers) and — new to this pass — read the snapshot and projection-cache read path end to end:
+`SecurityMasterProjectionCache`, `PostgresSecurityMasterSnapshotStore`,
+`SecurityMasterProjectionWarmupService`, `SecurityMasterProjectionService`,
+`SecurityMasterRebuildOrchestrator`, `PostgresSecurityMasterStore.LoadByStatusAsync` /
+`GetProjectionCoreAsync`, `PostgresSecurityMasterEventStore.LoadAsync`, migration 001's
+`security_snapshots` definition, and `SecurityMasterDataQualityService`.
+
+E1's `5N + 1` is a count read off the call graph — one id query, three per security in
+`GetProjectionCoreAsync`, two more per security in `RebuildEconomicDefinitionAsync` — not a measured
+figure; no benchmark was run and the finding says so. The D1 narrowing was established the way the
+2026-09-10 method note says D1's reachability was: by enumerating every construction site of the
+record and every writer of an event or snapshot payload, and finding all of them route through
+`ToEconomicRecord`. It is a claim about payloads this codebase writes, and it makes no claim about
+payloads written by any other producer or by an earlier version of this one.
+
+No code was changed. No .NET or TypeScript test was run and no reviewed code path was executed — the
+.NET SDK is not present in this pass's environment either — so every claim above is a source claim.
+
+The documentation validation that did run, on this pass's docs-only diff: `check-ai-inventory`
+(pass, 324 items, 0 findings), `check-ai-handoff` (pass), `validate-docs-structure` (pass, with the
+457 pre-existing front-matter warnings this repository already carries) and `validate-examples`
+(1,022 blocks, 0 invalid). `validate-doc-hashes` reports source-hash drift under `src/Meridian`,
+`src/Meridian.Risk`, `src/Meridian.Storage` and `src/Meridian.Ui.Shared`; that drift is **pre-existing
+on `main` and unrelated to this pass** — confirmed by re-running the check against a stashed tree,
+which reports the same errors — and this pass touched no source file, so it is recorded here rather
+than repaired, since repairing it would mean regenerating source docs this review did not author.
+
+**Two CI gates this pass tripped, recorded so the next one does not.** Appending a section to this
+document is never a docs-only change in CI's eyes, and the two failures are both mechanical:
+
+1. **`verify-docs` — the whole-repo generated-doc drift check.** `scripts/ci.sh --lane verify-docs`
+   regenerates `docs/status/doc-health-dashboard.{json,md}` and rejects any diff, and those
+   dashboards carry this file's line count and the repo-wide totals it rolls into. Growing this
+   document by 215 lines therefore reds the lane until the dashboards are regenerated **and
+   committed in the same push**. Reproduce CI exactly: run `build/scripts/docs/scan-todos.py
+   --json-output docs/status/todo-scan-results.json` **first** — the artifact is gitignored and CI's
+   TODO-registry step produces it before the drift check, so generating without it yields a
+   different dashboard than CI's — then `run-docs-automation.py --scripts
+   generate-structure-docs,generate-health-dashboard,generate-workflow-manifest`, then
+   `generate-structure-docs.py --workflows-only`, then confirm with `git diff --exit-code` over the
+   five paths `ci.sh` names. This is the same lesson `3be7e20e` recorded for the 2026-09-10 pass,
+   generalized: it is not specific to that pass's TODO-scan artifact.
+2. **`scope-gate` — the roadmap phase gate.** `tools/roadmap/enforce_phase_scope.py` fails closed
+   with "No phase declaration found" unless the PR declares a phase. Every path in a pass like this
+   one is under `docs/**`, so **`PR1`** is the narrowest covering phase (`PR0` covers only
+   `docs/roadmap/**` and `docs/roadmap-governance/**`, which this document is not under). Declare it
+   as `<!-- phase:PR1 -->` in the PR body **when the PR is opened**. The gate reads `PR_BODY` and
+   `PR_LABELS` from `github.event.pull_request.*` — the event payload, frozen at trigger time — and
+   `roadmap-source-docs.yml` declares `pull_request` with no `types:`, so it fires only on
+   `opened`/`synchronize`/`reopened`. Editing the body or adding a `phase:PR1` label afterwards
+   therefore triggers nothing, and re-running the job replays the stale payload: the declaration
+   only takes effect on the next commit pushed to the branch. Adding it up front costs nothing;
+   adding it late costs a push.
