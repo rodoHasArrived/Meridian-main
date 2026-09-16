@@ -5298,9 +5298,19 @@ validation"); before this pass `WarmAsync`, `SecurityMasterDataQualityService` a
 cost appeared zero times in this document, and `SnapshotStore` twice in passing.
 
 The verdict is unchanged. What this pass adds is that the subsystem's **universe-load primitive is
-an N+1 that every full-universe operation rides**, and that the data-quality lane — which is
-otherwise catalog-driven — reverts to naming asset classes by string literal in exactly the rules
-where the catalog already declares the predicate.
+an N+1 that every full-universe operation rides**, that the projection cache **drops a write that
+commits while a warm is in flight** (E3), and that the data-quality lane — which is otherwise
+catalog-driven — reverts to naming asset classes by string literal in exactly the rules where the
+catalog already declares the predicate.
+
+> **Correction, 2026-09-16.** As first written this pass filed E1 and E2 only, called the projection
+> cache sound, and told future passes to skip it. Review of the pull request showed that dismissal
+> was wrong, together with the stated remedies for E1 and E2 and the flat wording of the D3
+> verification row. E3 is the finding that dismissal was hiding; all four corrections are marked in
+> place below rather than silently rewritten, and the priorities are re-ordered accordingly. The
+> lesson is B1's procedural rule applied to this document's own output: the cache's comment conceded
+> the interleaving and then argued past it, and this pass repeated the argument instead of checking
+> which interleavings it actually covered.
 
 ### Claimed closures, independently re-verified
 
@@ -5311,7 +5321,7 @@ All five verify at `e173437e`. Recorded here so the next pass need not re-derive
 | C4 | Create is gated on `SecurityKindMappingMode.Write` | Yes. `SecurityMasterMapping.cs:19` passes `Write` from the create path; the fallback arm at `:417` refuses before the `OtherSecurity` degradation at `:423`, which stays intact for read mode. The same gate is applied at `:448`, `:516`, `:599`, `:963` and `:975`, so it is a mapping-wide rule, not a create-path special case. |
 | C5 | The two optional numeric readers check kind before reading | Yes. `PostgresSecurityMasterStore.cs:1834-1846` — both check `ValueKind == JsonValueKind.Number` before `TryGetDecimal` / `TryGetInt32`. `GetOptionalBool` (`:1848-1852`) already had the equivalent guard; no other reader on this path lacks one. |
 | D2 | Version 2 is reserved, and the chain no longer dispatches on the bare integer | Yes. `SecurityMasterSchemaVersions.cs:29` declares `ReservedForEconomicTerms = 2` with the reason at the declaration; `SecurityAssetSpecificTermsUpcasterChain.cs:215` dispatches on `IsEconomicTermsDocument`, which (`:93-99`) requires the economic version **and** an economic-terms module key, so a flat payload stamped 2 passes through with its version preserved instead of being emptied to `{"schemaVersion":1}`. |
-| D3 | `securities.schema_version` has one definition | Yes. `PostgresSecurityMasterStore.cs:318-324` states it — the version stamped on the stored blob — and the upsert binds it at `:346`. Migration 024's backfill implements the same definition. The `ISchemaUpcaster` constructor seam is gone. |
+| D3 | `securities.schema_version` has one definition | Yes for the divergence D3 named. `PostgresSecurityMasterStore.cs:318-324` states the definition — the version stamped on the stored blob — the upsert binds it at `:346`, migration 024's backfill implements the same rule, and the `ISchemaUpcaster` constructor seam is gone, so the v1-vs-v2 split D3 filed is closed. **Qualified 2026-09-16, after review:** the two writers still disagree on *malformed* numeric versions, so "one definition" holds for well-formed `int32` values only. Migration 024 guards on `jsonb_typeof(...) = 'number'` and then casts `(asset_specific_terms->>'schemaVersion')::integer` (`:14-16`), which accepts any JSON number — a fractional or out-of-int32-range value reaches the cast and **aborts the migration**. `ResolveSchemaVersion` requires `TryGetInt32` (`SecurityAssetSpecificTermsUpcaster.cs:60-71`) and silently falls back to `DefaultAssetSpecificTerms` for the same value. No such row is known to exist, and this review makes no claim that one does; the point is that the closure is narrower than the flat sentence implied, and a follow-up would need either a guarded migration predicate (`jsonb_typeof = 'number' and (payload->>'schemaVersion') ~ '^-?[0-9]+$'`, plus a range check) or the definition stated as "well-formed integer versions" in both places. |
 | D1 (partial) | Comments corrected, marker stamped, coverage test added | Yes, as scoped. The bridge itself is still lossy and the resolution pass says so. |
 
 **A narrowing D1 could not make, and this pass can.** The 2026-09-10 pass wrote that whether events
@@ -5377,12 +5387,23 @@ duration — `WarmAsync` logs only the record count (`SecurityMasterProjectionSe
 
 This is a scale finding, not a correctness one, and this review has no benchmark evidence to
 quantify it; the claim is about query count per warm, which is read off the call graph above. The
-remedies are ordinary and independent of each other: give the projection store a batched load (one
-query per table for the universe, joined or `IN`-listed, instead of three per security); give the
-snapshot and event stores connection-accepting or id-batched overloads so the warm reuses the
-connection the projection load already holds; and log the warm's elapsed time alongside its count so
-the staleness bound is observable. Until at least the last of those lands, the documented bound
-should be stated as interval-plus-warm-duration rather than interval.
+remedies are ordinary: give the projection store a batched load (one query per table for the
+universe, joined or `IN`-listed, instead of three per security); batch or pool the snapshot and
+event loads the same way; and log the warm's elapsed time alongside its count so the staleness bound
+is observable. Until at least the last of those lands, the documented bound should be stated as
+interval-plus-warm-duration rather than interval.
+
+**Corrected 2026-09-16, after review.** An earlier wording of this paragraph proposed
+"connection-accepting overloads so the warm reuses the connection the projection load already
+holds." There is no such connection to reuse, and the correction matters because it changes what the
+fix has to be. `LoadByStatusAsync` holds its connection in an `await using` scoped to the method
+(`:221`) and disposes it when it returns (`:250`); `BuildWarmSetAsync` awaits `LoadAllAsync` to
+completion before it enters the per-seed loop (`SecurityMasterProjectionService.cs:28-31`), so by
+the time the snapshot and event loads run, the projection load's connection is already gone. Adding
+connection-accepting overloads to those two stores would therefore leave the caller with nothing to
+pass and would not remove a single one of the `2N` opens. Removing them needs either a shared
+session / unit-of-work spanning all three loads, or a genuinely batched store API that fetches
+snapshots and events for a set of ids — not a parameter change.
 
 ### E2 — The value-consistency rules name two asset classes by string literal, where the catalog already declares the predicate
 
@@ -5412,11 +5433,71 @@ needs it re-derives it as a string literal instead. Both rules also carry a fiel
 is the same symptom C1/D1 describe from the other end: the flat v1 spelling is not canonical, so
 every consumer guesses at it.
 
-The fix is small and needs no design decision: drive VC002 off `RequiresMaturity` as `:106` already
-does, and give the catalog the one descriptor flag VC003 needs (an expiry-bearing predicate, which
-`Option`, `Future`, `Warrant` and the dated derivatives would all set) rather than matching
-`"Option"`. That converts two hand-maintained special cases into two catalog reads and picks up four
-asset classes that are silently unchecked today.
+The fix has two halves, and only the first is a catalog read: drive VC002's class gate off
+`RequiresMaturity` as `:106` already does, and give the catalog the one descriptor flag VC003 needs
+(an expiry-bearing predicate, which `Option`, `Future`, `Warrant` and the dated derivatives would
+all set) rather than matching `"Option"`.
+
+**Corrected 2026-09-16, after review.** An earlier wording called that "two catalog reads" and
+claimed it "picks up four asset classes that are silently unchecked today." Changing the gate alone
+picks up none of them, and the reason is the second half of this finding rather than a separate
+problem. VC002 reads its start date as `issueDate` (`:218-219`), and `issueDate` is declared by
+`Bond` alone. Of the other four `RequiresMaturity` classes, `CertificateOfDeposit`,
+`CommercialPaper` and `TreasuryBill` declare `startDate`, and `Swap` declares `effectiveDate`
+(`SecurityAssetTermsSchema.cs`). A strictly-mapped CD, commercial-paper note, T-bill or swap
+therefore yields no `issueDate`, `issueDate.HasValue` is false, and the comparison never runs — so
+a gate change by itself converts a rule that silently skips four classes into a rule that silently
+skips them slightly differently.
+
+Closing it for real means naming each class's authoritative start date, either by resolving the
+per-class field from the schema or by introducing a shared start-date term the classes map onto.
+That is not extra scope; it is the same symptom this finding already names two paragraphs above and
+that C1/D1 name from the other end — the flat v1 spelling is not canonical, so every consumer
+guesses at it, and here the guess is `issueDate`. The catalog knows which classes need the rule; it
+does not yet know what the rule should read, and no amount of gate-side tidying supplies that.
+
+### E3 — A write that commits during a warm is dropped from the cache, and the cache's comment reasons past the window
+
+*Filed 2026-09-16, after review, correcting this pass's own smaller note. The earlier note declared
+the cache sound and told future passes to skip it; the finding below is what re-reading it produced.*
+
+`SecurityMasterProjectionCache.ReplaceAll` (`:47-56`) builds a replacement dictionary and swaps the
+`volatile` reference. Its comment concedes the interleaving and then dismisses it:
+
+> An `Upsert` racing a `ReplaceAll` may land in the outgoing dictionary and be superseded by the
+> replacement — acceptable, because ReplaceAll is only ever fed a complete rebuild from the durable
+> store, which already contains any write committed before the rebuild read.
+
+The justification is true of writes committed **before the rebuild read** and says nothing about
+writes committed **after the read and before the swap**. That window is not instantaneous: it is the
+whole duration of `BuildWarmSetAsync`, which is E1's serial `5N + 1` queries. Concretely —
+
+1. `BuildWarmSetAsync` reads security S and produces `R_old`.
+2. A write to S commits, and `SecurityMasterService` calls `_projectionCache?.Upsert(R_new)`
+   (`:202`, `:281`, `:361`) — which lands in the **outgoing** dictionary.
+3. `WarmAsync` calls `ReplaceAll` (`SecurityMasterProjectionService.cs:49`), swapping in the
+   replacement built from the pre-write read.
+4. `R_new` is gone from the cache. The durable store has it; the cache serves `R_old`.
+
+Two things make this worse than a transient miss. First, **`ProjectionCacheRefreshMinutes` defaults
+to 0**, so there is no periodic re-warm to correct it — the stale entry persists until the next
+write to that security or the next full rebuild, which on a reference-data record can be a long
+time. Second, the stale entry **propagates**: `SecurityProjectionRebuildHandler` seeds from the
+cache (`_cache.Get(evt.SecurityId)`, `:51`) and upserts what it derives (`:61`), and
+`SecurityMasterCanonicalSymbolSeedService` seeds the canonical-symbol registry from the cache, so a
+dropped alias update can reach symbol resolution rather than staying a latency artifact.
+
+The window is narrow at startup — `WarmAsync` is awaited inside `StartAsync` — but the same
+`BuildWarmSetAsync` → `ReplaceAll` pair runs on demand in `SecurityMasterRebuildOrchestrator`
+(`:53-56`) while the process is serving, which is where the race is live.
+
+This is not a call to add locking around a hot read path. The cheap, in-character fix is to make the
+swap version-aware: `ReplaceAll` already has both dictionaries in hand, so it can keep an incoming
+entry whose `Version` exceeds the replacement's rather than discarding it, which costs one
+comparison per key and needs no synchronisation. The alternative is to record a generation counter
+taken before the rebuild read and re-apply any `Upsert` newer than it. Either way the comment must
+stop describing the case as acceptable, because the reason it gives does not cover the case that
+actually occurs.
 
 ### Smaller notes, not filed as findings
 
@@ -5434,9 +5515,12 @@ asset classes that are silently unchecked today.
   snapshot table is keyed `security_id primary key` (`001_security_master.sql:80-85`), so it holds
   only the latest state and would be wrong for any historical cutoff. Noted because it is an easy
   future "optimisation" to get wrong, and nothing in the code says why the snapshot is skipped.
-- **`SecurityMasterProjectionCache` is sound.** The `volatile` field plus whole-dictionary
-  `ReplaceAll` swap (`:47-56`) delivers the atomicity its comment claims, and the comment is accurate
-  about the `Upsert`-racing-`ReplaceAll` case. No finding; recorded so the next pass can skip it.
+- **`SecurityMasterProjectionCache`'s atomicity is sound; its `Upsert`-racing-`ReplaceAll` case is
+  not.** The `volatile` field plus whole-dictionary `ReplaceAll` swap (`:47-56`) does deliver the
+  atomicity its comment claims — a reader never sees an empty or half-filled master. **Withdrawn
+  2026-09-16, after review:** an earlier wording of this note called the whole class sound, said the
+  comment "is accurate about the `Upsert`-racing-`ReplaceAll` case," and told the next pass to skip
+  it. The second clause is wrong and the third compounded it. That race is now filed as E3 below.
 - **The warmup service's failure handling is right.** The initial warm is caught and logged rather
   than failing startup (`:62-66`), the periodic loop starts even when the initial warm failed
   (`:69-74`) which is what recovers a cold cache, and a failed refresh keeps serving the previous
@@ -5446,19 +5530,27 @@ asset classes that are silently unchecked today.
 
 Read as a delta on the standing lists.
 
+*Re-ordered 2026-09-16, after review. E3 did not exist when this list was first written, and two of
+the items below described remedies that do not work; both are corrected in place above.*
+
 1. **Everything still stays behind the standing correctness items** — the open halves of P1, P3b and
-   P4, and the B-series accounting findings. This pass files no correctness defect and does not
-   displace them.
-2. **Drive VC002/VC003 off the catalog (E2).** The cheapest item in this pass: two catalog reads
-   replacing two string literals, picking up four asset classes that are unchecked today. It needs
-   one new descriptor flag for the expiry predicate.
+   P4, and the B-series accounting findings.
+2. **Make the cache swap version-aware (E3).** This pass's one correctness defect, and it displaces
+   the rest of the list. One comparison per key inside `ReplaceAll`, no new synchronisation, and it
+   closes a path on which a committed write is dropped from the cache, persists (refresh defaults to
+   0) and propagates into the rebuild handler and the canonical-symbol registry.
 3. **Log the warm's elapsed time, and correct the staleness bound (E1).** A stopwatch and a log
    field, plus two comment corrections — the same shape of fix as D1's cheap half, and it makes a
    promise the subsystem currently states without measuring into one an operator can verify.
-4. **Batch the universe load (E1).** The durable fix: one query per table for the universe instead
-   of three per security, and connection-accepting overloads on the snapshot and event stores. Larger
-   than the rest of this pass and worth sizing against N6, which it shares a path with.
-5. **Re-rank D1's lossless half downward.** Per the narrowing above, it guards a payload shape no
+4. **Give VC002 a start date, then drive both rules off the catalog (E2).** No longer the cheapest
+   item in this pass: the gate change is trivial but inert until each class's authoritative start
+   date is named, because only `Bond` declares `issueDate`. Do the two together or neither — a gate
+   change alone buys nothing and looks like it bought four asset classes.
+5. **Batch the universe load (E1).** The durable fix: one query per table for the universe instead
+   of three per security, plus batched snapshot and event loads. Needs a shared session or a set-based
+   store API, not a parameter change. Larger than the rest of this pass and worth sizing against N6,
+   which it shares a path with.
+6. **Re-rank D1's lossless half downward.** Per the narrowing above, it guards a payload shape no
    current writer emits. It stays open as the codec-generation seam, not as a live data-loss risk.
 
 ---
