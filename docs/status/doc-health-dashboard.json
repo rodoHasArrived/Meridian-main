@@ -1,11 +1,11 @@
 {
-  "total_files": 665,
-  "total_lines": 143394,
+  "total_files": 668,
+  "total_lines": 144519,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 266,
-  "average_lines": 215.6,
+  "average_lines": 216.3,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1592,7 +1592,15 @@
     },
     {
       "path": "docs/architecture/README.md",
-      "line_count": 89,
+      "line_count": 91,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/reporting-workstation-model.md",
+      "line_count": 148,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1619,6 +1627,14 @@
       "line_count": 5762,
       "has_heading": true,
       "todo_count": 3,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/security-master-identifier-conflict-detection.md",
+      "line_count": 56,
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -2496,7 +2512,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-02.md",
-      "line_count": 553,
+      "line_count": 542,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2504,7 +2520,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-03.md",
-      "line_count": 591,
+      "line_count": 592,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2512,7 +2528,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
-      "line_count": 156,
+      "line_count": 170,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2672,7 +2688,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10924,
+      "line_count": 10950,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3120,9 +3136,17 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 359,
+      "line_count": 371,
       "has_heading": true,
       "todo_count": 3,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/reporting-operating-model-2026-09.md",
+      "line_count": 848,
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3784,7 +3808,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 262,
+      "line_count": 266,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5200,7 +5224,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 704,
+      "line_count": 716,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5352,7 +5376,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 285,
+      "line_count": 286,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5464,7 +5488,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 633,
+      "line_count": 638,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5544,7 +5568,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 832,
+      "line_count": 839,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

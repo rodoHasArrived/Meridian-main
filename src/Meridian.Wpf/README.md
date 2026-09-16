@@ -121,6 +121,8 @@ Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden
 an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
 together when a flow resets the input.
 
+Reusable value-adjacent confidence badges use `DataConfidenceIndicator` and `DataConfidenceIndicatorModel` so Portfolio, Accounting, Reporting, and Data screens can display the same Current, Stale, Partial, Reconciled, Unreconciled, Estimated, and Provider Degraded labels with source/provider metadata, freshness, reconciliation status, fallback notes, and click-through explanations sourced from shared evidence or provider read models where available.
+
 Desktop configuration is preflighted before the generic host parses `appsettings.json`. Invalid
 configuration is moved to a timestamped retained backup, a valid last-known-good copy is restored
 when available (otherwise safe defaults are written), and a recovery receipt is retained beside the
@@ -308,6 +310,11 @@ Runtime desktop capability toggles are declared by feature modules and surfaced 
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
+Security Master create, edit, deactivate, and file-import commands require an active desktop actor
+with `ModifySecurityMaster`; trading-parameter backfill requires `TriggerBackfill`. WPF resolves
+actor and permission together again at the in-process application-service boundary, and configured
+anonymous roles use the shared `RolePermissions` mapping rather than inheriting unrestricted
+local-development access.
 
 The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
 The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer

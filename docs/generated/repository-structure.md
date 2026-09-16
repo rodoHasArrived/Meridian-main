@@ -1418,9 +1418,11 @@ Meridian-main
 │   │   ├── provider-integration-manifest-runtime.md
 │   │   ├── provider-management.md
 │   │   ├── README.md
+│   │   ├── reporting-workstation-model.md
 │   │   ├── runtime-component-state-boundaries.md
 │   │   ├── security-lot-convergence-blueprint.md
 │   │   ├── security-master-extensibility-review.md
+│   │   ├── security-master-identifier-conflict-detection.md
 │   │   ├── storage-design.md
 │   │   ├── strategy-builder-integration.md
 │   │   ├── strategy-engine-foundation.md
@@ -1900,6 +1902,7 @@ Meridian-main
 │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   ├── production-readiness-backlog-2026-08.md
 │   │   ├── README.md
+│   │   ├── reporting-operating-model-2026-09.md
 │   │   ├── w10-depth-slate-2026-07.md
 │   │   ├── w9-close-out-delivery-plan-2026-08.md
 │   │   ├── w9-operator-acceptance-2026-08-29.md
@@ -5839,6 +5842,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.Aliases.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
+│   │   │   ├── PostgresSecurityMasterStore.IdentifierCandidates.cs
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
 │   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
@@ -6182,6 +6186,8 @@ Meridian-main
 │   │   │   │   │   │   ├── reporting-hub.test.tsx
 │   │   │   │   │   │   ├── reporting-hub.tsx
 │   │   │   │   │   │   ├── reporting-period-switcher.tsx
+│   │   │   │   │   │   ├── reporting-production-surface.test.tsx
+│   │   │   │   │   │   ├── reporting-production-surface.tsx
 │   │   │   │   │   │   ├── save-view-dialog.test.tsx
 │   │   │   │   │   │   ├── save-view-dialog.tsx
 │   │   │   │   │   │   ├── scope-picker.test.tsx
@@ -6480,6 +6486,10 @@ Meridian-main
 │   │   │   │   │   ├── quant-api-mappers.ts
 │   │   │   │   │   ├── quotes-stream.test.ts
 │   │   │   │   │   ├── quotes-stream.ts
+│   │   │   │   │   ├── report-change-since-review.test.ts
+│   │   │   │   │   ├── report-change-since-review.ts
+│   │   │   │   │   ├── report-health.test.ts
+│   │   │   │   │   ├── report-health.ts
 │   │   │   │   │   ├── report-run-stream.test.ts
 │   │   │   │   │   ├── report-run-stream.ts
 │   │   │   │   │   ├── report-writer-grid-diff.test.ts
@@ -6493,10 +6503,16 @@ Meridian-main
 │   │   │   │   │   ├── reporting-governance-routes.ts
 │   │   │   │   │   ├── reporting-hub.test.ts
 │   │   │   │   │   ├── reporting-hub.ts
+│   │   │   │   │   ├── reporting-lifecycle.test.ts
+│   │   │   │   │   ├── reporting-lifecycle.ts
 │   │   │   │   │   ├── reporting-link-safety.test.ts
 │   │   │   │   │   ├── reporting-link-safety.ts
+│   │   │   │   │   ├── reporting-period-object.test.ts
+│   │   │   │   │   ├── reporting-period-object.ts
 │   │   │   │   │   ├── reporting-periods.test.ts
 │   │   │   │   │   ├── reporting-periods.ts
+│   │   │   │   │   ├── reporting-production.test.ts
+│   │   │   │   │   ├── reporting-production.ts
 │   │   │   │   │   ├── reporting-workspace.test.ts
 │   │   │   │   │   ├── reporting-workspace.ts
 │   │   │   │   │   ├── route-error-telemetry.test.ts
@@ -6763,6 +6779,8 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.operator-focus.ts
 │   │   │   │   │   ├── reporting-screen.presenters.ts
 │   │   │   │   │   ├── reporting-screen.private-capital-readiness.tsx
+│   │   │   │   │   ├── reporting-screen.production-surface.test.ts
+│   │   │   │   │   ├── reporting-screen.production-surface.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.ts
 │   │   │   │   │   ├── reporting-screen.report-writer.tsx
 │   │   │   │   │   ├── reporting-screen.run-status-modules.tsx
@@ -7603,6 +7621,9 @@ Meridian-main
 │   │   │   └── IRemoteWorkstationClient.cs
 │   │   ├── Controls
 │   │   │   ├── AutomationLeafBorder.cs
+│   │   │   ├── DataConfidenceExplanationButton.cs
+│   │   │   ├── DataConfidenceIndicator.xaml
+│   │   │   ├── DataConfidenceIndicator.xaml.cs
 │   │   │   ├── EmptyStatePanel.xaml
 │   │   │   ├── EmptyStatePanel.xaml.cs
 │   │   │   ├── EvidenceLinkChip.xaml
@@ -7690,6 +7711,7 @@ Meridian-main
 │   │   │   ├── BackfillModels.cs
 │   │   │   ├── BlotterModels.cs
 │   │   │   ├── DashboardModels.cs
+│   │   │   ├── DataConfidenceIndicatorModel.cs
 │   │   │   ├── DataQualityModels.cs
 │   │   │   ├── FundAccountingRecordModels.cs
 │   │   │   ├── FundLedgerDimensionView.cs
@@ -7976,6 +7998,7 @@ Meridian-main
 │   │   │   ├── SecurityConflictLaneModels.cs
 │   │   │   ├── SecurityMasterDeactivateViewModel.cs
 │   │   │   ├── SecurityMasterEditViewModel.cs
+│   │   │   ├── SecurityMasterViewModel.Authorization.cs
 │   │   │   ├── SecurityMasterViewModel.cs
 │   │   │   ├── SecurityMasterViewModel.Import.cs
 │   │   │   ├── SecurityMasterViewModel.Sections.cs
@@ -9615,6 +9638,7 @@ Meridian-main
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonProviderContractTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
+│   │   │   │   ├── PolygonSecurityMasterIngestProviderTests.cs
 │   │   │   │   ├── PolygonSequenceIntegrityTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderDataQualityValidatorTests.cs
@@ -10301,6 +10325,7 @@ Meridian-main
 │   │   │   ├── RiskRuleRuntimeOrderRateStatusTests.cs
 │   │   │   ├── RiskRuleRuntimePriceCollarConfigTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
+│   │   │   ├── SecurityMasterAliasEndpointsTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkServiceTests.cs
 │   │   │   ├── SecurityMasterIngestStatusEndpointsTests.cs
@@ -10494,6 +10519,7 @@ Meridian-main
 │   │   │   ├── FeatureCapabilityGateTests.cs
 │   │   │   └── ServiceCollectionRegistrationAssertions.cs
 │   │   ├── Models
+│   │   │   ├── DataConfidenceIndicatorModelTests.cs
 │   │   │   ├── PaneLayoutTests.cs
 │   │   │   ├── ShellNavigationCatalogTests.cs
 │   │   │   └── WorkspaceShellChromeContributionTests.cs

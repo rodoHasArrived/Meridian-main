@@ -435,10 +435,11 @@ public static partial class SecurityMasterEndpoints
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
-        /// Adds or updates an external identifier (alias) for a security, supporting multi-provider symbol mapping.
+        /// Adds an external identifier (alias) for a security, supporting multi-provider symbol mapping.
         /// </summary>
         /// <remarks>
-        /// <para>Upsert: if an identifier with the same kind and provider exists, it is updated; otherwise, a new alias is created.</para>
+        /// <para>A new alias is created, or an identical request for the same alias ID is replayed idempotently.</para>
+        /// <para>Material replacement or retirement of an existing alias ID returns 409 until append-only alias revisions are available. A new ID is additive; it does not retire the old alias.</para>
         /// <para>Supported identifier kinds: ISIN, CUSIP, Ticker, FIGI, SEDOL, LEI, RIC, Bloomberg ID, etc.</para>
         /// <para>Returns 200 OK with the upserted alias detail.</para>
         /// </remarks>
@@ -452,13 +453,21 @@ public static partial class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            var alias = await service
-                .UpsertAliasAsync(request with { CreatedBy = ResolveActor(context) }, ct)
-                .ConfigureAwait(false);
-            return Results.Json(alias, jsonOptions);
+            try
+            {
+                var alias = await service
+                    .UpsertAliasAsync(request with { CreatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(alias, jsonOptions);
+            }
+            catch (SecurityAliasHistoryConflictException exception)
+            {
+                return Results.Conflict(new { error = exception.Message });
+            }
         })
         .WithName("UpsertSecurityMasterAlias").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityAliasDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -840,16 +849,22 @@ public static partial class SecurityMasterEndpoints
                 return Results.Forbid();
             }
 
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var result = await importService.ImportAsync(
                 request.FileContent,
                 request.FileExtension,
-                actor: ResolveActor(context),
+                actor,
                 progress: null,
                 ct: ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("ImportSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<AppSecurityMaster.SecurityMasterImportResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -1191,8 +1206,10 @@ public static partial class SecurityMasterEndpoints
     /// Deliberately narrow. <c>SourceSystem</c> stays caller-supplied because it identifies the
     /// upstream SOURCE for conflict detection and precedence, not the actor — deriving it from the
     /// principal would collapse distinct vendors into one and corrupt the precedence ladder. Likewise
-    /// <c>Reason</c>, <c>SourceRecordId</c> and the valid-time fields stay caller-authored: they
-    /// describe the change and its upstream record, which only the caller knows.
+    /// <c>Reason</c>, <c>SourceRecordId</c> and the valid-time fields stay caller-authored on direct
+    /// mutation routes because they describe the change and its upstream record. Bulk file import
+    /// is the exception: the import service treats the file as untrusted payload and replaces those
+    /// authority-bearing fields with its fixed source, reason, and one server ingest timestamp.
     /// </remarks>
     private static string ResolveActor(HttpContext context)
     {
