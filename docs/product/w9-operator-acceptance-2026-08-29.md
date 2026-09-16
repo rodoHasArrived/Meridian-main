@@ -26,6 +26,12 @@ release-certification gate in [`implementation-todo-list.md`](implementation-tod
 of these rows moves to `done` here — `done` additionally requires the release or status
 documentation each row's lane owns.
 
+> **Later status change.** `W9-DEMO-002` has since moved to `done`, on 2026-09-16, under
+> `DEC-W9-DONE-001` and the closure record in
+> [`w9-demo-002-closure-2026-09-16.md`](w9-demo-002-closure-2026-09-16.md). That record also
+> documents a correction to the evidence this acceptance was taken on. The other rows below are
+> unaffected, and this file remains the acceptance record for all of them.
+
 ## Currently accepted (six)
 
 | Row | Priority | Accepted on the evidence of |
