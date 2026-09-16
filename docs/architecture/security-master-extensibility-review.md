@@ -5319,6 +5319,20 @@ catalog already declares the predicate.
 > D2's discriminator does require a module key, and this pass confirmed that and stopped, without
 > asking whether a module key can appear in a document that is not an economic-terms document. Both
 > times the verification checked that the code did what it said, not that what it said was enough.
+>
+> **Second review round, same day.** A further five findings landed, all five correct, and they
+> produced **E5** (the canonical registry is seeded at startup and on two write paths, and nowhere
+> else) plus a refinement to E1's staleness bound. Three of the five caught *factual* errors in this
+> pass's own corrections, all with one cause worth naming because it is a method failure rather than
+> a judgement call: **class-level field claims were read with a fixed-window `grep -A 30` that ran
+> past the end of one schema block into the next.** That produced the false claim that
+> `CertificateOfDeposit`, `CommercialPaper` and `TreasuryBill` declare `startDate` (the field belongs
+> to `Repo`, the block immediately after `TreasuryBill`), and E4's collision inventory that both
+> omitted four affected classes and wrongly included `Swap`. A fourth finding showed the E4 remedy —
+> a `ValueKind.Object` shape check — would have broken every all-null economic document. The
+> corrections are in place at each site. The general rule this pass should have followed, and the
+> next one must: **enumerate a declaration block, never a line window**, and when the claim is "class
+> X declares field Y," parse the block rather than grepping near it.
 
 ### Claimed closures, independently re-verified
 
@@ -5401,6 +5415,18 @@ event loads the same way; and log the warm's elapsed time alongside its count so
 is observable. Until at least the last of those lands, the documented bound should be stated as
 interval-plus-warm-duration rather than interval.
 
+**Refined 2026-09-16, after review.** Even that bound holds only while a warm finishes inside the
+interval. `RunPeriodicRefreshAsync` drives a single `PeriodicTimer` (`:84-94`), and
+`WaitForNextTickAsync` does not queue elapsed periods — ticks that pass during a long warm are
+coalesced, so once a warm overruns the interval the next `await` returns immediately and warms run
+effectively back to back. A write committed just after its security was read by warm *N* is not
+installed until warm *N+1* completes, which approaches **two warm durations** rather than one. The
+honest statement is therefore conditional: the bound is interval-plus-warm-duration **while the warm
+stays shorter than the interval**, and degrades toward twice the warm duration once it does not —
+which is the regime E1's `5N + 1` makes reachable on a large universe with a tight refresh setting,
+i.e. exactly the configuration an operator would choose to reduce staleness. That is a second reason
+the elapsed-time log matters: without it, an operator cannot tell which regime they are in.
+
 **Corrected 2026-09-16, after review.** An earlier wording of this paragraph proposed
 "connection-accepting overloads so the warm reuses the connection the projection load already
 holds." There is no such connection to reuse, and the correction matters because it changes what the
@@ -5446,23 +5472,35 @@ The fix has two halves, and only the first is a catalog read: drive VC002's clas
 (an expiry-bearing predicate, which `Option`, `Future`, `Warrant` and the dated derivatives would
 all set) rather than matching `"Option"`.
 
-**Corrected 2026-09-16, after review.** An earlier wording called that "two catalog reads" and
-claimed it "picks up four asset classes that are silently unchecked today." Changing the gate alone
-picks up none of them, and the reason is the second half of this finding rather than a separate
-problem. VC002 reads its start date as `issueDate` (`:218-219`), and `issueDate` is declared by
-`Bond` alone. Of the other four `RequiresMaturity` classes, `CertificateOfDeposit`,
-`CommercialPaper` and `TreasuryBill` declare `startDate`, and `Swap` declares `effectiveDate`
-(`SecurityAssetTermsSchema.cs`). A strictly-mapped CD, commercial-paper note, T-bill or swap
-therefore yields no `issueDate`, `issueDate.HasValue` is false, and the comparison never runs — so
-a gate change by itself converts a rule that silently skips four classes into a rule that silently
-skips them slightly differently.
+**Corrected 2026-09-16, after review — twice; the first correction was itself wrong.** The original
+wording called this "two catalog reads" picking up "four asset classes that are silently unchecked
+today." The first correction established that the gate change picks up none of them, which is right,
+and then asserted that `CertificateOfDeposit`, `CommercialPaper` and `TreasuryBill` declare
+`startDate` while `Swap` declares `effectiveDate`. **The `startDate` half of that is false.** It came
+from a `grep -A 30` that ran past the end of the `TreasuryBill` block into the `Repo` block, which is
+the class that actually declares `startDate` (`SecurityAssetTermsSchema.cs:317-320`). The method
+note records this; it is the third claim in this pass produced by reading a window instead of a
+block, and the others are E4's inventory and the Swap entry below.
 
-Closing it for real means naming each class's authoritative start date, either by resolving the
-per-class field from the schema or by introducing a shared start-date term the classes map onto.
-That is not extra scope; it is the same symptom this finding already names two paragraphs above and
-that C1/D1 name from the other end — the flat v1 spelling is not canonical, so every consumer
-guesses at it, and here the guess is `issueDate`. The catalog knows which classes need the rule; it
-does not yet know what the rule should read, and no amount of gate-side tidying supplies that.
+The verified position. VC002 reads its start date as `issueDate` (`:218-219`), and among the five
+`RequiresMaturity` classes **only `Bond` declares any start-date field at all** — `issueDate`
+itself. `CertificateOfDeposit` declares `issuerName`, `maturity`, `couponRate`, `callableDate`,
+`dayCount`; `CommercialPaper` declares `issuerName`, `maturity`, `discountRate`, `dayCount`,
+`isAssetBacked`; `TreasuryBill` declares `maturity`, `auctionDate`, `cusip`, `discountRate`. None of
+the three has a start date under any spelling. `Swap` alone has one — `effectiveDate`, alongside
+`maturityDate`.
+
+That makes the remedy strictly larger than the first correction claimed. It is not a matter of
+*resolving* each class's start-date spelling, because for three of the four classes there is no
+field to resolve: the contract does not carry the data the rule needs. Closing E2 therefore means
+either **adding** a start-date term to those schemas and mapping it through the F# term records — the
+records at `SecurityMaster.fs` carry no start-date member for them either — or scoping VC002
+honestly to the classes that have one (`Bond` and `Swap`) and saying so, rather than implying the
+rule covers five classes when the data exists for two.
+
+The underlying symptom is unchanged and is the one C1/D1 name from the other end: the flat family's
+spelling is not canonical and not uniform, so a cross-class rule cannot be written against it. Here
+that surfaces not as a wrong guess but as an absent field.
 
 ### E3 — A write that commits during a warm is dropped from the cache, and the cache's comment reasons past the window
 
@@ -5518,9 +5556,20 @@ key. The test is `payload.TryGetProperty(module, out _)` — **presence, discard
 `EconomicTermsModules` is `BridgedModules ∪ DroppedModules` (`:44-45`, `:52-53`), whose first entry
 is `maturity`.
 
-`maturity` is also a flat-family field name. `Bond`, `CertificateOfDeposit`, `CommercialPaper`,
-`TreasuryBill` and `Swap` all declare it in `SecurityAssetTermsSchema`, where it holds a **scalar**
-date rather than the nested object the economic family uses.
+`maturity` is also a flat-family field name, where it holds a **scalar** date rather than the nested
+object the economic family uses. **Corrected 2026-09-16, after review:** the first filing listed
+`Bond`, `CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill` and `Swap`, and was wrong in both
+directions. Enumerated properly from `SecurityAssetTermsSchema`, **eight** classes declare a scalar
+`maturity`:
+
+`Bond`, `Deposit`, `CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill`, `OtherSecurity`,
+`DirectLoan`, `StructuredCredit`.
+
+`Swap` is **not** among them — it declares `effectiveDate` and `maturityDate`, neither of which is a
+module key, so it does not collide. The first filing omitted four affected classes and invented a
+fifth, which would have scoped any follow-up coverage test wrongly in both directions. `OtherSecurity`
+matters most of the four that were missed: it is the catch-all every unrecognized class degrades to
+on read.
 
 So for a flat payload stamped with the reserved version 2 and carrying a `maturity` key:
 
@@ -5545,14 +5594,72 @@ exactly when it is first needed. This review flags it as the highest-value item 
 despite being latent, because its cost if it ever fires is every economic term on every affected
 record, silently, with a `schemaVersion: 1` stamp asserting the result is fine.
 
-Two fixes, and the first is not enough on its own. Discriminate on **shape, not presence** — require
-that at least one matched module key hold a JSON object — which rejects the scalar-`maturity` case
-and costs one `ValueKind` check. Better, discriminate the families on something that cannot collide
-at all: a family marker written by the economic serializer, or separate storage slots, since a
-payload family that must avoid another family's field names is no more independent than one that had
-to avoid its version numbers — the objection D2 itself raised about the integer. Either way the
-regression test D2's suite is missing is a flat document with a scalar `maturity` stamped 2, asserted
-to pass through with its version intact rather than being emptied.
+**The remedy is a family marker, and the obvious cheap alternative does not work.**
+
+*Corrected 2026-09-16, after review.* This finding first recommended discriminating on **shape** —
+requiring at least one matched module key to hold a JSON object — as the cheap fix, with a
+non-colliding family marker offered as the better option. That prioritisation is backwards, because
+the shape check breaks valid economic-terms documents. `BuildEconomicTermsJson`
+(`SecurityEconomicDefinitionAdapter.cs:99-208`) builds an anonymous object whose every module is
+`… is null ? null : new { … }`, serialized with default options, so **null modules are emitted as
+present-but-null keys** rather than omitted. A security whose term modules are all empty —
+`SecurityKind.FxSpot` maps to `SecurityTermModules.empty` — therefore serializes as
+`{"schemaVersion":2,"maturity":null,"coupon":null,…}`. Under the presence test that is correctly
+recognised as economic-terms; under a `ValueKind.Object` test every module fails, the document is
+not recognised, it routes to the flat normalizer with version 2, and the guard rejects it with
+`Unsupported schemaVersion '2'` — turning a read that works today into a read failure for exactly
+the records that carry no economics to lose.
+
+So the fix is the one that cannot collide: **a family marker written by the economic serializer**
+(or separate storage slots). A payload family that must avoid another family's field names is no
+more independent than one that had to avoid its version numbers — the objection D2 itself raised
+about the integer, now recurring one level up. A discriminator that additionally recognises the
+serializer's null-only shape would also work, but it is strictly more fragile than a marker and
+encodes the same coupling.
+
+Two regression tests, not one: a flat document with a scalar `maturity` stamped 2, asserted to pass
+through with its version intact rather than being emptied; and an all-null economic document,
+asserted still to be recognised as economic-terms.
+
+### E5 — The canonical symbol registry is seeded at startup and on two write paths, and nowhere else
+
+*Filed 2026-09-16, after review. Distinct from E3: E3 is a write being dropped from the cache during
+a warm; E5 is writes that reach the cache — or the durable store — and never reach the registry at
+all.*
+
+`SecurityMasterCanonicalSymbolSeedService.SeedAsync` rebuilds `_tickerToSecurityId` from
+`_cache.Snapshot()` (`:66`), and `EventCanonicalizer` reads that map concurrently. It is invoked from
+exactly three places:
+
+- `SecurityMasterProjectionWarmupService.StartAsync` (`:55`), after the **initial** warm only.
+- `SecurityMasterService` (`:203` and `:362`, via `TryReseedRegistryInBackground`), on two write
+  paths.
+
+It is **not** invoked by:
+
+- **The periodic re-warm.** `RunPeriodicRefreshAsync` calls `_projectionService.WarmAsync(ct)` and
+  nothing else (`:94`). So on a multi-node deployment the mechanism documented as the bound on
+  cross-node staleness refreshes the projection cache and leaves the registry at its startup
+  contents. An identifier change made on another node never reaches this node's symbol resolution,
+  for the life of the process.
+- **The alias write path.** `UpsertAliasAsync` → `UpsertAliasAsyncCore` (`:1702-1710`) writes through
+  `_store.UpsertAliasAsync` and returns the persisted row. It neither upserts the projection cache
+  nor reseeds the registry — and aliases are precisely the identifier data the registry exists to
+  resolve.
+- **`DeactivateAsync`.** It upserts the cache (`:281`) but has no `TryReseedRegistryInBackground()`
+  beside it, unlike the two paths that do. A deactivated security's ticker therefore keeps resolving
+  until something else reseeds.
+
+The asymmetry is the tell: two write paths were given a background reseed and the others were not,
+which reads as an omission rather than a decision, and nothing in the code says which it is.
+
+Fixing E3 does not fix this. E3 makes the cache correct; E5 is about what is derived from the cache
+and when. The remedy is to reseed after every successful warm — `RunPeriodicRefreshAsync` is one line
+from parity with `StartAsync` — and to give the alias and deactivate paths the same
+`TryReseedRegistryInBackground()` the other two have, or, better, to make registry seeding a
+subscriber to cache mutation rather than something each call site must remember to invoke. The
+recurring complaint of this document applies unchanged: adding a thing means editing N
+hand-maintained places, and here one of the N was missed four times.
 
 ### Smaller notes, not filed as findings
 
@@ -5585,31 +5692,37 @@ to pass through with its version intact rather than being emptied.
 
 Read as a delta on the standing lists.
 
-*Re-ordered 2026-09-16, after review. E3 and E4 did not exist when this list was first written, and
-two of the items below described remedies that do not work; all are corrected in place above.*
+*Re-ordered 2026-09-16, across two review rounds. E3, E4 and E5 did not exist when this list was
+first written, and three of the remedies it described do not work; all are corrected in place above.*
 
 1. **Everything still stays behind the standing correctness items** — the open halves of P1, P3b and
    P4, and the B-series accounting findings.
-2. **Discriminate the payload families on shape, not key presence (E4).** Latent but ranked first of
-   the E series: a `ValueKind` check plus the scalar-`maturity` regression test D2's suite never got.
-   It is small, and the alternative to doing it is a reserved-version guard that fails on the first
-   document it is ever asked to protect, at a cost of every economic term on the record.
-3. **Make the cache swap version-aware (E3).** This pass's one *live* correctness defect, and it displaces
+2. **Give the payload families a non-colliding marker (E4).** Latent but ranked first of the E
+   series: a reserved-version guard that fails on the first document it is ever asked to protect, at
+   a cost of every economic term on eight flat classes. *Not* the `ValueKind.Object` check this pass
+   first proposed — that breaks all-null economic documents; see the corrected remedy. Two regression
+   tests, not one.
+3. **Reseed the canonical registry after every successful warm, and on alias and deactivate writes
+   (E5).** The periodic re-warm is one line from parity with `StartAsync`, and it is the mechanism
+   this subsystem documents as its cross-node staleness bound — today it refreshes the cache and
+   leaves symbol resolution at its startup contents.
+4. **Make the cache swap version-aware (E3).** This pass's one *live* cache defect, and it displaces
    the rest of the list. One comparison per key inside `ReplaceAll`, no new synchronisation, and it
    closes a path on which a committed write is dropped from the cache, persists (refresh defaults to
    0) and propagates into the rebuild handler and the canonical-symbol registry.
-4. **Log the warm's elapsed time, and correct the staleness bound (E1).** A stopwatch and a log
-   field, plus two comment corrections — the same shape of fix as D1's cheap half, and it makes a
-   promise the subsystem currently states without measuring into one an operator can verify.
-5. **Give VC002 a start date, then drive both rules off the catalog (E2).** No longer the cheapest
-   item in this pass: the gate change is trivial but inert until each class's authoritative start
-   date is named, because only `Bond` declares `issueDate`. Do the two together or neither — a gate
-   change alone buys nothing and looks like it bought four asset classes.
-6. **Batch the universe load (E1).** The durable fix: one query per table for the universe instead
+5. **Log the warm's elapsed time, and correct the staleness bound (E1).** A stopwatch and a log
+   field, plus the comment corrections. It matters more than it first appeared: the bound degrades
+   toward *twice* the warm duration once a warm overruns the refresh interval, and without the log an
+   operator cannot tell which regime they are in.
+6. **Decide what VC002 can actually check (E2).** Demoted, and reframed: this is no longer "name each
+   class's start date" but "three of the five `RequiresMaturity` classes have no start-date field in
+   the schema or the F# records at all." Either add and map one, or scope the rule to `Bond` and
+   `Swap` and say so. A gate change alone still buys nothing.
+7. **Batch the universe load (E1).** The durable fix: one query per table for the universe instead
    of three per security, plus batched snapshot and event loads. Needs a shared session or a set-based
    store API, not a parameter change. Larger than the rest of this pass and worth sizing against N6,
    which it shares a path with.
-7. **Re-rank D1's lossless half downward.** Per the narrowing above, it guards a payload shape no
+8. **Re-rank D1's lossless half downward.** Per the narrowing above, it guards a payload shape no
    current writer emits. It stays open as the codec-generation seam, not as a live data-loss risk.
 
 ---
