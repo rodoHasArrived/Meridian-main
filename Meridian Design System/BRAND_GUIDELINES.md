@@ -31,13 +31,17 @@ for web consumers through the design-system token files.
 
 ## Color And Type
 
-- Canvas: `#ECEFF3`
-- Command bars and inset wells: `#F5F7FA`
-- Card and panel surface: `#FFFFFF`
-- Chrome bars: `#171A1F`
-- Primary accent: `#2F6F8F`
-- Status colors: success `#16885F`, danger `#BA3F55`, warning `#B7791F`,
-  pending `#6F5BA7`
+Programmed Institutionalism v2.0 — warm paper foundation, copper accent.
+
+- Canvas: `#F2F0EC` (Soft Stone)
+- Command bars and inset wells: `#EDEAE4`
+- Card and panel surface: `#FBFAF8` (Architect White)
+- Chrome bars: `#1F1D1A` (warm black)
+- Primary accent: `#A85436` (copper — never blue); figure-only terracotta `#D16A4A`
+- Status colors: success `#3A7A56`, danger `#A8443C`, warning `#8A5C12`,
+  pending `#5D5486`
+
+The previous steel-blue identity remains selectable as `<html data-brand="steel">`.
 
 Use `tokens/colors.css`, `tokens/typography.css`, `tokens/elevation.css`, and
 `tokens/theme.css` rather than raw values in new package work.

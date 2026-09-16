@@ -1,4 +1,5 @@
 /* Meridian — Functional Color System (light defaults / base layer)
+   Programmed Institutionalism v2.0: warm paper foundation, copper accent.
    ───────────────────────────────────────────────────────────────
    This file defines the COMPLETE token surface every component consumes,
    in light mode. theme.css (white-label) overrides a small set of BASE
@@ -21,42 +22,42 @@
 ─────────────────────────────────────────────────────────────────────────────── */
 :root {
   /* ── Canvas / Backgrounds — neutral industrial gray, no warm tint ── */
-  --bg:                 #DEE3EA;  /* window canvas — concrete gray, deeper so panels read */
-  --bg-light:           #FFFFFF;  /* card surface — the brightest lifted surface */
-  --bg-medium:          #EBEFF4;  /* header / sticky thead / nav rail — structural mid band */
-  --bg-hover:           #EAEEF3;  /* hover state — flat shift off white */
-  --bg-active:          #D7E5F1;  /* active / selected — cool blue engagement */
+  --bg:                 #F2F0EC;  /* window canvas — Soft Stone, the drafting table */
+  --bg-light:           #FBFAF8;  /* card surface — Architect White, the lifted work surface */
+  --bg-medium:          #EDEAE4;  /* header / sticky thead / nav rail — structural mid band */
+  --bg-hover:           #F0EEE9;  /* hover state — flat shift off paper */
+  --bg-active:          #F2E3DB;  /* active / selected — warm engagement, tinted off the accent */
   --card-surface:       var(--bg-light);  /* card / panel surface (tracks dark) */
-  --card-surface-raised:#F3F6F9;  /* zebra rows, raised cells — visible flat step, no glow */
+  --card-surface-raised:#F6F4F0;  /* zebra rows, raised cells — visible flat step, no glow */
 
   /* ── Borders — structural & present. In a concrete system the border IS
      the elevation: visible, darker, load-bearing. ── */
-  --border:             #CBD3DC;  /* default line — clearly visible, load-bearing */
-  --border-hover:       #ADB8C4;  /* hovered control — firm */
-  --border-focus:       #2F6F8F;  /* focus ring */
-  --border-strong:      #99A5B2;  /* emphasized / totals / headers — heavy rule */
-  --border-divider:     #D2D9E2;  /* divider between sections — still readable */
+  --border:             #E4E3DE;  /* default line — the 1px rule that does the separating */
+  --border-hover:       #C6C3BB;  /* hovered control — firm */
+  --border-focus:       #A85436;  /* focus ring */
+  --border-strong:      #AFABA1;  /* emphasized / totals / headers — heavy rule */
+  --border-divider:     #DAD8D3;  /* divider between sections — still readable */
 
   /* ── Text — high-contrast, functional ── */
-  --text-primary:       #22272E;  /* headings, values — near-black ink */
-  --text-secondary:     #4D5967;  /* secondary text, labels */
-  --text-muted:         #59636F;  /* captions, hints */
-  --text-disabled:      #889099;  /* disabled — flat gray */
+  --text-primary:       #22252A;  /* headings, values — Carbon */
+  --text-secondary:     #4E5258;  /* secondary text, labels — Warm Graphite */
+  --text-muted:         #5E666F;  /* captions, hints — Slate, taken down from #69717A for AA on --bg-medium */
+  --text-disabled:      #94999F;  /* disabled — flat warm gray */
 
   /* ── Accent (primary action / info) — steel blue, muted & industrial ── */
-  --accent:             #2F6F8F;  /* steel blue — desaturated, functional */
-  --accent-dim:         #255B75;  /* pressed — heavy */
-  --accent-hover:       #3B82A6;  /* hover — controlled */
-  --accent-ghost:       #E1EAF2;  /* ghost button bg (neutral gray-blue) */
+  --accent:             #A85436;  /* copper — desaturated, functional, deliberately not blue */
+  --accent-dim:         #8C4429;  /* pressed — heavy */
+  --accent-hover:       #C06B4A;  /* hover — controlled */
+  --accent-ghost:       #F4E7E0;  /* ghost button bg (warm paper tint) */
   --text-on-accent:     #FFFFFF;  /* text/icon on a solid --accent or semantic fill (buttons, live pills) */
   --text-on-fill:       var(--text-on-accent);  /* alias: label ink on ANY solid semantic fill (mode chips,
                                                    stepper complete) — flips to dark ink in dark mode */
 
   /* ── Semantic base — desaturated, industrial. Legible signal, no candy. ── */
-  --green:              #16885F;  /* success — muted spruce */
-  --red:                #BA3F55;  /* danger — muted brick */
-  --orange:             #8A520E;  /* warning — muted ochre */
-  --purple:             #6F5BA7;  /* pending — muted slate-violet */
+  --green:              #3A7A56;  /* success — muted forest */
+  --red:                #A8443C;  /* danger — brick */
+  --orange:             #8A5C12;  /* warning — amber ochre */
+  --purple:             #5D5486;  /* pending — muted slate-violet */
   --amber:              var(--orange);  /* alias */
 
   /* ── Derived tints + dims (computed off base; auto-track theme + dark) ──
@@ -101,16 +102,16 @@
   --scrim:              rgba(14, 17, 19, 0.5);
 
   /* Chrome interior details — the bars stay near-black in BOTH modes, so these need no dark override */
-  --topbar-text-muted:  #AEB7C0;  /* module label, clock, statusbar values */
-  --topbar-text-faint:  #8A929B;  /* search placeholder, kbd hints, statusbar labels */
+  --topbar-text-muted:  #B8B3AA;  /* module label, clock, statusbar values */
+  --topbar-text-faint:  #9B958A;  /* search placeholder, kbd hints, statusbar labels */
   --topbar-sep:         #3A4048;  /* breadcrumb separator on chrome */
   --topbar-field-bg:    #0F1216;  /* inset search field on chrome */
   --topbar-field-border:#2C323A;  /* hairlines inside chrome (search field, kbd caps) */
   --topbar-field-border-hover: #3A424B;
   /* Status dots on near-black chrome — brighter than the panel semantics so they read on #171A1F */
-  --chrome-ok:          #2FA377;
-  --chrome-warn:        #D6A84A;
-  --chrome-err:         #E27087;
+  --chrome-ok:          #56A37E;
+  --chrome-warn:        #C79A4C;
+  --chrome-err:         #D1746B;
 
   /* ── Shell: nav rail (light surface — aliases track white-label + dark) ── */
   --sidebar-bg:         var(--bg-medium);

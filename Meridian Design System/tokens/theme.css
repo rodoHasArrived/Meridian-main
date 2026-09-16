@@ -4,37 +4,55 @@
 */
 
 :root {
-  /* ── Default Theme (Meridian — teal-blue institutional, refined v1.8) ── */
-  --theme-accent: #2F6F8F;
-  --theme-accent-dim: #255B75;
-  --theme-accent-hover: #3B82A6;
+  /* ── Default Theme (Meridian — Programmed Institutionalism v2.0) ──────────
+     Warm paper rather than cool concrete. The interface material is drafting
+     stock, not a screen: Architect White lifts off Soft Stone, separated by
+     fine rules instead of shadows.
 
-  --theme-primary-text: #22272E;
-  --theme-secondary-text: #4D5967;
-  --theme-muted-text: #59636F;
-  --theme-disabled-text: #889099;
+     The accent is deliberately NOT blue. It is the copper/terracotta family,
+     darkened to #A85436 so it clears WCAG AA both as text on a card (5.05:1)
+     and as a button fill under a white label (5.27:1). The brief's two
+     suggestions — Terracotta #D16A4A and Copper #B76841 — sit at 3.43:1 and
+     3.97:1 as text, below the 4.5:1 this repo's contrast gate enforces, so the
+     hue is kept and the value is taken down. #D16A4A survives as
+     --theme-accent-figure for the Meridian Field motif and report covers,
+     where it carries no text.
 
-  --theme-bg-canvas: #DEE3EA;
-  --theme-bg-light: #FFFFFF;
-  --theme-bg-hover: #EAEEF3;
-  --theme-bg-active: #D7E5F1;
+     Semantics are independent of the accent and intentionally desaturated:
+     muted forest, brick, amber ochre, slate-violet. Never use the accent for
+     positive/negative values. ── */
+  --theme-accent: #A85436;              /* copper — AA-clear as text and as fill */
+  --theme-accent-dim: #8C4429;          /* pressed */
+  --theme-accent-hover: #C06B4A;        /* hover */
+  --theme-accent-figure: #D16A4A;       /* terracotta — motif/cover use only, never behind text */
 
-  --theme-border: #CBD3DC;
-  --theme-border-hover: #ADB8C4;
-  --theme-border-focus: #2F6F8F;
-  --theme-border-strong: #99A5B2;
+  --theme-primary-text: #22252A;        /* Carbon */
+  --theme-secondary-text: #4E5258;      /* Warm Graphite */
+  --theme-muted-text: #5E666F;          /* Slate, taken down from the brief's #69717A,
+                                           which fails AA on the header band (4.12:1) */
+  --theme-disabled-text: #94999F;
 
-  /* Semantic */
-  --theme-green: #16885F;
-  --theme-red: #BA3F55;
-  --theme-orange: #8A520E;   /* warning (a.k.a. amber) */
+  --theme-bg-canvas: #F2F0EC;           /* Soft Stone — the drafting table */
+  --theme-bg-light: #FBFAF8;            /* Architect White — lifted work surface */
+  --theme-bg-hover: #F0EEE9;
+  --theme-bg-active: #F2E3DB;           /* warm selection, tinted off the accent */
+
+  --theme-border: #E4E3DE;              /* 1px rule — the primary separator */
+  --theme-border-hover: #C6C3BB;
+  --theme-border-focus: #A85436;
+  --theme-border-strong: #AFABA1;       /* totals, header rules */
+
+  /* Semantic — desaturated, independent of brand */
+  --theme-green: #3A7A56;               /* muted forest */
+  --theme-red: #A8443C;                 /* brick */
+  --theme-orange: #8A5C12;              /* amber ochre (a.k.a. warning) */
   --theme-amber: var(--theme-orange);
 
-  /* Chrome */
-  --theme-topbar-bg: #171A1F;
-  --theme-topbar-text: #F4F6F8;
-  --theme-statusbar-bg: #171A1F;
-  --theme-statusbar-text: #D7DCE2;
+  /* Chrome — warm black, material rather than luminous */
+  --theme-topbar-bg: #1F1D1A;
+  --theme-topbar-text: #F4F2ED;
+  --theme-statusbar-bg: #1F1D1A;
+  --theme-statusbar-text: #D8D3CA;
 
   /* ── Default Spacing (cozy) ── */
   --theme-spacing-xs: 4px;
@@ -46,7 +64,7 @@
 
   /* ── Brand & Font ── */
   --theme-brand-name: "Meridian"; /* @kind other */
-  --theme-brand-color: #2F6F8F;
+  --theme-brand-color: #A85436;
   --theme-font-display: "Segoe UI Variable Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --theme-font-body: "Segoe UI Variable Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --theme-font-mono: "Cascadia Mono", "JetBrains Mono", "Courier New", monospace;
@@ -92,6 +110,43 @@ body[data-theme-density="spacious"] {
 }
 
 /* ── Brand Color Variants (white-label: data-brand="name") ── */
+
+/* The pre-v2.0 Meridian identity: cool concrete canvas and steel-blue accent.
+   Retained as a selectable brand so the Programmed Institutionalism restyle is
+   reversible per-deployment without reverting the token layer. Unlike the
+   accent-only variants below, this one also restores the cool neutrals. */
+html[data-brand="steel"] {
+  --theme-accent: #2F6F8F;
+  --theme-accent-dim: #255B75;
+  --theme-accent-hover: #3B82A6;
+  --theme-accent-figure: #3B82A6;
+  --theme-brand-color: #2F6F8F;
+
+  --theme-primary-text: #22272E;
+  --theme-secondary-text: #4D5967;
+  --theme-muted-text: #59636F;
+  --theme-disabled-text: #889099;
+
+  --theme-bg-canvas: #DEE3EA;
+  --theme-bg-light: #FFFFFF;
+  --theme-bg-hover: #EAEEF3;
+  --theme-bg-active: #D7E5F1;
+
+  --theme-border: #CBD3DC;
+  --theme-border-hover: #ADB8C4;
+  --theme-border-focus: #2F6F8F;
+  --theme-border-strong: #99A5B2;
+
+  --theme-green: #16885F;
+  --theme-red: #BA3F55;
+  --theme-orange: #8A520E;
+
+  --theme-topbar-bg: #171A1F;
+  --theme-topbar-text: #F4F6F8;
+  --theme-statusbar-bg: #171A1F;
+  --theme-statusbar-text: #D7DCE2;
+}
+
 html[data-brand="indigo"] {
   --theme-accent: #4F46E5;
   --theme-accent-dim: #4338CA;
@@ -142,6 +197,7 @@ html[data-brand="amber"] {
   --accent: var(--theme-accent);
   --accent-dim: var(--theme-accent-dim);
   --accent-hover: var(--theme-accent-hover);
+  --accent-figure: var(--theme-accent-figure);
   --text-primary: var(--theme-primary-text);
   --text-secondary: var(--theme-secondary-text);
   --text-muted: var(--theme-muted-text);

@@ -51,13 +51,13 @@ export function AmountCell({
   const num = toNumber(value);
   const text = formatMoney(value, { currency, decimals, parens, zeroDash, signed });
 
-  let color = "var(--text-primary, #22272E)";
+  let color = "var(--text-primary, #22252A)";
   if (mode === "muted") {
-    color = "var(--text-muted, #59636F)";
+    color = "var(--text-muted, #5E666F)";
   } else if (mode === "pnl") {
     color =
       !Number.isFinite(num) || num === 0
-        ? "var(--text-muted, #59636F)"
+        ? "var(--text-muted, #5E666F)"
         : num < 0
           ? "var(--red-dim, #8C2F40)"
           : "var(--green-dim, #10663F)";

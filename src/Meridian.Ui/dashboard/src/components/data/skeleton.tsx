@@ -10,10 +10,10 @@ import type { CSSProperties, HTMLAttributes } from "react";
 import { injectStyle } from "../operations/inject-style";
 
 const CSS = `
-.mds-skel{display:block;background:var(--bg-active,#E1EAF2);border-radius:var(--radius-chip,2px);
+.mds-skel{display:block;background:var(--bg-active,#F4E7E0);border-radius:var(--radius-chip,2px);
   position:relative;overflow:hidden;}
 .mds-skel::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
-  background:linear-gradient(90deg,transparent,var(--bg-hover,#F1F4F7),transparent);
+  background:linear-gradient(90deg,transparent,var(--bg-hover,#F0EEE9),transparent);
   animation:mds-skel-sweep 1.3s ease-in-out infinite;}
 .mds-skel--text{height:12px;margin:3px 0;}
 .mds-skel--circle{border-radius:50%;}
