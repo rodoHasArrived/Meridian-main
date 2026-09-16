@@ -5349,11 +5349,31 @@ catalog already declares the predicate.
 > it was run only after review forced the question, and it then showed the damage was confined to
 > that one file.
 >
-> Taken together the three rounds say something this document should not soften: **of the five
-> findings this pass filed, one was stale, one had a wrong inventory twice over, and three had
-> remedies that would not have worked.** The findings that survive — E1, E2, E4, E5 — survive on
-> their observations, not on their prescriptions, and every prescription in this pass has now been
-> corrected at least once.
+> **Fourth review round, same day.** Five more findings, all correct, and no new finding — every one
+> corrected something this pass had asserted. Two caught claims made without checking: that the
+> quality scan pays the full warm (it calls `LoadActiveAsync` only, which this same finding states
+> correctly two paragraphs earlier — an internal contradiction), and that
+> `ProjectionCacheRefreshMinutes` is "validated by `SecurityMasterOptionsValidator`" (it is not
+> inspected there at all). One narrowed the refresh-wiring remedy to `StorageFeatureRegistration`,
+> since the WPF composition registers no warmup stack for the setting to drive. One showed E4's
+> compatibility plan cannot retire the legacy discriminator arm, because the event stream is
+> append-only and a backfill cannot reach `security_events`. And one reframed E5 entirely.
+>
+> **A subsystem pattern emerged from these rounds that is worth more than any single E finding.**
+> Three separate capabilities in this lane are *declared and unreachable*:
+> `ProjectionCacheRefreshMinutes` is an option with no binding;
+> `SecurityMasterCanonicalSymbolSeedService` is a service with no registration, so every call site
+> that guards on it is dead; and the options validator omits the one option whose misconfiguration is
+> silent. Each was found only because a reviewer asked "is this wired?" of something whose existence
+> the code asserts. This review had read all three call sites and treated declaration as evidence of
+> operation. The recurring extensibility complaint — *adding a thing means editing N hand-maintained
+> places* — has a sharper corollary here: **when the Nth place is composition, nothing fails; the
+> feature is simply absent, and the code keeps describing it as present.**
+>
+> Taken together the four rounds say something this document should not soften: **of the five
+> findings this pass filed, one was stale, one had a wrong inventory three times over, and every
+> prescription has been corrected at least once.** The findings that survive — E1, E2, E4, E5 —
+> survive on their observations, not on their prescriptions.
 
 ### Claimed closures, independently re-verified
 
@@ -5447,15 +5467,37 @@ in every production composition, and the `> 0` guard at
 outside tests.**
 
 That reframes this finding and E5 rather than retiring either. The warm still runs at every process
-start, every full rebuild and every quality scan, so E1's `5N + 1` cost stands unchanged on the paths
-that do execute. What is not true, and what the option's own summary and the cache's class comment
-both assert, is that an operator can bound cross-node staleness by setting an interval: that remedy is
-documented, validated by `SecurityMasterOptionsValidator`, and not wired. On a multi-node deployment
-the actual bound is *unbounded* — each node's cache and canonical registry hold what they built at
-startup plus that node's own writes, with no mechanism to converge. The fix is three lines (an
-`MERIDIAN_SECURITY_MASTER_CACHE_REFRESH_MINUTES` parse beside the four that are already there, in both
-compositions, plus the documented key), and until it lands the two comments that promise the bound
-should say the setting is not currently reachable.
+start and every full rebuild, so E1's `5N + 1` stands unchanged on the paths that do execute. What is
+not true, and what the option's own summary and the cache's class comment both assert, is that an
+operator can bound cross-node staleness by setting an interval. On a multi-node deployment the actual
+bound is *unbounded* — each node's cache holds what it built at startup plus that node's own writes,
+with no mechanism to converge.
+
+Three corrections to this paragraph's own first wording, all from the fourth review round, and all of
+a kind with each other:
+
+- **The quality scan does not pay the warm.** An earlier sentence here listed it among the paths
+  running `5N + 1`, contradicting the bullet two paragraphs above that correctly has it at `1 + 3N`.
+  `RunQualityChecksAsync` calls `LoadActiveAsync` and never `BuildWarmSetAsync` (`:64`), so it is a
+  consumer of the projection-store N+1 only, with no per-security snapshot or event load. Attributing
+  `2N` extra queries and `2N` connection opens to that lane also mis-scoped the batching priority.
+- **The option is not validated.** An earlier wording called it "documented, validated by
+  `SecurityMasterOptionsValidator`, and not wired." `SecurityMasterOptionsValidator.Validate` checks
+  `ConnectionString`, `Schema`, `SnapshotIntervalVersions` and `ProjectionReplayBatchSize`, and never
+  inspects `ProjectionCacheRefreshMinutes` (`:16-35`). It is documented and not wired; the validation
+  claim was asserted without being checked.
+- **The fix is not "both compositions."** `StrategyFeatureModule` registers the options, stores,
+  rebuilder, service and query service, but not `SecurityMasterProjectionCache`,
+  `SecurityMasterProjectionService` or `SecurityMasterProjectionWarmupService` — those are registered
+  only in `StorageFeatureRegistration` (`:302`, `:303`, `:333`). Parsing the variable in the WPF
+  composition would be dead configuration.
+
+So the corrected remedy is narrower and has a part the first version missed: parse the interval in
+**`StorageFeatureRegistration` alone**, and add a **non-negative guard** to the validator at the same
+time, because `ParseInt` accepts negatives and a `-1` would silently fail the warmup service's `> 0`
+guard and disable convergence with no startup error — reproducing today's failure under a setting the
+operator believes they have turned on. Until both land, the two comments promising the bound should
+say the setting is not currently reachable.
 
 **Refined 2026-09-16, after review.** *Conditional on the setting ever being wired:* even the
 interval-plus-warm bound holds only while a warm finishes inside the interval. `RunPeriodicRefreshAsync` drives a single `PeriodicTimer` (`:84-94`), and
@@ -5685,10 +5727,27 @@ same failure mode as the `ValueKind.Object` proposal, reached from the other dir
 test that breaks the documents already in flight.
 
 So the marker must be additive: recognise a document as economic-terms if it carries the marker **or**
-satisfies the existing presence test, and backfill or migrate stored payloads before the legacy arm is
-retired. The legacy arm keeps E4's defect alive for pre-marker documents, which is an argument for
-doing the backfill rather than for skipping the marker — and the order matters: marker first, backfill
-second, legacy arm removed third, each provable on its own.
+satisfies the existing presence test.
+
+**The legacy arm cannot then be retired, and an earlier wording of this paragraph was wrong to plan
+on retiring it.** *Corrected 2026-09-16, fourth review round.* That wording prescribed "marker first,
+backfill second, legacy arm removed third." The third step is unreachable: the Security Master event
+stream is append-only, and `PostgresSecurityMasterEventStore` exposes `AppendAsync`, `LoadAsync`,
+`LoadSinceSequenceAsync` and `GetLatestSequenceAsync` with **no payload update of any kind**. A
+backfill can rewrite the mutable projection and snapshot rows; it cannot rewrite `security_events`.
+Pre-marker economic payloads therefore persist in the stream permanently, and any full replay —
+`SecurityMasterAggregateRebuilder`'s three entry points, or a projection rebuild — re-encounters them
+unmarked. Removing the presence arm would break replay for exactly the historical records the
+compatibility plan exists to protect.
+
+That leaves two honest options, and the choice is a design decision this review should not make for
+the implementer. Either **keep the presence arm permanently** as the historical-event path, accepting
+that E4's collision stays live for pre-marker documents and containing it another way — the natural
+one being to discriminate from *enclosing-record context* rather than the payload alone, since
+`FromEconomicPayload` already knows whether it was handed an event payload or a projection. Or
+**version the envelope rather than the payload**, so replay can tell the families apart from metadata
+the stream does carry. What is not available is the clean three-step retirement the first wording
+described.
 
 Regression coverage, now four cases rather than one: a flat document with a scalar `maturity` stamped
 2; a flat `PrivateCompanyEquity` with a scalar `issuer` stamped 2; an all-null economic document; and
@@ -5702,6 +5761,30 @@ colliding name.
 *Filed 2026-09-16, after review. Distinct from E3: E3 is a write being dropped from the cache during
 a warm; E5 is writes that reach the cache — or the durable store — and never reach the registry at
 all.*
+
+**Reframed 2026-09-16, after the fourth review round: the seeding path is not badly timed, it is
+unwired.** This finding was first written as a timing and call-site problem — seeded at startup, not
+on refresh or alias writes. That understates it. `SecurityMasterCanonicalSymbolSeedService` is
+**never registered in DI**: it appears in the repository only as its own definition and as an
+*optional* constructor parameter defaulting to `null` on `SecurityMasterProjectionWarmupService`
+(`:22`, `:30`) and `SecurityMasterService` (`:33`, `:50`), and `ICanonicalSecurityIdLookup` has no
+`Add*`/`TryAdd*` registration anywhere. `StorageFeatureRegistration` registers the cache, the
+projection service and the warmup hosted service, and not the seed service.
+
+Built-in DI therefore supplies `null` for both optional parameters, `StartAsync`'s
+`if (_seedService is not null)` never fires, and `TryReseedRegistryInBackground` returns immediately
+at its own null check (`:368-370`). **In the normal host composition the canonical symbol registry is
+never seeded from the Security Master at all** — not at startup, not on writes, not ever. The call
+sites enumerated below are real, and every one of them is dead.
+
+That makes registration the first remedy and everything else conditional on it: replace semantics and
+extra reseed calls are both unreachable until something constructs the service. It also means this
+finding's original consequence — *stale* symbol resolution — is the wrong shape; the consequence is
+*absent* Security-Master-derived symbol resolution, with whatever other registry sources exist
+carrying the whole load.
+
+The call-site inventory below is retained because it is what the remedy has to fix once the service
+is registered, not because any of it executes today.
 
 `SecurityMasterCanonicalSymbolSeedService.SeedAsync` rebuilds `_tickerToSecurityId` from
 `_cache.Snapshot()` (`:66`), and `EventCanonicalizer` reads that map concurrently. It is invoked from
@@ -5794,23 +5877,27 @@ been corrected at least once; all corrections are in place above.*
 
 1. **Everything still stays behind the standing correctness items** — the open halves of P1, P3b and
    P4, and the B-series accounting findings.
-2. **Wire `ProjectionCacheRefreshMinutes` into the two compositions, or stop promising it (E1).**
-   Promoted to the top of the E series by the third review round: the option is declared, validated,
-   documented in two comments as the bound on cross-node staleness, and bound to nothing, so the
-   periodic re-warm never runs outside tests. Three lines beside the four environment parses already
-   in `CreateSecurityMasterOptions`, in both compositions, plus the documented key. Until then a
-   multi-node deployment has no convergence mechanism at all and the two comments overstate what is
-   available.
+2. **Close the three composition gaps in this lane — they are one item, not three (E1, E5).**
+   Promoted to the top of the E series, and merged after the fourth round showed a shared shape:
+   `ProjectionCacheRefreshMinutes` is an option with no binding, so the periodic re-warm never runs;
+   `SecurityMasterCanonicalSymbolSeedService` has no DI registration, so the canonical registry is
+   never seeded from the Security Master at all and every call site guarding on it is dead; and
+   `SecurityMasterOptionsValidator` omits the refresh interval, so once it *is* wired a negative value
+   would disable convergence with no startup error. Each is a few lines in
+   `StorageFeatureRegistration` — **not** the WPF composition, which registers no warmup stack — plus
+   a non-negative guard in the validator. Until they land, two code comments and this document's own
+   earlier drafts describe convergence machinery that does not execute.
 3. **Give the payload families a non-colliding marker, additively (E4).** Latent but the largest
    blast radius: a reserved-version guard that fails on the first documents it would ever protect,
    across nine flat classes and two module names. Must be additive — marker *or* the existing
    presence test — with a backfill before the legacy arm retires, or it rejects every pre-marker
    document. Four regression cases, not one. *Not* the `ValueKind.Object` check this pass first
    proposed.
-4. **Give the canonical registry replace semantics, then reseed after every warm (E5).** In that
-   order: the current seed merges and never retires, so extra invocations propagate additions faster
-   and still leave superseded tickers and removed aliases resolving. Reseeding after every successful
-   warm is worth doing once replace exists, and mostly write traffic before then.
+4. **Then give the canonical registry replace semantics, and only then reseed after every warm (E5).**
+   Strictly after item 2 — the service has no registration, so none of this executes yet. Ordered
+   within itself too: the current seed imports with `merge: true` and never retires, so extra
+   invocations propagate additions faster and still leave superseded tickers and removed aliases
+   resolving. Replace semantics first, reseed timing second; reversing them buys write traffic.
 5. **Log the warm's elapsed time (E1).** A stopwatch and a log field. Lower value than before — the
    bound it makes observable is currently unreachable — but it is what tells an operator which regime
    they are in once the interval is wired.
