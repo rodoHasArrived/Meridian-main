@@ -6185,6 +6185,8 @@ Meridian-main
 │   │   │   │   │   │   ├── report-writer-grid-diff-view.tsx
 │   │   │   │   │   │   ├── reporting-hub.test.tsx
 │   │   │   │   │   │   ├── reporting-hub.tsx
+│   │   │   │   │   │   ├── reporting-lineage-summary.test.tsx
+│   │   │   │   │   │   ├── reporting-lineage-summary.tsx
 │   │   │   │   │   │   ├── reporting-period-switcher.tsx
 │   │   │   │   │   │   ├── reporting-production-surface.test.tsx
 │   │   │   │   │   │   ├── reporting-production-surface.tsx
@@ -6496,6 +6498,8 @@ Meridian-main
 │   │   │   │   │   ├── report-writer-grid-diff.ts
 │   │   │   │   │   ├── report-writer-grid-format.test.ts
 │   │   │   │   │   ├── report-writer-grid-format.ts
+│   │   │   │   │   ├── reporting-datum.test.ts
+│   │   │   │   │   ├── reporting-datum.ts
 │   │   │   │   │   ├── reporting-distributions.ts
 │   │   │   │   │   ├── reporting-governance-api.test.ts
 │   │   │   │   │   ├── reporting-governance-api.ts
@@ -6503,16 +6507,24 @@ Meridian-main
 │   │   │   │   │   ├── reporting-governance-routes.ts
 │   │   │   │   │   ├── reporting-hub.test.ts
 │   │   │   │   │   ├── reporting-hub.ts
+│   │   │   │   │   ├── reporting-impact.test.ts
+│   │   │   │   │   ├── reporting-impact.ts
 │   │   │   │   │   ├── reporting-lifecycle.test.ts
 │   │   │   │   │   ├── reporting-lifecycle.ts
 │   │   │   │   │   ├── reporting-link-safety.test.ts
 │   │   │   │   │   ├── reporting-link-safety.ts
+│   │   │   │   │   ├── reporting-materiality.test.ts
+│   │   │   │   │   ├── reporting-materiality.ts
 │   │   │   │   │   ├── reporting-period-object.test.ts
 │   │   │   │   │   ├── reporting-period-object.ts
 │   │   │   │   │   ├── reporting-periods.test.ts
 │   │   │   │   │   ├── reporting-periods.ts
 │   │   │   │   │   ├── reporting-production.test.ts
 │   │   │   │   │   ├── reporting-production.ts
+│   │   │   │   │   ├── reporting-provenance-adapter.test.ts
+│   │   │   │   │   ├── reporting-provenance-adapter.ts
+│   │   │   │   │   ├── reporting-trace.test.ts
+│   │   │   │   │   ├── reporting-trace.ts
 │   │   │   │   │   ├── reporting-workspace.test.ts
 │   │   │   │   │   ├── reporting-workspace.ts
 │   │   │   │   │   ├── route-error-telemetry.test.ts

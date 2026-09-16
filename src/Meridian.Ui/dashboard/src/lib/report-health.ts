@@ -14,7 +14,10 @@
  *    single material failure cannot be diluted by everything else being green.
  *
  * `buildSourceCoverage` supplies the data dimension from report elements, counting
- * every element by its {@link ReportingDataState}.
+ * every element by its {@link ReportingDataState}. Pass a {@link MaterialityPolicy}
+ * in its options to have element variances measured against stated thresholds
+ * instead of trusting an upstream `hasMaterialException` flag; without one, the
+ * declaration-only behaviour is unchanged.
  */
 import {
   normalizeReportingControlState,
@@ -24,6 +27,7 @@ import {
   type ReportingControlState,
   type ReportingDataState
 } from "@/lib/reporting-lifecycle";
+import { assessVariance, type MaterialityPolicy } from "@/lib/reporting-materiality";
 import type { DesignSystemSeverity } from "@/design-system/status";
 
 export interface ReportElementInput {
@@ -38,6 +42,35 @@ export interface ReportElementInput {
   /** True when the element carries a material open exception. */
   hasMaterialException?: boolean | null;
   sectionId?: string | null;
+  /**
+   * Difference against the element's comparison baseline.
+   *
+   * Supplying this alongside a {@link SourceCoverageOptions.materialityPolicy} lets
+   * materiality be *computed* from stated thresholds rather than taken on trust from
+   * `hasMaterialException`. Elements without a variance stay out of the assessed
+   * population entirely.
+   */
+  variance?: number | null;
+  /** Denominator for the policy's portfolio-percentage test. */
+  portfolioValue?: number | null;
+  /** Performance impact of the variance, in basis points. */
+  performanceImpactBasisPoints?: number | null;
+}
+
+export interface SourceCoverageOptions {
+  /**
+   * When supplied, element variances are assessed against this policy and a computed
+   * material exception counts alongside the declared ones. Omitting it preserves the
+   * declaration-only behaviour exactly.
+   */
+  materialityPolicy?: MaterialityPolicy | null;
+}
+
+export interface MaterialElementRow {
+  elementId: string;
+  label: string;
+  /** Why the element is material: the declaration, or the breached threshold. */
+  reason: string;
 }
 
 export interface SourceCoverageBreakdownRow {
@@ -59,6 +92,13 @@ export interface SourceCoverageModel {
   criticalMissingCount: number;
   /** Exceptions the template flagged material, or attached to a critical element. */
   materialExceptionCount: number;
+  /** The elements behind `materialExceptionCount`, with the reason for each. */
+  materialElements: readonly MaterialElementRow[];
+  /**
+   * Elements carrying a variance that the supplied policy could not assess. Zero
+   * when no policy was supplied. These are not immaterial - they are unmeasured.
+   */
+  unassessedMaterialityCount: number;
   /**
    * Share of elements that resolved to a usable value. Stale and overridden
    * elements still carry a value and count as covered; missing ones do not.
@@ -87,11 +127,17 @@ function percentOf(part: number, total: number): number {
 }
 
 /** Counts report elements by data state and by source, deriving source coverage. */
-export function buildSourceCoverage(elements: readonly ReportElementInput[]): SourceCoverageModel {
+export function buildSourceCoverage(
+  elements: readonly ReportElementInput[],
+  options: SourceCoverageOptions = {}
+): SourceCoverageModel {
   const stateCounts = { ...EMPTY_STATE_COUNTS };
   const sourceTotals = new Map<string, { elementCount: number; currentCount: number }>();
+  const policy = options.materialityPolicy ?? null;
+  const materialElements: MaterialElementRow[] = [];
   let criticalMissingCount = 0;
   let materialExceptionCount = 0;
+  let unassessedMaterialityCount = 0;
 
   for (const element of elements) {
     const state = normalizeReportingDataState(element.dataState);
@@ -103,8 +149,37 @@ export function buildSourceCoverage(elements: readonly ReportElementInput[]): So
 
     // Materiality is explicit: an exception counts as material when the template
     // says so, or when it sits on an element the template marked critical.
-    if (state === "Exception" && (element.hasMaterialException === true || element.isCritical === true)) {
+    const declaredMaterial =
+      state === "Exception" && (element.hasMaterialException === true || element.isCritical === true);
+
+    // When a policy is supplied, a variance is measured against stated thresholds
+    // rather than taken on trust. An element carrying a variance the policy cannot
+    // assess is counted as unassessed - which is not the same as immaterial.
+    let assessedReason: string | null = null;
+    if (policy !== null && typeof element.variance === "number" && Number.isFinite(element.variance)) {
+      const assessment = assessVariance(
+        {
+          variance: element.variance,
+          portfolioValue: element.portfolioValue,
+          performanceImpactBasisPoints: element.performanceImpactBasisPoints
+        },
+        policy
+      );
+
+      if (assessment.outcome === "MaterialException") {
+        assessedReason = assessment.reason;
+      } else if (assessment.outcome === "NotAssessed") {
+        unassessedMaterialityCount += 1;
+      }
+    }
+
+    if (declaredMaterial || assessedReason !== null) {
       materialExceptionCount += 1;
+      materialElements.push({
+        elementId: element.elementId,
+        label: element.label,
+        reason: assessedReason ?? "Flagged material by the template."
+      });
     }
 
     const source = element.source?.trim() || "Unattributed";
@@ -139,6 +214,8 @@ export function buildSourceCoverage(elements: readonly ReportElementInput[]): So
     exceptionCount: stateCounts.Exception,
     criticalMissingCount,
     materialExceptionCount,
+    materialElements,
+    unassessedMaterialityCount,
     coveragePercent,
     bySource,
     summaryLabel: totalElements === 0

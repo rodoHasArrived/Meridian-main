@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Workstation Platform
-**Reviewed:** 2026-09-12
+**Reviewed:** 2026-09-16
 
 The reporting workstation treats Reporting as a production environment rather than a page that
 lists reports. Its purpose is to convert governed analytical state into controlled institutional
@@ -114,6 +114,97 @@ The freeze state decides what happens to those changes:
 A report that has never been reviewed has no baseline to diff against, so it reports no changes
 rather than reporting every change as new.
 
+## Materiality Policy
+
+Materiality is a stated policy rather than an upstream boolean. `reporting-materiality.ts` holds
+five independently optional thresholds — absolute variance, portfolio percentage, performance
+impact in basis points, missing-position share, and source freshness — so Meridian can distinguish
+a $847 difference that is within tolerance from a $284,711 difference that is a material exception,
+and name the threshold that decided it.
+
+Three properties matter:
+
+- **An unassessable difference is not within tolerance.** When no threshold governs a dimension, or
+  the inputs needed to apply it are missing, the outcome is `NotAssessed`, which carries a `review`
+  severity. Silence has to look different from a pass, because the two mean opposite things to a
+  preparer deciding whether to publish.
+- **Any single breach is material.** Dimensions are not averaged or voted on: a variance trivial in
+  dollars can still move performance past its threshold.
+- **A threshold admits its own value.** Comparison is `>`, not `>=`, so a $100,000 tolerance admits
+  a $100,000 difference.
+
+Default policies vary by report class — regulatory output is governed tightly, analytical output
+deliberately loosely — and a template overrides individual thresholds without discarding the rest.
+`resolveMaterialityPolicy` distinguishes an omitted override from an explicit `null`, which
+deliberately ungoverns a dimension.
+
+`buildSourceCoverage` accepts a policy as an option. With one, element variances are measured
+against the stated thresholds and a computed breach counts alongside the declared ones; without
+one, the previous declaration-only behaviour is unchanged. Elements carrying a variance the policy
+cannot assess are counted in `unassessedMaterialityCount`, which is not the same as immaterial.
+
+## Reporting Datum
+
+A number on a published page is not just a value. `reporting-datum.ts` models the atomic governed
+value with the four provenance attributes that travel with it to publication — source, state,
+as of, owner — plus its movement against a baseline and the materiality of that movement. Absent
+attributes render as "Not set" rather than being omitted, because a block with no recorded owner is
+a governance gap worth seeing.
+
+Block state is derived when the caller does not assert one: a moved value is `Changed`, an absent
+value is `Missing`, and an overridden or stale data state carries through. Defaulting to `Live`
+would let a moved number present as settled.
+
+The module also builds the **coverage field**, the repeated-mark summary used for completion,
+source coverage, and review coverage. It is capped at twenty marks; beyond that, marks become
+proportional and the label carries the real figures. Proportional marks round *down*, so a full
+field means the population is genuinely complete — rounding up would let 99% read as finished.
+
+## Lineage
+
+`reporting-trace.ts` orders a value's lineage across six stages: source, normalization,
+calculation, reconciliation, report block, publication. Two properties carry the model:
+
+- **Gaps are stated, not skipped.** A trace with no reconciliation is a six-stage trace with a hole
+  in it, not a five-stage trace. Source and report block are always required; callers name any
+  further stage their report class requires. A step at an unrecognised stage is retained as
+  unresolved rather than dropped or placed by guesswork.
+- **Calculations must tie.** `buildCalculationTrace` checks a component breakdown against the total
+  it claims to explain and reports any residual explicitly, at `action` severity. A component with
+  no usable value is excluded and named rather than treated as zero, which would manufacture a
+  tie-out that is not real.
+
+`buildDownstreamUsage` answers the other direction — which reports consume a value — and sorts
+published consumers first, because a change touching a published report is a restatement decision
+rather than an edit.
+
+`reporting-provenance-adapter.ts` maps the workspace's existing record graph
+(`reportLineProvenanceExplorer`) onto these stages. That graph already carries real provenance; what
+it lacks is stage ordering. The read service emits a placeholder node for every relationship slot it
+cannot fill, so the adapter reports those as gaps rather than as completed stages — a node counts as
+a placeholder only when its href is empty *and* its label is identical to its node type.
+
+`ReportingLineageSummary` renders that adapted lineage inside the existing Report-Line Provenance
+Explorer, which previously had no children. The explorer already draws the record graph; what it
+could not show is *where a chain stops*, since a record with no reconciliation looks structurally
+identical to one that has it. The summary places each record on the six-stage order and names the
+stages that produced nothing. It is the only one of these modules currently rendered — the rest are
+model-layer ahead of their surfaces, because the reporting workspace read model does not yet return
+report-element-level data.
+
+## Impact
+
+`reporting-impact.ts` shows what a change touches before it is committed: a source replacement
+(#71) or an upstream event propagating into the reporting estate (#115). The controlling rule is
+that **undeterminable impact counts as affected** — a block whose dependency cannot be evaluated is
+reported as impacted and flagged unresolved, never quietly dropped. A preview that understates its
+own blind spots is worse than none, because it is acted on with confidence.
+
+Blocks are ranked published-first, then unresolved, then expected. A replacement naming the same
+source on both sides reports as no change rather than as an impact-free change. Event impact counts
+distinct reports that had already reached a reviewed state, since those are where a moved value
+invalidates work somebody already signed off.
+
 ## Surface Composition
 
 `components/meridian/reporting-production-surface.tsx` renders the control surface, and
@@ -132,6 +223,12 @@ omitted entirely until at least one report has a known owner.
 | Report health, source coverage, publication gates | `src/Meridian.Ui/dashboard/src/lib/report-health.ts` |
 | Change since review, freeze admission | `src/Meridian.Ui/dashboard/src/lib/report-change-since-review.ts` |
 | Production pipeline lanes and control-surface model | `src/Meridian.Ui/dashboard/src/lib/reporting-production.ts` |
+| Materiality policy and threshold assessment | `src/Meridian.Ui/dashboard/src/lib/reporting-materiality.ts` |
+| Reporting datum, provenance, coverage field | `src/Meridian.Ui/dashboard/src/lib/reporting-datum.ts` |
+| Lineage stages, calculation tie-out, downstream usage | `src/Meridian.Ui/dashboard/src/lib/reporting-trace.ts` |
+| Record-graph to lineage adapter | `src/Meridian.Ui/dashboard/src/lib/reporting-provenance-adapter.ts` |
+| Source-replacement and event impact | `src/Meridian.Ui/dashboard/src/lib/reporting-impact.ts` |
+| Lineage summary surface | `src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.tsx` |
 | Control surface component | `src/Meridian.Ui/dashboard/src/components/meridian/reporting-production-surface.tsx` |
 | View-model adapter | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.production-surface.ts` |
 
