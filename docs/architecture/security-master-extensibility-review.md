@@ -5320,19 +5320,40 @@ catalog already declares the predicate.
 > asking whether a module key can appear in a document that is not an economic-terms document. Both
 > times the verification checked that the code did what it said, not that what it said was enough.
 >
-> **Second review round, same day.** A further five findings landed, all five correct, and they
-> produced **E5** (the canonical registry is seeded at startup and on two write paths, and nowhere
-> else) plus a refinement to E1's staleness bound. Three of the five caught *factual* errors in this
-> pass's own corrections, all with one cause worth naming because it is a method failure rather than
-> a judgement call: **class-level field claims were read with a fixed-window `grep -A 30` that ran
-> past the end of one schema block into the next.** That produced the false claim that
-> `CertificateOfDeposit`, `CommercialPaper` and `TreasuryBill` declare `startDate` (the field belongs
-> to `Repo`, the block immediately after `TreasuryBill`), and E4's collision inventory that both
-> omitted four affected classes and wrongly included `Swap`. A fourth finding showed the E4 remedy —
-> a `ValueKind.Object` shape check — would have broken every all-null economic document. The
-> corrections are in place at each site. The general rule this pass should have followed, and the
-> next one must: **enumerate a declaration block, never a line window**, and when the claim is "class
-> X declares field Y," parse the block rather than grepping near it.
+> **Second review round, same day.** A further five findings landed, all five correct, producing
+> **E5** and a refinement to E1's bound. Three caught *factual* errors in this pass's own
+> corrections, all from one cause: **class-level field claims were read with a fixed-window
+> `grep -A 30` that ran past the end of one schema block into the next.** That produced the false
+> claim that `CertificateOfDeposit`, `CommercialPaper` and `TreasuryBill` declare `startDate` (the
+> field belongs to `Repo`, the block immediately after `TreasuryBill`) and an E4 inventory that both
+> omitted four affected classes and wrongly included `Swap`. A fourth showed E4's `ValueKind.Object`
+> remedy would have broken every all-null economic document. Rule: **enumerate a declaration block,
+> never a line window.**
+>
+> **Third review round, same day — and the worst of the three.** Five more findings, all correct.
+> They establish that **E3 was already fixed on `main` before this pass filed it** (`8b1981293`,
+> *"Close projection cache replacement race"*, arrived in the `origin/main` merge that preceded the
+> filing commit), and that the remedy E3 prescribed would not have closed the race anyway. E3 is
+> withdrawn in full below. They also found a **ninth** colliding class that E4's twice-corrected
+> inventory still missed and that breaks its framing (`PrivateCompanyEquity`, colliding on `issuer`,
+> with no `maturity` at all); that E4's marker remedy rejects every pre-marker document; that E5's
+> remedy cannot retire anything because the registry seed merges rather than replaces; and that
+> `ProjectionCacheRefreshMinutes` **has no production binding at all**, so the periodic re-warm this
+> pass analysed at length is unreachable outside tests.
+>
+> The second process rule, and the one that cost most: **after taking a merge, re-read every file a
+> pending finding rests on.** This pass merged 346 commits, inspected the merge only for *conflicts*,
+> and let conflict-freedom stand in for unchanged-ness. `SecurityMasterProjectionCache.cs` changed by
+> 144 insertions in that merge and conflicted with nothing, because this pass had not touched it.
+> `git diff <pre-merge-head>..HEAD -- <files the findings cite>` would have caught it in one command;
+> it was run only after review forced the question, and it then showed the damage was confined to
+> that one file.
+>
+> Taken together the three rounds say something this document should not soften: **of the five
+> findings this pass filed, one was stale, one had a wrong inventory twice over, and three had
+> remedies that would not have worked.** The findings that survive — E1, E2, E4, E5 — survive on
+> their observations, not on their prescriptions, and every prescription in this pass has now been
+> corrected at least once.
 
 ### Claimed closures, independently re-verified
 
@@ -5415,8 +5436,29 @@ event loads the same way; and log the warm's elapsed time alongside its count so
 is observable. Until at least the last of those lands, the documented bound should be stated as
 interval-plus-warm-duration rather than interval.
 
-**Refined 2026-09-16, after review.** Even that bound holds only while a warm finishes inside the
-interval. `RunPeriodicRefreshAsync` drives a single `PeriodicTimer` (`:84-94`), and
+**Corrected 2026-09-16, after review: the periodic re-warm cannot be turned on.**
+`ProjectionCacheRefreshMinutes` has **no production binding anywhere in the repository**.
+`StorageFeatureRegistration.CreateSecurityMasterOptions` constructs `SecurityMasterOptions` setting
+`ConnectionString`, `Schema`, `SnapshotIntervalVersions` and `PreloadProjectionCache` — each from an
+environment variable — and never assigns the refresh interval; `StrategyFeatureModule` likewise; and
+there is no configuration-binding call for the type. The property therefore holds its default of `0`
+in every production composition, and the `> 0` guard at
+`SecurityMasterProjectionWarmupService.cs:71` never opens. **`RunPeriodicRefreshAsync` is unreachable
+outside tests.**
+
+That reframes this finding and E5 rather than retiring either. The warm still runs at every process
+start, every full rebuild and every quality scan, so E1's `5N + 1` cost stands unchanged on the paths
+that do execute. What is not true, and what the option's own summary and the cache's class comment
+both assert, is that an operator can bound cross-node staleness by setting an interval: that remedy is
+documented, validated by `SecurityMasterOptionsValidator`, and not wired. On a multi-node deployment
+the actual bound is *unbounded* — each node's cache and canonical registry hold what they built at
+startup plus that node's own writes, with no mechanism to converge. The fix is three lines (an
+`MERIDIAN_SECURITY_MASTER_CACHE_REFRESH_MINUTES` parse beside the four that are already there, in both
+compositions, plus the documented key), and until it lands the two comments that promise the bound
+should say the setting is not currently reachable.
+
+**Refined 2026-09-16, after review.** *Conditional on the setting ever being wired:* even the
+interval-plus-warm bound holds only while a warm finishes inside the interval. `RunPeriodicRefreshAsync` drives a single `PeriodicTimer` (`:84-94`), and
 `WaitForNextTickAsync` does not queue elapsed periods — ticks that pass during a long warm are
 coalesced, so once a warm overruns the interval the next `await` returns immediately and warms run
 effectively back to back. A write committed just after its security was read by warm *N* is not
@@ -5502,50 +5544,58 @@ The underlying symptom is unchanged and is the one C1/D1 name from the other end
 spelling is not canonical and not uniform, so a cross-class rule cannot be written against it. Here
 that surfaces not as a wrong guess but as an absent field.
 
-### E3 — A write that commits during a warm is dropped from the cache, and the cache's comment reasons past the window
+### E3 — WITHDRAWN: the cache replacement race was real, and was already closed before this pass filed it
 
-*Filed 2026-09-16, after review, correcting this pass's own smaller note. The earlier note declared
-the cache sound and told future passes to skip it; the finding below is what re-reading it produced.*
+**Withdrawn 2026-09-16, after review. This finding should never have been filed in the state it was
+filed, and the reason is a process failure worth more than the finding was.**
 
-`SecurityMasterProjectionCache.ReplaceAll` (`:47-56`) builds a replacement dictionary and swaps the
-`volatile` reference. Its comment concedes the interleaving and then dismisses it:
+What the finding said: a write committing during a warm has its `Upsert` land in the outgoing
+dictionary, `ReplaceAll` discards it, `ProjectionCacheRefreshMinutes` defaults to 0 so nothing
+corrects it, and the stale entry propagates into `SecurityProjectionRebuildHandler` and the
+canonical-symbol registry. **All of that was true of the implementation this pass read on
+2026-09-11**, at `e173437e`, and the reasoning in the class comment did argue past the window.
 
-> An `Upsert` racing a `ReplaceAll` may land in the outgoing dictionary and be superseded by the
-> replacement — acceptable, because ReplaceAll is only ever fed a complete rebuild from the durable
-> store, which already contains any write committed before the rebuild read.
+It is not true of the code the finding was filed against. `8b1981293` — *"Close projection cache
+replacement race"* — landed on `main` and reached this branch in the `origin/main` merge
+(`a873f96b4`, 2026-09-16). E3 was filed in `189f961f9`, **after** that merge. The repaired
+implementation was already in the working tree, and this pass described the one it had read five days
+earlier.
 
-The justification is true of writes committed **before the rebuild read** and says nothing about
-writes committed **after the read and before the swap**. That window is not instantaneous: it is the
-whole duration of `BuildWarmSetAsync`, which is E1's serial `5N + 1` queries. Concretely —
+The repair closes the race properly, and closes it in a way this pass's proposed remedy would not
+have. `ReplaceAll` (`SecurityMasterProjectionCache.cs:131-182`) takes `_replacementGate`, opens a
+replacement-scoped capture under `_writeGate`, builds the candidate map outside the gate so a lazy
+source cannot deadlock a writer, then — under `_writeGate` — replays every captured upsert into the
+candidate by version (`upsert.Version >= candidate.Version`), swaps the reference and clears the
+capture in the same critical section. `Upsert` (`:70-83`) writes the live map and the capture under
+the same gate.
 
-1. `BuildWarmSetAsync` reads security S and produces `R_old`.
-2. A write to S commits, and `SecurityMasterService` calls `_projectionCache?.Upsert(R_new)`
-   (`:202`, `:281`, `:361`) — which lands in the **outgoing** dictionary.
-3. `WarmAsync` calls `ReplaceAll` (`SecurityMasterProjectionService.cs:49`), swapping in the
-   replacement built from the pre-write read.
-4. `R_new` is gone from the cache. The durable store has it; the cache serves `R_old`.
+**This pass proposed "one comparison per key inside `ReplaceAll`, no new synchronisation." That was
+wrong on its own terms**, independently of the finding being stale: a version comparison without a
+gate leaves a write that lands *after* its key is compared and *before* the reference swap still
+discarded. Closing the window requires exactly the capture-and-serialise protocol the repair
+implements. So this pass filed a defect that was already fixed, and prescribed a fix that would not
+have fixed it.
 
-Two things make this worse than a transient miss. First, **`ProjectionCacheRefreshMinutes` defaults
-to 0**, so there is no periodic re-warm to correct it — the stale entry persists until the next
-write to that security or the next full rebuild, which on a reference-data record can be a long
-time. Second, the stale entry **propagates**: `SecurityProjectionRebuildHandler` seeds from the
-cache (`_cache.Get(evt.SecurityId)`, `:51`) and upserts what it derives (`:61`), and
-`SecurityMasterCanonicalSymbolSeedService` seeds the canonical-symbol registry from the cache, so a
-dropped alias update can reach symbol resolution rather than staying a latency artifact.
+**The process failure.** This pass merged 346 commits from `origin/main` and then wrote findings
+about files it had read before the merge, without re-reading them. The merge diff was inspected only
+for *conflicts* — which were confined to two generated dashboards — and conflict-freedom was allowed
+to stand in for unchanged-ness. Those are different properties: `SecurityMasterProjectionCache.cs`
+changed by 144 insertions in that merge and conflicted with nothing, because this pass had not
+touched it.
 
-The window is narrow at startup — `WarmAsync` is awaited inside `StartAsync` — but the same
-`BuildWarmSetAsync` → `ReplaceAll` pair runs on demand in `SecurityMasterRebuildOrchestrator`
-(`:53-56`) while the process is serving, which is where the race is live.
+The rule, which belongs beside the block-versus-window rule in the method note: **after taking a
+merge, re-read every file a pending finding rests on, and anchor findings to the post-merge tree.**
+A cheap mechanical form is `git diff <pre-merge-head>..HEAD -- <files the findings cite>`; run
+against this pass it would have flagged the cache immediately. It was run only after review forced
+the question, and it showed the damage was confined: of the eight files this pass's findings rest on,
+only the cache changed materially, which is why E1, E2 and E4 stand unaltered by this withdrawal and
+E5 stands on a `SecurityMasterService` diff that touches comments and an alias exception.
 
-This is not a call to add locking around a hot read path. The cheap, in-character fix is to make the
-swap version-aware: `ReplaceAll` already has both dictionaries in hand, so it can keep an incoming
-entry whose `Version` exceeds the replacement's rather than discarding it, which costs one
-comparison per key and needs no synchronisation. The alternative is to record a generation counter
-taken before the rebuild read and re-apply any `Upsert` newer than it. Either way the comment must
-stop describing the case as acceptable, because the reason it gives does not cover the case that
-actually occurs.
+What remains true and is not withdrawn: the *consequence* chain the finding described — that a stale
+cache entry propagates through `SecurityProjectionRebuildHandler` (`:51`) and the canonical-symbol
+registry (`:66`) — is unchanged and is why E5 matters independently of this.
 
-### E4 — The family discriminator matches on key presence, and `maturity` is both a module name and a flat field name
+### E4 — The family discriminator matches on key presence, and module names collide with flat field names
 
 *Filed 2026-09-16, after review, correcting this pass's own D2 verification row.*
 
@@ -5556,20 +5606,29 @@ key. The test is `payload.TryGetProperty(module, out _)` — **presence, discard
 `EconomicTermsModules` is `BridgedModules ∪ DroppedModules` (`:44-45`, `:52-53`), whose first entry
 is `maturity`.
 
-`maturity` is also a flat-family field name, where it holds a **scalar** date rather than the nested
-object the economic family uses. **Corrected 2026-09-16, after review:** the first filing listed
-`Bond`, `CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill` and `Swap`, and was wrong in both
-directions. Enumerated properly from `SecurityAssetTermsSchema`, **eight** classes declare a scalar
-`maturity`:
+Module names collide with flat-family field names, where the flat side holds a **scalar** rather than
+the nested object the economic family uses.
 
-`Bond`, `Deposit`, `CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill`, `OtherSecurity`,
-`DirectLoan`, `StructuredCredit`.
+**Corrected twice, 2026-09-16, after review.** The first filing named `Bond`,
+`CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill` and `Swap` — wrong in both directions. The
+second corrected that to eight `maturity`-bearing classes but kept framing the defect as a `maturity`
+problem, which understated it. Enumerated properly, by intersecting every flat class's declared
+fields with `EconomicTermsModules`, **nine** classes collide across **two** module names:
 
-`Swap` is **not** among them — it declares `effectiveDate` and `maturityDate`, neither of which is a
-module key, so it does not collide. The first filing omitted four affected classes and invented a
-fifth, which would have scoped any follow-up coverage test wrongly in both directions. `OtherSecurity`
-matters most of the four that were missed: it is the catch-all every unrecognized class degrades to
-on read.
+| Module name | Flat classes declaring it as a scalar |
+| --- | --- |
+| `maturity` | `Bond`, `Deposit`, `CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill`, `OtherSecurity`, `DirectLoan`, `StructuredCredit` |
+| `issuer` | `PrivateCompanyEquity` |
+
+`Swap` is **not** affected — it declares `effectiveDate` and `maturityDate`, neither a module key.
+
+The `issuer` case is the one that changes the shape of the finding rather than its size.
+`PrivateCompanyEquity` has no `maturity` at all, so a collision framed around maturity would have
+declared it safe; it is misclassified and emptied all the same, via a `DroppedModules` entry. **The
+exposed surface is the whole intersection of `EconomicTermsModules` (fourteen names) with every flat
+class's field set**, and it grows whenever either side gains a name — silently, because nothing tests
+the intersection. `OtherSecurity` remains the most consequential single entry: it is the catch-all
+every unrecognized class degrades to on read.
 
 So for a flat payload stamped with the reserved version 2 and carrying a `maturity` key:
 
@@ -5617,9 +5676,26 @@ about the integer, now recurring one level up. A discriminator that additionally
 serializer's null-only shape would also work, but it is strictly more fragile than a marker and
 encodes the same coupling.
 
-Two regression tests, not one: a flat document with a scalar `maturity` stamped 2, asserted to pass
-through with its version intact rather than being emptied; and an all-null economic document,
-asserted still to be recognised as economic-terms.
+**The marker needs a compatibility plan, which this finding first omitted.** *Added 2026-09-16, after
+review.* `BuildEconomicTermsJson` persists `schemaVersion` and module keys and nothing else, so no
+economic-terms document written before the marker exists can carry it. A discriminator that *requires*
+the marker therefore rejects every pre-marker v2 document — including the imported and legacy records
+that exercise this path most — routing them to the flat normalizer and failing the guard. That is the
+same failure mode as the `ValueKind.Object` proposal, reached from the other direction: a stricter
+test that breaks the documents already in flight.
+
+So the marker must be additive: recognise a document as economic-terms if it carries the marker **or**
+satisfies the existing presence test, and backfill or migrate stored payloads before the legacy arm is
+retired. The legacy arm keeps E4's defect alive for pre-marker documents, which is an argument for
+doing the backfill rather than for skipping the marker — and the order matters: marker first, backfill
+second, legacy arm removed third, each provable on its own.
+
+Regression coverage, now four cases rather than one: a flat document with a scalar `maturity` stamped
+2; a flat `PrivateCompanyEquity` with a scalar `issuer` stamped 2; an all-null economic document; and
+a pre-marker object-valued economic document. The first two must pass through with their version
+intact; the last two must still be recognised as economic-terms. A table-driven case over the
+module-name/flat-field intersection would generate the first two and fail when either side gains a
+colliding name.
 
 ### E5 — The canonical symbol registry is seeded at startup and on two write paths, and nowhere else
 
@@ -5653,13 +5729,33 @@ It is **not** invoked by:
 The asymmetry is the tell: two write paths were given a background reseed and the others were not,
 which reads as an omission rather than a decision, and nothing in the code says which it is.
 
-Fixing E3 does not fix this. E3 makes the cache correct; E5 is about what is derived from the cache
-and when. The remedy is to reseed after every successful warm — `RunPeriodicRefreshAsync` is one line
-from parity with `StartAsync` — and to give the alias and deactivate paths the same
-`TryReseedRegistryInBackground()` the other two have, or, better, to make registry seeding a
-subscriber to cache mutation rather than something each call site must remember to invoke. The
-recurring complaint of this document applies unchanged: adding a thing means editing N
-hand-maintained places, and here one of the N was missed four times.
+The cache-correctness half of this is now closed independently: the projection cache's replacement
+race was repaired on `main` by `8b1981293` (see the withdrawn E3). E5 is unaffected by that, because
+it is about what is derived from the cache and when, not about the cache's own consistency.
+
+**Corrected 2026-09-16, after review: reseeding more often does not fix it.** The first wording
+prescribed "the same `TryReseedRegistryInBackground()` the other two have" for the alias and
+deactivate paths. That remedy cannot retire anything. `SeedAsync` reaches the registry through
+`RegisterBatchAsync` (`SecurityMasterCanonicalSymbolSeedService.cs:176`), which calls
+`ImportSymbolsAsync(entries, merge: true)` (`CanonicalSymbolRegistry.cs:107`), and `MergeEntry`
+(`SymbolRegistryService.cs:845+`) fills null fields and **adds** aliases — it never removes an alias,
+never deactivates an entry, and warns-and-retains on a conflicting `SecurityId` rather than taking the
+incoming one. A security omitted from the seeded snapshot is therefore not deleted from the registry;
+it simply stops being refreshed. So calling the current seed from four call sites instead of two
+propagates *additions* faster and still never retires a superseded ticker or a removed alias — which
+is most of what the deactivate and alias-correction paths need it for.
+
+That makes the remedy structural rather than a matter of call-site parity. The registry needs a
+**source-owned replace** — an operation that treats the seeded snapshot as authoritative over the
+subset it owns, removing or deactivating what the snapshot omits — in the shape `ReplaceAll` already
+has on the projection cache, and for the same reason: a rebuild is authoritative about absence, not
+only about presence. Given that, seeding after every successful warm becomes worth doing; without it,
+the extra invocations mostly add write traffic.
+
+The recurring complaint of this document still applies to the call-site asymmetry — adding a thing
+means editing N hand-maintained places, and one of the N was missed in four spots — but it is the
+smaller half. Making registry seeding a subscriber to cache mutation would fix the asymmetry; only
+replace semantics fixes the staleness.
 
 ### Smaller notes, not filed as findings
 
@@ -5692,38 +5788,43 @@ hand-maintained places, and here one of the N was missed four times.
 
 Read as a delta on the standing lists.
 
-*Re-ordered 2026-09-16, across two review rounds. E3, E4 and E5 did not exist when this list was
-first written, and three of the remedies it described do not work; all are corrected in place above.*
+*Rewritten 2026-09-16, across three review rounds. E4 and E5 did not exist when this list was first
+written, E3 has since been withdrawn as already-fixed, and every remedy the original list named has
+been corrected at least once; all corrections are in place above.*
 
 1. **Everything still stays behind the standing correctness items** — the open halves of P1, P3b and
    P4, and the B-series accounting findings.
-2. **Give the payload families a non-colliding marker (E4).** Latent but ranked first of the E
-   series: a reserved-version guard that fails on the first document it is ever asked to protect, at
-   a cost of every economic term on eight flat classes. *Not* the `ValueKind.Object` check this pass
-   first proposed — that breaks all-null economic documents; see the corrected remedy. Two regression
-   tests, not one.
-3. **Reseed the canonical registry after every successful warm, and on alias and deactivate writes
-   (E5).** The periodic re-warm is one line from parity with `StartAsync`, and it is the mechanism
-   this subsystem documents as its cross-node staleness bound — today it refreshes the cache and
-   leaves symbol resolution at its startup contents.
-4. **Make the cache swap version-aware (E3).** This pass's one *live* cache defect, and it displaces
-   the rest of the list. One comparison per key inside `ReplaceAll`, no new synchronisation, and it
-   closes a path on which a committed write is dropped from the cache, persists (refresh defaults to
-   0) and propagates into the rebuild handler and the canonical-symbol registry.
-5. **Log the warm's elapsed time, and correct the staleness bound (E1).** A stopwatch and a log
-   field, plus the comment corrections. It matters more than it first appeared: the bound degrades
-   toward *twice* the warm duration once a warm overruns the refresh interval, and without the log an
-   operator cannot tell which regime they are in.
-6. **Decide what VC002 can actually check (E2).** Demoted, and reframed: this is no longer "name each
-   class's start date" but "three of the five `RequiresMaturity` classes have no start-date field in
-   the schema or the F# records at all." Either add and map one, or scope the rule to `Bond` and
-   `Swap` and say so. A gate change alone still buys nothing.
+2. **Wire `ProjectionCacheRefreshMinutes` into the two compositions, or stop promising it (E1).**
+   Promoted to the top of the E series by the third review round: the option is declared, validated,
+   documented in two comments as the bound on cross-node staleness, and bound to nothing, so the
+   periodic re-warm never runs outside tests. Three lines beside the four environment parses already
+   in `CreateSecurityMasterOptions`, in both compositions, plus the documented key. Until then a
+   multi-node deployment has no convergence mechanism at all and the two comments overstate what is
+   available.
+3. **Give the payload families a non-colliding marker, additively (E4).** Latent but the largest
+   blast radius: a reserved-version guard that fails on the first documents it would ever protect,
+   across nine flat classes and two module names. Must be additive — marker *or* the existing
+   presence test — with a backfill before the legacy arm retires, or it rejects every pre-marker
+   document. Four regression cases, not one. *Not* the `ValueKind.Object` check this pass first
+   proposed.
+4. **Give the canonical registry replace semantics, then reseed after every warm (E5).** In that
+   order: the current seed merges and never retires, so extra invocations propagate additions faster
+   and still leave superseded tickers and removed aliases resolving. Reseeding after every successful
+   warm is worth doing once replace exists, and mostly write traffic before then.
+5. **Log the warm's elapsed time (E1).** A stopwatch and a log field. Lower value than before — the
+   bound it makes observable is currently unreachable — but it is what tells an operator which regime
+   they are in once the interval is wired.
+6. **Decide what VC002 can actually check (E2).** Three of the five `RequiresMaturity` classes have
+   no start-date field in the schema or the F# records at all. Either add and map one, or scope the
+   rule to `Bond` and `Swap` and say so. A gate change alone still buys nothing.
 7. **Batch the universe load (E1).** The durable fix: one query per table for the universe instead
    of three per security, plus batched snapshot and event loads. Needs a shared session or a set-based
-   store API, not a parameter change. Larger than the rest of this pass and worth sizing against N6,
-   which it shares a path with.
+   store API, not a parameter change. Worth sizing against N6, which it shares a path with.
 8. **Re-rank D1's lossless half downward.** Per the narrowing above, it guards a payload shape no
    current writer emits. It stays open as the codec-generation seam, not as a live data-loss risk.
+
+*E3 is absent from this list because it is withdrawn: the defect it named was closed on `main` by
+`8b1981293` before this pass filed it. No action is outstanding.*
 
 ---
 
