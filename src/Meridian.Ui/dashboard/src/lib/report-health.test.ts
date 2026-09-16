@@ -6,6 +6,7 @@ import {
   type ReportElementInput,
   type ReportHealthInput
 } from "@/lib/report-health";
+import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
 
 function element(overrides: Partial<ReportElementInput> = {}): ReportElementInput {
   return {
@@ -240,5 +241,93 @@ describe("gate policy by report class", () => {
     expect(model.gates.find((entry) => entry.key === "dataCoverage")?.status).toBe("Passed");
     expect(model.gates.find((entry) => entry.key === "approval")?.status).toBe("Passed");
     expect(model.canPublish).toBe(true);
+  });
+});
+
+describe("buildSourceCoverage materiality policy", () => {
+  const POLICY = defaultMaterialityPolicyForClass("Accounting");
+
+  it("leaves declaration-only behaviour unchanged when no policy is supplied", () => {
+    const rows = [
+      element({ elementId: "a", dataState: "Exception", hasMaterialException: true }),
+      element({ elementId: "b", dataState: "Exception" }),
+      element({ elementId: "c", variance: 5_000_000 })
+    ];
+
+    const coverage = buildSourceCoverage(rows);
+
+    expect(coverage.materialExceptionCount).toBe(1);
+    expect(coverage.unassessedMaterialityCount).toBe(0);
+    expect(coverage.materialElements.map((row) => row.elementId)).toEqual(["a"]);
+  });
+
+  it("counts a computed breach alongside the declared ones", () => {
+    const rows = [
+      element({ elementId: "declared", dataState: "Exception", hasMaterialException: true }),
+      element({ elementId: "computed", variance: 284_711 }),
+      element({ elementId: "tolerable", variance: 847 })
+    ];
+
+    const coverage = buildSourceCoverage(rows, { materialityPolicy: POLICY });
+
+    expect(coverage.materialExceptionCount).toBe(2);
+    expect(coverage.materialElements.map((row) => row.elementId)).toEqual(["declared", "computed"]);
+    expect(coverage.materialElements[1]?.reason).toContain("$100,000");
+  });
+
+  it("does not double-count an element that is both declared and computed material", () => {
+    const rows = [
+      element({
+        elementId: "both",
+        dataState: "Exception",
+        hasMaterialException: true,
+        variance: 284_711
+      })
+    ];
+
+    const coverage = buildSourceCoverage(rows, { materialityPolicy: POLICY });
+
+    expect(coverage.materialExceptionCount).toBe(1);
+    expect(coverage.materialElements).toHaveLength(1);
+  });
+
+  it("counts an unassessable variance as unmeasured, not as immaterial", () => {
+    const ungoverned = { ...POLICY, absoluteVariance: null, portfolioPercent: null, performanceImpactBasisPoints: null };
+    const coverage = buildSourceCoverage([element({ elementId: "a", variance: 5_000_000 })], {
+      materialityPolicy: ungoverned
+    });
+
+    expect(coverage.materialExceptionCount).toBe(0);
+    expect(coverage.unassessedMaterialityCount).toBe(1);
+  });
+
+  it("keeps elements without a variance out of the assessed population", () => {
+    const coverage = buildSourceCoverage([element({ elementId: "a" }), element({ elementId: "b" })], {
+      materialityPolicy: POLICY
+    });
+
+    expect(coverage.unassessedMaterialityCount).toBe(0);
+    expect(coverage.materialExceptionCount).toBe(0);
+  });
+
+  it("feeds the computed count into the publication gate", () => {
+    const rows = [element({ elementId: "computed", variance: 284_711 })];
+    const coverage = buildSourceCoverage(rows, { materialityPolicy: POLICY });
+
+    const health = buildReportHealth({
+      reportClass: "Accounting",
+      coverage,
+      requiredSectionCount: 1,
+      completeSectionCount: 1,
+      requiredCommentaryCount: 0,
+      completeCommentaryCount: 0,
+      reviewedElementCount: 1,
+      isReviewComplete: true,
+      isApproved: true
+    });
+
+    const exceptionGate = health.gates.find((gate) => gate.key === "criticalExceptions");
+    expect(exceptionGate?.status).toBe("Failed");
+    expect(health.canPublish).toBe(false);
   });
 });

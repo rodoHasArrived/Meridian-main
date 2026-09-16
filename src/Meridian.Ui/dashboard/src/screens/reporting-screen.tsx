@@ -11,6 +11,7 @@ import { humanizeStatus, SeverityBadge } from "@/components/operations";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
+import { ReportingLineageSummary } from "@/components/meridian/reporting-lineage-summary";
 import { ReportingProductionSurface } from "@/components/meridian/reporting-production-surface";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -933,7 +934,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
           appliedFilters={[]}
           explorer={reportingData.reportLineProvenanceExplorer}
         >
-          {null}
+          <ReportingLineageSummary
+            graph={reportingData.reportLineProvenanceExplorer.recordGraph}
+            requiredStages={["Reconciliation"]}
+          />
         </FinancialRecordExplorerShell>
       ) : null}
 
