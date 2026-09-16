@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-10 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-16 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-10; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -70,6 +70,18 @@ risks that compound as new asset classes land.
 > sentence above: that is now true twice over, once per model. That pass also files two small
 > correctness back-ports of rules the subsystem has already made and documented elsewhere — an
 > unguarded create path (C4) and two unguarded numeric JSON readers (C5).
+
+> **Update 2026-09-16.** The architectural assessment stands. The
+> [2026-09-16 pass](#scheduled-institutional-requirements-pass--2026-09-16) reviews the
+> identifier-ambiguity work that landed since 2026-09-10 — the 2026-08-27 priority 1 — and finds
+> it well built and half-scoped: aliases, the other resolution source, were the half that pass
+> explicitly named and did not get, and they remain without a uniqueness index, ambiguity
+> detection, a typed kind, or an ordered resolution query (E1). Underneath it the subsystem
+> carries **two identifier normalizers with different semantics** — the F# one used by the
+> write-side duplicate and expiry guards is kind-blind (E2) — and **no write path enforces the
+> check digits** the "What's Solid" section credits it with (E3). Two coverage surfaces render an
+> unmodelled asset class as green rather than uncovered, and the test that would have caught the
+> thirteen-class gap asserts one element (E6).
 
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
@@ -213,6 +225,15 @@ validation — ISIN, CUSIP, SEDOL, LEI (ISO 17442 mod 97-10), FIGI, OCC OSI, RIC
 namespacing, aliases have their own timeline, and there is a dedicated
 `SecurityMasterHistoricalSymbolTimelineResolver` plus a `SecurityMasterTickerChangeService`. Point-
 in-time symbol resolution is a first-class concern rather than a lookup table.
+
+> **Qualified 2026-09-16 — "check-digit validation" is a report, not a write gate.** The ten
+> validators in `SecurityIdentifierNormalizer.TryValidateFormat` are real and correct, but no
+> Security Master write path invokes them: the F# `validateIdentifier`
+> (`SecurityMasterCommands.fs:366-378`) checks blankness, provider and date range only, the F#
+> `validateIsin`/`validateCusip`/`validateLei` have zero call sites, and `TryValidateFormat`'s only
+> non-test callers are `SecurityValidationService.cs:350` (which emits a report issue) and
+> `Meridian.Risk/Rules/OrderNotionalResolver.cs:294`. A malformed ISIN is accepted, persisted,
+> indexed and resolvable. See [E3](#e3--no-write-path-enforces-identifier-check-digits).
 
 **Validation is data-driven, not hand-coded per class.** `AssetClassValidatorRegistry` composes
 declarative `FieldRule` / `DateOrderRule` specs per asset class
@@ -5280,6 +5301,408 @@ remains the authoritative full run.
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-09-16
+
+Pinned at `b8dc61ff`, which is also `origin/main`. Unlike the 2026-09-10 pass, **Security Master
+source did change**: five non-merge commits plus three branch merges landed the indexed
+identifier-candidate lookup (`PostgresSecurityMasterStore.IdentifierCandidates.cs`, new), a
+reworked `SecurityMasterConflictDetection` / `SecurityMasterConflictService` /
+`PostgresSecurityMasterConflictService` (+855 lines between them), the alias write guard, the
+projection-cache replacement protocol, and `SecurityMasterRebuildOrchestrator`'s deferred
+conflict-scan retry.
+
+That work is the **2026-08-27 pass's priority 1** arriving. It is worth saying plainly that it
+arrived well: the detection is keyed through `SecurityIdentifierNormalizer`, the O(N²)
+full-universe rebuild scan is replaced by an indexed chunked lookup, the shared
+`IsExcludedFromAmbiguityPairing` contract means the lookup and the detection loop cannot disagree
+about which claims participate, the conflict ids are now escaped against delimiter collision, and
+`ReplaceAll`'s lost-update window is closed with a captured-and-replayed upsert set. Several of
+these are the kind of fix that only gets made when someone has actually reasoned about the
+concurrent case.
+
+So this pass takes as its frame **what that priority asked for and did not get**, and the
+identity model underneath it. The verdict is unchanged. What this pass adds is that the
+subsystem has **two identifier identity models and three normalization routes**, and that the one
+resolution source with no uniqueness constraint, no ambiguity detection and no typed kind —
+aliases — is also the one the just-landed work did not reach.
+
+### E1 — The ambiguity work landed for identifiers only; aliases were the half the same priority named, and the path now reads as finished
+
+The 2026-08-27 priorities said it in terms that left no room: *"**Scope it to include aliases**:
+detection reads only `Identifiers`, so a normalized canonical-identifier query — however well
+indexed — still leaves two securities claiming one value through *aliases* undetected, while the
+alias lookup returns one of them unordered. … This is not 'one change'; it is one change plus the
+alias surface it does not reach."*
+
+The one change landed. The alias surface it does not reach is unchanged, and every leg of the
+original argument still holds at current source:
+
+- **Resolution reads aliases.** `GetByIdentifierAsync` tries three sources in order
+  (`PostgresSecurityMasterStore.cs:655-697`): `security_identifiers`, then `security_aliases`, then
+  the `securities.normalized_primary_identifier_value` column. The alias arm (`:672-681`) is
+  `limit 1` with **no `order by`** — the identifier arm at least carries `order by i.is_primary
+  desc` (`:667`). Two securities sharing an alias resolve to whichever row the plan returns, and
+  nothing makes that stable across calls.
+- **Detection does not.** `.Aliases` appears **zero** times in `SecurityMasterConflictDetection.cs`,
+  `SecurityMasterConflictService.cs` and `PostgresSecurityMasterConflictService.cs`. `DetectAll`
+  walks `record.Identifiers` only (`SecurityMasterConflictDetection.cs:54`).
+- **The new indexed lookup does not.** `FindIdentifierCandidatesAsync`
+  (`PostgresSecurityMasterStore.IdentifierCandidates.cs:67-72`) queries
+  `{schema}.security_identifiers` and nothing else. Its parameter is
+  `IReadOnlyList<SecurityIdentifierDto>` — the alias type is a different record
+  (`SecurityAliasDto`, `SecurityIdentifiers.cs:63-75`) and could not be passed without a signature
+  change.
+- **Validation does not.** `ValidateCrossRecordDuplicates`
+  (`Validation/SecurityValidationService.cs:432-481`) walks `activeIdentifiers`; the alias
+  collection is never enumerated for duplicates.
+- **The database does not.** Migration 032 puts a UNIQUE index on
+  `securities (primary_identifier_kind, normalized_primary_identifier_value)`, and migration 016
+  creates `ix_security_aliases_normalized_lookup` (`016:61`) as a **plain** index. Primary
+  identifiers cannot collide; aliases can, by construction.
+
+So an ISIN claimed by two securities through aliases is resolvable, arbitrarily, and is invisible
+to the conflict queue, to the validation report and to the database. That was true before this
+work and is true after it.
+
+What changed is the **visibility of the gap**. Before, `RefreshAsync` scanned the universe and the
+absence of aliases from the scan was one omission among several in an obviously provisional path.
+Now there is a purpose-built, indexed, well-documented candidate lookup with a shared exclusion
+contract and a comment explaining exactly which kinds it skips and why — and aliases are not
+among the things it says it skips, because they were never in its frame. A reader arriving at
+`FindIdentifierCandidatesAsync` today sees a finished component.
+
+Two further asymmetries make the alias surface weaker than the identifier surface it stands beside,
+and they compound:
+
+- **Alias kind is an untyped string.** `SecurityAliasDto.AliasKind` is `string`
+  (`SecurityIdentifiers.cs:66`) where `SecurityIdentifierDto.Kind` is the validated
+  `SecurityIdentifierKind` enum (`:54`). `SecurityMasterService.UpsertAliasAsync`
+  (`SecurityMasterService.cs:284-302`) passes `request.AliasKind` straight through — no check that
+  it names a kind, no format validation, `IsEnabled` hardcoded `true`.
+- **Which gives aliases a third normalization route.** `NormalizeAliasValue`
+  (`SecurityIdentifierNormalizer.cs:84-87`) tries `Enum.TryParse` on the kind string and falls back
+  to `NormalizeBasic` — trim and upper, no kind-aware stripping — when it fails. An alias stored
+  under a kind string that does not parse is normalized kind-blind into
+  `normalized_alias_value` (`PostgresSecurityMasterStore.Aliases.cs:49`), while the resolution
+  query binds the **kind-aware** normalization of the caller's value
+  (`PostgresSecurityMasterStore.cs:649`). Those two can never match, so such an alias is
+  permanently unresolvable and nothing reports it.
+
+And since P3b's fail-closed guard (below), a wrong alias cannot be corrected or retired through the
+alias API at all. The only path that removes one is `ReplaceAliasesAsync`'s
+`delete … where security_id = @security_id` and re-insert
+(`PostgresSecurityMasterStore.Aliases.cs:81-87`), run unconditionally on every projection upsert
+(`PostgresSecurityMasterStore.cs:353`) — the unversioned rewrite the guard was added to prevent,
+reached from the other side.
+
+### E2 — There are two identifier normalizers, and the write-side identity guards use the kind-blind one
+
+Commit `928250a1` aligned `SecurityIdentifierNormalizer`'s strippers with migration 016's SQL
+character classes, and stated the invariant at the code:
+
+> Both strippers must mirror migration 016's SQL backfill character classes exactly … the stored
+> normalized columns, the indexed candidate lookup, and every in-memory computation must give one
+> raw value one identity. (`SecurityIdentifierNormalizer.cs:152-157`)
+
+That alignment covers C# and SQL. It does not cover F#, and F# has its own normalizer:
+
+```fsharp
+let normalizeValue (value: string) =
+    if isNull value then String.Empty else value.Trim().ToUpperInvariant()
+```
+
+— `src/Meridian.FSharp/Domain/SecurityIdentifiers.fs:48-49`. Trim and upper. **No kind
+parameter**, so no kind-aware stripping: it cannot strip, because it does not know what it is
+looking at.
+
+The C# normalizer, by contrast, strips non-alphanumerics for `Isin`, `Cusip`, `Sedol`, `Figi`,
+`OccOptionSymbol`, `Lei`, `Wkn` and `Cik`, and non-digits for `Valoren`
+(`SecurityIdentifierNormalizer.cs:65-78`). So `US-0378-331005` and `US0378331005` are **one**
+identity to the C# normalizer, the `normalized_identifier_value` column
+(`PostgresSecurityMasterStore.cs:436`), migration 016's backfill, and the new candidate lookup —
+and **two** identities to F#.
+
+F#'s `normalizeValue` is not incidental. It is the identity function for both write-side
+identifier guards:
+
+- `sameIdentity` (`SecurityIdentifiers.fs:91-97`) compares kind, normalized value and normalized
+  provider. It is what `collectExpiredIdentifiers` matches on
+  (`SecurityMasterCommands.fs:457-463`): an amendment's `IdentifiersToExpire` entry is applied only
+  to identifiers it matches. An expiry request spelling the ISIN with punctuation the stored row
+  does not carry matches nothing, so `ValidTo` is never set — the identifier stays active, and the
+  command reports no error because expiring zero identifiers is not modelled as a failure.
+- `validateActiveIdentifierSet` (`SecurityMasterCommands.fs:380-397`) groups active identifiers by
+  `(kindName, normalizeValue value, normalizeValue provider)` to count duplicates. Two spellings of
+  one ISIN on the same record are two groups, so the duplicate guard passes — and both rows then
+  land in `security_identifiers` under the **same** `normalized_identifier_value`, where every
+  read-side surface treats them as one identity claimed twice.
+
+This is the same class of defect `928250a1` fixed, one language over, on the guards that decide
+what a write is allowed to assert. The C#/SQL alignment has a comment stating the invariant and a
+test (`SecurityIdentifierNormalizerTests`); the F# side has neither, and nothing asserts the two
+normalizers agree.
+
+### E3 — No write path enforces identifier check digits
+
+The review's "What's Solid" section says identifier resolution is *"genuinely institutional.
+Sixteen identifier kinds with real check-digit validation"* (`:210-213`). The validators are real
+and correct. They gate nothing.
+
+- **The F# write path does not call them.** `validateIdentifier`
+  (`SecurityMasterCommands.fs:366-378`) checks: value not blank; provider present for
+  `ProviderSymbol`; provider metadata matches the kind discriminant; `ValidTo > ValidFrom`. That is
+  the whole rule set.
+- **The F# check-digit functions are dead.** `SecurityIdentifiers.fs` declares `validateIsin`
+  (`:101`), `validateCusip` (`:137`) and `validateLei` (`:168`). A grep for each across
+  `src/Meridian.FSharp/` returns only the declarations — **zero call sites**.
+- **The C# equivalent gates nothing either.** `SecurityIdentifierNormalizer.TryValidateFormat`
+  (`:105-145`) — the ten-kind validator the praise line describes — has exactly two non-test
+  callers in `src/`: `Validation/SecurityValidationService.cs:350`, which emits a
+  `SecurityValidationIssueDto` into a **report**, and
+  `Meridian.Risk/Rules/OrderNotionalResolver.cs:294`. Neither `CreateAsync` nor `AmendTermsAsync`
+  reaches it.
+
+So a create carrying `ISIN US0378331006` — one digit off, check digit invalid — is accepted,
+appended to the event stream, upserted, indexed and resolvable. It surfaces later as a
+`SM_IDENTIFIER_*` issue on a validation report someone has to run and read. For an institutional
+master that is the wrong end: a malformed canonical identifier is cheap to refuse at the door and
+expensive to unpick once positions, cash flows and reporting references have resolved through it.
+
+This does not make the praise line false — the validators exist and are correct, and a report is
+better than nothing. It makes it incomplete in a way that matters, and the sentence should say
+"validated on report, not on write" until that changes.
+
+### E4 — `DeterministicFieldConflictId` joins free-text components with an unescaped delimiter
+
+Commit `e8c3083a` closed exactly this on the identifier side, and documented the reasoning at
+length (`SecurityMasterConflictDetection.cs:235-268`): scope and value both survive normalization
+with `|` intact, so a naive join is ambiguous, two real ambiguities collapse to one id, and *"the
+id-keyed stores would retain only one of two real ambiguities."* `CanonicalConflictIdentity`
+(`:249-259`) now escapes both components.
+
+`DeterministicFieldConflictId`, 700 lines below in the same file (`:945-957`), does not:
+
+```csharp
+var sideA = $"{sourceA}|{valueA}";
+var sideB = $"{sourceB}|{valueB}";
+var ordered = string.CompareOrdinal(sideA, sideB) <= 0
+    ? $"{securityId}|{fieldPath}|{sideA}|{sideB}"
+    : $"{securityId}|{fieldPath}|{sideB}|{sideA}";
+```
+
+Four free-text components, three unescaped joins. Its components are **strictly more permissive**
+than the identifier side's:
+
+- `sourceA`/`sourceB` are `SecurityRecordProvenance.SourceSystem`, read verbatim out of the
+  provenance JSON (`SecurityMasterProvenance.cs:117-122`) — free text, not an enum.
+- `valueA`/`valueB` for `EconomicTerms.principalSchedule` are `NormalizePrincipalSchedule` output,
+  which is *itself* `|`-joined (`SecurityMasterConflictDetection.cs:280`). Any schedule with two or
+  more instalments contains the delimiter.
+- `valueA`/`valueB` for `ProfileFields.*` are operator- and vendor-supplied text returned raw for
+  Text-typed and undeclared fields (`ReadComparableProfileFieldValue`, `:908` and `:938`), or
+  `GetRawText()` for structured values (`:915`).
+
+Calibrating honestly: a collision needs one tuple's `source|value|source|value` rendering to equal
+another's under a different split, which means a source-system name shaped like the tail of a
+value. With today's source names — `Bloomberg`, `Reuters`, `Polygon`, `EDGAR` — this review could
+not construct a case that arises from ordinary data, and **does not claim one exists**. What it
+claims is narrower and sufficient: the file contains a documented argument for why this exact join
+must be escaped, applied to one of its two id functions and not the other, where the unescaped one
+takes the more permissive inputs. The remedy is the escape helper already sitting six lines away
+(`EscapeCanonicalIdentityComponent`, `:265-268`), and the reason to apply it now is that field
+conflict ids are persisted: escaping later re-keys rows, exactly as the identifier-side comment
+explains.
+
+### E5 — The asset-class-scoped rebuild is scoped in the fold, not in the load
+
+The standing "Missing or Incomplete Subsystems" table carried *"Asset-class-scoped projection
+replay | Argument ignored | Bounded rebuild cost as class count grows"*, and the 2026-08-24
+resolution pass marked it delivered: *"`RebuildAssetClassAsync` re-folds only the requested class"*
+(`:755`). The fold is scoped. The read is not.
+
+```csharp
+var seeds = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+foreach (var seed in seeds)
+{
+    if (!string.Equals(seed.AssetClass, assetClass, StringComparison.OrdinalIgnoreCase))
+        continue;
+```
+
+— `Rebuild/SecurityMasterRebuildOrchestrator.cs:132-139`, under a docstring claiming the method
+*"bound[s] the rebuild cost to that class's population instead of a full shared replay"*
+(`:121-126`). `LoadAllAsync` is `LoadByStatusAsync(activeOnly: false)`
+(`PostgresSecurityMasterStore.cs:212-251`), which the 2026-09-08 pass already measured at 1 + 3N:
+select every id, then `GetProjectionCoreAsync` per id — a `securities` read plus
+`LoadIdentifiersAsync` plus `LoadAliasesAsync` (`:509-560`), sequential, on one connection, each
+parsing three `JsonDocument`s. Rebuilding a twelve-security `Repo` population materializes the
+entire master first.
+
+`ISecurityMasterStore` has no by-class read to call: its cross-record shapes are `LoadAllAsync`,
+`LoadActiveAsync`, `SearchAsync` and the new `FindIdentifierCandidatesAsync`
+(`ISecurityMasterStore.cs:31-37`). There is no `LoadByAssetClassAsync`, and the relational terms
+projections that *would* serve one exist for thirteen classes already.
+
+The same shape reaches two paths where the universe is not wanted at all:
+
+- **Validating one security loads every security.** `ValidateSecurityAsync(securityId)` calls
+  `LoadAllAsync` and then `universe.FirstOrDefault(c => c.SecurityId == securityId)`
+  (`Validation/SecurityValidationService.cs:55-56`). The universe is genuinely needed for
+  `ValidateCrossRecordDuplicates`, but the subject lookup is a full-universe scan standing next to
+  an indexed `GetProjectionAsync`, and the cross-record half needs the identifier index the
+  candidate lookup just built, not the universe.
+- **A failed identifier lookup scans the universe.** `TryGetProjectionByIdentifierAsync` tries the
+  indexed `GetByIdentifierAsync` for each value/provider candidate and, on a miss, falls through to
+  `LoadAllAsync` plus a linear `FirstOrDefault`
+  (`SecurityMasterQueryService.cs:316-342`). The **miss** path is the expensive one — so resolving
+  an unmapped vendor symbol, the routine case during any import of a new feed, costs 1 + 3N round
+  trips and a full materialization, per symbol.
+
+`SearchAsync`'s profile-criteria branch is the third (`:85-94`): `LoadAllAsync`, filter in memory,
+then `Skip`/`Take` — pagination applied after materializing everything, on a UI-facing search.
+
+None of this is new code and none of it is wrong today at the repository's data volumes. It is
+filed here because the candidate lookup proves the subsystem now knows how to add a bounded read
+shape, and because "asset-class-scoped replay" is recorded as delivered when the cost bound it
+existed to provide is not.
+
+### E6 — Two coverage surfaces report absence as sufficiency, and the test that would catch it asserts one element
+
+This is the finding a registry-drift sweep turned up, and it is two instances of one shape: a
+surface enumerates the asset classes it models, and a class it does not model renders as *fine*
+rather than as *not covered*.
+
+**Instance 1 — operational readiness reads green for the thirteen classes it does not model.**
+`SecurityMasterOperationalReadinessService.Specifications`
+(`SecurityMasterOperationalReadinessService.cs:43-172`) declares **13** of the catalog's 26 classes:
+Equity, Option, Future, FxSpot, Bond, DirectLoan, StructuredCredit, PrivateFundInterest,
+PrivateCompanyEquity, RealEstateHolding, CommitmentGuarantee, CustomAsset, OtherSecurity. Absent:
+**Deposit, MoneyMarketFund, CertificateOfDeposit, CommercialPaper, TreasuryBill, Repo, CashSweep,
+Swap, Commodity, CryptoCurrency, Cfd, Warrant, InvestmentFund**. Six of those thirteen
+(Deposit, MoneyMarketFund, CertificateOfDeposit, Swap, Commodity, CryptoCurrency) carry a live
+relational terms projection, so the platform demonstrably supports them.
+
+`GetReadinessAsync` filters `Specifications` by the requested class (`:254-258`) and then computes:
+
+```csharp
+var blocked       = rows.Count(row => row.Status == "Blocked");
+var reviewRequired= rows.Count(row => row.Status == "ReviewRequired");
+var ready         = rows.Length - blocked - reviewRequired;
+```
+
+With no matching spec, `rows` is empty and all three are zero — and the metric-card variants
+(`:266-272`) are `ready == rows.Length ? "success" : "default"`, `reviewRequired > 0 ? "warning" :
+"success"` and `blocked > 0 ? "danger" : "success"`. **All three evaluate to `success`.** An
+operator asking "is Swap operationally ready?" gets three green cards and an empty table. The one
+status that cannot be rendered is the true one: *this asset class has no readiness definition.*
+
+**Instance 2 — six classes get an empty compatibility profile.** `PrivateFundInterest`,
+`PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee`, `InvestmentFund` and
+`CustomAsset` appear **zero** times in `InstrumentTypeDescriptorCatalog.cs` — neither as a
+descriptor's `SecurityMasterAssetClass` nor in any `CompatibleSecurityMasterAssetClasses` list. So
+`SecurityKindMapping.ToInstrumentTypeDescriptors` (`:129-140`) returns empty on both its branches,
+and `BuildAssetClassCompatibilityProfile` (`:192-226`) emits a profile whose
+`RequiredEconomicTerms`, `ProviderCapabilities`, `LifecycleEvents`, `ValidationRules`,
+`LedgerBehaviorHints` and `RiskModelHints` are **all empty collections**. Its `Summary` names only
+the market-data axis ("No direct market-data InstrumentType mapping exists for X"), which is true
+and is not what the other six fields say. The consumer is operator-facing
+(`Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:888`), and four of the six
+classes are exactly the ops-capable projection backlog — the population most in need of an honest
+"not modelled yet".
+
+**Why neither is caught.** Both registries are outside the parity-guard set. The subsystem's
+cross-registry guards are genuinely good — catalog ≡ `AssetClassRegistry.assetClasses`
+(`SecurityAssetClassCatalogTests.cs:100`), terms schema ≡ catalog
+(`SecurityAssetTermsSchemaTests.cs:65-72`), validator registry ≡ catalog and pack claims ⊆ catalog
+(`SecurityAssetClassParityGuardTests.cs:21-50`), plus the ratcheted projection partition
+(`SecurityAssetTermsSchemaTests.cs:132-184`). Neither `Specifications` nor
+`InstrumentTypeDescriptorCatalog` is bound to the catalog by any of them.
+
+And the one test that looks like it covers the readiness list does not.
+`SecurityMasterOperationalReadinessServiceTests.cs:15-29` reads:
+
+```csharp
+result.AssetClasses.Select(row => row.AssetClass).Should().Contain(
+    "Equity", "Option", "Future", /* … */ "OtherSecurity", "__VACUITY_PROBE__");
+```
+
+For a `string` collection, `Contain("a", "b", "c")` binds the **`Contain(T expected, string because,
+params object[] becauseArgs)`** overload, not the `params T[]` one: only `"Equity"` is asserted, the
+rest become a failure message and its arguments. The repository already knows this — the fix is
+applied and commented at `SecurityAssetClassCatalogTests.cs:106-108` (*"the params overload of
+Contain binds its second argument to `because`, which would silently assert only the first asset
+class"*) — and the trailing `"__VACUITY_PROBE__"` is a deliberate marker left by the adversarial
+review in `b362345a`: a value that cannot exist in any of these collections, so the assertion's
+continued passing *proves* it is vacuous. Nine such markers sit in Security Master tests
+(`SecurityMasterOperationalReadinessServiceTests.cs:29, 351, 398`;
+`SecurityAssetClassCatalogTests.cs:217, 224, 367, 376`;
+`SecurityValidationServiceTests.cs:170, 658`), with more across the repository.
+
+So the readiness registry's only coverage test asserts `"Equity"`, which is why a thirteen-class gap
+in an operator-facing readiness gate has sat unguarded. The gap and the reason it is invisible are
+the same fact, and the marker says someone already found it and left the light on.
+
+One related note from the same sweep, not filed as a finding: `Meridian.FSharp.fsproj:6` sets
+`<TreatWarningsAsErrors>false</TreatWarningsAsErrors>` with no `WarningsAsErrors` override, so an
+incomplete `match` over `SecurityKind` is warning FS0025 and builds clean — the exhaustiveness the
+review has repeatedly credited to the F# side is a warning, not a gate. A missing
+`AssetClassRegistry.descriptors` row is not even that: it is plain data, caught only by
+`failwithf` at `SecurityMaster.fs:743` at runtime. The write-mode guard C4 added
+(`SecurityMasterMapping.cs:416-418`) does catch a forgotten `ToSecurityKind` arm on create, which
+is the one edit site with a real gate.
+
+### Status of the standing findings this pass re-verified
+
+| # | Item | Status at `b8dc61ff` |
+| --- | --- | --- |
+| P1 | Golden-record writes recording a synthetic actor | **Open, one row narrower.** `b5f5600f` closes the trading-parameter backfill row: `ITradingParametersBackfillService` now requires `initiatedBy` on both methods and fails closed (`TradingParametersBackfillService.cs:51, 120`), stamping the resolved operator (`:212-213`) from a real authorization check (`Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:2243-2244`). Still open: `EdgarIngestOrchestrator.cs:351` and `:433` stamp `nameof(EdgarIngestOrchestrator)` and `EdgarIngestRequest` has no actor field to carry one; `PolygonSecurityMasterIngestProvider.cs:196` and `EdgarSecurityMasterIngestProvider.cs:271` stamp their own class names and the CLI passes the request through unmodified (no `StampImportAuthority` equivalent); `CorporateActionCommandService.cs:101, 109` substitutes a literal `"system"`, and `:109` feeds it into `_restatementTrigger.OnSupersededAsync` — a restatement decision, not a log line. |
+| P3b | Editing an alias erases it from earlier recorded-as-of views | **Narrowed, not resolved — and the remaining half is E1's.** The `on conflict … do update set created_by = excluded.created_by, created_at = excluded.created_at` clause is gone; the upsert is now a guarded no-op whose `where` compares every column and whose miss throws `SecurityAliasHistoryConflictException` (`PostgresSecurityMasterStore.Aliases.cs:29-64`), returning the original recording facts on an idempotent replay (`:67-71`). The rewrite is blocked. History is still not *retained*: no alias revision table exists in migrations 001–033, the as-of read still filters the single current row (`Rebuild/SecurityMasterAggregateRebuilder.cs:104-108`, `PostgresSecurityMasterStore.cs:604-616`), the "append-only revision path" `SecurityMasterService.cs:296` points at does not exist, and `ReplaceAliasesAsync`'s delete-and-reinsert (`Aliases.cs:81-87`) still rewrites unversioned on every projection upsert. |
+| P4 | Invalid import rows reported as harmless skips | **Narrowed; three rows open.** Closed: the message-substring classifier is gone and a raw SQLSTATE `23505` is no longer a skip — `SecurityMasterIngestFailureClassifier.cs:39-49` switches on the typed exception only, with the rationale at `:19-23`; cancellation is no longer swallowed in any of the three lanes (`SecurityMasterImportService.cs:189-194`, `EdgarIngestOrchestrator.cs:122-125`, `Commands/SecurityMasterCommands.cs:291-295`); and the CSV lane cannot present a reused id at all (`SecurityMasterCsvParser.cs:178` mints a fresh `Guid`). Open: `IsAlreadyCreated => ExpectedVersion == 0 && CurrentVersion > 0` (`ISecurityMasterEventStore.cs:35`) is a pure version predicate that compares no payload, and `StampImportAuthority` restamps six fields but **not** `SecurityId` (`SecurityMasterImportService.cs:261-282`), so a JSON import naming an existing id with different terms is still counted a duplicate skip; `EdgarIngestResult` has no failed counter, so `EdgarIngestOrchestrator.cs:131-140` increments `securitiesSkipped` for every genuine failure; and `PolygonSecurityMasterIngestProvider.FetchPageAsync` (`:129-153`) returns `null` on any failed page, the loop `break`s (`:80-82`) and the run logs and reports success (`:102-104`) with a truncated set. |
+
+### Priorities from this pass
+
+Read as a delta on the standing lists. The first two are the cheapest items on any list this review
+has produced, and both fix things it has been calling solid.
+
+1. **Call the check-digit validators from the write path (E3).** `TryValidateFormat` already exists,
+   already carries per-kind operator-facing messages, and is already reachable from the C# write
+   path — the create/amend guards just do not invoke it. A malformed ISIN refused at submit costs an
+   error message; the same ISIN discovered after it has resolved in ledger, cash-flow and reporting
+   references costs a governed identity remediation. Either wire the C# validator into the write
+   guards or move the rule into `validateIdentifier` and give the three dead F# functions their call
+   sites.
+2. **Un-vacuum the nine marked assertions, then decide the coverage gap they were hiding (E6).**
+   Wrapping each in `new[] { … }` is mechanical and the markers name every site; doing it turns a
+   thirteen-class hole in an operator-facing readiness gate into a failing test on the next run.
+   Then make the decision the failure forces: either declare readiness specifications for the
+   thirteen classes, or — cheaper and honest — give `GetReadinessAsync` a `NotCovered` status so an
+   unmodelled class stops rendering three green cards, and give
+   `BuildAssetClassCompatibilityProfile` the same distinction between "nothing required" and "not
+   modelled". Bind both registries to the catalog with the parity guard the other five registries
+   already have.
+3. **Give F# and C# one identifier normalizer, or one test that they agree (E2).** The cheap half is
+   a cross-language test asserting `SecurityIdentifier.normalizeValue` and
+   `SecurityIdentifierNormalizer.NormalizeValue` agree per kind over a punctuation corpus — it fails
+   immediately, which is the point. The durable half is making F# kind-aware so `sameIdentity` and
+   the active-duplicate grouping decide identity the way the column, the index and the candidate
+   lookup do. Until then a silent no-op expiry is reachable from an ordinary amendment.
+4. **Finish the 2026-08-27 priority: bring aliases into ambiguity detection (E1).** The identifier
+   half is done and done well; the alias half is the part with no uniqueness index, no detection, no
+   typed kind and an unordered `limit 1` resolving it. The unit of work is the one that pass already
+   specified — alias values and providers, enabled state, overlapping validity windows — now with a
+   working template to copy. At minimum, add an `order by` to the alias resolution arm
+   (`PostgresSecurityMasterStore.cs:672-681`) so the answer stops depending on row order.
+5. **Escape `DeterministicFieldConflictId`'s components (E4).** Four lines, using the helper already
+   in the file, and cheaper now than after more field conflict ids are persisted.
+
+*Also worth doing, below the five:* scope the scoped rebuild's read or stop recording it as
+delivered (E5) — a `LoadByAssetClassAsync` on `ISecurityMasterStore` serves the two other paths
+that want a bounded read (single-security validation, the identifier-resolution miss); and restamp
+`SecurityId` in `StampImportAuthority` (`SecurityMasterImportService.cs:261-282`), a one-line change
+of the same shape as the six fields it already restamps, which removes the only live vector for
+P4's misreported-skip half.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -5295,6 +5718,20 @@ Security Master contracts, the 58 `Meridian.Application` Security Master service
 round-trip and asset-class-support test suites.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
+
+The 2026-09-16 pass pinned `b8dc61ff` and diffed `3be7e20e..HEAD` over
+`src/Meridian.Contracts/SecurityMaster`, `src/Meridian.Application/SecurityMaster`,
+`src/Meridian.Storage/SecurityMaster`, `src/Meridian.ReferenceData/SecurityMaster` and
+`src/Meridian.FSharp` to scope itself to what moved. It then read the changed lane in full
+(`SecurityMasterConflictDetection.cs`, `PostgresSecurityMasterStore.IdentifierCandidates.cs`,
+`SecurityMasterProjectionCache.cs`, `Rebuild/SecurityMasterRebuildOrchestrator.cs`,
+`SecurityIdentifierNormalizer.cs`, `PostgresSecurityMasterStore.Aliases.cs`), the F# identity
+surface (`Domain/SecurityIdentifiers.fs`, `Domain/SecurityMasterCommands.fs`), the three-arm
+resolution query and the `LoadAllAsync` call graph, `SecurityMasterOperationalReadinessService`,
+`InstrumentTypeDescriptorCatalog` / `SecurityKindMapping`, and migrations 016 and 032. Registry
+fan-out across the 26-class catalog and the standing P1/P3b/P4 status were re-derived over the
+ingest lanes and the alias store; every claim carried into the pass above was re-verified directly
+in source before filing. No code was changed and no tests were run.
 
 The 2026-08-28 pass re-read the F# domain classification tables, `SecurityAssetClassCatalog`,
 `SecurityAssetPackRegistry`, the accounting event source adapter, `PostgresSecurityMasterStore`
