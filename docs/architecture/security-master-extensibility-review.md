@@ -5304,13 +5304,21 @@ catalog-driven — reverts to naming asset classes by string literal in exactly 
 catalog already declares the predicate.
 
 > **Correction, 2026-09-16.** As first written this pass filed E1 and E2 only, called the projection
-> cache sound, and told future passes to skip it. Review of the pull request showed that dismissal
-> was wrong, together with the stated remedies for E1 and E2 and the flat wording of the D3
-> verification row. E3 is the finding that dismissal was hiding; all four corrections are marked in
-> place below rather than silently rewritten, and the priorities are re-ordered accordingly. The
-> lesson is B1's procedural rule applied to this document's own output: the cache's comment conceded
-> the interleaving and then argued past it, and this pass repeated the argument instead of checking
-> which interleavings it actually covered.
+> cache sound, told future passes to skip it, and marked D2 and D3 closed without qualification.
+> Review of the pull request showed all of that to be wrong or overstated, along with the stated
+> remedies for E1 and E2. Two findings were hiding behind the dismissals — **E3** (a write that
+> commits during a warm is dropped from the cache) and **E4** (the family discriminator D2 added
+> matches on key presence, so a flat payload carrying `maturity` is still silently emptied). Every
+> correction is marked in place below rather than silently rewritten, and the priorities are
+> re-ordered accordingly.
+>
+> The lesson is B1's procedural rule turned on this document's own output, and it has one shape in
+> both cases: **a mechanism was confirmed to exist and was not tested against the cases it claimed to
+> cover.** The cache's comment conceded the `Upsert`/`ReplaceAll` interleaving and then argued past
+> it, and this pass repeated the argument without asking which interleavings the argument reached.
+> D2's discriminator does require a module key, and this pass confirmed that and stopped, without
+> asking whether a module key can appear in a document that is not an economic-terms document. Both
+> times the verification checked that the code did what it said, not that what it said was enough.
 
 ### Claimed closures, independently re-verified
 
@@ -5320,7 +5328,7 @@ All five verify at `e173437e`. Recorded here so the next pass need not re-derive
 | --- | --- | --- |
 | C4 | Create is gated on `SecurityKindMappingMode.Write` | Yes. `SecurityMasterMapping.cs:19` passes `Write` from the create path; the fallback arm at `:417` refuses before the `OtherSecurity` degradation at `:423`, which stays intact for read mode. The same gate is applied at `:448`, `:516`, `:599`, `:963` and `:975`, so it is a mapping-wide rule, not a create-path special case. |
 | C5 | The two optional numeric readers check kind before reading | Yes. `PostgresSecurityMasterStore.cs:1834-1846` — both check `ValueKind == JsonValueKind.Number` before `TryGetDecimal` / `TryGetInt32`. `GetOptionalBool` (`:1848-1852`) already had the equivalent guard; no other reader on this path lacks one. |
-| D2 | Version 2 is reserved, and the chain no longer dispatches on the bare integer | Yes. `SecurityMasterSchemaVersions.cs:29` declares `ReservedForEconomicTerms = 2` with the reason at the declaration; `SecurityAssetSpecificTermsUpcasterChain.cs:215` dispatches on `IsEconomicTermsDocument`, which (`:93-99`) requires the economic version **and** an economic-terms module key, so a flat payload stamped 2 passes through with its version preserved instead of being emptied to `{"schemaVersion":1}`. |
+| D2 | Version 2 is reserved, and the chain no longer dispatches on the bare integer | **Partly — see E4.** The reservation landed: `SecurityMasterSchemaVersions.cs:29` declares `ReservedForEconomicTerms = 2` with the reason at the declaration, and `SecurityAssetSpecificTermsUpcasterChain.cs:215` dispatches on `IsEconomicTermsDocument` rather than the bare integer. **Corrected 2026-09-16, after review:** this row first read "Yes," on the strength of the discriminator requiring the economic version *and* a module key. That is what the code does and it is not sufficient — the discriminator matches on key **presence**, not shape, and `maturity` is both a bridged module name and a flat-family field name. The total-loss path D2 was filed to close is therefore still open for the flat classes that matter most. E4 below has the detail. |
 | D3 | `securities.schema_version` has one definition | Yes for the divergence D3 named. `PostgresSecurityMasterStore.cs:318-324` states the definition — the version stamped on the stored blob — the upsert binds it at `:346`, migration 024's backfill implements the same rule, and the `ISchemaUpcaster` constructor seam is gone, so the v1-vs-v2 split D3 filed is closed. **Qualified 2026-09-16, after review:** the two writers still disagree on *malformed* numeric versions, so "one definition" holds for well-formed `int32` values only. Migration 024 guards on `jsonb_typeof(...) = 'number'` and then casts `(asset_specific_terms->>'schemaVersion')::integer` (`:14-16`), which accepts any JSON number — a fractional or out-of-int32-range value reaches the cast and **aborts the migration**. `ResolveSchemaVersion` requires `TryGetInt32` (`SecurityAssetSpecificTermsUpcaster.cs:60-71`) and silently falls back to `DefaultAssetSpecificTerms` for the same value. No such row is known to exist, and this review makes no claim that one does; the point is that the closure is narrower than the flat sentence implied, and a follow-up would need either a guarded migration predicate (`jsonb_typeof = 'number' and (payload->>'schemaVersion') ~ '^-?[0-9]+$'`, plus a range check) or the definition stated as "well-formed integer versions" in both places. |
 | D1 (partial) | Comments corrected, marker stamped, coverage test added | Yes, as scoped. The bridge itself is still lossy and the resolution pass says so. |
 
@@ -5499,6 +5507,53 @@ taken before the rebuild read and re-apply any `Upsert` newer than it. Either wa
 stop describing the case as acceptable, because the reason it gives does not cover the case that
 actually occurs.
 
+### E4 — The family discriminator matches on key presence, and `maturity` is both a module name and a flat field name
+
+*Filed 2026-09-16, after review, correcting this pass's own D2 verification row.*
+
+D2's remedy replaced an integer comparison with a shape test. `IsEconomicTermsDocument`
+(`SecurityAssetSpecificTermsUpcasterChain.cs:93-111`) accepts a payload as economic-terms when it is
+an object, resolves to `EconomicTermsSchema.Current`, and carries at least one `EconomicTermsModules`
+key. The test is `payload.TryGetProperty(module, out _)` — **presence, discarding the value** — and
+`EconomicTermsModules` is `BridgedModules ∪ DroppedModules` (`:44-45`, `:52-53`), whose first entry
+is `maturity`.
+
+`maturity` is also a flat-family field name. `Bond`, `CertificateOfDeposit`, `CommercialPaper`,
+`TreasuryBill` and `Swap` all declare it in `SecurityAssetTermsSchema`, where it holds a **scalar**
+date rather than the nested object the economic family uses.
+
+So for a flat payload stamped with the reserved version 2 and carrying a `maturity` key:
+
+1. `IsEconomicTermsDocument` returns `true` on the first module probe.
+2. `Convert` runs. `GetObject(economicTerms, "maturity")` returns `null` for a scalar, so every
+   `WriteIfPresent` against it returns false (`:139-142`), and the same holds for the other four
+   modules, which the flat document does not carry as objects either.
+3. `Convert` emits exactly `{"schemaVersion":1,"flattenedFromEconomicTermsSchemaVersion":2}`
+   (`:135-137`, `:166`) — stamped `AssetSpecificTermsSchema.Legacy`, accepted by the guard at
+   `SecurityMasterMapping.cs:711-723`, and carrying no economics at all.
+
+That is the total-loss path D2 was filed to close, reopened through the remedy that closed it. D2's
+own resolution note claims "a flat payload stamped 2 passes through with its version preserved for
+the guard's `Unsupported schemaVersion '2'` diagnostic instead of being emptied to
+`{"schemaVersion":1}`" — true only for a flat payload with no module-name collision, and `maturity`
+collides for the five classes above, which are most of the flat family that would ever need a v2.
+
+**The precondition is the same one D2 assumed.** Version 2 is reserved and no flat payload declares
+it today, so nothing is losing data now. The defect is that the guard erected against a future flat
+v2 does not hold for the documents that future would most likely produce — a guard that fails
+exactly when it is first needed. This review flags it as the highest-value item in the E series
+despite being latent, because its cost if it ever fires is every economic term on every affected
+record, silently, with a `schemaVersion: 1` stamp asserting the result is fine.
+
+Two fixes, and the first is not enough on its own. Discriminate on **shape, not presence** — require
+that at least one matched module key hold a JSON object — which rejects the scalar-`maturity` case
+and costs one `ValueKind` check. Better, discriminate the families on something that cannot collide
+at all: a family marker written by the economic serializer, or separate storage slots, since a
+payload family that must avoid another family's field names is no more independent than one that had
+to avoid its version numbers — the objection D2 itself raised about the integer. Either way the
+regression test D2's suite is missing is a flat document with a scalar `maturity` stamped 2, asserted
+to pass through with its version intact rather than being emptied.
+
 ### Smaller notes, not filed as findings
 
 - **`PostgresSecurityMasterSnapshotStore.SaveAsync` has no version fence.** The upsert
@@ -5530,27 +5585,31 @@ actually occurs.
 
 Read as a delta on the standing lists.
 
-*Re-ordered 2026-09-16, after review. E3 did not exist when this list was first written, and two of
-the items below described remedies that do not work; both are corrected in place above.*
+*Re-ordered 2026-09-16, after review. E3 and E4 did not exist when this list was first written, and
+two of the items below described remedies that do not work; all are corrected in place above.*
 
 1. **Everything still stays behind the standing correctness items** — the open halves of P1, P3b and
    P4, and the B-series accounting findings.
-2. **Make the cache swap version-aware (E3).** This pass's one correctness defect, and it displaces
+2. **Discriminate the payload families on shape, not key presence (E4).** Latent but ranked first of
+   the E series: a `ValueKind` check plus the scalar-`maturity` regression test D2's suite never got.
+   It is small, and the alternative to doing it is a reserved-version guard that fails on the first
+   document it is ever asked to protect, at a cost of every economic term on the record.
+3. **Make the cache swap version-aware (E3).** This pass's one *live* correctness defect, and it displaces
    the rest of the list. One comparison per key inside `ReplaceAll`, no new synchronisation, and it
    closes a path on which a committed write is dropped from the cache, persists (refresh defaults to
    0) and propagates into the rebuild handler and the canonical-symbol registry.
-3. **Log the warm's elapsed time, and correct the staleness bound (E1).** A stopwatch and a log
+4. **Log the warm's elapsed time, and correct the staleness bound (E1).** A stopwatch and a log
    field, plus two comment corrections — the same shape of fix as D1's cheap half, and it makes a
    promise the subsystem currently states without measuring into one an operator can verify.
-4. **Give VC002 a start date, then drive both rules off the catalog (E2).** No longer the cheapest
+5. **Give VC002 a start date, then drive both rules off the catalog (E2).** No longer the cheapest
    item in this pass: the gate change is trivial but inert until each class's authoritative start
    date is named, because only `Bond` declares `issueDate`. Do the two together or neither — a gate
    change alone buys nothing and looks like it bought four asset classes.
-5. **Batch the universe load (E1).** The durable fix: one query per table for the universe instead
+6. **Batch the universe load (E1).** The durable fix: one query per table for the universe instead
    of three per security, plus batched snapshot and event loads. Needs a shared session or a set-based
    store API, not a parameter change. Larger than the rest of this pass and worth sizing against N6,
    which it shares a path with.
-6. **Re-rank D1's lossless half downward.** Per the narrowing above, it guards a payload shape no
+7. **Re-rank D1's lossless half downward.** Per the narrowing above, it guards a payload shape no
    current writer emits. It stays open as the codec-generation seam, not as a live data-loss risk.
 
 ---
