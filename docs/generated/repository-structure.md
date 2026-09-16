@@ -6498,8 +6498,14 @@ Meridian-main
 │   │   │   │   │   ├── report-writer-grid-diff.ts
 │   │   │   │   │   ├── report-writer-grid-format.test.ts
 │   │   │   │   │   ├── report-writer-grid-format.ts
+│   │   │   │   │   ├── reporting-approval.test.ts
+│   │   │   │   │   ├── reporting-approval.ts
+│   │   │   │   │   ├── reporting-certification.test.ts
+│   │   │   │   │   ├── reporting-certification.ts
 │   │   │   │   │   ├── reporting-datum.test.ts
 │   │   │   │   │   ├── reporting-datum.ts
+│   │   │   │   │   ├── reporting-distribution.test.ts
+│   │   │   │   │   ├── reporting-distribution.ts
 │   │   │   │   │   ├── reporting-distributions.ts
 │   │   │   │   │   ├── reporting-governance-api.test.ts
 │   │   │   │   │   ├── reporting-governance-api.ts
@@ -6523,6 +6529,8 @@ Meridian-main
 │   │   │   │   │   ├── reporting-production.ts
 │   │   │   │   │   ├── reporting-provenance-adapter.test.ts
 │   │   │   │   │   ├── reporting-provenance-adapter.ts
+│   │   │   │   │   ├── reporting-publication.test.ts
+│   │   │   │   │   ├── reporting-publication.ts
 │   │   │   │   │   ├── reporting-trace.test.ts
 │   │   │   │   │   ├── reporting-trace.ts
 │   │   │   │   │   ├── reporting-workspace.test.ts

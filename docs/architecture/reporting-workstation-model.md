@@ -205,6 +205,76 @@ source on both sides reports as no change rather than as an impact-free change. 
 distinct reports that had already reached a reviewed state, since those are where a moved value
 invalidates work somebody already signed off.
 
+## Approval and Attestation
+
+Approval means something only when it binds to a specific version of specific data. An approval
+that survives the data moving underneath it is not a control — the approver signed off on numbers
+that no longer exist. So `reporting-approval.ts` records the version and the data fingerprint an
+approval was given against, and `evaluateApproval` compares both with the report's current state:
+
+- **Approved** — the approved version and data are still what is on the page.
+- **ChangesRequireReview** — somebody approved something, but the version or the data has moved.
+  The approval neither stands nor vanishes; both facts are stated.
+- **Indeterminate** — an approval exists that cannot be tied to a version or a data fingerprint,
+  so its currency is unknowable. This carries `action` severity, not a pass.
+
+The data *fingerprint* is what currency is judged on, not the data *state*: a report can stay
+"Confirmed" while every number underneath it moves.
+
+Attestation follows the same principle. Every required statement must be explicitly affirmed — an
+unanswered requirement blocks attestation rather than being assumed satisfied, and an attestation
+with no named approver is unsigned and therefore not an attestation. Requirements are set by report
+class, and `resolveAttestationRequirements` unions rather than replaces, so a template can require
+more than its class floor but never less.
+
+## Publication and Restatement
+
+Publishing creates an immutable record fixing what was said, when, by whom, against which data
+cutoff and which ledger version. A correction does not edit v09; it publishes v10 with an explicit
+relationship to the version it supersedes and a stated reason. Overwriting would destroy the only
+evidence of what recipients actually received.
+
+`buildRestatementChain` orders versions along their supersede relationships and reports breaks
+rather than smoothing them over — a missing predecessor, two versions superseding the same one, a
+chain that closes on itself with no origin, or records the walk never reaches. A reader needs to
+know when the history they are looking at is not the whole history.
+
+The internal/external boundary is fail-closed. An output whose distribution class was never stated,
+or stated as something unrecognised, is treated as **internal**; evidence and archive outputs stay
+internal whatever a caller declares, because they carry reviewer comments, accepted exceptions and
+manual overrides. Wrongly withholding an output costs a question; wrongly releasing one cannot be
+recalled.
+
+`buildDraftStateMarking` supplies the header/footer state treatment. A report is approved for
+distribution only once it is published — `Approved` means signed off but not yet released, and an
+approved-but-unpublished document leaving the building is exactly the accident this marking exists
+to prevent.
+
+## Distribution and Retention
+
+`reporting-distribution.ts` keeps the published/distributed/delivered/archived/superseded timeline.
+An event whose timestamp cannot be read is retained in `unplacedEvents` rather than dropped or
+sorted to the front: a distribution that happened is a fact even when its clock reading is unusable,
+and losing it would understate who holds a copy.
+
+Retention is where the fail-closed rule matters most. `isDisposable` is true only for `Eligible`.
+A record with **no** retention policy is `Unclassified` and undisposable — treating "no policy" as
+"no obligation" would let the least-governed records be destroyed first, which is precisely
+backwards. A record whose retention clock cannot be read is likewise undisposable.
+
+## Dataset Certification
+
+`reporting-certification.ts` applies the version-binding rule one layer down. A certified dataset is
+an assertion by an accountable team that a body of data is fit to report on; reports consuming it
+inherit that assertion, which is both the useful part and the dangerous part, because an inherited
+certification is invisible until it is wrong. Certification is bound to a fingerprint, so a dataset
+that changes afterwards is **invalidated** rather than quietly carried forward.
+
+Inheritance takes the worst state across a report's datasets, never an average — one invalidated
+dataset is enough to make a report's numbers unsupported. A report consuming no dataset at all is
+`Uncertified` rather than trivially certified, and `propagateCertificationToBlocks` marks a block
+naming a dataset it cannot see as `Indeterminate`: an unseen dependency is not a certified one.
+
 ## Surface Composition
 
 `components/meridian/reporting-production-surface.tsx` renders the control surface, and
@@ -228,6 +298,10 @@ omitted entirely until at least one report has a known owner.
 | Lineage stages, calculation tie-out, downstream usage | `src/Meridian.Ui/dashboard/src/lib/reporting-trace.ts` |
 | Record-graph to lineage adapter | `src/Meridian.Ui/dashboard/src/lib/reporting-provenance-adapter.ts` |
 | Source-replacement and event impact | `src/Meridian.Ui/dashboard/src/lib/reporting-impact.ts` |
+| Approval currency and attestation | `src/Meridian.Ui/dashboard/src/lib/reporting-approval.ts` |
+| Publication records, immutability, restatement chain | `src/Meridian.Ui/dashboard/src/lib/reporting-publication.ts` |
+| Distribution history and retention | `src/Meridian.Ui/dashboard/src/lib/reporting-distribution.ts` |
+| Dataset certification and inheritance | `src/Meridian.Ui/dashboard/src/lib/reporting-certification.ts` |
 | Lineage summary surface | `src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.tsx` |
 | Control surface component | `src/Meridian.Ui/dashboard/src/components/meridian/reporting-production-surface.tsx` |
 | View-model adapter | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.production-surface.ts` |
