@@ -17,7 +17,7 @@
     "test:w4": "vitest run src/screens/w4-acceptance-parity.test.ts src/screens/operations-continuity-screen.view-model.test.ts src/screens/reporting-screen.view-model.test.ts"
   },
   "dependencies": {
-    "lucide-react": "0.468.0",
+    "lucide-react": "1.34.0",
     "meridian-tools": "file:../../..",
     "react": "18.3.1",
     "react-dom": "18.3.1",
