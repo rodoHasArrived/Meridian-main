@@ -115,3 +115,11 @@ decisions:
     related_roadmap_items:
       - W9-ALPACA-004
       - W9-SAFETY-007
+  - id: DEC-W9-DONE-001
+    title: Close W9-DEMO-002 as done on the seeded-demo closure record
+    status: accepted
+    decided_on: 2026-09-16
+    owner_lane: Workstation Shell and UX
+    summary: Operator decision by the repository owner moving W9-DEMO-002 from accepted to done. DEC-W9-ACCEPTANCE-001 accepted the row on 2026-08-29 and explicitly withheld done, which the status taxonomy gates on the release or status documentation each row's lane owns; docs/product/w9-demo-002-closure-2026-09-16.md is that documentation and is linked from the row as evidence. The closure absorbs a correction found after acceptance - the seeded market history was filed at a demo-only historical/{SYMBOL}/seeded-trades.jsonl path that HistoricalDataQueryService cannot discover, so the Data desk returned nothing while every file was present, and the durability test asserted File.Exists rather than reading back through the service. That was fixed in commit b8dc61ff (PR 2972), which files seeded history through JsonlStoragePolicy into the production {demoRoot}/{SYMBOL}/Trade/{date}.jsonl layout with the SAMPLE source attributed, and replaced the file-existence assertion with a reader-backed check; the registry record of the correction merged as 8bdc3cff (PR 2973). All four exit criteria are evidenced in current source and were green across quality-gate, verify-dotnet, verify-docs, verify-browser, verify-workflows, demo-smoke, scope-gate, CodeQL and the secret scan. This decision closes one bounded roadmap row. It does not certify a release, does not close the P0 release-certification gate in docs/product/implementation-todo-list.md, and does not change the posture of any other W9 row.
+    related_roadmap_items:
+      - W9-DEMO-002

@@ -1905,6 +1905,7 @@ Meridian-main
 │   │   ├── reporting-operating-model-2026-09.md
 │   │   ├── w10-depth-slate-2026-07.md
 │   │   ├── w9-close-out-delivery-plan-2026-08.md
+│   │   ├── w9-demo-002-closure-2026-09-16.md
 │   │   ├── w9-operator-acceptance-2026-08-29.md
 │   │   ├── web-ui-improvements-brainstorm-2026-07.md
 │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
