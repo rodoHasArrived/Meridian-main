@@ -10,15 +10,15 @@ import { injectStyle } from "./inject-style";
 const CSS = `
 .mds-trust{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;min-width:0;}
 .mds-trust__item{display:flex;flex-direction:column;gap:2px;min-width:0;
-  border:1px solid var(--state-muted-bd,#D7DCE2);border-left-width:3px;border-radius:var(--radius-chip,2px);
-  background:var(--state-muted-bg,#F5F7FA);padding:5px 10px;}
-.mds-trust__item--ready{border-color:var(--state-healthy-bd,rgba(22,136,95,.32));border-left-color:var(--state-healthy-fg,#16885F);background:var(--state-healthy-bg,rgba(22,136,95,.10));}
-.mds-trust__item--review{border-color:var(--state-warn-bd,rgba(138,82,14,.38));border-left-color:var(--state-warn-fg,#8A520E);background:var(--state-warn-bg,rgba(138,82,14,.11));}
-.mds-trust__item--blocked{border-color:var(--state-danger-bd,rgba(186,63,85,.35));border-left-color:var(--state-danger-fg,#BA3F55);background:var(--state-danger-bg,rgba(186,63,85,.10));}
-.mds-trust__item--pending{border-color:var(--state-pending-bd,rgba(111,91,167,.34));border-left-color:var(--state-pending-fg,#6F5BA7);background:var(--state-pending-bg,rgba(111,91,167,.10));}
+  border:1px solid var(--state-muted-bd,#E4E3DE);border-left-width:3px;border-radius:var(--radius-chip,2px);
+  background:var(--state-muted-bg,#EDEAE4);padding:5px 10px;}
+.mds-trust__item--ready{border-color:var(--state-healthy-bd,rgba(22,136,95,.32));border-left-color:var(--state-healthy-fg,#3A7A56);background:var(--state-healthy-bg,rgba(22,136,95,.10));}
+.mds-trust__item--review{border-color:var(--state-warn-bd,rgba(138,82,14,.38));border-left-color:var(--state-warn-fg,#8A5C12);background:var(--state-warn-bg,rgba(138,82,14,.11));}
+.mds-trust__item--blocked{border-color:var(--state-danger-bd,rgba(186,63,85,.35));border-left-color:var(--state-danger-fg,#A8443C);background:var(--state-danger-bg,rgba(186,63,85,.10));}
+.mds-trust__item--pending{border-color:var(--state-pending-bd,rgba(111,91,167,.34));border-left-color:var(--state-pending-fg,#5D5486);background:var(--state-pending-bg,rgba(111,91,167,.10));}
 .mds-trust__label{font-family:var(--font-data,monospace);font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.05em;color:var(--text-muted,#59636F);white-space:nowrap;}
-.mds-trust__value{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-primary,#22272E);white-space:nowrap;}
+  letter-spacing:.05em;color:var(--text-muted,#5E666F);white-space:nowrap;}
+.mds-trust__value{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-primary,#22252A);white-space:nowrap;}
 `;
 
 type TrustState = "ready" | "review" | "blocked" | "pending" | "muted";

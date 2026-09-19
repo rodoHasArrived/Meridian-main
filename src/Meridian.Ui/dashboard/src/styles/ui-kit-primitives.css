@@ -169,7 +169,7 @@
 
 .dense-data-table-sorted .dense-data-table-sort-indicator {
   opacity: 1;
-  color: var(--accent, #2F6F8F);
+  color: var(--accent, #A85436);
 }
 
 .dense-data-table-sorted .dense-data-table-sort-button {

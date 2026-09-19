@@ -19,14 +19,14 @@ const labelStyle: CSSProperties = {
   fontWeight: 600,
   fontVariant: "all-small-caps",
   letterSpacing: "0.03em",
-  color: "var(--text-muted, #59636F)",
+  color: "var(--text-muted, #5E666F)",
 };
 
 const valueStyle: CSSProperties = {
   fontFamily: "var(--font-data, monospace)",
   fontSize: 13,
   fontVariantNumeric: "tabular-nums",
-  color: "var(--text-primary, #22272E)",
+  color: "var(--text-primary, #22252A)",
 };
 
 /**

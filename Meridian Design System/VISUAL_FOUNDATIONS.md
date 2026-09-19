@@ -7,29 +7,44 @@ semantics, no gradients or glow.
 ## Color
 
 **Canvas & surfaces** (`ThemeTokens.xaml`)
-- Window canvas `#ECEFF3` — the paper everything sits on
-- Command bars / wells `#F5F7FA`
-- Card / panel `#FFFFFF`; raised (metric tiles, inspector rails) `#FAFBFC`
-- Row hover `#F1F4F7`; pressed / selected wash `#E6EEF5`
-- Chrome (brand bar + status bar) near-black `#171A1F`, text `#F4F6F8`
+*Programmed Institutionalism v2.0 — warm paper, not cool concrete. The interface material is
+drafting stock: surfaces are separated by fine rules and tonal steps, never by shadow.*
 
-**Borders** carry the structure — `#D7DCE2` default, `#B8C2CC` hover, `#AAB4BF` strong,
-`#2F6F8F` focus.
+- Window canvas `#F2F0EC` (Soft Stone) — the drafting table everything sits on
+- Command bars / wells `#EDEAE4`
+- Card / panel `#FBFAF8` (Architect White); raised (metric tiles, inspector rails) `#F6F4F0`
+- Row hover `#F0EEE9`; pressed / selected wash `#F2E3DB`
+- Chrome (brand bar + status bar) warm black `#1F1D1A`, text `#F4F2ED`
 
-**Text** — primary `#22272E`, secondary `#4D5967`, muted `#6E7781`, disabled `#9AA4AF`.
+**Borders** carry the structure — `#E4E3DE` default, `#C6C3BB` hover, `#AFABA1` strong,
+`#A85436` focus. 1px rules do the separating; 2px only for emphasis.
 
-**Accent** — a single muted teal-blue `#2F6F8F` (primary buttons, focus rings, active nav,
-crosshair). Pressed `#255B75`, vibrant `#3B82A6`. One accented action per screen.
+**Text** — primary `#22252A` (Carbon), secondary `#4E5258` (Warm Graphite), muted `#5E666F`
+(Slate), disabled `#94999F`.
 
-**Semantic accents** are desaturated and always rendered as a **trio** — dim text · solid 1px
-border · alpha-10 fill. Never solid fills.
-- Success green `#16885F` (dim `#126C4D`)
-- Danger red `#BA3F55` (dim `#983244`)
-- Warning amber `#B7791F` (dim `#946216`)
-- Pending purple `#6F5BA7` (dim `#58478A`)
+**Accent** — a single copper `#A85436` (primary buttons, focus rings, active nav, crosshair).
+Pressed `#8C4429`, vibrant `#C06B4A`. One accented action per screen. Deliberately *not* blue.
 
-**Environment modes** — always visible: Live red `#BA3F55` (real money), Paper blue `#2F6F8F`
-(simulated), Fixture amber `#B7791F` (replay/recorded).
+> The source brief proposed Terracotta `#D16A4A` or Copper `#B76841`. Both fail this package's
+> WCAG AA gate as text on a card (3.43:1 and 3.97:1 against a 4.5:1 floor), so the hue is kept
+> and the value taken down to `#A85436` — 5.05:1 as text, 5.27:1 under a white label. The lighter
+> `#D16A4A` survives as `--accent-figure`, for the Meridian Field motif and report covers, where
+> it never sits behind text.
+
+**Semantic accents** are desaturated, independent of the brand accent, and always rendered as a
+**trio** — dim text · solid 1px border · alpha-10 fill. Never solid fills. Never use the accent
+for positive/negative values.
+- Success, muted forest `#3A7A56`
+- Danger, brick `#A8443C`
+- Warning, amber ochre `#8A5C12`
+- Pending, slate-violet `#5D5486`
+
+**Environment modes** — always visible: Live brick `#A8443C` (real money), Paper copper `#A85436`
+(simulated), Fixture ochre `#8A5C12` (replay/recorded).
+
+**Dark mode** is material, not luminous: warm black `#14120F` canvas, graphite `#201D19` panels,
+paper-white `#EFEBE4` text, and a lifted copper `#D98A64` carrying dark ink `#1A1511`. No glowing
+grids, no saturated gradients, no glass.
 
 ## Type (`ThemeTypography.xaml`)
 
