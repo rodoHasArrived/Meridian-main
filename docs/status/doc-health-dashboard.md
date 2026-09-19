@@ -25,7 +25,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 | Orphaned files | 253 |
 | Files without headings | 148 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 263 |
+| TODO/FIXME markers | 265 |
 | **Health score** | **80/100** |
 
 ### Score Breakdown
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 80 | 668 | 253 | 0 |
+| 1970-01-01 | 80 | 669 | 253 | 0 |
 
 ---
 
