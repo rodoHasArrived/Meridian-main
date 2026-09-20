@@ -1898,6 +1898,7 @@ Meridian-main
 │   │   ├── high-value-code-brainstorm-2026-07.md
 │   │   ├── implementation-todo-list.md
 │   │   ├── meridian-design-document.md
+│   │   ├── next-work-determination-2026-09-20.md
 │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   ├── production-readiness-backlog-2026-08.md
