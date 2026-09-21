@@ -145,7 +145,7 @@
    The real Meridian browser workstation (src/Meridian.Ui/dashboard) authors CSS
    against these names. Declared here so app component CSS resolves verbatim when
    pasted into a consumer. Values track the canonical light palette (Programmed Institutionalism v2.0);
-   keep them in step with the --theme-*/base tokens above when the brand changes. */
+   keep them in step with the --theme-* and base tokens above when the brand changes. */
 :root {
   --ws-page-bg:        #F2F0EC;
   --ws-surface:        #FBFAF8;
@@ -187,21 +187,21 @@
    so white-label and dark flow through automatically. Never hardcode a Tier-3 hex. */
 :root {
   /* Severity (operator status chips) — DERIVED from the semantic palette. */
-  --severity-blocked-fg: var(--red);    --severity-blocked-bd: color-mix(in srgb, var(--red) 40%, transparent);    --severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent);
-  --severity-action-fg:  var(--orange); --severity-action-bd:  color-mix(in srgb, var(--orange) 42%, transparent); --severity-action-bg:  color-mix(in srgb, var(--orange) 11%, transparent);
-  --severity-review-fg:  var(--accent); --severity-review-bd:  color-mix(in srgb, var(--accent) 36%, transparent); --severity-review-bg:  color-mix(in srgb, var(--accent) 10%, transparent);
-  --severity-ready-fg:   var(--green);  --severity-ready-bd:   color-mix(in srgb, var(--green) 36%, transparent);  --severity-ready-bg:   color-mix(in srgb, var(--green) 10%, transparent);
+  --severity-blocked-fg: var(--red-dim);    --severity-blocked-bd: color-mix(in srgb, var(--red) 40%, transparent);    --severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent);
+  --severity-action-fg:  var(--orange-dim); --severity-action-bd:  color-mix(in srgb, var(--orange) 42%, transparent); --severity-action-bg:  color-mix(in srgb, var(--orange) 11%, transparent);
+  --severity-review-fg:  var(--accent-dim); --severity-review-bd:  color-mix(in srgb, var(--accent) 36%, transparent); --severity-review-bg:  color-mix(in srgb, var(--accent) 10%, transparent);
+  --severity-ready-fg:   var(--green-dim);  --severity-ready-bd:   color-mix(in srgb, var(--green) 36%, transparent);  --severity-ready-bg:   color-mix(in srgb, var(--green) 10%, transparent);
   --severity-info-fg:    var(--text-muted); --severity-info-bd: var(--border);   --severity-info-bg: var(--bg-medium);
 
   /* State (environment + evidence) — DERIVED from the semantic palette. */
-  --state-healthy-fg:  var(--green);      --state-healthy-bd:  color-mix(in srgb, var(--green) 32%, transparent);  --state-healthy-bg:  color-mix(in srgb, var(--green) 10%, transparent);
-  --state-warn-fg:     var(--orange);     --state-warn-bd:     color-mix(in srgb, var(--orange) 38%, transparent); --state-warn-bg:     color-mix(in srgb, var(--orange) 11%, transparent);
-  --state-danger-fg:   var(--red);        --state-danger-bd:   color-mix(in srgb, var(--red) 35%, transparent);    --state-danger-bg:   color-mix(in srgb, var(--red) 10%, transparent);
-  --state-paper-fg:    var(--accent);     --state-paper-bd:    color-mix(in srgb, var(--accent) 34%, transparent); --state-paper-bg:    color-mix(in srgb, var(--accent) 10%, transparent);
-  --state-strategy-fg: var(--purple);     --state-strategy-bd: color-mix(in srgb, var(--purple) 34%, transparent); --state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent);
-  --state-live-fg:     var(--red);        --state-live-bd:     color-mix(in srgb, var(--red) 42%, transparent);    --state-live-bg:     color-mix(in srgb, var(--red) 12%, transparent);
+  --state-healthy-fg:  var(--green-dim);      --state-healthy-bd:  color-mix(in srgb, var(--green) 32%, transparent);  --state-healthy-bg:  color-mix(in srgb, var(--green) 10%, transparent);
+  --state-warn-fg:     var(--orange-dim);     --state-warn-bd:     color-mix(in srgb, var(--orange) 38%, transparent); --state-warn-bg:     color-mix(in srgb, var(--orange) 11%, transparent);
+  --state-danger-fg:   var(--red-dim);        --state-danger-bd:   color-mix(in srgb, var(--red) 35%, transparent);    --state-danger-bg:   color-mix(in srgb, var(--red) 10%, transparent);
+  --state-paper-fg:    var(--accent-dim);     --state-paper-bd:    color-mix(in srgb, var(--accent) 34%, transparent); --state-paper-bg:    color-mix(in srgb, var(--accent) 10%, transparent);
+  --state-strategy-fg: var(--purple-dim);     --state-strategy-bd: color-mix(in srgb, var(--purple) 34%, transparent); --state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent);
+  --state-live-fg:     var(--red-dim);        --state-live-bd:     color-mix(in srgb, var(--red) 42%, transparent);    --state-live-bg:     color-mix(in srgb, var(--red) 12%, transparent);
   --state-muted-fg:    var(--text-muted); --state-muted-bd:    var(--border);                                     --state-muted-bg:    var(--bg-medium);
-  --state-pending-fg:  var(--purple);     --state-pending-bd:  color-mix(in srgb, var(--purple) 34%, transparent); --state-pending-bg:  color-mix(in srgb, var(--purple) 10%, transparent);
+  --state-pending-fg:  var(--purple-dim);     --state-pending-bd:  color-mix(in srgb, var(--purple) 34%, transparent); --state-pending-bg:  color-mix(in srgb, var(--purple) 10%, transparent);
 }
 
 

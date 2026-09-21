@@ -34,7 +34,7 @@
     <Color x:Key="ConsoleAccentGreenLight">#56A37E</Color>
     <Color x:Key="ConsoleAccentBlue">#A85436</Color>
     <Color x:Key="ConsoleAccentBlueDim">#8C4429</Color>
-    <Color x:Key="ConsoleAccentBlueVibrant">#C06B4A</Color>
+    <Color x:Key="ConsoleAccentBlueVibrant">#AF6143</Color>
     <Color x:Key="ConsoleAccentPurple">#5D5486</Color>
     <Color x:Key="ConsoleAccentPurpleDim">#4A436B</Color>
     <Color x:Key="ConsoleAccentRed">#A8443C</Color>
@@ -113,6 +113,9 @@
     <SolidColorBrush x:Key="ErrorColorBrush"               Color="{StaticResource ConsoleAccentRed}" />
     <SolidColorBrush x:Key="InfoColorBrush"                Color="{StaticResource ConsoleAccentBlue}" />
     <SolidColorBrush x:Key="ConsoleAccentBlueBrush"        Color="{StaticResource ConsoleAccentBlue}" />
+    <!-- Opaque hover fill. The 80% alpha brush composites to ~#B9755D over a card,
+         only 3.64:1 under the white label; this is 4.55:1. -->
+    <SolidColorBrush x:Key="ConsoleAccentBlueHoverBrush"   Color="{StaticResource ConsoleAccentBlueVibrant}" />
     <SolidColorBrush x:Key="ConsoleAccentBlueDimBrush"     Color="{StaticResource ConsoleAccentBlueDim}" />
     <SolidColorBrush x:Key="AccentCyanBrush"               Color="{StaticResource ConsoleAccentCyan}" />
     <SolidColorBrush x:Key="AccentPurpleBrush"             Color="{StaticResource ConsoleAccentPurple}" />

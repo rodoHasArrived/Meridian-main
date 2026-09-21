@@ -71,15 +71,40 @@ WASH_PAIRS = [
     ("purple-dim on purple-a10 wash", "--purple-dim", "--purple", 0.10, "--bg-light", 4.5),
     ("green-dim on green-a20 wash",   "--green-dim",  "--green",  0.20, "--bg-light", 4.5),
     ("red-dim on red-a20 wash",       "--red-dim",    "--red",    0.20, "--bg-light", 4.5),
+    # The actual status chips, foreground token against its own wash, on each surface a chip
+    # sits on. Checking only the -dim tokens in the abstract missed that the *-fg tokens were
+    # wired to the raw hue: four of them measured under 4.5:1 as shipped.
+    ("severity-review chip",   "--severity-review-fg",  "--accent", 0.10, "--bg-light",  4.5),
+    ("severity-review on band","--severity-review-fg",  "--accent", 0.10, "--bg-medium", 4.5),
+    ("severity-ready chip",    "--severity-ready-fg",   "--green",  0.10, "--bg-light",  4.5),
+    ("severity-blocked chip",  "--severity-blocked-fg", "--red",    0.10, "--bg-light",  4.5),
+    ("severity-action chip",   "--severity-action-fg",  "--orange", 0.11, "--bg-light",  4.5),
+    ("state-healthy chip",     "--state-healthy-fg",    "--green",  0.10, "--bg-light",  4.5),
+    ("state-danger chip",      "--state-danger-fg",     "--red",    0.10, "--bg-light",  4.5),
+    ("state-paper chip",       "--state-paper-fg",      "--accent", 0.10, "--bg-light",  4.5),
+    ("state-strategy chip",    "--state-strategy-fg",   "--purple", 0.10, "--bg-light",  4.5),
+    ("state-live chip",        "--state-live-fg",       "--red",    0.12, "--bg-light",  4.5),
+    ("state-pending chip",     "--state-pending-fg",    "--purple", 0.10, "--bg-light",  4.5),
 ]
+
+
+def strip_comments(text: str) -> str:
+    """Remove /* ... */ the way a CSS parser does, so this script sees what a browser sees.
+
+    Matching tokens against raw text hides a whole class of bug: prose containing `*/` (for
+    example "--theme-*/base") closes its comment early, the browser then discards the rule
+    that follows, and a regex-based checker still reports the tokens as present. That happened
+    to the --ws-* compatibility block, which shipped entirely undefined behind a green gate.
+    """
+    return re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
 
 
 def parse_tokens(text: str) -> dict[str, str]:
     """First occurrence wins — colors-dark.css declares the dark media block first."""
     tokens: dict[str, str] = {}
-    for name, value in TOKEN_PATTERN.findall(text):
+    for name, value in TOKEN_PATTERN.findall(strip_comments(text)):
         if name not in tokens:
-            tokens[name] = re.sub(r"/\*.*?\*/", "", value, flags=re.DOTALL).strip()
+            tokens[name] = value.strip()
     return tokens
 
 
@@ -266,6 +291,11 @@ def check_ws_aliases(root: Path) -> list[str]:
     tokens = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
     failures: list[str] = []
     for ws, canon in WS_ALIASES:
+        if ws not in tokens or canon not in tokens:
+            failures.append(f"[ws-alias] {ws} or {canon} is not declared — "
+                            "check the block was not discarded by an early comment terminator")
+            print(f"[ws-alias] {ws}/{canon}: MISSING")
+            continue
         a, b = resolve(f"var({ws})", tokens), resolve(f"var({canon})", tokens)
         if a is None or b is None:
             continue
@@ -277,13 +307,38 @@ def check_ws_aliases(root: Path) -> list[str]:
     return failures
 
 
+# A `*/` inside comment prose closes the comment early; the browser then treats the rest of
+# the sentence plus the following rule as an invalid qualified rule and discards it. A
+# regex-based token parser still sees the declarations, so this is invisible to every other
+# check here. It happened to the --ws-* block, which shipped entirely undefined.
+CSS_AFTER_COMMENT = re.compile(r"^\s*([{}]|/\*|[.#@:*\[]|[\w-]+\s*[:{,]|$)")
+
+
+def check_comment_terminators(root: Path) -> list[str]:
+    """Flag a `*/` followed by prose rather than CSS — an early comment terminator."""
+    failures: list[str] = []
+    files = sorted((root / "tokens").glob("*.css")) + sorted(root.glob("*.css"))
+    for path in files:
+        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            for m in re.finditer(r"\*/", line):
+                after = line[m.end():]
+                if after.strip() and not CSS_AFTER_COMMENT.match(after):
+                    rel = path.relative_to(root)
+                    failures.append(f"[comment] {rel}:{lineno}: '*/' closes the comment early, "
+                                    f"leaving prose: {after.strip()[:48]!r}")
+                    print(f"[comment] {rel}:{lineno}: early terminator")
+    if not failures:
+        print(f"[comment] no early comment terminators in {len(files)} stylesheet(s)")
+    return failures
+
+
 def run_checks(root: Path) -> list[str]:
     light = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
     dark_overrides = parse_tokens((root / "tokens" / "colors-dark.css").read_text(encoding="utf-8"))
     dark = {**light, **dark_overrides}
     return (check_mode("light", light) + check_mode("dark", dark)
             + check_brands(root) + check_workstation(root)
-            + check_ws_aliases(root))
+            + check_ws_aliases(root) + check_comment_terminators(root))
 
 
 def main() -> int:

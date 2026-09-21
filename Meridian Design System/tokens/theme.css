@@ -179,6 +179,12 @@ html[data-brand="indigo"] {
   --theme-accent-dim: #4338CA;
   --theme-accent-hover: #6264ED;
   --theme-brand-color: #4F46E5;
+  /* Dark identity, lifted and desaturated from this brand's own light accent the way
+     the default trio is, to 6.7 / 7.9 / 8.7 against --theme-dark-text-on-accent.
+     Without these a selected brand fell back to the default copper in dark mode. */
+  --theme-dark-accent: #9893F0;
+  --theme-dark-accent-dim: #A7A2F8;
+  --theme-dark-accent-hover: #B0ABFB;
 }
 
 html[data-brand="emerald"] {
@@ -186,6 +192,12 @@ html[data-brand="emerald"] {
   --theme-accent-dim: #0A6748;
   --theme-accent-hover: #0E875F;
   --theme-brand-color: #0B7A55;
+  /* Dark identity, lifted and desaturated from this brand's own light accent the way
+     the default trio is, to 6.7 / 7.9 / 8.7 against --theme-dark-text-on-accent.
+     Without these a selected brand fell back to the default copper in dark mode. */
+  --theme-dark-accent: #10B37D;
+  --theme-dark-accent-dim: #1CC28B;
+  --theme-dark-accent-hover: #16CC8F;
 }
 
 html[data-brand="rose"] {
@@ -193,6 +205,12 @@ html[data-brand="rose"] {
   --theme-accent-dim: #BE123C;
   --theme-accent-hover: #CB1A41;
   --theme-brand-color: #E11D48;
+  /* Dark identity, lifted and desaturated from this brand's own light accent the way
+     the default trio is, to 6.7 / 7.9 / 8.7 against --theme-dark-text-on-accent.
+     Without these a selected brand fell back to the default copper in dark mode. */
+  --theme-dark-accent: #FF6C8C;
+  --theme-dark-accent-dim: #F68BA3;
+  --theme-dark-accent-hover: #FF94AB;
 }
 
 html[data-brand="slate"] {
@@ -200,6 +218,12 @@ html[data-brand="slate"] {
   --theme-accent-dim: #475569;
   --theme-accent-hover: #5A687D;
   --theme-brand-color: #64748B;
+  /* Dark identity, lifted and desaturated from this brand's own light accent the way
+     the default trio is, to 6.7 / 7.9 / 8.7 against --theme-dark-text-on-accent.
+     Without these a selected brand fell back to the default copper in dark mode. */
+  --theme-dark-accent: #899FBE;
+  --theme-dark-accent-dim: #95ADCF;
+  --theme-dark-accent-hover: #A3B5D0;
 }
 
 html[data-brand="cyan"] {
@@ -207,6 +231,12 @@ html[data-brand="cyan"] {
   --theme-accent-dim: #0B5E76;
   --theme-accent-hover: #0E7490;
   --theme-brand-color: #0C6A85;
+  /* Dark identity, lifted and desaturated from this brand's own light accent the way
+     the default trio is, to 6.7 / 7.9 / 8.7 against --theme-dark-text-on-accent.
+     Without these a selected brand fell back to the default copper in dark mode. */
+  --theme-dark-accent: #13AAD6;
+  --theme-dark-accent-dim: #15B9E8;
+  --theme-dark-accent-hover: #37C2EA;
 }
 
 html[data-brand="amber"] {
@@ -214,6 +244,12 @@ html[data-brand="amber"] {
   --theme-accent-dim: #8F4108;
   --theme-accent-hover: #B45309;
   --theme-brand-color: #A34A08;
+  /* Dark identity, lifted and desaturated from this brand's own light accent the way
+     the default trio is, to 6.7 / 7.9 / 8.7 against --theme-dark-text-on-accent.
+     Without these a selected brand fell back to the default copper in dark mode. */
+  --theme-dark-accent: #FF740D;
+  --theme-dark-accent-dim: #FB9041;
+  --theme-dark-accent-hover: #FD9C55;
 }
 
 /* ── Map theme tokens to component tokens ── */

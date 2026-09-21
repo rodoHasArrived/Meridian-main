@@ -472,20 +472,23 @@ describe("dashboard design-system contract", () => {
   it("derives the severity and state trios from the semantic palette via color-mix", () => {
     const styles = readDashboardStyles();
 
-    // Severity chips (Ready·Review·Action·Blocked·Info) derive from Tier 2.
-    expect(styles).toContain("--severity-ready-fg: var(--green)");
-    expect(styles).toContain("--severity-review-fg: var(--ws-accent)");
-    expect(styles).toContain("--severity-action-fg: var(--orange)");
-    expect(styles).toContain("--severity-blocked-fg: var(--red)");
+    // Severity chips (Ready·Review·Action·Blocked·Info) derive from Tier 2. The foreground
+    // takes the -dim variant, not the raw hue: a chip's label sits on a 10% wash of its own
+    // hue, and measured against that wash the raw hue gave 4.32-4.41:1 for ready/review —
+    // under AA. The -dim variants measure 5.9-8.1:1. check_contrast.py now pins every chip.
+    expect(styles).toContain("--severity-ready-fg: var(--green-dim)");
+    expect(styles).toContain("--severity-review-fg: var(--ws-accent-pressed)");
+    expect(styles).toContain("--severity-action-fg: var(--orange-dim)");
+    expect(styles).toContain("--severity-blocked-fg: var(--red-dim)");
     expect(styles).toContain(
       "--severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent)"
     );
 
     // State layer (healthy/warn/danger/paper/strategy/live/pending) derives too.
-    expect(styles).toContain("--state-live-fg: var(--red)");
-    expect(styles).toContain("--state-paper-fg: var(--ws-accent)");
-    expect(styles).toContain("--state-strategy-fg: var(--purple)");
-    expect(styles).toContain("--state-pending-fg: var(--purple)");
+    expect(styles).toContain("--state-live-fg: var(--red-dim)");
+    expect(styles).toContain("--state-paper-fg: var(--ws-accent-pressed)");
+    expect(styles).toContain("--state-strategy-fg: var(--purple-dim)");
+    expect(styles).toContain("--state-pending-fg: var(--purple-dim)");
     expect(styles).toContain(
       "--state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent)"
     );
@@ -499,12 +502,12 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain(":root[data-theme=\"dark\"]");
     expect(styles).toContain(":root[data-theme=\"light\"]");
 
-    // Concrete graphite dark base: canvas #0E1113 · panel #1A2026 · steel #5790BE.
+    // Warm graphite dark base: canvas #14120F · panel #201D19 · copper #D98A64.
     expect(styles).toContain("--ws-page-bg: #14120F");
     expect(styles).toContain("--ws-surface: #201D19");
     expect(styles).toContain("--ws-accent: #D98A64");
 
-    // The forced-light opt-out re-asserts the Concrete light canvas.
+    // The forced-light opt-out re-asserts the warm-paper light canvas.
     expect(styles.match(/--ws-page-bg: #F2F0EC/g)).toHaveLength(2);
   });
 

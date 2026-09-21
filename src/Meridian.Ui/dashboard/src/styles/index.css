@@ -279,43 +279,43 @@
 
     /* ─── State layer (environment + evidence) — DERIVED trios (fg · bd · bg).
        Semantic hue · 32–42% alpha border · 10–12% alpha wash. ──────────────*/
-    --state-healthy-fg: var(--green);
+    --state-healthy-fg: var(--green-dim);
     --state-healthy-bd: color-mix(in srgb, var(--green) 32%, transparent);
     --state-healthy-bg: color-mix(in srgb, var(--green) 10%, transparent);
-    --state-warn-fg: var(--orange);
+    --state-warn-fg: var(--orange-dim);
     --state-warn-bd: color-mix(in srgb, var(--orange) 38%, transparent);
     --state-warn-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --state-danger-fg: var(--red);
+    --state-danger-fg: var(--red-dim);
     --state-danger-bd: color-mix(in srgb, var(--red) 35%, transparent);
     --state-danger-bg: color-mix(in srgb, var(--red) 10%, transparent);
-    --state-paper-fg: var(--ws-accent);
+    --state-paper-fg: var(--ws-accent-pressed);
     --state-paper-bd: color-mix(in srgb, var(--ws-accent) 34%, transparent);
     --state-paper-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
-    --state-strategy-fg: var(--purple);
+    --state-strategy-fg: var(--purple-dim);
     --state-strategy-bd: color-mix(in srgb, var(--purple) 34%, transparent);
     --state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent);
-    --state-live-fg: var(--red);
+    --state-live-fg: var(--red-dim);
     --state-live-bd: color-mix(in srgb, var(--red) 42%, transparent);
     --state-live-bg: color-mix(in srgb, var(--red) 12%, transparent);
     --state-muted-fg: var(--ws-text-muted);
     --state-muted-bd: var(--ws-border);
     --state-muted-bg: var(--ws-surface-subtle);
-    --state-pending-fg: var(--purple);
+    --state-pending-fg: var(--purple-dim);
     --state-pending-bd: color-mix(in srgb, var(--purple) 34%, transparent);
     --state-pending-bg: color-mix(in srgb, var(--purple) 10%, transparent);
 
     /* ─── Severity layer (operator status chips) — DERIVED trios ────────────
        Blocked (red) · Action (ochre) · Review (steel) · Ready (spruce) · Info.*/
-    --severity-blocked-fg: var(--red);
+    --severity-blocked-fg: var(--red-dim);
     --severity-blocked-bd: color-mix(in srgb, var(--red) 40%, transparent);
     --severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent);
-    --severity-action-fg: var(--orange);
+    --severity-action-fg: var(--orange-dim);
     --severity-action-bd: color-mix(in srgb, var(--orange) 42%, transparent);
     --severity-action-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --severity-review-fg: var(--ws-accent);
+    --severity-review-fg: var(--ws-accent-pressed);
     --severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent);
     --severity-review-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
-    --severity-ready-fg: var(--green);
+    --severity-ready-fg: var(--green-dim);
     --severity-ready-bd: color-mix(in srgb, var(--green) 36%, transparent);
     --severity-ready-bg: color-mix(in srgb, var(--green) 10%, transparent);
     --severity-info-fg: var(--ws-text-muted);
