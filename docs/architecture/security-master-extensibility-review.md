@@ -5839,8 +5839,31 @@ produced by replaying `InferLifecycleEvent`'s `Contains` chain over the ten ship
 `journalTemplateEvents` literals and comparing the result against each pack's declared
 `LifecycleEvents`.
 
-No code was changed by the 2026-09-21 pass. No .NET or TypeScript test was run and no reviewed code
-path was executed, so every claim in it is a source claim. In particular, the "posts zero interest
-to the ledger" statement in E1 is a call-graph reading of
+No Security Master code was changed by the 2026-09-21 pass, and no .NET or TypeScript test was run —
+this environment has no .NET SDK — so every finding above is a source claim. In particular, the
+"posts zero interest to the ledger" statement in E1 is a call-graph reading of
 `SecurityMasterAmortizationLedgerBridge.cs:81,138` against `BuildCalculatedProjection`, not an
 observed posting.
+
+One test file outside the subsystem **is** changed on the branch carrying this pass, and it is not a
+review finding. `verify-dotnet` was red on the branch, and `quality-gate` with it, on
+`FutureProjectionServiceTests.GetFrontMonthAsync_IgnoresExpiredRollTargets` and
+`_IgnoresPastExpiryRollTargetsEvenWhenLifecycleIsRollTarget` — a dated-fixture time bomb unrelated
+to this document: both cases pin their only live contract to a hard-coded expiry of `2026-09-18`
+while `FutureProjectionService.GetExpiryLadderAsync` filters against
+`DateOnly.FromDateTime(DateTime.UtcNow)` with no clock seam
+(`src/Meridian.Instruments/Futures/FutureProjectionService.cs:29-35`), so the front month became
+null once that date passed. It is red on `main` for the same reason. PR #2978 already fixes it by
+anchoring the class's four date-bearing cases to the run date in whole months; that change to that
+one file is ported here verbatim rather than waiting on it to merge, and no-ops once the base
+carries it. Its separate `EventPipelineTests` race fix is deliberately not ported, that test having
+passed here.
+
+The port was verified without an SDK by replaying the service's two filters and the contract-code
+derivation: the original fixture yields a null front month on 2026-09-21, reproducing the reported
+failure, and the ported fixture returns the expected contract for today and for 1100 consecutive run
+dates with no contract-code collision. The hosted `verify-dotnet` lane remains the real proof.
+
+That port is also why the branch's `scope-gate` phase marker is **PR4** rather than the **PR1** this
+document alone would need: `tests/**` is allowed by no tier below PR4, and PR2 and PR3 were both
+checked and reject.
