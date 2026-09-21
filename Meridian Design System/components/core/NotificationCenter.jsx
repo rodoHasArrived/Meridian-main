@@ -15,7 +15,7 @@ function inject() {
   padding:5px 10px;border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);
   color:var(--text-secondary,#4E5258);font-family:var(--font-body);font-size:12px;}
 .mds-notif__bell:hover{background:var(--bg-hover,#F0EEE9);}
-.mds-notif__bell:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:1px;}
+.mds-notif__bell:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:1px;}
 .mds-notif__count{font-family:var(--font-data);font-size:10px;font-weight:700;line-height:1;
   padding:2px 5px;background:var(--red,#A8443C);color:var(--text-on-fill,#fff);
   border-radius:var(--radius-chip,2px);}

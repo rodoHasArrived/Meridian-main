@@ -18,7 +18,7 @@ function inject() {
 .mds-split--h > .mds-split__div::before{top:0;bottom:0;left:-3px;right:-3px;}
 .mds-split--v > .mds-split__div::before{left:0;right:0;top:-3px;bottom:-3px;}
 .mds-split__div:hover,.mds-split__div--drag{background:var(--border-hover,#C6C3BB);}
-.mds-split__div:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:1px;}
+.mds-split__div:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:1px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "splitpane");

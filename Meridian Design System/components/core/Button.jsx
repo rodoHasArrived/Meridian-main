@@ -9,7 +9,7 @@ function inject() {
 .mds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
   padding:8px 16px;height:32px;border:1px solid;
   font-family:var(--font-body);font-size:13px;cursor:pointer;}
-.mds-btn:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:var(--focus-ring-offset,2px);}
+.mds-btn:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:var(--focus-ring-offset,2px);}
 .mds-btn:disabled{cursor:not-allowed;background:var(--bg-medium,#EDEAE4);border-color:var(--border,#E4E3DE);color:var(--text-disabled,#94999F);}
 /* sizes */
 .mds-btn--sm{padding:6px 12px;font-size:12px;}

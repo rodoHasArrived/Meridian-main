@@ -55,8 +55,10 @@ body[data-theme-density="spacious"] .dds td{padding-top:15px;padding-bottom:15px
   background-size:12px;background-position:center;background-repeat:no-repeat;}
 .dds__sort{margin-left:6px;font-size:9px;opacity:.4;}
 .dds th.dds--sorted{color:var(--text-secondary,#4E5258);}
-.dds th.dds--sorted .dds__sort{opacity:1;color:var(--accent,#A85436);}
-.dds__rank{margin-left:3px;font-size:8px;font-weight:700;color:var(--accent,#A85436);vertical-align:super;}
+.dds th.dds--sorted .dds__sort{opacity:1;color:var(--accent-dim,#8C4429);}
+/* --accent is 4.39:1 on the header band (--bg-medium); --accent-dim is 5.88:1. These two
+   sit on the band, not on a card, so they take the dim variant. */
+.dds__rank{margin-left:3px;font-size:8px;font-weight:700;color:var(--accent-dim,#8C4429);vertical-align:super;}
 /* pinned columns: sticky to the left edge, raised above scrolling cells, right divider */
 .dds th.dds--pin,.dds td.dds--pin{position:sticky;z-index:var(--z-raised,10);
   background:var(--bg-medium,#EDEAE4);}

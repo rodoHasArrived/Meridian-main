@@ -22,7 +22,7 @@ function inject() {
 .mds-slider__track-fill{position:absolute;left:0;height:6px;background:var(--accent,#A85436);}
 .mds-slider__input{position:relative;-webkit-appearance:none;appearance:none;width:100%;height:16px;margin:0;
   background:transparent;cursor:pointer;}
-.mds-slider__input:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:var(--focus-ring-offset,2px);}
+.mds-slider__input:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:var(--focus-ring-offset,2px);}
 .mds-slider__input::-webkit-slider-runnable-track{height:6px;background:transparent;border:none;}
 .mds-slider__input::-moz-range-track{height:6px;background:transparent;border:none;}
 .mds-slider__input::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:16px;margin-top:-6px;

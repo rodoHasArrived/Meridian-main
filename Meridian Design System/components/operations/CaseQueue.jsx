@@ -20,8 +20,8 @@ function inject() {
   font-family:var(--font-body,"Segoe UI Variable Text",sans-serif);}
 .mds-caseq__row:last-child{border-bottom:0;}
 .mds-caseq__row:hover{background:var(--bg-hover,#F0EEE9);}
-.mds-caseq__row:focus-visible{outline:2px solid var(--focus-ring,#2F6F8F);outline-offset:-2px;}
-.mds-caseq__row[aria-selected="true"]{background:var(--accent-a10,rgba(47,111,143,.08));}
+.mds-caseq__row:focus-visible{outline:2px solid var(--focus-ring,#A85436);outline-offset:-2px;}
+.mds-caseq__row[aria-selected="true"]{background:var(--accent-a10,rgba(168,84,54,.08));}
 .mds-caseq__rail{align-self:stretch;background:transparent;}
 .mds-caseq__rail--critical{background:var(--severity-blocked-fg,#7E332D);}
 .mds-caseq__rail--high{background:var(--severity-action-fg,#68450E);}

@@ -18,7 +18,7 @@ function inject() {
   letter-spacing:.02em;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 button.mds-prov{cursor:pointer;}
 button.mds-prov:hover{border-color:var(--border-strong,#AFABA1);background:var(--bg-hover,#F0EEE9);}
-button.mds-prov:focus-visible{outline:2px solid var(--focus-ring,#2F6F8F);outline-offset:2px;}
+button.mds-prov:focus-visible{outline:2px solid var(--focus-ring,#A85436);outline-offset:2px;}
 .mds-prov__dot{height:6px;width:6px;border-radius:50%;flex:0 0 auto;}
 .mds-prov__dot--ready{background:var(--severity-ready-fg,#2C5C40);}
 .mds-prov__dot--review{background:var(--severity-review-fg,#8C4429);}

@@ -22,7 +22,7 @@ function inject() {
   font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border:1px solid var(--border,#E4E3DE);
   background:var(--bg-light,#FBFAF8);color:var(--text-secondary,#4E5258);}
 .mds-ticket__sbtn+.mds-ticket__sbtn{border-left:none;}
-.mds-ticket__sbtn:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:-2px;}
+.mds-ticket__sbtn:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:-2px;}
 .mds-ticket__sbtn--buy[aria-pressed="true"]{background:var(--green-a10,rgba(58,122,86,.10));
   border-color:var(--green,#3A7A56);color:var(--green-dim,#2C5C40);}
 .mds-ticket__sbtn--sell[aria-pressed="true"]{background:var(--red-a10,rgba(168,68,60,.10));

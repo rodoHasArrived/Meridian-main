@@ -29,7 +29,7 @@ function inject() {
   cursor:pointer;color:var(--accent-dim,#8C4429);font-family:var(--font-body);font-size:12px;
   font-weight:600;padding:4px 10px;margin-top:8px;align-self:flex-start;border-radius:var(--radius-button,2px);}
 .mds-toast__action:hover{background:var(--accent-ghost,#F4E7E0);}
-.mds-toast__action:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:1px;}
+.mds-toast__action:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:1px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds","toast");

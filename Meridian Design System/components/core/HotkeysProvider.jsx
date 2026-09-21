@@ -27,7 +27,7 @@ function inject() {
 .mds-hotkeys-title{font-size:13px;font-weight:600;color:var(--text-primary,#22252A);}
 .mds-hotkeys-x{appearance:none;border:none;background:transparent;cursor:pointer;font-size:16px;
   color:var(--text-muted,#5E666F);padding:2px 6px;}
-.mds-hotkeys-x:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);}
+.mds-hotkeys-x:focus-visible{outline:var(--focus-ring,2px solid #A85436);}
 .mds-hotkeys-group{padding:10px 16px 4px;font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#5E666F);}
 .mds-hotkeys-row{display:flex;align-items:center;justify-content:space-between;gap:12px;

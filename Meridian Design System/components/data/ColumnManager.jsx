@@ -18,7 +18,7 @@ function inject() {
   border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-button,2px);
   background:var(--bg-light,#FBFAF8);color:var(--text-secondary,#4E5258);font-size:12px;cursor:pointer;}
 .mds-colmgr__btn:hover{background:var(--bg-active,#F2E3DB);border-color:var(--accent,#A85436);}
-.mds-colmgr__btn:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:1px;}
+.mds-colmgr__btn:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:1px;}
 .mds-colmgr__btn--active{border-color:var(--accent,#A85436);color:var(--accent,#A85436);}
 .mds-colmgr__menu{position:absolute;top:calc(100% + 4px);right:0;z-index:var(--z-dropdown,100);
   width:280px;background:var(--bg-light,#FBFAF8);border:1px solid var(--border-strong,#AFABA1);
@@ -37,7 +37,7 @@ function inject() {
   background:var(--bg-light,#FBFAF8);cursor:pointer;flex:none;display:inline-flex;align-items:center;
   justify-content:center;font-size:9px;color:var(--text-on-accent,#fff);border-radius:2px;padding:0;}
 .mds-colmgr__vis--on{background:var(--accent,#A85436);border-color:var(--accent,#A85436);}
-.mds-colmgr__vis:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:1px;}
+.mds-colmgr__vis:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:1px;}
 .mds-colmgr__label{font-size:12px;color:var(--text-primary,#22252A);overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px;}
 .mds-colmgr__pintag{font-size:8px;font-weight:700;font-variant:all-small-caps;letter-spacing:.05em;
@@ -47,7 +47,7 @@ function inject() {
   width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;
   color:var(--text-muted,#5E666F);font-size:12px;line-height:1;border-radius:2px;padding:0;}
 .mds-colmgr__ic:hover:not(:disabled){background:var(--bg-active,#F2E3DB);color:var(--text-primary,#22252A);}
-.mds-colmgr__ic:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:-1px;}
+.mds-colmgr__ic:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:-1px;}
 .mds-colmgr__ic:disabled{opacity:.3;cursor:not-allowed;}
 .mds-colmgr__ic--on{color:var(--accent,#A85436);}
 .mds-colmgr__w{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#5E666F);

@@ -24,7 +24,7 @@ function inject() {
   text-align:left;cursor:default;font-family:var(--font-body,"Segoe UI Variable Text",sans-serif);}
 .mds-own__node--click{cursor:pointer;}
 .mds-own__node--click:hover{border-color:var(--border-strong,#AFABA1);background:var(--bg-hover,#F0EEE9);}
-.mds-own__node:focus-visible{outline:2px solid var(--focus-ring,#2F6F8F);outline-offset:2px;}
+.mds-own__node:focus-visible{outline:2px solid var(--focus-ring,#A85436);outline-offset:2px;}
 .mds-own__node--sel{outline:2px solid var(--accent,#A85436);outline-offset:-1px;border-color:var(--accent,#A85436);}
 .mds-own__type{font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
   color:var(--text-muted,#5E666F);font-family:var(--font-data,"Cascadia Mono",monospace);}

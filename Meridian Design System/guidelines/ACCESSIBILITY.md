@@ -35,6 +35,12 @@ relative-luminance formula), not estimated. Re-run them whenever a base color to
 | `--topbar-text` `#F4F2ED` on `--topbar-bg` `#1F1D1A` | — | **15.0:1** | ✅ AAA | ✅ AAA |
 
 > `--accent-hover` is a **fill**, never a text colour: as text on a panel it measures 4.4:1.
+>
+> **`--accent` is not a text colour on the header band either.** It is 5.05:1 on the card
+> and 4.63:1 on the canvas, but only **4.39:1** on `--bg-medium` — under AA. On the band it
+> is a borders-and-icons colour (3:1 role); band text takes `--accent-dim` (5.88:1). The
+> sticky sort arrow and multi-column rank in `DenseDataTable` sit there and were caught by
+> this rule. Both band pairs are now rows in `scripts/check_contrast.py`.
 > All three button states are checked against their white label by `scripts/check_contrast.py`,
 > which also checks every `data-brand` variant.
 

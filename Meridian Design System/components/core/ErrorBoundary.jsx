@@ -18,7 +18,7 @@ function inject() {
   border:1px solid var(--red,#A8443C);background:var(--bg-light,#FBFAF8);color:var(--red-dim,#7E332D);
   font-family:var(--font-body);font-size:12px;font-weight:600;}
 .mds-errbound__btn:hover{background:var(--red-a10,rgba(168,68,60,.10));}
-.mds-errbound__btn:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:1px;}
+.mds-errbound__btn:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:1px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "errorboundary");

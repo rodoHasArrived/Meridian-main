@@ -38,6 +38,13 @@ PAIRS = [
     ("muted text on hover row",    "--text-muted",     "--bg-hover",     4.5),
     ("accent text on card",        "--accent",         "--bg-light",     4.5),
     ("accent-dim text on card",    "--accent-dim",     "--bg-light",     4.5),
+    # The header band is a third surface, and the accent is only 4.39:1 on it — which is why
+    # DenseDataTable's sort arrow and rank, which sit there, now take the dim variant. The
+    # accent keeps a non-text row on the band (borders, icons, the 3:1 threshold); text on the
+    # band is --accent-dim. Checking the accent only against the card and the canvas missed a
+    # pair that ships on every sorted table.
+    ("accent on header band (non-text)", "--accent",   "--bg-medium",    3.0),
+    ("accent-dim text on header band",   "--accent-dim", "--bg-medium",  4.5),
     ("primary button label",       "--text-on-accent", "--accent",       4.5),
     # The hover state was omitted here until 2026-09, so a hover fill that failed AA
     # shipped behind a green gate. All three button states are checked now.
@@ -442,9 +449,29 @@ def check_var_chains(root: Path) -> list[str]:
     return failures
 
 
+DOC_HEX = re.compile(r"#[0-9A-Fa-f]{6}\b")
+# The steel brand block IS the superseded identity, kept deliberately as `data-brand="steel"`.
+STEEL_BLOCK = re.compile(r'html\[data-brand="steel"\]\s*\{(.*?)\n\}', re.S)
+EXTRA_SUPERSEDED = {"#2AB2D4", "#08101A", "#06F3FF", "#C06B4A"}
+
+
+def superseded_values(root: Path) -> set[str]:
+    """Every colour the steel identity holds — the palette this restyle replaced."""
+    theme = (root / "tokens" / "theme.css").read_text(encoding="utf-8")
+    return {h.upper() for block in STEEL_BLOCK.findall(theme)
+            for h in DOC_HEX.findall(block)} | EXTRA_SUPERSEDED
+
+
+DSCARD = re.compile(r"@dsCard\s+([^>]*?)-->")
+DSCARD_ATTR = re.compile(r'(\w+)="([^"]*)"')
+CARD_FIELDS = ("group", "viewport", "name", "subtitle")
+
+
 MIX_ALPHA = re.compile(r"^color-mix\(in srgb,\s*(.+?)\s+(\d+(?:\.\d+)?)%\s*,\s*transparent\s*\)$")
-HEX_FALLBACK = re.compile(r"var\(\s*(--[a-z0-9-]+)\s*,\s*(#[0-9A-Fa-f]{3,6})\s*\)")
-RGBA_FALLBACK = re.compile(r"var\(\s*(--[a-z0-9-]+)\s*,\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)")
+VAR_CALL = re.compile(r"var\(\s*(--[a-zA-Z0-9-]+)\s*(,)?")
+HEX_LITERAL = re.compile(r"#[0-9A-Fa-f]{6}\b|#[0-9A-Fa-f]{3}\b")
+RGBA_LITERAL = re.compile(r"rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)")
+INNER_VAR = re.compile(r"var\(\s*(--[a-zA-Z0-9-]+)")
 # Directories whose sources carry `var(--token, literal)` call sites. The package's own
 # `src/` governance snapshot is deliberately absent: it is a frozen pre-restyle copy.
 PACKAGE_CALL_SITES = ["components", "templates", "guidelines"]
@@ -457,12 +484,90 @@ CALL_SITE_SUFFIXES = (".jsx", ".tsx", ".ts", ".css", ".html")
 # had; checking both means neither side can drift alone again.
 COMPILED_BUNDLE = "_ds_bundle.js"
 
+# Tokens a component may reference without the package declaring them: ones it sets on itself
+# through an inline style (the `--mds-*` convention) and Tailwind's runtime internals.
+LOCAL_PREFIXES = ("--mds-", "--tw-")
+
 
 def call_sites(root: Path) -> list[Path]:
     repo = root.parent
     return ([root / rel for rel in PACKAGE_CALL_SITES]
             + [repo / rel for rel in WORKSTATION_CALL_SITES]
             + [root / COMPILED_BUNDLE])
+
+
+def split_var_call(text: str, start: int) -> tuple[str, str] | None:
+    """Return (token, fallback) for the `var(` beginning at `start`, honouring nesting.
+
+    A regex cannot do this: a fallback is an arbitrary CSS value and may itself contain
+    parentheses (`rgba(…)`) or a whole shorthand (`2px solid #2F6F8F`). Matching only the
+    shape `var(--x, #hex)` is what let nineteen composite focus-ring fallbacks stay blue.
+    """
+    depth, i = 0, start
+    while i < len(text):
+        if text[i] == "(":
+            depth += 1
+        elif text[i] == ")":
+            depth -= 1
+            if depth == 0:
+                break
+        i += 1
+    else:
+        return None
+    if depth != 0:
+        return None
+    inner = text[start + len("var(") : i]
+    depth = 0
+    for j, ch in enumerate(inner):
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            return inner[:j].strip(), inner[j + 1 :].strip()
+    return inner.strip(), ""
+
+
+def deref(name: str, tokens: dict[str, str], depth: int = 0) -> str:
+    """A token's declared value with bare `var(--x)` aliases followed to their source."""
+    value = tokens.get(name, "").strip()
+    alias = VAR_PATTERN.match(value)
+    if alias and depth < 8:
+        return deref(alias.group(1), tokens, depth + 1)
+    return value
+
+
+def token_colours(value: str, tokens: dict[str, str]) -> list[tuple[float, float, float]]:
+    """The colours a token's declared value resolves to, in order.
+
+    A plain colour yields one. A composite such as `2px solid var(--border-focus)` yields the
+    colour of each var() inside it, so a composite fallback can be compared position by position.
+    """
+    direct = resolve(value, tokens)
+    if direct is not None:
+        return [direct]
+    out = []
+    for name in INNER_VAR.findall(value):
+        rgb = resolve(f"var({name})", tokens)
+        if rgb is not None:
+            out.append(rgb)
+    return out
+
+
+# Token names that call sites reference and the package has never declared — on `origin/main`
+# as well as here. Each one means the literal beside it is what renders, always; none of them
+# carries a superseded colour any more, so none is this restyle's defect. They are listed
+# rather than skipped so that a *new* undeclared reference fails, and so the remaining gap is
+# a reviewable list instead of a silent branch. Declaring or re-pointing them is a package
+# design decision, not a restyle.
+KNOWN_UNDECLARED = frozenset({
+    "--accent-pressed", "--amber-a10", "--bg-panel", "--bg-subtle", "--panel", "--shadow-raised",
+    "--chart-benchmark", "--chart-bollinger", "--chart-rsi", "--chart-sma-20", "--chart-sma-50",
+    "--chart-compare-1", "--chart-compare-2", "--chart-compare-3",
+    "--chart-series-1", "--chart-series-2", "--chart-series-3", "--chart-series-4",
+    "--chart-series-5", "--chart-series-6", "--chart-series-7",
+    "--state-danger", "--state-positive", "--state-warning",
+})
 
 
 def check_fallbacks(root: Path) -> list[str]:
@@ -473,11 +578,26 @@ def check_fallbacks(root: Path) -> list[str]:
     palette is invisible in the app and wrong everywhere else, which is exactly how the
     superseded colours survived three rounds of review. Only the RGB channels are compared:
     the alpha on a wash fallback is the author's opacity choice, not a palette value.
+
+    A token the package never declares is a failure rather than a skip. The fallback is then
+    not a fallback at all — it is what renders always, stylesheet or no stylesheet — and
+    skipping it reported success over a live defect (`--accent-a10`, never declared, kept the
+    case-queue selection wash on the superseded steel).
     """
-    light = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
-    theme = parse_tokens((root / "tokens" / "theme.css").read_text(encoding="utf-8"))
-    tokens = {**theme, **light}
+    # A fallback renders in place of the LIGHT default, so colors.css and theme.css are
+    # authoritative here; colors-dark.css must never win. The remaining sheets only widen the
+    # set of names the package declares (elevation, typography, motion), which is what lets a
+    # composite like `var(--focus-ring, 2px solid #…)` be checked at all.
+    tokens = {**parse_tokens((root / "tokens" / "theme.css").read_text(encoding="utf-8")),
+              **parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))}
+    for sheet in sorted((root / "tokens").glob("*.css")):
+        if sheet.name in ("colors.css", "colors-dark.css", "theme.css"):
+            continue
+        for name, value in parse_tokens(sheet.read_text(encoding="utf-8")).items():
+            tokens.setdefault(name, value)
+    superseded = superseded_values(root)
     failures: list[str] = []
+    notes: list[str] = []
     checked = 0
     for base in call_sites(root):
         if not base.exists():
@@ -491,33 +611,69 @@ def check_fallbacks(root: Path) -> list[str]:
             text = path.read_text(encoding="utf-8", errors="replace")
             if path.suffix == ".css":
                 text = blank_comments(text)
+            local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
             for lineno, line in enumerate(text.splitlines(), 1):
-                for name, literal in HEX_FALLBACK.findall(line):
-                    want = resolve(f"var({name})", tokens)
-                    got = hex_to_rgb(literal)
-                    if name not in tokens or want is None or got is None:
+                for found in VAR_CALL.finditer(line):
+                    if not found.group(2):        # no comma: no fallback to check
                         continue
-                    checked += 1
-                    if max(abs(want[i] - got[i]) for i in range(3)) > 1.0:
-                        failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, {literal}) "
-                                        f"— the token resolves to "
-                                        f"#{round(want[0]):02X}{round(want[1]):02X}{round(want[2]):02X}")
-                for name, r, g, b in RGBA_FALLBACK.findall(line):
-                    value = tokens.get(name, "")
-                    m = MIX_ALPHA.match(value.strip())
-                    if not m:
+                    parsed = split_var_call(line, found.start())
+                    if parsed is None:
                         continue
-                    want = resolve(m.group(1), tokens)
-                    if want is None:
+                    name, fallback = parsed
+                    if not fallback or not (HEX_LITERAL.search(fallback)
+                                            or RGBA_LITERAL.search(fallback)):
                         continue
-                    checked += 1
-                    got = (float(r), float(g), float(b))
-                    if max(abs(want[i] - got[i]) for i in range(3)) > 1.0:
-                        failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, rgba({r},{g},{b}, …)) "
-                                        f"— the token's hue is "
-                                        f"rgb({round(want[0])},{round(want[1])},{round(want[2])})")
+                    if name not in tokens:
+                        if name.startswith(LOCAL_PREFIXES) or name in local:
+                            continue
+                        checked += 1
+                        stale = [h for h in HEX_LITERAL.findall(fallback)
+                                 if len(h) == 7 and h.upper() in superseded]
+                        where = f"{_rel(path, root)}:{lineno}: var({name}, …)"
+                        if name in KNOWN_UNDECLARED and not stale:
+                            notes.append(f"[fallback-note] {where} — undeclared (known gap)")
+                            continue
+                        detail = (f"so {', '.join(stale)} is what renders, always"
+                                  if stale else "so the literal is what renders, always")
+                        failures.append(f"[fallback] {where} — the package declares no such "
+                                        f"token, {detail}")
+                        continue
+                    wants = token_colours(tokens[name], tokens)
+                    if not wants:
+                        continue
+                    hexes = HEX_LITERAL.findall(fallback)
+                    rgbas = RGBA_LITERAL.findall(fallback)
+                    gots: list[tuple[float, float, float] | None] = []
+                    for literal in hexes:
+                        gots.append(hex_to_rgb(literal))
+                    for r, g, b in rgbas:
+                        gots.append((float(r), float(g), float(b)))
+                    # A wash token's literal carries the hue at the author's own alpha. Follow
+                    # bare aliases first: --blue-a10 is declared as var(--accent-a10), and the
+                    # color-mix only appears one level down.
+                    mix = MIX_ALPHA.match(deref(name, tokens))
+                    if mix:
+                        hue = resolve(mix.group(1), tokens)
+                        wants = [hue] if hue is not None else []
+                    for index, got in enumerate(gots):
+                        if got is None or index >= len(wants):
+                            continue
+                        want = wants[index]
+                        checked += 1
+                        if max(abs(want[i] - got[i]) for i in range(3)) > 1.0:
+                            shown = (hexes + [f"rgb({r},{g},{b})" for r, g, b in rgbas])[index]
+                            failures.append(
+                                f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …{shown}…) — "
+                                f"the token resolves to "
+                                f"#{round(want[0]):02X}{round(want[1]):02X}{round(want[2]):02X}")
+    for stale_entry in sorted(KNOWN_UNDECLARED & tokens.keys()):
+        failures.append(f"[fallback] {stale_entry} is declared now — drop it from "
+                        "KNOWN_UNDECLARED so the exemption cannot outlive the gap")
     for f in failures[:10]:
         print(f)
+    if notes:
+        print(f"[fallback-note] {len(notes)} call site(s) name one of the "
+              f"{len(KNOWN_UNDECLARED)} known-undeclared tokens")
     if failures:
         print(f"[fallback] {len(failures)} of {checked} literals disagree with the token they guard")
     else:
@@ -525,14 +681,37 @@ def check_fallbacks(root: Path) -> list[str]:
     return failures
 
 
-# Three checks over the package's *prose and metadata*. Rounds six and seven both turned up
-# guidance that still described the superseded system: a reader or an agent following it
-# rebuilds the old palette, and following the elevation section rebuilt a radius and shadow
-# contract the tokens do not implement. Documentation is a surface too.
+# A component's CSS lives as a one-line rule inside its source, and the bundle is built from
+# those strings verbatim. Comparing them catches the drift the fallback check cannot see: a
+# rule that changes which *token* it reads (--accent to --accent-dim, say) leaves both sides'
+# literals correctly mirroring their own tokens while the shipped component keeps the old one.
+SOURCE_RULE = re.compile(r"^[.#&\[][^{]*\{[^{}]*var\(--[a-z0-9-]+[^{}]*\}$")
 
-DSCARD = re.compile(r"@dsCard\s+([^>]*?)-->")
-DSCARD_ATTR = re.compile(r'(\w+)="([^"]*)"')
-CARD_FIELDS = ("group", "viewport", "name", "subtitle")
+
+def check_bundle_parity(root: Path) -> list[str]:
+    """Every token-bearing CSS rule in a component source must be in the compiled bundle."""
+    bundle_path = root / COMPILED_BUNDLE
+    if not bundle_path.exists():
+        return []
+    bundle = bundle_path.read_text(encoding="utf-8", errors="replace")
+    failures: list[str] = []
+    checked = 0
+    for path in sorted((root / "components").rglob("*.jsx")):
+        for lineno, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            rule = line.strip()
+            if not SOURCE_RULE.match(rule):
+                continue
+            checked += 1
+            if rule not in bundle:
+                failures.append(f"[bundle] {_rel(path, root)}:{lineno}: this rule is not in "
+                                f"{COMPILED_BUNDLE} — the shipped component differs from its "
+                                f"source: {rule[:72]}")
+    for f in failures[:10]:
+        print(f)
+    if not failures:
+        print(f"[bundle] all {checked} token-bearing component rules are present verbatim in "
+              f"{COMPILED_BUNDLE}")
+    return failures
 
 
 def check_card_metadata(root: Path) -> list[str]:
@@ -573,9 +752,6 @@ def check_card_metadata(root: Path) -> list[str]:
 # The steel brand block IS the superseded identity, kept deliberately as `data-brand="steel"`.
 # Any document quoting one of its values while describing the current system is describing the
 # old one. Plus the superseded brand cyan/navy and the pre-AA-fix hover.
-STEEL_BLOCK = re.compile(r'html\[data-brand="steel"\]\s*\{(.*?)\n\}', re.S)
-DOC_HEX = re.compile(r"#[0-9A-Fa-f]{6}\b")
-EXTRA_SUPERSEDED = {"#2AB2D4", "#08101A", "#06F3FF", "#C06B4A"}
 # Whole documents whose job is to record history rather than describe the current system.
 HISTORICAL_DOCS = {"CHANGELOG.md", "INSPIRATION_BRIEF.md", "docs/UPGRADING.md"}
 HISTORICAL_DIRS = ("docs/changelog/", "src/")
@@ -586,9 +762,7 @@ HISTORICAL_LINE = re.compile(r"steel|superseded|previous|was\b|former|legacy|unt
 
 def check_doc_palette(root: Path) -> list[str]:
     """Flag a superseded-identity colour quoted in documentation as if it were current."""
-    theme = (root / "tokens" / "theme.css").read_text(encoding="utf-8")
-    superseded = {h.upper() for block in STEEL_BLOCK.findall(theme)
-                  for h in DOC_HEX.findall(block)} | EXTRA_SUPERSEDED
+    superseded = superseded_values(root)
     failures: list[str] = []
     checked = 0
     for path in sorted(root.rglob("*.md")):
@@ -658,7 +832,7 @@ def run_checks(root: Path) -> list[str]:
             + check_ws_aliases(root) + check_comment_terminators(root)
             + check_var_chains(root) + check_fallbacks(root)
             + check_card_metadata(root) + check_doc_palette(root)
-            + check_elevation_guidance(root))
+            + check_elevation_guidance(root) + check_bundle_parity(root))
 
 
 def main() -> int:
