@@ -8,11 +8,11 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-metric{background:var(--card-surface-raised,#FAFBFC);
-  border:1px solid var(--border,#D7DCE2);border-left-width:3px;
+.mds-metric{background:var(--card-surface-raised,#F6F4F0);
+  border:1px solid var(--border,#E4E3DE);border-left-width:3px;
   border-radius:var(--radius-card,2px);padding:18px;
   box-shadow:var(--shadow-card,none);display:flex;flex-direction:column;min-width:0;}
-.mds-metric--neutral{border-left-color:var(--border-strong,#AAB4BF);}
+.mds-metric--neutral{border-left-color:var(--border-strong,#AFABA1);}
 .mds-metric--info{border-left-color:var(--accent,#A85436);}
 .mds-metric--success{border-left-color:var(--green,#3A7A56);}
 .mds-metric--warning{border-left-color:var(--orange,#8A5C12);}
@@ -29,8 +29,8 @@ function inject() {
 .mds-metric__delta{font-family:var(--font-data);font-size:11px;white-space:nowrap;
   font-variant-numeric:slashed-zero tabular-nums;}
 .mds-metric__ctx{font-family:var(--font-body);font-size:11px;color:var(--text-muted,#5E666F);white-space:nowrap;}
-.mds-delta--up{color:var(--green-dim,#10663F);}
-.mds-delta--down{color:var(--red-dim,#8C2F40);}
+.mds-delta--up{color:var(--green-dim,#2C5C40);}
+.mds-delta--down{color:var(--red-dim,#7E332D);}
 .mds-delta--flat{color:var(--text-muted,#5E666F);}
 `;
   const el = document.createElement("style");

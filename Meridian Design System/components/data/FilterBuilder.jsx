@@ -25,7 +25,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-fb__x{flex:0 0 24px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
   border:1px solid transparent;border-radius:var(--radius-button,2px);background:transparent;
   color:var(--text-muted,#5E666F);font-size:13px;line-height:1;}
-.mds-fb__x:hover{color:var(--red-dim,#8C2F40);border-color:var(--border,#E4E3DE);background:var(--bg-hover,#F0EEE9);}
+.mds-fb__x:hover{color:var(--red-dim,#7E332D);border-color:var(--border,#E4E3DE);background:var(--bg-hover,#F0EEE9);}
 .mds-fb__x:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-fb__foot{display:flex;align-items:center;gap:8px;padding-top:2px;}
 .mds-fb__btn{height:24px;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;cursor:pointer;

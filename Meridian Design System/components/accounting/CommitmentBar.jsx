@@ -12,20 +12,20 @@ function inject() {
   const css = `
 .mds-cmt{display:flex;flex-direction:column;gap:8px;font-family:var(--font-body,"Segoe UI Variable Text",sans-serif);}
 .mds-cmt__head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
-.mds-cmt__label{font-size:12px;font-weight:600;color:var(--text-primary,#1A2027);
+.mds-cmt__label{font-size:12px;font-weight:600;color:var(--text-primary,#22252A);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mds-cmt__vintage{font-family:var(--font-data,"Cascadia Mono",monospace);font-size:9.5px;font-weight:700;
-  letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted,#6E7781);white-space:nowrap;}
-.mds-cmt__bar{position:relative;height:8px;border:1px solid var(--border,#D7DCE2);
-  border-radius:var(--radius-chip,2px);background:var(--bg-medium,#EDF0F3);overflow:hidden;}
+  letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted,#5E666F);white-space:nowrap;}
+.mds-cmt__bar{position:relative;height:8px;border:1px solid var(--border,#E4E3DE);
+  border-radius:var(--radius-chip,2px);background:var(--bg-medium,#EDEAE4);overflow:hidden;}
 .mds-cmt__called{position:absolute;inset:0 auto 0 0;background:var(--accent,#A85436);}
 .mds-cmt__figs{display:flex;flex-wrap:wrap;gap:0 18px;row-gap:6px;}
 .mds-cmt__fig{display:flex;flex-direction:column;gap:1px;min-width:72px;}
 .mds-cmt__k{font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;
-  color:var(--text-muted,#6E7781);}
+  color:var(--text-muted,#5E666F);}
 .mds-cmt__v{font-family:var(--font-data,"Cascadia Mono",monospace);font-size:11.5px;font-weight:600;
-  color:var(--text-primary,#1A2027);font-variant-numeric:tabular-nums;}
-.mds-cmt__v small{font-size:9.5px;font-weight:500;color:var(--text-muted,#6E7781);margin-left:3px;}
+  color:var(--text-primary,#22252A);font-variant-numeric:tabular-nums;}
+.mds-cmt__v small{font-size:9.5px;font-weight:500;color:var(--text-muted,#5E666F);margin-left:3px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "commitment-bar");

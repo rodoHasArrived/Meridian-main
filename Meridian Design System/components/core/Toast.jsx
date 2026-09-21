@@ -10,12 +10,12 @@ function inject() {
 .mds-toast-stack{position:fixed;bottom:20px;right:20px;z-index:9999;
   display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none;}
 .mds-toast{display:flex;align-items:flex-start;gap:10px;min-width:280px;max-width:420px;
-  padding:12px 14px;border:1px solid var(--border,#D7DCE2);background:var(--bg-light,#fff);
+  padding:12px 14px;border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);
   pointer-events:all;}
 .mds-toast--out{display:none;}
 .mds-toast__bar{width:3px;flex-shrink:0;align-self:stretch;margin:-12px 0 -12px -14px;}
 .mds-toast--success .mds-toast__bar{background:var(--green,#3A7A56);}
-.mds-toast--warning .mds-toast__bar{background:var(--amber,#8A520E);}
+.mds-toast--warning .mds-toast__bar{background:var(--amber,#8A5C12);}
 .mds-toast--error   .mds-toast__bar{background:var(--red,#A8443C);}
 .mds-toast--info    .mds-toast__bar{background:var(--accent,#A85436);}
 .mds-toast__body{flex:1;min-width:0;}

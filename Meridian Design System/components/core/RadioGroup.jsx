@@ -12,7 +12,7 @@ function inject() {
 .mds-radio{display:inline-flex;align-items:flex-start;gap:8px;cursor:pointer;user-select:none;}
 .mds-radio--disabled{opacity:.5;cursor:not-allowed;}
 .mds-radio__ring{width:16px;height:16px;flex:0 0 auto;margin-top:1px;border-radius:50%;
-  border:1.5px solid var(--border,#D7DCE2);background:var(--bg-light,#FAFBFC);
+  border:1.5px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);
   display:flex;align-items:center;justify-content:center;}
 .mds-radio__ring:focus-within{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-radio--checked .mds-radio__ring{border-color:var(--accent,#A85436);}

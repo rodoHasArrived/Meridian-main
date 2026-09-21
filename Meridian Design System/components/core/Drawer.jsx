@@ -18,7 +18,7 @@ function inject() {
   to { opacity: 1; }
 }
 .mds-drawer-wrap {
-  position: fixed; background: var(--bg-light, #FAFBFC);
+  position: fixed; background: var(--bg-light, #FBFAF8);
   display: flex; flex-direction: column; z-index: 1000;
   box-shadow: var(--shadow-menu);
 }
@@ -58,8 +58,8 @@ function inject() {
 .mds-drawer-hd {
   display: flex; align-items: center; justify-content: space-between;
   padding: var(--space-md, 12px) var(--space-lg, 16px);
-  border-bottom: 1px solid var(--border-divider, #E5E9EE);
-  background: var(--bg-medium, #F5F7FA);
+  border-bottom: 1px solid var(--border-divider, #DAD8D3);
+  background: var(--bg-medium, #EDEAE4);
 }
 .mds-drawer-title {
   font-family: var(--font-body); font-size: var(--type-card-title, 13px);

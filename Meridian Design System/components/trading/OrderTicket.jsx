@@ -13,20 +13,20 @@ function inject() {
   injected = true;
   const css = `
 .mds-ticket{display:flex;flex-direction:column;gap:10px;border:1px solid var(--border,#E4E3DE);
-  background:var(--bg-light,#fff);padding:14px;font-family:var(--font-body);box-sizing:border-box;}
+  background:var(--bg-light,#FBFAF8);padding:14px;font-family:var(--font-body);box-sizing:border-box;}
 .mds-ticket__hd{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .mds-ticket__sym{font:600 14px var(--font-data);color:var(--text-primary,#22252A);letter-spacing:.02em;}
 .mds-ticket__last{font:11px var(--font-data);color:var(--text-muted,#5E666F);font-variant-numeric:tabular-nums;}
 .mds-ticket__side{display:grid;grid-template-columns:1fr 1fr;}
 .mds-ticket__sbtn{appearance:none;cursor:pointer;padding:7px 0;font-family:var(--font-body);font-size:12px;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border:1px solid var(--border,#E4E3DE);
-  background:var(--bg-light,#fff);color:var(--text-secondary,#4E5258);}
+  background:var(--bg-light,#FBFAF8);color:var(--text-secondary,#4E5258);}
 .mds-ticket__sbtn+.mds-ticket__sbtn{border-left:none;}
 .mds-ticket__sbtn:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:-2px;}
-.mds-ticket__sbtn--buy[aria-pressed="true"]{background:var(--green-a10,rgba(22,136,95,.10));
-  border-color:var(--green,#3A7A56);color:var(--green-dim,#10663F);}
-.mds-ticket__sbtn--sell[aria-pressed="true"]{background:var(--red-a10,rgba(186,63,85,.10));
-  border-color:var(--red,#A8443C);color:var(--red-dim,#8C2F40);}
+.mds-ticket__sbtn--buy[aria-pressed="true"]{background:var(--green-a10,rgba(58,122,86,.10));
+  border-color:var(--green,#3A7A56);color:var(--green-dim,#2C5C40);}
+.mds-ticket__sbtn--sell[aria-pressed="true"]{background:var(--red-a10,rgba(168,68,60,.10));
+  border-color:var(--red,#A8443C);color:var(--red-dim,#7E332D);}
 .mds-ticket__grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start;}
 /* Converge on the form primitives; only right-align the numeric fields. */
 .mds-ticket__num input{text-align:right;font-variant-numeric:tabular-nums;}
@@ -36,8 +36,8 @@ function inject() {
 .mds-ticket__sum-label{font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);}
 .mds-ticket__gate{display:flex;gap:7px;align-items:flex-start;padding:8px 10px;
-  border:1px solid var(--red,#A8443C);background:var(--red-a10,rgba(186,63,85,.10));
-  font-size:11px;line-height:1.4;color:var(--red-dim,#8C2F40);}
+  border:1px solid var(--red,#A8443C);background:var(--red-a10,rgba(168,68,60,.10));
+  font-size:11px;line-height:1.4;color:var(--red-dim,#7E332D);}
 .mds-ticket__gate input{margin:1px 0 0;accent-color:var(--red,#A8443C);}
 `;
   const el = document.createElement("style");

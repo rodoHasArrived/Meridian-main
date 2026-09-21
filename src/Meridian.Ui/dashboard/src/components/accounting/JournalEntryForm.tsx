@@ -70,7 +70,7 @@ function inject(): void {
 .jnl__del{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;
   border:1px solid transparent;border-radius:var(--radius-button,2px);background:transparent;cursor:pointer;
   color:var(--text-muted,#5E666F);font-size:14px;line-height:1;transition:all .12s ease;}
-.jnl__del:hover{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#8C2F40);}
+.jnl__del:hover{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#7E332D);}
 .jnl__grid tfoot td{padding:8px 12px;border-top:2px solid var(--border-strong,#AFABA1);
   background:var(--bg-medium,#EDEAE4);font-weight:600;}
 .jnl__grid tfoot td.jnl--r{text-align:right;}
@@ -80,15 +80,15 @@ function inject(): void {
 .jnl__btn{font-family:var(--font-body,inherit);font-size:12px;font-weight:600;cursor:pointer;
   border-radius:var(--radius-button,2px);padding:6px 12px;line-height:1.3;border:1px solid;transition:all .12s ease;}
 .jnl__btn--ghost{background:transparent;border-color:var(--border,#E4E3DE);color:var(--text-secondary,#4E5258);}
-.jnl__btn--ghost:hover{background:var(--bg-hover,#F6F4F0);border-color:var(--border-strong,#AFABA1);}
+.jnl__btn--ghost:hover{background:var(--bg-hover,#F0EEE9);border-color:var(--border-strong,#AFABA1);}
 .jnl__btn--primary{background:var(--accent,#A85436);border-color:var(--accent,#A85436);color:#fff;}
 .jnl__btn--primary:hover:not(:disabled){background:var(--accent-pressed,#8C4429);border-color:var(--accent-pressed,#8C4429);}
 .jnl__btn:disabled{cursor:not-allowed;opacity:.5;}
 .jnl__status{display:inline-flex;align-items:center;gap:7px;
   font-family:var(--font-body,inherit);font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
   border:1px solid;border-radius:var(--radius-chip,2px);padding:5px 10px;}
-.jnl__status--bal{background:var(--green-a10,rgba(22,136,95,.10));border-color:var(--green,#3A7A56);color:var(--green-dim,#10663F);}
-.jnl__status--out{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#8C2F40);}
+.jnl__status--bal{background:var(--green-a10,rgba(58,122,86,.10));border-color:var(--green,#3A7A56);color:var(--green-dim,#2C5C40);}
+.jnl__status--out{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#7E332D);}
 .jnl__dot{height:6px;width:6px;border-radius:50%;background:currentColor;}
 `;
   const el = document.createElement("style");

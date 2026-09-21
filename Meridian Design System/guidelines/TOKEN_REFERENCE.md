@@ -65,10 +65,10 @@ the thing they read → **muted**. (Both pass AA on every surface; choosing corr
 hierarchy, not contrast.)
 
 ### `--accent-hover` vs `--accent-dim`
-`--accent-hover` (#3B82A6, lighter) is the **pointer-hover** state; `--accent-dim` (#255B75,
+`--accent-hover` (#AF6143, lighter) is the **pointer-hover** state; `--accent-dim` (#8C4429,
 darker) is the **pressed/active** state. Lighter on hover, darker on press — never swap them.
 `--accent-dim` also doubles as **emphasized accent text** (Toast action, role badges).
-**Dark-mode exception (2026-07):** in dark, `--accent-dim` is `#609BC9` — *lighter* than the
+**Dark-mode exception (2026-07):** in dark, `--accent-dim` is `#E39A77` — *lighter* than the
 accent, sitting between accent and hover — because a darker pressed fill left the dark button
 ink at 3.11:1 and failed as text on dark panels. Semantics are unchanged (still "pressed" +
 "accent text"); only the direction of the shift flips in dark, per standard dark-UI convention.

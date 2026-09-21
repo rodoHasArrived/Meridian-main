@@ -88,6 +88,11 @@ WASH_PAIRS = [
 ]
 
 
+def blank_comments(text: str) -> str:
+    """Like strip_comments, but keeps every newline so line numbers stay true."""
+    return re.sub(r"/\*.*?\*/", lambda m: re.sub(r"[^\n]", " ", m.group(0)), text, flags=re.DOTALL)
+
+
 def strip_comments(text: str) -> str:
     """Remove /* ... */ the way a CSS parser does, so this script sees what a browser sees.
 
@@ -196,6 +201,15 @@ BRAND_BLOCK = re.compile(r'html\[data-brand="(\w+)"\]\s*\{(.*?)\n\}', re.S)
 # palette let a brand ship an inaccessible primary action.
 BRAND_PAIRS = [("base", "accent"), ("hover", "accent-hover"), ("pressed", "accent-dim")]
 
+# Surfaces a brand's accent also drives. Checking only the button states let six brands ship
+# with the default copper focus ring and the default warm-brown ghost fill, because those two
+# tokens were never restated per brand and nothing here looked at them.
+# (name, foreground suffix, background suffix, minimum) — 3.0 is the non-text threshold.
+BRAND_SURFACES = [
+    ("focus ring on card", "border-focus", "bg-light", 3.0),
+    ("body text on ghost", "primary-text", "accent-ghost", 4.5),
+]
+
 # A brand may restate its light identity, its dark identity, or both, in separate blocks.
 # Merge a brand's blocks before checking so each variant is reported once per mode, and so
 # a brand that states only a dark identity is not silently measured against the defaults.
@@ -205,7 +219,10 @@ BRAND_MODES = [("light", "--theme-"), ("dark", "--theme-dark-")]
 def check_brands(root: Path) -> list[str]:
     """Check each data-brand variant's button states against its own label colour."""
     text = (root / "tokens" / "theme.css").read_text(encoding="utf-8")
-    defaults = parse_tokens(text)
+    # Brand blocks sit above the default dark block in this file, so parsing the whole text
+    # would let the first brand's --theme-dark-* values stand in as "the defaults" for every
+    # brand that omits one. Read the defaults from the text with the brand blocks removed.
+    defaults = parse_tokens(BRAND_BLOCK.sub("", text))
     merged: dict[str, dict[str, str]] = {}
     for brand, body in BRAND_BLOCK.findall(text):
         merged.setdefault(brand, {}).update(parse_tokens(body))
@@ -246,6 +263,16 @@ def check_brands(root: Path) -> list[str]:
                 print(f"[{mode} · brand {brand}] {state} button label: {value:.2f}:1 (min 4.5) {status}")
                 if status == "FAIL":
                     failures.append(f"[{mode} · brand {brand}] {state} button label: {value:.2f}:1 < 4.5")
+            for name, fg_name, bg_name, minimum in BRAND_SURFACES:
+                fg = resolve(f"var({prefix}{fg_name})", tokens)
+                bg = resolve(f"var({prefix}{bg_name})", tokens)
+                if fg is None or bg is None:
+                    continue
+                value = ratio(fg, bg)
+                status = "ok" if value >= minimum else "FAIL"
+                print(f"[{mode} · brand {brand}] {name}: {value:.2f}:1 (min {minimum}) {status}")
+                if status == "FAIL":
+                    failures.append(f"[{mode} · brand {brand}] {name}: {value:.2f}:1 < {minimum}")
     return failures
 
 
@@ -347,13 +374,165 @@ def check_comment_terminators(root: Path) -> list[str]:
     return failures
 
 
+# Two checks that model what the browser does with a reference, rather than whether the text
+# of a declaration is present. Everything above matches tokens by name, and twice now that has
+# reported a token as healthy while the browser rendered nothing: once when a stray `*/` made
+# the parser throw the whole --ws-* block away, and once when the workstation's --*-fg tokens
+# pointed at --green-dim and friends that only the package declared.
+
+def _rel(path: Path, root: Path) -> str:
+    """Path relative to the repository, so a finding can be opened directly."""
+    repo = root.parent
+    try:
+        return str(path.relative_to(repo))
+    except ValueError:
+        return str(path)
+
+
+DECL_NAME = re.compile(r"(--[a-zA-Z0-9-]+)\s*:")
+JS_DECL_NAME = re.compile(r"[\"'](--[a-zA-Z0-9-]+)[\"']\s*:")
+BARE_REF = re.compile(r"var\(\s*(--[a-zA-Z0-9-]+)\s*\)")
+
+# Each track is self-contained: the browser workstation does not import the package's
+# stylesheets, so a token the package declares is not available to it. Paths are resolved
+# from an explicit base, because the package also carries a governance snapshot at
+# `<package>/src/Meridian.Ui/...` — a frozen pre-restyle copy owned by
+# governance-baseline.json, which must not be read as the live workstation track.
+PACKAGE_TRACK = ["tokens/colors.css", "tokens/colors-dark.css", "tokens/theme.css"]
+WORKSTATION_TRACK = ["src/Meridian.Ui/dashboard/src/styles/index.css"]
+
+
+def tracks(root: Path) -> dict[str, list[Path]]:
+    repo = root.parent
+    return {
+        "package": [root / rel for rel in PACKAGE_TRACK],
+        "workstation": [repo / rel for rel in WORKSTATION_TRACK],
+    }
+
+
+def check_var_chains(root: Path) -> list[str]:
+    """Fail when a bare var() names a token its own track never declares.
+
+    Such a declaration is invalid at computed-value time: the custom property becomes the
+    guaranteed-invalid value, so consumers fall through to their fallback (rendering the
+    literal rather than the token) or, with no fallback, inherit. Nothing else here sees it,
+    because the declaration is present in the text either way.
+    """
+    failures: list[str] = []
+    checked = 0
+    for track, paths in tracks(root).items():
+        files = [f for f in paths if f.exists()]
+        if not files:
+            continue
+        declared: set[str] = set()
+        for f in files:
+            declared |= set(DECL_NAME.findall(blank_comments(f.read_text(encoding="utf-8"))))
+        for f in files:
+            text = blank_comments(f.read_text(encoding="utf-8"))
+            for lineno, line in enumerate(text.splitlines(), 1):
+                for ref in BARE_REF.findall(line):
+                    checked += 1
+                    if ref not in declared:
+                        failures.append(f"[var-chain] {track} {_rel(f, root)}:{lineno}: var({ref}) — "
+                                        f"this track never declares it, so the declaration is "
+                                        f"invalid at computed-value time")
+                        print(f"[var-chain] {track} {_rel(f, root)}:{lineno}: var({ref}) UNRESOLVED")
+    if not failures:
+        print(f"[var-chain] all {checked} bare var() references resolve within their own track")
+    return failures
+
+
+MIX_ALPHA = re.compile(r"^color-mix\(in srgb,\s*(.+?)\s+(\d+(?:\.\d+)?)%\s*,\s*transparent\s*\)$")
+HEX_FALLBACK = re.compile(r"var\(\s*(--[a-z0-9-]+)\s*,\s*(#[0-9A-Fa-f]{3,6})\s*\)")
+RGBA_FALLBACK = re.compile(r"var\(\s*(--[a-z0-9-]+)\s*,\s*rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)")
+# Directories whose sources carry `var(--token, literal)` call sites. The package's own
+# `src/` governance snapshot is deliberately absent: it is a frozen pre-restyle copy.
+PACKAGE_CALL_SITES = ["components", "templates", "guidelines"]
+WORKSTATION_CALL_SITES = ["src/Meridian.Ui/dashboard/src"]
+CALL_SITE_SUFFIXES = (".jsx", ".tsx", ".ts", ".css", ".html")
+
+
+# The compiled bundle is a call site too, and it is the one that actually ships to a
+# consumer. Round four found it carrying pre-restyle fallbacks its own sources no longer
+# had; checking both means neither side can drift alone again.
+COMPILED_BUNDLE = "_ds_bundle.js"
+
+
+def call_sites(root: Path) -> list[Path]:
+    repo = root.parent
+    return ([root / rel for rel in PACKAGE_CALL_SITES]
+            + [repo / rel for rel in WORKSTATION_CALL_SITES]
+            + [root / COMPILED_BUNDLE])
+
+
+def check_fallbacks(root: Path) -> list[str]:
+    """Every `var(--token, literal)` literal must be the value that token resolves to.
+
+    The literal is what renders wherever the stylesheet is absent — a component pasted into a
+    consuming app, a static export, a card rendered on its own. A literal left on the previous
+    palette is invisible in the app and wrong everywhere else, which is exactly how the
+    superseded colours survived three rounds of review. Only the RGB channels are compared:
+    the alpha on a wash fallback is the author's opacity choice, not a palette value.
+    """
+    light = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
+    theme = parse_tokens((root / "tokens" / "theme.css").read_text(encoding="utf-8"))
+    tokens = {**theme, **light}
+    failures: list[str] = []
+    checked = 0
+    for base in call_sites(root):
+        if not base.exists():
+            continue
+        paths = [base] if base.is_file() else sorted(base.rglob("*"))
+        for path in paths:
+            if not path.is_file():
+                continue
+            if path != base and path.suffix not in CALL_SITE_SUFFIXES:
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if path.suffix == ".css":
+                text = blank_comments(text)
+            for lineno, line in enumerate(text.splitlines(), 1):
+                for name, literal in HEX_FALLBACK.findall(line):
+                    want = resolve(f"var({name})", tokens)
+                    got = hex_to_rgb(literal)
+                    if name not in tokens or want is None or got is None:
+                        continue
+                    checked += 1
+                    if max(abs(want[i] - got[i]) for i in range(3)) > 1.0:
+                        failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, {literal}) "
+                                        f"— the token resolves to "
+                                        f"#{round(want[0]):02X}{round(want[1]):02X}{round(want[2]):02X}")
+                for name, r, g, b in RGBA_FALLBACK.findall(line):
+                    value = tokens.get(name, "")
+                    m = MIX_ALPHA.match(value.strip())
+                    if not m:
+                        continue
+                    want = resolve(m.group(1), tokens)
+                    if want is None:
+                        continue
+                    checked += 1
+                    got = (float(r), float(g), float(b))
+                    if max(abs(want[i] - got[i]) for i in range(3)) > 1.0:
+                        failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, rgba({r},{g},{b}, …)) "
+                                        f"— the token's hue is "
+                                        f"rgb({round(want[0])},{round(want[1])},{round(want[2])})")
+    for f in failures[:10]:
+        print(f)
+    if failures:
+        print(f"[fallback] {len(failures)} of {checked} literals disagree with the token they guard")
+    else:
+        print(f"[fallback] all {checked} literals mirror the token they guard")
+    return failures
+
+
 def run_checks(root: Path) -> list[str]:
     light = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
     dark_overrides = parse_tokens((root / "tokens" / "colors-dark.css").read_text(encoding="utf-8"))
     dark = {**light, **dark_overrides}
     return (check_mode("light", light) + check_mode("dark", dark)
             + check_brands(root) + check_workstation(root)
-            + check_ws_aliases(root) + check_comment_terminators(root))
+            + check_ws_aliases(root) + check_comment_terminators(root)
+            + check_var_chains(root) + check_fallbacks(root))
 
 
 def main() -> int:

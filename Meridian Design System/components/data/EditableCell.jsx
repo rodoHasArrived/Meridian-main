@@ -12,11 +12,11 @@ function inject() {
 .mds-editable__display{padding:4px 6px;cursor:pointer;user-select:none;
   border:1px solid transparent;border-radius:2px;
   transition:background-color 100ms ease;}
-.mds-editable__display:hover{background:var(--bg-hover,#F1F4F7);}
+.mds-editable__display:hover{background:var(--bg-hover,#F0EEE9);}
 .mds-editable--active .mds-editable__display{display:none;}
 .mds-editable__input{width:100%;box-sizing:border-box;height:28px;padding:4px 8px;
-  border:1px solid var(--border,#D7DCE2);border-radius:var(--radius-button,2px);
-  background:var(--bg-light,#fff);color:var(--text-primary,#22252A);
+  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-button,2px);
+  background:var(--bg-light,#FBFAF8);color:var(--text-primary,#22252A);
   font-family:inherit;font-size:inherit;font-variant-numeric:inherit;
   transition:border-color 100ms ease,box-shadow 100ms ease;}
 .mds-editable__input:focus{border-color:var(--accent,#A85436);outline:var(--focus-ring);outline-offset:-2px;}

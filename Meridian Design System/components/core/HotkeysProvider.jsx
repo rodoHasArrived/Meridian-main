@@ -20,10 +20,10 @@ function inject() {
   animation:mds-hotkeys-fade var(--motion-base,150ms) var(--ease-standard,ease-out);}
 @keyframes mds-hotkeys-fade{from{opacity:0}to{opacity:1}}
 .mds-hotkeys-panel{width:520px;max-width:92vw;max-height:76vh;overflow-y:auto;
-  background:var(--bg-light,#fff);border:1px solid var(--border-strong,#AFABA1);
+  background:var(--bg-light,#FBFAF8);border:1px solid var(--border-strong,#AFABA1);
   box-shadow:var(--shadow-menu);font-family:var(--font-body);}
 .mds-hotkeys-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
-  border-bottom:1px solid var(--border,#E4E3DE);position:sticky;top:0;background:var(--bg-light,#fff);}
+  border-bottom:1px solid var(--border,#E4E3DE);position:sticky;top:0;background:var(--bg-light,#FBFAF8);}
 .mds-hotkeys-title{font-size:13px;font-weight:600;color:var(--text-primary,#22252A);}
 .mds-hotkeys-x{appearance:none;border:none;background:transparent;cursor:pointer;font-size:16px;
   color:var(--text-muted,#5E666F);padding:2px 6px;}

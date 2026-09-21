@@ -13,11 +13,11 @@ function inject() {
   display: flex; align-items: center; justify-content: center;
   animation: mdl-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out); }
 @keyframes mdl-fade-in { from { opacity: 0; } to { opacity: 1; } }
-.mdl-wrap { background: var(--bg-light, #fff); border: 1px solid var(--border, #D7DCE2);
+.mdl-wrap { background: var(--bg-light, #FBFAF8); border: 1px solid var(--border, #E4E3DE);
   max-width: 520px; width: 92vw; max-height: 92vh; display: flex; flex-direction: column; }
 .mdl-hd { display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 18px; border-bottom: 1px solid var(--border, #D7DCE2);
-  background: var(--bg-medium, #F5F7FA); }
+  padding: 16px 18px; border-bottom: 1px solid var(--border, #E4E3DE);
+  background: var(--bg-medium, #EDEAE4); }
 .mdl-title { font-family: var(--font-body); font-size: 15px; font-weight: 600;
   color: var(--text-primary, #22252A); margin: 0; }
 .mdl-close { appearance: none; border: none; background: transparent; width: 28px; height: 28px;
@@ -28,14 +28,14 @@ function inject() {
 .mdl-bd { flex: 1; overflow-y: auto; padding: 18px; font-family: var(--font-body);
   font-size: 13px; color: var(--text-primary, #22252A); }
 .mdl-ft { display: flex; align-items: center; gap: 8px; justify-content: flex-end;
-  padding: 14px 18px; border-top: 1px solid var(--border, #D7DCE2);
-  background: var(--bg-medium, #F5F7FA); flex-wrap: wrap; }
-.mdl-btn { padding: 7px 14px; border: 1px solid var(--border, #D7DCE2);
-  border-radius: var(--radius-button,2px); background: var(--bg-light, #fff);
+  padding: 14px 18px; border-top: 1px solid var(--border, #E4E3DE);
+  background: var(--bg-medium, #EDEAE4); flex-wrap: wrap; }
+.mdl-btn { padding: 7px 14px; border: 1px solid var(--border, #E4E3DE);
+  border-radius: var(--radius-button,2px); background: var(--bg-light, #FBFAF8);
   color: var(--text-primary, #22252A); font-family: var(--font-body);
   font-size: 12px; font-weight: 500; cursor: pointer;
   transition: background 100ms ease, border-color 100ms ease; }
-.mdl-btn:hover { background: var(--bg-active, #E6EEF5); border-color: var(--accent, #A85436); }
+.mdl-btn:hover { background: var(--bg-active, #F2E3DB); border-color: var(--accent, #A85436); }
 .mdl-btn--primary { background: var(--accent, #A85436); color: var(--text-on-accent, #fff); border-color: var(--accent, #A85436); }
 .mdl-btn--primary:hover { background: var(--accent-dim, #8C4429); }
 .mdl-btn:disabled { opacity: 0.5; cursor: not-allowed; }

@@ -8,7 +8,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-pnlcal{border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#fff);font-family:var(--font-body);}
+.mds-pnlcal{border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);font-family:var(--font-body);}
 .mds-pnlcal__grid{display:grid;grid-template-columns:repeat(7,1fr);}
 .mds-pnlcal__wd{padding:6px 8px;font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;
   color:var(--text-muted,#5E666F);background:var(--bg-medium,#EDEAE4);text-align:right;
@@ -21,8 +21,8 @@ function inject() {
 .mds-pnlcal__day{font-family:var(--font-data);font-size:9px;color:var(--text-muted,#5E666F);}
 .mds-pnlcal__val{font-family:var(--font-data);font-size:11px;font-variant-numeric:tabular-nums;text-align:right;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mds-pnlcal__cell--up .mds-pnlcal__val{color:var(--green-dim,#10663F);}
-.mds-pnlcal__cell--down .mds-pnlcal__val{color:var(--red-dim,#8C2F40);}
+.mds-pnlcal__cell--up .mds-pnlcal__val{color:var(--green-dim,#2C5C40);}
+.mds-pnlcal__cell--down .mds-pnlcal__val{color:var(--red-dim,#7E332D);}
 .mds-pnlcal__cell--flat .mds-pnlcal__val{color:var(--text-muted,#5E666F);}
 .mds-pnlcal__foot{display:flex;justify-content:space-between;align-items:baseline;padding:8px 12px;
   border-top:2px solid var(--border-strong,#AFABA1);}

@@ -9,11 +9,11 @@ function inject() {
   injected = true;
   const css = `
 .mds-tags{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:32px;box-sizing:border-box;
-  padding:3px 6px;border:1px solid var(--border,#D7DCE2);background:var(--bg-light,#fff);cursor:text;}
+  padding:3px 6px;border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);cursor:text;}
 .mds-tags:focus-within{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:1px;}
 .mds-tags--disabled{background:var(--bg-medium,#EDEAE4);cursor:not-allowed;}
 .mds-tags__chip{display:inline-flex;align-items:center;gap:5px;padding:2px 4px 2px 7px;
-  border:1px solid var(--border,#D7DCE2);border-radius:var(--radius-chip,2px);
+  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-chip,2px);
   background:var(--bg-medium,#EDEAE4);font-family:var(--font-data);font-size:11px;
   color:var(--text-primary,#22252A);white-space:nowrap;}
 .mds-tags__x{appearance:none;border:none;background:transparent;cursor:pointer;padding:0;

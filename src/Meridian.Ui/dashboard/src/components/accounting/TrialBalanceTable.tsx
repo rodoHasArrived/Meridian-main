@@ -32,7 +32,7 @@ function inject(): void {
 .tbl__acct{font-family:var(--font-body,inherit);white-space:normal;min-width:210px;}
 .tbl__code{color:var(--text-secondary,#4E5258);}
 .tbl__row--click{cursor:pointer;}
-.tbl__row--click:hover{background:var(--bg-hover,#F6F4F0);}
+.tbl__row--click:hover{background:var(--bg-hover,#F0EEE9);}
 .tbl__row--click:focus-visible{outline:2px solid var(--accent,#A85436);outline-offset:-2px;}
 .tbl__row--on td{background:color-mix(in srgb,var(--accent,#A85436) 8%,transparent);}
 .tbl__sub td{background:var(--bg-subtle,#F6F4F0);font-weight:600;color:var(--text-secondary,#4E5258);}

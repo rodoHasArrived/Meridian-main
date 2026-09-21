@@ -67,7 +67,7 @@
     --topbar-text:        #EDE9E2;
     --statusbar-bg:       #1A1511;
     --statusbar-text:     #BDB7AE;
-    --statusbar-border:   #30363D;
+    --statusbar-border:   #2B2721;
 
     --scrim:              rgba(0, 0, 0, 0.62);  /* stronger over already-dark content */
   }
@@ -108,9 +108,9 @@
 
   --dim-mix:            #FFFFFF;
 
-  --topbar-bg:          #100E0C;
+  --topbar-bg:          #1A1511;
   --topbar-text:        #EDE9E2;
-  --statusbar-bg:       #100E0C;
+  --statusbar-bg:       #1A1511;
   --statusbar-text:     #BDB7AE;
   --statusbar-border:   #2B2721;
 

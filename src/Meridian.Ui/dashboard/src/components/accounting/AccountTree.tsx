@@ -52,7 +52,7 @@ function inject(): void {
 .act__head .act--r{text-align:right;}
 .act__row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
   padding:6px 12px;border-top:1px solid var(--border,#E4E3DE);}
-.act__row:hover{background:var(--bg-hover,#F6F4F0);}
+.act__row:hover{background:var(--bg-hover,#F0EEE9);}
 .act__row--sel{cursor:pointer;}
 .act__row--on{background:var(--bg-active,#F2E3DB);box-shadow:inset 3px 0 0 var(--accent,#A85436);}
 .act__name{display:flex;align-items:center;gap:8px;min-width:0;

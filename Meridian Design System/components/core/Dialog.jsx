@@ -20,7 +20,7 @@ function inject() {
   to { opacity: 1; }
 }
 .mds-dialog-wrap {
-  background: var(--bg-light, #FAFBFC); border: 1px solid var(--border, #D7DCE2);
+  background: var(--bg-light, #FBFAF8); border: 1px solid var(--border, #E4E3DE);
   border-radius: var(--radius-card, 2px); max-width: 520px; width: 92vw;
   max-height: 92vh; display: flex; flex-direction: column;
   box-shadow: var(--shadow-menu); animation: mds-dialog-slide-up var(--motion-base, 150ms) var(--ease-standard, ease-out);
@@ -32,8 +32,8 @@ function inject() {
 .mds-dialog-hd {
   display: flex; align-items: center; justify-content: space-between;
   padding: var(--space-md, 12px) var(--space-lg, 16px);
-  border-bottom: 1px solid var(--border-divider, #E5E9EE);
-  background: var(--bg-medium, #F5F7FA);
+  border-bottom: 1px solid var(--border-divider, #DAD8D3);
+  background: var(--bg-medium, #EDEAE4);
 }
 .mds-dialog-title {
   font-family: var(--font-body); font-size: var(--type-card-title, 13px);
@@ -57,8 +57,8 @@ function inject() {
 .mds-dialog-ft {
   display: flex; align-items: center; gap: var(--space-md, 12px);
   justify-content: flex-end; padding: var(--space-md, 12px) var(--space-lg, 16px);
-  border-top: 1px solid var(--border-divider, #E5E9EE);
-  background: var(--bg-medium, #F5F7FA); flex-wrap: wrap;
+  border-top: 1px solid var(--border-divider, #DAD8D3);
+  background: var(--bg-medium, #EDEAE4); flex-wrap: wrap;
 }
 `;
   const el = document.createElement("style");

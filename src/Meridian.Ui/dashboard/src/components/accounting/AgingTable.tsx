@@ -34,7 +34,7 @@ function inject(): void {
 .agt__name{font-family:var(--font-body,inherit);font-weight:600;}
 .agt__ref{color:var(--text-secondary,#4E5258);}
 .agt__row--click{cursor:pointer;}
-.agt__row--click:hover{background:var(--bg-hover,#F6F4F0);}
+.agt__row--click:hover{background:var(--bg-hover,#F0EEE9);}
 .agt__row--click:focus-visible{outline:2px solid var(--accent,#A85436);outline-offset:-2px;}
 .agt__row--on td{background:color-mix(in srgb,var(--accent,#A85436) 8%,transparent);}
 .agt--warn{background:color-mix(in srgb,var(--orange,#8A5C12) 8%,transparent);}

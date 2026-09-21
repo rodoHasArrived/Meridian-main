@@ -146,7 +146,7 @@ function CoveredCallLabScreen() {
                     <div style={{ height: 240, marginTop: 8 }}>
                       <EquityCurve
                         series={[
-                          { label: "Covered-call strategy", color: "var(--chart-equity, #2F6F8F)", points: STRAT },
+                          { label: "Covered-call strategy", color: "var(--chart-equity, #3A7A56)", points: STRAT },
                           { label: "MSFT buy & hold", color: "var(--chart-benchmark, #6E7781)", points: UNDER, dashed: true },
                         ]}
                         labels={LABELS}

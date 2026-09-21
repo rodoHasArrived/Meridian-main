@@ -10,7 +10,7 @@ function inject() {
   injected = true;
   const css = `
 .mds-ctip{position:absolute;top:10px;z-index:var(--z-tooltip,500);pointer-events:none;
-  min-width:120px;background:var(--bg-light,#fff);border:1px solid var(--border-strong,#AFABA1);
+  min-width:120px;background:var(--bg-light,#FBFAF8);border:1px solid var(--border-strong,#AFABA1);
   box-shadow:var(--shadow-menu);font-family:var(--font-data);font-size:11px;padding:7px 9px;}
 .mds-ctip__hd{font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);

@@ -62,30 +62,32 @@ deliberately low-contrast to read as inactive.
   active nav items carry a 3px accent bar *plus* a wash. Do not rely on border color alone to
   communicate state — pair it with the wash/inset the components already provide.
 
-### Dark mode — measured (graphite charcoal tokens)
+### Dark mode — measured (warm graphite tokens)
 
-Dark mode was fully swept July 2026 with the same measured methodology as the light table.
-Foreground on the dark panel `--bg-light` `#1A2026` unless noted.
+Re-measured September 2026 against the current default dark tokens, with the same methodology
+as the light table. The figures below were the steel identity's until this pass; the restyle
+moved the tokens and left the table behind, which made the "measured against the actual tokens"
+claim above false for this section. Foreground on the dark panel `--bg-light` `#201D19` unless noted.
 
 | Token | Hex | Ratio | Normal text | Large text |
 | --- | --- | --- | --- | --- |
-| `--text-primary` | `#E5EAEF` | **13.6:1** | ✅ AAA | ✅ AAA |
-| `--text-primary` on canvas `#0E1113` | — | **15.7:1** | ✅ AAA | ✅ AAA |
-| `--text-secondary` | `#A5AFBC` | **7.4:1** | ✅ AAA | ✅ AAA |
-| `--text-muted` | `#8F9AA7` | **5.8:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on header band `#232A32` | — | **5.1:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on hover row `#283039` | — | **4.7:1** | ✅ AA | ✅ AAA |
-| `--text-disabled` | `#5A6574` | 2.8:1 | exempt¹ | exempt¹ |
-| `--accent` | `#5790BE` | **4.8:1** | ✅ AA | ✅ AAA |
-| `--accent` on canvas `#0E1113` | — | **5.5:1** | ✅ AA | ✅ AAA |
-| `--accent-dim` (pressed / accent text) | `#609BC9` | **5.5:1** | ✅ AA | ✅ AAA |
-| Dark ink `--text-on-accent` on `--accent` | — | **5.5:1** | ✅ AA | ✅ AAA |
-| Dark ink `--text-on-accent` on `--accent-dim` (pressed) | — | **6.3:1** | ✅ AA | ✅ AAA |
-| Focus ring `--border-focus` `#5B9FD9` | — | **5.8:1** | (3:1 non-text) ✅ | — |
-| `--green-dim` / `--red-dim` / `--orange-dim` / `--purple-dim` | — | **7.0 / 6.3 / 7.6 / 6.8:1** | ✅ AA(A) | ✅ AAA |
-| Raw `--green` / `--red` / `--orange` / `--purple` (borders, ≥3:1 role) | — | **5.1 / 4.4 / 5.6 / 4.7:1** | ⚠️ see rule | ✅ AA |
-| `--text-on-fill` ink on solid green / red / orange / purple | — | **5.8 / 5.0 / 6.5 / 5.4:1** | ✅ AA | ✅ AAA |
-| `--topbar-text` / muted / faint on chrome `#0D1117` | — | **15.7 / 9.3 / 6.0:1** | ✅ AAA/AA | ✅ AAA |
+| `--text-primary` | `#EFEBE4` | **14.1:1** | ✅ AAA | ✅ AAA |
+| `--text-primary` on canvas `#14120F` | — | **15.7:1** | ✅ AAA | ✅ AAA |
+| `--text-secondary` | `#B5AEA4` | **7.6:1** | ✅ AAA | ✅ AAA |
+| `--text-muted` | `#9A9289` | **5.5:1** | ✅ AA | ✅ AAA |
+| `--text-muted` on header band `#292520` | — | **5.0:1** | ✅ AA | ✅ AAA |
+| `--text-muted` on hover row `#2E2A24` | — | **4.6:1** | ✅ AA | ✅ AAA |
+| `--text-disabled` | `#6A635A` | 2.8:1 | exempt¹ | exempt¹ |
+| `--accent` | `#D98A64` | **6.2:1** | ✅ AA | ✅ AAA |
+| `--accent` on canvas `#14120F` | — | **6.9:1** | ✅ AA | ✅ AAA |
+| `--accent-dim` (pressed / accent text) | `#E39A77` | **7.3:1** | ✅ AAA | ✅ AAA |
+| Dark ink `--text-on-accent` on `--accent` | — | **6.7:1** | ✅ AA | ✅ AAA |
+| Dark ink `--text-on-accent` on `--accent-dim` (pressed) | — | **7.9:1** | ✅ AAA | ✅ AAA |
+| Focus ring `--border-focus` `#D98A64` | — | **6.2:1** | (3:1 non-text) ✅ | — |
+| `--green-dim` / `--red-dim` / `--orange-dim` / `--purple-dim` | — | **7.6 / 6.9 / 8.4 / 7.2:1** | ✅ AAA | ✅ AAA |
+| Raw `--green` / `--red` / `--orange` / `--purple` (borders, ≥3:1 role) | — | **5.6 / 4.9 / 6.4 / 5.1:1** | ⚠️ see rule | ✅ AA |
+| `--text-on-fill` ink on solid green / red / orange / purple | — | **6.1 / 5.3 / 6.9 / 5.5:1** | ✅ AA | ✅ AAA |
+| `--topbar-text` / muted / faint on chrome `#1A1511` | — | **15.0 / 8.7 / 6.1:1** | ✅ AAA/AA | ✅ AAA |
 
 ¹ Same WCAG 1.4.3 exemption as light mode.
 

@@ -10,14 +10,14 @@ function inject() {
 .mds-number-field{display:block;}
 .mds-number-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);margin-bottom:5px;}
-.mds-number-wrap{display:flex;align-items:center;border:1px solid var(--border,#D7DCE2);
-  background:var(--bg-light,#fff);height:32px;}
+.mds-number-wrap{display:flex;align-items:center;border:1px solid var(--border,#E4E3DE);
+  background:var(--bg-light,#FBFAF8);height:32px;}
 .mds-number-btn{width:32px;height:32px;border:none;background:transparent;color:var(--text-primary,#22252A);
   cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;
-  border-right:1px solid var(--border,#D7DCE2);}
-.mds-number-btn:last-of-type{border-right:none;border-left:1px solid var(--border,#D7DCE2);}
-.mds-number-btn:hover{background:var(--bg-hover,#F1F4F7);}
-.mds-number-btn:active{background:var(--bg-active,#E6EEF5);}
+  border-right:1px solid var(--border,#E4E3DE);}
+.mds-number-btn:last-of-type{border-right:none;border-left:1px solid var(--border,#E4E3DE);}
+.mds-number-btn:hover{background:var(--bg-hover,#F0EEE9);}
+.mds-number-btn:active{background:var(--bg-active,#F2E3DB);}
 .mds-number-btn:disabled{opacity:.5;cursor:not-allowed;}
 .mds-number-input{flex:1;border:none;background:transparent;color:var(--text-primary,#22252A);
   font-family:var(--font-data);font-size:13px;padding:0 8px;text-align:center;}

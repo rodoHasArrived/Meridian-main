@@ -13,7 +13,7 @@ function inject() {
 .mds-prog__value{font-family:var(--font-data,monospace);font-size:12px;font-weight:600;
   color:var(--text-primary,#22252A);letter-spacing:var(--letter-spacing-data,.01em);}
 .mds-prog__track{position:relative;width:100%;height:6px;overflow:hidden;
-  background:var(--bg-active,#E1EAF2);border-radius:var(--radius-chip,3px);}
+  background:var(--bg-active,#F2E3DB);border-radius:var(--radius-chip,3px);}
 .mds-prog--sm .mds-prog__track{height:4px;}
 .mds-prog--lg .mds-prog__track{height:10px;}
 .mds-prog__fill{position:absolute;top:0;left:0;height:100%;border-radius:inherit;

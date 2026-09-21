@@ -1599,7 +1599,7 @@ function PortfolioDrillInChartInner({
         style={{ flexShrink: 0 }}
       >
         <EquityCurve
-          series={[{ label: "Equity", color: "var(--chart-equity, #A85436)", points: equity }]}
+          series={[{ label: "Equity", color: "var(--chart-equity, #3A7A56)", points: equity }]}
           drawdown={drawdown}
           labels={labels}
           valueFmt={drillInCurrency}

@@ -64,25 +64,25 @@
 .command-palette-status {
   border-color: var(--state-paper-bd, rgba(168, 84, 54, 0.34));
   background: var(--state-paper-bg, rgba(168, 84, 54, 0.1));
-  color: var(--state-paper-fg, #A85436);
+  color: var(--state-paper-fg, #8C4429);
 }
 
 .command-palette-status-blocked {
   border-color: var(--state-danger-bd, rgba(168, 68, 60, 0.35));
   background: var(--state-danger-bg, rgba(168, 68, 60, 0.1));
-  color: var(--state-danger-fg, #A8443C);
+  color: var(--state-danger-fg, #7E332D);
 }
 
 .command-palette-status-review {
-  border-color: var(--state-warn-bd, rgba(138, 82, 14, 0.38));
-  background: var(--state-warn-bg, rgba(138, 82, 14, 0.11));
-  color: var(--state-warn-fg, #8A5C12);
+  border-color: var(--state-warn-bd, rgba(138, 92, 18, 0.38));
+  background: var(--state-warn-bg, rgba(138, 92, 18, 0.11));
+  color: var(--state-warn-fg, #68450E);
 }
 
 .command-palette-status-ready {
   border-color: var(--state-healthy-bd, rgba(58, 122, 86, 0.32));
   background: var(--state-healthy-bg, rgba(58, 122, 86, 0.1));
-  color: var(--state-healthy-fg, #3A7A56);
+  color: var(--state-healthy-fg, #2C5C40);
 }
 
 .command-palette-status-neutral {

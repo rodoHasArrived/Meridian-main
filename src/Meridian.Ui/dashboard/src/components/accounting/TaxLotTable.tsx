@@ -62,15 +62,15 @@ function inject(): void {
 .tlt td:last-child{border-right:none;}
 .tlt tbody tr:first-child td{border-top:none;}
 .tlt td.tlt--r{text-align:right;}
-.tlt tbody tr:hover{background:var(--bg-hover,#F6F4F0);}
+.tlt tbody tr:hover{background:var(--bg-hover,#F0EEE9);}
 .tlt__date{color:var(--text-secondary,#4E5258);}
 .tlt__sym{font-weight:600;color:var(--text-primary,#22252A);}
 .tlt__days{color:var(--text-muted,#5E666F);font-size:11px;}
 .tlt__hp{display:inline-flex;align-items:center;gap:5px;border:1px solid;border-radius:var(--radius-chip,2px);
   padding:2px 7px;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;white-space:nowrap;line-height:1.3;}
-.tlt__hp--short{background:var(--orange-a10,rgba(138,82,14,.10));border-color:var(--orange,#8A5C12);color:var(--orange-dim,#683E0B);}
-.tlt__hp--long{background:var(--blue-a10,rgba(47,111,143,.10));border-color:var(--accent,#A85436);color:var(--accent,#A85436);}
+.tlt__hp--short{background:var(--orange-a10,rgba(138,92,18,.10));border-color:var(--orange,#8A5C12);color:var(--orange-dim,#68450E);}
+.tlt__hp--long{background:var(--blue-a10,rgba(168,84,54,.10));border-color:var(--accent,#A85436);color:var(--accent,#A85436);}
 .tlt__hp__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 .tlt__pct{font-family:var(--font-data,monospace);font-size:10.5px;margin-left:7px;}
 .tlt tfoot td{padding:9px 12px;background:var(--bg-medium,#EDEAE4);font-weight:600;
@@ -174,9 +174,9 @@ export function TaxLotTable({
                     style={{
                       color:
                         r.gain < 0
-                          ? "var(--red-dim, #8C2F40)"
+                          ? "var(--red-dim, #7E332D)"
                           : r.gain > 0
-                            ? "var(--green-dim, #10663F)"
+                            ? "var(--green-dim, #2C5C40)"
                             : "var(--text-muted, #5E666F)"
                     }}
                   >

@@ -46,7 +46,7 @@ export function AmountCell({
   else if (mode === "pnl") {
     color = !isFinite(num) || num === 0
       ? "var(--text-muted, #5E666F)"
-      : num < 0 ? "var(--red-dim, #8C2F40)" : "var(--green-dim, #10663F)";
+      : num < 0 ? "var(--red-dim, #7E332D)" : "var(--green-dim, #2C5C40)";
   }
 
   return (

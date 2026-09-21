@@ -10,15 +10,15 @@ function inject() {
 .mds-textarea-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);margin-bottom:5px;}
 .mds-textarea{width:100%;box-sizing:border-box;padding:7px 10px;
-  border:1px solid var(--border,#D7DCE2);background:var(--bg-light,#fff);
+  border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);
   color:var(--text-primary,#22252A);font-family:var(--font-body);font-size:13px;
   line-height:1.4;resize:vertical;min-height:100px;}
 .mds-textarea::placeholder{color:var(--text-disabled,#94999F);}
-.mds-textarea:hover{border-color:var(--border-hover,#B8C2CC);}
+.mds-textarea:hover{border-color:var(--border-hover,#C6C3BB);}
 .mds-textarea:focus{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
-.mds-textarea:disabled{opacity:.5;cursor:not-allowed;background:var(--bg-medium,#F5F7FA);}
+.mds-textarea:disabled{opacity:.5;cursor:not-allowed;background:var(--bg-medium,#EDEAE4);}
 .mds-textarea--error{border-color:var(--red,#A8443C);}
-.mds-textarea-error{font-family:var(--font-body);font-size:11px;color:var(--red-dim,#8C2F40);margin-top:5px;}
+.mds-textarea-error{font-family:var(--font-body);font-size:11px;color:var(--red-dim,#7E332D);margin-top:5px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "textarea");

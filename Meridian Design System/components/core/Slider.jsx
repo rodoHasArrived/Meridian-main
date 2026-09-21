@@ -18,7 +18,7 @@ function inject() {
   color:var(--text-primary,#22252A);letter-spacing:var(--letter-spacing-data,.01em);}
 .mds-slider__track-wrap{position:relative;display:flex;align-items:center;height:16px;}
 .mds-slider__track-bg{position:absolute;left:0;right:0;height:6px;
-  background:var(--bg-active,#E1EAF2);border:1px solid var(--border,#D7DCE2);box-sizing:border-box;}
+  background:var(--bg-active,#F2E3DB);border:1px solid var(--border,#E4E3DE);box-sizing:border-box;}
 .mds-slider__track-fill{position:absolute;left:0;height:6px;background:var(--accent,#A85436);}
 .mds-slider__input{position:relative;-webkit-appearance:none;appearance:none;width:100%;height:16px;margin:0;
   background:transparent;cursor:pointer;}

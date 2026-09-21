@@ -63,7 +63,7 @@ function inject(): void {
 .ldg td:last-child{border-right:none;}
 .ldg tbody tr:first-child td{border-top:none;}
 .ldg td.ldg--r{text-align:right;}
-.ldg tbody tr:hover{background:var(--bg-hover,#F6F4F0);}
+.ldg tbody tr:hover{background:var(--bg-hover,#F0EEE9);}
 .ldg__date{color:var(--text-secondary,#4E5258);}
 .ldg__ref{color:var(--accent,#A85436);}
 .ldg__memo{font-family:var(--font-body,inherit);color:var(--text-secondary,#4E5258);

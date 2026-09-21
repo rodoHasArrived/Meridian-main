@@ -13,30 +13,30 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.ldg-wrap{overflow-x:auto;border:1px solid var(--border,#D7DCE2);
-  border-radius:var(--radius-chip,2px);background:var(--bg-light,#fff);}
+.ldg-wrap{overflow-x:auto;border:1px solid var(--border,#E4E3DE);
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FBFAF8);}
 .ldg{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
 .ldg thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
-  background:var(--bg-medium,#F5F7FA);z-index:1;cursor:pointer;user-select:none;
+  background:var(--bg-medium,#EDEAE4);z-index:1;cursor:pointer;user-select:none;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#5E666F);
-  border-bottom:1px solid var(--border-strong,#AAB4BF);border-right:1px solid var(--border-divider,#DDE3EA);}
+  border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#DAD8D3);}
 .ldg thead th:hover{color:var(--text-primary,#22252A);}
 .ldg thead th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--text-primary,#22252A);}
 .ldg thead th:last-child{border-right:none;}
 .ldg th.ldg--r{text-align:right;}
 .ldg td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#22252A);
-  border-top:1px solid var(--border,#D7DCE2);border-right:1px solid var(--border-divider,#DDE3EA);
+  border-top:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border-divider,#DAD8D3);
   vertical-align:baseline;height:40px;}
 .ldg td:last-child{border-right:none;}
 .ldg tbody tr:first-child td{border-top:none;}
 .ldg td.ldg--r{text-align:right;}
-.ldg tbody tr:hover{background:var(--bg-hover,#F1F4F7);}
+.ldg tbody tr:hover{background:var(--bg-hover,#F0EEE9);}
 .ldg tbody tr.ldg__row--click{cursor:pointer;}
-.ldg tbody tr.ldg__row--on td{background:var(--bg-active,#E6EEF5);}
+.ldg tbody tr.ldg__row--on td{background:var(--bg-active,#F2E3DB);}
 .ldg tbody tr.ldg__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#A85436);}
-.ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(138,82,14,.07));}
+.ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(138,92,18,.07));}
 .ldg tbody tr.ldg__row--void td{color:var(--text-disabled,#94999F);text-decoration:line-through;}
 .ldg tbody tr.ldg__row--void td span{color:var(--text-disabled,#94999F) !important;}
 .ldg__date{color:var(--text-secondary,#4E5258);}
@@ -44,15 +44,15 @@ function inject() {
 .ldg__chip{display:inline-block;margin-left:7px;font-family:var(--font-body);font-size:9px;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border:1px solid;
   border-radius:var(--radius-chip,2px);padding:0 5px;line-height:1.5;vertical-align:1px;}
-.ldg__chip--pending{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#8A5C12);color:var(--orange-dim,#683E0B);}
-.ldg__chip--void{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#8C2F40);}
+.ldg__chip--pending{background:var(--orange-a10,rgba(138,92,18,.10));border-color:var(--orange,#8A5C12);color:var(--orange-dim,#68450E);}
+.ldg__chip--void{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#7E332D);}
 .ldg__memo{font-family:var(--font-body);color:var(--text-secondary,#4E5258);
   white-space:normal;min-width:160px;}
 .ldg__acct{color:var(--text-primary,#22252A);}
-.ldg__open td{background:var(--bg-medium,#F5F7FA);color:var(--text-muted,#5E666F);}
+.ldg__open td{background:var(--bg-medium,#EDEAE4);color:var(--text-muted,#5E666F);}
 .ldg__open .ldg__memo{font-style:italic;}
-.ldg tfoot td{padding:9px 12px;background:var(--bg-medium,#F5F7FA);font-weight:600;
-  border-top:2px solid var(--border-strong,#AAB4BF);color:var(--text-primary,#22252A);}
+.ldg tfoot td{padding:9px 12px;background:var(--bg-medium,#EDEAE4);font-weight:600;
+  border-top:2px solid var(--border-strong,#AFABA1);color:var(--text-primary,#22252A);}
 .ldg tfoot td.ldg--r{text-align:right;}
 .ldg__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
   font-size:11px;color:var(--text-secondary,#4E5258);}

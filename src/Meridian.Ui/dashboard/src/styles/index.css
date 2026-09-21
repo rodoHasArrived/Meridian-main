@@ -245,6 +245,15 @@
     --orange: #8A5C12;
     --amber: var(--orange);
     --purple: #5D5486;
+    /* The -dim variants the severity/state foregrounds below read. These are
+       derived exactly as the design-system package derives them, so the two
+       tracks cannot drift. The package declared them and this track did not,
+       so every --*-fg reading one resolved to nothing. */
+    --dim-mix: #000;
+    --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
+    --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
+    --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --bg: var(--ws-page-bg);
     --bg-medium: var(--ws-surface-subtle);
@@ -432,6 +441,15 @@
       --red: #CE7068;
       --orange: #C29A4A;
       --purple: #9089B5;
+      /* The -dim variants the severity/state foregrounds below read. These are
+         derived exactly as the design-system package derives them, so the two
+         tracks cannot drift. The package declared them and this track did not,
+         so every --*-fg reading one resolved to nothing. */
+      --dim-mix: #FFFFFF;
+      --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
+      --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
+      --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+      --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
       --border-hover: var(--ws-border-hover);
       --border-strong: var(--ws-border-strong);
@@ -522,6 +540,15 @@
     --red: #CE7068;
     --orange: #C29A4A;
     --purple: #9089B5;
+    /* The -dim variants the severity/state foregrounds below read. These are
+       derived exactly as the design-system package derives them, so the two
+       tracks cannot drift. The package declared them and this track did not,
+       so every --*-fg reading one resolved to nothing. */
+    --dim-mix: #FFFFFF;
+    --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
+    --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
+    --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --border-hover: var(--ws-border-hover);
     --border-strong: var(--ws-border-strong);
@@ -614,6 +641,15 @@
     --red: #A8443C;
     --orange: #8A5C12;
     --purple: #5D5486;
+    /* The -dim variants the severity/state foregrounds below read. These are
+       derived exactly as the design-system package derives them, so the two
+       tracks cannot drift. The package declared them and this track did not,
+       so every --*-fg reading one resolved to nothing. */
+    --dim-mix: #000;
+    --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
+    --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
+    --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --border-hover: var(--ws-border-hover);
     --border-strong: var(--ws-border-strong);

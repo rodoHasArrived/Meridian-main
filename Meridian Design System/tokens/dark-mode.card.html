@@ -51,9 +51,9 @@
       </div>
       <div class="example-card">
         <h3 style="margin-top: 0;">Dark Mode</h3>
-        <p>Canvas: <code>#0E1113</code></p>
-        <p>Text: <code>#E5EAEF</code></p>
-        <p>Accent: <code>#5790BE</code> (cooler blue for night)</p>
+        <p>Canvas: <code>#14120F</code></p>
+        <p>Text: <code>#EFEBE4</code></p>
+        <p>Accent: <code>#D98A64</code> (lifted copper for night)</p>
         <p>Best for: Nighttime, low-light environments, reduced eye strain.</p>
       </div>
     </div>
@@ -65,14 +65,14 @@
       <div class="swatch-box" style="background: var(--bg);"></div>
       <div class="swatch-label">
         <strong>--bg</strong><br>
-        Light: #DEE3EA | Dark: #0E1113
+        Light: #F2F0EC | Dark: #14120F
       </div>
     </div>
     <div class="swatch">
       <div class="swatch-box" style="background: var(--bg-light);"></div>
       <div class="swatch-label">
         <strong>--bg-light</strong><br>
-        Light: #FFFFFF | Dark: #1A2026
+        Light: #FBFAF8 | Dark: #201D19
       </div>
     </div>
 
@@ -81,7 +81,7 @@
       <div class="swatch-box" style="background: var(--text-primary); opacity: 0.3;"></div>
       <div class="swatch-label">
         <strong>--text-primary</strong><br>
-        Light: #22272E | Dark: #E5EAEF
+        Light: #22252A | Dark: #EFEBE4
       </div>
     </div>
     <div class="swatch">
@@ -118,8 +118,8 @@
     <h2>Implementation Notes</h2>
     <ul style="line-height: 1.8;">
       <li><strong>No manual switching in code:</strong> OS preference is automatic. Only override <code>data-theme="dark"</code> if user explicitly requests dark mode.</li>
-      <li><strong>Accent color:</strong> Becomes a cooler blue in dark mode (<code>#5790BE</code>) for night-friendly contrast. Primary actions remain clear.</li>
-      <li><strong>Border colors:</strong> Become lighter in dark mode (<code>#45505C</code>) to remain visible on dark canvas.</li>
+      <li><strong>Accent color:</strong> Lifts to a lighter copper in dark mode (<code>#D98A64</code>) and carries dark ink rather than white. Primary actions remain clear.</li>
+      <li><strong>Border colors:</strong> Become lighter in dark mode (<code>#4A443C</code>) to remain visible on dark canvas.</li>
       <li><strong>Transitions:</strong> Background and color shift smoothly (200ms) when theme changes.</li>
       <li><strong>All components inherit:</strong> Button, Input, Modal, Table — all automatically adapt to dark mode via CSS variables.</li>
     </ul>

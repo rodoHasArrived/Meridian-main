@@ -11,7 +11,7 @@ function inject() {
 .ws-masthead{display:grid;min-height:48px;
   grid-template-columns:max-content minmax(180px,1fr) max-content max-content;
   gap:.75rem;align-items:center;padding:0 1rem;
-  background:var(--topbar-bg,#1F1D1A);border-bottom:1px solid var(--topbar-border,#262B31);
+  background:var(--topbar-bg,#1F1D1A);border-bottom:1px solid var(--topbar-border,#2E2A24);
   font-family:var(--font-body);}
 .ws-brand{display:inline-flex;align-items:center;gap:.5rem;min-width:0;}
 .ws-brand img{width:22px;height:22px;flex:0 0 auto;}

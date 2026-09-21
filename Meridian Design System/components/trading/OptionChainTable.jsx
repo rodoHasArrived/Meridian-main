@@ -26,7 +26,7 @@ function inject() {
 .mds-ochain__cell{padding:0 8px;height:var(--ochain-row,26px);display:flex;align-items:center;
   justify-content:flex-end;font-variant-numeric:tabular-nums;color:var(--text-secondary,#4E5258);
   border-bottom:1px solid var(--bg-hover,#F0EEE9);white-space:nowrap;}
-.mds-ochain__cell--itm{background:var(--blue-a10,rgba(47,111,143,.1));}
+.mds-ochain__cell--itm{background:var(--blue-a10,rgba(168,84,54,.1));}
 .mds-ochain__cell--strike{justify-content:center;font-weight:600;color:var(--text-primary,#22252A);
   border-left:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border,#E4E3DE);}
 .mds-ochain__cell--up{color:var(--green-dim);}

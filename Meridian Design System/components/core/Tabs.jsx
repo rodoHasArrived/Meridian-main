@@ -7,7 +7,7 @@ function inject() {
   injected = true;
   const css = `
 .mds-tabs{display:flex;flex-direction:column;}
-.mds-tabs__bar{display:flex;gap:2px;border-bottom:1px solid var(--border,#D7DCE2);}
+.mds-tabs__bar{display:flex;gap:2px;border-bottom:1px solid var(--border,#E4E3DE);}
 .mds-tabs__tab{appearance:none;border:none;background:transparent;cursor:pointer;
   font-family:var(--font-body);font-size:13px;color:var(--text-secondary,#4E5258);
   padding:9px 14px 11px;border-bottom:2px solid transparent;margin-bottom:-1px;
@@ -17,7 +17,7 @@ function inject() {
   border-bottom-color:var(--accent,#A85436);}
 .mds-tabs__tab:disabled{cursor:not-allowed;color:var(--text-disabled,#94999F);}
 .mds-tabs__count{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#5E666F);
-  border:1px solid var(--border,#D7DCE2);padding:0 5px;line-height:1.6;}
+  border:1px solid var(--border,#E4E3DE);padding:0 5px;line-height:1.6;}
 .mds-tabs__panel{display:none;}
 .mds-tabs__panel--active{display:block;}
 `;

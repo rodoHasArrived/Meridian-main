@@ -18,7 +18,7 @@ function inject() {
 .mds-usermenu__chip--light{border-color:var(--border,#E4E3DE);background:var(--bg-medium,#EDEAE4);
   color:var(--text-primary,#22252A);}
 .mds-usermenu__panel{position:absolute;right:0;top:calc(100% + 6px);min-width:220px;z-index:60;
-  background:var(--bg-light,#fff);border:1px solid var(--border-strong,#AFABA1);
+  background:var(--bg-light,#FBFAF8);border:1px solid var(--border-strong,#AFABA1);
   box-shadow:var(--shadow-menu);}
 .mds-usermenu__id{padding:11px 14px;border-bottom:1px solid var(--border,#E4E3DE);
   display:flex;flex-direction:column;gap:3px;}
@@ -29,21 +29,21 @@ function inject() {
   font-size:12px;color:var(--text-secondary,#4E5258);}
 .mds-usermenu__item:hover{background:var(--bg-hover,#F0EEE9);color:var(--text-primary,#22252A);}
 .mds-usermenu__item:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:-2px;}
-.mds-usermenu__item--danger{color:var(--red-dim,#8C2F40);}
-.mds-usermenu__item--danger:hover{background:var(--red-a10,rgba(186,63,85,.10));color:var(--red-dim,#8C2F40);}
+.mds-usermenu__item--danger{color:var(--red-dim,#7E332D);}
+.mds-usermenu__item--danger:hover{background:var(--red-a10,rgba(168,68,60,.10));color:var(--red-dim,#7E332D);}
 .mds-usermenu__sep{height:1px;background:var(--border-divider,#DAD8D3);margin:4px 0;}
 .mds-rolebadge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;
   border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-chip,2px);
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.04em;background:var(--bg-medium,#EDEAE4);color:var(--text-secondary,#4E5258);}
-.mds-rolebadge--admin{border-color:var(--purple,#5D5486);color:var(--purple-dim,#54448D);
-  background:var(--purple-a10,rgba(111,91,167,.10));}
+.mds-rolebadge--admin{border-color:var(--purple,#5D5486);color:var(--purple-dim,#463F64);
+  background:var(--purple-a10,rgba(93,84,134,.10));}
 .mds-rolebadge--operator{border-color:var(--accent,#A85436);color:var(--accent-dim,#8C4429);
   background:var(--accent-ghost,#F4E7E0);}
 .mds-rolebadge--viewer{border-color:var(--border-strong,#AFABA1);}
 .mds-readonly{display:flex;align-items:center;gap:10px;padding:7px 14px;
-  background:var(--orange-a10,rgba(138,82,14,.10));border:1px solid var(--orange,#8A5C12);
-  border-left-width:1px;font-family:var(--font-body);font-size:12px;color:var(--orange-dim,#67400B);}
+  background:var(--orange-a10,rgba(138,92,18,.10));border:1px solid var(--orange,#8A5C12);
+  border-left-width:1px;font-family:var(--font-body);font-size:12px;color:var(--orange-dim,#68450E);}
 .mds-readonly__tag{font-family:var(--font-data);font-size:9px;font-weight:700;letter-spacing:.06em;
   text-transform:uppercase;padding:2px 6px;border:1px solid var(--orange,#8A5C12);
   border-radius:var(--radius-chip,2px);flex:none;}
