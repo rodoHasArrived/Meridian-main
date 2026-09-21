@@ -11,12 +11,13 @@ public sealed class FutureProjectionServiceTests
     [Fact]
     public async Task GetExpiryLadderAsync_ExcludesRetiredAndExpiredContracts()
     {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
         IReadOnlyList<FutureProjectionRow> rows =
         [
-            MakeRow(Guid.NewGuid(), "ES", "ESZ6", new DateOnly(2026, 12, 19), false, "Active"),
-            MakeRow(Guid.NewGuid(), "ES", "ESH7", new DateOnly(2027, 3, 19), false, "Active"),
-            MakeRow(Guid.NewGuid(), "ES", "ESH5", new DateOnly(2025, 3, 21), false, "Retired"),
-            MakeRow(Guid.NewGuid(), "ES", "ESM6", new DateOnly(2026, 6, 19), false, "Expired")
+            MakeRow(Guid.NewGuid(), "ES", "ESZ6", today.AddDays(30), false, "Active"),
+            MakeRow(Guid.NewGuid(), "ES", "ESH7", today.AddDays(120), false, "Active"),
+            MakeRow(Guid.NewGuid(), "ES", "ESH5", today.AddDays(-365), false, "Retired"),
+            MakeRow(Guid.NewGuid(), "ES", "ESM6", today.AddDays(-30), false, "Expired")
         ];
 
         var projectionStore = Substitute.For<IFutureReferenceProjectionStore>();
@@ -33,10 +34,11 @@ public sealed class FutureProjectionServiceTests
     [Fact]
     public async Task GetFrontMonthAsync_PrefersRollTargetOverActive()
     {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
         IReadOnlyList<FutureProjectionRow> rows =
         [
-            MakeRow(Guid.NewGuid(), "ES", "ESZ6", new DateOnly(2026, 12, 19), true, "RollTarget"),
-            MakeRow(Guid.NewGuid(), "ES", "ESH7", new DateOnly(2027, 3, 19), false, "Active")
+            MakeRow(Guid.NewGuid(), "ES", "ESZ6", today.AddDays(30), true, "RollTarget"),
+            MakeRow(Guid.NewGuid(), "ES", "ESH7", today.AddDays(120), false, "Active")
         ];
 
         var projectionStore = Substitute.For<IFutureReferenceProjectionStore>();
@@ -53,10 +55,11 @@ public sealed class FutureProjectionServiceTests
     [Fact]
     public async Task GetFrontMonthAsync_IgnoresExpiredRollTargets()
     {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
         IReadOnlyList<FutureProjectionRow> rows =
         [
-            MakeRow(Guid.NewGuid(), "ES", "ESM5", new DateOnly(2025, 6, 20), true, "Expired"),
-            MakeRow(Guid.NewGuid(), "ES", "ESU6", new DateOnly(2026, 9, 18), false, "Active")
+            MakeRow(Guid.NewGuid(), "ES", "ESM5", today.AddDays(-30), true, "Expired"),
+            MakeRow(Guid.NewGuid(), "ES", "ESU6", today.AddDays(30), false, "Active")
         ];
 
         var projectionStore = Substitute.For<IFutureReferenceProjectionStore>();
@@ -74,10 +77,11 @@ public sealed class FutureProjectionServiceTests
     [Fact]
     public async Task GetFrontMonthAsync_IgnoresPastExpiryRollTargetsEvenWhenLifecycleIsRollTarget()
     {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
         IReadOnlyList<FutureProjectionRow> rows =
         [
-            MakeRow(Guid.NewGuid(), "ES", "ESM5", new DateOnly(2025, 6, 20), true, "RollTarget"),
-            MakeRow(Guid.NewGuid(), "ES", "ESU6", new DateOnly(2026, 9, 18), false, "Active")
+            MakeRow(Guid.NewGuid(), "ES", "ESM5", today.AddDays(-30), true, "RollTarget"),
+            MakeRow(Guid.NewGuid(), "ES", "ESU6", today.AddDays(30), false, "Active")
         ];
 
         var projectionStore = Substitute.For<IFutureReferenceProjectionStore>();
