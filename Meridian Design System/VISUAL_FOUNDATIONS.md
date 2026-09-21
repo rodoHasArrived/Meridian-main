@@ -1,7 +1,7 @@
 # Meridian — Visual Foundations
 
 Grounded in the desktop app `src/Meridian.Wpf/Styles/*.xaml`. The language is **"Institutional
-Ops"**: a light paper workstation, hairline structure, one teal-blue accent, desaturated
+Ops"**: a warm paper workstation, hairline structure, one copper accent, desaturated
 semantics, no gradients or glow.
 
 ## Color
@@ -70,10 +70,10 @@ render as small-caps rather than ALL-CAPS.
 ## Interaction & motion
 
 - Primary button: hover = accent @ 80% α, press = `--accent-dim` (no movement, no offset shadow)
-- Ghost button: hover `#F1F4F7`, press `#E6EEF5`, border darkens to focus on press
-- Nav item: active = `#E1EAF2` wash + **3px teal-blue left indicator**; hover `#E9EEF3`
-- Table row: hover/selected = `#E6EEF5` + `inset 3px 0 0 #2F6F8F` left rail; zebra at `#FAFBFC`
-- Input: hover darkens border; focus = teal-blue border + 2px ring; error = red border
+- Ghost button: hover `#F0EEE9`, press `#F2E3DB`, border darkens to focus on press
+- Nav item: active = `#F2E3DB` wash + **3px copper left indicator**; hover `#F0EEE9`
+- Table row: hover/selected = `#F2E3DB` + `inset 3px 0 0 #A85436` left rail; zebra at `#F6F4F0`
+- Input: hover darkens border; focus = copper border + 2px ring; error = red border
 - Motion: 100–150ms ease on color/background/border only. No springs, no entrance animation,
   no decorative loops. Live numbers update silently.
 
@@ -84,6 +84,8 @@ decorative asset is `assets/brand/meridian-hero.svg`. Depth is hairlines + a whi
 
 ## Charts
 
-White plot `#FBFCFD`, surround `#FFFFFF`, grid `#DDE3EA`, axis text `#6E7781`, border `#CBD3DC`,
-crosshair teal-blue. Series: equity green `#16885F`, drawdown red `#BA3F55`, primary line
-teal-blue `#2F6F8F`, secondary/benchmark `#7A9DB3` (dashed), warning amber `#B7791F`.
+Paper plot `#FBFAF8`, surround `#F2F0EC`, grid `#E4E3DE`, axis text `#5E666F`, border `#AFABA1`.
+The crosshair is chrome, not a series: it takes `--text-secondary` `#4E5258` so it separates from
+the loss series by chroma rather than hue, which it crosses in every candle and equity plot.
+Series: equity green `#3A7A56`, drawdown red `#A8443C`, primary line copper `#A85436`,
+secondary/benchmark `--text-muted` `#5E666F` (dashed), warning ochre `#8A5C12`.

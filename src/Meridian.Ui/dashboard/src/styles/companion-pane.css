@@ -50,7 +50,7 @@
 .companion-pane-session-ended {
   padding: 0.5rem 0.875rem;
   border-bottom: 1px solid var(--chart-drawdown, #A8443C);
-  background: rgba(186, 63, 85, 0.12);
+  background: rgba(168, 68, 60, 0.12);
   color: var(--ws-text, #16202c);
   font-size: 0.75rem;
 }

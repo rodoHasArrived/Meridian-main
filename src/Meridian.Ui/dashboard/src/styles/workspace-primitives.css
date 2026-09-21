@@ -81,7 +81,7 @@
 }
 
 .workspace-filter-segment.active {
-  border-color: rgba(47, 111, 143, 0.34);
+  border-color: rgba(168, 84, 54, 0.34);
   background: var(--ws-row-selected);
   color: #255B75;
 }

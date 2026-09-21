@@ -1,6 +1,6 @@
 {
   "total_files": 669,
-  "total_lines": 144581,
+  "total_lines": 144583,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -5072,7 +5072,7 @@
     },
     {
       "path": "Meridian Design System/VISUAL_FOUNDATIONS.md",
-      "line_count": 89,
+      "line_count": 91,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

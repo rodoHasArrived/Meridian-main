@@ -255,4 +255,203 @@ html[data-brand="amber"] {
   --chrome-ok: var(--theme-chrome-ok);
   --chrome-warn: var(--theme-chrome-warn);
   --chrome-err: var(--theme-chrome-err);
+  --text-on-accent: var(--theme-text-on-accent);
+  --dim-mix: var(--theme-dim-mix);
+  --statusbar-border: var(--theme-statusbar-border);
+  --scrim: var(--theme-scrim);
+}
+
+
+/* ── Dark-mode + forced-theme brand identity ─────────────────────────────────
+   colors-dark.css is imported after this file and re-declares the component
+   tokens literally. A brand selector is (0,1,1), the auto-dark :root there is
+   (0,1,0) but wins on source order, and both data-theme blocks are (0,2,0) —
+   so every data-brand silently reverted to the default palette outside the
+   plain OS-light path, and the advertised rollback only ever worked in one of
+   the four theme states.
+
+   The blocks below re-assert the mapping at (0,3,0), which outranks all of
+   them regardless of import order, and match [data-brand] rather than one
+   brand so this holds for every variant above. A brand states its dark
+   identity in --theme-dark-*; anything it leaves out falls back to the
+   defaults here, so selecting a brand can never render half a palette.
+   Nothing sets data-brand by default, so the unbranded cascade is untouched.
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --theme-text-on-accent:            #FFFFFF;
+  --theme-dim-mix:                   #000;
+  --theme-statusbar-border:          #2E2A24;
+  --theme-scrim:                     rgba(20, 18, 15, 0.5);
+
+  --theme-dark-bg-canvas:            #14120F;
+  --theme-dark-bg-light:             #201D19;
+  --theme-dark-bg-medium:            #292520;
+  --theme-dark-bg-hover:             #2E2A24;
+  --theme-dark-bg-active:            #3A2E26;
+  --theme-dark-card-surface-raised:  #252119;
+  --theme-dark-border:               #4A443C;
+  --theme-dark-border-hover:         #5F584E;
+  --theme-dark-border-focus:         #D98A64;
+  --theme-dark-border-strong:        #736B60;
+  --theme-dark-border-divider:       #302B25;
+  --theme-dark-primary-text:         #EFEBE4;
+  --theme-dark-secondary-text:       #B5AEA4;
+  --theme-dark-muted-text:           #9A9289;
+  --theme-dark-disabled-text:        #6A635A;
+  --theme-dark-accent:               #D98A64;
+  --theme-dark-accent-dim:           #E39A77;
+  --theme-dark-accent-hover:         #E6A585;
+  --theme-dark-accent-ghost:         #2A211B;
+  --theme-dark-text-on-accent:       #1A1511;
+  --theme-dark-green:                #5FA37C;
+  --theme-dark-red:                  #CE7068;
+  --theme-dark-orange:               #C29A4A;
+  --theme-dark-purple:               #9089B5;
+  --theme-dark-dim-mix:              #FFFFFF;
+  --theme-dark-topbar-bg:            #1A1511;
+  --theme-dark-topbar-text:          #EDE9E2;
+  --theme-dark-statusbar-bg:         #1A1511;
+  --theme-dark-statusbar-text:       #BDB7AE;
+  --theme-dark-statusbar-border:     #30363D;
+  --theme-dark-scrim:                rgba(0, 0, 0, 0.62);
+}
+
+/* Brand Steel keeps the pre-v2.0 dark identity, not a tint of the new one. */
+html[data-brand="steel"] {
+  --theme-dark-bg-canvas:            #0E1113;
+  --theme-dark-bg-light:             #1A2026;
+  --theme-dark-bg-medium:            #232A32;
+  --theme-dark-bg-hover:             #283039;
+  --theme-dark-bg-active:            #2F3F4A;
+  --theme-dark-card-surface-raised:  #20272E;
+  --theme-dark-border:               #45505C;
+  --theme-dark-border-hover:         #5A6776;
+  --theme-dark-border-focus:         #5B9FD9;
+  --theme-dark-border-strong:        #6E7C8A;
+  --theme-dark-border-divider:       #2D353D;
+  --theme-dark-primary-text:         #E5EAEF;
+  --theme-dark-secondary-text:       #A5AFBC;
+  --theme-dark-muted-text:           #8F9AA7;
+  --theme-dark-disabled-text:        #5A6574;
+  --theme-dark-accent:               #5790BE;
+  --theme-dark-accent-dim:           #609BC9;
+  --theme-dark-accent-hover:         #6BA6D4;
+  --theme-dark-accent-ghost:         #1E2A33;
+  --theme-dark-text-on-accent:       #0D1117;
+  --theme-dark-green:                #4D9E78;
+  --theme-dark-red:                  #C9656E;
+  --theme-dark-orange:               #BD9038;
+  --theme-dark-purple:               #8B83B8;
+  --theme-dark-dim-mix:              #FFFFFF;
+  --theme-dark-topbar-bg:            #0D1117;
+  --theme-dark-topbar-text:          #E6EAF0;
+  --theme-dark-statusbar-bg:         #0D1117;
+  --theme-dark-statusbar-text:       #B1BAC4;
+  --theme-dark-statusbar-border:     #30363D;
+  --theme-dark-scrim:                rgba(0, 0, 0, 0.62);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-brand]:not([data-theme="light"]) {
+    --bg:                              var(--theme-dark-bg-canvas);
+    --bg-light:                        var(--theme-dark-bg-light);
+    --bg-medium:                       var(--theme-dark-bg-medium);
+    --bg-hover:                        var(--theme-dark-bg-hover);
+    --bg-active:                       var(--theme-dark-bg-active);
+    --card-surface-raised:             var(--theme-dark-card-surface-raised);
+    --border:                          var(--theme-dark-border);
+    --border-hover:                    var(--theme-dark-border-hover);
+    --border-focus:                    var(--theme-dark-border-focus);
+    --border-strong:                   var(--theme-dark-border-strong);
+    --border-divider:                  var(--theme-dark-border-divider);
+    --text-primary:                    var(--theme-dark-primary-text);
+    --text-secondary:                  var(--theme-dark-secondary-text);
+    --text-muted:                      var(--theme-dark-muted-text);
+    --text-disabled:                   var(--theme-dark-disabled-text);
+    --accent:                          var(--theme-dark-accent);
+    --accent-dim:                      var(--theme-dark-accent-dim);
+    --accent-hover:                    var(--theme-dark-accent-hover);
+    --accent-ghost:                    var(--theme-dark-accent-ghost);
+    --text-on-accent:                  var(--theme-dark-text-on-accent);
+    --green:                           var(--theme-dark-green);
+    --red:                             var(--theme-dark-red);
+    --orange:                          var(--theme-dark-orange);
+    --purple:                          var(--theme-dark-purple);
+    --dim-mix:                         var(--theme-dark-dim-mix);
+    --topbar-bg:                       var(--theme-dark-topbar-bg);
+    --topbar-text:                     var(--theme-dark-topbar-text);
+    --statusbar-bg:                    var(--theme-dark-statusbar-bg);
+    --statusbar-text:                  var(--theme-dark-statusbar-text);
+    --statusbar-border:                var(--theme-dark-statusbar-border);
+    --scrim:                           var(--theme-dark-scrim);
+  }
+}
+
+:root[data-brand][data-theme="dark"] {
+  --bg:                              var(--theme-dark-bg-canvas);
+  --bg-light:                        var(--theme-dark-bg-light);
+  --bg-medium:                       var(--theme-dark-bg-medium);
+  --bg-hover:                        var(--theme-dark-bg-hover);
+  --bg-active:                       var(--theme-dark-bg-active);
+  --card-surface-raised:             var(--theme-dark-card-surface-raised);
+  --border:                          var(--theme-dark-border);
+  --border-hover:                    var(--theme-dark-border-hover);
+  --border-focus:                    var(--theme-dark-border-focus);
+  --border-strong:                   var(--theme-dark-border-strong);
+  --border-divider:                  var(--theme-dark-border-divider);
+  --text-primary:                    var(--theme-dark-primary-text);
+  --text-secondary:                  var(--theme-dark-secondary-text);
+  --text-muted:                      var(--theme-dark-muted-text);
+  --text-disabled:                   var(--theme-dark-disabled-text);
+  --accent:                          var(--theme-dark-accent);
+  --accent-dim:                      var(--theme-dark-accent-dim);
+  --accent-hover:                    var(--theme-dark-accent-hover);
+  --accent-ghost:                    var(--theme-dark-accent-ghost);
+  --text-on-accent:                  var(--theme-dark-text-on-accent);
+  --green:                           var(--theme-dark-green);
+  --red:                             var(--theme-dark-red);
+  --orange:                          var(--theme-dark-orange);
+  --purple:                          var(--theme-dark-purple);
+  --dim-mix:                         var(--theme-dark-dim-mix);
+  --topbar-bg:                       var(--theme-dark-topbar-bg);
+  --topbar-text:                     var(--theme-dark-topbar-text);
+  --statusbar-bg:                    var(--theme-dark-statusbar-bg);
+  --statusbar-text:                  var(--theme-dark-statusbar-text);
+  --statusbar-border:                var(--theme-dark-statusbar-border);
+  --scrim:                           var(--theme-dark-scrim);
+}
+
+:root[data-brand][data-theme="light"] {
+  --bg:                              var(--theme-bg-canvas);
+  --bg-light:                        var(--theme-bg-light);
+  --bg-medium:                       var(--theme-bg-medium);
+  --bg-hover:                        var(--theme-bg-hover);
+  --bg-active:                       var(--theme-bg-active);
+  --card-surface-raised:             var(--theme-card-surface-raised);
+  --border:                          var(--theme-border);
+  --border-hover:                    var(--theme-border-hover);
+  --border-focus:                    var(--theme-border-focus);
+  --border-strong:                   var(--theme-border-strong);
+  --border-divider:                  var(--theme-border-divider);
+  --text-primary:                    var(--theme-primary-text);
+  --text-secondary:                  var(--theme-secondary-text);
+  --text-muted:                      var(--theme-muted-text);
+  --text-disabled:                   var(--theme-disabled-text);
+  --accent:                          var(--theme-accent);
+  --accent-dim:                      var(--theme-accent-dim);
+  --accent-hover:                    var(--theme-accent-hover);
+  --accent-ghost:                    var(--theme-accent-ghost);
+  --text-on-accent:                  var(--theme-text-on-accent);
+  --green:                           var(--theme-green);
+  --red:                             var(--theme-red);
+  --orange:                          var(--theme-orange);
+  --purple:                          var(--theme-purple);
+  --dim-mix:                         var(--theme-dim-mix);
+  --topbar-bg:                       var(--theme-topbar-bg);
+  --topbar-text:                     var(--theme-topbar-text);
+  --statusbar-bg:                    var(--theme-statusbar-bg);
+  --statusbar-text:                  var(--theme-statusbar-text);
+  --statusbar-border:                var(--theme-statusbar-border);
+  --scrim:                           var(--theme-scrim);
 }

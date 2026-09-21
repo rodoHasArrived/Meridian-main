@@ -209,7 +209,7 @@
 }
 
 .operator-nav-status-available {
-  border-color: var(--state-healthy-bd, rgba(22, 136, 95, 0.32));
+  border-color: var(--state-healthy-bd, rgba(58, 122, 86, 0.32));
   color: var(--state-healthy-fg, #3A7A56);
 }
 

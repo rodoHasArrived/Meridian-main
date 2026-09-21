@@ -305,8 +305,8 @@
 }
 
 .meridian-toolbar-chip.active {
-  border-color: rgba(47, 111, 143, 0.34);
-  background: rgba(47, 111, 143, 0.10);
+  border-color: rgba(168, 84, 54, 0.34);
+  background: rgba(168, 84, 54, 0.10);
   color: var(--cyan-primary);
 }
 

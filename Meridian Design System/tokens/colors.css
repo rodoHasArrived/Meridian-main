@@ -89,17 +89,17 @@
   --mode-fixture:       var(--orange);
 
   /* ── Chrome (near-black masthead + status bar — dark in both modes) ── */
-  --topbar-bg:          #171A1F;
-  --topbar-text:        #F4F6F8;
-  --statusbar-bg:       #171A1F;
-  --statusbar-text:     #D7DCE2;
-  --statusbar-border:   #262B31;
+  --topbar-bg:          #1F1D1A;
+  --topbar-text:        #F4F2ED;
+  --statusbar-bg:       #1F1D1A;
+  --statusbar-text:     #D8D3CA;
+  --statusbar-border:   #2E2A24;
   --topbar-border:      var(--statusbar-border);  /* masthead divider */
 
   /* ── Overlay scrim — the dim behind modals / dialogs / drawers / command
      palette / hotkeys sheet. Near-black in both modes (tracks the chrome
      family), standardized so every overlay dims identically. ── */
-  --scrim:              rgba(14, 17, 19, 0.5);
+  --scrim:              rgba(20, 18, 15, 0.5);
 
   /* Chrome interior details — the bars stay near-black in BOTH modes, so these need no dark override */
   --topbar-text-muted:  #B8B3AA;  /* module label, clock, statusbar values */

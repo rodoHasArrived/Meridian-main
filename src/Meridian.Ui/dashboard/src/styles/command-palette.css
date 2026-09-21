@@ -62,14 +62,14 @@
 }
 
 .command-palette-status {
-  border-color: var(--state-paper-bd, rgba(47, 111, 143, 0.34));
-  background: var(--state-paper-bg, rgba(47, 111, 143, 0.1));
+  border-color: var(--state-paper-bd, rgba(168, 84, 54, 0.34));
+  background: var(--state-paper-bg, rgba(168, 84, 54, 0.1));
   color: var(--state-paper-fg, #A85436);
 }
 
 .command-palette-status-blocked {
-  border-color: var(--state-danger-bd, rgba(186, 63, 85, 0.35));
-  background: var(--state-danger-bg, rgba(186, 63, 85, 0.1));
+  border-color: var(--state-danger-bd, rgba(168, 68, 60, 0.35));
+  background: var(--state-danger-bg, rgba(168, 68, 60, 0.1));
   color: var(--state-danger-fg, #A8443C);
 }
 
@@ -80,8 +80,8 @@
 }
 
 .command-palette-status-ready {
-  border-color: var(--state-healthy-bd, rgba(22, 136, 95, 0.32));
-  background: var(--state-healthy-bg, rgba(22, 136, 95, 0.1));
+  border-color: var(--state-healthy-bd, rgba(58, 122, 86, 0.32));
+  background: var(--state-healthy-bg, rgba(58, 122, 86, 0.1));
   color: var(--state-healthy-fg, #3A7A56);
 }
 

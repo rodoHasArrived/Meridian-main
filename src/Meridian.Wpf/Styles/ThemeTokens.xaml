@@ -65,7 +65,7 @@
     <Color x:Key="ChartBorderColor">#D3D0C9</Color>
     <Color x:Key="ChartCrosshairColor">#A85436</Color>
     <Color x:Key="ChartPrimaryLineColor">#A85436</Color>
-    <Color x:Key="ChartSecondaryLineColor">#7A9DB3</Color>
+    <Color x:Key="ChartSecondaryLineColor">#7E7A72</Color>
     <Color x:Key="ChartEquityColor">#3A7A56</Color>
     <Color x:Key="ChartEquityAlpha20Color">#333A7A56</Color>
     <Color x:Key="ChartDrawdownColor">#A8443C</Color>
@@ -80,10 +80,10 @@
     <Color x:Key="ModeCriticalColor">#A8443C</Color>
 
     <!-- Top bar colors: near-black brand bar -->
-    <Color x:Key="TopBarBackground">#171A1F</Color>
+    <Color x:Key="TopBarBackground">#1F1D1A</Color>
     <Color x:Key="TopBarText">#F4F6F8</Color>
-    <Color x:Key="TopBarBorder">#262B31</Color>
-    <Color x:Key="TopBarIconAccent">#E8ECEF</Color>
+    <Color x:Key="TopBarBorder">#2E2A24</Color>
+    <Color x:Key="TopBarIconAccent">#EFEBE4</Color>
 
     <!-- ── Solid brushes ── -->
     <SolidColorBrush x:Key="ConsoleBackgroundDarkBrush"    Color="{StaticResource ConsoleBackgroundDark}" />
@@ -142,7 +142,7 @@
     <SolidColorBrush x:Key="ChartDrawdownBrush" Color="{StaticResource ChartDrawdownColor}" />
     <SolidColorBrush x:Key="ChartDrawdownAlpha20Brush" Color="{StaticResource ChartDrawdownAlpha20Color}" />
     <SolidColorBrush x:Key="ChartWarningLineBrush" Color="{StaticResource ChartWarningLineColor}" />
-    <SolidColorBrush x:Key="ChartLoadingOverlayBrush" Color="#D9030A13" />
+    <SolidColorBrush x:Key="ChartLoadingOverlayBrush" Color="#D914120F" />
 
     <DrawingBrush x:Key="ChartCanvasGridBrush"
                   TileMode="Tile"
@@ -212,7 +212,7 @@
     </LinearGradientBrush>
 
     <!-- Sidebar background is needed by shell surface brushes below, so declare it before use. -->
-    <Color x:Key="SidebarBackground">#F4F6F8</Color>
+    <Color x:Key="SidebarBackground">#F6F4F0</Color>
 
     <!-- Shell surfaces: clean, elevated canvas -->
     <SolidColorBrush x:Key="ShellWindowBackgroundBrush" Color="{StaticResource ConsoleBackgroundDark}" />
@@ -247,19 +247,19 @@
     <SolidColorBrush x:Key="OutlineDimBrush"       Color="{StaticResource ConsoleBorderColor}" />
 
     <!-- Nav active state: light sidebar selection -->
-    <SolidColorBrush x:Key="NavActiveBackgroundBrush"   Color="#E6EEF5" />
+    <SolidColorBrush x:Key="NavActiveBackgroundBrush"   Color="#F2E3DB" />
     <SolidColorBrush x:Key="NavActiveBorderBrush"       Color="{StaticResource ConsoleAccentBlue}" />
 
     <!-- ── Light institutional sidebar palette ── -->
     <Color x:Key="SidebarBorderColor">#E4E3DE</Color>
-    <Color x:Key="SidebarHoverColor">#E9EEF3</Color>
-    <Color x:Key="SidebarActiveColor">#E1EAF2</Color>
+    <Color x:Key="SidebarHoverColor">#F0EEE9</Color>
+    <Color x:Key="SidebarActiveColor">#F2E3DB</Color>
     <Color x:Key="SidebarActiveIndicatorColor">#A85436</Color>
-    <Color x:Key="SidebarTileColor">#FFFFFF</Color>
-    <Color x:Key="SidebarTileHoverColor">#E9EEF3</Color>
+    <Color x:Key="SidebarTileColor">#FBFAF8</Color>
+    <Color x:Key="SidebarTileHoverColor">#F0EEE9</Color>
     <Color x:Key="NavItemText">#4E5258</Color>
     <Color x:Key="NavItemTextHover">#22252A</Color>
-    <Color x:Key="NavItemTextActive">#1F2933</Color>
+    <Color x:Key="NavItemTextActive">#22252A</Color>
     <Color x:Key="NavSectionLabel">#5E666F</Color>
 
     <SolidColorBrush x:Key="SidebarBackgroundBrush"          Color="{StaticResource SidebarBackground}" />
@@ -275,9 +275,9 @@
     <SolidColorBrush x:Key="NavSectionLabelBrush"            Color="{StaticResource NavSectionLabel}" />
 
     <!-- ── Workstation status bar palette ── -->
-    <Color x:Key="StatusBarBackground">#171A1F</Color>
+    <Color x:Key="StatusBarBackground">#1F1D1A</Color>
     <Color x:Key="StatusBarTextColor">#E4E3DE</Color>
-    <Color x:Key="StatusBarBorderColor">#262B31</Color>
+    <Color x:Key="StatusBarBorderColor">#2E2A24</Color>
 
     <SolidColorBrush x:Key="StatusBarBackgroundBrush"  Color="{StaticResource StatusBarBackground}" />
     <SolidColorBrush x:Key="StatusBarTextBrush"        Color="{StaticResource StatusBarTextColor}" />
@@ -356,19 +356,19 @@
     <SolidColorBrush x:Key="DarkSurfaceMutedTextBrush" Color="{StaticResource DarkSurfaceMutedTextColor}" />
 
     <!-- Top bar / masthead text and accents (over the near-black brand bar) -->
-    <Color x:Key="TopBarTextSecondaryColor">#9CA3AF</Color>
-    <Color x:Key="TopBarTextMutedColor">#6B7280</Color>
-    <Color x:Key="TopBarAccentBlueColor">#60A5FA</Color>
-    <Color x:Key="TopBarAlertAmberColor">#F59E0B</Color>
+    <Color x:Key="TopBarTextSecondaryColor">#A9A399</Color>
+    <Color x:Key="TopBarTextMutedColor">#7C766C</Color>
+    <Color x:Key="TopBarAccentBlueColor">#D98A64</Color>
+    <Color x:Key="TopBarAlertAmberColor">#C79A4C</Color>
     <SolidColorBrush x:Key="TopBarTextSecondaryBrush" Color="{StaticResource TopBarTextSecondaryColor}" />
     <SolidColorBrush x:Key="TopBarTextMutedBrush"     Color="{StaticResource TopBarTextMutedColor}" />
     <SolidColorBrush x:Key="TopBarAccentBlueBrush"    Color="{StaticResource TopBarAccentBlueColor}" />
     <SolidColorBrush x:Key="TopBarAlertAmberBrush"    Color="{StaticResource TopBarAlertAmberColor}" />
 
     <!-- Startup window text (over the dark brand panel) -->
-    <Color x:Key="StartupSubtitleTextColor">#C9D1D9</Color>
+    <Color x:Key="StartupSubtitleTextColor">#D5D0C7</Color>
     <Color x:Key="StartupBodyTextColor">#AFABA1</Color>
-    <Color x:Key="StartupFootnoteTextColor">#7E8792</Color>
+    <Color x:Key="StartupFootnoteTextColor">#8C867C</Color>
     <SolidColorBrush x:Key="StartupSubtitleTextBrush" Color="{StaticResource StartupSubtitleTextColor}" />
     <SolidColorBrush x:Key="StartupBodyTextBrush"     Color="{StaticResource StartupBodyTextColor}" />
     <SolidColorBrush x:Key="StartupFootnoteTextBrush" Color="{StaticResource StartupFootnoteTextColor}" />

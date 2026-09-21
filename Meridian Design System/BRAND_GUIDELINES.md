@@ -8,9 +8,9 @@ bundle. The active package guidance lives in `README.md`, `styles.css`,
 
 Meridian is an institutional trading, market-data, research, accounting, and
 reporting workstation. The brand language is light, precise, and operational:
-a paper canvas, white work surfaces, near-black chrome bars, one muted
-teal-blue accent, desaturated status color, hairline borders, and shallow
-shadow.
+a warm paper canvas, architect-white work surfaces, warm near-black chrome
+bars, one muted copper accent, desaturated status color, hairline borders,
+and shallow shadow.
 
 The visual system is grounded in `src/Meridian.Wpf/Styles/*.xaml` and exported
 for web consumers through the design-system token files.
@@ -52,7 +52,7 @@ families.
 
 ## Usage Rules
 
-- Keep one primary teal-blue action per screen.
+- Keep one primary copper action per screen.
 - Use semantic colors as text, border, and alpha wash trios; do not use solid
   status fills for routine badges.
 - Preserve the near-black brand/status bars when showing workstation chrome.
