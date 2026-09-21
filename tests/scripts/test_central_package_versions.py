@@ -31,12 +31,10 @@ class CentralPackageVersionTests(unittest.TestCase):
             "Microsoft.Extensions.Configuration.EnvironmentVariables",
             "Microsoft.Extensions.Configuration.CommandLine",
             "Microsoft.Extensions.DependencyInjection",
-            "Microsoft.Extensions.DependencyInjection.Abstractions",
             "Microsoft.Extensions.Hosting",
             "Microsoft.Extensions.Hosting.Abstractions",
             "Microsoft.Extensions.Caching.Memory",
             "Microsoft.Extensions.Logging",
-            "Microsoft.Extensions.Logging.Abstractions",
             "Microsoft.Extensions.Logging.Debug",
             "Microsoft.Extensions.Options",
             "Microsoft.Extensions.Options.ConfigurationExtensions",
@@ -45,6 +43,11 @@ class CentralPackageVersionTests(unittest.TestCase):
         for package in packages:
             with self.subTest(package=package):
                 self.assertEqual(self.versions[package], "10.0.7")
+
+        # Logging.Abstractions 10.0.12 requires DI.Abstractions >= 10.0.12.
+        # Keep these reviewed patch updates explicit without changing the other pins.
+        self.assertEqual(self.versions["Microsoft.Extensions.Logging.Abstractions"], "10.0.12")
+        self.assertEqual(self.versions["Microsoft.Extensions.DependencyInjection.Abstractions"], "10.0.12")
 
     def test_json_stack_pins_match_system_text_json_transitives(self) -> None:
         self.assertEqual(self.versions["System.Text.Json"], "10.0.7")
