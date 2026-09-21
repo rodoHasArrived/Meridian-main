@@ -53,11 +53,11 @@ function inject(): void {
   background:var(--bg-medium,#EDEAE4);
   font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#5E666F);
-  border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#E4E3DE);}
+  border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#DAD8D3);}
 .tlt thead th:last-child{border-right:none;}
 .tlt th.tlt--r{text-align:right;}
 .tlt td{padding:7px 12px;white-space:nowrap;color:var(--text-primary,#22252A);
-  border-top:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border-divider,#E4E3DE);
+  border-top:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border-divider,#DAD8D3);
   vertical-align:middle;font-variant-numeric:tabular-nums;}
 .tlt td:last-child{border-right:none;}
 .tlt tbody tr:first-child td{border-top:none;}

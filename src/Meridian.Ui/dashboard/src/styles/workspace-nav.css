@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   Meridian "Concrete" operator rail — 14rem light paper sidebar (#EBEFF4),
-   small-caps section labels, nav items with a 3px teal-blue active indicator.
+   Meridian "Programmed Institutionalism" operator rail — 14rem warm paper sidebar
+   (#EDEAE4), small-caps section labels, nav items with a 3px copper active indicator.
    ───────────────────────────────────────────────────────────────────────────── */
 
 :root {
@@ -128,7 +128,7 @@
 }
 
 .operator-nav-item:hover {
-  background: var(--mds-nav-rail-hover, var(--sidebar-hover, #E1E7EE));
+  background: var(--mds-nav-rail-hover, var(--sidebar-hover, #F0EEE9));
   color: var(--mds-nav-rail-text-active, var(--nav-item-hover, #22252A));
 }
 
@@ -137,9 +137,9 @@
 }
 
 .operator-nav-item.active {
-  background: var(--mds-nav-rail-active, var(--ws-rail-active, #F4E7E0));
+  background: var(--mds-nav-rail-active, var(--ws-rail-active, #F2E3DB));
   border-left-color: var(--mds-nav-rail-accent, var(--ws-accent, #A85436));
-  color: var(--mds-nav-rail-text-active, var(--nav-item-active, #1F2933));
+  color: var(--mds-nav-rail-text-active, var(--nav-item-active, #22252A));
   font-weight: 600;
   box-shadow: none;
 }
@@ -169,7 +169,7 @@
 
 .operator-nav-expand:hover {
   border-color: var(--mds-nav-rail-border, var(--ws-border, #E4E3DE));
-  background: var(--mds-nav-rail-hover, var(--sidebar-hover, #E1E7EE));
+  background: var(--mds-nav-rail-hover, var(--sidebar-hover, #F0EEE9));
   color: var(--mds-nav-rail-text-active, var(--ws-text, #22252A));
 }
 
@@ -277,14 +277,14 @@
 }
 
 .operator-nav-subitem:hover {
-  background: var(--mds-nav-rail-hover, var(--sidebar-hover, #E1E7EE));
+  background: var(--mds-nav-rail-hover, var(--sidebar-hover, #F0EEE9));
   color: var(--mds-nav-rail-text-active, var(--nav-item-hover, #22252A));
 }
 
 .operator-nav-subitem.active {
-  background: var(--mds-nav-rail-active, var(--ws-rail-active, #F4E7E0));
+  background: var(--mds-nav-rail-active, var(--ws-rail-active, #F2E3DB));
   border-left-color: var(--mds-nav-rail-accent, var(--ws-accent, #A85436));
-  color: var(--mds-nav-rail-text-active, var(--nav-item-active, #1F2933));
+  color: var(--mds-nav-rail-text-active, var(--nav-item-active, #22252A));
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────────── */

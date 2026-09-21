@@ -85,7 +85,7 @@ for splitting sections *inside* a surface where a full border would be too much.
 
 ---
 
-## Spacing, radius, elevation — the Concrete constraints
+## Spacing, radius, elevation — the Programmed Institutionalism constraints
 
 **Spacing** is a 6-step scale: `--space-xs 3px · sm 6px · md 12px · lg 16px · xl 24px · 2xl 32px`.
 The density switch rescales the *theme* spacing (`--theme-spacing-*`) and `--theme-row-height`
@@ -94,7 +94,7 @@ The density switch rescales the *theme* spacing (`--theme-spacing-*`) and `--the
 **Radius is intentionally tiny.** Everything is `2px` (`--radius-chip` / `-button` / `-card` all
 2px); the named scale tops out at `--radius-xl 6px` for large sheets only. *Structure comes from
 borders, not rounding.* If you find yourself wanting a 12px corner, you're off-system — Meridian is
-"Concrete," not "friendly SaaS."
+"Programmed Institutionalism," not "friendly SaaS."
 
 **Elevation is flat by mandate.** `--shadow-card`, `--shadow-panel`, `--shadow-soft`,
 `--shadow-workstation` are all `none` — the workstation plane is flat and **borders carry
@@ -156,7 +156,7 @@ The near-black bars stay dark in **both** modes, so their interior details have 
 instead of reusing panel tokens (which flip in dark): `--topbar-text-muted` / `--topbar-text-faint`
 (secondary/hint ink on chrome), `--topbar-sep`, `--topbar-field-bg` / `--topbar-field-border`(`-hover`)
 (the inset search field and kbd caps), and `--chrome-ok/warn/err` (status dots bright enough to read
-on `#171A1F` — deliberately lighter than the panel semantics `--green/--orange/--red`). Anything that
+on `#1F1D1A` — deliberately lighter than the panel semantics `--green/--orange/--red`). Anything that
 sits ON the chrome uses these; anything on paper uses the normal panel tokens. Defined in
 `tokens/colors.css` under "Chrome interior details"; no dark override needed.
 
@@ -164,7 +164,7 @@ sits ON the chrome uses these; anything on paper uses the normal panel tokens. D
 
 ## Anti-patterns
 
-- ❌ Hardcoding a hex (`color:#2F6F8F`) — breaks white-label + dark. Use `var(--accent)`.
+- ❌ Hardcoding a hex (`color:#A85436`) — breaks white-label + dark. Use `var(--accent)`.
 - ❌ Authoring against Tier 3 (`var(--green-dim)` for a non-semantic surface) or `--ws-*` names.
 - ❌ Typed pixel padding/margins instead of `--space-*`; typed corners instead of `--radius-*`.
 - ❌ A shadow to separate two coplanar panels — use a border or surface step.
@@ -173,5 +173,5 @@ sits ON the chrome uses these; anything on paper uses the normal panel tokens. D
 
 ---
 
-**See also:** `guidelines/VISUAL_FOUNDATIONS.md` (the "why" behind Concrete) ·
+**See also:** `guidelines/VISUAL_FOUNDATIONS.md` (the "why" behind Programmed Institutionalism) ·
 `guidelines/ACCESSIBILITY.md` (measured contrast for every token) · `PATTERNS.md` (composition).

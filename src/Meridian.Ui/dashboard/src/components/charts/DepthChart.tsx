@@ -28,7 +28,7 @@ const PLOT = "var(--chart-plot, #FBFAF8)";
 const GRID = "var(--chart-grid, #E4E3DE)";
 const AXIS = "var(--chart-axis, #5E666F)";
 const BORDER = "var(--chart-border, #AFABA1)";
-const CROSSHAIR = "var(--chart-crosshair, #A85436)";
+const CROSSHAIR = "var(--chart-crosshair, #6B655C)";
 const UP = "var(--chart-equity, #3A7A56)";
 const DOWN = "var(--chart-drawdown, #A8443C)";
 

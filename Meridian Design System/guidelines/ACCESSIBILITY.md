@@ -5,40 +5,47 @@ and trading operations — a domain where accessibility is frequently a procurem
 requirement, not a nicety. This guide states what the system guarantees, what it measures, and
 what the consuming application is responsible for.
 
-All contrast figures below are **measured** against the actual Concrete tokens (sRGB, WCAG 2.x
+All contrast figures below are **measured** against the actual Programmed Institutionalism tokens (sRGB, WCAG 2.x
 relative-luminance formula), not estimated. Re-run them whenever a base color token changes.
 
 ---
 
 ## 1. Color & contrast
 
-### Text — light mode (foreground on `--bg-light` #FFFFFF panel, unless noted)
+### Text — light mode (foreground on `--bg-light` #FBFAF8 panel, unless noted)
 
 | Token | Hex | Ratio | Normal text | Large text |
 | --- | --- | --- | --- | --- |
-| `--text-primary` | `#22272E` | **15.0:1** | ✅ AAA | ✅ AAA |
-| `--text-secondary` | `#4D5967` | **7.1:1** | ✅ AAA | ✅ AAA |
-| `--text-secondary` on canvas `#DEE3EA` | — | **5.5:1** | ✅ AA | ✅ AAA |
-| `--text-muted` | `#59636F` | **6.1:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on canvas `#DEE3EA` | — | **4.7:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on `--bg-medium` `#EBEFF4` | — | **5.3:1** | ✅ AA | ✅ AAA |
-| `--text-disabled` | `#889099` | 3.2:1 | exempt¹ | exempt¹ |
-| `--accent` | `#2F6F8F` | **5.5:1** | ✅ AA | ✅ AAA |
-| `--accent-dim` (pressed) | `#255B75` | **7.4:1** | ✅ AAA | ✅ AAA |
-| White on `--accent` (primary button) | — | **5.5:1** | ✅ AA | ✅ AAA |
-| White on `--accent-dim` (pressed button) | — | **7.4:1** | ✅ AAA | ✅ AAA |
-| `--red` | `#BA3F55` | **5.3:1** | ✅ AA | ✅ AAA |
-| `--orange` | `#8A520E` | **6.4:1** | ✅ AA | ✅ AAA |
-| `--purple` | `#6F5BA7` | **5.6:1** | ✅ AA | ✅ AAA |
-| `--green` | `#16885F` | 4.45:1 | ⚠️ see below | ✅ AA |
-| `--topbar-text` `#F4F6F8` on `--topbar-bg` `#171A1F` | — | **16.1:1** | ✅ AAA | ✅ AAA |
+| `--text-primary` | `#22252A` | **14.7:1** | ✅ AAA | ✅ AAA |
+| `--text-secondary` | `#4E5258` | **7.5:1** | ✅ AAA | ✅ AAA |
+| `--text-secondary` on canvas `#F2F0EC` | — | **6.9:1** | ✅ AA | ✅ AAA |
+| `--text-muted` | `#5E666F` | **5.6:1** | ✅ AA | ✅ AAA |
+| `--text-muted` on canvas `#F2F0EC` | — | **5.1:1** | ✅ AA | ✅ AAA |
+| `--text-muted` on `--bg-medium` `#EDEAE4` | — | **4.9:1** | ✅ AA | ✅ AAA |
+| `--text-disabled` | `#94999F` | 2.8:1 | exempt¹ | exempt¹ |
+| `--accent` | `#A85436` | **5.1:1** | ✅ AA | ✅ AAA |
+| `--accent-dim` (pressed) | `#8C4429` | **6.8:1** | ✅ AAA | ✅ AAA |
+| White on `--accent` (primary button) | — | **5.3:1** | ✅ AA | ✅ AAA |
+| White on `--accent-hover` (hovered button) | — | **4.6:1** | ✅ AA | ✅ AAA |
+| White on `--accent-dim` (pressed button) | — | **7.1:1** | ✅ AAA | ✅ AAA |
+| `--red` | `#A8443C` | **5.7:1** | ✅ AA | ✅ AAA |
+| `--orange` | `#8A5C12` | **5.6:1** | ✅ AA | ✅ AAA |
+| `--purple` | `#5D5486` | **6.5:1** | ✅ AA | ✅ AAA |
+| `--green` | `#3A7A56` | **4.9:1** | ✅ AA | ✅ AAA |
+| `--topbar-text` `#F4F2ED` on `--topbar-bg` `#1F1D1A` | — | **15.0:1** | ✅ AAA | ✅ AAA |
+
+> `--accent-hover` is a **fill**, never a text colour: as text on a panel it measures 4.4:1.
+> All three button states are checked against their white label by `scripts/check_contrast.py`,
+> which also checks every `data-brand` variant.
 
 ¹ WCAG 1.4.3 exempts disabled/inactive controls from contrast minimums. Disabled text is
 deliberately low-contrast to read as inactive.
 
 > **The one rule that matters: semantic text uses the `-dim` variant, never the raw hue.**
-> Raw `--green` (#16885F) is 4.45:1 — *marginally under* the 4.5:1 AA threshold for normal text.
-> This is exactly why every chip, badge, and status row renders its label in `--green-dim`
+> Under the superseded palette raw `--green` (#16885F) was 4.45:1 — *marginally under* the 4.5:1
+> AA threshold. The restyle lifted it to 4.9:1, so it now clears AA on its own, but the rule
+> stands: the `-dim` variants carry a margin that survives a brand swap, and a white-label
+> deployment can move the raw hue anywhere. Every chip, badge, and status row renders its label in `--green-dim`
 > (the hue mixed 75% toward `--dim-mix`), which is darker and clears AA comfortably. The raw
 > hues (`--green`/`--red`/`--orange`/`--purple`) are for **borders and ≥18px/▲ icons** (the
 > trio's solid-border role), where the 3:1 non-text / large-text threshold applies and all pass.
@@ -46,10 +53,10 @@ deliberately low-contrast to read as inactive.
 
 ### Non-text contrast (WCAG 2.2 · 1.4.11)
 
-- **Focus ring** `--border-focus` (#2F6F8F) on a white panel is **5.5:1** — comfortably above the
+- **Focus ring** `--border-focus` (#A85436) on a paper panel is **5.1:1** — comfortably above the
   3:1 requirement for focus indicators. Every interactive control exposes it via `:focus-visible`.
-- **Structural borders are decorative and intentionally below 3:1** (`--border` #CBD3DC ≈ 1.5:1,
-  `--border-strong` #99A5B2 ≈ 2.5:1). This is conformant because the border is **never the sole
+- **Structural borders are decorative and intentionally below 3:1** (`--border` #E4E3DE ≈ 1.2:1,
+  `--border-strong` #AFABA1 ≈ 2.2:1). This is conformant because the border is **never the sole
   indicator** of a control or its state: inputs also change background on hover/focus and show a
   high-contrast focus ring; selected table rows carry a 3px accent inset *plus* a background wash;
   active nav items carry a 3px accent bar *plus* a wash. Do not rely on border color alone to

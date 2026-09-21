@@ -27,9 +27,9 @@ function inject(): void {
 .agt{width:100%;min-width:720px;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
 .agt th,.agt td{text-align:right;white-space:nowrap;}
 .agt th.agt--l,.agt td.agt--l{text-align:left;}
-.agt thead th{padding:9px 12px;position:sticky;top:0;background:var(--bg-medium,#EDEAE4);z-index:1;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#E4E3DE);}
+.agt thead th{padding:9px 12px;position:sticky;top:0;background:var(--bg-medium,#EDEAE4);z-index:1;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#DAD8D3);}
 .agt thead th:last-child,.agt td:last-child{border-right:none;}
-.agt td{padding:10px 12px;color:var(--text-primary,#22252A);border-top:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border-divider,#E4E3DE);vertical-align:top;}
+.agt td{padding:10px 12px;color:var(--text-primary,#22252A);border-top:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border-divider,#DAD8D3);vertical-align:top;}
 .agt tbody tr:first-child td{border-top:none;}
 .agt__name{font-family:var(--font-body,inherit);font-weight:600;}
 .agt__ref{color:var(--text-secondary,#4E5258);}

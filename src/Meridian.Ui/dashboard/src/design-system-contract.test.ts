@@ -415,7 +415,9 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("[data-appearance=\"light\"]");
     expect(navStyles).toContain("--mds-nav-rail-bg: var(--theme-bg-hover, var(--ws-rail-bg))");
     expect(navStyles).toContain("--mds-nav-rail-accent: var(--theme-accent, var(--ws-accent))");
-    expect(navStyles).toContain("background: var(--mds-nav-rail-active, var(--ws-rail-active, #F4E7E0))");
+    // The fallback mirrors --ws-rail-active (#F2E3DB); it previously quoted --accent-ghost
+    // (#F4E7E0), a different token.
+    expect(navStyles).toContain("background: var(--mds-nav-rail-active, var(--ws-rail-active, #F2E3DB))");
 
     // Tailwind color registrations present
     expect(tailwindConfig).toContain("sidebar: {");

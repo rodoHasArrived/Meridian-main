@@ -19,7 +19,7 @@ const CSS = `
 .mds-skel--circle{border-radius:50%;}
 .mds-skel-lines{display:flex;flex-direction:column;gap:8px;}
 .mds-skel-table{width:100%;border-collapse:collapse;font-family:var(--font-body);}
-.mds-skel-table td{padding:9px 12px;border-bottom:1px solid var(--border-divider,#DDE3EA);}
+.mds-skel-table td{padding:9px 12px;border-bottom:1px solid var(--border-divider,#DAD8D3);}
 @keyframes mds-skel-sweep{100%{transform:translateX(100%);}}
 @media (prefers-reduced-motion:reduce){.mds-skel::after{animation:none;}}
 `;

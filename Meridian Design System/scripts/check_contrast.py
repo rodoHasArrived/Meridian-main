@@ -209,11 +209,81 @@ def check_brands(root: Path) -> list[str]:
     return failures
 
 
+# The browser workstation keeps a parallel --ws-* track in its own index.css, and its
+# DesignSystemButton reads --ws-accent-hover rather than the canonical --accent-hover. That
+# track shipped a 3.86:1 hover behind a green gate because nothing here looked at it.
+WS_STATES = [("base", "--ws-accent"), ("hover", "--ws-accent-hover"), ("pressed", "--ws-accent-pressed")]
+WS_INDEX = Path("src/Meridian.Ui/dashboard/src/styles/index.css")
+# Tailwind --primary-foreground, as HSL triples: white in light, near-black ink in dark.
+WS_LABEL = {"light": (255.0, 255.0, 255.0), "dark": (26.0, 21.0, 18.0)}
+
+
+def check_workstation(root: Path) -> list[str]:
+    """Check the browser workstation's --ws-* button states, which are not in this package."""
+    index = root.parent / WS_INDEX
+    if not index.exists():
+        return []  # package used standalone, without the monorepo around it
+    text = index.read_text(encoding="utf-8")
+    # First declaration of each token is the light block; the dark blocks follow.
+    blocks = {"light": {}, "dark": {}}
+    for m in re.finditer(r"(--ws-accent(?:-hover|-pressed)?)\s*:\s*(#[0-9A-Fa-f]{6})\s*;", text):
+        tok, val = m.group(1), m.group(2)
+        blocks["light"].setdefault(tok, val)
+    for m in re.finditer(r"prefers-color-scheme:\s*dark(.*)", text, re.S):
+        for d in re.finditer(r"(--ws-accent(?:-hover|-pressed)?)\s*:\s*(#[0-9A-Fa-f]{6})\s*;", m.group(1)):
+            blocks["dark"].setdefault(d.group(1), d.group(2))
+        break
+
+    failures: list[str] = []
+    for mode, tokens in blocks.items():
+        label = WS_LABEL[mode]
+        for state, tok in WS_STATES:
+            if tok not in tokens:
+                continue
+            value = ratio(label, hex_to_rgb(tokens[tok]))
+            status = "ok" if value >= 4.5 else "FAIL"
+            print(f"[{mode} \u00b7 workstation] {state} button label: {value:.2f}:1 (min 4.5) {status}")
+            if status == "FAIL":
+                failures.append(f"[{mode} \u00b7 workstation] {state} button label: {value:.2f}:1 < 4.5")
+    return failures
+
+
+# The package publishes a --ws-* compatibility layer beside the canonical tokens. The two
+# tracks are meant to carry the same colours; when only one is updated, a consumer using the
+# documented paste path gets a palette that disagrees with the canonical contract. This has
+# now drifted three times, so it is checked rather than remembered.
+WS_ALIASES = [
+    ("--ws-accent", "--accent"), ("--ws-accent-hover", "--accent-hover"),
+    ("--ws-accent-pressed", "--accent-dim"), ("--ws-page-bg", "--bg"),
+    ("--ws-surface", "--bg-light"), ("--ws-surface-subtle", "--bg-medium"),
+    ("--ws-border", "--border"), ("--ws-border-strong", "--border-strong"),
+    ("--ws-text", "--text-primary"), ("--ws-text-muted", "--text-muted"),
+]
+
+
+def check_ws_aliases(root: Path) -> list[str]:
+    """The --ws-* compatibility layer must agree with the canonical tokens it mirrors."""
+    tokens = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
+    failures: list[str] = []
+    for ws, canon in WS_ALIASES:
+        a, b = resolve(f"var({ws})", tokens), resolve(f"var({canon})", tokens)
+        if a is None or b is None:
+            continue
+        if a != b:
+            failures.append(f"[ws-alias] {ws} does not mirror {canon}")
+            print(f"[ws-alias] {ws} vs {canon}: MISMATCH")
+    if not failures:
+        print(f"[ws-alias] all {len(WS_ALIASES)} compatibility aliases mirror their canonical token")
+    return failures
+
+
 def run_checks(root: Path) -> list[str]:
     light = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
     dark_overrides = parse_tokens((root / "tokens" / "colors-dark.css").read_text(encoding="utf-8"))
     dark = {**light, **dark_overrides}
-    return check_mode("light", light) + check_mode("dark", dark) + check_brands(root)
+    return (check_mode("light", light) + check_mode("dark", dark)
+            + check_brands(root) + check_workstation(root)
+            + check_ws_aliases(root))
 
 
 def main() -> int:

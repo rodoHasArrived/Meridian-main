@@ -145,9 +145,9 @@
     --sidebar-ring: 16 51% 44%;
     /* ─── Chart tokens ───────────────────────────────────────────────────────
        Named --chart-1…5 to match the existing Tailwind contract.
-       Mapped to Meridian's muted Concrete semantic chart palette:
+       Mapped to Meridian's muted Programmed Institutionalism semantic chart palette:
        copper #A85436 · forest #3A7A56 · brick #A8443C · ochre #8A5C12 ·
-       benchmark #6E8597.
+       warm slate benchmark #7E7A72.
     ──────────────────────────────────────────────────────────────────────────*/
     --chart-1: 16 51% 44%;
     --chart-2: 146 36% 35%;
@@ -193,6 +193,7 @@
     --ws-surface-subtle: #EDEAE4;
     --ws-surface-raised: #F6F4F0;
     --ws-border: #E4E3DE;
+    --ws-border-hover: #C6C3BB;
     --ws-border-strong: #AFABA1;
     --ws-text: #22252A;
     --ws-text-muted: #5E666F;
@@ -207,7 +208,7 @@
     --ws-inspector-bg: #FBFAF8;
     --ws-canvas-bg: #FBFAF8;
     --ws-accent: #A85436;
-    --ws-accent-hover: #C06B4A;
+    --ws-accent-hover: #AF6143;  /* 4.55:1 under the white label */
     --ws-accent-pressed: #8C4429;
     /* Concrete is flat: the workstation shadow token carries NO card shadow;
        borders carry structure. Only detached overlays float (--shadow-float). */
@@ -259,8 +260,8 @@
     --surface-raise-bg: var(--ws-surface-raised);
     --border-color: var(--ws-border);
     --border-hi: var(--ws-border-strong);
-    --border-hover: #ADB8C4;
-    --border-strong: #99A5B2;
+    --border-hover: var(--ws-border-hover);
+    --border-strong: var(--ws-border-strong);
     --border-divider: #DAD8D3;
     --surface-topbar: var(--ws-masthead-bg);
     --surface-input: var(--ws-surface-subtle);
@@ -349,8 +350,8 @@
   }
 
   /* ─── Dark mode — graphite charcoal, equally flat ───────────────────────────
-     Concrete dark (handoff colors-dark.css): canvas #0E1113 · panel #1A2026 ·
-     band #232A32 · steel accent #5790BE · border #45505C. Only the base tokens
+     Warm graphite dark (handoff colors-dark.css): canvas #14120F · panel #201D19 ·
+     band #292520 · copper accent #D98A64 · border #4A443C. Only the base tokens
      flip; every derived severity/state/mode trio re-derives from --green/--red/
      --orange/--purple/--ws-accent via color-mix(), so the ops layer follows for
      free. The dark block covers BOTH Track A (HSL channels for Tailwind) and
@@ -408,6 +409,7 @@
       --ws-surface-subtle: #292520;
       --ws-surface-raised: #252119;
       --ws-border: #4A443C;
+      --ws-border-hover: #5F584E;
       --ws-border-strong: #736B60;
       --ws-text: #EFEBE4;
       --ws-text-muted: #9A9289;
@@ -431,8 +433,8 @@
       --orange: #C29A4A;
       --purple: #9089B5;
 
-      --border-hover: #5A6776;
-      --border-strong: #6E7C8A;
+      --border-hover: var(--ws-border-hover);
+      --border-strong: var(--ws-border-strong);
       --border-divider: #302B25;
 
       /* Charts — dark series/grid */
@@ -497,6 +499,7 @@
     --ws-surface-subtle: #292520;
     --ws-surface-raised: #252119;
     --ws-border: #4A443C;
+    --ws-border-hover: #5F584E;
     --ws-border-strong: #736B60;
     --ws-text: #EFEBE4;
     --ws-text-muted: #9A9289;
@@ -520,8 +523,8 @@
     --orange: #C29A4A;
     --purple: #9089B5;
 
-    --border-hover: #5A6776;
-    --border-strong: #6E7C8A;
+    --border-hover: var(--ws-border-hover);
+    --border-strong: var(--ws-border-strong);
     --border-divider: #302B25;
 
     --chart-grid: #302B25;
@@ -588,6 +591,7 @@
     --ws-surface-subtle: #EDEAE4;
     --ws-surface-raised: #F6F4F0;
     --ws-border: #E4E3DE;
+    --ws-border-hover: #C6C3BB;
     --ws-border-strong: #AFABA1;
     --ws-text: #22252A;
     --ws-text-muted: #5E666F;
@@ -602,7 +606,7 @@
     --ws-inspector-bg: #FBFAF8;
     --ws-canvas-bg: #FBFAF8;
     --ws-accent: #A85436;
-    --ws-accent-hover: #C06B4A;
+    --ws-accent-hover: #AF6143;  /* 4.55:1 under the white label */
     --ws-accent-pressed: #8C4429;
 
     --accent-ghost: #F4E7E0;
@@ -611,8 +615,8 @@
     --orange: #8A5C12;
     --purple: #5D5486;
 
-    --border-hover: #ADB8C4;
-    --border-strong: #99A5B2;
+    --border-hover: var(--ws-border-hover);
+    --border-strong: var(--ws-border-strong);
     --border-divider: #DAD8D3;
 
     --chart-grid: #E4E3DE;
@@ -756,7 +760,7 @@
   .panel-state-title {
     min-width: 0;
     overflow: hidden;
-    color: #f6fbff;
+    color: #FDFAF5;
     font-size: 0.8125rem;
     font-weight: 750;
     line-height: 1.25;
@@ -790,7 +794,7 @@
 
   .panel-action-footer {
     justify-content: space-between;
-    border-top: 1px solid rgba(31, 52, 76, 0.72);
+    border-top: 1px solid rgba(74, 68, 60, 0.72);
     padding-top: 0.625rem;
   }
 
@@ -810,7 +814,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    border: 1px solid rgba(31, 52, 76, 0.78);
+    border: 1px solid rgba(74, 68, 60, 0.78);
     border-radius: var(--radius-sm);
     background: rgba(6, 18, 31, 0.92);
     box-shadow: var(--shadow-soft);
@@ -819,7 +823,7 @@
 
   .workspace-section-title {
     margin: 0;
-    color: #f6fbff;
+    color: #FDFAF5;
     font-size: 0.8125rem;
     font-weight: 780;
     line-height: 1.2;
@@ -839,10 +843,10 @@
     align-items: center;
     gap: 0.375rem;
     min-height: 2rem;
-    border: 1px solid rgba(42, 178, 212, 0.3);
+    border: 1px solid rgba(217, 138, 100, 0.3);
     border-radius: var(--radius-xs);
-    background: rgba(42, 178, 212, 0.08);
-    color: #bcefff;
+    background: rgba(217, 138, 100, 0.08);
+    color: #E6A585;
     padding: 0.25rem 0.5rem;
     font-size: 0.6875rem;
     font-weight: 700;
@@ -874,8 +878,8 @@
 
   .operator-mode-toggle [aria-pressed="true"],
   .operator-mode-toggle [aria-current="page"] {
-    background: rgba(42, 178, 212, 0.14);
-    color: #f6fbff;
+    background: rgba(217, 138, 100, 0.14);
+    color: #FDFAF5;
   }
 
   .development-fixture-notice {
@@ -926,7 +930,7 @@
     min-height: 1.75rem;
     border: 1px solid rgba(214, 158, 56, 0.34);
     border-radius: var(--radius-sm);
-    background: rgba(8, 16, 26, 0.45);
+    background: rgba(20, 18, 15, 0.45);
     color: #f6e7ba;
     padding: 0 0.5rem;
     text-decoration: none;
@@ -1044,9 +1048,9 @@
   .workspace-header-card {
     min-width: 0;
     padding: 0.75rem 0.875rem;
-    border: 1px solid rgba(31, 52, 76, 0.95);
+    border: 1px solid rgba(74, 68, 60, 0.95);
     border-radius: var(--radius-lg);
-    background: rgba(8, 16, 26, 0.62);
+    background: rgba(20, 18, 15, 0.62);
     box-shadow: var(--shadow-panel);
     transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
   }
@@ -1059,7 +1063,7 @@
 
   .workspace-header-card-value {
     margin-top: 0.5rem;
-    color: #f6fbff;
+    color: #FDFAF5;
     font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.75rem;
     line-height: 1.5;
@@ -1085,9 +1089,9 @@
     --muted-foreground: 212 11% 70%;
     --border: 211 14% 32%;
     --secondary: 212 18% 17%;
-    border: 1px solid rgba(31, 52, 76, 0.95);
+    border: 1px solid rgba(74, 68, 60, 0.95);
     border-radius: var(--radius-xl);
-    background: #05101b;
+    background: #14120F;
     padding: 0.875rem;
     box-shadow: var(--shadow-panel);
   }
@@ -1104,7 +1108,7 @@
     gap: 0.25rem;
     height: 14rem;
     padding: 1rem 0.75rem;
-    border: 1px solid rgba(31, 52, 76, 0.95);
+    border: 1px solid rgba(74, 68, 60, 0.95);
     border-radius: var(--radius-lg);
     background: var(--surface-topbar);
   }

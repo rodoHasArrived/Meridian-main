@@ -51,7 +51,7 @@
   align-items: center;
   padding: 0 1rem;
   background: var(--theme-topbar-bg, var(--ws-masthead-bg, #1F1D1A));
-  border-bottom: 1px solid var(--topbar-border, #262B31);
+  border-bottom: 1px solid var(--topbar-border, #2D2A25);
   color: var(--theme-topbar-text, var(--ws-masthead-fg, #F4F2ED));
 }
 
@@ -96,14 +96,14 @@
   gap: 0.5rem;
   min-width: 0;
   font-size: 0.8125rem;
-  color: #AEB7C0;
+  color: #BBB5AC;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .workstation-brand-sep {
-  color: #3A4048;
+  color: #433F38;
 }
 
 .workstation-nav-toggle {
@@ -112,16 +112,16 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  border: 1px solid #2C323A;
+  border: 1px solid #35312A;
   border-radius: var(--radius-button, 2px);
-  background: #0F1216;
-  color: #AEB7C0;
+  background: #13110E;
+  color: #BBB5AC;
   cursor: pointer;
   transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
 }
 
 .workstation-nav-toggle:hover {
-  border-color: #3A424B;
+  border-color: #454138;
   color: var(--theme-topbar-text, var(--ws-masthead-fg, #F4F2ED));
 }
 
@@ -142,17 +142,17 @@
   max-width: 560px;
   height: 30px;
   padding: 0 0.625rem;
-  border: 1px solid #2C323A;
+  border: 1px solid #35312A;
   border-radius: var(--radius-button, 2px);
-  background: #0F1216;
-  color: #8A929B;
+  background: #13110E;
+  color: #969188;
   text-align: left;
   cursor: text;
   transition: border-color 120ms ease;
 }
 
 .workstation-search:hover {
-  border-color: #3A424B;
+  border-color: #454138;
 }
 
 .workstation-search:focus-visible {
@@ -162,7 +162,7 @@
 }
 
 .workstation-search svg {
-  color: #8A929B;
+  color: #969188;
 }
 
 .workstation-search-placeholder {
@@ -172,16 +172,16 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.75rem;
-  color: #8A929B;
+  color: #969188;
 }
 
 .workstation-search-kbd {
   display: inline-flex;
   align-items: center;
   padding: 1px 5px;
-  border: 1px solid #2C323A;
+  border: 1px solid #35312A;
   border-radius: var(--radius-chip, 2px);
-  color: #8A929B;
+  color: #969188;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
   font-size: 0.75rem;
   white-space: nowrap;
@@ -208,10 +208,10 @@
   overflow: hidden;
   align-items: center;
   gap: 0.35rem;
-  border: 1px solid var(--topbar-border, #262B31);
+  border: 1px solid var(--topbar-border, #2D2A25);
   border-radius: 2px;
   padding: 0.25rem 0.5rem;
-  color: #EAF0F6;
+  color: #F3EFE8;
   cursor: pointer;
   list-style: none;
   white-space: nowrap;
@@ -262,10 +262,10 @@
   min-width: 0;
   min-height: 22px;
   padding: 0 0.45rem;
-  border: 1px solid #2C323A;
+  border: 1px solid #35312A;
   border-radius: var(--radius-chip, 2px);
-  background: #0F1216;
-  color: #AEB7C0;
+  background: #13110E;
+  color: #BBB5AC;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
   font-size: 0.75rem;
   text-decoration: none;
@@ -281,7 +281,7 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workstation-trust-label {
-  color: #8A929B;
+  color: #969188;
   font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
   font-variant: all-small-caps;
   letter-spacing: 0.03em;
@@ -290,7 +290,7 @@ a.workstation-trust-item:focus-visible {
 .workstation-trust-value {
   max-width: 100%;
   overflow: hidden;
-  color: #EAF0F6;
+  color: #F3EFE8;
   font-weight: 600;
   text-overflow: ellipsis;
 }
@@ -341,7 +341,7 @@ a.workstation-trust-item:focus-visible {
   min-height: 28px;
   padding: 0 0.625rem;
   border-radius: 2px;
-  border: 1px solid var(--topbar-border, #262B31);
+  border: 1px solid var(--topbar-border, #2D2A25);
   color: var(--ws-masthead-fg, #F4F2ED);
   font-size: 0.75rem;
   line-height: 1;
@@ -358,7 +358,7 @@ a.workstation-trust-item:focus-visible {
   width: 7px;
   height: 7px;
   border-radius: 9999px;
-  background: #8A93A0;
+  background: #989286;
 }
 
 .masthead-status-pill-status {
@@ -395,9 +395,9 @@ a.workstation-trust-item:focus-visible {
   min-width: 0;
   height: 26px;
   padding: 0 0.5rem;
-  border: 1px solid #2C323A;
+  border: 1px solid #35312A;
   border-radius: var(--radius-chip, 2px);
-  background: #0F1216;
+  background: #13110E;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
   font-size: 0.6875rem;
 }
@@ -412,7 +412,7 @@ a.workstation-trust-item:focus-visible {
    `min-width: auto`, which refuses to shrink below the text's own width, so the
    overflow rules below would never fire and the card would push past the masthead. */
 .workstation-session-name {
-  color: #EAF0F6;
+  color: #F3EFE8;
   white-space: nowrap;
   min-width: 0;
   overflow: hidden;
@@ -420,7 +420,7 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workstation-session-role {
-  color: #8A929B;
+  color: #969188;
   white-space: nowrap;
   min-width: 0;
   overflow: hidden;
@@ -466,7 +466,7 @@ a.workstation-trust-item:focus-visible {
   overflow: hidden;
   border-radius: var(--radius-chip, 2px);
   border: 1px solid var(--ws-border, #E4E3DE);
-  background: var(--ws-surface-subtle, #F6F4F0);
+  background: var(--ws-surface-subtle, #EDEAE4);
 }
 
 .startup-status-meter span {
@@ -524,7 +524,7 @@ a.workstation-trust-item:focus-visible {
   min-height: 28px;
   padding: 0 12px;
   background: var(--statusbar-bg, #1F1D1A);
-  border-top: 1px solid var(--topbar-border, #262B31);
+  border-top: 1px solid var(--topbar-border, #2D2A25);
   color: var(--statusbar-text, #E4E3DE);
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
   font-size: 0.6875rem;
@@ -537,7 +537,7 @@ a.workstation-trust-item:focus-visible {
   gap: 6px;
   height: 16px;
   padding: 0 12px;
-  border-right: 1px solid #262B31;
+  border-right: 1px solid #2D2A25;
 }
 
 .workstation-statusbar-item:first-child {
@@ -547,11 +547,11 @@ a.workstation-trust-item:focus-visible {
 .workstation-statusbar-item-push {
   margin-left: auto;
   border-right: none;
-  border-left: 1px solid #262B31;
+  border-left: 1px solid #2D2A25;
 }
 
 .workstation-statusbar-label {
-  color: #8A929B;
+  color: #969188;
   font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
   font-variant: all-small-caps;
   letter-spacing: 0.03em;

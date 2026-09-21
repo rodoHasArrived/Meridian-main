@@ -1,16 +1,16 @@
 .row-detail-panel {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(31, 52, 76, 0.95);
+  border: 1px solid rgba(74, 68, 60, 0.95);
   border-radius: var(--radius-md);
-  background: rgba(8, 16, 26, 0.72);
+  background: rgba(20, 18, 15, 0.72);
   box-shadow: var(--shadow-panel);
 }
 
 .row-detail-panel .head {
   padding: 0.5rem 0.625rem;
-  border-bottom: 1px solid rgba(31, 52, 76, 0.95);
-  background: #05101b;
+  border-bottom: 1px solid rgba(74, 68, 60, 0.95);
+  background: #14120F;
   color: var(--fg-muted);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
   font-size: 0.75rem;
@@ -20,7 +20,7 @@
 
 .row-detail-panel .body {
   padding: 0.625rem;
-  color: #d4dce6;
+  color: #E0DAD1;
   font-size: 0.75rem;
   line-height: 1.5;
 }
