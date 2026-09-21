@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-10 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-21 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-10; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -70,6 +70,17 @@ risks that compound as new asset classes land.
 > sentence above: that is now true twice over, once per model. That pass also files two small
 > correctness back-ports of rules the subsystem has already made and documented elsewhere — an
 > unguarded create path (C4) and two unguarded numeric JSON readers (C5).
+>
+> **Update 2026-09-21. Three times over.** The
+> [2026-09-21 pass](#scheduled-institutional-requirements-pass--2026-09-21) finds the same shape in
+> the *calculated cash-flow engine*: one Bond-shaped coupon walk serves all fourteen asset classes
+> that declare cash-flow support, its rate and maturity alias lists recognise three of them, and
+> the classes it cannot read degrade to a zero interest rate rather than to a refusal — a zero the
+> amortization ledger bridge posts as the period coupon accrual (E1). That pass also finds the
+> asset-pack registry deriving journal-template bindings by substring over free-text names, with
+> four packs binding a template to a lifecycle event they never declare (E2), and roughly twenty of
+> its validation assertions structurally unable to fail because every pack is handed the same three
+> constant tables (E3).
 
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
@@ -5280,6 +5291,294 @@ remains the authoritative full run.
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-09-21
+
+Pinned at `531776b1`, which is also `origin/main`. Unlike the 2026-09-10 pass, **Security Master
+source did move**: fifteen files changed across `Contracts`, `Application` and `Storage` since
+`3be7e20e` (+1,257/-200), in four lanes — conflict detection and the Postgres conflict service,
+identifier normalization and candidate lookup, alias-history containment, and the projection cache.
+That work is re-verified below but is not this pass's frame: it is careful, well-commented, and its
+defects are small.
+
+This pass frames instead on the two surfaces that *advertise* cross-asset coverage and are read as
+capability by everything downstream — the **calculated cash-flow engine** and the **asset-pack
+registry** — because both are named in the standing brief ("cashflow/factor schedule integration",
+"cross-asset extensibility") and neither has been framed on end-to-end. A1 (2026-08-31) found the
+cash-flow resolver could not read `DirectLoan`'s coupon; this pass finds that A1 was not a
+`DirectLoan` bug.
+
+The verdict is unchanged and now has a third instance. The subsystem's recurring shape is a
+**Bond-shaped mechanism with a cross-asset name**: C1 found it in the normalized term model, D1 on
+the return leg of the schema bridge, and E1 below finds it in the money the cash-flow engine
+projects. Each is individually explained; together they are one pattern.
+
+### E1 — The cash-flow engine reads one asset class's rate spelling, and the zero it substitutes is posted to the ledger
+
+`SecurityAssetClassCatalog` declares `SupportsCashflowScheduleByDefault: true` for **fourteen**
+asset classes, and `SecurityMasterWorkbenchQueryService.cs:3050` turns that flag directly into the
+workbench's `supportsCashflowSchedule` capability. The engine behind it is
+`SecurityMasterCashFlowService.BuildCalculatedProjection` (`:205-380`), which resolves its terms
+through `StructuredCashFlowTermsResolver` and has **no asset-class dispatch at all** — one coupon
+walk for every class.
+
+What that walk can read is fixed by two alias lists in
+`src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs`:
+
+```
+MaturityAliases    = ["maturityDate", "maturity", "legalFinalMaturity"]     (:14)
+CouponRateAliases  = ["fixedCouponRate", "couponRate", "coupon", "annualRate"]  (:19)
+```
+
+`SecurityTermReader.TryGetProperty` matches a key **exactly** (case-insensitively); there is no
+fuzzy or prefix match. And the two failure modes are silent and asymmetric:
+
+- no readable maturity → `if (terms.MaturityDate is not DateOnly maturity) return Empty();` (`:219`)
+- no readable rate → `var annualRate = NormalizeAnnualRate(terms.CouponRate ?? 0m) + …` (`:314`)
+
+Cross-referencing the alias lists against the per-class rate and date keys that
+`SecurityAssetTermsSchema` actually declares gives the following. The "common terms" blob cannot
+rescue any of them: `Interop.SecurityMaster.fs:424-436` shows it carries display name, currency,
+country, issuer, exchange, lot/tick size, MIC, settlement days and calendar — no date, no rate.
+
+| Class (`SupportsCashflowScheduleByDefault: true`) | Rate key it declares | Date key it declares | Result |
+| --- | --- | --- | --- |
+| Bond | `couponRate` ✓ | `maturity` ✓ | **projects correctly** |
+| CertificateOfDeposit | `couponRate` ✓ | `maturity` ✓ | **projects correctly** |
+| Swap | (per-leg) ✓ | `maturityDate` ✓ | **projects correctly** (leg path, `:233`) |
+| Deposit | `interestRate` ✗ | `maturity` ✓ | schedule at **0% interest** |
+| CommercialPaper | `discountRate` ✗ | `maturity` ✓ | schedule at **0% interest** |
+| TreasuryBill | `discountRate` ✗ | `maturity` ✓ | schedule at **0% interest** |
+| DirectLoan | `currentCouponRate` ✗ | `maturity` ✓ | schedule at **0% interest** (this is A1) |
+| StructuredCredit | `couponOrIndex` (string) ✗ | `maturity` ✓ | schedule at **0% interest** (this is C2) |
+| MoneyMarketFund | — | — | **no projection** |
+| Repo | `repoRate` ✗ | `startDate`/`endDate` ✗ | **no projection** |
+| CashSweep | `yieldRate` ✗ | — | **no projection** |
+| PrivateFundInterest | — | `navDate` ✗ | **no projection** |
+| RealEstateHolding | — | `valuationDate` ✗ | **no projection** |
+| CommitmentGuarantee | `feeRate` ✗ | `effectiveDate`/`expiryDate` ✗ | **no projection** |
+
+Three of fourteen. Five produce a full, well-formed payment schedule whose every interest row is
+zero, and six produce nothing while the workbench still offers the tab.
+
+The zero is not confined to display. `SecurityMasterAmortizationLedgerBridge` takes this same
+projection (`:81`) and posts `Math.Max(0m, RoundCash(entry.InterestAmount))` as the period coupon
+accrual (`:138`). A `DirectLoan`, `Deposit`, `CommercialPaper`, `TreasuryBill` or
+`StructuredCredit` position therefore accrues **no interest income in the ledger**, and does so
+without a diagnostic: the schedule exists, the principal rows are right, and the interest column is
+a plausible-looking 0.00. That is the institutional-finance failure mode this review most wants to
+avoid — not an error, an answer.
+
+Note also what the engine's own comments already concede: `:240` and `:263` document that
+`DirectLoan` "carries no face amount", so its contractual principal schedule is discarded
+(`contractualPrincipal = terms.PrincipalFace is > 0m ? inWindowContractual : []`) and the class
+falls back to the bullet/sinker walk on a 100-unit basis. The code knows it is being asked to price
+instruments it has no terms for; it just has nowhere to say so.
+
+**Why this is the same finding as A1, C1 and D1.** In each case a mechanism written against
+`BondTerms` was given a cross-asset name, and the classes it cannot represent degrade to a value
+rather than to a refusal. The fix shape is also the same in each case: the *contract* that says
+which terms a class carries already exists (`SecurityAssetTermsSchema`), and none of these three
+mechanisms consults it.
+
+### E2 — Journal-template bindings are inferred by substring, and four packs bind a template to a lifecycle event they do not declare
+
+`SecurityAssetPackRegistry` does not store which journal template serves which lifecycle event. It
+*derives* it: `InferLifecycleEvent` (`:482-518`) lowercases a free-text template name ("management
+fee", "variation margin", "FX remeasurement") and walks a fourteen-arm `Contains` chain, with
+`"Amendment"` as the fall-through. `BuildLifecycleCoverage` (`:449-480`) then groups the templates
+by the inferred event and joins them onto the pack's declared `LifecycleEvents`.
+
+Replaying that inference over the ten shipped packs:
+
+| Pack | Templates bound to an event the pack does **not** declare | Declared events with **no** template |
+| --- | --- | --- |
+| cash-bank (Deep) | `bank fee`→Coupon, `interest income`→Coupon, `FX remeasurement`→Appraisal | Purchase, Sale, Draw, Repayment, Maturity, Default |
+| private-fund-partnership (Deep) | `management fee`→Coupon | Purchase, Sale, Impairment, Maturity |
+| derivatives-fx (Deep) | `FX remeasurement`→Appraisal | Purchase, Draw, Maturity, Default, CorporateAction |
+| commitment-guarantee (Deep) | `fee accrual`→Coupon | Purchase, Sale, Distribution, Default, Maturity |
+| fixed-income (Deep) | — | Purchase, Default, Amendment, CorporateAction |
+| private-loan-credit (Deep) | — | Purchase, Sale, Amendment, Maturity |
+| mortgage-facility-intercompany (Deep) | — | Purchase, Sale, Default, Maturity |
+| real-estate (Deep) | — | Sale, Maturity |
+| public-equity-etf (Deep) | — | Impairment, Amendment |
+| controlled-other-asset (Wide) | — | Amendment, Maturity |
+
+Three consequences, all of them silent:
+
+1. **Orphaned templates.** A template inferred onto an undeclared event appears in
+   `AccountingRules.JournalTemplates` but in **no** `LifecycleCoverage` row, because coverage is
+   built by walking `LifecycleEvents`. `cash-bank` ships four templates and three of them are
+   orphaned this way. `RequireAccountingRules` (`:602-636`) checks each template's event against
+   `SupportedLifecycleEvents` — the *global* fourteen-value list, which contains `Coupon` — so it
+   passes. Nothing checks the template against the pack's own declared set.
+2. **`Purchase` and `Sale` are the least covered events in the registry.** Seven of ten packs
+   declare `Purchase` with no template; six declare `Sale` with no template. For a pack marked
+   `DeepAccountingAutomation`, those rows report `AccountingAutomationStatus =
+   "CapturedPendingTemplate"` (`:467-471`) — the honest answer, but it means `cash-bank` is a
+   deep-automation pack whose entire declared lifecycle is pending.
+3. **The inference is wrong in ways a table would not be.** `Coupon` is the third arm and matches
+   any name containing `fee` or `interest`, which is why every fee template in the registry —
+   bank fee, management fee, fee accrual — is classified as a coupon. For `derivatives-fx`,
+   `premium` and `variation margin` both fall through to `Amendment`: the two defining cash
+   mechanics of a derivatives book are recorded as amendments.
+
+The fix is not to lengthen the chain. `journalTemplateEvents` should be declared as
+`(lifecycleEvent, templateName)` pairs by the pack that owns them, and `RequireAccountingRules`
+should reject a pair whose event the pack does not declare. The inference exists only because the
+seed data was written as prose.
+
+### E3 — Half of the pack registry's validation cannot fail, because every pack is handed the same three constants
+
+`Pack(...)` (`:387-417`) — the sole constructor path for every shipped pack and for
+`CreateCandidateDescriptor` — assigns the *same static instances* of `ContractSchema` (`:37-115`),
+`StandardValidationRules` (`:117-151`) and `StandardReportingTaxonomy` (`:153-160`) to all ten
+descriptors. `ValidateDescriptor` then calls `RequireSchema`, `RequireValidationRules` and
+`RequireReportingTaxonomy` (`:587-694`), whose entire contents are twenty `RequireNonEmpty` calls
+against those same constants.
+
+Twenty of the roughly forty-five assertions in `ValidateDescriptor` are therefore structurally
+incapable of failing for any pack the registry can build, and `ValidateAll()` returning
+`IsValid: true` says nothing about them. The content is also not a schema: `ContractSchema.Terms`
+is `["instrument type", "legal terms", "economic terms", "settlement terms", "optional governed
+attributes"]` — English, not keys, types or requiredness. Nothing in the subsystem reads it; it is
+documentation shaped like data, and `ValidateDescriptor` spends half its body confirming the
+documentation is non-empty.
+
+The real per-pack contract already exists elsewhere and is enforced:
+`RequireCatalogAssetClasses` (`:553-582`) holds the claimed and planned class sets against
+`SecurityAssetClassCatalog` in both directions, and that one is a genuine, failable check. The
+recommendation is to keep it, drop the constant-shaped ones, and move `ContractSchema` to prose in
+this document or the pack design doc where it is honest.
+
+**Companion, same shape, different file.** `AssetOperationsCapabilitySet.FixedIncome`,
+`.DirectLending` and `.AlternativeAssetOperations`
+(`SecurityAssetClassCatalog.cs:605-645`) are three separately-named, **byte-identical**
+ten-element lists. Six asset classes select between them; the selection has no effect. The
+catalog's own doc comment (`:454-464`) already states the true rule — "every declared set adds
+LifecycleState, ProjectedCashFlows, … on top of identity, so declaring one is what makes a class
+ops-capable" — which is a boolean, not a choice of three. Three names for one value will diverge
+the first time someone edits one of them believing the other two are different.
+
+### E4 — A3 re-verified and sharpened: the thirteen classes readiness does not model are exactly the cash and financing tail
+
+`SecurityMasterOperationalReadinessService.Specifications` (`:43-172`) is unchanged since A3 was
+filed on 2026-08-31 and still names thirteen classes: Equity, Option, Future, FxSpot, Bond,
+DirectLoan, StructuredCredit, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
+CommitmentGuarantee, CustomAsset, OtherSecurity. There is still no parity guard against
+`SecurityAssetClassCatalog.AssetClasses` (26) and still no "unmodeled" state — an unmodeled class
+is simply absent from the coverage response.
+
+What this pass adds is *which* thirteen are missing: Deposit, MoneyMarketFund,
+CertificateOfDeposit, CommercialPaper, TreasuryBill, Repo, CashSweep, Swap, Commodity,
+CryptoCurrency, Cfd, Warrant, InvestmentFund. Mapped onto the pack registry, that means the
+**`cash-bank` pack has zero readiness coverage** — all three of its classes are unmodeled — while
+being declared `DeepAccountingAutomation`; `fixed-income` covers two of six; `derivatives-fx`
+covers three of six; `public-equity-etf` covers one of two.
+
+Read with E1 and E2 this is one statement, not three: for the cash, short-dated and financing
+classes, the registry claims deep accounting automation, readiness reports nothing, and the
+cash-flow engine projects zero or nothing. No single surface is lying; the three disagree, and
+nothing compares them.
+
+### Re-verified as still open, unchanged
+
+- **A4** — `SecurityAssetProfileFieldDefinitionDto.IsProjected` / `.IsSearchable` are still
+  declared per profile field and honoured nowhere. The only non-test readers are two `Count()`
+  calls in `SecurityAssetProfileGovernanceService.cs:511,525` (a promotion-signal score) and a
+  display count in `SettingsViewModel.AssetProfiles.cs:898`. No projection is written and no index
+  is created from either flag.
+- **A1** — subsumed into E1 above and confirmed at source: `currentCouponRate` is written by the F#
+  serializer (`Interop.SecurityMaster.fs:304`), decoded by `SecurityMasterMapping.cs:336`, and
+  projected to `direct_loan_projection.current_coupon_rate`
+  (`SecurityTermsProjectionRegistry.cs:179`) — four surfaces carry it and the cash-flow resolver
+  is not one of them.
+- **C1, C2, C3, C6, C7, B1–B7, N4/N5, N6, P1 (actor-source rows), P3b, P2, P3, P6** — no source in
+  their cited paths changed in the window; unre-derived this pass.
+- **Relational projections remain 13 of 26 classes** (`PostgresSecurityMasterStore.cs:44-76`):
+  eleven hand-written writers plus the two declarative descriptors (DirectLoan, StructuredCredit).
+  The declarative registry itself (`SecurityTermsProjectionRegistry`) remains the best-guarded
+  piece of the subsystem — it validates every projected column against `SecurityAssetTermsSchema`
+  for key, type and gating — and it is still used by two classes.
+
+### Movement since 2026-09-10, verified
+
+- **CSV import is fixed, and narrowed.** `SecurityMasterCsvParser` (`:141-147`) now resolves
+  through `SecurityAssetClassCatalog.ResolveIdentifierOnlyImportableAssetClass` and rejects a row
+  whose class needs terms the CSV cannot carry, with a message naming the importable set. The
+  independent-verification finding ("CSV import fails for every asset class") is closed. The
+  importable set is `SupportsIdentifierOnlyImport`, which is **two** classes — Equity and
+  InvestmentFund — so bulk import is correct rather than capable; that is the right trade and
+  should be read as such, not as import coverage.
+- **Alias history is contained, not resolved (P3b).** `PostgresSecurityMasterStore.Aliases.cs:63`
+  throws `SecurityAliasHistoryConflictException` rather than rewriting recorded facts in place.
+  The comment at `:17` states the remaining gap plainly: the schema still has no alias revision.
+- **The identifier/conflict lane is materially better.** `Unknown`-kind identifiers are excluded
+  from ambiguity pairing through one shared predicate both the detector and the candidate lookup
+  call (`SecurityMasterConflictDetection.cs:193-194`); supersession is restricted to field paths
+  this build can evaluate (`:204-207`); conflict-id identity components are escaped so a scoped
+  identity cannot collide with an unscoped one (`:236-267`); and detection is now indexed once per
+  refresh with subject-restricted pairing (`:45-130`), which addresses P4's quadratic rebuild.
+  A2's normalized-vs-raw split is closed: detection keys on
+  `SecurityIdentifierNormalizer.GetOrComputeNormalizedValue` (`:61`).
+- **`SecurityMasterProjectionCache`** now swaps a fully-built map by reference with an
+  upsert-capture-and-replay window (`:131-182`), closing the empty-master and lost-update races.
+  Reviewed and found sound.
+
+### Smaller notes, not filed as findings
+
+- **A redetected conflict can change which security it files under.**
+  `DetectForProjections` re-homes a conflict onto whichever side is a subject
+  (`SecurityMasterConflictDetection.cs:171-181`), while a full refresh homes it on the lower Guid
+  (`:116`). The conflict id is order-independent so the row is stable, and the `do update` in
+  `UpsertDetectedIdentifierConflictAsync` (`:1044-1061`) is gated to detector-superseded rows, so
+  an Open row and every operator resolution are safe. But a supersede-then-redetect cycle will
+  rewrite `security_id` to the other side. Both ids are in `value_a`/`value_b`, so nothing is
+  lost — it is only which security a per-security conflict query returns it under.
+- **`SecurityMasterProjectionCache.Remove` cannot reach an in-flight replacement's candidate map**,
+  so a purge concurrent with a warm whose source read preceded the delete is reinstated until the
+  next re-warm. Documented at `:88-94` and correctly scoped there (authoritative reads go to the
+  durable store); noted only because it is the one window the class's guarantees do not cover.
+- **`SecurityAssetPackRegistry.ValidateCandidateSet` checks asset-class overlap only for candidate
+  packs** (`:289`). Two *shipped* packs claiming the same class would not be reported — and
+  `private-loan-credit` and `mortgage-facility-intercompany` both claim `DirectLoan` today, which
+  is presumably why the filter is there. If the overlap is intended, the descriptor should say so
+  rather than the validator silently skipping it.
+
+### Priorities from this pass
+
+Read as a delta on the standing lists.
+
+1. **Make the cash-flow engine refuse rather than substitute (E1).** The minimum useful change is
+   two lines of behaviour: when a class declares `SupportsCashflowScheduleByDefault` and the
+   resolver returns no `CouponRate`, return a projection carrying an explicit
+   "rate term not resolvable for this asset class" state instead of `?? 0m`. That alone stops
+   zero interest reaching `SecurityMasterAmortizationLedgerBridge:138`. It is strictly smaller than
+   fixing the aliases and it is the part with ledger consequences.
+2. **Then add the five missing rate spellings and the four missing date spellings (E1).**
+   `interestRate`, `discountRate`, `currentCouponRate`, `repoRate`, `yieldRate`; `endDate`,
+   `expiryDate`, `navDate`, `valuationDate`. Each is one array entry. Do it *after* (1), because
+   an alias list is exactly the mechanism that let the gap hide — and add the guard that makes it
+   stay closed: a table-driven test asserting that every class with
+   `SupportsCashflowScheduleByDefault: true` has at least one `SecurityAssetTermsSchema` field
+   reachable by `CouponRateAliases` and one by `MaturityAliases`. That test is the same instrument
+   C1 and D1 both asked for, applied to a third mechanism.
+3. **Declare journal-template bindings instead of inferring them (E2).** Change
+   `journalTemplateEvents` to `(lifecycleEvent, name)` pairs, delete `InferLifecycleEvent`, and
+   have `RequireAccountingRules` reject a pair naming an event the pack does not declare. The
+   orphaned templates and the `premium`→`Amendment` misclassification both disappear with the
+   inference; the `Purchase`/`Sale` coverage gaps then become visible as what they are — seed data
+   that was never written.
+4. **Delete the tautological validators and collapse the three identical capability sets (E3).**
+   Small, and it restores the meaning of `ValidateAll()` returning true.
+5. **Give readiness an explicit `Unmodeled` state and a catalog-parity guard (E4, was A3).** Still
+   the cheapest way to make the three surfaces' disagreement visible instead of inferable. A class
+   in the catalog with no specification should appear in the coverage response as unmodeled, not
+   be absent from it.
+6. **C4 and C5 landed on 2026-09-10; the remaining pre-existing cheap items are A4's two dead flags
+   and D1's lossless half**, both unchanged.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -5518,3 +5817,30 @@ with the regenerated `docs/status/` reports correctly recognized as generated-ex
 check on this document, not on the subsystem it reviews, and it is recorded here only so the
 paragraph above is not read as claiming more silence than the pass kept — the same correction the
 2026-09-08 pass had to make after the fact (`4481741f`), made here before it was needed.
+
+The 2026-09-21 pass re-read `SecurityAssetClassCatalog`, `SecurityAssetTermsSchema`,
+`SecurityAssetPackRegistry`, `SecurityAssetProfiles`, `SecurityIdentifiers`,
+`SecurityMasterProvenance`, `SecurityMasterSchemaVersions`, `SecurityDtos`, `FaceValueLot`,
+`StructuredCashFlowTermsResolver` and `SecurityTermReader` in `Meridian.Contracts`;
+`SecurityMasterCashFlowService`, `SecurityMasterAmortizationLedgerBridge`,
+`SecurityMasterOperationalReadinessService`, `AssetClassValidatorRegistry`,
+`SecurityMasterConflictDetection`, `PostgresSecurityMasterConflictService` and
+`SecurityMasterCsvParser` in `Meridian.Application`; `SecurityTermsProjectionRegistry`,
+`PostgresSecurityMasterStore`, `PostgresSecurityMasterStore.Aliases` and
+`SecurityMasterProjectionCache` in `Meridian.Storage`; the F# `SecurityKind` declaration,
+`AssetClassRegistry` and `Interop.SecurityMaster.fs`; and
+`SecurityMasterWorkbenchQueryService`'s capability assembly.
+
+E1's per-class table was built by cross-referencing the alias arrays in
+`StructuredCashFlowTermsResolver` against the declared field keys in `SecurityAssetTermsSchema` and
+the common-terms shape in `Interop.SecurityMaster.fs:424-436`, and confirming that
+`SecurityTermReader.TryGetProperty` matches keys exactly rather than fuzzily. E2's table was
+produced by replaying `InferLifecycleEvent`'s `Contains` chain over the ten shipped packs'
+`journalTemplateEvents` literals and comparing the result against each pack's declared
+`LifecycleEvents`.
+
+No code was changed by the 2026-09-21 pass. No .NET or TypeScript test was run and no reviewed code
+path was executed, so every claim in it is a source claim. In particular, the "posts zero interest
+to the ledger" statement in E1 is a call-graph reading of
+`SecurityMasterAmortizationLedgerBridge.cs:81,138` against `BuildCalculatedProjection`, not an
+observed posting.
