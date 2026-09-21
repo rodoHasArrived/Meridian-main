@@ -129,7 +129,11 @@
   --chart-grid:         var(--border);        /* gridlines */
   --chart-axis:         var(--text-muted);    /* axis labels / ticks */
   --chart-border:       var(--border-strong); /* axis frame */
-  --chart-crosshair:    var(--accent);        /* crosshair + price chip */
+  --chart-crosshair:    var(--text-secondary); /* crosshair + price chip — chrome, not a
+                                                 series: it crosses --chart-drawdown in every
+                                                 candle/equity plot, and copper sits only ~11deg
+                                                 from brick. A ~11%-saturated neutral separates
+                                                 by chroma where hue cannot. */
   --chart-equity:       var(--green);         /* equity / up candle */
   --chart-drawdown:     var(--red);           /* drawdown / down candle */
   --chart-primary:      var(--accent);        /* primary / strategy line (brand) */
@@ -140,27 +144,28 @@
 /* ── Meridian app compatibility aliases (Track B --ws-* + working names) ───────
    The real Meridian browser workstation (src/Meridian.Ui/dashboard) authors CSS
    against these names. Declared here so app component CSS resolves verbatim when
-   pasted into a consumer. Values are the canonical light Institutional Ops palette. */
+   pasted into a consumer. Values track the canonical light palette (Programmed Institutionalism v2.0);
+   keep them in step with the --theme-*/base tokens above when the brand changes. */
 :root {
-  --ws-page-bg:        #ECEFF3;
-  --ws-surface:        #FFFFFF;
-  --ws-surface-subtle: #F5F7FA;
-  --ws-surface-raised: #FAFBFC;
-  --ws-border:         #D7DCE2;
-  --ws-border-strong:  #B8C2CC;
-  --ws-text:           #22272E;
-  --ws-text-muted:     #59636F;
-  --ws-text-secondary: #4D5967;
-  --ws-masthead-bg:    #171A1F;
-  --ws-masthead-fg:    #F4F6F8;
-  --ws-rail-bg:        #F4F6F8;
-  --ws-rail-active:    #E1EAF2;
-  --ws-row-hover:      #F1F4F7;
-  --ws-row-selected:   #E6EEF5;
-  --ws-row-border:     #DDE3EA;
-  --ws-accent:         #2F6F8F;
-  --ws-accent-hover:   #3B82A6;
-  --ws-accent-pressed: #255B75;
+  --ws-page-bg:        #F2F0EC;
+  --ws-surface:        #FBFAF8;
+  --ws-surface-subtle: #EDEAE4;
+  --ws-surface-raised: #F6F4F0;
+  --ws-border:         #E4E3DE;
+  --ws-border-strong:  #AFABA1;
+  --ws-text:           #22252A;
+  --ws-text-muted:     #5E666F;
+  --ws-text-secondary: #4E5258;
+  --ws-masthead-bg:    #1F1D1A;
+  --ws-masthead-fg:    #F4F2ED;
+  --ws-rail-bg:        #EDEAE4;
+  --ws-rail-active:    #F2E3DB;
+  --ws-row-hover:      #F0EEE9;
+  --ws-row-selected:   #F2E3DB;
+  --ws-row-border:     #E4E3DE;
+  --ws-accent:         #A85436;
+  --ws-accent-hover:   #C06B4A;
+  --ws-accent-pressed: #8C4429;
 
   /* Working-name aliases used across app component CSS (.dense-data-table, .metric-tile, masthead…) */
   --fg:               var(--ws-text);

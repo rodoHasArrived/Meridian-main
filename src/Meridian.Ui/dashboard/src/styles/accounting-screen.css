@@ -1,7 +1,7 @@
-/* Accounting route-owned workstation styling — Concrete design language.
-   Flat #FFFFFF panels on the #DEE3EA canvas, hairline #CBD3DC borders, 2px radii,
-   one steel accent (#2F6F8F), mono tabular money, small-caps section labels. Every
-   value routes through the shared --ws-* / semantic tokens with a Concrete hex
+/* Accounting route-owned workstation styling — Programmed Institutionalism design language.
+   Flat #FBFAF8 panels on the #F2F0EC warm-paper canvas, hairline #E4E3DE borders, 2px radii,
+   one copper accent (#A85436), mono tabular money, small-caps section labels. Every
+   value routes through the shared --ws-* / semantic tokens with a literal hex
    fallback so the sheet tracks white-label + dark automatically.
    Keep imported from accounting-screen.tsx. */
 

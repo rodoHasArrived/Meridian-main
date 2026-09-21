@@ -321,16 +321,22 @@
     --severity-info-bd: var(--ws-border);
     --severity-info-bg: var(--ws-surface-subtle);
 
-    /* ─── Charts — warm-paper series + grid. ─────────────────────────────────*/
+    /* ─── Charts — warm-paper series + grid. The analytical overlay (MA20) sits
+       deliberately outside the accent's hue: copper and brick are only ~11deg
+       apart, so an accent-coloured MA line is indistinguishable from the loss
+       series where they cross. Slate-violet restores ~114deg of separation.
+       The crosshair is chrome, not a series, so it separates by chroma rather
+       than hue — ~14% saturation against a 64%-saturated series reads as a grey
+       hairline at any intersection. ────────────────────────────────────────*/
     --chart-grid: #E4E3DE;
     --chart-grid-major: #D3D0C9;
     --chart-up: #3A7A56;
     --chart-dn: #A8443C;
-    --chart-ma20: #A85436;
+    --chart-ma20: #5D5486;
     --chart-ma50: #8A5C12;
     --chart-bench: #7E7A72;
     --chart-band: color-mix(in srgb, var(--ws-accent) 10%, transparent);
-    --chart-crosshair: #A85436;
+    --chart-crosshair: #6B655C;
     --chart-dd: color-mix(in srgb, var(--red) 22%, transparent);
 
     /* ─── Elevation — flat by mandate. Panels/cards carry no shadow; only
@@ -434,10 +440,10 @@
       --chart-grid-major: #4A443C;
       --chart-up: #5FA37C;
       --chart-dn: #CE7068;
-      --chart-ma20: #D98A64;
+      --chart-ma20: #9089B5;
       --chart-ma50: #C29A4A;
       --chart-bench: #8C857A;
-      --chart-crosshair: #D98A64;
+      --chart-crosshair: #9A9289;
     }
   }
 
@@ -522,10 +528,10 @@
     --chart-grid-major: #4A443C;
     --chart-up: #5FA37C;
     --chart-dn: #CE7068;
-    --chart-ma20: #D98A64;
+    --chart-ma20: #9089B5;
     --chart-ma50: #C29A4A;
     --chart-bench: #8C857A;
-    --chart-crosshair: #D98A64;
+    --chart-crosshair: #9A9289;
   }
 
   /* ─── Forced-light opt-out ──────────────────────────────────────────────────
@@ -613,10 +619,10 @@
     --chart-grid-major: #D3D0C9;
     --chart-up: #3A7A56;
     --chart-dn: #A8443C;
-    --chart-ma20: #A85436;
+    --chart-ma20: #5D5486;
     --chart-ma50: #8A5C12;
     --chart-bench: #7E7A72;
-    --chart-crosshair: #A85436;
+    --chart-crosshair: #6B655C;
   }
 
   * {

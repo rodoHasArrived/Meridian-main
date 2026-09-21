@@ -21,7 +21,7 @@ const CSS = `
   padding:4px 10px;font-family:var(--font-body);font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;
   white-space:nowrap;}
 .mds-wsection__jump:hover{background:var(--bg-active,#F2E3DB);}
-.mds-wsection__jump:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:2px;}
+.mds-wsection__jump:focus-visible{outline:var(--focus-ring,2px solid var(--ws-accent,#A85436));outline-offset:2px;}
 .mds-wsection__body{display:grid;gap:12px;min-width:0;}
 `;
 

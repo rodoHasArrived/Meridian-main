@@ -14,7 +14,7 @@ const CSS = `
   color:var(--text-primary,#22252A);text-decoration:none;cursor:pointer;
   transition:border-color 120ms ease,background-color 120ms ease;}
 .mds-evidence:hover{border-color:var(--border-hover,#C6C3BB);background:var(--bg-hover,#F0EEE9);}
-.mds-evidence:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:var(--focus-ring-offset,2px);}
+.mds-evidence:focus-visible{outline:var(--focus-ring,2px solid var(--ws-accent,#A85436));outline-offset:var(--focus-ring-offset,2px);}
 .mds-evidence__dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--state-muted-fg,#5E666F);}
 .mds-evidence--ready .mds-evidence__dot{background:var(--state-healthy-fg,#3A7A56);}
 .mds-evidence--review .mds-evidence__dot{background:var(--state-paper-fg,#A85436);}

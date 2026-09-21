@@ -16,7 +16,7 @@ const CSS = `
   background:var(--accent,#A85436);color:#fff;border-radius:var(--radius-button,2px);
   font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;transition:background .12s ease;}
 .mds-empty__action:hover{background:var(--accent-pressed,#8C4429);border-color:var(--accent-pressed,#8C4429);}
-.mds-empty__action:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:2px;}
+.mds-empty__action:focus-visible{outline:var(--focus-ring,2px solid var(--ws-accent,#A85436));outline-offset:2px;}
 `;
 
 export type EmptyStateIcon = "table" | "search" | "chart" | "docs" | "inbox";

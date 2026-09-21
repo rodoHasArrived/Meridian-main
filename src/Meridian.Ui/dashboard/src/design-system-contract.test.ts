@@ -133,11 +133,11 @@ describe("dashboard design-system contract", () => {
     expect(componentSourceByName.get("AgingTable")).toBe("components/accounting/AgingTable.jsx");
     expect(componentSourceByName.get("ReconciliationPanel")).toBe("components/accounting/ReconciliationPanel.jsx");
     expect(defaultThemeTokenByName.get("--theme-bg-canvas")).toMatchObject({
-      value: "#DEE3EA",
+      value: "#F2F0EC",
       definedIn: "tokens/theme.css"
     });
     expect(defaultThemeTokenByName.get("--theme-accent")).toMatchObject({
-      value: "#2F6F8F",
+      value: "#A85436",
       definedIn: "tokens/theme.css"
     });
 
@@ -239,7 +239,7 @@ describe("dashboard design-system contract", () => {
     const styles = readDashboardStyles();
     const designSystemTheme = readDesignSystemPackageFile("tokens/theme.css");
 
-    // Concrete canvas #DEE3EA → 215 22% 89%; steel accent #2F6F8F → 200 51% 37%.
+    // Warm paper canvas #F2F0EC → 40 19% 94%; terracotta accent #A85436 → 16 51% 44%.
     expect(designSystemTheme).toContain("--theme-bg-canvas: #F2F0EC");
     expect(designSystemTheme).toContain("--theme-accent: #A85436");
     expect(designSystemTheme).toContain("--theme-border: #E4E3DE");
@@ -427,7 +427,7 @@ describe("dashboard design-system contract", () => {
     const styles = readDashboardStyles();
     const tailwindConfig = readTailwindConfig();
 
-    // steel #2F6F8F · spruce #16885F · brick #BA3F55 · ochre #8A520E · slate #6E8597
+    // copper #A85436 · spruce #3A7A56 · brick #A8443C · ochre #8A5C12 · warm slate #7E7A72
     expect(styles).toContain("--chart-1: 16 51% 44%");
     expect(styles).toContain("--chart-2: 146 36% 35%");
     expect(styles).toContain("--chart-3: 4 47% 45%");

@@ -6,17 +6,21 @@
     <link rel="icon" href="data:," />
     <title>Meridian Web Workstation</title>
     <style>
+      /* Programmed Institutionalism v2.0. Mirrors tokens/colors.css; the startup
+         shell cannot import the token stylesheet because it must render before any
+         module loads, so these values are duplicated deliberately and must be kept
+         in step with the canonical palette. */
       :root {
-        --startup-bg: #08101a;
-        --startup-card: #0d1722;
-        --startup-panel: #101c2b;
-        --startup-border: #1f344c;
-        --startup-border-hi: #2a4566;
-        --startup-fg: #dee6ef;
-        --startup-muted: #7c8a9b;
-        --startup-primary: #2ab2d4;
-        --startup-success: #26bf86;
-        --startup-warning: #d69e38;
+        --startup-bg: #F2F0EC;        /* Soft Stone canvas */
+        --startup-card: #FBFAF8;      /* Architect White panel */
+        --startup-panel: #EDEAE4;     /* structural band */
+        --startup-border: #E4E3DE;    /* 1px rule */
+        --startup-border-hi: #C6C3BB;
+        --startup-fg: #22252A;        /* Carbon */
+        --startup-muted: #5E666F;     /* Slate */
+        --startup-primary: #A85436;   /* copper */
+        --startup-success: #3A7A56;   /* muted forest */
+        --startup-warning: #8A5C12;   /* amber ochre */
       }
 
       html,
@@ -27,12 +31,9 @@
       }
 
       body {
-        background:
-          radial-gradient(ellipse at 6% 0%, rgba(42, 178, 212, 0.08) 0%, transparent 40%),
-          radial-gradient(ellipse at 96% 96%, rgba(96, 165, 250, 0.05) 0%, transparent 38%),
-          linear-gradient(180deg, rgba(8, 16, 26, 1) 0%, rgba(8, 16, 26, 1) 100%);
+        background: var(--startup-bg);
         color: var(--startup-fg);
-        font-family: "IBM Plex Sans", "Inter", "Segoe UI", system-ui, sans-serif;
+        font-family: "Segoe UI Variable Text", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
       }
 
       .startup-shell {
@@ -46,13 +47,8 @@
       .startup-card {
         width: min(760px, 100%);
         border: 1px solid var(--startup-border);
-        border-radius: 10px;
-        background:
-          linear-gradient(90deg, rgba(42, 178, 212, 0.10), transparent 42%),
-          var(--startup-card);
-        box-shadow:
-          0 1px 0 rgba(255, 255, 255, 0.02) inset,
-          0 1px 2px rgba(0, 0, 0, 0.30);
+        border-radius: 2px;
+        background: var(--startup-card);
         overflow: hidden;
       }
 
@@ -62,7 +58,7 @@
         justify-content: space-between;
         gap: 16px;
         padding: 24px 24px 18px;
-        border-bottom: 1px solid rgba(31, 52, 76, 0.75);
+        border-bottom: 1px solid var(--startup-border);
       }
 
       .startup-eyebrow {
@@ -76,7 +72,7 @@
 
       .startup-title {
         margin: 0;
-        font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+        font-family: "Segoe UI Variable Display", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
         font-size: clamp(24px, 4vw, 34px);
         line-height: 1.08;
       }
@@ -91,10 +87,10 @@
 
       .startup-badge {
         flex: 0 0 auto;
-        border: 1px solid rgba(96, 165, 250, 0.35);
-        border-radius: 4px;
-        background: rgba(96, 165, 250, 0.10);
-        color: #60a5fa;
+        border: 1px solid var(--startup-border-hi);
+        border-radius: 2px;
+        background: var(--startup-panel);
+        color: var(--startup-muted);
         padding: 5px 8px;
         font-size: 11px;
         font-weight: 700;
@@ -109,8 +105,8 @@
       .startup-meter {
         height: 4px;
         overflow: hidden;
-        border-radius: 3px;
-        background: rgba(31, 52, 76, 0.82);
+        border-radius: 2px;
+        background: var(--startup-panel);
       }
 
       .startup-meter span {
@@ -133,9 +129,9 @@
 
       .startup-checks li {
         min-width: 0;
-        border: 1px solid rgba(42, 178, 212, 0.20);
-        border-radius: 8px;
-        background: rgba(8, 16, 26, 0.55);
+        border: 1px solid var(--startup-border-hi);
+        border-radius: 2px;
+        background: var(--startup-panel);
         padding: 12px;
       }
 
@@ -153,7 +149,6 @@
         height: 6px;
         border-radius: 999px;
         background: var(--startup-primary);
-        box-shadow: 0 0 0 3px rgba(42, 178, 212, 0.12);
       }
 
       .startup-check-detail {
@@ -191,11 +186,11 @@
         }
       }
     </style>
-    <script type="module" crossorigin src="/workstation/assets/index-QBcDXtKd.js"></script>
+    <script type="module" crossorigin src="/workstation/assets/index-BHbUddwi.js"></script>
     <link rel="modulepreload" crossorigin href="/workstation/assets/button-DEBIrLG7.js">
     <link rel="modulepreload" crossorigin href="/workstation/assets/chrome-bridge-B4RO-XWV.js">
     <link rel="modulepreload" crossorigin href="/workstation/assets/workstation-endpoints-BOEUahJB.js">
-    <link rel="stylesheet" crossorigin href="/workstation/assets/index-D08MwroU.css">
+    <link rel="stylesheet" crossorigin href="/workstation/assets/index-BwBWej5g.css">
   </head>
   <body>
     <div id="root">

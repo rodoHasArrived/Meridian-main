@@ -48,11 +48,27 @@
   --theme-orange: #8A5C12;              /* amber ochre (a.k.a. warning) */
   --theme-amber: var(--theme-orange);
 
+  /* Structural surfaces and derived neutrals. These were previously set only in
+     colors.css, which left them outside the white-label layer: a brand could
+     restore the accent and text but not the bands, dividers or chrome dots, so
+     data-brand rendered a mixed palette. Mapping them here makes a brand
+     override the complete changed surface. */
+  --theme-bg-medium: #EDEAE4;
+  --theme-card-surface-raised: #F6F4F0;
+  --theme-border-divider: #DAD8D3;
+  --theme-accent-ghost: #F4E7E0;
+  --theme-purple: #5D5486;
+
   /* Chrome — warm black, material rather than luminous */
   --theme-topbar-bg: #1F1D1A;
   --theme-topbar-text: #F4F2ED;
+  --theme-topbar-text-muted: #B8B3AA;
+  --theme-topbar-text-faint: #9B958A;
   --theme-statusbar-bg: #1F1D1A;
   --theme-statusbar-text: #D8D3CA;
+  --theme-chrome-ok: #56A37E;
+  --theme-chrome-warn: #C79A4C;
+  --theme-chrome-err: #D1746B;
 
   /* ── Default Spacing (cozy) ── */
   --theme-spacing-xs: 4px;
@@ -140,11 +156,22 @@ html[data-brand="steel"] {
   --theme-green: #16885F;
   --theme-red: #BA3F55;
   --theme-orange: #8A520E;
+  --theme-purple: #6F5BA7;
+
+  --theme-bg-medium: #EBEFF4;
+  --theme-card-surface-raised: #F3F6F9;
+  --theme-border-divider: #D2D9E2;
+  --theme-accent-ghost: #E1EAF2;
 
   --theme-topbar-bg: #171A1F;
   --theme-topbar-text: #F4F6F8;
+  --theme-topbar-text-muted: #AEB7C0;
+  --theme-topbar-text-faint: #8A929B;
   --theme-statusbar-bg: #171A1F;
   --theme-statusbar-text: #D7DCE2;
+  --theme-chrome-ok: #2FA377;
+  --theme-chrome-warn: #D6A84A;
+  --theme-chrome-err: #E27087;
 }
 
 html[data-brand="indigo"] {
@@ -214,8 +241,18 @@ html[data-brand="amber"] {
   --red: var(--theme-red);
   --orange: var(--theme-orange);
   --amber: var(--orange);
+  --purple: var(--theme-purple);
+  --bg-medium: var(--theme-bg-medium);
+  --card-surface-raised: var(--theme-card-surface-raised);
+  --border-divider: var(--theme-border-divider);
+  --accent-ghost: var(--theme-accent-ghost);
   --topbar-bg: var(--theme-topbar-bg);
   --topbar-text: var(--theme-topbar-text);
+  --topbar-text-muted: var(--theme-topbar-text-muted);
+  --topbar-text-faint: var(--theme-topbar-text-faint);
   --statusbar-bg: var(--theme-statusbar-bg);
   --statusbar-text: var(--theme-statusbar-text);
+  --chrome-ok: var(--theme-chrome-ok);
+  --chrome-warn: var(--theme-chrome-warn);
+  --chrome-err: var(--theme-chrome-err);
 }

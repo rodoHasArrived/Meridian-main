@@ -17,7 +17,7 @@ const CSS = `
   display:flex;align-items:center;justify-content:center;
   transition:background .1s ease,border-color .1s ease;}
 .pgn-btn:hover:not(:disabled){background:var(--bg-active,#F2E3DB);border-color:var(--accent,#A85436);}
-.pgn-btn:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:1px;}
+.pgn-btn:focus-visible{outline:var(--focus-ring,2px solid var(--ws-accent,#A85436));outline-offset:1px;}
 .pgn-btn:disabled{opacity:.4;cursor:not-allowed;}
 .pgn-btn--active{background:var(--accent,#A85436);color:#fff;border-color:var(--accent,#A85436);}
 .pgn-ellipsis{padding:0 4px;color:var(--text-muted,#5E666F);}
