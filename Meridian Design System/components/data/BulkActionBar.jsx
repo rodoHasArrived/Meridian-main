@@ -18,7 +18,7 @@ const BulkActionBar = ({ selectedCount = 0, onAction, actions = [] }) => {
   border-radius:var(--radius-chip,2px);transition:all .12s;}
 .mds-bulk-action-btn:hover{background:color-mix(in srgb, currentColor 20%, transparent);border-color:color-mix(in srgb, currentColor 40%, transparent);}
 .mds-bulk-action-btn:active{background:color-mix(in srgb, currentColor 30%, transparent);}
-.mds-bulk-action-btn--danger{border-color:var(--red,#BA3F55);background:var(--red,#BA3F55);color:var(--text-on-accent,#fff);}
+.mds-bulk-action-btn--danger{border-color:var(--red,#A8443C);background:var(--red,#A8443C);color:var(--text-on-accent,#fff);}
 .mds-bulk-action-btn--danger:hover{background:var(--red-dim,#8C2F40);border-color:var(--red-dim,#8C2F40);}
 `;
   if (!document.getElementById("mds-bulk-bar-css")) {

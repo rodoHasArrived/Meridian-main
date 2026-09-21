@@ -39,6 +39,9 @@ PAIRS = [
     ("accent text on card",        "--accent",         "--bg-light",     4.5),
     ("accent-dim text on card",    "--accent-dim",     "--bg-light",     4.5),
     ("primary button label",       "--text-on-accent", "--accent",       4.5),
+    # The hover state was omitted here until 2026-09, so a hover fill that failed AA
+    # shipped behind a green gate. All three button states are checked now.
+    ("hover button label",         "--text-on-accent", "--accent-hover", 4.5),
     ("pressed button label",       "--text-on-accent", "--accent-dim",   4.5),
     ("focus ring on card",         "--border-focus",   "--bg-light",     3.0),
     ("LIVE badge label",           "--text-on-fill",   "--mode-live",    4.5),
@@ -161,11 +164,56 @@ def check_mode(mode: str, tokens: dict[str, str]) -> list[str]:
     return failures
 
 
+BRAND_BLOCK = re.compile(r'html\[data-brand="(\w+)"\]\s*\{(.*?)\n\}', re.S)
+
+# Button states a brand can restate. Every white-label variant renders these with the
+# same white label, so each has to clear AA on its own — checking only the default
+# palette let a brand ship an inaccessible primary action.
+BRAND_PAIRS = [("base", "accent"), ("hover", "accent-hover"), ("pressed", "accent-dim")]
+
+# A brand may restate its light identity, its dark identity, or both, in separate blocks.
+# Merge a brand's blocks before checking so each variant is reported once per mode, and so
+# a brand that states only a dark identity is not silently measured against the defaults.
+BRAND_MODES = [("light", "--theme-"), ("dark", "--theme-dark-")]
+
+
+def check_brands(root: Path) -> list[str]:
+    """Check each data-brand variant's button states against its own label colour."""
+    text = (root / "tokens" / "theme.css").read_text(encoding="utf-8")
+    defaults = parse_tokens(text)
+    merged: dict[str, dict[str, str]] = {}
+    for brand, body in BRAND_BLOCK.findall(text):
+        merged.setdefault(brand, {}).update(parse_tokens(body))
+
+    failures: list[str] = []
+    for brand, declared in merged.items():
+        for mode, prefix in BRAND_MODES:
+            # Only report a mode the brand actually restates; otherwise it inherits the
+            # default palette, which the light/dark passes above already cover.
+            if not any(f"{prefix}{name}" in declared for _, name in BRAND_PAIRS):
+                continue
+            tokens = {**defaults, **declared}
+            label = tokens.get(f"{prefix}text-on-accent", "#FFFFFF")
+            for state, name in BRAND_PAIRS:
+                token = f"{prefix}{name}"
+                if token not in tokens:
+                    continue
+                fg, bg = resolve(label, tokens), resolve(f"var({token})", tokens)
+                if fg is None or bg is None:
+                    continue
+                value = ratio(fg, bg)
+                status = "ok" if value >= 4.5 else "FAIL"
+                print(f"[{mode} · brand {brand}] {state} button label: {value:.2f}:1 (min 4.5) {status}")
+                if status == "FAIL":
+                    failures.append(f"[{mode} · brand {brand}] {state} button label: {value:.2f}:1 < 4.5")
+    return failures
+
+
 def run_checks(root: Path) -> list[str]:
     light = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
     dark_overrides = parse_tokens((root / "tokens" / "colors-dark.css").read_text(encoding="utf-8"))
     dark = {**light, **dark_overrides}
-    return check_mode("light", light) + check_mode("dark", dark)
+    return check_mode("light", light) + check_mode("dark", dark) + check_brands(root)
 
 
 def main() -> int:

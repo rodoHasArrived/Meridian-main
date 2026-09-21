@@ -13,25 +13,25 @@ function inject() {
   border-radius:var(--radius-card,2px);padding:18px;
   box-shadow:var(--shadow-card,none);display:flex;flex-direction:column;min-width:0;}
 .mds-metric--neutral{border-left-color:var(--border-strong,#AAB4BF);}
-.mds-metric--info{border-left-color:var(--accent,#2F6F8F);}
-.mds-metric--success{border-left-color:var(--green,#16885F);}
-.mds-metric--warning{border-left-color:var(--orange,#8A520E);}
-.mds-metric--danger{border-left-color:var(--red,#BA3F55);}
+.mds-metric--info{border-left-color:var(--accent,#A85436);}
+.mds-metric--success{border-left-color:var(--green,#3A7A56);}
+.mds-metric--warning{border-left-color:var(--orange,#8A5C12);}
+.mds-metric--danger{border-left-color:var(--red,#A8443C);}
 .mds-metric__head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:14px;}
 .mds-metric__label{font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#59636F);margin:0;}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);margin:0;}
 .mds-metric__spark{flex:0 0 auto;display:block;opacity:.9;}
 .mds-metric__value{margin:10px 0 0;font-family:var(--font-data);font-size:24px;font-weight:600;
-  line-height:1;white-space:nowrap;font-variant-numeric:slashed-zero tabular-nums;color:var(--text-primary,#22272E);}
+  line-height:1;white-space:nowrap;font-variant-numeric:slashed-zero tabular-nums;color:var(--text-primary,#22252A);}
 .mds-metric--hero .mds-metric__value{font-size:30px;}
 .mds-metric--hero .mds-metric__label{font-size:11px;}
 .mds-metric__foot{display:flex;align-items:baseline;gap:8px;margin-top:7px;flex-wrap:wrap;}
 .mds-metric__delta{font-family:var(--font-data);font-size:11px;white-space:nowrap;
   font-variant-numeric:slashed-zero tabular-nums;}
-.mds-metric__ctx{font-family:var(--font-body);font-size:11px;color:var(--text-muted,#59636F);white-space:nowrap;}
+.mds-metric__ctx{font-family:var(--font-body);font-size:11px;color:var(--text-muted,#5E666F);white-space:nowrap;}
 .mds-delta--up{color:var(--green-dim,#10663F);}
 .mds-delta--down{color:var(--red-dim,#8C2F40);}
-.mds-delta--flat{color:var(--text-muted,#59636F);}
+.mds-delta--flat{color:var(--text-muted,#5E666F);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "metric");
@@ -48,7 +48,7 @@ function Sparkline({ points, tone }) {
   const y = (v) => pad + (max - v) * ((h - pad * 2) / span);
   const d = points.map((v, i) => `${(pad + i * step).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
   const stroke = tone === "success" ? "var(--green)" : tone === "danger" ? "var(--red)"
-    : tone === "info" ? "var(--accent)" : tone === "warning" ? "var(--orange)" : "var(--text-disabled,#889099)";
+    : tone === "info" ? "var(--accent)" : tone === "warning" ? "var(--orange)" : "var(--text-disabled,#94999F)";
   const lx = pad + (points.length - 1) * step, ly = y(points[points.length - 1]);
   return (
     <svg className="mds-metric__spark" width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">

@@ -9,20 +9,20 @@ function inject() {
   const css = `
 .mds-number-field{display:block;}
 .mds-number-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#59636F);margin-bottom:5px;}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);margin-bottom:5px;}
 .mds-number-wrap{display:flex;align-items:center;border:1px solid var(--border,#D7DCE2);
   background:var(--bg-light,#fff);height:32px;}
-.mds-number-btn{width:32px;height:32px;border:none;background:transparent;color:var(--text-primary,#22272E);
+.mds-number-btn{width:32px;height:32px;border:none;background:transparent;color:var(--text-primary,#22252A);
   cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;
   border-right:1px solid var(--border,#D7DCE2);}
 .mds-number-btn:last-of-type{border-right:none;border-left:1px solid var(--border,#D7DCE2);}
 .mds-number-btn:hover{background:var(--bg-hover,#F1F4F7);}
 .mds-number-btn:active{background:var(--bg-active,#E6EEF5);}
 .mds-number-btn:disabled{opacity:.5;cursor:not-allowed;}
-.mds-number-input{flex:1;border:none;background:transparent;color:var(--text-primary,#22272E);
+.mds-number-input{flex:1;border:none;background:transparent;color:var(--text-primary,#22252A);
   font-family:var(--font-data);font-size:13px;padding:0 8px;text-align:center;}
 .mds-number-input:focus{outline:none;}
-.mds-number-input::placeholder{color:var(--text-disabled,#889099);}
+.mds-number-input::placeholder{color:var(--text-disabled,#94999F);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "numberinput");

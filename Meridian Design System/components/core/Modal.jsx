@@ -19,25 +19,25 @@ function inject() {
   padding: 16px 18px; border-bottom: 1px solid var(--border, #D7DCE2);
   background: var(--bg-medium, #F5F7FA); }
 .mdl-title { font-family: var(--font-body); font-size: 15px; font-weight: 600;
-  color: var(--text-primary, #22272E); margin: 0; }
+  color: var(--text-primary, #22252A); margin: 0; }
 .mdl-close { appearance: none; border: none; background: transparent; width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
-  color: var(--text-muted, #59636F); font-size: 18px; line-height: 1;
+  color: var(--text-muted, #5E666F); font-size: 18px; line-height: 1;
 }
-.mdl-close:hover { color: var(--text-primary, #22272E); }
+.mdl-close:hover { color: var(--text-primary, #22252A); }
 .mdl-bd { flex: 1; overflow-y: auto; padding: 18px; font-family: var(--font-body);
-  font-size: 13px; color: var(--text-primary, #22272E); }
+  font-size: 13px; color: var(--text-primary, #22252A); }
 .mdl-ft { display: flex; align-items: center; gap: 8px; justify-content: flex-end;
   padding: 14px 18px; border-top: 1px solid var(--border, #D7DCE2);
   background: var(--bg-medium, #F5F7FA); flex-wrap: wrap; }
 .mdl-btn { padding: 7px 14px; border: 1px solid var(--border, #D7DCE2);
   border-radius: var(--radius-button,2px); background: var(--bg-light, #fff);
-  color: var(--text-primary, #22272E); font-family: var(--font-body);
+  color: var(--text-primary, #22252A); font-family: var(--font-body);
   font-size: 12px; font-weight: 500; cursor: pointer;
   transition: background 100ms ease, border-color 100ms ease; }
-.mdl-btn:hover { background: var(--bg-active, #E6EEF5); border-color: var(--accent, #2F6F8F); }
-.mdl-btn--primary { background: var(--accent, #2F6F8F); color: var(--text-on-accent, #fff); border-color: var(--accent, #2F6F8F); }
-.mdl-btn--primary:hover { background: var(--accent-dim, #255B75); }
+.mdl-btn:hover { background: var(--bg-active, #E6EEF5); border-color: var(--accent, #A85436); }
+.mdl-btn--primary { background: var(--accent, #A85436); color: var(--text-on-accent, #fff); border-color: var(--accent, #A85436); }
+.mdl-btn--primary:hover { background: var(--accent-dim, #8C4429); }
 .mdl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
   const el = document.createElement("style");

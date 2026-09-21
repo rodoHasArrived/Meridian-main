@@ -51,7 +51,7 @@ export function VirtualizedList({
                   padding: "0 12px",
                   fontFamily: "var(--font-data)",
                   fontSize: "13px",
-                  color: "var(--text-primary, #22272E)",
+                  color: "var(--text-primary, #22252A)",
                 }}
               >
                 {renderRow ? renderRow(item, index) : String(item)}

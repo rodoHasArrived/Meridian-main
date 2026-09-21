@@ -10,14 +10,14 @@ function inject() {
   injected = true;
   const css = `
 .mds-ctip{position:absolute;top:10px;z-index:var(--z-tooltip,500);pointer-events:none;
-  min-width:120px;background:var(--bg-light,#fff);border:1px solid var(--border-strong,#99A5B2);
+  min-width:120px;background:var(--bg-light,#fff);border:1px solid var(--border-strong,#AFABA1);
   box-shadow:var(--shadow-menu);font-family:var(--font-data);font-size:11px;padding:7px 9px;}
 .mds-ctip__hd{font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#59636F);
-  margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border-divider,#D2D9E2);}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);
+  margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border-divider,#DAD8D3);}
 .mds-ctip__row{display:flex;justify-content:space-between;gap:14px;line-height:1.7;}
-.mds-ctip__k{color:var(--text-secondary,#4D5967);}
-.mds-ctip__v{color:var(--text-primary,#22272E);font-variant-numeric:tabular-nums;font-weight:600;}
+.mds-ctip__k{color:var(--text-secondary,#4E5258);}
+.mds-ctip__v{color:var(--text-primary,#22252A);font-variant-numeric:tabular-nums;font-weight:600;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "charttooltip");

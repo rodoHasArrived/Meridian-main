@@ -18,23 +18,23 @@ function inject() {
 .act__head{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 12px;
   background:var(--bg-medium,#F5F7FA);border-bottom:1px solid var(--border,#D7DCE2);
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#59636F);}
+  letter-spacing:.03em;color:var(--text-muted,#5E666F);}
 .act__head .act--r{text-align:right;}
 .act__row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
   padding:6px 12px;border-top:1px solid var(--border,#D7DCE2);}
 .act__row:hover{background:var(--bg-hover,#F1F4F7);}
 .act__row--sel{cursor:pointer;}
-.act__row--on{background:var(--bg-active,#E6EEF5);box-shadow:inset 3px 0 0 var(--accent,#2F6F8F);}
+.act__row--on{background:var(--bg-active,#E6EEF5);box-shadow:inset 3px 0 0 var(--accent,#A85436);}
 .act__row:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .act__name{display:flex;align-items:center;gap:8px;min-width:0;
-  font-family:var(--font-body);font-size:12px;color:var(--text-primary,#22272E);}
+  font-family:var(--font-body);font-size:12px;color:var(--text-primary,#22252A);}
 .act__name--group{font-weight:600;}
 .act__tw{width:14px;height:14px;flex:0 0 auto;display:inline-flex;align-items:center;
-  justify-content:center;font-size:9px;color:var(--text-muted,#59636F);
+  justify-content:center;font-size:9px;color:var(--text-muted,#5E666F);
   cursor:pointer;border-radius:var(--radius-chip,2px);user-select:none;}
-.act__tw:hover{background:var(--bg-active,#E6EEF5);color:var(--text-secondary,#4D5967);}
+.act__tw:hover{background:var(--bg-active,#E6EEF5);color:var(--text-secondary,#4E5258);}
 .act__tw--leaf{cursor:default;opacity:0;}
-.act__code{font-family:var(--font-data);font-size:11px;color:var(--text-muted,#59636F);
+.act__code{font-family:var(--font-data);font-size:11px;color:var(--text-muted,#5E666F);
   flex:0 0 auto;}
 .act__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 `;
@@ -194,7 +194,7 @@ export function AccountTree({
                 currency={currency}
                 parens
                 strong={isGroup}
-                style={isGroup ? undefined : { color: "var(--text-secondary,#4D5967)" }}
+                style={isGroup ? undefined : { color: "var(--text-secondary,#4E5258)" }}
               />
             </div>
           );

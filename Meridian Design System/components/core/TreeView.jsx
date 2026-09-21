@@ -9,19 +9,19 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-tree{font-family:var(--font-data);font-size:13px;color:var(--text-primary,#22272E);user-select:none;}
+.mds-tree{font-family:var(--font-data);font-size:13px;color:var(--text-primary,#22252A);user-select:none;}
 .mds-tree-row{display:flex;align-items:center;gap:6px;height:30px;padding:0 8px;cursor:pointer;
   border-left:2px solid transparent;}
 .mds-tree-row:hover{background:var(--bg-hover,#F1F4F7);}
-.mds-tree-row--sel{background:var(--bg-active,#E1EAF2);border-left-color:var(--accent,#2F6F8F);}
+.mds-tree-row--sel{background:var(--bg-active,#E1EAF2);border-left-color:var(--accent,#A85436);}
 .mds-tree-row:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .mds-tree-caret{width:14px;display:inline-flex;align-items:center;justify-content:center;
-  color:var(--text-muted,#59636F);font-size:10px;flex:0 0 auto;}
+  color:var(--text-muted,#5E666F);font-size:10px;flex:0 0 auto;}
 .mds-tree-caret--leaf{visibility:hidden;}
 .mds-tree-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mds-tree-meta{font-family:var(--font-data);font-size:11px;color:var(--text-muted,#59636F);
+.mds-tree-meta{font-family:var(--font-data);font-size:11px;color:var(--text-muted,#5E666F);
   font-variant-numeric:tabular-nums;flex:0 0 auto;}
-.mds-tree-icon{flex:0 0 auto;color:var(--text-secondary,#4D5967);font-size:12px;}
+.mds-tree-icon{flex:0 0 auto;color:var(--text-secondary,#4E5258);font-size:12px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "treeview");

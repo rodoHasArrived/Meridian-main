@@ -23,7 +23,7 @@
      positive/negative values. ── */
   --theme-accent: #A85436;              /* copper — AA-clear as text and as fill */
   --theme-accent-dim: #8C4429;          /* pressed */
-  --theme-accent-hover: #C06B4A;        /* hover */
+  --theme-accent-hover: #AF6143;        /* hover — 4.55:1 under the white label */
   --theme-accent-figure: #D16A4A;       /* terracotta — motif/cover use only, never behind text */
 
   --theme-primary-text: #22252A;        /* Carbon */
@@ -134,7 +134,7 @@ body[data-theme-density="spacious"] {
 html[data-brand="steel"] {
   --theme-accent: #2F6F8F;
   --theme-accent-dim: #255B75;
-  --theme-accent-hover: #3B82A6;
+  --theme-accent-hover: #397DA0;
   --theme-accent-figure: #3B82A6;
   --theme-brand-color: #2F6F8F;
 
@@ -177,7 +177,7 @@ html[data-brand="steel"] {
 html[data-brand="indigo"] {
   --theme-accent: #4F46E5;
   --theme-accent-dim: #4338CA;
-  --theme-accent-hover: #6366F1;
+  --theme-accent-hover: #6264ED;
   --theme-brand-color: #4F46E5;
 }
 
@@ -191,14 +191,14 @@ html[data-brand="emerald"] {
 html[data-brand="rose"] {
   --theme-accent: #E11D48;
   --theme-accent-dim: #BE123C;
-  --theme-accent-hover: #F43F5E;
+  --theme-accent-hover: #CB1A41;
   --theme-brand-color: #E11D48;
 }
 
 html[data-brand="slate"] {
   --theme-accent: #64748B;
   --theme-accent-dim: #475569;
-  --theme-accent-hover: #94A3B8;
+  --theme-accent-hover: #5A687D;
   --theme-brand-color: #64748B;
 }
 

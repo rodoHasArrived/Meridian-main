@@ -41,8 +41,8 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
 .spr-chip{font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.02em;border:1px solid;border-radius:var(--radius-chip,4px);
   padding:1px 7px;line-height:1.5;white-space:nowrap;}
-.spr-chip--ok{background:var(--green-a10,rgba(22,136,95,.10));border-color:var(--green,#16885F);color:var(--green-dim,#126C4D);}
-.spr-chip--break{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#BA3F55);color:var(--red-dim,#983244);}
+.spr-chip--ok{background:var(--green-a10,rgba(22,136,95,.10));border-color:var(--green,#3A7A56);color:var(--green-dim,#126C4D);}
+.spr-chip--break{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#983244);}
 .spr-chip--timing{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#B7791F);color:var(--orange-dim,#946216);}
 .spr-pane__scroll{overflow-y:auto;flex:1;min-height:0;}
 .spr-table{width:100%;border-collapse:collapse;}
@@ -60,9 +60,9 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
 .spr-table tbody tr td:first-child{padding-left:13px;position:relative;}
 .spr-table tbody tr td:first-child::before{content:"";position:absolute;left:0;top:0;
   bottom:0;width:3px;border-radius:0 2px 2px 0;}
-.spr-table tr.matched td:first-child::before{background:var(--green,#16885F);}
+.spr-table tr.matched td:first-child::before{background:var(--green,#3A7A56);}
 .spr-table tr.timing td:first-child::before{background:var(--orange,#B7791F);}
-.spr-table tr.break td:first-child::before{background:var(--red,#BA3F55);}
+.spr-table tr.break td:first-child::before{background:var(--red,#A8443C);}
 .spr-table tr.timing td{background:rgba(183,121,31,.05);}
 .spr-table tr.break td{background:var(--red-a10,rgba(186,63,85,.07));}
 .spr-table tbody tr:hover td{background:var(--bg-hover,#F1F4F7);}
@@ -71,7 +71,7 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
 .spr-table tr.cross-lit td{background:var(--blue-a10,rgba(47,111,143,.06))!important;
   outline:1px dashed var(--accent);outline-offset:-1px;}
 .spr-table tr.selected td:first-child::before,
-.spr-table tr.cross-lit td:first-child::before{background:var(--accent,#2F6F8F)!important;}
+.spr-table tr.cross-lit td:first-child::before{background:var(--accent,#A85436)!important;}
 .spr-status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .spr-empty{padding:24px 16px;text-align:center;font-family:var(--font-body);font-size:12px;color:var(--text-muted);}
 .spr-summary{display:grid;grid-template-columns:1fr 1fr auto;gap:0;
@@ -155,9 +155,9 @@ const LDGR_SEED = [
 ];
 
 const STATUS_DOT_COLOR = {
-  matched: "var(--green,#16885F)",
+  matched: "var(--green,#3A7A56)",
   timing:  "var(--orange,#B7791F)",
-  break:   "var(--red,#BA3F55)",
+  break:   "var(--red,#A8443C)",
 };
 
 const STATUS_LABEL = {

@@ -17,11 +17,11 @@ function inject() {
 .tbl thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
   background:var(--bg-medium,#F5F7FA);z-index:1;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#59636F);
+  letter-spacing:.03em;color:var(--text-muted,#5E666F);
   border-bottom:1px solid var(--border-strong,#AAB4BF);border-right:1px solid var(--border-divider,#DDE3EA);}
 .tbl thead th:last-child{border-right:none;}
 .tbl th.tbl--r,.tbl td.tbl--r{text-align:right;}
-.tbl td{padding:9px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
+.tbl td{padding:9px 12px;white-space:nowrap;color:var(--text-primary,#22252A);
   border-top:1px solid var(--border,#D7DCE2);border-right:1px solid var(--border-divider,#DDE3EA);
   vertical-align:baseline;}
 .tbl td:last-child{border-right:none;}
@@ -29,19 +29,19 @@ function inject() {
 .tbl tbody tr.tbl__sec:hover td,.tbl tbody tr.tbl__sub:hover td{background:inherit;}
 .tbl tbody tr.tbl__row--click{cursor:pointer;}
 .tbl tbody tr.tbl__row--on td{background:var(--bg-active,#E6EEF5);}
-.tbl tbody tr.tbl__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#2F6F8F);}
+.tbl tbody tr.tbl__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#A85436);}
 .tbl__sec td{background:var(--bg-medium,#F5F7FA)!important;font-family:var(--font-body);
   font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
-  color:var(--text-secondary,#4D5967);padding:6px 12px;}
+  color:var(--text-secondary,#4E5258);padding:6px 12px;}
 .tbl__sub td{background:var(--bg-light,#fff)!important;font-family:var(--font-body);
-  font-size:11px;color:var(--text-muted,#59636F);border-top:1px solid var(--border-divider,#DDE3EA);}
-.tbl__code{color:var(--text-muted,#59636F);}
-.tbl__acct{font-family:var(--font-body);color:var(--text-primary,#22272E);}
+  font-size:11px;color:var(--text-muted,#5E666F);border-top:1px solid var(--border-divider,#DDE3EA);}
+.tbl__code{color:var(--text-muted,#5E666F);}
+.tbl__acct{font-family:var(--font-body);color:var(--text-primary,#22252A);}
 .tbl tfoot td{padding:9px 12px;background:var(--bg-medium,#F5F7FA);font-weight:600;
-  border-top:2px solid var(--border-strong,#AAB4BF);color:var(--text-primary,#22272E);}
+  border-top:2px solid var(--border-strong,#AAB4BF);color:var(--text-primary,#22252A);}
 .tbl__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#4D5967);}
-.tbl__foot-note{font-weight:400;color:var(--text-muted,#59636F);margin-left:8px;font-family:var(--font-body);font-size:11px;}
+  font-size:11px;color:var(--text-secondary,#4E5258);}
+.tbl__foot-note{font-weight:400;color:var(--text-muted,#5E666F);margin-left:8px;font-family:var(--font-body);font-size:11px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "trialbalance");

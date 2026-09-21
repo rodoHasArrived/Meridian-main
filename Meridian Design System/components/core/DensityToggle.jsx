@@ -16,9 +16,9 @@ function inject() {
 .mds-den--full{display:flex;width:100%;}
 .mds-den__btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
   padding:5px 12px;font-size:12px;font-weight:500;line-height:1;white-space:nowrap;cursor:pointer;
-  color:var(--text-secondary,#4D5967);background:transparent;border:none;border-radius:var(--radius-button,2px);}
-.mds-den__btn:hover:not(.mds-den__btn--active){color:var(--text-primary,#22272E);background:var(--bg-hover,#F1F4F7);}
-.mds-den__btn--active{color:var(--text-primary,#22272E);background:var(--bg-light,#FFFFFF);
+  color:var(--text-secondary,#4E5258);background:transparent;border:none;border-radius:var(--radius-button,2px);}
+.mds-den__btn:hover:not(.mds-den__btn--active){color:var(--text-primary,#22252A);background:var(--bg-hover,#F1F4F7);}
+.mds-den__btn--active{color:var(--text-primary,#22252A);background:var(--bg-light,#FBFAF8);
   font-weight:600;box-shadow:inset 0 0 0 1px var(--border,#D7DCE2);}
 .mds-den__btn:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-den--sm .mds-den__btn{padding:3px 9px;font-size:11px;}

@@ -28,7 +28,7 @@ const { useState, useMemo } = React;
 .acct-search{height:30px;box-sizing:border-box;padding:5px 10px;border:1px solid var(--border);
   border-radius:var(--radius-button,6px);background:var(--bg-light);color:var(--text-primary);
   font-family:var(--font-data);font-size:12px;min-width:220px;transition:border-color .12s,box-shadow .12s;}
-.acct-search:focus{outline:none;border-color:var(--border-focus,#2F6F8F);box-shadow:0 0 0 2px rgba(47,111,143,.2);}
+.acct-search:focus{outline:none;border-color:var(--border-focus,#A85436);box-shadow:0 0 0 2px rgba(47,111,143,.2);}
 .acct-search::placeholder{color:var(--text-disabled,#9AA4AF);}
 .seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-button,6px);overflow:hidden;}
 .seg button{appearance:none;border:none;background:var(--bg-light);cursor:pointer;font-family:var(--font-body);

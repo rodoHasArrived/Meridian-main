@@ -16,11 +16,11 @@ function inject() {
 .agt thead th{padding:9px 12px;text-align:right;white-space:nowrap;position:sticky;top:0;
   background:var(--bg-medium,#F5F7FA);z-index:1;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#59636F);
+  letter-spacing:.03em;color:var(--text-muted,#5E666F);
   border-bottom:1px solid var(--border-strong,#AAB4BF);border-right:1px solid var(--border-divider,#DDE3EA);}
 .agt thead th:last-child{border-right:none;}
 .agt thead th.agt--l{text-align:left;}
-.agt td{padding:9px 12px;white-space:nowrap;text-align:right;color:var(--text-primary,#22272E);
+.agt td{padding:9px 12px;white-space:nowrap;text-align:right;color:var(--text-primary,#22252A);
   border-top:1px solid var(--border,#D7DCE2);border-right:1px solid var(--border-divider,#DDE3EA);
   vertical-align:baseline;}
 .agt td:last-child{border-right:none;}
@@ -28,18 +28,18 @@ function inject() {
 .agt tbody tr:hover td{background:var(--bg-hover,#F1F4F7);}
 .agt tbody tr.agt__row--click{cursor:pointer;}
 .agt tbody tr.agt__row--on td{background:var(--bg-active,#E6EEF5);}
-.agt tbody tr.agt__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#2F6F8F);}
+.agt tbody tr.agt__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#A85436);}
 .agt td.agt--warn{background:var(--orange-a10,rgba(138,82,14,.07));}
 .agt td.agt--late{background:var(--red-a10,rgba(186,63,85,.08));}
-.agt__name{font-family:var(--font-body);color:var(--text-primary,#22272E);}
-.agt__ref{color:var(--text-muted,#59636F);}
+.agt__name{font-family:var(--font-body);color:var(--text-primary,#22252A);}
+.agt__ref{color:var(--text-muted,#5E666F);}
 .agt tfoot td{padding:9px 12px;background:var(--bg-medium,#F5F7FA);font-weight:600;
-  border-top:2px solid var(--border-strong,#AAB4BF);color:var(--text-primary,#22272E);text-align:right;}
+  border-top:2px solid var(--border-strong,#AAB4BF);color:var(--text-primary,#22252A);text-align:right;}
 .agt tfoot td.agt--l{text-align:left;}
 .agt__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#4D5967);}
+  font-size:11px;color:var(--text-secondary,#4E5258);}
 .agt__share{display:block;font-family:var(--font-body);font-size:10px;font-weight:400;
-  color:var(--text-muted,#59636F);margin-top:2px;}
+  color:var(--text-muted,#5E666F);margin-top:2px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "aging");

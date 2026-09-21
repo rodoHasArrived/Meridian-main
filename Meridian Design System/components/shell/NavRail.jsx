@@ -26,7 +26,7 @@ function inject() {
 .op-nav-item__icon{width:16px;height:16px;opacity:.7;}
 .op-nav-item.active .op-nav-item__icon{opacity:1;}
 .op-nav-item__shortcut{font-family:var(--font-data);font-size:10px;
-  color:var(--text-muted,#59636F);border:1px solid var(--border,#D7DCE2);
+  color:var(--text-muted,#5E666F);border:1px solid var(--border,#D7DCE2);
   border-radius:var(--radius-chip,2px);padding:1px 5px;background:var(--bg-light,#fff);}
 `;
   const el = document.createElement("style");

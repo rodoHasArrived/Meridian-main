@@ -20,13 +20,13 @@ function inject() {
 .ldg thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
   background:var(--bg-medium,#F5F7FA);z-index:1;cursor:pointer;user-select:none;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#59636F);
+  letter-spacing:.03em;color:var(--text-muted,#5E666F);
   border-bottom:1px solid var(--border-strong,#AAB4BF);border-right:1px solid var(--border-divider,#DDE3EA);}
-.ldg thead th:hover{color:var(--text-primary,#22272E);}
-.ldg thead th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--text-primary,#22272E);}
+.ldg thead th:hover{color:var(--text-primary,#22252A);}
+.ldg thead th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--text-primary,#22252A);}
 .ldg thead th:last-child{border-right:none;}
 .ldg th.ldg--r{text-align:right;}
-.ldg td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
+.ldg td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#22252A);
   border-top:1px solid var(--border,#D7DCE2);border-right:1px solid var(--border-divider,#DDE3EA);
   vertical-align:baseline;height:40px;}
 .ldg td:last-child{border-right:none;}
@@ -35,28 +35,28 @@ function inject() {
 .ldg tbody tr:hover{background:var(--bg-hover,#F1F4F7);}
 .ldg tbody tr.ldg__row--click{cursor:pointer;}
 .ldg tbody tr.ldg__row--on td{background:var(--bg-active,#E6EEF5);}
-.ldg tbody tr.ldg__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#2F6F8F);}
+.ldg tbody tr.ldg__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#A85436);}
 .ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(138,82,14,.07));}
-.ldg tbody tr.ldg__row--void td{color:var(--text-disabled,#889099);text-decoration:line-through;}
-.ldg tbody tr.ldg__row--void td span{color:var(--text-disabled,#889099) !important;}
-.ldg__date{color:var(--text-secondary,#4D5967);}
-.ldg__ref{color:var(--accent,#2F6F8F);}
+.ldg tbody tr.ldg__row--void td{color:var(--text-disabled,#94999F);text-decoration:line-through;}
+.ldg tbody tr.ldg__row--void td span{color:var(--text-disabled,#94999F) !important;}
+.ldg__date{color:var(--text-secondary,#4E5258);}
+.ldg__ref{color:var(--accent,#A85436);}
 .ldg__chip{display:inline-block;margin-left:7px;font-family:var(--font-body);font-size:9px;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border:1px solid;
   border-radius:var(--radius-chip,2px);padding:0 5px;line-height:1.5;vertical-align:1px;}
-.ldg__chip--pending{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#8A520E);color:var(--orange-dim,#683E0B);}
-.ldg__chip--void{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#BA3F55);color:var(--red-dim,#8C2F40);}
-.ldg__memo{font-family:var(--font-body);color:var(--text-secondary,#4D5967);
+.ldg__chip--pending{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#8A5C12);color:var(--orange-dim,#683E0B);}
+.ldg__chip--void{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#8C2F40);}
+.ldg__memo{font-family:var(--font-body);color:var(--text-secondary,#4E5258);
   white-space:normal;min-width:160px;}
-.ldg__acct{color:var(--text-primary,#22272E);}
-.ldg__open td{background:var(--bg-medium,#F5F7FA);color:var(--text-muted,#59636F);}
+.ldg__acct{color:var(--text-primary,#22252A);}
+.ldg__open td{background:var(--bg-medium,#F5F7FA);color:var(--text-muted,#5E666F);}
 .ldg__open .ldg__memo{font-style:italic;}
 .ldg tfoot td{padding:9px 12px;background:var(--bg-medium,#F5F7FA);font-weight:600;
-  border-top:2px solid var(--border-strong,#AAB4BF);color:var(--text-primary,#22272E);}
+  border-top:2px solid var(--border-strong,#AAB4BF);color:var(--text-primary,#22252A);}
 .ldg tfoot td.ldg--r{text-align:right;}
 .ldg__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#4D5967);}
-.ldg__foot-note{font-weight:400;color:var(--text-muted,#59636F);margin-left:8px;}
+  font-size:11px;color:var(--text-secondary,#4E5258);}
+.ldg__foot-note{font-weight:400;color:var(--text-muted,#5E666F);margin-left:8px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "ledger");
@@ -184,7 +184,7 @@ export function LedgerTable({
                 </td>
                 <td className="ldg--r">
                   {r._void || !hasRunning
-                    ? <span style={{ color: "var(--text-disabled,#889099)" }}>&mdash;</span>
+                    ? <span style={{ color: "var(--text-disabled,#94999F)" }}>&mdash;</span>
                     : <AmountCell value={r._bal} currency={currency} parens />}
                 </td>
               </tr>

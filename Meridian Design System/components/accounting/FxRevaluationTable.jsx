@@ -16,11 +16,11 @@ function inject() {
 .fxr thead th{padding:9px 12px;text-align:right;white-space:nowrap;position:sticky;top:0;
   background:var(--bg-medium,#F5F7FA);z-index:1;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#59636F);
+  letter-spacing:.03em;color:var(--text-muted,#5E666F);
   border-bottom:1px solid var(--border-strong,#AAB4BF);border-right:1px solid var(--border-divider,#DDE3EA);}
 .fxr thead th:last-child{border-right:none;}
 .fxr thead th.fxr--l{text-align:left;}
-.fxr td{padding:9px 12px;white-space:nowrap;text-align:right;color:var(--text-primary,#22272E);
+.fxr td{padding:9px 12px;white-space:nowrap;text-align:right;color:var(--text-primary,#22252A);
   border-top:1px solid var(--border,#D7DCE2);border-right:1px solid var(--border-divider,#DDE3EA);
   vertical-align:baseline;}
 .fxr td:last-child{border-right:none;}
@@ -28,15 +28,15 @@ function inject() {
 .fxr tbody tr:hover td{background:var(--bg-hover,#F1F4F7);}
 .fxr tbody tr.fxr__row--click{cursor:pointer;}
 .fxr tbody tr.fxr__row--on td{background:var(--bg-active,#E6EEF5);}
-.fxr tbody tr.fxr__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#2F6F8F);}
-.fxr__ccy{font-weight:600;color:var(--text-primary,#22272E);}
-.fxr__acct{font-family:var(--font-body);color:var(--text-secondary,#4D5967);}
-.fxr__rate{color:var(--text-secondary,#4D5967);}
+.fxr tbody tr.fxr__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#A85436);}
+.fxr__ccy{font-weight:600;color:var(--text-primary,#22252A);}
+.fxr__acct{font-family:var(--font-body);color:var(--text-secondary,#4E5258);}
+.fxr__rate{color:var(--text-secondary,#4E5258);}
 .fxr tfoot td{padding:9px 12px;background:var(--bg-medium,#F5F7FA);font-weight:600;
-  border-top:2px solid var(--border-strong,#AAB4BF);color:var(--text-primary,#22272E);text-align:right;}
+  border-top:2px solid var(--border-strong,#AAB4BF);color:var(--text-primary,#22252A);text-align:right;}
 .fxr tfoot td.fxr--l{text-align:left;}
 .fxr__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#4D5967);}
+  font-size:11px;color:var(--text-secondary,#4E5258);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "fxreval");

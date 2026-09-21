@@ -9,22 +9,22 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-fills{border:1px solid var(--border,#CBD3DC);background:var(--bg-light,#fff);
+.mds-fills{border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#fff);
   font-family:var(--font-data);font-size:11px;overflow-y:auto;}
 .mds-fills__row{display:grid;grid-template-columns:76px 1fr 44px 1fr auto;gap:8px;
-  padding:5px 10px;border-top:1px solid var(--border-divider,#D2D9E2);align-items:baseline;
+  padding:5px 10px;border-top:1px solid var(--border-divider,#DAD8D3);align-items:baseline;
   font-variant-numeric:tabular-nums;}
 .mds-fills__row:first-child{border-top:none;}
-.mds-fills__time{color:var(--text-muted,#59636F);font-size:10px;}
-.mds-fills__sym{font-weight:600;color:var(--text-primary,#22272E);}
+.mds-fills__time{color:var(--text-muted,#5E666F);font-size:10px;}
+.mds-fills__sym{font-weight:600;color:var(--text-primary,#22252A);}
 .mds-fills__side{font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.03em;}
 .mds-fills__side--buy{color:var(--green-dim,#10663F);}
 .mds-fills__side--sell{color:var(--red-dim,#8C2F40);}
-.mds-fills__qty{text-align:right;color:var(--text-secondary,#4D5967);}
-.mds-fills__px{text-align:right;color:var(--text-primary,#22272E);}
+.mds-fills__qty{text-align:right;color:var(--text-secondary,#4E5258);}
+.mds-fills__px{text-align:right;color:var(--text-primary,#22252A);}
 .mds-fills__empty{padding:18px 10px;text-align:center;font-family:var(--font-body);
-  font-size:12px;color:var(--text-muted,#59636F);}
+  font-size:12px;color:var(--text-muted,#5E666F);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "fillsfeed");

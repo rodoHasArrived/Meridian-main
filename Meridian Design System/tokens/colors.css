@@ -47,7 +47,7 @@
   /* ── Accent (primary action / info) — steel blue, muted & industrial ── */
   --accent:             #A85436;  /* copper — desaturated, functional, deliberately not blue */
   --accent-dim:         #8C4429;  /* pressed — heavy */
-  --accent-hover:       #C06B4A;  /* hover — controlled */
+  --accent-hover:       #AF6143;  /* hover — controlled, 4.55:1 under white */
   --accent-ghost:       #F4E7E0;  /* ghost button bg (warm paper tint) */
   --text-on-accent:     #FFFFFF;  /* text/icon on a solid --accent or semantic fill (buttons, live pills) */
   --text-on-fill:       var(--text-on-accent);  /* alias: label ink on ANY solid semantic fill (mode chips,

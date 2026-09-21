@@ -18,7 +18,7 @@ function inject() {
   letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted,#6E7781);white-space:nowrap;}
 .mds-cmt__bar{position:relative;height:8px;border:1px solid var(--border,#D7DCE2);
   border-radius:var(--radius-chip,2px);background:var(--bg-medium,#EDF0F3);overflow:hidden;}
-.mds-cmt__called{position:absolute;inset:0 auto 0 0;background:var(--accent,#2F6F8F);}
+.mds-cmt__called{position:absolute;inset:0 auto 0 0;background:var(--accent,#A85436);}
 .mds-cmt__figs{display:flex;flex-wrap:wrap;gap:0 18px;row-gap:6px;}
 .mds-cmt__fig{display:flex;flex-direction:column;gap:1px;min-width:72px;}
 .mds-cmt__k{font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;

@@ -20,19 +20,19 @@ function inject() {
   animation:mds-hotkeys-fade var(--motion-base,150ms) var(--ease-standard,ease-out);}
 @keyframes mds-hotkeys-fade{from{opacity:0}to{opacity:1}}
 .mds-hotkeys-panel{width:520px;max-width:92vw;max-height:76vh;overflow-y:auto;
-  background:var(--bg-light,#fff);border:1px solid var(--border-strong,#99A5B2);
+  background:var(--bg-light,#fff);border:1px solid var(--border-strong,#AFABA1);
   box-shadow:var(--shadow-menu);font-family:var(--font-body);}
 .mds-hotkeys-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
-  border-bottom:1px solid var(--border,#CBD3DC);position:sticky;top:0;background:var(--bg-light,#fff);}
-.mds-hotkeys-title{font-size:13px;font-weight:600;color:var(--text-primary,#22272E);}
+  border-bottom:1px solid var(--border,#E4E3DE);position:sticky;top:0;background:var(--bg-light,#fff);}
+.mds-hotkeys-title{font-size:13px;font-weight:600;color:var(--text-primary,#22252A);}
 .mds-hotkeys-x{appearance:none;border:none;background:transparent;cursor:pointer;font-size:16px;
-  color:var(--text-muted,#59636F);padding:2px 6px;}
+  color:var(--text-muted,#5E666F);padding:2px 6px;}
 .mds-hotkeys-x:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);}
 .mds-hotkeys-group{padding:10px 16px 4px;font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#59636F);}
+  font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#5E666F);}
 .mds-hotkeys-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:6px 16px;font-size:12px;color:var(--text-secondary,#4D5967);}
-.mds-hotkeys-row+.mds-hotkeys-row{border-top:1px solid var(--border-divider,#D2D9E2);}
+  padding:6px 16px;font-size:12px;color:var(--text-secondary,#4E5258);}
+.mds-hotkeys-row+.mds-hotkeys-row{border-top:1px solid var(--border-divider,#DAD8D3);}
 .mds-hotkeys-keys{display:flex;gap:4px;align-items:center;flex:none;}
 `;
   const el = document.createElement("style");
@@ -153,7 +153,7 @@ export function HotkeysProvider({ bindings = [], sheet = true, sheetTitle = "Key
             ))}
           </React.Fragment>
         ))}
-        <div className="mds-hotkeys-row" style={{ borderTop: "1px solid var(--border, #CBD3DC)" }}>
+        <div className="mds-hotkeys-row" style={{ borderTop: "1px solid var(--border, #E4E3DE)" }}>
           <span>Show this sheet</span>
           <span className="mds-hotkeys-keys"><Kbd>?</Kbd></span>
         </div>

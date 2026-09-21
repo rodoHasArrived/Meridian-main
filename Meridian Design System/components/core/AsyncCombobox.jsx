@@ -11,20 +11,20 @@ function inject() {
   const css = `
 .mds-cbx{position:relative;font-family:var(--font-body);}
 .mds-cbx__field{display:flex;align-items:center;gap:6px;height:30px;padding:0 8px;
-  border:1px solid var(--border,#CBD3DC);background:var(--bg-light,#fff);}
+  border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#fff);}
 .mds-cbx__field:focus-within{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:-1px;}
 .mds-cbx__input{flex:1;min-width:0;border:none;outline:none;background:transparent;
-  font-family:var(--font-data);font-size:12px;color:var(--text-primary,#22272E);}
-.mds-cbx__caret{color:var(--text-muted,#59636F);font-size:10px;flex:none;}
+  font-family:var(--font-data);font-size:12px;color:var(--text-primary,#22252A);}
+.mds-cbx__caret{color:var(--text-muted,#5E666F);font-size:10px;flex:none;}
 .mds-cbx__pop{position:absolute;left:0;right:0;top:calc(100% + 3px);z-index:var(--z-dropdown,100);
-  background:var(--bg-light,#fff);border:1px solid var(--border-strong,#99A5B2);
+  background:var(--bg-light,#fff);border:1px solid var(--border-strong,#AFABA1);
   box-shadow:var(--shadow-menu);max-height:264px;overflow-y:auto;}
-.mds-cbx__opt{padding:7px 10px;font-size:12px;color:var(--text-primary,#22272E);cursor:pointer;
+.mds-cbx__opt{padding:7px 10px;font-size:12px;color:var(--text-primary,#22252A);cursor:pointer;
   display:flex;align-items:baseline;gap:8px;box-sizing:border-box;}
-.mds-cbx__opt--on{background:var(--bg-active,#D7E5F1);}
+.mds-cbx__opt--on{background:var(--bg-active,#F2E3DB);}
 .mds-cbx__opt-sym{font-family:var(--font-data);font-weight:600;flex:none;min-width:56px;}
-.mds-cbx__opt-label{color:var(--text-secondary,#4D5967);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mds-cbx__foot{padding:8px 10px;font-size:11px;color:var(--text-muted,#59636F);
+.mds-cbx__opt-label{color:var(--text-secondary,#4E5258);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mds-cbx__foot{padding:8px 10px;font-size:11px;color:var(--text-muted,#5E666F);
   font-family:var(--font-body);text-align:center;}
 .mds-cbx__foot--err{color:var(--red-dim,#8C2F40);}
 `;

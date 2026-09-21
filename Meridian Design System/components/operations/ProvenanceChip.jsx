@@ -13,7 +13,7 @@ function inject() {
   const css = `
 .mds-prov{display:inline-flex;align-items:center;gap:6px;width:fit-content;max-width:100%;
   min-height:20px;border:1px solid var(--border,#D7DCE2);border-radius:var(--radius-chip,2px);
-  background:var(--bg-light,#FFFFFF);color:var(--text-secondary,#3D454F);
+  background:var(--bg-light,#FBFAF8);color:var(--text-secondary,#3D454F);
   font-family:var(--font-data,"Cascadia Mono",monospace);font-size:9.5px;font-weight:500;line-height:1;
   letter-spacing:.02em;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 button.mds-prov{cursor:pointer;}
