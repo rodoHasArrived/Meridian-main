@@ -212,10 +212,25 @@ def check_brands(root: Path) -> list[str]:
 
     failures: list[str] = []
     for brand, declared in merged.items():
+        stated = {
+            mode: any(f"{prefix}{name}" in declared for _, name in BRAND_PAIRS)
+            for mode, prefix in BRAND_MODES
+        }
+        # A brand that states a light identity but no dark one does not fall back to a
+        # dark version of itself: it inherits the default accent, so the whole white-label
+        # promise silently reverts to copper the moment the OS asks for dark. Six brands
+        # shipped that way. Skipping the unstated mode would also hide it from every check
+        # below, so name it here rather than measure the defaults twice.
+        if stated["light"] and not stated["dark"]:
+            print(f"[dark · brand {brand}] no dark identity: inherits the default accent FAIL")
+            failures.append(
+                f"[dark · brand {brand}] declares a light accent but no --theme-dark-accent*; "
+                "it would render the default accent in dark mode"
+            )
         for mode, prefix in BRAND_MODES:
             # Only report a mode the brand actually restates; otherwise it inherits the
             # default palette, which the light/dark passes above already cover.
-            if not any(f"{prefix}{name}" in declared for _, name in BRAND_PAIRS):
+            if not stated[mode]:
                 continue
             tokens = {**defaults, **declared}
             label = tokens.get(f"{prefix}text-on-accent", "#FFFFFF")
