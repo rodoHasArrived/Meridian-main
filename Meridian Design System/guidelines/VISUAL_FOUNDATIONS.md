@@ -23,7 +23,8 @@ drafting stock: surfaces are separated by fine rules and tonal steps, never by s
 (Slate), disabled `#94999F`.
 
 **Accent** — a single copper `#A85436` (primary buttons, focus rings, active nav, crosshair).
-Pressed `#8C4429`, vibrant `#C06B4A`. One accented action per screen. Deliberately *not* blue.
+Pressed `#8C4429`, hover `#AF6143` (opaque — 4.55:1 under the white label). One accented
+action per screen. Deliberately *not* blue.
 
 > The source brief proposed Terracotta `#D16A4A` or Copper `#B76841`. Both fail this package's
 > WCAG AA gate as text on a card (3.43:1 and 3.97:1 against a 4.5:1 floor), so the hue is kept
@@ -59,17 +60,21 @@ render as small-caps rather than ALL-CAPS.
 
 ## Elevation, radii, spacing (`ThemeSurfaces.xaml`)
 
-- Radii: 4px chips/badges · 6px buttons/inputs · 8px cards/panels
+- Radii: unified **2px** across chips, controls, and cards/panels — one tight corner.
+  Structure comes from borders, not rounding; the named scale never exceeds 6px (`--radius-xl`,
+  large sheets only).
 - Accent bars: 3px metric-card left border; 4px tone-inspector / queue-card left border
-- Shadows: **card** `0 1px 1px rgba(0,0,0,.08)`, **elevated** `0 1px 2px rgba(0,0,0,.10)` —
-  that is the entire elevation system. Everything else is borders.
+- Shadows: surfaces are **flat — `--shadow-card: none`**. The only elevation is a tight,
+  hard-edged **menu** shadow `0 2px 6px rgba(0,0,0,.18)` on detached overlays that genuinely
+  float above the plane. Everything else is borders.
 - Spacing rhythm: 24 section · 16 card · 12 compact · 8 tight
 - Padding: card 20 · compact card 16 · metric 18
 - Chrome: 48px brand bar · 28px status bar · 224px nav rail · ~34px dense row
 
 ## Interaction & motion
 
-- Primary button: hover = accent @ 80% α, press = `--accent-dim` (no movement, no offset shadow)
+- Primary button: hover = `--accent-hover` **opaque** (never accent @ α — compositing eats the
+  label contrast), press = `--accent-dim` (no movement, no offset shadow)
 - Ghost button: hover `#F0EEE9`, press `#F2E3DB`, border darkens to focus on press
 - Nav item: active = `#F2E3DB` wash + **3px copper left indicator**; hover `#F0EEE9`
 - Table row: hover/selected = `#F2E3DB` + `inset 3px 0 0 #A85436` left rail; zebra at `#F6F4F0`
@@ -80,7 +85,8 @@ render as small-caps rather than ALL-CAPS.
 ## Backgrounds
 
 Flat solid surfaces. **No gradients, no textures, no photography, no glow.** The only
-decorative asset is `assets/brand/meridian-hero.svg`. Depth is hairlines + a whisper of shadow.
+decorative asset is `assets/brand/meridian-hero.svg`. Depth is carried entirely by visible,
+load-bearing borders — surfaces are flat, with no card shadow.
 
 ## Charts
 

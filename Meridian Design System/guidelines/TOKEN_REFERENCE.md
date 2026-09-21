@@ -57,8 +57,8 @@ Both are legible body weights; the distinction is **role, not just darkness**.
 
 | | Token | Hex · on panel | Use for |
 | --- | --- | --- | --- |
-| Secondary | `--text-secondary` | `#4D5967` · 7.1:1 | Content that is *still primary reading* but subordinate — row labels, field labels, secondary values, body copy in a side panel. The user is meant to read it. |
-| Muted | `--text-muted` | `#59636F` · 6.1:1 | *Metadata about* content — captions, hints, timestamps, unit suffixes, column sublabels, "last synced" lines. Glanceable, not primary reading. |
+| Secondary | `--text-secondary` | `#4E5258` · 7.5:1 | Content that is *still primary reading* but subordinate — row labels, field labels, secondary values, body copy in a side panel. The user is meant to read it. |
+| Muted | `--text-muted` | `#5E666F` · 5.6:1 | *Metadata about* content — captions, hints, timestamps, unit suffixes, column sublabels, "last synced" lines. Glanceable, not primary reading. |
 
 Rule of thumb: if the user reads it to do the task → **secondary**; if it annotates or timestamps
 the thing they read → **muted**. (Both pass AA on every surface; choosing correctly is about
@@ -74,8 +74,8 @@ ink at 3.11:1 and failed as text on dark panels. Semantics are unchanged (still 
 "accent text"); only the direction of the shift flips in dark, per standard dark-UI convention.
 
 ### `--bg-hover` vs `--bg-active`
-`--bg-hover` (#EAEEF3) is a flat neutral shift for transient hover. `--bg-active` (#D7E5F1) is a
-cool blue wash for *selected/engaged* state (selected row, active nav). Active is a state that
+`--bg-hover` (#F0EEE9) is a flat neutral shift for transient hover. `--bg-active` (#F2E3DB) is a
+warm copper-tinted wash for *selected/engaged* state (selected row, active nav). Active is a state that
 persists; hover is not.
 
 ### `--border` vs `--border-strong` vs `--border-divider`

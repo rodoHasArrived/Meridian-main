@@ -45,7 +45,7 @@ Full guide: `guidelines/VISUAL_FOUNDATIONS.md`. Tokens live in `tokens/`.
 - **Type:** Segoe UI Variable Display (titles, 600), Segoe UI Variable Text (body, 13px), Cascadia Mono / JetBrains Mono (all data, tabular). Ramp (px): page title 24 · section 16 · card title 13 · body 13 · metric 28 (mono 700) · data value 16 · label 9 (small-caps, muted).
 - **Spacing & density:** 32 major · 24 section · 16 generous · 12 standard · 6 tight · 3 micro. Chrome: 48px brand bar, 28px status bar, 224px (14rem) nav rail, \~34px table rows. Density scopes via `DensityToggle`: **`terminal`** (densest — 26px rows, for multi-monitor ops walls) · `compact` · default · `spacious`.
 - **Radii:** unified **2px** across chips/badges, buttons/inputs, and cards/panels — one tight corner. Metric cards carry a **3px left-accent border**. Hard corners — never friendly radii.
-- **Borders & shadows:** structure is **visible, load-bearing borders** (`#CBD3DC`; hover `#ADB8C4`; heavy header/total rules `#99A5B2`). Surfaces are **flat — no card shadow**; the only shadow is a tight hard-edged `0 2px 6px /.18` on floating menus/popovers. **No gradients, no glow, no soft cloud shadows.**
+- **Borders & shadows:** structure is **visible, load-bearing borders** (`#E4E3DE`; hover `#C6C3BB`; heavy header/total rules `#AFABA1`). Surfaces are **flat — no card shadow**; the only shadow is a tight hard-edged `0 2px 6px /.18` on floating menus/popovers. **No gradients, no glow, no soft cloud shadows.**
 - **Motion:** minimal — 100–150ms ease on background/border/color. No springs, no entrance choreography. Live numbers update without animation.
 
 ## Content fundamentals

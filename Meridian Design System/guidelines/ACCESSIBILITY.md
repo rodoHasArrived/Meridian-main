@@ -93,12 +93,14 @@ claim above false for this section. Foreground on the dark panel `--bg-light` `#
 
 **The alpha-10/20 washes.** The trio pattern puts `-dim` text on translucent hue washes, so the
 effective background is the wash composited over the panel. Measured over the dark panel:
-`-dim` text on its own **a10** wash is **6.1 / 5.6 / 6.6 / 6.0:1** (green/red/orange/purple) and
-on the heavier **a20** wash **5.2 / 4.9 / 5.5 / 5.1:1** — all AA. The light-mode equivalents
-(6.1–8.0:1 on a10 over white) pass too. These composite pairs are now locked in
+`-dim` text on its own **a10** wash is **6.6 / 6.0 / 7.1 / 6.3:1** (green/red/orange/purple) and
+on the heavier **a20** wash **5.6 / 5.2 / 5.9 / 5.4:1** — all AA. The light-mode equivalents
+(6.6–8.1:1 on a10 over the card) pass too. These composite pairs are now locked in
 `scripts/check_contrast.py` (`WASH_PAIRS`), so a wash or hue edit that breaks a chip fails the suite.
 
-**What the sweep changed** (dark tokens only — light mode untouched):
+**What the July 2026 sweep changed** (dark tokens only — light mode untouched). The values
+below are the *steel* identity's, which this package now ships as `data-brand="steel"`; the
+reasoning is what carried forward, not the hexes:
 
 - **`--accent-dim` `#3C6688` → `#609BC9`.** The old value failed two ways: dark ink on the
   pressed primary button was **3.11:1**, and `accent-dim`-as-text (Toast action, ColumnManager
@@ -114,8 +116,8 @@ The same rule as light mode holds: **semantic text uses `-dim`, never the raw hu
 `dark-mode-validation` cards visually verify every surface/text pair in dark.
 
 **Text sitting *on* a solid fill is a separate question from text on a panel.** White text on
-the dark-mode accent measures only **~3.45:1** — this is why `--text-on-accent` flips to dark
-ink `#0D1117` in dark mode. **Swept July 2026:** every
+the dark-mode accent measures only **2.70:1** — this is why `--text-on-accent` flips to dark
+ink `#1A1511` in dark mode. **Swept July 2026:** every
 other solid-fill + white-text pairing now routes through the same token — accent fills
 (`Pagination`, `Stepper`, `Checkbox`, `DatePicker`/`DateRangePicker`, `ColumnChooser`,
 `SelectionToolbar`, `BulkActionBar`, `Modal`'s primary button) use `--text-on-accent`; non-accent

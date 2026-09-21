@@ -1,6 +1,6 @@
 {
   "total_files": 669,
-  "total_lines": 144607,
+  "total_lines": 144626,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -4960,7 +4960,7 @@
     },
     {
       "path": "Meridian Design System/guidelines/ACCESSIBILITY.md",
-      "line_count": 296,
+      "line_count": 298,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5008,7 +5008,7 @@
     },
     {
       "path": "Meridian Design System/guidelines/VISUAL_FOUNDATIONS.md",
-      "line_count": 91,
+      "line_count": 97,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5032,7 +5032,7 @@
     },
     {
       "path": "Meridian Design System/INSPIRATION_BRIEF.md",
-      "line_count": 63,
+      "line_count": 68,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5072,7 +5072,7 @@
     },
     {
       "path": "Meridian Design System/VISUAL_FOUNDATIONS.md",
-      "line_count": 91,
+      "line_count": 97,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

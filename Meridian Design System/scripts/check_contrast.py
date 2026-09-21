@@ -525,6 +525,130 @@ def check_fallbacks(root: Path) -> list[str]:
     return failures
 
 
+# Three checks over the package's *prose and metadata*. Rounds six and seven both turned up
+# guidance that still described the superseded system: a reader or an agent following it
+# rebuilds the old palette, and following the elevation section rebuilt a radius and shadow
+# contract the tokens do not implement. Documentation is a surface too.
+
+DSCARD = re.compile(r"@dsCard\s+([^>]*?)-->")
+DSCARD_ATTR = re.compile(r'(\w+)="([^"]*)"')
+CARD_FIELDS = ("group", "viewport", "name", "subtitle")
+
+
+def check_card_metadata(root: Path) -> list[str]:
+    """The manifest's card records must match each card's own @dsCard declaration.
+
+    A catalog UI reads the manifest, not the card, so a card can be corrected at source and
+    still present its superseded description to everyone who browses it.
+    """
+    manifest = root / "_ds_manifest.json"
+    if not manifest.exists():
+        return []
+    import json
+    records = json.loads(manifest.read_text(encoding="utf-8")).get("cards", [])
+    failures: list[str] = []
+    checked = 0
+    for record in records:
+        card = root / record.get("path", "")
+        if not card.is_file():
+            continue
+        found = DSCARD.search(card.read_text(encoding="utf-8", errors="replace")[:600])
+        if not found:
+            continue
+        declared = dict(DSCARD_ATTR.findall(found.group(1)))
+        for field in CARD_FIELDS:
+            if field not in declared:
+                continue
+            checked += 1
+            if record.get(field) != declared[field]:
+                failures.append(f"[card-meta] {record['path']}: manifest {field}="
+                                f"{record.get(field)!r} but the card declares {declared[field]!r}")
+    for f in failures[:10]:
+        print(f)
+    if not failures:
+        print(f"[card-meta] all {checked} card metadata fields match their @dsCard declaration")
+    return failures
+
+
+# The steel brand block IS the superseded identity, kept deliberately as `data-brand="steel"`.
+# Any document quoting one of its values while describing the current system is describing the
+# old one. Plus the superseded brand cyan/navy and the pre-AA-fix hover.
+STEEL_BLOCK = re.compile(r'html\[data-brand="steel"\]\s*\{(.*?)\n\}', re.S)
+DOC_HEX = re.compile(r"#[0-9A-Fa-f]{6}\b")
+EXTRA_SUPERSEDED = {"#2AB2D4", "#08101A", "#06F3FF", "#C06B4A"}
+# Whole documents whose job is to record history rather than describe the current system.
+HISTORICAL_DOCS = {"CHANGELOG.md", "INSPIRATION_BRIEF.md", "docs/UPGRADING.md"}
+HISTORICAL_DIRS = ("docs/changelog/", "src/")
+# A line that names the value as superseded is a legitimate historical reference.
+HISTORICAL_LINE = re.compile(r"steel|superseded|previous|was\b|former|legacy|until this pass|→",
+                             re.I)
+
+
+def check_doc_palette(root: Path) -> list[str]:
+    """Flag a superseded-identity colour quoted in documentation as if it were current."""
+    theme = (root / "tokens" / "theme.css").read_text(encoding="utf-8")
+    superseded = {h.upper() for block in STEEL_BLOCK.findall(theme)
+                  for h in DOC_HEX.findall(block)} | EXTRA_SUPERSEDED
+    failures: list[str] = []
+    checked = 0
+    for path in sorted(root.rglob("*.md")):
+        rel = path.relative_to(root).as_posix()
+        if rel in HISTORICAL_DOCS or rel.startswith(HISTORICAL_DIRS):
+            continue
+        for lineno, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            hits = [h for h in DOC_HEX.findall(line) if h.upper() in superseded]
+            if not hits:
+                continue
+            checked += len(hits)
+            if HISTORICAL_LINE.search(line):
+                continue
+            failures.append(f"[doc-palette] {rel}:{lineno}: {', '.join(hits)} — a superseded-identity "
+                            "value stated as current")
+    for f in failures[:10]:
+        print(f)
+    if not failures:
+        print(f"[doc-palette] all {checked} superseded-value mentions in docs are labelled as historical")
+    return failures
+
+
+# The guides state the radius and shadow contract in prose. Round four synced the two copies of
+# VISUAL_FOUNDATIONS.md onto the stale wording, so both described 4/6/8px radii and card shadows
+# while tokens/elevation.css declares a unified 2px corner and --shadow-card: none.
+GUIDES = ["VISUAL_FOUNDATIONS.md", "guidelines/VISUAL_FOUNDATIONS.md"]
+RADII_LINE = re.compile(r"^- Radii:(.*)$", re.M)
+SHADOW_LINE = re.compile(r"^- Shadows:(.*(?:\n  .*)*)$", re.M)
+
+
+def check_elevation_guidance(root: Path) -> list[str]:
+    """The guides' stated radii and card shadow must match tokens/elevation.css."""
+    elevation = root / "tokens" / "elevation.css"
+    if not elevation.exists():
+        return []
+    tokens = parse_tokens(elevation.read_text(encoding="utf-8"))
+    card_radius = tokens.get("--radius-card", "").strip()
+    card_shadow = tokens.get("--shadow-card", "").strip()
+    failures: list[str] = []
+    for rel in GUIDES:
+        path = root / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        radii = RADII_LINE.search(text)
+        if radii and card_radius and card_radius not in radii.group(1):
+            failures.append(f"[elevation] {rel}: the radii line does not state the token contract "
+                            f"(--radius-card is {card_radius}): {radii.group(1).strip()[:60]!r}")
+        shadows = SHADOW_LINE.search(text)
+        if shadows and card_shadow == "none" and "none" not in shadows.group(1):
+            failures.append(f"[elevation] {rel}: the shadows line describes a card shadow, but "
+                            "--shadow-card is none")
+    for f in failures:
+        print(f)
+    if not failures:
+        print(f"[elevation] both guide copies state the token contract "
+              f"(--radius-card {card_radius}, --shadow-card {card_shadow})")
+    return failures
+
+
 def run_checks(root: Path) -> list[str]:
     light = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
     dark_overrides = parse_tokens((root / "tokens" / "colors-dark.css").read_text(encoding="utf-8"))
@@ -532,7 +656,9 @@ def run_checks(root: Path) -> list[str]:
     return (check_mode("light", light) + check_mode("dark", dark)
             + check_brands(root) + check_workstation(root)
             + check_ws_aliases(root) + check_comment_terminators(root)
-            + check_var_chains(root) + check_fallbacks(root))
+            + check_var_chains(root) + check_fallbacks(root)
+            + check_card_metadata(root) + check_doc_palette(root)
+            + check_elevation_guidance(root))
 
 
 def main() -> int:
