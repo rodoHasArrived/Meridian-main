@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-09-14T06:29:06Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-09-21T06:29:51Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Wpf/Services/PendingOperationsQueueService.cs` | Desktop and UI Workflows | `3820d604d` (2026-09-12T12:35:19Z) | 1 |
-| `src/Meridian.Wpf/Controls/DataConfidenceIndicator.xaml` | Desktop and UI Workflows | `e4cf27a99` (2026-09-12T11:24:39Z) | 6 |
-| `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.IBApi.cs` | Providers and Storage | `404211a4a` (2026-09-12T10:47:02Z) | 16 |
-| `src/Meridian.Wpf/Models/DataConfidenceIndicatorModel.cs` | Desktop and UI Workflows | `c35e17937` (2026-09-12T10:45:19Z) | 15 |
-| `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs` | Providers and Storage | `bdc90df8e` (2026-09-12T10:36:27Z) | 20 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `3d7f13c7c` (2026-09-11T06:24:15-07:00) | 14 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `3d7f13c7c` (2026-09-11T06:24:15-07:00) | 12 |
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | `3d7f13c7c` (2026-09-11T06:24:15-07:00) | 8 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs` | Unmapped | `3d7f13c7c` (2026-09-11T06:24:15-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` | Desktop and UI Workflows | `3d7f13c7c` (2026-09-11T06:24:15-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs` | Desktop and UI Workflows | `3d7f13c7c` (2026-09-11T06:24:15-07:00) | 1 |
-| `src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs` | Providers and Storage | `a0f1856da` (2026-09-11T06:20:29-07:00) | 2 |
-| `src/Meridian.Storage/Ledger/Migrations/V_ledger_036__ledger_event_audit_chain.sql` | Providers and Storage | `902e4cadc` (2026-09-11T06:07:54-07:00) | 3 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Audit.cs` | Providers and Storage | `902e4cadc` (2026-09-11T06:07:54-07:00) | 3 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `3792d1f0c` (2026-09-11T05:25:04-07:00) | 6 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-approval.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-approval.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-certification.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-certification.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-distribution.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-distribution.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-publication.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-publication.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 3 |
+| `src/Meridian.Ui/dashboard/src/lib/report-health.test.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/lib/report-health.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.test.tsx` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.tsx` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-datum.test.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-datum.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
 
