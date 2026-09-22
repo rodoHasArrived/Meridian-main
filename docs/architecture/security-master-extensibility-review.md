@@ -5858,3 +5858,16 @@ No code was changed. No .NET or TypeScript test was run — every claim in the 2
 source claim. In particular, E1's reproducibility consequence and E2's unit-basis and 2a-7 claims
 are read off the schema, the service and the test fixtures; none was observed against a running
 system or a populated database.
+
+The repository's documentation validation did run, on the 2026-09-22 pass's own diff, and is
+recorded here for the reason the 2026-09-10 pass gives: so the paragraph above is not read as
+claiming more silence than the pass kept. The docs-automation `core` profile passed 20/20 and was
+verified idempotent on a second run — the two `docs/status/doc-health-dashboard.*` files in the
+pass's commit are its regenerated output, not hand edits. The rules engine
+(`build/rules/doc-rules.yaml`) reported PASS with warnings; the two rows naming this document are
+present identically on the clean trunk. `check-codex-memory.py`, `validate-docs-structure.py` and
+`validate-doc-hashes.py` each report findings, and each was re-run against a stashed tree to
+confirm all of them pre-exist this change. `tools/roadmap/enforce_phase_scope.py --phase PR1`
+passed over `ab58115b..2893d2ef`: the diff touches `docs/architecture/**` plus the two
+`docs/status/` dashboards, which the gate recognizes as generated-exempt. That is a check on this
+document, not on the subsystem it reviews.
