@@ -285,3 +285,22 @@ and the advance-refunding scenario reconciles from source evidence through repor
 Contract and persistence foundation in progress: shared decimal `OpenLotDto` and acquisition facts, canonical relief selection, Execution/Backtesting parity adapters, an additive nullable `acquisition_terms` column, immutable acquisition guards, and ledger-to-canonical face/unit projection. Missing identity, FX, or subject-bound acquisition evidence is refused. Legacy null fields remain absent in fingerprints; populated evidence participates in atomic replay identity.
 
 The governed legacy exception/backfill workflow and durable disposal/Reporting consumers are implemented as described in section 1. No acquisition-writer cutover is claimed. Remaining phases include acquisition writer convergence; atomic AverageCost basis redistribution and currency-precision/selector/amortization parity across remaining production consumers; append-only corporate-action successor and adjustment posting; the advance-refunding/reporting acceptance scenario; and shadow-operation evidence before retiring legacy contracts. Changed basis without a governed adjustment projection currently blocks canonical projection. Short positions require the explicit direction decision in section 9. This increment is not full production certification.
+
+## Implementation receipt - 2026-09-22
+
+Acquisition writer convergence: `AccountingPostingCandidatePostService`, the only production code
+that creates lots, now writes canonical `OpenLotAcquisitionDto` facts on spine acquisitions. Unit lots
+always receive them; face lots receive them when the acquisition instruction states
+`AmortizationMethod` (and `EffectiveYield` for constant yield), which `AssetAcquisitionLotDto` now
+carries as optional fields omitted from serialization when absent so retained instruction
+fingerprints are unchanged. No fact is defaulted: the spine refuses foreign-currency events and the
+store requires lot currency to equal the journal functional currency, so FX is exactly one and
+transaction and functional bases both equal the asserted quantity-times-cost event amount. The
+lot-bound `OpenLotAcquisition` evidence restates each retained source record (URI, content hash,
+source reference) as reviewed and retained with the independent maker-checker approval that covered
+the drafted candidate. A face lot without a stated method keeps its par terms and no canonical
+facts. A retried batch committed before this change replays its retained shape rather than
+colliding on the fact-bearing fingerprint. `AssetAcquisitionLotPostgresRoundTripTests` proves unit
+and face acquisitions post, project through `ToOpenLot`, pass `CanonicalOpenLotDisposalGuard`, and
+replay. Remaining phases are unchanged: AverageCost redistribution, amortization, corporate-action
+successors, advance refunding, and shadow operation.

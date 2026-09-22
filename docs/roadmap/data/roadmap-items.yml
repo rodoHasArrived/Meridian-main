@@ -1799,7 +1799,7 @@ items:
     health: green
     priority: critical
     evidence_posture: in_progress
-    current_summary: Governed legacy backfill now retains hashed acquisition facts, requires independent review plus authoritative security/book-position validation, and resolves durable exceptions only through atomic versioned receipts. Both open and fully disposed legacy rows can be repaired without invented identity, quantity basis or acquisition FX. Production durable disposal and Reporting consume canonical lot evidence and fail closed on unresolved facts. Acquisition writer convergence, AverageCost basis redistribution, amortization, corporate-action successors, advance refunding and shadow-operation acceptance remain open. Hosted CI passed at d49fbc8e7, and six PostgreSQL lot cases passed without skips in Production Certification run 33956884001; that broader run still failed six other tests and its dependency gate.
+    current_summary: Governed legacy backfill now retains hashed acquisition facts, requires independent review plus authoritative security/book-position validation, and resolves durable exceptions only through atomic versioned receipts. Both open and fully disposed legacy rows can be repaired without invented identity, quantity basis or acquisition FX. Production durable disposal and Reporting consume canonical lot evidence and fail closed on unresolved facts. Acquisition writer convergence landed 2026-09-22 - the Asset Accounting Event Spine post service, the only production writer that creates lots, now retains canonical acquisition facts on every unit lot and on every face lot whose instruction states its amortization method, so production disposal relieves spine-acquired lots instead of routing them to the backfill exception queue. The facts are known rather than defaulted (the spine refuses foreign-currency events, so FX is exactly one and both bases equal the asserted event amount), and the lot-bound OpenLotAcquisition evidence restates the retained source records as reviewed and retained with the independent maker-checker approval. Face lots without a stated method keep their par terms alone, and a retry of a batch committed before facts were written replays its retained shape exactly. AverageCost basis redistribution, amortization, corporate-action successors, advance refunding and shadow-operation acceptance remain open. Hosted CI passed at d49fbc8e7, and six PostgreSQL lot cases passed without skips in Production Certification run 33956884001; that broader run still failed six other tests and its dependency gate.
     exit_criteria:
       - Every authoritative open lot requires SecurityId and BookPositionId, uses decimal original/open quantity, and declares Units or Face quantity basis; symbols remain effective-dated display evidence only.
       - Acquisition currency, functional currency, transaction-to-functional acquisition FX, transaction basis, and functional basis are retained and restatable without using a current market FX rate.
@@ -1841,7 +1841,11 @@ items:
         path: tests/Meridian.Tests/Storage/CanonicalOpenLotConsumerTests.cs
       - type: test
         path: tests/Meridian.Tests/Ui/WorkstationEndpointsTests.OpenLotBackfill.cs
-    last_reviewed: 2026-09-04
+      - type: source
+        path: src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs
+      - type: test
+        path: tests/Meridian.Tests/AssetOperations/AssetAcquisitionLotPostgresRoundTripTests.cs
+    last_reviewed: 2026-09-22
 
   - id: W10-DEBT-001
     title: God-file burn-down against the file-size ratchet

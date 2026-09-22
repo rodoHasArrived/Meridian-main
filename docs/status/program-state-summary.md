@@ -47,7 +47,7 @@ Snapshot date: 2026-08-30
 | W10-RECON-004 | W10 | Operator-taught match rules with promotion gate | Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-PERF-001 | W10 | Portfolio and investor return measurement | Portfolio; Reporting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-CONSOL-001 | W10 | Intercompany elimination on consolidated ledger views | Accounting; Reporting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-07-31 |
-| W10-LOT-002 | W10 | Security-identified open-lot convergence | Accounting; Portfolio; Reporting | in_progress | green | critical | Accounting and Ledger | in_progress | 2026-09-04 |
+| W10-LOT-002 | W10 | Security-identified open-lot convergence | Accounting; Portfolio; Reporting | in_progress | green | critical | Accounting and Ledger | in_progress | 2026-09-22 |
 
 ## Source Contract
 

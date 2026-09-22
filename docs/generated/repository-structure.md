@@ -9305,6 +9305,7 @@ Meridian-main
 │   │   ├── AssetOperations
 │   │   │   ├── AssetAccountingEventSpineContractTests.cs
 │   │   │   ├── AssetAccountingEvidenceSubjectContractTests.cs
+│   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.cs
 │   │   │   ├── AssetObligationProjectionServiceTests.cs
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
