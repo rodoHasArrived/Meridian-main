@@ -462,10 +462,20 @@ EXTRA_SUPERSEDED = {
 
 
 def superseded_values(root: Path) -> set[str]:
-    """Every colour the steel identity holds — the palette this restyle replaced."""
+    """Every colour the steel identity holds and the current one does not.
+
+    Subtracting the live palette matters: a brand replaces the *accent*, so it keeps plenty of
+    values the default keeps too — `#FFFFFF` for one. Without this, every card that puts white
+    ink on a fill reads as "a superseded value stated as current", which is both wrong and the
+    kind of noise that gets a check switched off.
+    """
     theme = (root / "tokens" / "theme.css").read_text(encoding="utf-8")
-    return {h.upper() for block in STEEL_BLOCK.findall(theme)
-            for h in DOC_HEX.findall(block)} | EXTRA_SUPERSEDED
+    steel = {h.upper() for block in STEEL_BLOCK.findall(theme)
+             for h in DOC_HEX.findall(block)} | EXTRA_SUPERSEDED
+    current = {h.upper()
+               for sheet in ("colors.css", "colors-dark.css")
+               for h in DOC_HEX.findall((root / "tokens" / sheet).read_text(encoding="utf-8"))}
+    return steel - current
 
 
 DSCARD = re.compile(r"@dsCard\s+([^>]*?)-->")
@@ -480,9 +490,13 @@ RGBA_LITERAL = re.compile(r"rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)")
 INNER_VAR = re.compile(r"var\(\s*(--[a-zA-Z0-9-]+)")
 # Directories whose sources carry `var(--token, literal)` call sites. The package's own
 # `src/` governance snapshot is deliberately absent: it is a frozen pre-restyle copy.
-PACKAGE_CALL_SITES = ["components", "templates", "guidelines"]
+# `tokens` and `scripts` are call sites too, and both were missing. The token cards paint with
+# var(--token, literal) like any component, and scripts/create-workstation.sh *emits* a stylesheet
+# — what it writes is the first thing a freshly scaffolded workstation renders, so a stale literal
+# there ships to every new consumer while nothing here ever read the file.
+PACKAGE_CALL_SITES = ["components", "templates", "guidelines", "tokens", "scripts", "docs"]
 WORKSTATION_CALL_SITES = ["src/Meridian.Ui/dashboard/src"]
-CALL_SITE_SUFFIXES = (".jsx", ".tsx", ".ts", ".css", ".html")
+CALL_SITE_SUFFIXES = (".jsx", ".tsx", ".ts", ".css", ".html", ".sh")
 
 
 # The compiled bundle is a call site too, and it is the one that actually ships to a
@@ -809,7 +823,12 @@ def check_doc_palette(root: Path) -> list[str]:
     superseded = superseded_values(root)
     failures: list[str] = []
     checked = 0
-    for path in sorted(root.rglob("*.md")):
+    # `.card.html` swatch tables document the palette in prose the same way a guide does — and
+    # round ten found four rows of one still publishing the steel values as the implementation
+    # figures. Scanning only `*.md` left every catalogue card out of the one check that exists
+    # to catch exactly that.
+    docs = sorted(root.rglob("*.md")) + sorted(root.rglob("*.card.html"))
+    for path in docs:
         rel = path.relative_to(root).as_posix()
         if rel in HISTORICAL_DOCS or rel.startswith(HISTORICAL_DIRS):
             continue
@@ -826,6 +845,55 @@ def check_doc_palette(root: Path) -> list[str]:
         print(f)
     if not failures:
         print(f"[doc-palette] all {checked} superseded-value mentions in docs are labelled as historical")
+    return failures
+
+
+# The desktop lane has a second palette that no stylesheet check could reach: Charting,
+# QuantScript and the ScottPlot surfaces render from ColorPalette.cs, not from ThemeTokens.xaml,
+# so restyling the XAML left those surfaces on the previous identity. Each field there now names
+# the XAML key it mirrors in its doc comment; this reads the claim back and verifies it.
+RUNTIME_PALETTE = "src/Meridian.Ui.Services/Services/ColorPalette.cs"
+WPF_TOKENS = "src/Meridian.Wpf/Styles/ThemeTokens.xaml"
+XAML_COLOUR = re.compile(r'<Color x:Key="([A-Za-z0-9_]+)">#([0-9A-Fa-f]{6,8})</Color>')
+# `/// <summary>… — SomeXamlKey #RRGGBB.</summary>` then `… Name = new(255, r, g, b);`
+PALETTE_FIELD = re.compile(
+    r"—\s*(?P<key>[A-Za-z0-9_]+)\s*#(?P<hex>[0-9A-Fa-f]{6})\b"
+    r"(?:(?!</summary>).)*</summary>\s*\n"
+    r"\s*public static readonly ArgbColor (?P<name>\w+) = "
+    r"new\(255,\s*(?P<r>\d+),\s*(?P<g>\d+),\s*(?P<b>\d+)\);",
+    re.S)
+
+
+def check_runtime_palette(root: Path) -> list[str]:
+    """Every annotated ColorPalette.cs colour must equal the XAML token it says it mirrors."""
+    repo = root.parent
+    palette_path, tokens_path = repo / RUNTIME_PALETTE, repo / WPF_TOKENS
+    if not palette_path.exists() or not tokens_path.exists():
+        return []
+    xaml = {k: "#" + v.upper()[-6:]
+            for k, v in XAML_COLOUR.findall(tokens_path.read_text(encoding="utf-8"))}
+    failures: list[str] = []
+    checked = 0
+    for m in PALETTE_FIELD.finditer(palette_path.read_text(encoding="utf-8")):
+        checked += 1
+        name, key = m.group("name"), m.group("key")
+        stated = "#" + m.group("hex").upper()
+        literal = "#{:02X}{:02X}{:02X}".format(*(int(m.group(c)) for c in "rgb"))
+        if key not in xaml:
+            failures.append(f"[runtime-palette] {RUNTIME_PALETTE}: {name} says it mirrors {key}, "
+                            f"which {WPF_TOKENS} does not declare")
+        elif xaml[key] != literal:
+            failures.append(f"[runtime-palette] {RUNTIME_PALETTE}: {name} is {literal}, but the "
+                            f"{key} it mirrors is {xaml[key]} — the desktop charts would render "
+                            "a different identity from the XAML around them")
+        elif stated != literal:
+            failures.append(f"[runtime-palette] {RUNTIME_PALETTE}: {name}'s comment says {stated} "
+                            f"and the value is {literal}")
+    for f in failures:
+        print(f)
+    if not failures:
+        print(f"[runtime-palette] all {checked} annotated ColorPalette.cs colours match the "
+              "ThemeTokens.xaml key they mirror")
     return failures
 
 
@@ -943,7 +1011,8 @@ def run_checks(root: Path) -> list[str]:
             + check_var_chains(root) + check_fallbacks(root)
             + check_card_metadata(root) + check_doc_palette(root)
             + check_elevation_guidance(root) + check_bundle_parity(root)
-            + check_tailwind_literals(root) + check_catalog_palette(root))
+            + check_tailwind_literals(root) + check_catalog_palette(root)
+            + check_runtime_palette(root))
 
 
 def main() -> int:

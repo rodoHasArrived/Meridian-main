@@ -81,7 +81,7 @@
 
     <!-- Top bar colors: near-black brand bar -->
     <Color x:Key="TopBarBackground">#1F1D1A</Color>
-    <Color x:Key="TopBarText">#F4F6F8</Color>
+    <Color x:Key="TopBarText">#F4F2ED</Color>
     <Color x:Key="TopBarBorder">#2E2A24</Color>
     <Color x:Key="TopBarIconAccent">#EFEBE4</Color>
 
