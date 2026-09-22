@@ -176,8 +176,10 @@ public static class FundStructureTenantBackfillPlanner
             {
                 component.Add(id);
                 foreach (var neighbor in adjacency[id])
-                if (visited.Add(neighbor))
-                    pending.Enqueue(neighbor);
+                {
+                    if (visited.Add(neighbor))
+                        pending.Enqueue(neighbor);
+                }
             }
             var componentReasons = component.Where(reasons.ContainsKey).SelectMany(id => reasons[id]).Distinct().Order().ToArray();
             if (componentReasons.Length == 0)
