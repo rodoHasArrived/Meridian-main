@@ -51,6 +51,11 @@ operational data.
 Scheduled archive-maintenance state is exposed through stable snapshots so operator edits can run
 concurrently with scheduler ticks. Timer callbacks are cancellation-aware and contain background
 exceptions at the service boundary instead of allowing a maintenance tick to terminate the host.
+Data completeness denominators, calendar holiday cells, backfill recommendations, and analysis
+exports use the Platform-owned operational trading calendar through `IOperationalTradingCalendar`.
+The calendar visualization reuses its completeness service's calendar instance, including injected
+policy, so holiday shading and missing-day counts cannot select different calendars. The legacy
+`TradingCalendarService` is a forwarding adapter and contains no independent holiday rules.
 
 Use this module when changing workstation endpoint behavior, operator workflow read models,
 readiness projections, or UI-service orchestration consumed by browser and WPF clients.

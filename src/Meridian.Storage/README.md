@@ -65,11 +65,28 @@ and recovers the single retained record through a fresh WAL instance.
 
 ## Shared close and lot convergence
 
+Asset-scoped lot reads reconstruct end-of-effective-date quantities from immutable journal-backed
+mutation history, including lots fully disposed after the requested date. Lot and history reads use
+one repeatable-read snapshot. Missing dates, inconsistent quantity chains, and legacy relief without
+retained history block paydown candidates; current holdings are never rewritten by the read.
+
+
 Migration `V_ledger_034__open_lot_acquisition.sql` adds nullable retained acquisition facts to the existing tax-lot record, without backfilling legacy rows. Canonical identity and acquisition economics cannot be rewritten; ordinary partial relief preserves acquisition evidence. `LedgerOpenLotProjection` refuses missing evidence or unexplained basis drift and translates the legacy per-100 face convention into explicit face quantity. Atomic fingerprints include populated acquisition facts while absent fields preserve legacy fingerprints. Focused proof: `OpenLotConvergenceTests`, `OpenLotPostgresTests`, and `AtomicTaxLotJournalStoreTests`.
 
 `V_ledger_035__open_lot_backfill.sql` adds immutable source bytes, independent reviews, application receipts, and unresolved lot exceptions. `IOpenLotBackfillStore` surveys a book, retains hashed acquisition facts, checks Security Master and book-position ownership, and applies approved evidence with optimistic versions and idempotency. Only the atomic application receipt can resolve its exception. Existing acquisition facts cannot be replaced through backfill.
 
 Durable disposal now uses the canonical decimal relief guard. Missing identity, quantity basis, or acquisition FX blocks relief and authoritative reporting until repaired. Reporting carries canonical lot evidence alongside retained disposal history; current market FX never substitutes for acquisition FX. Durable AverageCost posting remains refused until remaining-lot basis redistribution has its own atomic proof.
+
+### Reviewed fund tenant backfill
+
+`PostgresFundStructureTenantBackfillStore` locks retained ledger ownership evidence and the fund
+graph in a stable order, then commits reviewed tenant stamps, quarantine, and an immutable receipt
+together. Legacy Account nodes inferred from retained links/assignments are included in preview
+and materialized only with an attributable stamp in that same transaction. Entity kinds match
+ledger-book contracts. Retry reads a committed receipt directly before connecting to source
+ledger storage or taking mutation locks, then rechecks after locks to handle concurrent attempts.
+Explicit unscoped tenant sentinels cannot become ownership seeds. Migration 005 creates receipt
+storage and protection; no tenant attribution is performed by a migration or by startup.
 
 ## Purpose
 
@@ -636,3 +653,27 @@ Route durable writes through WAL or atomic file helpers. Avoid direct unguarded 
 - `docs/operators/governed-reporting-operations.md`
 - `docs/operators/statement-reconciliation-report-operations.md`
 - `docs/source/generated/source-roadmap-traceability.md`
+
+### Dated Security Master prices
+
+Migration 034 retains raw price observations by security/source/effective timestamp and adds
+versioned pricing-hierarchy history. Exact observation/version retries are accepted; changed
+payloads at the same identity are refused. Queries apply both effective-date and recorded-date
+cutoffs, preserving late-arrival history. Existing raw observations retain an Unspecified quote
+unit; no missing historical prices or units are invented. Legacy hierarchy knowledge begins at
+migration, and the prior current hierarchy is retained transactionally when an operator changes it.
+
+Migration 034 requires schema/storage and release-operations review of its narrowly scoped
+primary-key replacement waiver. Drain old pricing writers before applying it: their two-column
+`ON CONFLICT` target is incompatible with the new three-column history key. The migration runner
+holds the schema advisory lock and commits all DDL plus its checksum receipt in one transaction;
+a failed replacement leaves the prior primary key and rows intact. Re-running startup skips an
+already applied matching checksum. After multiple dates exist per source, use a forward fix;
+never delete retained observations to make the old key fit. A reverse migration requires separate
+human review and an explicit plan preserving all history.
+
+Legacy raw prices already have non-null `recorded_at` from migration 022. The previous writer
+updated that timestamp when accepting its latest observation, so migration 034 preserves the
+retained observation's available arrival evidence unchanged. It cannot recover observations the
+previous overwrite model discarded. Legacy hierarchies had no recorded timestamp; their first
+known time is the migration timestamp, and earlier knowledge queries correctly return no version.

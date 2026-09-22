@@ -1,6 +1,8 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
+using Meridian.Application.DirectLending;
+using Meridian.Contracts.Tenancy;
 using Meridian.Core.Config;
 using Meridian.Storage;
 using Meridian.Testing;
@@ -75,9 +77,45 @@ public sealed class ProcessWideHostedServiceRegistrationTests
         }
     }
 
+    [Fact]
+    public async Task AddMarketDataServices_FailClosedPosture_WithholdsUnattributedDirectLendingWorkers()
+    {
+        using var environment = CompositionRegistrationTestEnvironment.Enable();
+        environment.Set(TenantScopeEnforcementOptions.EnvironmentVariable, "fail-closed");
+        using var artifacts = TestArtifactDirectory.Create(nameof(ProcessWideHostedServiceRegistrationTests));
+
+        var hostedServices = await ResolveHostedServiceNamesAsync(
+            WriteConfig(artifacts.RootPath),
+            enableProcessWideHostedServices: true);
+
+        hostedServices.Should().NotContain("DirectLendingOutboxDispatcher");
+        hostedServices.Should().NotContain("DailyAccrualWorker");
+        hostedServices.Should().Contain(
+            "ProjectionReconciliationHostedService",
+            "strict tenancy should withhold only workers that lack per-unit tenant attribution");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AddMarketDataServices_LateStrictOverride_WithholdsWorkers(bool useFactory)
+    {
+        using var environment = CompositionRegistrationTestEnvironment.Enable();
+        using var artifacts = TestArtifactDirectory.Create(nameof(ProcessWideHostedServiceRegistrationTests));
+        var workers = await ResolveHostedServiceNamesAsync(WriteConfig(artifacts.RootPath), true, services =>
+        {
+            if (useFactory) services.AddSingleton(_ => TenantScopeEnforcementOptions.FailClosed);
+            else services.AddSingleton(TenantScopeEnforcementOptions.FailClosed);
+        });
+        workers.Should().NotContain("DailyAccrualWorker");
+        workers.Should().NotContain("DirectLendingOutboxDispatcher");
+        workers.Should().Contain("ProjectionReconciliationHostedService");
+    }
+
     private static async Task<HashSet<string>> ResolveHostedServiceNamesAsync(
         string configPath,
-        bool enableProcessWideHostedServices)
+        bool enableProcessWideHostedServices,
+        Action<IServiceCollection>? configureLast = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -88,13 +126,20 @@ public sealed class ProcessWideHostedServiceRegistrationTests
                 EnableProcessWideHostedServices = enableProcessWideHostedServices
             });
 
+        configureLast?.Invoke(services);
         await using var provider = services.BuildServiceProvider();
 
         // Resolve registrations to expose factory-backed hosted-service types (Polygon and the
         // coordinator), but deliberately never start an IHost or call any worker's StartAsync.
         return provider
             .GetServices<IHostedService>()
-            .Select(service => service.GetType().Name)
+            .Select(service => service switch
+            {
+                TenantPostureHostedService<DailyAccrualWorker> gate => gate.ActiveWorkerType?.Name,
+                TenantPostureHostedService<DirectLendingOutboxDispatcher> gate => gate.ActiveWorkerType?.Name,
+                _ => service.GetType().Name
+            })
+            .OfType<string>()
             .ToHashSet(StringComparer.Ordinal);
     }
 
@@ -130,6 +175,7 @@ public sealed class ProcessWideHostedServiceRegistrationTests
             "MERIDIAN_MODE",
             "MERIDIAN_API_DEPLOYMENT_MODE",
             "MERIDIAN_USE_INMEMORY_GOVERNANCE",
+            TenantScopeEnforcementOptions.EnvironmentVariable,
             MeridianDatabaseEnvironment.UnifiedVariable,
             .. MeridianDatabaseEnvironment.PropagatedConnectionStringVariables,
             ScopedAccessConnectionStringVariable,
@@ -173,6 +219,12 @@ public sealed class ProcessWideHostedServiceRegistrationTests
         }
 
         public static CompositionRegistrationTestEnvironment Enable() => new();
+
+        public CompositionRegistrationTestEnvironment Set(string name, string? value)
+        {
+            Environment.SetEnvironmentVariable(name, value);
+            return this;
+        }
 
         public void Dispose()
         {

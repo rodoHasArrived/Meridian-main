@@ -5,6 +5,7 @@
 import { useState, type ThHTMLAttributes } from "react";
 import type { AriaAttributes, KeyboardEvent } from "react";
 import { AmountCell } from "./AmountCell";
+import { EvidenceAmount, type AmountEvidenceSubject } from "./EvidenceAmount";
 import { toNumber } from "./money";
 
 export interface LedgerRow {
@@ -21,6 +22,8 @@ export interface LedgerRow {
   credit?: number | string;
   /** Explicit running balance. Omit to auto-compute from `opening` + normal-side deltas. */
   balance?: number | string;
+  /** Exact retained entry subject; no source is inferred from the amount. */
+  evidenceSubject?: AmountEvidenceSubject | null;
 }
 
 export interface LedgerTableProps {
@@ -204,10 +207,14 @@ export function LedgerTable({
               {showAccount && <td className="ldg__acct">{r.account}</td>}
               <td className="ldg__memo">{r.memo}</td>
               <td className="ldg--r">
-                <AmountCell value={r.debit ?? ""} currency={currency} zeroDash />
+                {r.evidenceSubject !== undefined
+                  ? <EvidenceAmount value={r.debit ?? ""} currency={currency} zeroDash subject={r.evidenceSubject} />
+                  : <AmountCell value={r.debit ?? ""} currency={currency} zeroDash />}
               </td>
               <td className="ldg--r">
-                <AmountCell value={r.credit ?? ""} currency={currency} zeroDash />
+                {r.evidenceSubject !== undefined
+                  ? <EvidenceAmount value={r.credit ?? ""} currency={currency} zeroDash subject={r.evidenceSubject} />
+                  : <AmountCell value={r.credit ?? ""} currency={currency} zeroDash />}
               </td>
               <td className="ldg--r">
                 {r._hasBal ? (

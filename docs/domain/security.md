@@ -33,3 +33,14 @@ A Security represents a financial instrument, investable asset, or fund interest
 ## Future Expansion Notes
 
 Future additions should support richer issuer hierarchies, multi-identifier matching, corporate actions, expected cash-flow models, private-asset attributes, and fund-interest look-through behavior without coupling provider ingestion directly to accounting records.
+
+## Price and projected-cash-flow evidence
+
+A raw price observation has security, source, effective timestamp, recorded timestamp and explicit
+quote units. Golden-copy selection uses both economic and knowledge cutoffs with a retained
+hierarchy version. An untyped legacy quote or an assumed class-level par value is insufficient
+valuation evidence.
+
+An absent coupon or fixing is unresolved economics, distinct from contractual zero. A normalized
+per-100 schedule is analysis only until actual principal/notional is retained. Bills and discount
+commercial paper pay principal rather than coupon interest; carrying-value accretion is separate.

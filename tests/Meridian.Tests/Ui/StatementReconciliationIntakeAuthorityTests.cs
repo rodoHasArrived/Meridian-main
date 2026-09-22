@@ -8,6 +8,7 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.PortfolioRecords.Accounts;
+using Meridian.Infrastructure.Reconciliation;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Evidence;
@@ -85,6 +86,9 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         queueItem.LedgerBookId.Should().Be(LedgerBookId);
         queueItem.AccountingPeriodId.Should().Be(AccountingPeriodId.ToString("D"));
         queueItem.AsOfDate.Should().Be(PeriodEnd);
+        queueItem.Lineage.Should().NotBeNull();
+        queueItem.Lineage!.ObservationState.Should().Be("New");
+        queueItem.Lineage.LastObservedRunId.Should().Be(StatementRunId);
         queueItem.BlockedOutputs.Should().BeEquivalentTo(
             ["FinalReport", "PeriodClose", "ClientDelivery"]);
 
@@ -142,6 +146,32 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
                 It.IsAny<CancellationToken>()),
             Times.Exactly(2),
             "the exact accounting period is resolved before retention and revalidated before publication");
+    }
+
+    [Fact]
+    public async Task PublishAsync_OlderSuccessfulRunAfterNewerComparison_RetainsCaseworkWithoutFailingOrClearing()
+    {
+        var harness = CreateHarness([Book(LedgerBookId)],
+            [Period(AccountingPeriodId, LedgerBookId, LedgerPeriodStatusDto.Open)]);
+        var imported = StatementRun();
+        var artifact = new StatementRunMatchArtifact(StatementRunId, StatementRunId,
+            imported.Breaks, imported.Cases, 0)
+        { SourceComparisonComplete = true, SourceComparisonPolicyFingerprint = new string('a', 64),
+            SourceComparisonPopulationKinds = ["cash"] };
+        var source = StatementReconciliationIntakeAuthority.ComparisonSourceIdentity(imported.Import, artifact, SourceInstitution);
+        var scope = new ReconciliationRunObservationScope(TenantId, CompanyId, FundProfileId.ToString("D"),
+            FundAccountId.ToString("D"), LedgerBookId, AccountingPeriodId.ToString("D"), source, ExternalAccountId);
+        await harness.Queue.ObserveCompletedRunAsync(new ReconciliationCompletedRunObservation(
+            "newer-run", scope, ObservedAt.AddMinutes(1), true, true, []));
+
+        var first = await harness.Workflow.StartAsync(Command());
+        first.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        var olderCase = (await harness.Queue.GetAllAsync()).Should().ContainSingle().Which;
+        olderCase.Lineage.Should().BeNull("older publication cannot replace the retained newer comparison head");
+        olderCase.BlockedOutputs.Should().Contain("PeriodClose");
+        await harness.Authority.PublishAsync(first.Workflow.WorkflowId, ImportResult(), imported.Import.AccountingScope!,
+            TenantId, CompanyId, "statement-operations", SourceInstitution, []);
+        (await harness.Queue.GetAllAsync()).Should().ContainSingle();
     }
 
     [Fact]
@@ -374,6 +404,17 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         var queue = new FileReconciliationBreakQueueRepository(
             Path.Combine(dataRoot, "reconciliation-casework"),
             NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var canonical = new Mock<ICanonicalStatementStore>(MockBehavior.Strict);
+        canonical.Setup(store => store.GetImportAsync(StatementRunId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BrokerStatementImportResult(statementRun.Import,
+                [new CanonicalStatementRow(StatementRunId, 1, ExternalAccountId, "", 0m, 0m, 125000m,
+                    "cash", PeriodEnd, "retained-source-row")]));
+        var matches = new Mock<IStatementRunMatchArtifactStore>(MockBehavior.Strict);
+        matches.Setup(store => store.GetAsync(StatementRunId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new StatementRunMatchArtifact(StatementRunId, StatementRunId,
+                statementRun.Breaks, statementRun.Cases, 0)
+            { SourceComparisonComplete = true, SourceComparisonPolicyFingerprint = new string('a', 64),
+                SourceComparisonPopulationKinds = ["cash"] });
         var authority = new StatementReconciliationIntakeAuthority(
             accounts.Object,
             tenancy.Object,
@@ -381,7 +422,9 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
             operations,
             statementRuns.Object,
             reconciliation.Object,
-            queue);
+            queue,
+            canonical.Object,
+            matches.Object);
         var imports = new RecordingStatementImportService(importResult);
         var workflow = new StatementReconciliationReportWorkflowService(
             imports,
@@ -531,7 +574,7 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
             SourceBreakId,
             StatementRunId,
             StatementRunId,
-            $"{StatementRunId}:row-1",
+            $"{StatementRunId}:1",
             "CASH_BALANCE_MISMATCH",
             "cash",
             Delta: 500m,
@@ -557,7 +600,7 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
             StatementBreakType.CashBalanceMismatch,
             StatementValidationSeverity.Error,
             MatchTier: null,
-            StatementReference: $"{StatementRunId}:row-1",
+            StatementReference: $"{StatementRunId}:1",
             Description: "Custodian cash exceeds the retained book balance.",
             StatementAmount: 125_000m,
             BookAmount: 124_500m,

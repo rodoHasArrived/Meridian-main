@@ -11,6 +11,11 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Contracts
 
+Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
+first/last observation and successful-run clearing evidence. This metadata is omitted when absent
+so legacy integrity-checked snapshots keep their serialized shape. Source clearing is distinct from
+governed disposition, sign-off and close readiness.
+
 Ledger commands add optional `AccountingPostingCommandDto.Actor` and
 `CreateLedgerPeriodRequest.CreatedBy`. Public command boundaries stamp authenticated identities;
 callers cannot use these fields to replace that identity. Absent values stay explicitly unattributed
@@ -1507,3 +1512,17 @@ contract shape, blocker vocabulary, or route-visible payloads change.
 - `docs/status/contract-compatibility-matrix.md`
 - `docs/architecture/module-map.md`
 - `docs/source/generated/source-module-index.md`
+
+### Security Master economics and pricing evidence
+
+Calculated cash-flow projections retain `BlockedReason` and `IsNormalizedPer100`: missing coupon
+terms and unresolved floating fixings never mean zero, and normalized analytical schedules cannot
+drive ledger postings without retained principal/notional. Discount rates on Treasury bills and
+commercial paper are not coupon payments. Classes with no implemented calculated schedule require
+provider evidence. Asset-pack template bindings use exact mappings with declared Fee, Amortization,
+and MarginSettlement lifecycle coverage.
+
+Security Master prices declare CurrencyPerUnit or PercentOfPar. Legacy Unspecified observations
+remain readable but cannot support a golden copy. Selections retain economic, hierarchy and
+knowledge timestamps; callers replay both `asOf` and `knownAt` to reproduce the same eligible
+observations. Mixed quote units have no percentage comparison.

@@ -39,32 +39,16 @@ public sealed class SecurityMasterPricingServiceTests
         result.Should().BeNull();
     }
 
-    [Fact]
-    public async Task GetGoldenCopyPriceAsync_ReturnsCalculatedPar_ForRepoAssetClass()
+    [Theory]
+    [InlineData("Repo")]
+    [InlineData("MoneyMarketFund")]
+    [InlineData("CommercialPaper")]
+    [InlineData("CertificateOfDeposit")]
+    public async Task GetGoldenCopyPriceAsync_DoesNotInventCalculatedPrices(string assetClass)
     {
-        var (sut, _, queryService) = BuildSut();
-        queryService.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity("Repo"));
-
-        var result = await sut.GetGoldenCopyPriceAsync(SecurityId, null);
-
-        result.Should().NotBeNull();
-        result!.PriceKind.Should().Be(SecurityPriceKind.CalculatedPar);
-        result.GoldenCopyPrice.Should().Be(100m);
-        result.SelectedSource.Should().Be("calculated");
-    }
-
-    [Fact]
-    public async Task GetGoldenCopyPriceAsync_ReturnsCalculatedPar_ForMoneyMarketFund()
-    {
-        var (sut, _, queryService) = BuildSut();
-        queryService.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>())
-            .Returns(BuildSecurity("MoneyMarketFund"));
-
-        var result = await sut.GetGoldenCopyPriceAsync(SecurityId, null);
-
-        result!.GoldenCopyPrice.Should().Be(1m);
-        result.PriceKind.Should().Be(SecurityPriceKind.CalculatedPar);
+        var (sut, _, query) = BuildSut();
+        query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(BuildSecurity(assetClass));
+        (await sut.GetGoldenCopyPriceAsync(SecurityId, null)).Should().BeNull();
     }
 
     [Fact]
@@ -82,14 +66,14 @@ public sealed class SecurityMasterPricingServiceTests
             ],
             DateTimeOffset.UtcNow, "operator");
 
-        store.GetHierarchyAsync(SecurityId, null, Arg.Any<CancellationToken>())
+        store.GetHierarchyAsOfAsync(SecurityId, null, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
             .Returns(hierarchy);
 
-        store.GetRawPricesAsync(SecurityId, Arg.Any<CancellationToken>())
-            .Returns(new List<(string, decimal, DateTimeOffset)>
+        store.GetRawPricesAsync(SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
+            .Returns(new List<SecurityRawPriceDto>
             {
-                ("refinitiv", 150.25m, DateTimeOffset.UtcNow.AddHours(-2)),
-                ("bloomberg", 150.20m, DateTimeOffset.UtcNow.AddHours(-4))
+                new("refinitiv", 150.25m, DateTimeOffset.UtcNow.AddHours(-2), SecurityPriceUnit.CurrencyPerUnit),
+                new("bloomberg", 150.20m, DateTimeOffset.UtcNow.AddHours(-4), SecurityPriceUnit.CurrencyPerUnit)
             });
 
         var result = await sut.GetGoldenCopyPriceAsync(SecurityId, null);
@@ -114,13 +98,13 @@ public sealed class SecurityMasterPricingServiceTests
             [new PricingHierarchyEntryDto(1, "refinitiv", "LSEG/Refinitiv", MaxDaysStale: 1)],
             DateTimeOffset.UtcNow, "operator");
 
-        store.GetHierarchyAsync(SecurityId, null, Arg.Any<CancellationToken>())
+        store.GetHierarchyAsOfAsync(SecurityId, null, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
             .Returns(hierarchy);
 
-        store.GetRawPricesAsync(SecurityId, Arg.Any<CancellationToken>())
-            .Returns(new List<(string, decimal, DateTimeOffset)>
+        store.GetRawPricesAsync(SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
+            .Returns(new List<SecurityRawPriceDto>
             {
-                ("refinitiv", 99.50m, DateTimeOffset.UtcNow.AddDays(-5))  // 5 days old > MaxDaysStale=1
+                new("refinitiv", 99.50m, DateTimeOffset.UtcNow.AddDays(-5), SecurityPriceUnit.CurrencyPerUnit)  // 5 days old > MaxDaysStale=1
             });
 
         var result = await sut.GetGoldenCopyPriceAsync(SecurityId, null);
@@ -137,12 +121,65 @@ public sealed class SecurityMasterPricingServiceTests
         queryService.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>())
             .Returns(BuildSecurity("Bond"));
 
-        store.GetHierarchyAsync(SecurityId, null, Arg.Any<CancellationToken>())
+        store.GetHierarchyAsOfAsync(SecurityId, null, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
             .Returns((SecurityPricingHierarchyDto?)null);
 
         var result = await sut.GetGoldenCopyPriceAsync(SecurityId, null);
 
         result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task HistoricalSelection_UsesCutoffHierarchyAndLatestEligibleObservation_WithComparableUnitsOnly()
+    {
+        var asOf = new DateTimeOffset(2026, 6, 30, 23, 59, 0, TimeSpan.Zero);
+        var (sut, store, query) = BuildSut();
+        query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(BuildSecurity("Repo"));
+        store.GetHierarchyAsOfAsync(SecurityId, null, asOf, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
+            .Returns(new SecurityPricingHierarchyDto(SecurityId, null,
+                [new(1, "market", "Market", 3)], asOf.AddDays(-10), "operator"));
+        store.GetRawPricesAsync(SecurityId, asOf, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
+            .Returns(new SecurityRawPriceDto[] {
+                new("market", 97m, asOf.AddDays(-2), SecurityPriceUnit.PercentOfPar),
+                new("market", 98m, asOf.AddDays(-1), SecurityPriceUnit.PercentOfPar),
+                new("market", 105m, asOf.AddDays(1), SecurityPriceUnit.PercentOfPar),
+                new("comparison", 99m, asOf.AddDays(-1), SecurityPriceUnit.PercentOfPar),
+                new("currency", 980m, asOf.AddDays(-1), SecurityPriceUnit.CurrencyPerUnit),
+                new("legacy", 100m, asOf.AddDays(-1), SecurityPriceUnit.Unspecified)
+            });
+        var result = await sut.GetGoldenCopyPriceAsOfAsync(SecurityId, null, asOf);
+        result!.GoldenCopyPrice.Should().Be(98m);
+        result.Unit.Should().Be(SecurityPriceUnit.PercentOfPar);
+        result.EvaluatedAsOf.Should().Be(asOf);
+        result.HierarchyAsOf.Should().Be(asOf.AddDays(-10));
+        result.ComparisonPrices.Single(p => p.SourceId == "comparison").PctDiffFromGoldenCopy.Should().Be(1.0204m);
+        result.ComparisonPrices.Where(p => p.SourceId != "comparison").Should().OnlyContain(p => p.PctDiffFromGoldenCopy == null);
+    }
+
+    [Fact]
+    public async Task MissingUnit_CannotSupportGoldenCopyOrNewObservation()
+    {
+        var (sut, store, query) = BuildSut();
+        var asOf = DateTimeOffset.UtcNow;
+        query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(BuildSecurity("Bond"));
+        store.GetHierarchyAsOfAsync(SecurityId, null, asOf, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
+            .Returns(new SecurityPricingHierarchyDto(SecurityId, null, [new(1, "legacy", "Legacy", 3)], asOf, "operator"));
+        store.GetRawPricesAsync(SecurityId, asOf, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
+            .Returns(new SecurityRawPriceDto[] { new("legacy", 100m, asOf, SecurityPriceUnit.Unspecified) });
+        (await sut.GetGoldenCopyPriceAsOfAsync(SecurityId, null, asOf)).Should().BeNull();
+        await sut.Invoking(s => s.RecordRawPriceAsync(new(SecurityId, "legacy", 100m, asOf, "operator")))
+            .Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task FutureHierarchy_CannotRewriteHistoricalSelection()
+    {
+        var (sut, store, query) = BuildSut();
+        var asOf = DateTimeOffset.UtcNow;
+        query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(BuildSecurity("Bond"));
+        store.GetHierarchyAsOfAsync(SecurityId, null, asOf, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
+            .Returns(new SecurityPricingHierarchyDto(SecurityId, null, [new(1, "market", "Market", 3)], asOf.AddDays(1), "operator"));
+        (await sut.GetGoldenCopyPriceAsOfAsync(SecurityId, null, asOf)).Should().BeNull();
     }
 
     private static SecurityDetailDto BuildSecurity(string assetClass)

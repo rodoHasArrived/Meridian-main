@@ -18,6 +18,13 @@ public enum SecurityPriceKind
     CalculatedStraightLine
 }
 
+/// <summary>Quote basis; unspecified legacy observations cannot support valuation.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<SecurityPriceUnit>))]
+public enum SecurityPriceUnit { Unspecified, CurrencyPerUnit, PercentOfPar }
+
+/// <summary>A dated source observation retained without overwriting earlier prices.</summary>
+public sealed record SecurityRawPriceDto(string SourceId, decimal Price, DateTimeOffset PriceAsOf, SecurityPriceUnit Unit);
+
 /// <summary>
 /// One entry in a per-security pricing source priority chain.
 /// </summary>
@@ -44,7 +51,8 @@ public sealed record SecurityComparisonPriceDto(
     string SourceId,
     decimal Price,
     DateTimeOffset PriceAsOf,
-    decimal? PctDiffFromGoldenCopy);
+    decimal? PctDiffFromGoldenCopy,
+    SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified);
 
 /// <summary>
 /// The selected golden copy price for a security with staleness metadata and comparison array.
@@ -57,7 +65,11 @@ public sealed record SecurityPriceGoldenCopyDto(
     DateTimeOffset PriceAsOf,
     bool IsStaleFallback,
     int? DaysStale,
-    IReadOnlyList<SecurityComparisonPriceDto> ComparisonPrices);
+    IReadOnlyList<SecurityComparisonPriceDto> ComparisonPrices,
+    SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified,
+    DateTimeOffset? EvaluatedAsOf = null,
+    DateTimeOffset? HierarchyAsOf = null,
+    DateTimeOffset? KnowledgeAsOf = null);
 
 /// <summary>
 /// Request to record a raw price from a single source for golden copy evaluation.
@@ -67,4 +79,5 @@ public sealed record RecordRawPriceRequest(
     string SourceId,
     decimal Price,
     DateTimeOffset PriceAsOf,
-    string RecordedBy);
+    string RecordedBy,
+    SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified);

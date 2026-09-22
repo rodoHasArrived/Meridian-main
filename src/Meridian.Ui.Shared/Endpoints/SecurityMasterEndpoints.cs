@@ -1330,10 +1330,21 @@ public static partial class SecurityMasterEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
                 return Results.Unauthorized();
 
-            await pricingService
-                .UpsertPricingHierarchyAsync(request with { UpdatedBy = actor }, ct)
-                .ConfigureAwait(false);
-            return Results.NoContent();
+            try
+            {
+                await pricingService
+                    .UpsertPricingHierarchyAsync(request with { UpdatedBy = actor }, ct)
+                    .ConfigureAwait(false);
+                return Results.NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
         })
         .WithName("UpsertSecurityMasterPricingHierarchy")
         .Accepts<SecurityPricingHierarchyDto>("application/json")
@@ -1360,10 +1371,21 @@ public static partial class SecurityMasterEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
                 return Results.Unauthorized();
 
-            await pricingService
-                .RecordRawPriceAsync(request with { RecordedBy = actor }, ct)
-                .ConfigureAwait(false);
-            return Results.NoContent();
+            try
+            {
+                await pricingService
+                    .RecordRawPriceAsync(request with { RecordedBy = actor }, ct)
+                    .ConfigureAwait(false);
+                return Results.NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
         })
         .WithName("RecordSecurityMasterRawPrice")
         .Accepts<RecordRawPriceRequest>("application/json")
@@ -1377,11 +1399,14 @@ public static partial class SecurityMasterEndpoints
         group.MapGet(UiApiRoutes.SecurityMasterPriceGoldenCopy, async (
             Guid securityId,
             string? accountId,
+            DateTimeOffset? asOf,
+            DateTimeOffset? knownAt,
             [FromServices] ISecurityMasterPricingService pricingService,
             CancellationToken ct) =>
         {
-            var golden = await pricingService
-                .GetGoldenCopyPriceAsync(securityId, accountId, ct).ConfigureAwait(false);
+            var golden = asOf is { } cutoff
+                ? await pricingService.GetGoldenCopyPriceAsOfAsync(securityId, accountId, cutoff, ct, knownAt).ConfigureAwait(false)
+                : await pricingService.GetGoldenCopyPriceAsOfAsync(securityId, accountId, DateTimeOffset.UtcNow, ct, knownAt).ConfigureAwait(false);
             return golden is null ? Results.NotFound() : Results.Json(golden, jsonOptions);
         })
         .WithName("GetSecurityMasterPriceGoldenCopy")
