@@ -59,7 +59,7 @@ Use the simplified symbol for favicons and thumbnails:
 
 ### Colors
 - **Primary Neutral**: `hsl(var(--foreground))`
-- **Accent Cyan**: `var(--cyan-primary)`
+- **Accent Copper**: `var(--cyan-primary)` (legacy token name; the accent is copper)
 - **Data Green**: `var(--state-healthy-fg)`
 - **Dark Background**: `hsl(var(--background))`
 

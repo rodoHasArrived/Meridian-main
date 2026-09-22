@@ -347,6 +347,25 @@
     --chart-bench: #7E7A72;
     --chart-band: color-mix(in srgb, var(--ws-accent) 10%, transparent);
     --chart-crosshair: #6B655C;
+    /* Overlay channels the historical chart reads: comparison symbols, moving averages,
+       Bollinger envelope and RSI. They were referenced and never declared, so every
+       overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
+       /pink — no matter what this block said. The seven series are the palette; the
+       named channels alias them, so an overlay follows the mode with everything else. */
+    --chart-series-1: #3A7A56;
+    --chart-series-2: #A85436;
+    --chart-series-3: #7C5CBF;
+    --chart-series-4: #B08A2E;
+    --chart-series-5: #A8443C;
+    --chart-series-6: #8A5C12;
+    --chart-series-7: #5E666F;
+    --chart-compare-1: var(--chart-series-2);
+    --chart-compare-2: var(--chart-series-4);
+    --chart-compare-3: var(--chart-series-1);
+    --chart-sma-20: var(--chart-ma20);
+    --chart-sma-50: var(--chart-ma50);
+    --chart-bollinger: var(--chart-bench);
+    --chart-rsi: var(--chart-series-3);
     --chart-dd: color-mix(in srgb, var(--red) 22%, transparent);
 
     /* ─── Elevation — flat by mandate. Panels/cards carry no shadow; only
@@ -464,6 +483,25 @@
       --chart-ma50: #C29A4A;
       --chart-bench: #8C857A;
       --chart-crosshair: #9A9289;
+      /* Overlay channels the historical chart reads: comparison symbols, moving averages,
+         Bollinger envelope and RSI. They were referenced and never declared, so every
+         overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
+         /pink — no matter what this block said. The seven series are the palette; the
+         named channels alias them, so an overlay follows the mode with everything else. */
+      --chart-series-1: #5FA37C;
+      --chart-series-2: #D98A64;
+      --chart-series-3: #9089B5;
+      --chart-series-4: #C29A4A;
+      --chart-series-5: #CE7068;
+      --chart-series-6: #B8923F;
+      --chart-series-7: #8C857A;
+      --chart-compare-1: var(--chart-series-2);
+      --chart-compare-2: var(--chart-series-4);
+      --chart-compare-3: var(--chart-series-1);
+      --chart-sma-20: var(--chart-ma20);
+      --chart-sma-50: var(--chart-ma50);
+      --chart-bollinger: var(--chart-bench);
+      --chart-rsi: var(--chart-series-3);
     }
   }
 
@@ -562,6 +600,25 @@
     --chart-ma50: #C29A4A;
     --chart-bench: #8C857A;
     --chart-crosshair: #9A9289;
+    /* Overlay channels the historical chart reads: comparison symbols, moving averages,
+       Bollinger envelope and RSI. They were referenced and never declared, so every
+       overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
+       /pink — no matter what this block said. The seven series are the palette; the
+       named channels alias them, so an overlay follows the mode with everything else. */
+    --chart-series-1: #5FA37C;
+    --chart-series-2: #D98A64;
+    --chart-series-3: #9089B5;
+    --chart-series-4: #C29A4A;
+    --chart-series-5: #CE7068;
+    --chart-series-6: #B8923F;
+    --chart-series-7: #8C857A;
+    --chart-compare-1: var(--chart-series-2);
+    --chart-compare-2: var(--chart-series-4);
+    --chart-compare-3: var(--chart-series-1);
+    --chart-sma-20: var(--chart-ma20);
+    --chart-sma-50: var(--chart-ma50);
+    --chart-bollinger: var(--chart-bench);
+    --chart-rsi: var(--chart-series-3);
   }
 
   /* ─── Forced-light opt-out ──────────────────────────────────────────────────
@@ -663,6 +720,25 @@
     --chart-ma50: #8A5C12;
     --chart-bench: #7E7A72;
     --chart-crosshair: #6B655C;
+    /* Overlay channels the historical chart reads: comparison symbols, moving averages,
+       Bollinger envelope and RSI. They were referenced and never declared, so every
+       overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
+       /pink — no matter what this block said. The seven series are the palette; the
+       named channels alias them, so an overlay follows the mode with everything else. */
+    --chart-series-1: #3A7A56;
+    --chart-series-2: #A85436;
+    --chart-series-3: #7C5CBF;
+    --chart-series-4: #B08A2E;
+    --chart-series-5: #A8443C;
+    --chart-series-6: #8A5C12;
+    --chart-series-7: #5E666F;
+    --chart-compare-1: var(--chart-series-2);
+    --chart-compare-2: var(--chart-series-4);
+    --chart-compare-3: var(--chart-series-1);
+    --chart-sma-20: var(--chart-ma20);
+    --chart-sma-50: var(--chart-ma50);
+    --chart-bollinger: var(--chart-bench);
+    --chart-rsi: var(--chart-series-3);
   }
 
   * {

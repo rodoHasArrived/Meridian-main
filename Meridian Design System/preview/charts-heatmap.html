@@ -8,12 +8,12 @@
 <link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
-  .card { background: #0B1520; border: 1px solid #477089; border-radius: 8px; padding: 16px; }
-  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #477089; }
-  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #A8B5C4; }
+  .card { background: #201D19; border: 1px solid #736B60; border-radius: 8px; padding: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #736B60; }
+  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #B5AEA4; }
   .title b { color: #FFF; margin-right: 10px; }
-  .scale { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; }
-  .scale .bar { display: inline-block; width: 140px; height: 6px; background: linear-gradient(90deg, #DE5878 0%, #1F344C 50%, #26BF86 100%); border-radius: 1px; }
+  .scale { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: #B5AEA4; }
+  .scale .bar { display: inline-block; width: 140px; height: 6px; background: linear-gradient(90deg, #CE7068 0%, #4A443C 50%, #5FA37C 100%); border-radius: 1px; }
   .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
   .cell { aspect-ratio: 1.6 / 1; border-radius: 3px; display: flex; flex-direction: column; justify-content: space-between; padding: 6px 7px; font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; color: #FFF; }
   .cell .s { font-size: 10px; font-weight: 500; }
@@ -48,12 +48,12 @@
     let bg, fg = "#FFF";
     if (clamp >= 0) {
       const t = clamp;
-      bg = `rgba(38, 191, 134, ${0.15 + t*0.7})`;
+      bg = `rgba(95, 163, 124, ${0.15 + t*0.7})`;
     } else {
       const t = -clamp;
-      bg = `rgba(222, 88, 120, ${0.15 + t*0.7})`;
+      bg = `rgba(206, 112, 104, ${0.15 + t*0.7})`;
     }
-    if (Math.abs(clamp) < 0.1) bg = "#1F344C";
+    if (Math.abs(clamp) < 0.1) bg = "#4A443C";
     const cell = document.createElement('div');
     cell.className = 'cell';
     cell.style.background = bg;

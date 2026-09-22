@@ -70,6 +70,8 @@
     --statusbar-border:   #2B2721;
 
     --scrim:              rgba(0, 0, 0, 0.62);  /* stronger over already-dark content */
+
+    --chart-crosshair:    #9A9289;  /* warm neutral hairline, as in the workstation */
   }
 }
 
@@ -115,6 +117,8 @@
   --statusbar-border:   #2B2721;
 
   --scrim:              rgba(0, 0, 0, 0.62);  /* stronger over already-dark content */
+
+  --chart-crosshair:    #9A9289;  /* warm neutral hairline, as in the workstation */
 }
 
 /* ── 3. Forced light — opt out of OS dark by re-asserting the light base values

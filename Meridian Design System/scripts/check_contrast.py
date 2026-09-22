@@ -452,7 +452,13 @@ def check_var_chains(root: Path) -> list[str]:
 DOC_HEX = re.compile(r"#[0-9A-Fa-f]{6}\b")
 # The steel brand block IS the superseded identity, kept deliberately as `data-brand="steel"`.
 STEEL_BLOCK = re.compile(r'html\[data-brand="steel"\]\s*\{(.*?)\n\}', re.S)
-EXTRA_SUPERSEDED = {"#2AB2D4", "#08101A", "#06F3FF", "#C06B4A"}
+EXTRA_SUPERSEDED = {
+    "#2AB2D4", "#08101A", "#06F3FF", "#C06B4A",
+    # The pre-restyle chart overlay palette. The steel block holds the superseded
+    # *UI* colours only, so these were invisible to the scan that is meant to find
+    # exactly this: a live surface still rendering the old identity.
+    "#7C5CFF", "#F5A524", "#14B8A6", "#38BDF8", "#EC4899",
+}
 
 
 def superseded_values(root: Path) -> set[str]:
@@ -562,10 +568,6 @@ def token_colours(value: str, tokens: dict[str, str]) -> list[tuple[float, float
 # design decision, not a restyle.
 KNOWN_UNDECLARED = frozenset({
     "--accent-pressed", "--amber-a10", "--bg-panel", "--bg-subtle", "--panel", "--shadow-raised",
-    "--chart-benchmark", "--chart-bollinger", "--chart-rsi", "--chart-sma-20", "--chart-sma-50",
-    "--chart-compare-1", "--chart-compare-2", "--chart-compare-3",
-    "--chart-series-1", "--chart-series-2", "--chart-series-3", "--chart-series-4",
-    "--chart-series-5", "--chart-series-6", "--chart-series-7",
     "--state-danger", "--state-positive", "--state-warning",
 })
 
@@ -588,13 +590,21 @@ def check_fallbacks(root: Path) -> list[str]:
     # authoritative here; colors-dark.css must never win. The remaining sheets only widen the
     # set of names the package declares (elevation, typography, motion), which is what lets a
     # composite like `var(--focus-ring, 2px solid #…)` be checked at all.
-    tokens = {**parse_tokens((root / "tokens" / "theme.css").read_text(encoding="utf-8")),
-              **parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))}
+    package_tokens = {**parse_tokens((root / "tokens" / "theme.css").read_text(encoding="utf-8")),
+                      **parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))}
     for sheet in sorted((root / "tokens").glob("*.css")):
         if sheet.name in ("colors.css", "colors-dark.css", "theme.css"):
             continue
         for name, value in parse_tokens(sheet.read_text(encoding="utf-8")).items():
-            tokens.setdefault(name, value)
+            package_tokens.setdefault(name, value)
+    # The workstation is its own track and declares tokens the package never will (the chart
+    # overlay channels, for one). Resolving its call sites against the package's table reported
+    # every one of those as undeclared, which is how seven live chart channels reached a
+    # "known gap" list instead of being fixed.
+    workstation = root.parent / WORKSTATION_TRACK[0]
+    workstation_tokens = dict(package_tokens)
+    if workstation.exists():
+        workstation_tokens.update(parse_tokens(workstation.read_text(encoding="utf-8")))
     superseded = superseded_values(root)
     failures: list[str] = []
     notes: list[str] = []
@@ -612,6 +622,8 @@ def check_fallbacks(root: Path) -> list[str]:
             if path.suffix == ".css":
                 text = blank_comments(text)
             local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
+            tokens = (workstation_tokens if str(path).find("dashboard") >= 0
+                      else package_tokens)
             for lineno, line in enumerate(text.splitlines(), 1):
                 for found in VAR_CALL.finditer(line):
                     if not found.group(2):        # no comma: no fallback to check
@@ -714,6 +726,38 @@ def check_bundle_parity(root: Path) -> list[str]:
     return failures
 
 
+# A Tailwind arbitrary value — `bg-[#F3F6F9]` in a className string — is outside the token
+# layer entirely: no `var()`, no stylesheet, so neither the restyle nor a `data-brand` can
+# reach it and no fallback check can see it. Forty-six of them survived nine review rounds
+# rendering the superseded steel surfaces in live primitives, because every sweep before this
+# read `var(--token, literal)` fallbacks or bare literals in stylesheets and never a className.
+TAILWIND_HEX = re.compile(r"\[(#[0-9A-Fa-f]{3,8})\]")
+TAILWIND_SUFFIXES = (".tsx", ".ts", ".jsx", ".css")
+
+
+def check_tailwind_literals(root: Path) -> list[str]:
+    """No colour may be hard-coded as a Tailwind arbitrary value; it must come from a token."""
+    base = root.parent / WORKSTATION_CALL_SITES[0]
+    if not base.exists():
+        return []
+    failures: list[str] = []
+    scanned = 0
+    for path in sorted(base.rglob("*")):
+        if not path.is_file() or path.suffix not in TAILWIND_SUFFIXES:
+            continue
+        scanned += 1
+        for lineno, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            for found in TAILWIND_HEX.finditer(line):
+                failures.append(f"[tailwind] {_rel(path, root)}:{lineno}: {found.group(0)} is a "
+                                "hard-coded colour outside the token layer — use "
+                                "[var(--token)] so the restyle and data-brand can reach it")
+    for f in failures[:10]:
+        print(f)
+    if not failures:
+        print(f"[tailwind] no hard-coded arbitrary colours in {scanned} workstation source files")
+    return failures
+
+
 def check_card_metadata(root: Path) -> list[str]:
     """The manifest's card records must match each card's own @dsCard declaration.
 
@@ -785,6 +829,72 @@ def check_doc_palette(root: Path) -> list[str]:
     return failures
 
 
+# The catalogue — colors_and_type.css, index.html, preview/ and ui_kits/ — is the package's
+# primary visual entrypoint and was the last surface still rendering the pre-restyle identity.
+# It survived nine rounds because every check here pointed at tokens/, guidelines/, the cards
+# and the dashboard, and nothing read the catalogue's own 1,459 literals. These are the values
+# it carried: the navy/cyan ladder, its accents and its semantics.
+CATALOG_SUPERSEDED = frozenset({
+    # surfaces
+    # (#171A1F is deliberately absent: it is the steel brand's chrome in tokens/theme.css
+    #  and components/shell/*, a live value, not a retired one.)
+    "#050B12", "#0B0E16", "#05101B", "#08101A", "#081423", "#1A1407", "#08131F",
+    "#0B1520", "#0D1722", "#101C2B", "#13253A", "#1A1F2E", "#142036", "#162334", "#18283C",
+    "#1A2940", "#1B2A3C", "#1A2D44", "#1F2E42", "#2A3142", "#26364B", "#2D3E54", "#2E4766",
+    # lines and text
+    "#1F344C", "#4A5060", "#477089", "#5A6878", "#5B7B9E", "#7C8A9B", "#80A2C8", "#93B4DA",
+    "#A8B5C4", "#BEC8D4", "#D4DCE6", "#DEE6EF",
+    # cyan accent
+    "#2AB2D4", "#2D9CDB", "#20D3F7", "#8CC5DE",
+    # semantics
+    "#26BF86", "#34D399", "#84F3B6", "#DE5878", "#E84545", "#F06B6B", "#D69E38", "#E6A93C",
+    "#F2C94C", "#A78BFA", "#60A5FA",
+})
+
+CATALOG_ROOTS = ("colors_and_type.css", "index.html", "preview/", "ui_kits/")
+CATALOG_SUFFIXES = {".css", ".html", ".jsx", ".js"}
+CATALOG_RGB = re.compile(r"rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*[,)]")
+
+
+def check_catalog_palette(root: Path) -> list[str]:
+    """No superseded-identity colour may render from the catalogue.
+
+    Scans literals, not tokens: the swatch sheets paint inline, so a token sweep never saw
+    them. `src/Meridian.Ui/...` under the package is out of scope on purpose — it is the
+    frozen pre-restyle snapshot governance-baseline.json owns, not a surface that renders.
+    """
+    failures: list[str] = []
+    scanned = files = 0
+    for path in sorted(root.rglob("*")):
+        if any(part in {"node_modules", ".git", "__pycache__"} for part in path.parts):
+            continue
+        if not path.is_file() or path.suffix.lower() not in CATALOG_SUFFIXES:
+            continue
+        rel = path.relative_to(root).as_posix()
+        if not rel.startswith(CATALOG_ROOTS):
+            continue
+        files += 1
+        for lineno, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            hits = {h.upper() for h in DOC_HEX.findall(line) if h.upper() in CATALOG_SUPERSEDED}
+            for m in CATALOG_RGB.finditer(line):
+                value = "#{:02X}{:02X}{:02X}".format(*(int(g) for g in m.groups()))
+                if value in CATALOG_SUPERSEDED:
+                    hits.add(value)
+            scanned += len(DOC_HEX.findall(line))
+            if hits:
+                failures.append(f"[catalog-palette] {_rel(path, root)}:{lineno}: "
+                                f"{', '.join(sorted(hits))} — the catalogue still renders a "
+                                "superseded-identity colour")
+    for f in failures[:10]:
+        print(f)
+    if failures and len(failures) > 10:
+        print(f"[catalog-palette] ... and {len(failures) - 10} more")
+    if not failures:
+        print(f"[catalog-palette] {files} catalogue file(s), {scanned} literal(s), none on the "
+              "superseded identity")
+    return failures
+
+
 # The guides state the radius and shadow contract in prose. Round four synced the two copies of
 # VISUAL_FOUNDATIONS.md onto the stale wording, so both described 4/6/8px radii and card shadows
 # while tokens/elevation.css declares a unified 2px corner and --shadow-card: none.
@@ -832,7 +942,8 @@ def run_checks(root: Path) -> list[str]:
             + check_ws_aliases(root) + check_comment_terminators(root)
             + check_var_chains(root) + check_fallbacks(root)
             + check_card_metadata(root) + check_doc_palette(root)
-            + check_elevation_guidance(root) + check_bundle_parity(root))
+            + check_elevation_guidance(root) + check_bundle_parity(root)
+            + check_tailwind_literals(root) + check_catalog_palette(root))
 
 
 def main() -> int:

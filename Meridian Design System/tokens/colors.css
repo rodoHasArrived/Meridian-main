@@ -130,11 +130,14 @@
   --chart-grid:         var(--border);        /* gridlines */
   --chart-axis:         var(--text-muted);    /* axis labels / ticks */
   --chart-border:       var(--border-strong); /* axis frame */
-  --chart-crosshair:    var(--text-secondary); /* crosshair + price chip — chrome, not a
+  --chart-crosshair:    #6B655C;             /* crosshair + price chip — chrome, not a
                                                  series: it crosses --chart-drawdown in every
                                                  candle/equity plot, and copper sits only ~11deg
                                                  from brick. A ~11%-saturated neutral separates
-                                                 by chroma where hue cannot. */
+                                                 by chroma where hue cannot. Warm rather than
+                                                 --text-secondary, matching the workstation: a
+                                                 cool graphite sat out of family with every
+                                                 other light neutral. */
   --chart-equity:       var(--green);         /* equity / up candle */
   --chart-drawdown:     var(--red);           /* drawdown / down candle */
   --chart-primary:      var(--accent);        /* primary / strategy line (brand) */
