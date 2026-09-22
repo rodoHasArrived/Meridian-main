@@ -166,12 +166,12 @@ command, which can prepare a case through `ReadyForApproval` but can never grant
    crash between the spine commit and the case record is recovered idempotently on retry, and a
    spine event posted outside the case's approval is refused rather than adopted.
 
-   **Current limitation (CA-DEF-007).** Against the PostgreSQL ledger the durable post is refused:
-   the spine drafts an instrument-bearing journal without the `securityMasterProvenance` /
-   `securityMasterLineage` tags the period posting guard requires. Steps 1–3 are proven durable by
-   `CorporateActionAccountingPostgresRoundTripTests`, which pins the step-4 refusal (case stays
-   `Approved`, no journal written) until the spine stamps that lineage. See
-   `tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md`.
+   The durable journal carries the Security Master provenance and ledger-mapping lineage the
+   period posting guard requires for instrument-bearing entries. The candidate builder stamps it
+   only under spine authority, after the spine resolves the event-recorded Security Master record
+   at its exact expected version and asserts it Active, effective, and in the event currency; a
+   generic candidate never receives it. `CorporateActionAccountingPostgresRoundTripTests` proves
+   the whole lane, post and replay included, against PostgreSQL.
 
 Journals and posted lot effects stay immutable. `Posted → RestatementRequired` opens the governed
 correction lane; corrections add reversal, rebook, or restatement lineage through the spine onto a

@@ -13,7 +13,7 @@
       "Portfolio and accounting reconciliation",
       "Accounting records",
       "Approvals",
-      "Corporate-action approval and posting completion against unchanged W9-CORPACT-011 exit criterion four",
+      "Operator acceptance review of W9-CORPACT-011 corporate-action approval and posting evidence",
       "Governed report packs",
       "Operational record workflow backed by shared services and contracts, delivered across both the browser workstation and the reactivated WPF desktop workstation",
       "WPF desktop workstation reactivation and web-UI parity over shared contracts and read models",
@@ -283,13 +283,13 @@
       "Wave": "W9",
       "Title": "One-command seeded demo with durable storage",
       "Workspaces": "Data; Settings",
-      "Status": "accepted",
+      "Status": "done",
       "Health": "green",
       "Priority": "critical",
       "Owner Lane": "Workstation Shell and UX",
       "Evidence Posture": "complete",
-      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs; src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs; src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs; src/Meridian/DemoWorkspaceCli.cs; tests/Meridian.Tests/Demo/DemoWorkspaceSeederTests.cs; tests/Meridian.Tests/Demo/DemoWorkspaceGuardTests.cs; .github/workflows/demo-smoke.yml",
-      "Last Reviewed": "2026-08-29"
+      "Evidence": "docs/product/w9-demo-002-closure-2026-09-16.md; docs/product/w9-operator-acceptance-2026-08-29.md; src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs; src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs; src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs; src/Meridian/DemoWorkspaceCli.cs; tests/Meridian.Tests/Demo/DemoWorkspaceSeederTests.cs; tests/Meridian.Tests/Demo/DemoWorkspaceGuardTests.cs; src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs; src/Meridian.Storage/Policies/JsonlStoragePolicy.cs; .github/workflows/demo-smoke.yml",
+      "Last Reviewed": "2026-09-16"
     },
     {
       "ID": "W9-PAPER-003",
@@ -400,13 +400,13 @@
       "Wave": "W9",
       "Title": "Durable corporate action case processing and accounting projection",
       "Workspaces": "Accounting; Portfolio; Data",
-      "Status": "in_progress",
-      "Health": "red",
+      "Status": "ready_for_acceptance",
+      "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "in_progress",
-      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; docs/domain/corporate-action-case.md; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs; src/Meridian.Instruments/AssetOperations/CorporateActionAccountingProjectionService.cs; src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs; src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_corporate_action_operations.sql; src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsServiceTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionIngestOrchestratorTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionGoldenLedgerTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsContractTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsMigrationTests.cs; tests/Meridian.Backtesting.Tests/CorporateActionGoldenAdjustmentTests.cs",
-      "Last Reviewed": "2026-08-30"
+      "Evidence Posture": "implementation_complete",
+      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; docs/domain/corporate-action-case.md; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs; src/Meridian.Instruments/AssetOperations/CorporateActionAccountingProjectionService.cs; src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs; src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_corporate_action_operations.sql; src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsServiceTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionIngestOrchestratorTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionGoldenLedgerTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsContractTests.cs; tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsMigrationTests.cs; tests/Meridian.Backtesting.Tests/CorporateActionGoldenAdjustmentTests.cs; src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs; src/Meridian.Storage/SecurityMaster/Migrations/031_security_master_corporate_action_accounting_lane.sql; tests/Meridian.Tests/SecurityMaster/CorporateActionAccountingPostgresRoundTripTests.cs; src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs",
+      "Last Reviewed": "2026-09-22"
     },
     {
       "ID": "W10-DEBT-001",
@@ -426,13 +426,13 @@
       "Wave": "W10",
       "Title": "Fail-closed stale-mark policy and mark-age surfacing",
       "Workspaces": "Accounting; Portfolio",
-      "Status": "planned",
+      "Status": "in_progress",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "planned_evidence",
-      "Evidence": "",
-      "Last Reviewed": "2026-07-31"
+      "Evidence Posture": "in_progress",
+      "Evidence": "src/Meridian.Ledger/ValuationFreshnessPolicy.cs; src/Meridian.Ledger/ValuationMarkEvidence.cs; src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs; src/Meridian.Ui/dashboard/src/components/meridian/mark-freshness-cell.tsx; src/Meridian.Wpf/Models/MarkFreshnessPresentation.cs; tests/Meridian.Tests/Application/Accounting/ValuationFreshnessAcceptanceTests.cs; tests/Meridian.Wpf.Tests/ViewModels/MarkFreshnessPresentationTests.cs",
+      "Last Reviewed": "2026-09-05"
     },
     {
       "ID": "W10-RECON-001",
@@ -504,13 +504,13 @@
       "Wave": "W10",
       "Title": "Unified close-readiness projection behind one shared contract",
       "Workspaces": "Accounting; Reporting",
-      "Status": "planned",
+      "Status": "in_progress",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Workstation Shell and UX",
-      "Evidence Posture": "planned_evidence",
-      "Evidence": "",
-      "Last Reviewed": "2026-07-31"
+      "Evidence Posture": "in_progress",
+      "Evidence": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs; src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.CloseInputs.cs; src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseReadiness.cs; src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-command-center.view-model.ts; src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs; tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.ScopeTests.cs; tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.AcceptanceTests.cs; tests/Meridian.Tests/Ui/CloseReadinessSubjectSourceTests.cs; src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs; src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs; tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.cs; tests/Meridian.Tests/FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs",
+      "Last Reviewed": "2026-09-05"
     },
     {
       "ID": "W10-RECON-003",
@@ -569,13 +569,13 @@
       "Wave": "W10",
       "Title": "Security-identified open-lot convergence",
       "Workspaces": "Accounting; Portfolio; Reporting",
-      "Status": "planned",
+      "Status": "in_progress",
       "Health": "green",
       "Priority": "critical",
       "Owner Lane": "Accounting and Ledger",
-      "Evidence Posture": "planned_evidence",
-      "Evidence": "docs/architecture/security-lot-convergence-blueprint.md",
-      "Last Reviewed": "2026-08-28"
+      "Evidence Posture": "in_progress",
+      "Evidence": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs; src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs; src/Meridian.Ledger/OpenLotReliefService.cs; tests/Meridian.Tests/Storage/OpenLotConvergenceTests.cs; tests/Meridian.Tests/Storage/OpenLotPostgresTests.cs; docs/architecture/security-lot-convergence-blueprint.md; src/Meridian.Contracts/Accounting/Lots/OpenLotBackfillDtos.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs; src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs; tests/Meridian.Tests/Storage/CanonicalOpenLotConsumerTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.OpenLotBackfill.cs",
+      "Last Reviewed": "2026-09-04"
     }
   ]
 }

@@ -157,9 +157,9 @@ capability claims, not blanket production certification.
 
 As of 2026-08-30 the W9 slate is mostly closed: `W9-ASSET-010` is `done`; `W9-TRUTH-001`,
 `W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` remain `accepted` on operator
-decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011` is reopened as `in_progress` with
-`evidence_posture: in_progress` and `health: red` under `DEC-W9-ACCEPTANCE-002` pending unchanged
-exit criterion four. Both decisions and their chronology are recorded in the
+decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011`, reopened under `DEC-W9-ACCEPTANCE-002`,
+reached `ready_for_acceptance` on 2026-09-22 with all five exit criteria evidenced and awaits a
+fresh operator acceptance decision. Both decisions and their chronology are recorded in the
 [2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md).
 `W9-ALPACA-004` was deliberately held over three recorded fill-path caveats and moved to
 `accepted` on 2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source;

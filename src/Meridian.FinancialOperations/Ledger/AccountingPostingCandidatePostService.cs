@@ -461,7 +461,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             drafted.Projection.Scope.PeriodId,
             candidate.ExpectedPeriodVersion!.Value,
             rulePack.RulePackId,
-            rulePack.RulePackVersion);
+            rulePack.RulePackVersion,
+            drafted.Projection.Scope.ExpectedSecurityVersion);
         return new AssetPostingAuthoritySnapshot(projected, drafted, latest, context);
     }
 

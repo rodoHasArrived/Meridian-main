@@ -20,13 +20,12 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// Exercises the registered in-process accounting lane against PostgreSQL: accept, evidence,
-/// attach, ReadyForApproval, maker-checker refusal and independent approval run as the target
-/// behavior; the durable post is pinned at its current refusal (CA-DEF-007). The explicit source,
-/// policy and lot fixtures are test evidence, not certification of source fan-out or legacy binding.
+/// Exercises the registered in-process accounting lane against PostgreSQL end to end: accept,
+/// evidence, attach, ReadyForApproval, maker-checker refusal, independent approval, durable post,
+/// and idempotent replay from reconstructed services. The explicit source, policy and lot fixtures
+/// are test evidence, not certification of source fan-out or legacy binding.
 /// </summary>
 [Trait("Category", "Integration")]
-[Trait("Category", "KnownDefect")]
 public sealed class CorporateActionAccountingPostgresRoundTripTests
 {
     private const string Tenant = "corpact-test-tenant";
@@ -220,29 +219,41 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
             "post-dividend", Tenant, Company, attached.Projection.ProjectionId, approved.Approval.ApprovalId,
             "Post the independently approved dividend.", Approver, caseScope,
             Authority: new CorporateActionAccountingDecisionAuthorityDto(false, true));
-        // KNOWN DEFECT CA-DEF-007 (tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md):
-        // the spine drafts an instrument-bearing journal (metadata SecurityId) but never stamps the
-        // securityMasterProvenance/securityMasterLineage tags the PostgreSQL period posting guard
-        // requires, so the durable post is refused.
-        // TARGET: PostAsync returns Replayed=false, State=Posted and USD 120 debits/credits; a
-        // reconstructed service replays the same receipt; the period holds exactly that one
-        // balanced journal; the spine reloads Expected, Projected, Drafted, Approved, Posted with
-        // the posted journal impact; the case reloads as Posted; the 500-share lot is unchanged.
-        var post = () => accounting.PostAsync(postRequest, ct);
-        await post.Should().ThrowAsync<CorporateActionStateConflictException>()
-            .WithMessage("*remains approved and recoverable*without Security Master provenance*");
+        var posted = await accounting.PostAsync(postRequest, ct);
+        posted.Replayed.Should().BeFalse();
+        posted.Case.State.Should().Be(CorporateActionCaseStates.Posted);
+        posted.Posting.TotalDebits.Should().Be(Amount);
+        posted.Posting.TotalCredits.Should().Be(Amount);
 
-        // Reconstruct every persistence-facing store to prove the refusal left durable state
-        // recoverable rather than half-written.
+        // Reconstruct every persistence-facing service to prove the result is not process-local.
         var reopenedJournal = new PostgresLedgerJournalStore(ledgerOptions);
         var reopenedAssets = new PostgresAssetOperationsProjectionStore(assetOptions, reopenedJournal);
         var reopenedOperations = new PostgresCorporateActionOperationsStore(securityOptions);
-        (await reopenedJournal.GetByPeriodAsync(periodId, ct)).Should().BeEmpty();
+        var reopened = new CorporateActionCaseAccountingService(reopenedOperations, reopenedAssets,
+            new AccountingPostingCandidatePostService(candidateBuilder, reopenedJournal,
+                assetAccountingEventStore: reopenedAssets), new PostgresLedgerBookService(reopenedJournal));
+        var replay = await reopened.PostAsync(postRequest, ct);
+        replay.Replayed.Should().BeTrue();
+        replay.Posting.Should().BeEquivalentTo(posted.Posting);
+        var entries = await reopenedJournal.GetByPeriodAsync(periodId, ct);
+        var entry = entries.Should().ContainSingle().Subject.Entry;
+        entry.JournalEntryId.Should().Be(posted.Posting.JournalEntryId);
+        entry.Lines.Sum(line => line.Debit).Should().Be(Amount);
+        entry.Lines.Sum(line => line.Credit).Should().Be(Amount);
+        // The durable journal carries the server-resolved Security Master lineage the period guard requires.
+        entry.Metadata.SecurityId.Should().Be(securityId);
+        entry.Metadata.Tags!["securityMasterProvenance"].Should()
+            .Contain($"security-master:{securityId:N}").And.Contain("approved:true").And.Contain("version:1");
+        entry.Metadata.Tags["securityMasterLineage"].Should()
+            .Contain("ledger-map:asset-spine:").And.Contain("security-status:Active");
         var reloaded = (await reopenedAssets.GetLatestAsync(eventId, 1, ct))!.Projection;
-        reloaded.Stages[^1].Stage.Should().NotBe(AssetAccountingLifecycleStageDto.Posted);
-        reloaded.PostedJournalImpact.Should().BeNull();
+        reloaded.Stages.Select(stage => stage.Stage).Should().Equal(
+            AssetAccountingLifecycleStageDto.Expected, AssetAccountingLifecycleStageDto.Projected,
+            AssetAccountingLifecycleStageDto.Drafted, AssetAccountingLifecycleStageDto.Approved,
+            AssetAccountingLifecycleStageDto.Posted);
+        reloaded.PostedJournalImpact!.JournalEntryId.Should().Be(posted.Posting.JournalEntryId);
         (await reopenedOperations.GetCaseAsync(processingCase.CaseId, Tenant, Company, ct))!
-            .State.Should().Be(CorporateActionCaseStates.Approved);
+            .State.Should().Be(CorporateActionCaseStates.Posted);
         (await reopenedJournal.ListOpenTaxLotsByAssetScopeAsync(bookId, securityId, positionId, EffectiveDate, ct))
             .Should().ContainSingle().Which.OpenQuantity.Should().Be(500m);
     }
