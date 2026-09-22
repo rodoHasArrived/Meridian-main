@@ -1,6 +1,7 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.Ledger;
@@ -48,7 +49,8 @@ public sealed record AssetAccountingCandidateAuthorityContext(
     Guid PeriodId,
     long ExpectedPeriodVersion,
     string RulePackId,
-    string RulePackVersion);
+    string RulePackVersion,
+    long SecurityVersion = 0);
 
 public sealed record AccountingPostingCandidateWriteResult(
     PostingRuleJournalCandidateResultDto Candidate,
@@ -321,7 +323,11 @@ public sealed class AccountingPostingCandidateService :
             : null;
         var write = draft.Write is null
             ? null
-            : draft.Write with { PostingCommand = postingCommand };
+            : draft.Write with
+            {
+                Entry = WithSecurityMasterLineage(draft.Write.Entry, authority, request.Currency),
+                PostingCommand = postingCommand
+            };
 
         return new AccountingPostingCandidateWriteResult(
             new PostingRuleJournalCandidateResultDto(
@@ -798,6 +804,47 @@ public sealed class AccountingPostingCandidateService :
             .GroupBy(static evidence => evidence.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.Last())
             .ToArray();
+    }
+
+    // An asset event's journal carries the event's SecurityId, so the ledger period guard treats it
+    // as instrument-bearing and requires approved, active Security Master provenance and a ledger
+    // mapping for that security. The lineage is stamped only under spine authority, after the spine
+    // has server-resolved the event-recorded Security Master record at the exact expected version and
+    // asserted it Active, effective, and in the event currency - the same rule the manual journal
+    // path applies - so a generic caller can never assert it. Post-time re-derivation reproduces the
+    // same tags from the retained spine scope.
+    private static JournalEntry WithSecurityMasterLineage(
+        JournalEntry entry,
+        AssetAccountingCandidateAuthorityContext? authority,
+        string currency)
+    {
+        if (authority is null || authority.SecurityId == Guid.Empty || authority.SecurityVersion <= 0)
+        {
+            return entry;
+        }
+
+        var securityIdToken = authority.SecurityId.ToString("N");
+        var provenance =
+            $"security-master:{securityIdToken};server-resolved:true;approved:true;status:{SecurityStatusDto.Active};version:{authority.SecurityVersion};currency:{currency.Trim().ToUpperInvariant()}";
+        var lineage =
+            $"asset-spine:{securityIdToken}:ledger-map:asset-spine:{authority.RulePackId}:{authority.RulePackVersion}:{securityIdToken}:sm-approval:security-master-active:{securityIdToken}:security-status:{SecurityStatusDto.Active}:{provenance}";
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (entry.Metadata.Tags is { } existing)
+        {
+            foreach (var (key, value) in existing)
+            {
+                tags[key] = value;
+            }
+        }
+
+        tags["securityMasterProvenance"] = provenance;
+        tags["securityMasterLineage"] = lineage;
+        return new JournalEntry(
+            entry.JournalEntryId,
+            entry.Timestamp,
+            entry.Description,
+            entry.Lines,
+            entry.Metadata with { Tags = tags });
     }
 
     private static bool IsBareReferenceFor(

@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
@@ -461,7 +462,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             drafted.Projection.Scope.PeriodId,
             candidate.ExpectedPeriodVersion!.Value,
             rulePack.RulePackId,
-            rulePack.RulePackVersion);
+            rulePack.RulePackVersion,
+            drafted.Projection.Scope.ExpectedSecurityVersion);
         return new AssetPostingAuthoritySnapshot(projected, drafted, latest, context);
     }
 
@@ -1167,6 +1169,25 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                         / LedgerTaxLotFaceValueTerms.LedgerLotParBasis,
                     acquisition.BookedFactor!.Value,
                     acquisition.ParBasis!.Value));
+            }
+
+            // A face lot gains canonical facts only when its instruction states the amortization
+            // inputs; they are never inferred, so an unstated face lot keeps its par terms alone.
+            var faceTerms = acquisition.HasFaceValueTerms && acquisition.AmortizationMethod is { } method
+                ? new FaceValueAcquisitionTermsDto(
+                    acquisition.ParBasis!.Value, acquisition.BookedFactor!.Value, method, acquisition.EffectiveYield)
+                : null;
+            if ((!acquisition.HasFaceValueTerms || faceTerms is not null) &&
+                !await SpineAcquisitionLotFacts.IsRetainedLegacyBatchAsync(_journalStore, mutationBatchId, ct).ConfigureAwait(false))
+            {
+                acquisitionLot = acquisitionLot with
+                {
+                    Acquisition = SpineAcquisitionLotFacts.Build(
+                        acquisitionLot,
+                        faceTerms,
+                        request.Candidate.RetainedEvidence,
+                        request.ApprovalEvidence)
+                };
             }
 
             mutationKind = AtomicTaxLotMutationKind.Acquisition;

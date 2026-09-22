@@ -23679,6 +23679,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAmortizationMethod"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
@@ -47105,7 +47111,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "73e7d85d5a45c835a09ead9bddbaeca894d962d95e28d5548c35c3ef308be763",
+  "fingerprint": "255babaf56447432025f0da60650b325e92052e1e1ac6a2592586ced3180d74a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -69007,9 +69013,9 @@
     }
   ],
   "summary": {
-    "contract_references": 3097,
+    "contract_references": 3098,
     "contract_set_memberships": 3675,
-    "edges": 7826,
+    "edges": 7827,
     "foreign_keys": 132,
     "logical_references": 6,
     "nodes": 3794
