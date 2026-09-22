@@ -739,3 +739,9 @@ calculated capability.
 Golden-copy pricing consults retained source hierarchy and observation history at the supplied
 economic and knowledge cutoffs. It never invents par, straight-line accretion, or stable NAV from
 an asset-class name. Explicit quote units accompany every selected price and comparison.
+
+Each successful golden-copy evaluation persists an immutable selection receipt before returning it.
+Receipt replay returns its exact selected quote, comparisons, hierarchy and cutoff metadata under
+the original security/account scope, without consulting live prices. Timestamp-only re-evaluation
+can legitimately change after an earlier-started transaction commits; timestamps are eligibility
+filters, while `SelectionReceiptId` is the durable replay identity.

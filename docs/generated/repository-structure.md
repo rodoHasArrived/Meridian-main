@@ -5811,7 +5811,8 @@ Meridian-main
 │   │   │   │   ├── 031_security_master_corporate_action_accounting_lane.sql
 │   │   │   │   ├── 032_security_master_normalized_primary_identifier_uniqueness.sql
 │   │   │   │   ├── 033_security_master_asset_operations_projections.sql
-│   │   │   │   └── 034_security_master_dated_price_history.sql
+│   │   │   │   ├── 034_security_master_dated_price_history.sql
+│   │   │   │   └── 035_security_master_price_selection_receipts.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs

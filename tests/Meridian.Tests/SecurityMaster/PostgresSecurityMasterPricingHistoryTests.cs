@@ -1,4 +1,8 @@
 using FluentAssertions;
+using System.Text.Json;
+using Meridian.Application.SecurityMaster;
+using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Npgsql;
@@ -60,6 +64,67 @@ public sealed class PostgresSecurityMasterPricingHistoryTests(SecurityMasterData
         (await store.GetHierarchyAsOfAsync(securityId, "account-a", date))!.Entries.Single().SourceId.Should().Be("source");
         (await store.GetHierarchyAsOfAsync(securityId, "account-b", date))!.Entries.Single().SourceId.Should().Be("other");
         (await store.GetHierarchyAsOfAsync(securityId, null, date)).Should().BeNull();
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ReceiptReplay_RemainsExactWhenEarlierRecordedTransactionCommitsAfterEvaluation()
+    {
+        var id = await SeedSecurityAsync();
+        var store = new PostgresSecurityMasterPricingStore(fixture.Options);
+        var date = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        await store.RecordRawPriceAsync(new(id, "source", 98m, date, "operator", SecurityPriceUnit.PercentOfPar));
+        await store.UpsertHierarchyAsync(new(id, "account-a", [new(1, "source", "Source", 30)], date, "operator"));
+        var query = Substitute.For<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>();
+        query.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(new SecurityDetailDto(
+            id, "Bond", SecurityStatusDto.Active, "Price test", "USD",
+            JsonSerializer.SerializeToElement(new { currency = "USD" }), JsonSerializer.SerializeToElement(new { }),
+            [], [], 1, date, null));
+        var service = new SecurityMasterPricingService(store, query, NullLogger<SecurityMasterPricingService>.Instance);
+
+        // The row gets the transaction-start recorded timestamp but remains invisible until commit.
+        await using var pendingConnection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await pendingConnection.OpenAsync();
+        await using var pending = await pendingConnection.BeginTransactionAsync();
+        await using var command = pendingConnection.CreateCommand();
+        command.Transaction = pending;
+        command.CommandText = $"""
+            insert into {fixture.Options.Schema}.security_raw_prices
+                (security_id, source_id, price, price_as_of, price_unit, recorded_by)
+            values (@id, 'source', 99, @effective_at, 'PercentOfPar', 'operator');
+            """;
+        command.Parameters.AddWithValue("id", id);
+        command.Parameters.AddWithValue("effective_at", date.AddDays(1));
+        await command.ExecuteNonQueryAsync();
+        var knownAt = await DatabaseNowAsync();
+        var original = await service.GetGoldenCopyPriceAsOfAsync(id, "account-a", date.AddDays(2), knownAt: knownAt);
+        original!.GoldenCopyPrice.Should().Be(98m);
+        await pending.CommitAsync();
+
+        var reevaluation = await service.GetGoldenCopyPriceAsOfAsync(id, "account-a", date.AddDays(2), knownAt: knownAt);
+        reevaluation!.GoldenCopyPrice.Should().Be(99m, "timestamp filters alone are not commit snapshots");
+        var replay = await service.GetGoldenCopySelectionAsync(id, "account-a", original.SelectionReceiptId!.Value);
+        replay.Should().BeEquivalentTo(original);
+        (await service.GetGoldenCopySelectionAsync(id, "account-b", original.SelectionReceiptId.Value)).Should().BeNull();
+        (await service.GetGoldenCopySelectionAsync(Guid.NewGuid(), "account-a", original.SelectionReceiptId.Value)).Should().BeNull();
+        (await service.GetGoldenCopySelectionAsync(id, "account-a", Guid.NewGuid())).Should().BeNull();
+        await store.RetainPriceSelectionAsync(original, "account-a");
+        await store.Invoking(s => s.RetainPriceSelectionAsync(original with { GoldenCopyPrice = 97m }, "account-a"))
+            .Should().ThrowAsync<InvalidOperationException>();
+
+        await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        foreach (var sql in new[] {
+            $"update {fixture.Options.Schema}.security_price_selection_receipts set payload = payload where receipt_id = @id",
+            $"delete from {fixture.Options.Schema}.security_price_selection_receipts where receipt_id = @id",
+            $"truncate {fixture.Options.Schema}.security_price_selection_receipts" })
+        {
+            await using var mutation = connection.CreateCommand();
+            mutation.CommandText = sql;
+            mutation.Parameters.AddWithValue("id", original.SelectionReceiptId.Value);
+            await mutation.Invoking(c => c.ExecuteNonQueryAsync()).Should().ThrowAsync<PostgresException>();
+        }
+        (await service.GetGoldenCopySelectionAsync(id, "account-a", original.SelectionReceiptId.Value))
+            .Should().BeEquivalentTo(original);
     }
 
     private async Task<DateTimeOffset> DatabaseNowAsync()

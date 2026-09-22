@@ -1524,5 +1524,9 @@ and MarginSettlement lifecycle coverage.
 
 Security Master prices declare CurrencyPerUnit or PercentOfPar. Legacy Unspecified observations
 remain readable but cannot support a golden copy. Selections retain economic, hierarchy and
-knowledge timestamps; callers replay both `asOf` and `knownAt` to reproduce the same eligible
-observations. Mixed quote units have no percentage comparison.
+knowledge timestamps and an immutable `SelectionReceiptId` with the exact hierarchy and quote
+snapshot. `asOf` and `knownAt` filter eligible evidence but are not a PostgreSQL commit snapshot:
+a pending transaction can become visible later with an earlier recorded timestamp. Reproduce an
+exact evaluation using `receiptId` on the golden-copy endpoint, retaining the security/account
+scope. Unknown or differently scoped receipts return no result and never silently recompute.
+Mixed quote units have no percentage comparison.

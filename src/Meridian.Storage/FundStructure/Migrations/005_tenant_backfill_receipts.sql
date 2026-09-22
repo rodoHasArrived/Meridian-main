@@ -24,3 +24,5 @@ for each row execute function __SCHEMA__.reject_tenant_backfill_receipt_rewrite(
 create or replace trigger tenant_backfill_receipt_no_truncate
 before truncate on __SCHEMA__.fund_structure_tenant_backfill_receipt
 for each statement execute function __SCHEMA__.reject_tenant_backfill_receipt_rewrite();
+
+comment on table __SCHEMA__.fund_structure_tenant_backfill_receipt is 'Immutable receipts binding an explicit tenant-backfill run to its reviewed plan hash, operator, review reference, and atomically committed attribution and quarantine counts.';

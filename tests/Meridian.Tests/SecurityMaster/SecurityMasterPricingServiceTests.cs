@@ -152,6 +152,9 @@ public sealed class SecurityMasterPricingServiceTests
         result.Unit.Should().Be(SecurityPriceUnit.PercentOfPar);
         result.EvaluatedAsOf.Should().Be(asOf);
         result.HierarchyAsOf.Should().Be(asOf.AddDays(-10));
+        result.SelectionReceiptId.Should().NotBeNull();
+        result.HierarchySnapshot!.Entries.Single().SourceId.Should().Be("market");
+        await store.Received(1).RetainPriceSelectionAsync(result, null, Arg.Any<CancellationToken>());
         result.ComparisonPrices.Single(p => p.SourceId == "comparison").PctDiffFromGoldenCopy.Should().Be(1.0204m);
         result.ComparisonPrices.Where(p => p.SourceId != "comparison").Should().OnlyContain(p => p.PctDiffFromGoldenCopy == null);
     }
@@ -180,6 +183,24 @@ public sealed class SecurityMasterPricingServiceTests
         store.GetHierarchyAsOfAsync(SecurityId, null, asOf, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>())
             .Returns(new SecurityPricingHierarchyDto(SecurityId, null, [new(1, "market", "Market", 3)], asOf.AddDays(1), "operator"));
         (await sut.GetGoldenCopyPriceAsOfAsync(SecurityId, null, asOf)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ReceiptReplay_UsesExactRetainedResult_AndMissingReceiptDoesNotRecalculate()
+    {
+        var (sut, store, query) = BuildSut();
+        var receiptId = Guid.NewGuid();
+        var date = DateTimeOffset.UtcNow;
+        var retained = new SecurityPriceGoldenCopyDto(SecurityId, 98m, SecurityPriceKind.MarketGoldenCopy,
+            "source", date, false, 0, [], SecurityPriceUnit.PercentOfPar, date, date, date,
+            receiptId, new(SecurityId, "account-a", [new(1, "source", "Source", 3)], date, "operator"));
+        store.GetPriceSelectionAsync(SecurityId, "account-a", receiptId, Arg.Any<CancellationToken>()).Returns(retained);
+        (await sut.GetGoldenCopySelectionAsync(SecurityId, "account-a", receiptId)).Should().BeSameAs(retained);
+        (await sut.GetGoldenCopySelectionAsync(SecurityId, "account-b", receiptId)).Should().BeNull();
+        (await sut.GetGoldenCopySelectionAsync(SecurityId, "account-a", Guid.NewGuid())).Should().BeNull();
+        await query.DidNotReceive().GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().GetRawPricesAsync(Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(),
+            Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>());
     }
 
     private static SecurityDetailDto BuildSecurity(string assetClass)

@@ -55,7 +55,9 @@ public sealed record SecurityComparisonPriceDto(
     SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified);
 
 /// <summary>
-/// The selected golden copy price for a security with staleness metadata and comparison array.
+/// The selected golden copy price with explicit units, exact hierarchy and comparison evidence.
+/// SelectionReceiptId replays the immutable evaluation. Economic/knowledge timestamps filter
+/// eligibility but do not identify a PostgreSQL visibility snapshot or certify close approval.
 /// </summary>
 public sealed record SecurityPriceGoldenCopyDto(
     Guid SecurityId,
@@ -69,7 +71,9 @@ public sealed record SecurityPriceGoldenCopyDto(
     SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified,
     DateTimeOffset? EvaluatedAsOf = null,
     DateTimeOffset? HierarchyAsOf = null,
-    DateTimeOffset? KnowledgeAsOf = null);
+    DateTimeOffset? KnowledgeAsOf = null,
+    Guid? SelectionReceiptId = null,
+    SecurityPricingHierarchyDto? HierarchySnapshot = null);
 
 /// <summary>
 /// Request to record a raw price from a single source for golden copy evaluation.

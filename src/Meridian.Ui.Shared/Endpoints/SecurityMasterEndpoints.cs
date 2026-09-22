@@ -1401,16 +1401,20 @@ public static partial class SecurityMasterEndpoints
             string? accountId,
             DateTimeOffset? asOf,
             DateTimeOffset? knownAt,
+            Guid? receiptId,
             [FromServices] ISecurityMasterPricingService pricingService,
             CancellationToken ct) =>
         {
-            var golden = asOf is { } cutoff
-                ? await pricingService.GetGoldenCopyPriceAsOfAsync(securityId, accountId, cutoff, ct, knownAt).ConfigureAwait(false)
-                : await pricingService.GetGoldenCopyPriceAsOfAsync(securityId, accountId, DateTimeOffset.UtcNow, ct, knownAt).ConfigureAwait(false);
+            if (receiptId.HasValue && (asOf.HasValue || knownAt.HasValue))
+                return Results.BadRequest(new { error = "Replay by receiptId uses the retained cutoffs; omit asOf and knownAt." });
+            var golden = receiptId is { } retainedId
+                ? await pricingService.GetGoldenCopySelectionAsync(securityId, accountId, retainedId, ct).ConfigureAwait(false)
+                : await pricingService.GetGoldenCopyPriceAsOfAsync(securityId, accountId, asOf ?? DateTimeOffset.UtcNow, ct, knownAt).ConfigureAwait(false);
             return golden is null ? Results.NotFound() : Results.Json(golden, jsonOptions);
         })
         .WithName("GetSecurityMasterPriceGoldenCopy")
         .Produces<SecurityPriceGoldenCopyDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet(UiApiRoutes.SecurityMasterPriceComparison, async (

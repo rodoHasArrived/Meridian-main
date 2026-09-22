@@ -92,9 +92,19 @@ public sealed class SecurityMasterPricingService : ISecurityMasterPricingService
                 p.Unit == selected.Unit && selected.Price != 0m
                     ? Math.Round((p.Price - selected.Price) / selected.Price * 100m, 4) : null,
                 p.Unit)).ToArray();
-        return new SecurityPriceGoldenCopyDto(securityId, selected.Price, SecurityPriceKind.MarketGoldenCopy,
-            selected.SourceId, selected.PriceAsOf, stale, daysStale, comparisons, selected.Unit, asOf, hierarchy.AsOf, knowledgeAsOf);
+        var selection = new SecurityPriceGoldenCopyDto(securityId, selected.Price, SecurityPriceKind.MarketGoldenCopy,
+            selected.SourceId, selected.PriceAsOf, stale, daysStale, comparisons, selected.Unit, asOf, hierarchy.AsOf,
+            knowledgeAsOf, Guid.NewGuid(), hierarchy);
+        // Timestamp predicates are eligibility filters, not a PostgreSQL commit snapshot. A writer
+        // can commit later with an earlier recorded timestamp; retain the exact evaluated result
+        // and inputs so receipt replay remains stable even in that case.
+        await _store.RetainPriceSelectionAsync(selection, accountId, ct).ConfigureAwait(false);
+        return selection;
     }
+
+    public Task<SecurityPriceGoldenCopyDto?> GetGoldenCopySelectionAsync(
+        Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default)
+        => _store.GetPriceSelectionAsync(securityId, accountId, receiptId, ct);
 
     public async Task<IReadOnlyList<SecurityComparisonPriceDto>> GetComparisonPricesAsync(
         Guid securityId, CancellationToken ct = default)

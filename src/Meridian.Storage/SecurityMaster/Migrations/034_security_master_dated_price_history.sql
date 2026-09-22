@@ -20,3 +20,5 @@ create table if not exists __SCHEMA__.security_pricing_hierarchy_history (
     recorded_at timestamptz not null default now(),
     primary key (security_id, account_id, as_of)
 );
+
+comment on table __SCHEMA__.security_pricing_hierarchy_history is 'Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection.';

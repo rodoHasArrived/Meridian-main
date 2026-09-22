@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Integrity;
 using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
@@ -153,6 +154,73 @@ public sealed class PostgresSecurityMasterPricingStore : ISecurityMasterPricingS
             results.Add(new SecurityRawPriceDto(reader.GetString(0), reader.GetDecimal(1),
                 reader.GetFieldValue<DateTimeOffset>(2), Enum.Parse<SecurityPriceUnit>(reader.GetString(3))));
         return results;
+    }
+
+    public async Task RetainPriceSelectionAsync(
+        SecurityPriceGoldenCopyDto selection, string? accountId, CancellationToken ct = default)
+    {
+        if (selection.SelectionReceiptId is not { } receiptId || receiptId == Guid.Empty
+            || selection.SecurityId == Guid.Empty || selection.HierarchySnapshot is not { } hierarchy
+            || hierarchy.SecurityId != selection.SecurityId
+            || NormalizeAccountId(hierarchy.AccountId) != NormalizeAccountId(accountId)
+            || selection.EvaluatedAsOf is null || selection.KnowledgeAsOf is null
+            || selection.HierarchyAsOf != hierarchy.AsOf || selection.Unit == SecurityPriceUnit.Unspecified)
+            throw new ArgumentException("A selection receipt requires complete retained pricing evidence and matching security/account scope.", nameof(selection));
+
+        var payload = JsonSerializer.Serialize(selection, JsonOptions);
+        var digest = Sha256Digest.ComputeUtf8(payload);
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            insert into {Qualified("security_price_selection_receipts")}
+                (receipt_id, security_id, account_id, payload, payload_sha256)
+            values (@receipt_id, @security_id, @account_id, @payload, @digest)
+            on conflict (receipt_id) do nothing
+            returning receipt_id;
+            """;
+        command.Parameters.AddWithValue("receipt_id", receiptId);
+        command.Parameters.AddWithValue("security_id", selection.SecurityId);
+        command.Parameters.AddWithValue("account_id", NormalizeAccountId(accountId));
+        command.Parameters.AddWithValue("payload", payload);
+        command.Parameters.AddWithValue("digest", digest);
+        if (await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is not null)
+            return;
+
+        // Idempotence never updates an immutable receipt. A colliding identity must retain the
+        // same scope and exact payload; differently scoped IDs are not disclosed by the reader.
+        command.CommandText = $"""
+            select payload_sha256 from {Qualified("security_price_selection_receipts")}
+            where receipt_id = @receipt_id and security_id = @security_id and account_id = @account_id;
+            """;
+        var existingDigest = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string;
+        if (!Sha256Digest.FixedEquals(existingDigest, digest))
+            throw new InvalidOperationException("The retained price-selection receipt cannot be replaced or moved to another scope.");
+    }
+
+    public async Task<SecurityPriceGoldenCopyDto?> GetPriceSelectionAsync(
+        Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            select payload, payload_sha256 from {Qualified("security_price_selection_receipts")}
+            where receipt_id = @receipt_id and security_id = @security_id and account_id = @account_id;
+            """;
+        command.Parameters.AddWithValue("receipt_id", receiptId);
+        command.Parameters.AddWithValue("security_id", securityId);
+        command.Parameters.AddWithValue("account_id", NormalizeAccountId(accountId));
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
+        var payload = reader.GetString(0);
+        if (!Sha256Digest.FixedEquals(Sha256Digest.ComputeUtf8(payload), reader.GetString(1)))
+            throw new InvalidOperationException("The retained price-selection receipt failed its integrity check.");
+        var selection = JsonSerializer.Deserialize<SecurityPriceGoldenCopyDto>(payload, JsonOptions);
+        if (selection is null || selection.SecurityId != securityId || selection.SelectionReceiptId != receiptId
+            || selection.HierarchySnapshot is not { } hierarchy || hierarchy.SecurityId != securityId
+            || NormalizeAccountId(hierarchy.AccountId) != NormalizeAccountId(accountId))
+            throw new InvalidOperationException("The retained price-selection receipt does not match its indexed scope.");
+        return selection;
     }
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)

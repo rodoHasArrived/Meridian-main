@@ -677,3 +677,12 @@ updated that timestamp when accepting its latest observation, so migration 034 p
 retained observation's available arrival evidence unchanged. It cannot recover observations the
 previous overwrite model discarded. Legacy hierarchies had no recorded timestamp; their first
 known time is the migration timestamp, and earlier knowledge queries correctly return no version.
+
+Migration 035 adds immutable Security Master price-selection receipts. Each receipt stores the
+exact golden-copy result, all retained comparisons, hierarchy snapshot, cutoffs, indexed
+security/account scope, and payload SHA-256. Replay checks both indexed scope and payload
+integrity; unknown or differently scoped IDs return no result. Database triggers reject update,
+delete, and truncate. Identical retain retries never update the row. This closes the precommit
+visibility gap in timestamp-only queries: a transaction can begin before a knowledge cutoff and
+commit after evaluation, so only receipt replay guarantees the original evaluated result.
+Receipts preserve an evaluation; they do not independently certify accounting-close approval.
