@@ -74,6 +74,14 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
             Aliases: Array.Empty<SecurityAliasDto>());
     }
 
+    // Detection anchors an identifier conflict on the lower security id of the claimant pair, so a
+    // lookup by one fixed side fails whenever Guid.NewGuid() orders the pair the other way.
+    private static bool IsPairConflict(SecurityMasterConflict conflict, Guid securityA, Guid securityB)
+    {
+        var pair = new[] { securityA.ToString(), securityB.ToString() };
+        return pair.Contains(conflict.ValueA) && pair.Contains(conflict.ValueB) && conflict.ValueA != conflict.ValueB;
+    }
+
     [SecurityMasterDatabaseFact]
     public async Task GetOpenConflictsAsync_DetectsAndPersistsConflict()
     {
@@ -85,7 +93,7 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
 
         var conflicts = await NewService(store).GetOpenConflictsAsync(CancellationToken.None);
 
-        var conflict = conflicts.Should().ContainSingle(c => c.SecurityId == securityA).Subject;
+        var conflict = conflicts.Should().ContainSingle(c => IsPairConflict(c, securityA, securityB)).Subject;
         conflict.ConflictKind.Should().Be("IdentifierAmbiguity");
         conflict.FieldPath.Should().Contain("Isin");
         conflict.Status.Should().Be("Open");
@@ -103,7 +111,7 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         // Instance A detects and resolves.
         var serviceA = NewService(store);
         var open = await serviceA.GetOpenConflictsAsync(CancellationToken.None);
-        var conflictId = open.Single(c => c.SecurityId == securityA).ConflictId;
+        var conflictId = open.Single(c => IsPairConflict(c, securityA, securityB)).ConflictId;
 
         var resolved = await serviceA.ResolveAsync(
             new ResolveConflictRequest(conflictId, "Resolve", "operator@meridian.test", "Edgar is golden.", ChosenWinnerSource: "Edgar"),

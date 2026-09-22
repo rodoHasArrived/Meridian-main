@@ -766,7 +766,18 @@ public sealed class AccountingPostingCandidateService :
             return existing;
         }
 
+        // The draft turns every candidate evidence link into a bare reference keyed by its URI,
+        // and the spine links each retained record's URI. A bare reference for a URI that typed
+        // retained evidence carries is the same evidence without its identity: left in place it
+        // survives the id-keyed merge (retained ids are not URIs) and the posting validator
+        // refuses the whole command as incomplete evidence.
+        var retainedUris = retainedEvidence
+            .Select(static evidence => evidence.EvidenceUri)
+            .Where(static uri => !string.IsNullOrWhiteSpace(uri))
+            .Select(static uri => uri.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         return existing
+            .Where(evidence => !IsBareReferenceFor(evidence, retainedUris))
             .Concat(retainedEvidence.Select(static evidence =>
                 new AccountingPostingEvidenceReferenceDto(
                     EvidenceId: evidence.EvidenceId,
@@ -788,6 +799,14 @@ public sealed class AccountingPostingCandidateService :
             .Select(static group => group.Last())
             .ToArray();
     }
+
+    private static bool IsBareReferenceFor(
+        AccountingPostingEvidenceReferenceDto evidence,
+        IReadOnlySet<string> retainedUris) =>
+        string.IsNullOrWhiteSpace(evidence.ContentHash) &&
+        evidence.EvidenceVersion is null &&
+        !string.IsNullOrWhiteSpace(evidence.Uri) &&
+        retainedUris.Contains(evidence.Uri.Trim());
 
     // Posting-candidate fingerprints arrive from external authority projections, so surrounding
     // whitespace is tolerated here before the shared digest contract is applied.

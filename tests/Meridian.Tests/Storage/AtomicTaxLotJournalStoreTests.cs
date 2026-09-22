@@ -628,6 +628,17 @@ public sealed class AtomicTaxLotJournalStoreTests
                 ClosedAt: null,
                 Version: 0),
             expectedVersion: 0);
+        // Authoritative disposal resolves relief from the effective account policy, and the
+        // disposals below request FIFO under revision tax-policy-v1.
+        await database.JournalStore.SaveTaxLotPolicyAsync(new LedgerAccountTaxLotPolicyRecord(
+            Guid.NewGuid(),
+            ledgerBookId,
+            new LedgerAccount("Investment lots", LedgerAccountType.Asset),
+            LedgerTaxLotReliefMethod.Fifo,
+            "tax-policy-v1",
+            new DateOnly(2026, 5, 1),
+            openedAt,
+            openedAt));
 
         var acquisition = BuildAcquisitionCommand(
             ledgerBookId,
@@ -865,7 +876,9 @@ public sealed class AtomicTaxLotJournalStoreTests
                     disposalEvidence.EvidenceId,
                     ExpectedUnitCost: 100m,
                     ExpectedCostBasis: 1_000m)
-            ]);
+            ],
+            reliefMethod: "Fifo",
+            policyRevision: "tax-policy-v1");
 
         var staleAct = () => database.JournalStore.AppendAssetPostingAsync(stale);
         await staleAct.Should().ThrowAsync<LedgerValidationException>()
@@ -899,7 +912,9 @@ public sealed class AtomicTaxLotJournalStoreTests
                     disposalEvidence.EvidenceId,
                     ExpectedUnitCost: 100m,
                     ExpectedCostBasis: 500m)
-            ]);
+            ],
+            reliefMethod: "Fifo",
+            policyRevision: "tax-policy-v1");
         var collisionAct = () => database.JournalStore.AppendAssetPostingAsync(idempotencyCollision);
         await collisionAct.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*identity collision*");
@@ -1030,11 +1045,26 @@ public sealed class AtomicTaxLotJournalStoreTests
                 new JournalEntryMetadata(
                     SecurityId: scopedSecurityId,
                     EffectiveDate: new DateOnly(2026, 5, 12),
-                    IdempotencyKey: idempotencyKey)),
+                    IdempotencyKey: idempotencyKey,
+                    Tags: SecurityMasterLineageTags(scopedSecurityId))),
             AggregateId: ledgerBookId,
             PeriodId: periodId,
             SourceEventId: sourceEventId,
             LedgerBookId: ledgerBookId);
+    }
+
+    // A journal carrying a SecurityId is instrument-bearing, so the period posting guard requires
+    // approved, active Security Master provenance and a ledger mapping for that security before
+    // the atomic lot economics are ever evaluated.
+    private static Dictionary<string, string> SecurityMasterLineageTags(Guid securityId)
+    {
+        var provenance = $"security-master:{securityId:N};snapshot:test-source-hash;approved:true";
+        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["securityMasterProvenance"] = provenance,
+            ["securityMasterLineage"] =
+                $"LOT:{securityId:N}:ledger-map:investment-lots:sm-approval:lot-controller:security-status:active:{provenance}"
+        };
     }
 
     private static RetainedEvidenceIdentityDto BuildEvidence(string evidenceId, char hashCharacter)
