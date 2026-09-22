@@ -1,11 +1,11 @@
 {
   "total_files": 670,
-  "total_lines": 144954,
+  "total_lines": 144956,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 267,
-  "average_lines": 216.3,
+  "average_lines": 216.4,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2361,7 +2361,7 @@
     },
     {
       "path": "docs/generated/database/contracts/asset-operations-contracts-page-01.md",
-      "line_count": 681,
+      "line_count": 683,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
