@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-10 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-22 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-10; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -196,6 +196,21 @@ risks that compound as new asset classes land.
 > do with the instrument, and the downward scenarios clamp back to zero. Compounding it, `DirectLoan`
 > supplies no resolvable principal basis either, so every calculated projection runs on a synthetic
 > 100 notional whatever the rate.
+>
+> **Scheduled institutional-requirements pass, 2026-09-22.** Re-read against `ab58115b`. The three
+> long-running Security Master branches merged in the window; their claimed closures were
+> independently re-verified and all hold (the import actor thread, the alias-history containment,
+> and the four identifier-ambiguity findings). The pass then framed on the **pricing and valuation
+> lane**, which no prior pass had read. See
+> [Scheduled institutional-requirements pass — 2026-09-22](#scheduled-institutional-requirements-pass--2026-09-22).
+> That lane is the one part of the subsystem with none of the properties the verdict credits it for:
+> `security_raw_prices` is keyed `(security_id, source_id)` with no time dimension, so no valuation
+> it produces is reproducible and the golden-copy query cannot take an as-of; four asset classes are
+> priced from hardcoded constants in two unit bases that short-circuit every configured source; and
+> the vendor entitlements meant to govern which vendor price may be used are enforced nowhere. It is
+> also not what values the book — the accounting lane's `IMarkPriceSource` / `MarkPriceQuote` is a
+> materially better price contract, and the two never meet, so reordering the pricing hierarchy in
+> the passport changes a display and nothing else.
 
 ---
 
@@ -5280,6 +5295,304 @@ remains the authoritative full run.
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-09-22
+
+Pinned at `ab58115b`, which is also `origin/main`: 708 commits after the 2026-09-10 anchor
+`168a55e4`, of which 20 non-merge commits touch Security Master source. Unlike the last pass, the
+code did **not** stand still — three long-running Security Master branches merged in the window
+(`#2854` conflict detection, `#2869` alias-history containment, `#2870` the trust-boundary
+corrective), plus the 2026-09-10 resolution commit itself. This pass therefore did two things:
+independently re-verified what those merges claim to close, and then framed on the one remaining
+institutional surface no prior pass has read — **the pricing and valuation lane**
+(`SecurityMasterPricingService`, `SecurityMasterPricing`, `PostgresSecurityMasterPricingStore`,
+migration 022, and the vendor-entitlement records that are supposed to govern it).
+
+The verdict on the framed lane is worse than the verdict on the subsystem as a whole. Every other
+part of the Security Master this review has read is event-sourced, rebuildable, governed and
+attributed; the pricing lane is none of those. It stores one current price per source with no time
+dimension, prices four asset classes from hardcoded constants in two different unit bases, and is
+not the thing that values the book — a second, better-modelled price contract in the accounting lane
+is. The vendor entitlements that exist to govern which vendor price may be used are recorded and
+rendered and enforced nowhere.
+
+Nothing here is a regression; this lane has been this way since migration 022 landed. What is new is
+that it has now been read.
+
+### Claimed closures, independently re-verified
+
+Each was checked against source at `ab58115b` rather than accepted from the merge description.
+
+| # | Item (pass of origin) | Evidence at `ab58115b` |
+| --- | --- | --- |
+| P1 (bulk-import branch, 2026-08-28) | Import accepts file-asserted attribution | `ISecurityMasterImportService.ImportAsync` now takes a required `actor` and documents that file-supplied attribution, source lineage, reason, effective time and identifier validity "are not authoritative and are replaced by the import workflow" (`SecurityMasterImportService.cs:36-56`). The HTTP surface resolves it from the authenticated principal and refuses the request when it cannot: `EndpointAuthorization.TryResolveActor(context, out var actor)` → `Results.Unauthorized()`, then `ImportAsync(..., actor, ...)` (`SecurityMasterEndpoints.cs:852-862`). This closes the branch of P1 that the 2026-08-28 pass led with. |
+| P3b (2026-08-28) | Editing an alias rewrites its recorded history | Closed by containment, not by versioning, and the code says so. `UpsertAliasAsync`'s `on conflict (alias_id) do update set alias_id = excluded.alias_id` is a deliberate no-op guarded by a `where` clause requiring **every** material column to match; a non-matching row returns no tuple and the store throws `SecurityAliasHistoryConflictException` (`PostgresSecurityMasterStore.Aliases.cs:33-64`). An idempotent replay echoes the stored `created_by`/`created_at` back to the caller (`:67-72`), so re-stamping is structurally impossible. `SecurityMasterService.UpsertAliasAsyncCore` refuses to read a null as success (`SecurityMasterService.cs:1702-1709`) and the endpoint surfaces the conflict (`SecurityMasterEndpoints.cs:463`). |
+| P1–P4 (identifier ambiguity, 2026-08-27) | Detection on raw values, blind to valid-time, first-pair-only, quadratic on rebuild | All four close in one rewrite. Claims are keyed on `IdentifierKey(Kind, NormalizedValue, IdentityScope)` with the normalized value computed by `SecurityIdentifierNormalizer.GetOrComputeNormalizedValue` (`SecurityMasterConflictDetection.cs:18-21, :62-72`), so detection and resolution now compare the same form (P1). Each claim carries `ValidFrom`/`ValidTo` and pairs are filtered through `FindDeterministicOverlap` (`:22-26, :103`), so non-overlapping historical claims no longer pair (P2). The claimant loop is a full nested enumeration over every distinct `SecurityId` claiming the key, not a first match (`:92-95`), so three claimants yield three pairs (P3). Rebuild cost is addressed by building the identifier map once per batch and restricting pairs to those involving a subject (`:44-48, :96-101, :143-160`), backed by a new indexed candidate lookup (`PostgresSecurityMasterStore.IdentifierCandidates.cs`) (P4). |
+
+### Re-verified as still open
+
+Spot-checked at this anchor, not re-derived. `SecurityAssetPackRegistry`'s shared prose objects
+(N5) are unchanged — `ContractSchema` is still one static instance of English phrases at `:37`, and
+`ValidateAll()` still passes an empty candidate list (N4). The projection fan-out still runs all
+eleven writers per record (N6, `PostgresSecurityMasterStore.cs:359`). D1's lossless half, C1,
+C2, C3, C6, C7, A1, A3, A4, B1–B7 and P1's remaining actor-source rows stand at the anchors their
+passes recorded; no commit in the window touches them.
+
+### E1 — The golden-copy price has no time dimension, so no valuation is reproducible
+
+`security_raw_prices` is declared `primary key (security_id, source_id)`
+(`022_security_master_pricing_hierarchy.sql:24`). One row per source per security, overwritten in
+place: `on conflict (security_id, source_id) do update set price = excluded.price, price_as_of =
+excluded.price_as_of, ...` (`PostgresSecurityMasterPricingStore.cs:96-101`). There is no price
+history table anywhere in the schema.
+
+Everything follows from that. `ISecurityMasterPricingService.GetGoldenCopyPriceAsync(Guid securityId,
+string? accountId, CancellationToken)` has **no as-of parameter**, and could not honour one if it had
+— the store holds only the current row. `GetRawPricesAsync` selects the whole current set
+(`:113-125`) and the service compares each against `DateTimeOffset.UtcNow`
+(`SecurityMasterPricingService.cs:83-97`). So the golden copy is not a recorded fact; it is a
+derivation over mutable current state, recomputed on every read, and it changes retroactively every
+time a vendor posts a new price.
+
+The institutional consequence is specific: **a NAV struck last Tuesday cannot be re-derived.** Asked
+"which vendor price did we use, at what staleness, and what did the alternatives say", the subsystem
+can answer only for this instant. That is the exact question the rest of the Security Master answers
+unusually well — the event store, the snapshot store, `RebuildRecordedAsOfAsync` and the
+recorded-versus-effective distinction exist precisely to separate "what did we believe then" from
+"what is true now" — and the pricing lane has none of it.
+
+There is a second, quieter defect in the same statement. The upsert is guarded `where
+excluded.price_as_of >= security_raw_prices.price_as_of` (`:101`), so a price arriving out of order
+updates **zero rows** — and `RecordRawPriceAsync` returns `Task` with no row count, no result and no
+exception (`:85-110`). The caller is told the price was recorded; it was discarded. The endpoint
+returns success on that path (`SecurityMasterEndpoints.cs:1364`). Compare the treatment the alias
+path received this same month under P3b: a write the store refuses to apply throws
+`SecurityAliasHistoryConflictException` rather than reporting success. Same defect class, opposite
+handling, same subsystem, three weeks apart.
+
+The remedy is the one the subsystem already uses everywhere else: make the raw price table
+append-only on `(security_id, source_id, price_as_of)`, give the golden-copy query an as-of
+parameter, and either record the selection or make it deterministically re-derivable from the
+as-of state. Until then the honest alternative is to say in the contract that this lane answers
+current-state questions only, so no close, NAV or report-pack consumer binds to it expecting
+reproducibility.
+
+### E2 — Four asset classes are priced by hardcoded constants, in two unit bases, and the constants outrank every configured source
+
+`TryGetCalculatedPrice` (`SecurityMasterPricingService.cs:124-157`) is a chain of asset-class string
+comparisons returning literals:
+
+- `Repo` → `CalculatedPar`, **100**
+- `CommercialPaper`, `CertificateOfDeposit` → `CalculatedStraightLine`, **100**
+- `MoneyMarketFund` → `CalculatedPar`, **1**
+
+Four separate problems sit in those nine lines.
+
+**The units are mixed and undeclared.** Three classes return 100 (price per 100 of par) and one
+returns 1 (price per unit NAV), in the same `decimal GoldenCopyPrice` field
+(`SecurityMasterPricing.cs:54`), which carries no basis discriminator. This review credits
+`FaceValueLot` for making the quote basis explicit precisely to kill the silent price-per-100
+assumption; `SecurityPriceGoldenCopyDto` reintroduces it, and now with two bases live in one field.
+
+**The straight-line rule does not accrete.** The comment concedes it — "The service returns par
+here; callers requiring full accretion use the ledger projector" (`:138-139`). A discount instrument
+bought at 97 and held to maturity is reported by the golden-copy API at 100 on every day of its life.
+This is the API the passport surface renders.
+
+**The money-market rule contradicts its own comment, using a field the class already carries.** The
+comment says "Non-institutional-prime money-market funds: priced at 1.0 (stable NAV)" (`:145`); the
+code applies 1.0 to *every* `MoneyMarketFund`. Institutional prime funds float their NAV, and the
+class's declared terms schema carries `liquidityFeeEligible` (`SecurityAssetTermsSchema.cs:288-294`)
+— the 2a-7 marker that distinguishes exactly the funds the comment means to exclude. The service
+never looks: it reads only `security.AssetClass` (`:50`) off a `SecurityDetailDto` whose terms it
+has in hand.
+
+**The constants short-circuit the configured hierarchy entirely.** The calculated branch returns
+before the hierarchy is loaded (`:49-56`), so for these four classes no operator-configured source,
+no vendor price, and in particular no client override can ever win. `SecurityPriceKind.ClientOverride`
+is declared in the taxonomy (`SecurityMasterPricing.cs:13`) and constructed by nothing in the
+repository.
+
+The unit tests do not catch any of this because they pin it:
+`GetGoldenCopyPriceAsync_ReturnsCalculatedPar_ForRepoAssetClass` asserts `100m` and
+`..._ForMoneyMarketFund` asserts `1m` (`SecurityMasterPricingServiceTests.cs:43-68`), with no
+terms supplied to either fixture.
+
+This is the fragile pattern the review has now filed under four different names — a behaviour
+selected by an asset-class string literal, in a file unrelated to where that class's fields are
+declared. The generalized form is a per-class valuation rule declared alongside the class (the
+terms schema and `AssetClassValidatorRegistry` are the shape), reading the class's own terms, and
+returning a price *with its basis*.
+
+### E3 — Three disjoint valuation vocabularies, and the Security Master's own one does not value the book
+
+The repository models "how was this priced" three times, in three namespaces, with no member in
+common and no mapping between them.
+
+1. **`SecurityPriceKind`** (`SecurityMasterPricing.cs:10-19`) — `Raw`, `TradePrice`,
+   `ClientOverride`, `MarketGoldenCopy`, `Comparison`, `CalculatedPar`, `CalculatedStraightLine`.
+   Four of the seven are never constructed anywhere in `src/`: `Raw`, `TradePrice`, `ClientOverride`
+   and `Comparison` have zero production sites.
+2. **`SecurityAssetPackRegistry.StandardValuationMethods`** (`:26-35`) — `MarketPrice`,
+   `ManagerReportedNav`, `Appraisal`, `DiscountedCashFlow`, `AmortizedCost`, `UserEstimate`,
+   `ExternalModel`. These are per-pack declarations (`:192, :208, :240`) validated only for
+   membership in the standard list (`:332`), and they flow to exactly two display surfaces —
+   `SecurityMasterOperationalReadinessService.cs:881` and the workstation bootstrap DTO.
+3. **`MarkPriceQuote`** (`src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:32-40`) —
+   a `decimal Price` with `Source`, `EvidenceReference`, an ASC 820 `FairValueLevel`
+   (`src/Meridian.Ledger/FairValueLevel.cs:10-22`), a `PriceAsOf`, a
+   `DailyPortfolioPriceConfidence`, and a `DataProvenance` that forces a synthetic or seeded source
+   to declare itself. It is served by `IMarkPriceSource.GetMarkPriceAsync(string symbol, DateOnly
+   asOf, ...)` (`:114-117`) — **keyed by an as-of date** — behind a `MarkPriceQualityPolicy` with a
+   minimum confidence and a stale-price rule, with rejections modelled explicitly
+   (`MarkPriceRejection`, `:102`).
+
+The third is a materially better contract than the first, and it is the one that values the book:
+`WaterfallMarkPriceSource`, `RegisteredHistoricalCloseMarkPriceSource` and
+`HistoricalCloseMarkPriceSource` implement it, and the daily valuation lane consumes it. The
+Security Master's pricing service is consumed by exactly two non-null call sites —
+`SecurityMasterWorkbenchQueryService.cs:966` and the four passport endpoints at
+`SecurityMasterEndpoints.cs:1306-1397`. Both are read-only presentation.
+
+So the operator-facing control that decides which vendor wins, and at what staleness, has no effect
+on the prices that value positions, strike NAV or feed reports. An operator who reorders the pricing
+hierarchy in the passport has changed a display. Nothing warns them; the section is titled as a
+control.
+
+This is finding 2 ("one concept, three or four modeling routes") at its most consequential, because
+the concept is price. The convergence direction is not in doubt: `MarkPriceQuote` already has the
+dimensions the other two lack (as-of, fair-value level, confidence, provenance, explicit rejection).
+What is missing is the seam — the Security Master hierarchy and its `MaxDaysStale` chain expressed
+as an `IMarkPriceSource` the valuation lane can consult, so configuring the hierarchy means
+something.
+
+### E4 — The pricing-hierarchy key holds two identifier namespaces, and the write is ungoverned
+
+`security_pricing_hierarchy` is keyed `primary key (security_id, account_id)`
+(`022_...sql:11`), with null normalized to the empty string
+(`PostgresSecurityMasterPricingStore.cs:82-83`). Two callers write into that `account_id` slot, and
+they do not agree on what it holds:
+
+- the HTTP surface passes a caller-supplied **account id** (`SecurityMasterEndpoints.cs:1384`);
+- the workbench read model passes a **fund profile id** —
+  `GetGoldenCopyPriceAsync(securityId, fundProfileId, ct)` and
+  `GetPricingHierarchyAsync(securityId, fundProfileId, ct)`
+  (`SecurityMasterWorkbenchQueryService.cs:966, :969`), into a parameter named `accountId`.
+
+Two namespaces, one text column, no discriminator. The ordinary outcome is silent invisibility: a
+hierarchy configured for account `ACC-1` through the API is not the row the passport reads for fund
+profile `ACC-1`, and vice versa — each simply sees no hierarchy and `GetGoldenCopyPriceAsync`
+returns null (`SecurityMasterPricingService.cs:58-63`). The unlucky outcome is a collision, where a
+fund profile and an account sharing a string silently share a pricing policy.
+
+The write itself has none of the governance the subsystem applies to every other operator-set
+control. `UpsertPricingHierarchyAsync` is a one-line delegation to the store
+(`SecurityMasterPricingService.cs:34-36`); the store upserts with `set entries = excluded.entries`
+(`:66-71`). No version, no optimistic concurrency, no prior-value retention, no approval, no audit
+row. The endpoint does stamp the authenticated actor — `request with { UpdatedBy = actor }`
+(`SecurityMasterEndpoints.cs:1334`), which is the trust-boundary rule correctly applied — but
+`updated_by` is a single overwritten column, so the record of who set the pricing policy is exactly
+one operator deep and the previous chain is gone. For a control that selects which vendor's price
+becomes the golden copy, that is the same governance gap the operator-override surface was built to
+close, in a lane the override machinery does not reach.
+
+### E5 — Vendor entitlements are recorded and rendered, and enforced nowhere
+
+`DataVendorEntitlementDto` models the licensing controls an institutional reference-data operation
+actually needs: vendor, `DataVendorDataType` (including `Pricing`), contract reference, effective
+window, `AumThresholdUsd`, `RequiresDirectClientContract`, renewal reminders, status, and — added by
+migration 020 — the scope quartet `ClientId` / `AccountId` / `FundProfileId` / `SecurityId` plus
+`SourceCategory`, `ExpectedRefreshCadence` and `DefaultMaxDaysStale`
+(`DataVendorEntitlement.cs:28-50`).
+
+`IDataVendorEntitlementService` exposes four members: `GetAllAsync`, `GetExpiringAsync`,
+`UpsertAsync`, `DeactivateAsync` (`IDataVendorEntitlementService.cs:5-11`). **There is no scoped
+query.** Nothing can ask "which entitlement covers pricing for this security, this fund, this
+client" — the four scope columns migration 020 added cannot be queried on.
+
+The one non-CRUD read site fetches the entire table for a single security's passport —
+`_entitlementService.GetAllAsync(ct)` (`SecurityMasterWorkbenchQueryService.cs:975`) — and resolves
+applicability and most-specific scope afterwards, in the presentation layer, to decide what the
+section says (`:1180-1186`, and the `applies`/`does not match the selected scope` summary at
+`:1171-1173`). So scope resolution exists, and exists only as display logic.
+
+The gap that matters is at the other end. `DefaultMaxDaysStale` — an entitlement's declared refresh
+expectation for a vendor's data — has four appearances in `src/`: it is written to the store, read
+back from it, copied into a DTO, and shown. `SecurityMasterPricingService` makes every staleness
+decision from `PricingHierarchyEntryDto.MaxDaysStale` (`SecurityMasterPricing.cs:28`,
+`SecurityMasterPricingService.cs:88`), a separately-configured number the entitlement never feeds.
+And no path — not golden-copy selection, not raw-price recording, not ingest — asks whether an
+entitlement for `DataVendorDataType.Pricing` is `Active` before using or redistributing that
+vendor's price. An `Expired` Bloomberg BVAL entitlement does not stop a BVAL price becoming the
+golden copy; it changes a line in a passport panel.
+
+For a subsystem whose governance elsewhere is a genuine strength, this is the weakest link in the
+pricing lane: the licensing control is a record of an intention with no enforcement point.
+
+### Smaller notes, not filed as findings
+
+- **A future-dated price reads as fresh.** `var age = (int)(now - rawPrice.PriceAsOf).TotalDays`
+  (`SecurityMasterPricingService.cs:87`) is negative when `PriceAsOf` is ahead of now, so
+  `age <= entry.MaxDaysStale` passes and the price is selected as non-stale with a negative
+  `DaysStale` reported to the caller. `RecordRawPriceAsync` does not bound `PriceAsOf`, and the
+  `>=` upsert guard actively favours the furthest-future timestamp — so one bad vendor timestamp
+  both wins selection and pins the row against every correct price that follows.
+- **`DaysStale` is the observed age, not the excess.** It is populated on both branches
+  (`:91, :96`), so a fresh selection reports a non-null "days stale". The passport then renders it
+  into a field named `DefaultMaxDaysStale` for the synthesized golden-copy row
+  (`SecurityMasterWorkbenchQueryService.cs:1207`) — an observed age presented in a policy-threshold
+  slot, beside real entitlement thresholds in the same list.
+- **`GetComparisonPricesAsync` never computes the comparison.** It returns every raw price with
+  `PctDiffFromGoldenCopy: null` unconditionally (`SecurityMasterPricingService.cs:115-122`), which
+  is the one field distinguishing it from a raw-price dump. The deviation *is* computed, but only
+  inside `GetGoldenCopyPriceAsync`'s `BuildComparisons` (`:158-177`). The endpoint at
+  `SecurityMasterEndpoints.cs:1397` serves the empty one.
+- **`ReplaceAliasesAsync` is a second alias write path outside P3b's new guard.** The projection
+  upsert deletes every alias row for a security and reinserts from `record.Aliases`
+  (`PostgresSecurityMasterStore.cs:353`, `PostgresSecurityMasterStore.Aliases.cs:74-121`), with no
+  immutability check. It is safe today because the aliases it reinserts are the ones it just read —
+  `AmendTermsInternalAsync` and `DeactivateAsync` both carry `aliasProjection?.Aliases` forward
+  (`SecurityMasterService.cs:83, :112` and `:256, :262`) — so the rows round-trip unchanged. The note is that
+  the guarantee is held by caller discipline at two sites rather than by the table, which is what
+  `UpsertAliasAsync`'s own docstring says alias rows need.
+- **P3b's containment removes the ability to correct an alias at all.** With no revision table, a
+  genuine correction now returns a conflict to the operator rather than silently rewriting history.
+  That is the right trade and the code is honest about it (`PostgresSecurityMasterStore.Aliases.cs:6-9`),
+  but the append-only alias revision it names as the real remedy is still unbuilt, so the operator
+  workflow for "this alias was wrong" is currently "create a new alias id and leave the wrong one
+  enabled".
+
+### Priorities from this pass
+
+Read as a delta on the standing lists. E1 and E5 are the two that would fail an institutional
+reference-data review outright; E2 is the cheapest.
+
+1. **Stop `TryGetCalculatedPrice` returning bare constants (E2).** Two sub-fixes, both small: carry
+   the quote basis on `SecurityPriceGoldenCopyDto` so 1 and 100 are not the same field, and read
+   `liquidityFeeEligible` before applying the stable-NAV constant. The larger move — per-class
+   valuation rules declared with the class — can follow; the units and the 2a-7 check should not
+   wait for it. Note that the existing unit tests assert the current constants and must change with
+   it.
+2. **Make raw prices append-only and give the golden-copy query an as-of (E1).** `(security_id,
+   source_id, price_as_of)` as the key, `GetGoldenCopyPriceAsync(..., DateTimeOffset asOf)`, and a
+   non-silent result from `RecordRawPriceAsync` when the write is superseded. Without this, no
+   valuation this lane produces is reproducible, which blocks every close, NAV and report-pack use
+   the roadmap contemplates for it.
+3. **Give the entitlement service a scoped query and one enforcement point (E5).** The scope columns
+   already exist; the missing pieces are `GetApplicableAsync(securityId, fundProfileId, clientId,
+   dataType)` and a check in golden-copy selection that the chosen source's `Pricing` entitlement is
+   `Active`. Feeding `DefaultMaxDaysStale` into the hierarchy's staleness default is the natural
+   second step.
+4. **Decide what the pricing hierarchy is for, and key it accordingly (E3, E4).** Either it becomes
+   an `IMarkPriceSource` the valuation lane consults — in which case the three valuation
+   vocabularies need one mapping and the hierarchy write needs the governance every other operator
+   control has — or the passport section says plainly that it is reference metadata and does not
+   price anything. The `account_id`/`fundProfileId` namespace collision must be resolved either way;
+   it is a correctness bug in its own right.
+5. **D1's lossless half, C4/C5's successors and the deferred codec-generation item are unchanged
+   in rank.** Nothing in this pass outranks them except E2, which is smaller than any of them.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -5518,3 +5831,30 @@ with the regenerated `docs/status/` reports correctly recognized as generated-ex
 check on this document, not on the subsystem it reviews, and it is recorded here only so the
 paragraph above is not read as claiming more silence than the pass kept — the same correction the
 2026-09-08 pass had to make after the fact (`4481741f`), made here before it was needed.
+
+The 2026-09-22 pass established the merge delta with `git log`/`git diff --stat` over
+`168a55e4..ab58115b` (708 commits, 20 of them non-merge commits touching Security Master source),
+then independently re-verified the three merged branches' claimed closures at source rather than
+from their descriptions: the import actor thread (`ISecurityMasterImportService`,
+`SecurityMasterImportService`, the `SecurityMasterImport` endpoint), the alias-history containment
+(`PostgresSecurityMasterStore.Aliases`, `SecurityMasterService.UpsertAliasAsyncCore`, the alias
+endpoint's conflict branch, and both `ReplaceAliasesAsync` callers), and the identifier-ambiguity
+rewrite (`SecurityMasterConflictDetection` end to end plus the new
+`PostgresSecurityMasterStore.IdentifierCandidates`). New to this pass: the pricing and valuation
+lane read end to end — `SecurityMasterPricing`, `ISecurityMasterPricingService`,
+`SecurityMasterPricingService`, `ISecurityMasterPricingStore`,
+`PostgresSecurityMasterPricingStore`, migration `022_security_master_pricing_hierarchy.sql`, the
+four pricing routes in `SecurityMasterEndpoints.cs`, `SecurityMasterPricingServiceTests`, and the
+vendor-entitlement records that govern it (`DataVendorEntitlement`,
+`IDataVendorEntitlementService`, `DataVendorEntitlementService`,
+`PostgresDataVendorEntitlementStore`, migrations 019 and 020). The claim that this lane does not
+value the book was established by enumerating every consumer of `ISecurityMasterPricingService` in
+`src/` and then reading the contract that does — `IMarkPriceSource` / `MarkPriceQuote` /
+`MarkPriceQualityPolicy` in `DailyMarkToMarketService`, `FairValueLevel` in `Meridian.Ledger`, and
+the three `IMarkPriceSource` implementations — rather than from the absence of a reference in one
+direction. E3's "four of seven never constructed" is a grep over `src/` per enum member.
+
+No code was changed. No .NET or TypeScript test was run — every claim in the 2026-09-22 pass is a
+source claim. In particular, E1's reproducibility consequence and E2's unit-basis and 2a-7 claims
+are read off the schema, the service and the test fixtures; none was observed against a running
+system or a populated database.
