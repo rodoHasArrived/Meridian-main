@@ -1,11 +1,11 @@
 {
   "total_files": 670,
-  "total_lines": 144803,
+  "total_lines": 144924,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 267,
-  "average_lines": 216.1,
+  "average_lines": 216.3,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1081,7 +1081,7 @@
     },
     {
       "path": "docs/ai/ai-known-errors.md",
-      "line_count": 509,
+      "line_count": 520,
       "has_heading": true,
       "todo_count": 10,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3881,7 +3881,7 @@
     },
     {
       "path": "Meridian Design System/BRAND_GUIDELINES.md",
-      "line_count": 68,
+      "line_count": 72,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3889,7 +3889,7 @@
     },
     {
       "path": "Meridian Design System/CHANGELOG.md",
-      "line_count": 207,
+      "line_count": 247,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4969,7 +4969,7 @@
     },
     {
       "path": "Meridian Design System/guidelines/ACCESSIBILITY.md",
-      "line_count": 287,
+      "line_count": 304,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5017,7 +5017,7 @@
     },
     {
       "path": "Meridian Design System/guidelines/VISUAL_FOUNDATIONS.md",
-      "line_count": 76,
+      "line_count": 97,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5041,7 +5041,7 @@
     },
     {
       "path": "Meridian Design System/INSPIRATION_BRIEF.md",
-      "line_count": 63,
+      "line_count": 68,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5081,7 +5081,7 @@
     },
     {
       "path": "Meridian Design System/VISUAL_FOUNDATIONS.md",
-      "line_count": 74,
+      "line_count": 97,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

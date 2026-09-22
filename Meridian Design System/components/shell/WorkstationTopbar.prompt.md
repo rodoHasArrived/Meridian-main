@@ -1,4 +1,4 @@
-Masthead chrome — the near-black brand bar (`#171A1F`) capping the light workstation: brand mark + module breadcrumb · Ctrl-K command search · UTC clock · environment mode badge.
+Masthead chrome — the near-black brand bar (`#1F1D1A`) capping the light workstation: brand mark + module breadcrumb · Ctrl-K command search · UTC clock · environment mode badge.
 
 ```jsx
 <WorkstationTopbar moduleLabel="Security Master" environment="PAPER" clock="14:32:08 UTC" />

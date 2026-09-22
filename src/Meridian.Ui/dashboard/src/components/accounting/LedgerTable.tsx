@@ -46,38 +46,38 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.ldg-wrap{overflow-x:auto;border:1px solid var(--border,#CBD3DC);
-  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FFFFFF);}
+.ldg-wrap{overflow-x:auto;border:1px solid var(--border,#E4E3DE);
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FBFAF8);}
 .ldg{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data,monospace);font-size:12px;}
 .ldg thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
-  background:var(--bg-medium,#EBEFF4);z-index:1;
+  background:var(--bg-medium,#EDEAE4);z-index:1;
   font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#59636F);
-  border-bottom:1px solid var(--border-strong,#99A5B2);border-right:1px solid var(--border-divider,#CBD3DC);}
+  letter-spacing:.03em;color:var(--text-muted,#5E666F);
+  border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#DAD8D3);}
 .ldg thead th:last-child{border-right:none;}
 .ldg th.ldg--r{text-align:right;}
-.ldg td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
-  border-top:1px solid var(--border,#CBD3DC);border-right:1px solid var(--border-divider,#CBD3DC);
+.ldg td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#22252A);
+  border-top:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border-divider,#DAD8D3);
   vertical-align:baseline;height:40px;}
 .ldg td:last-child{border-right:none;}
 .ldg tbody tr:first-child td{border-top:none;}
 .ldg td.ldg--r{text-align:right;}
-.ldg tbody tr:hover{background:var(--bg-hover,#F3F6F9);}
-.ldg__date{color:var(--text-secondary,#4D5967);}
-.ldg__ref{color:var(--accent,#2F6F8F);}
-.ldg__memo{font-family:var(--font-body,inherit);color:var(--text-secondary,#4D5967);
+.ldg tbody tr:hover{background:var(--bg-hover,#F0EEE9);}
+.ldg__date{color:var(--text-secondary,#4E5258);}
+.ldg__ref{color:var(--accent,#A85436);}
+.ldg__memo{font-family:var(--font-body,inherit);color:var(--text-secondary,#4E5258);
   white-space:normal;min-width:160px;}
-.ldg__acct{color:var(--text-primary,#22272E);}
-.ldg__open td{background:var(--bg-medium,#EBEFF4);color:var(--text-muted,#59636F);}
+.ldg__acct{color:var(--text-primary,#22252A);}
+.ldg__open td{background:var(--bg-medium,#EDEAE4);color:var(--text-muted,#5E666F);}
 .ldg__open .ldg__memo{font-style:italic;}
-.ldg tfoot td{padding:9px 12px;background:var(--bg-medium,#EBEFF4);font-weight:600;
-  border-top:2px solid var(--border-strong,#99A5B2);color:var(--text-primary,#22272E);}
+.ldg tfoot td{padding:9px 12px;background:var(--bg-medium,#EDEAE4);font-weight:600;
+  border-top:2px solid var(--border-strong,#AFABA1);color:var(--text-primary,#22252A);}
 .ldg tfoot td.ldg--r{text-align:right;}
 .ldg__foot-label{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#4D5967);}
+  font-size:11px;color:var(--text-secondary,#4E5258);}
 .ldg__sort{cursor:pointer;user-select:none;}
-.ldg__sort:focus-visible{outline:2px solid var(--accent,#2F6F8F);outline-offset:-2px;}
+.ldg__sort:focus-visible{outline:2px solid var(--accent,#A85436);outline-offset:-2px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "ledger");
@@ -213,7 +213,7 @@ export function LedgerTable({
                 {r._hasBal ? (
                   <AmountCell value={r._bal} currency={currency} parens />
                 ) : (
-                  <span style={{ color: "var(--text-disabled, #889099)" }}>—</span>
+                  <span style={{ color: "var(--text-disabled, #94999F)" }}>—</span>
                 )}
               </td>
             </tr>
