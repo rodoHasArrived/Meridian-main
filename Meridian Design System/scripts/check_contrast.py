@@ -253,6 +253,20 @@ def check_brands(root: Path) -> list[str]:
         # promise silently reverts to copper the moment the OS asks for dark. Six brands
         # shipped that way. Skipping the unstated mode would also hide it from every check
         # below, so name it here rather than measure the defaults twice.
+        # A brand exists to replace the accent, so it owes every accent-family token the
+        # default declares — not just the trio. Round six added the focus ring and ghost after
+        # six brands shipped without them; --theme-accent-figure went the same way and was
+        # caught the same way, one round later. Deriving the list from the default means the
+        # next token added there is covered without anyone remembering to add it here.
+        if stated["light"]:
+            family = {name for name in defaults
+                      if name.startswith("--theme-accent") or name == "--theme-border-focus"}
+            missing = sorted(family - set(declared))
+            for name in missing:
+                print(f"[light · brand {brand}] no {name}: inherits the default FAIL")
+                failures.append(
+                    f"[light · brand {brand}] declares an accent but no {name}; it would render "
+                    "the default's value while the rest of the identity changes")
         if stated["light"] and not stated["dark"]:
             print(f"[dark · brand {brand}] no dark identity: inherits the default accent FAIL")
             failures.append(
@@ -452,6 +466,40 @@ def check_var_chains(root: Path) -> list[str]:
                                         f"this track never declares it, so the declaration is "
                                         f"invalid at computed-value time")
                         print(f"[var-chain] {track} {_rel(f, root)}:{lineno}: var({ref}) UNRESOLVED")
+    # The loop above reads the token sheets, which is where a token's *definition* can name a
+    # missing sibling. A component can do the same thing with no fallback at all, and that was
+    # invisible to every pass here: check_fallbacks only sees a call that HAS a literal, and
+    # this one only saw the stylesheets. Round twelve walked straight into it by pointing the
+    # package's CandleChart at a --chart-ma20 only the workstation declared.
+    # Every sheet the package ships, not just the colour ones: --font-body lives in
+    # typography.css and --focus-ring in elevation.css, and a call site may name either.
+    package_tokens: set[str] = set()
+    for sheet in sorted((root / "tokens").glob("*.css")):
+        package_tokens |= set(DECL_NAME.findall(blank_comments(sheet.read_text(encoding="utf-8"))))
+    workstation_tokens: set[str] = set()
+    for f in tracks(root)["workstation"]:
+        if f.exists():
+            workstation_tokens |= set(DECL_NAME.findall(blank_comments(f.read_text(encoding="utf-8"))))
+    for track, base in call_sites(root):
+        if not base.exists():
+            continue
+        for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
+            if path != base and path.suffix not in CALL_SITE_SUFFIXES:
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if path.suffix == ".css":
+                text = blank_comments(text)
+            declared = workstation_tokens if track == "workstation" else package_tokens
+            local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
+            for lineno, line in enumerate(text.splitlines(), 1):
+                for ref in BARE_REF.findall(line):
+                    checked += 1
+                    if ref in declared or ref in local or ref in KNOWN_UNDECLARED:
+                        continue
+                    failures.append(f"[var-chain] {_rel(path, root)}:{lineno}: bare var({ref}) with "
+                                    "no fallback names a token this track never declares — it "
+                                    "renders as nothing")
+                    print(f"[var-chain] {_rel(path, root)}:{lineno}: bare var({ref}) UNDECLARED")
     if not failures:
         print(f"[var-chain] all {checked} bare var() references resolve within their own track")
     return failures
@@ -517,11 +565,17 @@ COMPILED_BUNDLE = "_ds_bundle.js"
 LOCAL_PREFIXES = ("--mds-", "--tw-")
 
 
-def call_sites(root: Path) -> list[Path]:
+def call_sites(root: Path) -> list[tuple[str, Path]]:
+    """Each call-site base with the track that owns it.
+
+    The track cannot be inferred from the path text: `templates/dashboard-workstation/` is a
+    package template whose name contains "dashboard", and resolving it against the
+    workstation's tokens reported forty perfectly good references as undeclared.
+    """
     repo = root.parent
-    return ([root / rel for rel in PACKAGE_CALL_SITES]
-            + [repo / rel for rel in WORKSTATION_CALL_SITES]
-            + [root / COMPILED_BUNDLE])
+    return ([("package", root / rel) for rel in PACKAGE_CALL_SITES]
+            + [("workstation", repo / rel) for rel in WORKSTATION_CALL_SITES]
+            + [("package", root / COMPILED_BUNDLE)])
 
 
 def split_var_call(text: str, start: int) -> tuple[str, str] | None:
@@ -631,7 +685,7 @@ def check_fallbacks(root: Path) -> list[str]:
     failures: list[str] = []
     notes: list[str] = []
     checked = 0
-    for base in call_sites(root):
+    for track, base in call_sites(root):
         if not base.exists():
             continue
         paths = [base] if base.is_file() else sorted(base.rglob("*"))
@@ -644,8 +698,7 @@ def check_fallbacks(root: Path) -> list[str]:
             if path.suffix == ".css":
                 text = blank_comments(text)
             local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
-            tokens = (workstation_tokens if str(path).find("dashboard") >= 0
-                      else package_tokens)
+            tokens = workstation_tokens if track == "workstation" else package_tokens
             for lineno, line in enumerate(text.splitlines(), 1):
                 for found in VAR_CALL.finditer(line):
                     if not found.group(2):        # no comma: no fallback to check
@@ -924,7 +977,7 @@ def check_accent_on_wash(root: Path) -> list[str]:
     """No rule may put raw `--accent` text on an accent-tinted surface."""
     failures: list[str] = []
     scanned = 0
-    for base in call_sites(root):
+    for track, base in call_sites(root):
         if not base.exists():
             continue
         for path in ([base] if base.is_file() else sorted(base.rglob("*"))):

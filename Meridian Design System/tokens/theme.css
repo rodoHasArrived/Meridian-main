@@ -179,6 +179,12 @@ html[data-brand="indigo"] {
   --theme-accent-dim: #4338CA;
   --theme-accent-hover: #6264ED;
   --theme-brand-color: #4F46E5;
+  /* Motif and report-cover fill. Only the default and steel declared one, so a branded
+     build's covers stayed copper while everything else changed. Each is this brand's own
+     accent lifted until it clears 3:1 on the canvas — the graphic threshold, since the
+     figure never sits behind text — landing beside the default's 3.14:1. */
+  --theme-accent-figure: #7E77EC;
+
   /* Focus ring and ghost surface follow this brand's accent. Declaring only an
      accent trio left both falling through to the default copper, so a branded
      build still showed copper focus rings and warm-brown ghost fills. */
@@ -199,6 +205,12 @@ html[data-brand="emerald"] {
   --theme-accent-dim: #0A6748;
   --theme-accent-hover: #0E875F;
   --theme-brand-color: #0B7A55;
+  /* Motif and report-cover fill. Only the default and steel declared one, so a branded
+     build's covers stayed copper while everything else changed. Each is this brand's own
+     accent lifted until it clears 3:1 on the canvas — the graphic threshold, since the
+     figure never sits behind text — landing beside the default's 3.14:1. */
+  --theme-accent-figure: #0E9B6C;
+
   /* Focus ring and ghost surface follow this brand's accent. Declaring only an
      accent trio left both falling through to the default copper, so a branded
      build still showed copper focus rings and warm-brown ghost fills. */
@@ -219,6 +231,12 @@ html[data-brand="rose"] {
   --theme-accent-dim: #BE123C;
   --theme-accent-hover: #CB1A41;
   --theme-brand-color: #E11D48;
+  /* Motif and report-cover fill. Only the default and steel declared one, so a branded
+     build's covers stayed copper while everything else changed. Each is this brand's own
+     accent lifted until it clears 3:1 on the canvas — the graphic threshold, since the
+     figure never sits behind text — landing beside the default's 3.14:1. */
+  --theme-accent-figure: #E95273;
+
   /* Focus ring and ghost surface follow this brand's accent. Declaring only an
      accent trio left both falling through to the default copper, so a branded
      build still showed copper focus rings and warm-brown ghost fills. */
@@ -239,6 +257,12 @@ html[data-brand="slate"] {
   --theme-accent-dim: #475569;
   --theme-accent-hover: #5A687D;
   --theme-brand-color: #64748B;
+  /* Motif and report-cover fill. Only the default and steel declared one, so a branded
+     build's covers stayed copper while everything else changed. Each is this brand's own
+     accent lifted until it clears 3:1 on the canvas — the graphic threshold, since the
+     figure never sits behind text — landing beside the default's 3.14:1. */
+  --theme-accent-figure: #79899F;
+
   /* Focus ring and ghost surface follow this brand's accent. Declaring only an
      accent trio left both falling through to the default copper, so a branded
      build still showed copper focus rings and warm-brown ghost fills. */
@@ -259,6 +283,12 @@ html[data-brand="cyan"] {
   --theme-accent-dim: #0B5E76;
   --theme-accent-hover: #0E7490;
   --theme-brand-color: #0C6A85;
+  /* Motif and report-cover fill. Only the default and steel declared one, so a branded
+     build's covers stayed copper while everything else changed. Each is this brand's own
+     accent lifted until it clears 3:1 on the canvas — the graphic threshold, since the
+     figure never sits behind text — landing beside the default's 3.14:1. */
+  --theme-accent-figure: #1193B8;
+
   /* Focus ring and ghost surface follow this brand's accent. Declaring only an
      accent trio left both falling through to the default copper, so a branded
      build still showed copper focus rings and warm-brown ghost fills. */
@@ -279,6 +309,12 @@ html[data-brand="amber"] {
   --theme-accent-dim: #8F4108;
   --theme-accent-hover: #B45309;
   --theme-brand-color: #A34A08;
+  /* Motif and report-cover fill. Only the default and steel declared one, so a branded
+     build's covers stayed copper while everything else changed. Each is this brand's own
+     accent lifted until it clears 3:1 on the canvas — the graphic threshold, since the
+     figure never sits behind text — landing beside the default's 3.14:1. */
+  --theme-accent-figure: #DD640B;
+
   /* Focus ring and ghost surface follow this brand's accent. Declaring only an
      accent trio left both falling through to the default copper, so a branded
      build still showed copper focus rings and warm-brown ghost fills. */

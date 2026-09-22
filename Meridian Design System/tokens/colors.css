@@ -143,6 +143,11 @@
   --chart-primary:      var(--accent);        /* primary / strategy line (brand) */
   --chart-secondary:    var(--text-muted);    /* benchmark / secondary series */
   --chart-warning:      var(--orange);        /* warning / threshold line */
+  /* Moving-average overlays. The accent is 11 degrees from --chart-drawdown, so an MA
+     crossing falling candles disappears into them; these are the roles that keep the
+     hue separation the restyle's first review round measured. */
+  --chart-ma20:         var(--purple);        /* MA(20) overlay */
+  --chart-ma50:         var(--orange);        /* MA(50) overlay */
 }
 
 /* ── Meridian app compatibility aliases (Track B --ws-* + working names) ───────

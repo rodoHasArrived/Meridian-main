@@ -4464,7 +4464,7 @@ function Treemap({
       const tok = GROUP_WASHES[groups.indexOf(d.group) % GROUP_WASHES.length];
       return `color-mix(in srgb, var(${tok}) 12%, transparent)`;
     }
-    return "var(--bg-raised)";
+    return "var(--card-surface-raised)";
   };
   const mono = {
     fontFamily: "var(--font-data)",

@@ -569,15 +569,15 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workstation-statusbar-dot-ok {
-  background: #2FA377;
+  background: var(--chrome-ok, #56A37E);
 }
 
 .workstation-statusbar-dot-warn {
-  background: #D6A84A;
+  background: var(--chrome-warn, #C79A4C);
 }
 
 .workstation-statusbar-dot-err {
-  background: #E27087;
+  background: var(--chrome-err, #D1746B);
 }
 
 @media (max-width: 640px) {

@@ -200,6 +200,19 @@
     --ws-text-secondary: #4E5258;
     --ws-masthead-bg: #1F1D1A;
     --ws-masthead-fg: #F4F2ED;
+    /* Chrome status colours. The bars are near-black in every scope, so these are the
+    same everywhere; the package has declared them since the restyle and the
+    workstation never did, which is why app-shell.css was still painting the
+    pre-restyle mint, yellow and pink. */
+    --chrome-ok: #56A37E;
+    --chrome-warn: #C79A4C;
+    --chrome-err: #D1746B;
+    /* Type faces as tokens. Thirteen call sites name these and the workstation declared
+    none of them, so every one resolved to nothing and inherited instead. Values mirror
+    the package's tokens/typography.css. */
+    --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     --ws-rail-bg: #EDEAE4;
     --ws-rail-active: #F2E3DB;
     --ws-row-hover: #F0EEE9;
@@ -444,6 +457,19 @@
       --ws-text-secondary: #B5AEA4;
       --ws-masthead-bg: #100E0C;
       --ws-masthead-fg: #EDE9E2;
+      /* Chrome status colours. The bars are near-black in every scope, so these are the
+      same everywhere; the package has declared them since the restyle and the
+      workstation never did, which is why app-shell.css was still painting the
+      pre-restyle mint, yellow and pink. */
+      --chrome-ok: #56A37E;
+      --chrome-warn: #C79A4C;
+      --chrome-err: #D1746B;
+      /* Type faces as tokens. Thirteen call sites name these and the workstation declared
+      none of them, so every one resolved to nothing and inherited instead. Values mirror
+      the package's tokens/typography.css. */
+      --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
       --ws-rail-bg: #292520;
       --ws-rail-active: #3A2E26;
       --ws-row-hover: #2E2A24;
@@ -562,6 +588,19 @@
     --ws-text-secondary: #B5AEA4;
     --ws-masthead-bg: #100E0C;
     --ws-masthead-fg: #EDE9E2;
+    /* Chrome status colours. The bars are near-black in every scope, so these are the
+    same everywhere; the package has declared them since the restyle and the
+    workstation never did, which is why app-shell.css was still painting the
+    pre-restyle mint, yellow and pink. */
+    --chrome-ok: #56A37E;
+    --chrome-warn: #C79A4C;
+    --chrome-err: #D1746B;
+    /* Type faces as tokens. Thirteen call sites name these and the workstation declared
+    none of them, so every one resolved to nothing and inherited instead. Values mirror
+    the package's tokens/typography.css. */
+    --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     --ws-rail-bg: #292520;
     --ws-rail-active: #3A2E26;
     --ws-row-hover: #2E2A24;
@@ -682,6 +721,19 @@
     --ws-text-secondary: #4E5258;
     --ws-masthead-bg: #1F1D1A;
     --ws-masthead-fg: #F4F2ED;
+    /* Chrome status colours. The bars are near-black in every scope, so these are the
+    same everywhere; the package has declared them since the restyle and the
+    workstation never did, which is why app-shell.css was still painting the
+    pre-restyle mint, yellow and pink. */
+    --chrome-ok: #56A37E;
+    --chrome-warn: #C79A4C;
+    --chrome-err: #D1746B;
+    /* Type faces as tokens. Thirteen call sites name these and the workstation declared
+    none of them, so every one resolved to nothing and inherited instead. Values mirror
+    the package's tokens/typography.css. */
+    --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     --ws-rail-bg: #EDEAE4;
     --ws-rail-active: #F2E3DB;
     --ws-row-hover: #F0EEE9;

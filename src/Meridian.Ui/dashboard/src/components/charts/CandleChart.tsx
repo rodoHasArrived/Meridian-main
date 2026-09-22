@@ -46,7 +46,9 @@ export interface CandleChartProps {
 }
 
 const DEFAULT_OVERLAYS: CandleOverlay[] = [
-  { label: "MA20", color: "var(--accent, #A85436)", win: 20 },
+  // MA20 is the violet overlay role, not the accent: copper sits 11 degrees from the brick
+  // down candle, which is the collision --chart-ma20 exists to avoid.
+  { label: "MA20", color: "var(--chart-ma20, #5D5486)", win: 20 },
   { label: "MA50", color: "var(--chart-warning, #8A5C12)", win: 50 }
 ];
 
