@@ -17,10 +17,10 @@ public interface IOperationsReportPackAuthority
 
 /// <summary>Resolves pre-close report support from retained packages, never a caller readiness flag.</summary>
 public sealed class OperationsReportPackAuthority(
-    IAccountingReportPackageService packages,
-    ILedgerBookService books,
-    IFundProfileTenancyRegistry ownership,
-    ILedgerJournalStore journals) : IOperationsReportPackAuthority
+    IAccountingReportPackageService? packages = null,
+    ILedgerBookService? books = null,
+    IFundProfileTenancyRegistry? ownership = null,
+    ILedgerJournalStore? journals = null) : IOperationsReportPackAuthority
 {
     private const string RevisionSource = "accounting-report-package-revision";
 
@@ -40,6 +40,12 @@ public sealed class OperationsReportPackAuthority(
         string tenantId, string companyId, CancellationToken ct = default)
     {
         static OperationsReportPackReadinessDto Block(string message) => new(false, null, message, []);
+        ct.ThrowIfCancellationRequested();
+        // Seeded and setup-only hosts can render the workstation before a durable ledger is
+        // configured. Composition stays available, but none of its missing sources can attest
+        // report readiness or allow the publication guard to close a period.
+        if (packages is null || books is null || ownership is null || journals is null)
+            return Block("The retained report-package or canonical ledger authority is unavailable.");
         if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId)
             || string.IsNullOrWhiteSpace(packageId) || workflow.LedgerBookId is not { } bookId)
             return Block("Select a retained report package for the exact authenticated account, book, and period.");

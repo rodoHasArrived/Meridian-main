@@ -11,8 +11,11 @@ public sealed class StructuredCashFlowTermsResolverTests
     {
         var security = Build(JsonSerializer.SerializeToElement(new
         {
-            startDate = "2026-06-01", endDate = "2026-06-08", repoRate = 5m
-        })) with { AssetClass = "Repo" };
+            startDate = "2026-06-01",
+            endDate = "2026-06-08",
+            repoRate = 5m
+        })) with
+        { AssetClass = "Repo" };
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
         terms.IssueDate.Should().Be(new DateOnly(2026, 6, 1));
         terms.MaturityDate.Should().Be(new DateOnly(2026, 6, 8));
@@ -23,7 +26,8 @@ public sealed class StructuredCashFlowTermsResolverTests
     public void StructuredCreditIndexName_IsUnresolvedRatherThanZeroCoupon()
     {
         var security = Build(JsonSerializer.SerializeToElement(new { couponOrIndex = "SOFR + 300" }))
-            with { AssetClass = "StructuredCredit" };
+            with
+        { AssetClass = "StructuredCredit" };
         StructuredCashFlowTermsResolver.Resolve(security).CouponRate.Should().BeNull();
     }
 

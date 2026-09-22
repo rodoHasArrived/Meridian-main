@@ -53,7 +53,8 @@ internal static class HistoricalTaxLotQuantity
 
             running = mutation.After;
             lastVersion = mutation.ResultVersion;
-            if (mutation.EffectiveDate <= effectiveDate) asOf += mutation.Delta;
+            if (mutation.EffectiveDate <= effectiveDate)
+                asOf += mutation.Delta;
         }
         if (running != lot.OpenQuantity || ordered[^1].MutationBatchId != lot.LastMutationBatchId ||
             asOf < 0m || asOf > lot.OriginalQuantity ||

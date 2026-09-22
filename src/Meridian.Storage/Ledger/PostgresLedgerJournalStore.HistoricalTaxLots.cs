@@ -93,7 +93,8 @@ public sealed partial class PostgresLedgerJournalStore
     private async Task<IReadOnlyList<DatedTaxLotQuantityMutation>> ReadDatedLotQuantitiesAsync(
         NpgsqlConnection connection, NpgsqlTransaction transaction, Guid ledgerBookId, Guid[] lotIds, CancellationToken ct)
     {
-        if (lotIds.Length == 0) return [];
+        if (lotIds.Length == 0)
+            return [];
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = $"""

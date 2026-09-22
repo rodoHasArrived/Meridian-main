@@ -30,8 +30,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             FundStructureNodeKindDto.Fund, "Historical legacy", "USD", at, at));
         var lot = BuildAcquisitionCommand(bookId).AcquisitionLot! with
         {
-            OpenQuantity = 60m, SourceJournalEntryId = null,
-            OriginatingMutationBatchId = null, LastMutationBatchId = null
+            OpenQuantity = 60m,
+            SourceJournalEntryId = null,
+            OriginatingMutationBatchId = null,
+            LastMutationBatchId = null
         };
         await database.JournalStore.SaveTaxLotAsync(lot);
         var act = () => database.JournalStore.ListOpenTaxLotsByAssetScopeAsync(bookId,
@@ -56,24 +58,33 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var lot = acquisition.AcquisitionLot!;
         var acquisitionEvidence = BuildEvidence("historical-acquisition", 'e') with
         {
-            SubjectType = "OpenLotAcquisition", SubjectId = lot.TaxLotRecordId.ToString("D"),
+            SubjectType = "OpenLotAcquisition",
+            SubjectId = lot.TaxLotRecordId.ToString("D"),
             EffectiveDate = lot.AcquiredDate
         };
-        acquisition = (acquisition with { AcquisitionLot = lot with
+        acquisition = (acquisition with
         {
-            OriginalFace = 10_000m, BookedFactor = 0.8m, ParBasis = 100m,
-            Acquisition = new(LotQuantityBasis.Face, "USD", "USD", 1m, 10_000m, 10_000m,
+            AcquisitionLot = lot with
+            {
+                OriginalFace = 10_000m,
+                BookedFactor = 0.8m,
+                ParBasis = 100m,
+                Acquisition = new(LotQuantityBasis.Face, "USD", "USD", 1m, 10_000m, 10_000m,
                 lot.AcquiredDate, new(100m, 0.8m, BondAmortizationMethod.StraightLine, null), [acquisitionEvidence])
-        } }).WithComputedFingerprint();
+            }
+        }).WithComputedFingerprint();
         var acquired = await database.JournalStore.AppendAssetPostingAsync(acquisition);
         lot = acquired.MutatedLots.Single();
         var eventId = Guid.NewGuid();
         var evidence = BuildEvidence("historical-disposal", 'f') with { EffectiveDate = new(2026, 5, 20) };
         var write = BuildJournalWrite(bookId, periodId, eventId, "historical-disposal", "Cash",
             "Investment lots", quantitySold * 100m);
-        write = write with { Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp,
+        write = write with
+        {
+            Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp,
             write.Entry.Description, write.Entry.Lines,
-            write.Entry.Metadata with { EffectiveDate = new DateOnly(2026, 5, 20) }) };
+            write.Entry.Metadata with { EffectiveDate = new DateOnly(2026, 5, 20) })
+        };
         var disposal = AtomicTaxLotJournalCommand.Create(Guid.NewGuid(), bookId, write, eventId,
             "historical-disposal", period.Version, AtomicTaxLotMutationKind.Disposal, [evidence],
             disposalSelections: [new(lot.TaxLotRecordId, lot.LotId, lot.Version, 100m,
@@ -92,8 +103,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             .Should().Be(12_500m);
         var after = await reopened.ListOpenTaxLotsByAssetScopeAsync(bookId, TestSecurityId,
             TestBookPositionId, new(2026, 5, 20));
-        if (quantitySold == 100m) after.Should().BeEmpty();
-        else after.Should().ContainSingle().Which.OpenQuantity.Should().Be(60m);
+        if (quantitySold == 100m)
+            after.Should().BeEmpty();
+        else
+            after.Should().ContainSingle().Which.OpenQuantity.Should().Be(60m);
         (await reopened.GetTaxLotsByIdsAsync(bookId, [lot.TaxLotRecordId])).Single()
             .OpenQuantity.Should().Be(100m - quantitySold, "historical reads never rewrite current holdings");
     }

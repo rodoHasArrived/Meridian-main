@@ -156,8 +156,11 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         var imported = StatementRun();
         var artifact = new StatementRunMatchArtifact(StatementRunId, StatementRunId,
             imported.Breaks, imported.Cases, 0)
-        { SourceComparisonComplete = true, SourceComparisonPolicyFingerprint = new string('a', 64),
-            SourceComparisonPopulationKinds = ["cash"] };
+        {
+            SourceComparisonComplete = true,
+            SourceComparisonPolicyFingerprint = new string('a', 64),
+            SourceComparisonPopulationKinds = ["cash"]
+        };
         var source = StatementReconciliationIntakeAuthority.ComparisonSourceIdentity(imported.Import, artifact, SourceInstitution);
         var scope = new ReconciliationRunObservationScope(TenantId, CompanyId, FundProfileId.ToString("D"),
             FundAccountId.ToString("D"), LedgerBookId, AccountingPeriodId.ToString("D"), source, ExternalAccountId);
@@ -413,8 +416,11 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         matches.Setup(store => store.GetAsync(StatementRunId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new StatementRunMatchArtifact(StatementRunId, StatementRunId,
                 statementRun.Breaks, statementRun.Cases, 0)
-            { SourceComparisonComplete = true, SourceComparisonPolicyFingerprint = new string('a', 64),
-                SourceComparisonPopulationKinds = ["cash"] });
+            {
+                SourceComparisonComplete = true,
+                SourceComparisonPolicyFingerprint = new string('a', 64),
+                SourceComparisonPopulationKinds = ["cash"]
+            });
         var authority = new StatementReconciliationIntakeAuthority(
             accounts.Object,
             tenancy.Object,

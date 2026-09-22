@@ -43,25 +43,29 @@ public sealed class FundStructureTenantBackfillTests
             var second = Row("fund", Guid.NewGuid(), "Fund", [snapshot.Rows.Single(row => row.Kind == "Organization").Id]);
             snapshot = snapshot with { Rows = [.. snapshot.Rows, second], Evidence = [.. snapshot.Evidence, Evidence(second.Id, "tenant-b")] };
         }
-        else if (conflict == "missing-registry") snapshot = snapshot with { Evidence = [] };
-        else if (conflict == "existing-owner") snapshot = snapshot with
-        {
-            Rows = snapshot.Rows.Select(row => row.Id == fund.Id ? row with { TenantId = "tenant-b" } : row).ToArray()
-        };
-        else if (conflict == "non-owning-link") snapshot = snapshot with
-        {
-            Rows = snapshot.Rows.Select(row => row.Kind == "OwnershipLink"
-                ? row with { RetainedRow = JsonSerializer.SerializeToElement(new { relationship_type = "Advises" }) } : row).ToArray()
-        };
+        else if (conflict == "missing-registry")
+            snapshot = snapshot with { Evidence = [] };
+        else if (conflict == "existing-owner")
+            snapshot = snapshot with
+            {
+                Rows = snapshot.Rows.Select(row => row.Id == fund.Id ? row with { TenantId = "tenant-b" } : row).ToArray()
+            };
+        else if (conflict == "non-owning-link")
+            snapshot = snapshot with
+            {
+                Rows = snapshot.Rows.Select(row => row.Kind == "OwnershipLink"
+                    ? row with { RetainedRow = JsonSerializer.SerializeToElement(new { relationship_type = "Advises" }) } : row).ToArray()
+            };
         else if (conflict == "seeded-child")
         {
             var child = Row("fund", Guid.NewGuid(), "Fund", [fund.Id]);
             snapshot = snapshot with { Rows = [.. snapshot.Rows, child], Evidence = [.. snapshot.Evidence, Evidence(child.Id, "tenant-b")] };
         }
-        else snapshot = snapshot with
-        {
-            Rows = snapshot.Rows.Select(row => row.Kind == "Organization" ? row with { Parents = [fund.Id] } : row).ToArray()
-        };
+        else
+            snapshot = snapshot with
+            {
+                Rows = snapshot.Rows.Select(row => row.Kind == "Organization" ? row with { Parents = [fund.Id] } : row).ToArray()
+            };
 
         var plan = FundStructureTenantBackfillPlanner.Create(snapshot);
 
@@ -69,7 +73,8 @@ public sealed class FundStructureTenantBackfillTests
         plan.Stamps.Should().BeEmpty();
         plan.Exceptions.Should().HaveCount(snapshot.Rows.Count);
         plan.Exceptions.Should().Contain(row => row.NodeKind == "OwnershipLink");
-        if (conflict == "existing-owner") plan.Evidence.Rows.Single(row => row.Id == fund.Id).TenantId.Should().Be("tenant-b");
+        if (conflict == "existing-owner")
+            plan.Evidence.Rows.Single(row => row.Id == fund.Id).TenantId.Should().Be("tenant-b");
     }
 
     [Fact]
@@ -126,7 +131,8 @@ public sealed class FundStructureTenantBackfillTests
         });
 
         plan.AttributionComplete.Should().Be(compatible);
-        if (!compatible) plan.BlockingReasons.Should().ContainMatch("*resolution conflicts*");
+        if (!compatible)
+            plan.BlockingReasons.Should().ContainMatch("*resolution conflicts*");
     }
 
     [Fact]
@@ -200,14 +206,17 @@ public sealed class FundStructureTenantBackfillTests
     {
         var snapshot = MakeSnapshot();
         var evidence = snapshot.Evidence.Single();
-        snapshot = snapshot with { Evidence = [evidence with
+        snapshot = snapshot with
+        {
+            Evidence = [evidence with
         {
             RetainedBook = JsonSerializer.SerializeToElement(new
             {
                 ledger_book_id = evidence.BookId, fund_profile_id = evidence.FundProfileId,
                 fund_structure_node_id = evidence.NodeId, fund_structure_node_kind = "Fund", tenant_id = stamp
             })
-        }] };
+        }]
+        };
         var plan = FundStructureTenantBackfillPlanner.Create(snapshot);
         plan.AttributionComplete.Should().Be(valid);
         if (!valid)
@@ -227,8 +236,10 @@ public sealed class FundStructureTenantBackfillTests
         var create = () => new PostgresFundStructureTenantBackfillStore(
             new() { ConnectionString = "Host=localhost;Database=meridian", Schema = schema },
             "Host=localhost;Database=meridian", schema);
-        if (valid) create.Should().NotThrow();
-        else create.Should().Throw<ArgumentException>();
+        if (valid)
+            create.Should().NotThrow();
+        else
+            create.Should().Throw<ArgumentException>();
     }
 
     private static FundStructureTenantBackfillSnapshot MakeSnapshot()
@@ -282,7 +293,8 @@ public sealed class FundStructureTenantBackfillTests
         public Task<IFundStructureTenantBackfillSession> OpenSessionAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            if (RefuseSnapshot) throw new InvalidOperationException("Source graph is unavailable.");
+            if (RefuseSnapshot)
+                throw new InvalidOperationException("Source graph is unavailable.");
             Opens++;
             return Task.FromResult<IFundStructureTenantBackfillSession>(new Session(this, Snapshot));
         }

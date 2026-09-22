@@ -23,6 +23,10 @@ namespace Meridian.Tests.Ui;
 [Collection("IdentityEnvironment")]
 public sealed class InMemoryFundStructureTenancyGuardTests : IDisposable
 {
+    // The guard reads the same usable account source as authentication. Legacy raw hex strings
+    // are deliberately rejected; fixtures must carry a currently supported password hash.
+    private static readonly string FixturePasswordHash = PasswordHashing.HashPassword("tenant-guard-fixture-password");
+
     private readonly AuthEnvironmentScope _environment = new AuthEnvironmentScope()
         .Set("MDC_USERS", null)
         .Set("MDC_DEMO_USERS", null)
@@ -184,7 +188,7 @@ public sealed class InMemoryFundStructureTenancyGuardTests : IDisposable
     [Fact]
     public async Task Guard_UsesGovernedStorePrecedenceInsteadOfCombiningInactiveEnvironmentAccounts()
     {
-        _environment.Set("MDC_USERS", EnvironmentAccounts(new string('0', 64)));
+        _environment.Set("MDC_USERS", EnvironmentAccounts(FixturePasswordHash));
         var profiles = new UserProfileRegistry(null, AccountStoreFor("governed-company"));
         profiles.GetProfile("operator-alpha").Should().BeNull();
         profiles.GetConfiguredCompanyIds().Should().Equal("governed-company");
@@ -200,7 +204,7 @@ public sealed class InMemoryFundStructureTenancyGuardTests : IDisposable
     {
         _environment.Set("DOTNET_ENVIRONMENT", "Production")
             .Set("ASPNETCORE_ENVIRONMENT", "Production")
-            .Set("MDC_DEMO_USERS", EnvironmentAccounts(new string('0', 64)));
+            .Set("MDC_DEMO_USERS", EnvironmentAccounts(FixturePasswordHash));
         var profiles = new UserProfileRegistry(null, AccountStoreFor());
         profiles.IsConfigured.Should().BeFalse();
         var guard = new InMemoryFundStructureTenancyGuard(
@@ -213,7 +217,7 @@ public sealed class InMemoryFundStructureTenancyGuardTests : IDisposable
     [Fact]
     public async Task Guard_AllowsEquivalentCompanyIdsFromEnvironmentAccounts()
     {
-        _environment.Set("MDC_USERS", EnvironmentAccounts(new string('0', 64))
+        _environment.Set("MDC_USERS", EnvironmentAccounts(FixturePasswordHash)
             .Replace("company-beta", " COMPANY-ALPHA "));
         var profiles = new UserProfileRegistry(null, AccountStoreFor());
         profiles.GetConfiguredCompanyIds().Should().Equal("company-alpha");
@@ -246,7 +250,7 @@ public sealed class InMemoryFundStructureTenancyGuardTests : IDisposable
         [
             .. accountCompanyIds.Select((companyId, index) => new UserAccountConfig(
                 $"operator-{index.ToString()}",
-                new string('0', 64),
+                FixturePasswordHash,
                 UserRole.ReadOnly,
                 CompanyId: companyId)),
         ]);

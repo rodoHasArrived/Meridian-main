@@ -62,8 +62,14 @@ public sealed partial class StatementReconciliationIntakeAuthority
 
     internal static string ComparisonSourceIdentity(CanonicalStatementImport import,
         Meridian.Infrastructure.Reconciliation.StatementRunMatchArtifact artifact, string institution)
-        => JsonSerializer.Serialize(new { institution, import.MappingProfileId, import.ToleranceProfileId,
-            artifact.SourceComparisonPolicyFingerprint, artifact.SourceComparisonPopulationKinds });
+        => JsonSerializer.Serialize(new
+        {
+            institution,
+            import.MappingProfileId,
+            import.ToleranceProfileId,
+            artifact.SourceComparisonPolicyFingerprint,
+            artifact.SourceComparisonPopulationKinds
+        });
 
     internal static bool CanCompareSourceRun(Meridian.Infrastructure.Reconciliation.StatementRunMatchArtifact artifact)
         => artifact.SourceComparisonComplete == true

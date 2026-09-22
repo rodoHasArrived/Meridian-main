@@ -10,7 +10,8 @@ public sealed class StatementReconciliationLineageTests
     public void Source_identity_survives_amount_date_row_order_and_import_changes()
     {
         var row = new CanonicalStatementRow("run-a", 1, "account", "CUSIP1", 100m, 2m, 200m,
-            "position", new DateOnly(2026, 9, 1), "hash") { Currency = "USD" };
+            "position", new DateOnly(2026, 9, 1), "hash")
+        { Currency = "USD" };
         StatementReconciliationIntakeAuthority.SourceSubject(row).Should().Be(
             StatementReconciliationIntakeAuthority.SourceSubject(row with
             { ImportId = "run-b", SourceRowNumber = 8, Quantity = 20m, Price = 3m, TradeDate = new DateOnly(2026, 9, 2) }));

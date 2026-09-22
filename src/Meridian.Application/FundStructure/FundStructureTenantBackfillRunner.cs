@@ -19,7 +19,8 @@ public sealed class FundStructureTenantBackfillRunner(IFundStructureTenantBackfi
         Guid runId, string reviewedPlanHash, string operatorId, string reviewReference,
         CancellationToken ct = default)
     {
-        if (runId == Guid.Empty) throw new ArgumentException("A retained run identity is required.", nameof(runId));
+        if (runId == Guid.Empty)
+            throw new ArgumentException("A retained run identity is required.", nameof(runId));
         ArgumentException.ThrowIfNullOrWhiteSpace(reviewedPlanHash);
         ArgumentException.ThrowIfNullOrWhiteSpace(operatorId);
         ArgumentException.ThrowIfNullOrWhiteSpace(reviewReference);

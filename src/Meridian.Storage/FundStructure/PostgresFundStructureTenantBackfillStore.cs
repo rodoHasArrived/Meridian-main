@@ -80,7 +80,8 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
             await ExecuteAsync(ledger, ledgerTransaction,
                 $"LOCK TABLE {Q(_ledgerSchema, "fund_profile_tenancy")}, {Q(_ledgerSchema, "ledger_books")} IN SHARE MODE", ct).ConfigureAwait(false);
 
-            if (sameDatabase) fundTransaction = ledgerTransaction;
+            if (sameDatabase)
+                fundTransaction = ledgerTransaction;
             else
             {
                 await fund.OpenAsync(ct).ConfigureAwait(false);
@@ -179,7 +180,8 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
             IReadOnlyList<FundStructureTenantBackfillStamp> stamps,
             IReadOnlyList<FundStructureTenantBackfillException> exceptions, CancellationToken ct)
         {
-            if (_committed) throw new InvalidOperationException("Backfill session has already committed.");
+            if (_committed)
+                throw new InvalidOperationException("Backfill session has already committed.");
             if (!Snapshot.SupportsAtomicApply)
                 throw new InvalidOperationException("Separate databases support preview only; atomic apply requires co-located schemas.");
             foreach (var stamp in stamps)
@@ -272,7 +274,8 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
             connection, transaction);
         command.Parameters.AddWithValue("id", runId);
         var raw = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string;
-        if (raw is null) return null;
+        if (raw is null)
+            return null;
         var row = Parse(raw);
         return new(row.GetProperty("run_id").GetGuid(), row.GetProperty("plan_hash").GetString()!,
             row.GetProperty("operator_id").GetString()!, row.GetProperty("review_reference").GetString()!,
@@ -284,7 +287,8 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
     {
         try
         {
-            if (transaction is not null) await transaction.DisposeAsync().ConfigureAwait(false);
+            if (transaction is not null)
+                await transaction.DisposeAsync().ConfigureAwait(false);
         }
         finally
         {
@@ -304,7 +308,8 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
         await using var command = new NpgsqlCommand(sql, connection, transaction);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var rows = new List<JsonElement>();
-        while (await reader.ReadAsync(ct).ConfigureAwait(false)) rows.Add(Parse(reader.GetString(0)));
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            rows.Add(Parse(reader.GetString(0)));
         return rows;
     }
 
@@ -341,12 +346,15 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
         var references = new HashSet<Guid>();
         foreach (var property in properties)
         {
-            if (!row.TryGetProperty(property, out var value) || value.ValueKind == JsonValueKind.Null) continue;
+            if (!row.TryGetProperty(property, out var value) || value.ValueKind == JsonValueKind.Null)
+                continue;
             if (value.ValueKind == JsonValueKind.Array)
             {
-                foreach (var id in value.EnumerateArray()) references.Add(id.GetGuid());
+                foreach (var id in value.EnumerateArray())
+                    references.Add(id.GetGuid());
             }
-            else references.Add(value.GetGuid());
+            else
+                references.Add(value.GetGuid());
         }
         return references.Order().ToArray();
     }

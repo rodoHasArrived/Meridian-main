@@ -884,9 +884,13 @@ public sealed class SecurityMasterCashFlowServiceTests
     {
         var securityId = Guid.NewGuid();
         var issue = WholePeriodIssueDate();
-        var terms = JsonSerializer.SerializeToElement(new Dictionary<string, object> {
-            ["issueDate"] = issue, ["maturityDate"] = issue.AddYears(1), ["par"] = 100m,
-            [rateField] = 6m, ["dayCountConvention"] = "30/360"
+        var terms = JsonSerializer.SerializeToElement(new Dictionary<string, object>
+        {
+            ["issueDate"] = issue,
+            ["maturityDate"] = issue.AddYears(1),
+            ["par"] = 100m,
+            [rateField] = 6m,
+            ["dayCountConvention"] = "30/360"
         });
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
@@ -930,7 +934,8 @@ public sealed class SecurityMasterCashFlowServiceTests
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(BuildSecurity(securityId,
             JsonSerializer.SerializeToElement(new { issueDate = issue, maturity = issue.AddYears(1), par = 100m, discountRate = 5m }))
-            with { AssetClass = assetClass });
+            with
+        { AssetClass = assetClass });
         var result = await BuildService(StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet), query)
             .GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
         result!.Schedule.Sum(p => p.PrincipalAmount).Should().Be(100m);
@@ -942,8 +947,11 @@ public sealed class SecurityMasterCashFlowServiceTests
     {
         var securityId = Guid.NewGuid();
         var issue = WholePeriodIssueDate();
-        var query = QueryWith(securityId, JsonSerializer.SerializeToElement(new {
-            issueDate = issue, maturityDate = issue.AddYears(1), par = 100m,
+        var query = QueryWith(securityId, JsonSerializer.SerializeToElement(new
+        {
+            issueDate = issue,
+            maturityDate = issue.AddYears(1),
+            par = 100m,
             legs = new[] { new { legType = "Floating", index = "SOFR", spreadBps = 300m } }
         }));
         var result = await BuildService(StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet), query)
@@ -962,9 +970,13 @@ public sealed class SecurityMasterCashFlowServiceTests
         var issue = WholePeriodIssueDate();
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(BuildSecurity(id,
-            JsonSerializer.SerializeToElement(new Dictionary<string, object> {
-                ["issueDate"] = issue, ["maturityDate"] = issue.AddYears(1), [rateField] = 6m
-            })) with { AssetClass = assetClass });
+            JsonSerializer.SerializeToElement(new Dictionary<string, object>
+            {
+                ["issueDate"] = issue,
+                ["maturityDate"] = issue.AddYears(1),
+                [rateField] = 6m
+            })) with
+        { AssetClass = assetClass });
         var service = BuildService(StoreWith(id, StructuredCashFlowSourceKind.CalculatedBullet), query);
         var projection = await service.GetProjectionAsync(id, StructuredCashFlowScenario.Base);
         projection!.IsNormalizedPer100.Should().BeTrue();

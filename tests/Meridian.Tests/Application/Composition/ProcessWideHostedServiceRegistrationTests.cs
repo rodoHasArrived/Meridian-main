@@ -104,8 +104,10 @@ public sealed class ProcessWideHostedServiceRegistrationTests
         using var artifacts = TestArtifactDirectory.Create(nameof(ProcessWideHostedServiceRegistrationTests));
         var workers = await ResolveHostedServiceNamesAsync(WriteConfig(artifacts.RootPath), true, services =>
         {
-            if (useFactory) services.AddSingleton(_ => TenantScopeEnforcementOptions.FailClosed);
-            else services.AddSingleton(TenantScopeEnforcementOptions.FailClosed);
+            if (useFactory)
+                services.AddSingleton(_ => TenantScopeEnforcementOptions.FailClosed);
+            else
+                services.AddSingleton(TenantScopeEnforcementOptions.FailClosed);
         });
         workers.Should().NotContain("DailyAccrualWorker");
         workers.Should().NotContain("DirectLendingOutboxDispatcher");

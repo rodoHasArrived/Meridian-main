@@ -38,14 +38,16 @@ public static class FundStructureTenantBackfillPlanner
         if (!snapshot.SupportsAtomicApply)
             blockers.Add("Ledger evidence and fund structure use separate databases; coordinated migration is required before apply.");
         var duplicateIds = snapshot.Rows.GroupBy(row => row.Id).Where(group => group.Count() != 1).Select(group => group.Key).ToHashSet();
-        if (duplicateIds.Count > 0) blockers.Add("Retained row identities collide across fund-structure tables.");
+        if (duplicateIds.Count > 0)
+            blockers.Add("Retained row identities collide across fund-structure tables.");
         var nodes = snapshot.Rows.Where(row => row.IsNode && !duplicateIds.Contains(row.Id)).ToDictionary(row => row.Id);
         var edges = new HashSet<FundStructureOwnershipEdge>();
         var reasons = new Dictionary<Guid, SortedSet<string>>();
 
         void Reject(Guid id, string reason)
         {
-            if (!reasons.TryGetValue(id, out var found)) reasons[id] = found = new(StringComparer.Ordinal);
+            if (!reasons.TryGetValue(id, out var found))
+                reasons[id] = found = new(StringComparer.Ordinal);
             found.Add(reason);
         }
 
@@ -53,8 +55,10 @@ public static class FundStructureTenantBackfillPlanner
         {
             if (!nodes.ContainsKey(parent) || !nodes.ContainsKey(child))
             {
-                if (nodes.ContainsKey(parent)) Reject(parent, "DanglingOwnershipReference");
-                if (nodes.ContainsKey(child)) Reject(child, "DanglingOwnershipReference");
+                if (nodes.ContainsKey(parent))
+                    Reject(parent, "DanglingOwnershipReference");
+                if (nodes.ContainsKey(child))
+                    Reject(child, "DanglingOwnershipReference");
                 return;
             }
             edges.Add(new(parent, child));
@@ -64,13 +68,16 @@ public static class FundStructureTenantBackfillPlanner
         {
             if (row.IsNode)
             {
-                foreach (var parent in row.Parents) AddEdge(parent, row.Id);
-                foreach (var child in row.Children) AddEdge(row.Id, child);
+                foreach (var parent in row.Parents)
+                    AddEdge(parent, row.Id);
+                foreach (var child in row.Children)
+                    AddEdge(row.Id, child);
             }
             else if (row.Kind == "OwnershipLink")
             {
                 foreach (var parent in row.Parents)
-                    foreach (var child in row.Children) AddEdge(parent, child);
+                    foreach (var child in row.Children)
+                        AddEdge(parent, child);
                 if (!row.RetainedRow.TryGetProperty("relationship_type", out var relationship) ||
                     row.Parents.Concat(row.Children).Any(id => !nodes.ContainsKey(id)) ||
                     row.Parents.Any(parent => row.Children.Any(child =>
@@ -98,7 +105,8 @@ public static class FundStructureTenantBackfillPlanner
                 !RegistryMatchesFund(row) || BookStampConflicts(row));
             if (invalid || tenants.Length != 1 || group.GroupBy(row => row.BookId).Any(book => book.Count() != 1))
                 Reject(group.Key, "AmbiguousOrMissingLedgerOwnershipEvidence");
-            else seeds[group.Key] = tenants[0]!;
+            else
+                seeds[group.Key] = tenants[0]!;
         }
 
         var graph = new FundStructureTenantAttributionGraph(nodes.ToDictionary(row => row.Key, row => row.Value.Kind),
@@ -109,9 +117,11 @@ public static class FundStructureTenantBackfillPlanner
             edge.ParentNodeId, edge.ChildNodeId, OwnershipRelationshipTypeDto.Owns,
             null, false, DateTimeOffset.MinValue, null, null)).ToArray();
         foreach (var issue in OwnershipGraphValidation.Validate(validationLinks, nodes.ContainsKey))
-            if (issue.NodeId is { } id) Reject(id, issue.Code);
+            if (issue.NodeId is { } id)
+                Reject(id, issue.Code);
         var derived = FundStructureTenantAttribution.Derive(graph, seeds);
-        foreach (var item in derived.Quarantined) Reject(item.NodeId, item.Reason.ToString());
+        foreach (var item in derived.Quarantined)
+            Reject(item.NodeId, item.Reason.ToString());
         foreach (var edge in graph.Edges)
         {
             if (derived.Attributions.TryGetValue(edge.ParentNodeId, out var parentTenant) &&
@@ -126,7 +136,8 @@ public static class FundStructureTenantBackfillPlanner
         {
             var owner = NormalizeTenant(node.TenantId);
             if (owner is not null && (!derived.Attributions.TryGetValue(node.Id, out var tenant) ||
-                !string.Equals(owner, tenant, StringComparison.OrdinalIgnoreCase))) Reject(node.Id, "ExistingTenantConflict");
+                !string.Equals(owner, tenant, StringComparison.OrdinalIgnoreCase)))
+                Reject(node.Id, "ExistingTenantConflict");
             if (node.TenantId is not null && node.TenantId.Trim().Equals("all", StringComparison.OrdinalIgnoreCase))
                 Reject(node.Id, "UnscopedTenantSentinel");
         }
@@ -142,7 +153,8 @@ public static class FundStructureTenantBackfillPlanner
             if (endpoints.Length == 0 || endpoints.Any(id => !nodes.ContainsKey(id)) || owners.Length != 1 ||
                 (!string.IsNullOrWhiteSpace(row.TenantId) && existing is null) ||
                 (existing is not null && !string.Equals(existing, owners.SingleOrDefault(), StringComparison.OrdinalIgnoreCase)))
-                foreach (var id in endpoints.Where(nodes.ContainsKey)) Reject(id, "DependentRowOwnershipConflict");
+                foreach (var id in endpoints.Where(nodes.ContainsKey))
+                    Reject(id, "DependentRowOwnershipConflict");
         }
 
         var adjacency = nodes.Keys.ToDictionary(id => id, _ => new HashSet<Guid>());
@@ -155,22 +167,27 @@ public static class FundStructureTenantBackfillPlanner
         var visited = new HashSet<Guid>();
         foreach (var start in nodes.Keys.Order())
         {
-            if (!visited.Add(start)) continue;
+            if (!visited.Add(start))
+                continue;
             var component = new List<Guid>();
             var pending = new Queue<Guid>();
             pending.Enqueue(start);
             while (pending.TryDequeue(out var id))
             {
                 component.Add(id);
-                foreach (var neighbor in adjacency[id]) if (visited.Add(neighbor)) pending.Enqueue(neighbor);
+                foreach (var neighbor in adjacency[id])
+                if (visited.Add(neighbor))
+                    pending.Enqueue(neighbor);
             }
             var componentReasons = component.Where(reasons.ContainsKey).SelectMany(id => reasons[id]).Distinct().Order().ToArray();
-            if (componentReasons.Length == 0) continue;
+            if (componentReasons.Length == 0)
+                continue;
             var candidates = component.Where(derived.Attributions.ContainsKey).Select(id => derived.Attributions[id])
                 .Concat(derived.Quarantined.Where(item => component.Contains(item.NodeId)).SelectMany(item => item.CandidateTenantIds))
                 .Concat(snapshot.Evidence.Where(item => component.Contains(item.NodeId)).Select(item => NormalizeTenant(item.TenantId)).OfType<string>())
                 .Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray();
-            foreach (var id in component) quarantined[id] = (string.Join(";", componentReasons), candidates);
+            foreach (var id in component)
+                quarantined[id] = (string.Join(";", componentReasons), candidates);
         }
 
         var stamps = new List<FundStructureTenantBackfillStamp>();
@@ -187,8 +204,10 @@ public static class FundStructureTenantBackfillPlanner
                 continue;
             }
             var tenants = dependencies.Select(id => derived.Attributions[id]).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-            if (tenants.Length != 1) throw new InvalidOperationException("Attribution did not resolve a complete component.");
-            if (string.IsNullOrWhiteSpace(row.TenantId)) stamps.Add(new(row.Table, row.Id, tenants[0]));
+            if (tenants.Length != 1)
+                throw new InvalidOperationException("Attribution did not resolve a complete component.");
+            if (string.IsNullOrWhiteSpace(row.TenantId))
+                stamps.Add(new(row.Table, row.Id, tenants[0]));
         }
 
         var resolvedQuarantine = snapshot.RetainedQuarantine.Where(row =>
@@ -216,7 +235,8 @@ public static class FundStructureTenantBackfillPlanner
 
         var before = nodes.Values.Where(row => !string.IsNullOrWhiteSpace(row.TenantId)).ToDictionary(row => row.Id, row => row.TenantId!);
         var after = new Dictionary<Guid, string>(before);
-        foreach (var stamp in stamps.Where(stamp => nodes.ContainsKey(stamp.Id))) after[stamp.Id] = stamp.TenantId;
+        foreach (var stamp in stamps.Where(stamp => nodes.ContainsKey(stamp.Id)))
+            after[stamp.Id] = stamp.TenantId;
         var tenantIds = before.Values.Concat(after.Values).Select(NormalizeTenant).OfType<string>()
             .Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase);
         var counts = tenantIds.Select(tenant => new FundStructureTenantReadCount(tenant,
@@ -277,9 +297,11 @@ public static class FundStructureTenantBackfillPlanner
     {
         if (!row.RetainedBook.TryGetProperty("tenant_id", out var stamp) || stamp.ValueKind == JsonValueKind.Null)
             return false;
-        if (stamp.ValueKind != JsonValueKind.String) return true;
+        if (stamp.ValueKind != JsonValueKind.String)
+            return true;
         var retained = stamp.GetString();
-        if (string.IsNullOrWhiteSpace(retained)) return false;
+        if (string.IsNullOrWhiteSpace(retained))
+            return false;
         var tenant = NormalizeTenant(retained);
         return tenant is null || !string.Equals(tenant, NormalizeTenant(row.TenantId), StringComparison.OrdinalIgnoreCase);
     }

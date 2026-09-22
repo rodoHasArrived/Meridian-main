@@ -35,7 +35,8 @@ internal sealed class TenantPostureHostedService<TWorker>(
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        if (_worker is not null) await _worker.StopAsync(cancellationToken).ConfigureAwait(false);
+        if (_worker is not null)
+            await _worker.StopAsync(cancellationToken).ConfigureAwait(false);
         await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 

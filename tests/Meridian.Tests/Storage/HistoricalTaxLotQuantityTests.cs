@@ -24,8 +24,16 @@ public sealed class HistoricalTaxLotQuantityTests
     public void Project_UsesEconomicDateWhenBackdatedDisposalWasRecordedAfterLaterDisposal()
     {
         var (lot, history) = Scenario(40);
-        var third = history[1] with { MutationBatchId = Guid.NewGuid(), Before = 60m, Delta = -10m,
-            After = 50m, ExpectedVersion = 2, ResultVersion = 3, EffectiveDate = new(2026, 5, 14) };
+        var third = history[1] with
+        {
+            MutationBatchId = Guid.NewGuid(),
+            Before = 60m,
+            Delta = -10m,
+            After = 50m,
+            ExpectedVersion = 2,
+            ResultVersion = 3,
+            EffectiveDate = new(2026, 5, 14)
+        };
         lot = lot with { OpenQuantity = 50m, Version = 3, LastMutationBatchId = third.MutationBatchId };
         HistoricalTaxLotQuantity.Project(lot, [.. history, third], new(2026, 5, 15)).OpenQuantity.Should().Be(90m);
     }
@@ -44,14 +52,30 @@ public sealed class HistoricalTaxLotQuantityTests
         var (lot, history) = Scenario(40);
         switch (defect)
         {
-            case "missing-acquisition": history = [history[1]]; break;
-            case "missing-disposal": history = [history[0]]; break;
-            case "wrong-scope": history[1] = history[1] with { BookPositionId = Guid.NewGuid() }; break;
-            case "broken-quantity-chain": history[1] = history[1] with { Before = 99m, After = 59m }; break;
-            case "duplicate-version": history = [.. history, history[1]]; break;
-            case "wrong-last-batch": lot = lot with { LastMutationBatchId = Guid.NewGuid() }; break;
-            case "unknown-mutation": history[1] = history[1] with { Kind = (AtomicTaxLotMutationKind)99 }; break;
-            case "disposal-before-acquisition": history[1] = history[1] with { EffectiveDate = new(2026, 5, 10) }; break;
+            case "missing-acquisition":
+                history = [history[1]];
+                break;
+            case "missing-disposal":
+                history = [history[0]];
+                break;
+            case "wrong-scope":
+                history[1] = history[1] with { BookPositionId = Guid.NewGuid() };
+                break;
+            case "broken-quantity-chain":
+                history[1] = history[1] with { Before = 99m, After = 59m };
+                break;
+            case "duplicate-version":
+                history = [.. history, history[1]];
+                break;
+            case "wrong-last-batch":
+                lot = lot with { LastMutationBatchId = Guid.NewGuid() };
+                break;
+            case "unknown-mutation":
+                history[1] = history[1] with { Kind = (AtomicTaxLotMutationKind)99 };
+                break;
+            case "disposal-before-acquisition":
+                history[1] = history[1] with { EffectiveDate = new(2026, 5, 10) };
+                break;
         }
         var act = () => HistoricalTaxLotQuantity.Project(lot, history, new(2026, 5, 15));
         act.Should().Throw<LedgerValidationException>().WithMessage("*complete retained mutation evidence*");

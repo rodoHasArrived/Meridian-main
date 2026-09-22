@@ -34,12 +34,16 @@ public sealed class StatementRunComparisonEvidenceTests
     public void Tolerance_version_or_rule_change_creates_different_comparison_scope_from_retained_executed_policy()
     {
         var first = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, StatementToleranceProfile.Default);
-        var wider = StatementToleranceProfile.Default with { Version = 2,
-            CashRules = [new CashToleranceRule("wider-rule", 1000m, null, TimeSpan.Zero)] };
+        var wider = StatementToleranceProfile.Default with
+        {
+            Version = 2,
+            CashRules = [new CashToleranceRule("wider-rule", 1000m, null, TimeSpan.Zero)]
+        };
         var second = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, wider);
         first.SourceComparisonPolicyFingerprint.Should().NotBe(second.SourceComparisonPolicyFingerprint);
         var import = new CanonicalStatementImport("run", "custodian", new DateOnly(2026, 9, 1),
-            DateTimeOffset.UtcNow, "source", "hash", 1, 1) { ToleranceProfileId = StatementToleranceProfile.DefaultProfileId };
+            DateTimeOffset.UtcNow, "source", "hash", 1, 1)
+        { ToleranceProfileId = StatementToleranceProfile.DefaultProfileId };
         StatementReconciliationIntakeAuthority.ComparisonSourceIdentity(import, first, "custodian").Should().NotBe(
             StatementReconciliationIntakeAuthority.ComparisonSourceIdentity(import, second, "custodian"));
         StatementReconciliationIntakeAuthority.CanCompareSourceRun(first with { SourceComparisonPolicyFingerprint = null }).Should().BeFalse();
