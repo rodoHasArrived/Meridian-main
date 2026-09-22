@@ -23,7 +23,7 @@ button.mds-ichip:focus-visible{outline:var(--focus-ring);outline-offset:var(--fo
 .mds-ichip--sm{padding:1px 5px 1px 2px;gap:5px;}
 .mds-ichip--sm .mds-ichip__class{width:13px;height:13px;font-size:7.5px;}
 .mds-ichip--sm .mds-ichip__sym{font-size:11px;}
-.mds-ichip__class--eq{color:var(--accent,#A85436);border-color:var(--accent,#A85436);background:var(--blue-a10,rgba(168,84,54,.1));}
+.mds-ichip__class--eq{color:var(--accent-dim,#8C4429);border-color:var(--accent,#A85436);background:var(--blue-a10,rgba(168,84,54,.1));}
 .mds-ichip__class--fut{color:var(--purple-dim,#463F64);border-color:var(--purple,#5D5486);background:var(--purple-a10,rgba(93,84,134,.1));}
 .mds-ichip__class--opt{color:var(--orange-dim,#68450E);border-color:var(--orange,#8A5C12);background:var(--orange-a10,rgba(138,92,18,.1));}
 .mds-ichip__class--fx{color:var(--green-dim,#2C5C40);border-color:var(--green,#3A7A56);background:var(--green-a10,rgba(58,122,86,.1));}

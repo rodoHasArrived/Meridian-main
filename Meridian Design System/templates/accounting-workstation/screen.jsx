@@ -35,7 +35,7 @@ const { useState, useMemo } = React;
   font-size:12px;color:var(--text-secondary);padding:6px 12px;border-right:1px solid var(--border);transition:all .12s;}
 .seg button:last-child{border-right:none;}
 .seg button:hover{background:var(--bg-hover);color:var(--text-primary);}
-.seg button[aria-pressed="true"]{background:var(--bg-active,#F2E3DB);color:var(--accent);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
+.seg button[aria-pressed="true"]{background:var(--bg-active,#F2E3DB);color:var(--accent-dim);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
 .acct-overlay{position:fixed;inset:0;background:rgba(23,26,31,.42);z-index:40;display:flex;justify-content:flex-end;animation:acct-fade .14s ease;}
 @keyframes acct-fade{from{opacity:0;}}
 .acct-drawer{width:660px;max-width:92vw;height:100%;background:var(--bg);overflow-y:auto;

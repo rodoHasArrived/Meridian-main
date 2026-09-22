@@ -77,6 +77,14 @@ WASH_PAIRS = [
     ("orange-dim on orange-a10 wash", "--orange-dim", "--orange", 0.10, "--bg-light", 4.5),
     ("purple-dim on purple-a10 wash", "--purple-dim", "--purple", 0.10, "--bg-light", 4.5),
     ("green-dim on green-a20 wash",   "--green-dim",  "--green",  0.20, "--bg-light", 4.5),
+    # An accent wash lifts the surface toward the accent, so the accent itself loses contrast on
+    # it — 4.41:1 on a card, 4.07 on canvas, 3.87 on the header band, where the steel pair
+    # cleared AA. Same shape as the header-band rows above: the accent is a borders-and-icons
+    # colour on its own wash, and wash *text* is --accent-dim.
+    ("accent on accent wash (non-text)", "--accent",     "--accent", 0.10, "--bg-light",  3.0),
+    ("accent-dim text on accent wash",   "--accent-dim", "--accent", 0.10, "--bg-light",  4.5),
+    ("accent-dim on accent wash, canvas","--accent-dim", "--accent", 0.10, "--bg",        4.5),
+    ("accent-dim on accent wash, band",  "--accent-dim", "--accent", 0.10, "--bg-medium", 4.5),
     ("red-dim on red-a20 wash",       "--red-dim",    "--red",    0.20, "--bg-light", 4.5),
     # The actual status chips, foreground token against its own wash, on each surface a chip
     # sits on. Checking only the -dim tokens in the abstract missed that the *-fg tokens were
@@ -848,6 +856,100 @@ def check_doc_palette(root: Path) -> list[str]:
     return failures
 
 
+# The brand marks are rendered identity, not artwork in a folder: WorkstationTopbar defaults to
+# meridian-mark-light.svg, 41 files reference the set, and the dashboard and WPF both carry their
+# own copy. Nothing had ever read an .svg, so the neon cyan sat in every masthead while the token
+# and catalogue checks passed. The hero's own cool ramp is listed because it appears nowhere else.
+BRAND_DIRS = [
+    "Meridian Design System/assets/brand",
+    "src/Meridian.Ui/dashboard/src/assets/brand",
+    "src/Meridian.Wpf/Assets/Brand",
+]
+BRAND_RETIRED = frozenset({
+    "#06F3FF", "#00D9FF", "#2AB2D4", "#DEE6EF", "#F5F7FA", "#D8DFE8", "#8A96A8", "#7C8A9B",
+    "#08101A", "#1F344C",
+    # the hero's blue/cyan/mint ramp
+    "#07101C", "#0F1B28", "#111C28", "#152838", "#1B334B", "#21405D", "#29425C",
+    "#1A6BB5", "#0EA5E9", "#16A34A", "#3B82F6", "#60A5FA", "#67E8F9", "#86EFAC", "#84F3B6",
+})
+BRAND_FONTS = ("Space Grotesk", "IBM Plex", "JetBrains Mono", "Inter")
+
+
+def check_brand_assets(root: Path) -> list[str]:
+    """No brand asset may carry a retired colour or font, and the copies must agree."""
+    repo = root.parent
+    failures: list[str] = []
+    checked = 0
+    canonical = repo / BRAND_DIRS[0]
+    for rel in BRAND_DIRS:
+        base = repo / rel
+        if not base.exists():
+            continue
+        for path in sorted(base.glob("*.svg")):
+            checked += 1
+            text = path.read_text(encoding="utf-8", errors="replace")
+            hits = sorted({h.upper() for h in DOC_HEX.findall(text)} & BRAND_RETIRED)
+            if hits:
+                failures.append(f"[brand] {_rel(path, root)}: {', '.join(hits)} — a retired-identity "
+                                "colour in an asset the workstation chrome renders")
+            fonts = [f for f in BRAND_FONTS if f in text]
+            if fonts:
+                failures.append(f"[brand] {_rel(path, root)}: names {', '.join(fonts)}, a face the "
+                                "package no longer loads")
+            source = canonical / path.name
+            if base != canonical and source.exists() and \
+                    source.read_text(encoding="utf-8").rstrip("\n") != text.rstrip("\n"):
+                failures.append(f"[brand] {_rel(path, root)}: differs from the package copy — "
+                                "the tracks would drift apart again")
+    for f in failures[:10]:
+        print(f)
+    if not failures:
+        print(f"[brand] all {checked} brand asset(s) across {len(BRAND_DIRS)} track(s) carry the "
+              "current identity and agree")
+    return failures
+
+
+# Round eight moved DenseDataTable's sort rank off the raw accent and stopped there. The same
+# shape survived in five more components and two templates, because a table row pins the *token*
+# rule and nothing was reading the call sites. An accent-tinted surface lifts the background
+# toward the accent, so the accent on it is 3.87–4.41:1 — fine for a border or an icon, under AA
+# for a label.
+ACCENT_SURFACES = ("--blue-a10", "--accent-a10", "--bg-active", "--accent-ghost")
+CSS_RULE = re.compile(r"[^{}]*\{[^{}]*\}", re.S)
+RULE_BG = re.compile(r"background(?:-color)?\s*:\s*([^;}]+)")
+RULE_FG_ACCENT = re.compile(r"(?<![-a-z])color\s*:\s*var\(\s*--accent\s*[,)]")
+
+
+def check_accent_on_wash(root: Path) -> list[str]:
+    """No rule may put raw `--accent` text on an accent-tinted surface."""
+    failures: list[str] = []
+    scanned = 0
+    for base in call_sites(root):
+        if not base.exists():
+            continue
+        for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
+            if path != base and path.suffix not in CALL_SITE_SUFFIXES:
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for m in CSS_RULE.finditer(text):
+                body = m.group(0)
+                bg = RULE_BG.search(body)
+                if not bg or not any(s in bg.group(1) for s in ACCENT_SURFACES):
+                    continue
+                scanned += 1
+                if RULE_FG_ACCENT.search(body):
+                    selector = body.split("{", 1)[0].strip().splitlines()[-1].strip()
+                    failures.append(
+                        f"[accent-wash] {_rel(path, root)}:{text.count(chr(10), 0, m.start()) + 1}: "
+                        f"{selector[:44]} puts --accent text on an accent-tinted surface "
+                        "(3.87–4.41:1) — wash text is --accent-dim")
+    for f in failures[:10]:
+        print(f)
+    if not failures:
+        print(f"[accent-wash] none of the {scanned} accent-tinted rules uses the raw accent as text")
+    return failures
+
+
 # The desktop lane has a second palette that no stylesheet check could reach: Charting,
 # QuantScript and the ScottPlot surfaces render from ColorPalette.cs, not from ThemeTokens.xaml,
 # so restyling the XAML left those surfaces on the previous identity. Each field there now names
@@ -1012,7 +1114,9 @@ def run_checks(root: Path) -> list[str]:
             + check_card_metadata(root) + check_doc_palette(root)
             + check_elevation_guidance(root) + check_bundle_parity(root)
             + check_tailwind_literals(root) + check_catalog_palette(root)
-            + check_runtime_palette(root))
+            + check_runtime_palette(root)
+            + check_accent_on_wash(root)
+            + check_brand_assets(root))
 
 
 def main() -> int:

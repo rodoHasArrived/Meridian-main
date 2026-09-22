@@ -21,7 +21,7 @@ function inject() {
 .mds-sel-opt{padding:8px 12px;font-family:var(--font-data);font-size:12px;
   color:var(--text-primary,#22252A);cursor:pointer;display:flex;align-items:center;gap:8px;}
 .mds-sel-opt:hover{background:var(--bg-hover,#F0EEE9);}
-.mds-sel-opt--active{background:var(--bg-active,#F2E3DB);color:var(--accent,#A85436);font-weight:600;}
+.mds-sel-opt--active{background:var(--bg-active,#F2E3DB);color:var(--accent-dim,#8C4429);font-weight:600;}
 .mds-sel-opt--active::after{content:"✓";margin-left:auto;font-size:11px;}
 .mds-sel-divider{height:1px;background:var(--border,#E4E3DE);margin:4px 0;}
 .mds-sel-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;

@@ -25,7 +25,7 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
   padding:6px 12px;border-right:1px solid var(--border);transition:all .12s;}
 .spr-seg button:last-child{border-right:none;}
 .spr-seg button:hover{background:var(--bg-hover);color:var(--text-primary);}
-.spr-seg button[aria-pressed="true"]{background:var(--bg-active,#F2E3DB);color:var(--accent);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
+.spr-seg button[aria-pressed="true"]{background:var(--bg-active,#F2E3DB);color:var(--accent-dim);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
 .spr-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
 .spr-split{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);
   border-radius:var(--radius-card,8px);overflow:hidden;background:var(--bg-light);

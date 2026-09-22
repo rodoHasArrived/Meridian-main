@@ -17,7 +17,7 @@ const CSS = `
 .mds-wsection__summary{margin:1px 0 0;color:var(--text-muted,#5E666F);font-size:12px;line-height:1.35;}
 .mds-wsection__jump{display:inline-flex;align-items:center;gap:6px;min-height:30px;
   border:1px solid var(--accent,#A85436);border-radius:var(--radius-chip,2px);
-  background:var(--blue-a10,rgba(168,84,54,.10));color:var(--accent,#A85436);
+  background:var(--blue-a10,rgba(168,84,54,.10));color:var(--accent-dim,#8C4429);
   padding:4px 10px;font-family:var(--font-body);font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;
   white-space:nowrap;}
 .mds-wsection__jump:hover{background:var(--bg-active,#F2E3DB);}

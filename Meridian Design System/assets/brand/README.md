@@ -64,9 +64,9 @@ Use the simplified symbol for favicons and thumbnails:
 - **Dark Background**: `hsl(var(--background))`
 
 ### Typography
-- **Display font**: Space Grotesk, with IBM Plex Sans fallback
-- **UI font**: Inter, with IBM Plex Sans fallback
-- **Monospace**: JetBrains Mono, with IBM Plex Mono fallback
+- **Display font**: Segoe UI Variable Display, falling back to Segoe UI then system-ui
+- **UI font**: Segoe UI Variable Text, falling back to Segoe UI then system-ui
+- **Monospace**: Cascadia Mono, falling back to ui-monospace
 - **Weight**: Bold (700) for headings, Regular (400) for body
 
 ### Minimum Sizes

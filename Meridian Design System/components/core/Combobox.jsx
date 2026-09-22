@@ -23,10 +23,10 @@ function inject() {
 .mds-cb-opt{padding:8px 12px;font-family:var(--font-data);font-size:12px;
   color:var(--text-primary,#22252A);cursor:pointer;display:flex;align-items:center;gap:8px;}
 .mds-cb-opt--hl{background:var(--bg-hover,#F0EEE9);}
-.mds-cb-opt--active{background:var(--bg-active,#F2E3DB);color:var(--accent,#A85436);font-weight:600;}
+.mds-cb-opt--active{background:var(--bg-active,#F2E3DB);color:var(--accent-dim,#8C4429);font-weight:600;}
 .mds-cb-opt--active::after{content:"✓";margin-left:auto;font-size:11px;}
 .mds-cb-empty{padding:10px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#5E666F);}
-.mds-cb-mark{background:var(--accent-ghost,#F4E7E0);color:var(--accent,#A85436);}
+.mds-cb-mark{background:var(--accent-ghost,#F4E7E0);color:var(--accent-dim,#8C4429);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "combobox");
