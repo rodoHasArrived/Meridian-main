@@ -34,6 +34,18 @@
       "object_type": "table"
     },
     {
+      "comment": "Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority.",
+      "fingerprint": "721fd5347a8becbaad67b9d44e75f2ab5048b9041a9b8ca3c917f7d7c83edd15",
+      "object": "security_master.security_price_selection_receipts",
+      "object_type": "table"
+    },
+    {
+      "comment": "Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection.",
+      "fingerprint": "b95ee30c14fb99c2dee9b9e0ad019b38e1e49896fc94f015e6ab67eba91acc79",
+      "object": "security_master.security_pricing_hierarchy_history",
+      "object_type": "table"
+    },
+    {
       "comment": "Dated pool-factor points of a projected structured-credit tranche, in terms-document order (ordinal). Serves the factor-as-of lookup used by amortization.",
       "fingerprint": "610af3d7fc5cf5f50c921ed16a0f544597deca1d35797a9df8de3dcc00d3a3ff",
       "object": "security_master.structured_credit_factor_schedule_projection",
@@ -2485,6 +2497,54 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "7e20c1d40569991101dc49447215f6ea85718cece656dee37d1de61add7583af",
+      "kind": "normal",
+      "source": "security_master.security_price_selection_receipts_security_id_fkey on security_master.security_price_selection_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities.security_id",
+      "target_kind": "table column",
+      "target_name": "securities",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "c1c6748eb8dbb3c3e767bfd8bb934cd35d53b6a04a353481e9362442d4680bbc",
+      "kind": "normal",
+      "source": "security_master.security_price_selection_receipts_security_id_fkey on security_master.security_price_selection_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities_pkey",
+      "target_kind": "index",
+      "target_name": "securities_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "862d5d7aa7ff349cd2c28206d9dd0681f1b631ab03a68db744292b5df683a5a6",
+      "kind": "normal",
+      "source": "security_master.security_pricing_hierarchy_history_security_id_fkey on security_master.security_pricing_hierarchy_history",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities.security_id",
+      "target_kind": "table column",
+      "target_name": "securities",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "159883937b4ce37464a126ab4f04e13bc3cf08af31b3087ca06a18e695d44367",
+      "kind": "normal",
+      "source": "security_master.security_pricing_hierarchy_history_security_id_fkey on security_master.security_pricing_hierarchy_history",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities_pkey",
+      "target_kind": "index",
+      "target_name": "securities_pkey",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "4efc35615df52a1b80724ad14b16031ffb4e60d8a3911bac77a30dd753ca9945",
       "kind": "normal",
       "source": "security_master.security_pricing_hierarchy_security_id_fkey on security_master.security_pricing_hierarchy",
@@ -2530,6 +2590,18 @@
       "target": "security_master.securities_pkey",
       "target_kind": "index",
       "target_name": "securities_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "263350868be1e26ae2b9a21d46a67176d929c9ac5b00df96d38019a12df1572a",
+      "kind": "normal",
+      "source": "security_master.security_raw_prices_unit_check on security_master.security_raw_prices",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_raw_prices.price_unit",
+      "target_kind": "table column",
+      "target_name": "security_raw_prices",
       "target_schema": "security_master"
     },
     {
@@ -2777,9 +2849,40 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "30eb3f7a916492982f9c3c4b5da0990f884db4073110d0219dda091151a6a8f5",
+  "fingerprint": "f32458671471af5b6a0636d4d61fceccb38abd95ba03086883bae93492bbae63",
   "foreign_tables": [],
   "functions": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "864e94c04ca58ab6371f895ee92b5952c9b97077dd4b8932388c7ad8123bb413",
+      "fingerprint": "f777ee25f8f726fe4227a6c78201b81c5a6f3d4b20b0929b06df46362c3597b4",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_price_selection_receipt_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "security_master",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_price_selection_receipt_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
     {
       "acl": [
         {
@@ -28390,6 +28493,298 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "3aba477ac8e07704aaf9377b8f033cbd510922ab13621faed1006697d3417f5c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "receipt_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "dd37657fb7b8c12d5d41f399d103fa41b7c1c5951aee020e2a5463bb24cb622c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7ee3e245af1a2abe483180fb0b6e1543db0fac6d68ce05e726b1eaea67fca84e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "character(64)",
+          "default": null,
+          "fingerprint": "603d11889c59f4f8e4b47c8ab2f659c86f43beb3316147d4b6d1a51da54ff80d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_sha256",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "bpchar",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+          "delete_action": "no_action",
+          "fingerprint": "f5dbf5ede2615f417b2c9bacf7a48390a44f82dd85496f85ad59aa604265b826",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_price_selection_receipts_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "securities",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "receipt_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (receipt_id)",
+          "delete_action": null,
+          "fingerprint": "80d05f1c14bcc1cfd4fed130577c3c8adcba1327866a5ca74bb2f9b278e1e29b",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_price_selection_receipts_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "663e0450e1a7ad74e2f8eaa89b3137cc5d5350a9531be34faf29912264407255",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_price_selection_receipts_scope ON security_master.security_price_selection_receipts USING btree (security_id, account_id, receipt_id)",
+          "expression": null,
+          "fingerprint": "c456937f5629582f6c8eaa31ddac0219775b9884ad92603eea110ed497bed241",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "account_id",
+            "receipt_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_price_selection_receipts_scope",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_price_selection_receipts_pkey ON security_master.security_price_selection_receipts USING btree (receipt_id)",
+          "expression": null,
+          "fingerprint": "204c44e19a9b6362b9cab28621d1ee1c84491e0073fffbfb71963e6263c83b2e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "receipt_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_price_selection_receipts_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_price_selection_receipts",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_price_selection_receipts_immutable BEFORE DELETE OR UPDATE ON security_master.security_price_selection_receipts FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "fa472da90cb107a06a1a3abcee2670817a08dc4f3cafd46596f23e6275a93042",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "b34b65eb6dc61b5f3c65b55225b1c6f08a2f1af97d6113c0362a3d267aa249e7",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "row",
+          "name": "security_price_selection_receipts_immutable",
+          "relation": "security_price_selection_receipts",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_price_selection_receipts_no_truncate BEFORE TRUNCATE ON security_master.security_price_selection_receipts FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "fd6dc846d02cdf35b39efa760815611e5fdf08cab90d14108a505e13b75bd27a",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "fb2dba0553e318e59c1181eb84ecdddb39a0d636a3bcde0e010db43f320e3695",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "statement",
+          "name": "security_price_selection_receipts_no_truncate",
+          "relation": "security_price_selection_receipts",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
           "generated": null,
           "generated_expression": null,
@@ -28464,6 +28859,22 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -28514,7 +28925,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "89f2b52e2600a4392efbed44d61e3aebf7293c93048513788528c06e7b464bfe",
+      "fingerprint": "97c4dfe304c108faed292157425a756ee874c3977cbe0ca8cce502cf5998ce22",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -28567,6 +28978,242 @@
       "is_partition": false,
       "kind": "table",
       "name": "security_pricing_hierarchy",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "2c32fcc0297c5fd069ae0ff4f3922efcf62a9ee567b6352432374c54f0aab659",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "ef3b4146e50b0b38e1a7f4a7c2fa6b427f78be4c4c1e1a1f5711833a2c865ece",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entries",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "1da885ccfcea0b84e7399d33a885850b236922f7903f818db0c95235b47c05b7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "as_of",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "bab802b59229fc4cf21c9adb00addf513b092b81fd38e35525c2f95349c3ca39",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "updated_by",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+          "delete_action": "no_action",
+          "fingerprint": "3dfd06a52ea165524979527d84bd328737a46012cb1eccbcbda2037de8416781",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_pricing_hierarchy_history_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "securities",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id",
+            "account_id",
+            "as_of"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id, account_id, as_of)",
+          "delete_action": null,
+          "fingerprint": "4271e49b936f1370b85837c313aac213abe6b10d92d8ac7e1ae887919ff94009",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_pricing_hierarchy_history_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "b0fd8a0c12c9d6066f378db454b2b60be4769b4eca5905d06ad0e051b7765be7",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_pricing_hierarchy_history_pkey ON security_master.security_pricing_hierarchy_history USING btree (security_id, account_id, as_of)",
+          "expression": null,
+          "fingerprint": "734a803d38bf9b0ee16683526383c9def5ce48cff2532fb49e5eb58afe14a84f",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "account_id",
+            "as_of"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_pricing_hierarchy_history_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_pricing_hierarchy_history",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",
@@ -28720,10 +29367,46 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "'Unspecified'::text",
+          "fingerprint": "c684376ef520a400a384a049aa1bdd0f30d2be98032349508f68512d1e758a98",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "price_unit",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "price_unit"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (price_unit = ANY (ARRAY['Unspecified'::text, 'CurrencyPerUnit'::text, 'PercentOfPar'::text]))",
+          "delete_action": null,
+          "fingerprint": "2fd326fc1eee593bac70804200d44ebef8880791e2918b679632bda9db269f91",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_raw_prices_unit_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "security_id"
@@ -28749,13 +29432,14 @@
         {
           "columns": [
             "security_id",
-            "source_id"
+            "source_id",
+            "price_as_of"
           ],
           "comment": null,
           "deferrable": false,
-          "definition": "PRIMARY KEY (security_id, source_id)",
+          "definition": "PRIMARY KEY (security_id, source_id, price_as_of)",
           "delete_action": null,
-          "fingerprint": "cff73ef30cc979dcc0f70471a715b99794beb3f565a2a753a45459496388ed96",
+          "fingerprint": "9c6301c712828862ab58a9dfb10a7c4f4c256b85441d529a58ea3993a14e0419",
           "initially_deferred": false,
           "match_type": null,
           "name": "security_raw_prices_pkey",
@@ -28770,7 +29454,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ffe7e8d6490b7e872c17f764df86607441fbed25129c774345b00f9319c6585a",
+      "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -28798,14 +29482,15 @@
         },
         {
           "comment": null,
-          "definition": "CREATE UNIQUE INDEX security_raw_prices_pkey ON security_master.security_raw_prices USING btree (security_id, source_id)",
+          "definition": "CREATE UNIQUE INDEX security_raw_prices_pkey ON security_master.security_raw_prices USING btree (security_id, source_id, price_as_of)",
           "expression": null,
-          "fingerprint": "4a76a78b1c80450bb7cf7a17bdf7b31c2efdc9ab465436d011307b7806ae2555",
+          "fingerprint": "331735b12ffe3863cd4e488be8eeae9e2a45269d678407f432a43129ddaae1cb",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
             "security_id",
-            "source_id"
+            "source_id",
+            "price_as_of"
           ],
           "live": true,
           "method": "btree",
@@ -34237,10 +34922,26 @@
     },
     {
       "enabled": false,
+      "fingerprint": "d708bfa91e0157d54c498ccbbb5c57fd961dca8b3ab0642aaaaf7abdd800b356",
+      "forced": false,
+      "policies": [],
+      "relation": "security_price_selection_receipts",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
       "fingerprint": "b25bf9abf979c5929a185c5bc016c8a3110d68041c337a8b9a4ff12b9b844eef",
       "forced": false,
       "policies": [],
       "relation": "security_pricing_hierarchy",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "0f8ee9344596a5dafc8dbd498eef7476771a58992b4eefc9e229a7d5944679f9",
+      "forced": false,
+      "policies": [],
+      "relation": "security_pricing_hierarchy_history",
       "schema": "security_master"
     },
     {
@@ -59904,6 +60605,298 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "3aba477ac8e07704aaf9377b8f033cbd510922ab13621faed1006697d3417f5c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "receipt_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "dd37657fb7b8c12d5d41f399d103fa41b7c1c5951aee020e2a5463bb24cb622c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7ee3e245af1a2abe483180fb0b6e1543db0fac6d68ce05e726b1eaea67fca84e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "character(64)",
+          "default": null,
+          "fingerprint": "603d11889c59f4f8e4b47c8ab2f659c86f43beb3316147d4b6d1a51da54ff80d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_sha256",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "bpchar",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+          "delete_action": "no_action",
+          "fingerprint": "f5dbf5ede2615f417b2c9bacf7a48390a44f82dd85496f85ad59aa604265b826",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_price_selection_receipts_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "securities",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "receipt_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (receipt_id)",
+          "delete_action": null,
+          "fingerprint": "80d05f1c14bcc1cfd4fed130577c3c8adcba1327866a5ca74bb2f9b278e1e29b",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_price_selection_receipts_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "663e0450e1a7ad74e2f8eaa89b3137cc5d5350a9531be34faf29912264407255",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_price_selection_receipts_scope ON security_master.security_price_selection_receipts USING btree (security_id, account_id, receipt_id)",
+          "expression": null,
+          "fingerprint": "c456937f5629582f6c8eaa31ddac0219775b9884ad92603eea110ed497bed241",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "account_id",
+            "receipt_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_price_selection_receipts_scope",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_price_selection_receipts_pkey ON security_master.security_price_selection_receipts USING btree (receipt_id)",
+          "expression": null,
+          "fingerprint": "204c44e19a9b6362b9cab28621d1ee1c84491e0073fffbfb71963e6263c83b2e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "receipt_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_price_selection_receipts_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_price_selection_receipts",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_price_selection_receipts_immutable BEFORE DELETE OR UPDATE ON security_master.security_price_selection_receipts FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "fa472da90cb107a06a1a3abcee2670817a08dc4f3cafd46596f23e6275a93042",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "b34b65eb6dc61b5f3c65b55225b1c6f08a2f1af97d6113c0362a3d267aa249e7",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "row",
+          "name": "security_price_selection_receipts_immutable",
+          "relation": "security_price_selection_receipts",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_price_selection_receipts_no_truncate BEFORE TRUNCATE ON security_master.security_price_selection_receipts FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+          "definition_hash": "fd6dc846d02cdf35b39efa760815611e5fdf08cab90d14108a505e13b75bd27a",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "fb2dba0553e318e59c1181eb84ecdddb39a0d636a3bcde0e010db43f320e3695",
+          "function_schema": "security_master",
+          "function_signature": "reject_price_selection_receipt_mutation()",
+          "level": "statement",
+          "name": "security_price_selection_receipts_no_truncate",
+          "relation": "security_price_selection_receipts",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
           "generated": null,
           "generated_expression": null,
@@ -59978,6 +60971,22 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -60028,7 +61037,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "89f2b52e2600a4392efbed44d61e3aebf7293c93048513788528c06e7b464bfe",
+      "fingerprint": "97c4dfe304c108faed292157425a756ee874c3977cbe0ca8cce502cf5998ce22",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -60081,6 +61090,242 @@
       "is_partition": false,
       "kind": "table",
       "name": "security_pricing_hierarchy",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "2c32fcc0297c5fd069ae0ff4f3922efcf62a9ee567b6352432374c54f0aab659",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "ef3b4146e50b0b38e1a7f4a7c2fa6b427f78be4c4c1e1a1f5711833a2c865ece",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entries",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "1da885ccfcea0b84e7399d33a885850b236922f7903f818db0c95235b47c05b7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "as_of",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "bab802b59229fc4cf21c9adb00addf513b092b81fd38e35525c2f95349c3ca39",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "updated_by",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection.",
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+          "delete_action": "no_action",
+          "fingerprint": "3dfd06a52ea165524979527d84bd328737a46012cb1eccbcbda2037de8416781",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_pricing_hierarchy_history_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "securities",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id",
+            "account_id",
+            "as_of"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id, account_id, as_of)",
+          "delete_action": null,
+          "fingerprint": "4271e49b936f1370b85837c313aac213abe6b10d92d8ac7e1ae887919ff94009",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_pricing_hierarchy_history_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "b0fd8a0c12c9d6066f378db454b2b60be4769b4eca5905d06ad0e051b7765be7",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_pricing_hierarchy_history_pkey ON security_master.security_pricing_hierarchy_history USING btree (security_id, account_id, as_of)",
+          "expression": null,
+          "fingerprint": "734a803d38bf9b0ee16683526383c9def5ce48cff2532fb49e5eb58afe14a84f",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "account_id",
+            "as_of"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_pricing_hierarchy_history_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_pricing_hierarchy_history",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",
@@ -60234,10 +61479,46 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "'Unspecified'::text",
+          "fingerprint": "c684376ef520a400a384a049aa1bdd0f30d2be98032349508f68512d1e758a98",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "price_unit",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "price_unit"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (price_unit = ANY (ARRAY['Unspecified'::text, 'CurrencyPerUnit'::text, 'PercentOfPar'::text]))",
+          "delete_action": null,
+          "fingerprint": "2fd326fc1eee593bac70804200d44ebef8880791e2918b679632bda9db269f91",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_raw_prices_unit_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "security_id"
@@ -60263,13 +61544,14 @@
         {
           "columns": [
             "security_id",
-            "source_id"
+            "source_id",
+            "price_as_of"
           ],
           "comment": null,
           "deferrable": false,
-          "definition": "PRIMARY KEY (security_id, source_id)",
+          "definition": "PRIMARY KEY (security_id, source_id, price_as_of)",
           "delete_action": null,
-          "fingerprint": "cff73ef30cc979dcc0f70471a715b99794beb3f565a2a753a45459496388ed96",
+          "fingerprint": "9c6301c712828862ab58a9dfb10a7c4f4c256b85441d529a58ea3993a14e0419",
           "initially_deferred": false,
           "match_type": null,
           "name": "security_raw_prices_pkey",
@@ -60284,7 +61566,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ffe7e8d6490b7e872c17f764df86607441fbed25129c774345b00f9319c6585a",
+      "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -60312,14 +61594,15 @@
         },
         {
           "comment": null,
-          "definition": "CREATE UNIQUE INDEX security_raw_prices_pkey ON security_master.security_raw_prices USING btree (security_id, source_id)",
+          "definition": "CREATE UNIQUE INDEX security_raw_prices_pkey ON security_master.security_raw_prices USING btree (security_id, source_id, price_as_of)",
           "expression": null,
-          "fingerprint": "4a76a78b1c80450bb7cf7a17bdf7b31c2efdc9ab465436d011307b7806ae2555",
+          "fingerprint": "331735b12ffe3863cd4e488be8eeae9e2a45269d678407f432a43129ddaae1cb",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
             "security_id",
-            "source_id"
+            "source_id",
+            "price_as_of"
           ],
           "live": true,
           "method": "btree",
@@ -65256,6 +66539,41 @@
       "level": "row",
       "name": "trg_security_search_vector",
       "relation": "securities",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_price_selection_receipts_immutable BEFORE DELETE OR UPDATE ON security_master.security_price_selection_receipts FOR EACH ROW EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+      "definition_hash": "fa472da90cb107a06a1a3abcee2670817a08dc4f3cafd46596f23e6275a93042",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "b34b65eb6dc61b5f3c65b55225b1c6f08a2f1af97d6113c0362a3d267aa249e7",
+      "function_schema": "security_master",
+      "function_signature": "reject_price_selection_receipt_mutation()",
+      "level": "row",
+      "name": "security_price_selection_receipts_immutable",
+      "relation": "security_price_selection_receipts",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_price_selection_receipts_no_truncate BEFORE TRUNCATE ON security_master.security_price_selection_receipts FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_price_selection_receipt_mutation()",
+      "definition_hash": "fd6dc846d02cdf35b39efa760815611e5fdf08cab90d14108a505e13b75bd27a",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "fb2dba0553e318e59c1181eb84ecdddb39a0d636a3bcde0e010db43f320e3695",
+      "function_schema": "security_master",
+      "function_signature": "reject_price_selection_receipt_mutation()",
+      "level": "statement",
+      "name": "security_price_selection_receipts_no_truncate",
+      "relation": "security_price_selection_receipts",
       "schema": "security_master",
       "timing": "before"
     }

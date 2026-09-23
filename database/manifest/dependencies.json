@@ -64,6 +64,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentReasons"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
     },
     {
@@ -9478,6 +9490,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasScope"
     },
     {
@@ -9868,6 +9886,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPricingHierarchyDto"
     },
     {
@@ -9875,6 +9899,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRawPriceDto"
     },
     {
       "kind": "contract-set-member",
@@ -13132,6 +13162,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto"
     },
     {
@@ -13139,6 +13175,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakObservation"
     },
     {
       "kind": "contract-set-member",
@@ -13306,6 +13348,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationCorrelationContext"
     },
     {
@@ -13349,6 +13397,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationRunDetail"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationRunObservationScope"
     },
     {
       "kind": "contract-set-member",
@@ -21436,6 +21490,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasScope"
     },
     {
@@ -21826,6 +21886,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPricingHierarchyDto"
     },
     {
@@ -21833,6 +21899,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRawPriceDto"
     },
     {
       "kind": "contract-set-member",
@@ -23663,6 +23735,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondAmortizationMethod"
     },
     {
       "kind": "contract-reference",
@@ -31911,6 +31989,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RecordRawPriceRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.ResolveCorporateActionConflictRequestDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
     },
@@ -32151,6 +32235,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityDetailDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasDto"
     },
@@ -32271,6 +32361,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceGoldenCopyDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceGoldenCopyDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPricingHierarchyDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityPricingHierarchyDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.PricingHierarchyEntryDto"
     },
@@ -32291,6 +32393,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityRawPriceDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
     },
     {
       "kind": "contract-reference",
@@ -36448,6 +36556,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto"
     },
     {
@@ -36665,6 +36779,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakObservation"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationRunObservationScope"
     },
     {
       "kind": "contract-reference",
@@ -41111,6 +41237,36 @@
       "target": "database:fund_structure.fund_structure_legacy_import_receipt.source_hash"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_operator_id_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.operator_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_plan_hash_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.plan_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_quarantined_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.quarantined_rows"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_review_reference_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.review_reference"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_stamped_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows"
+    },
+    {
       "declared": true,
       "kind": "logical-reference",
       "label": "entity_id",
@@ -41616,6 +41772,12 @@
       "kind": "normal",
       "label": "",
       "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.relief_method"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
       "target": "database:ledger.tax_lot_mutations.unit_cost"
     },
     {
@@ -41665,6 +41827,12 @@
       "label": "",
       "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
       "target": "database:ledger.tax_lot_mutations.quantity_delta"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.relief_method"
     },
     {
       "kind": "normal",
@@ -41737,6 +41905,18 @@
       "label": "",
       "source": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
       "target": "database:ledger.tax_lots.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_basis_adjustment on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.acquisition_terms"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_basis_adjustment on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.basis_adjustment"
     },
     {
       "kind": "normal",
@@ -41933,6 +42113,84 @@
       "label": "journal_entry_id",
       "source": "database:ledger.journal_legs",
       "target": "database:ledger.journal_entries"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_chain_sequence_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.chain_sequence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.close_event_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.close_event_snapshot"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_entry_hash_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.entry_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_payload_hash_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.payload_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_previous_hash_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.previous_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_subject_kind_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.subject_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_events_subject_version_check on ledger.ledger_event_audit_events",
+      "target": "database:ledger.ledger_event_audit_events.subject_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_genesis_subject_kind_check on ledger.ledger_event_audit_genesis",
+      "target": "database:ledger.ledger_event_audit_genesis.subject_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_head_chain_id_check on ledger.ledger_event_audit_head",
+      "target": "database:ledger.ledger_event_audit_head.chain_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_head_genesis_hash_check on ledger.ledger_event_audit_head",
+      "target": "database:ledger.ledger_event_audit_head.genesis_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_head_last_hash_check on ledger.ledger_event_audit_head",
+      "target": "database:ledger.ledger_event_audit_head.last_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_event_audit_head_next_sequence_check on ledger.ledger_event_audit_head",
+      "target": "database:ledger.ledger_event_audit_head.next_sequence"
     },
     {
       "constraint": "open_lot_backfill_evidence_ledger_book_id_fkey",
@@ -45485,11 +45743,49 @@
       "target": "database:security_master.securities_pkey"
     },
     {
+      "constraint": "security_price_selection_receipts_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.security_price_selection_receipts",
+      "target": "database:security_master.securities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_price_selection_receipts_security_id_fkey on security_master.security_price_selection_receipts",
+      "target": "database:security_master.securities.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_price_selection_receipts_security_id_fkey on security_master.security_price_selection_receipts",
+      "target": "database:security_master.securities_pkey"
+    },
+    {
       "constraint": "security_pricing_hierarchy_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
       "source": "database:security_master.security_pricing_hierarchy",
       "target": "database:security_master.securities"
+    },
+    {
+      "constraint": "security_pricing_hierarchy_history_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.security_pricing_hierarchy_history",
+      "target": "database:security_master.securities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_pricing_hierarchy_history_security_id_fkey on security_master.security_pricing_hierarchy_history",
+      "target": "database:security_master.securities.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_pricing_hierarchy_history_security_id_fkey on security_master.security_pricing_hierarchy_history",
+      "target": "database:security_master.securities_pkey"
     },
     {
       "kind": "normal",
@@ -45521,6 +45817,12 @@
       "label": "",
       "source": "database:security_master.security_raw_prices_security_id_fkey on security_master.security_raw_prices",
       "target": "database:security_master.securities_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_raw_prices_unit_check on security_master.security_raw_prices",
+      "target": "database:security_master.security_raw_prices.price_unit"
     },
     {
       "constraint": "servicer_position_report_line_loan_id_fkey",
@@ -45997,6 +46299,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:fund_structure",
+      "target": "database:fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
       "target": "database:fund_structure.fund_structure_tenant_quarantine"
     },
     {
@@ -46186,6 +46494,24 @@
       "label": "",
       "source": "schema:ledger",
       "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.ledger_event_audit_events"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.ledger_event_audit_genesis"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.ledger_event_audit_head"
     },
     {
       "kind": "contains",
@@ -46885,7 +47211,19 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_price_selection_receipts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_pricing_hierarchy"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.security_pricing_hierarchy_history"
     },
     {
       "kind": "contains",
@@ -46997,7 +47335,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e2bc1d4f9448096a5139d204f6a9476bc082369f1ee2e727da4a68821adb16cd",
+  "fingerprint": "136bad8b2273bd404fe03eb367cc8a5e3ff27fc0f051e0f5a96bc61b7754a326",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -47109,6 +47447,18 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillReceiptDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.OpenLotBackfillReceiptDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentReasons",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentReasons"
     },
     {
       "classification": "dto",
@@ -56525,6 +56875,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityAliasDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasScope",
       "kind": "contract-type",
@@ -56915,6 +57271,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityPriceKind"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceUnit",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityPriceUnit"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityPricingHierarchyDto",
       "kind": "contract-type",
@@ -56925,6 +57287,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityProjectionRecord"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRawPriceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityRawPriceDto"
     },
     {
       "classification": "record",
@@ -60180,6 +60548,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakLineageDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationBreakLineageDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto"
@@ -60189,6 +60563,12 @@
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakObservation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationBreakObservation"
     },
     {
       "classification": "record",
@@ -60354,6 +60734,12 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationCorrelationContext",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationCorrelationContext"
@@ -60399,6 +60785,12 @@
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationRunDetail",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationRunDetail"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationRunObservationScope",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationRunObservationScope"
     },
     {
       "classification": "request",
@@ -64067,6 +64459,62 @@
       "schema": "fund_structure"
     },
     {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-table",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt.operator_id",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt.operator_id"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt.plan_hash",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt.plan_hash"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt.quarantined_rows",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt.quarantined_rows"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt.review_reference",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt.review_reference"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt_operator_id_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt_operator_id_check on fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt_plan_hash_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt_plan_hash_check on fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt_quarantined_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt_quarantined_rows_check on fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt_review_reference_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt_review_reference_check on fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_tenant_backfill_receipt_stamped_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_tenant_backfill_receipt_stamped_rows_check on fund_structure.fund_structure_tenant_backfill_receipt"
+    },
+    {
       "id": "database:fund_structure.fund_structure_tenant_quarantine",
       "kind": "database-table",
       "label": "fund_structure.fund_structure_tenant_quarantine",
@@ -64551,6 +64999,11 @@
       "label": "ledger.ck_tax_lots_asset_scope on ledger.tax_lots"
     },
     {
+      "id": "database:ledger.ck_tax_lots_basis_adjustment on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_basis_adjustment on ledger.tax_lots"
+    },
+    {
       "id": "database:ledger.ck_tax_lots_currency on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.ck_tax_lots_currency on ledger.tax_lots"
@@ -64773,6 +65226,149 @@
       "id": "database:ledger.ledger_books_pkey",
       "kind": "database-object",
       "label": "ledger.ledger_books_pkey"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events",
+      "kind": "database-table",
+      "label": "ledger.ledger_event_audit_events",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.chain_sequence",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.chain_sequence"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.close_event_id",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.close_event_id"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.close_event_snapshot",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.close_event_snapshot"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.entry_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.entry_hash"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.payload_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.payload_hash"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.previous_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.previous_hash"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.subject_kind",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.subject_kind"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events.subject_version",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events.subject_version"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_chain_sequence_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_chain_sequence_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_entry_hash_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_entry_hash_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_payload_hash_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_payload_hash_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_previous_hash_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_previous_hash_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_subject_kind_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_subject_kind_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_events_subject_version_check on ledger.ledger_event_audit_events",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_events_subject_version_check on ledger.ledger_event_audit_events"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_genesis",
+      "kind": "database-table",
+      "label": "ledger.ledger_event_audit_genesis",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_genesis.subject_kind",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_genesis.subject_kind"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_genesis_subject_kind_check on ledger.ledger_event_audit_genesis",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_genesis_subject_kind_check on ledger.ledger_event_audit_genesis"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head",
+      "kind": "database-table",
+      "label": "ledger.ledger_event_audit_head",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head.chain_id",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head.chain_id"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head.genesis_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head.genesis_hash"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head.last_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head.last_hash"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head.next_sequence",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head.next_sequence"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head_chain_id_check on ledger.ledger_event_audit_head",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head_chain_id_check on ledger.ledger_event_audit_head"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head_genesis_hash_check on ledger.ledger_event_audit_head",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head_genesis_hash_check on ledger.ledger_event_audit_head"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head_last_hash_check on ledger.ledger_event_audit_head",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head_last_hash_check on ledger.ledger_event_audit_head"
+    },
+    {
+      "id": "database:ledger.ledger_event_audit_head_next_sequence_check on ledger.ledger_event_audit_head",
+      "kind": "database-object",
+      "label": "ledger.ledger_event_audit_head_next_sequence_check on ledger.ledger_event_audit_head"
     },
     {
       "id": "database:ledger.ledger_journal_schema_migrations",
@@ -65054,6 +65650,11 @@
       "label": "ledger.tax_lot_mutations.quantity_delta"
     },
     {
+      "id": "database:ledger.tax_lot_mutations.relief_method",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.relief_method"
+    },
+    {
       "id": "database:ledger.tax_lot_mutations.result_version",
       "kind": "database-object",
       "label": "ledger.tax_lot_mutations.result_version"
@@ -65139,6 +65740,11 @@
       "id": "database:ledger.tax_lots.acquisition_terms",
       "kind": "database-object",
       "label": "ledger.tax_lots.acquisition_terms"
+    },
+    {
+      "id": "database:ledger.tax_lots.basis_adjustment",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.basis_adjustment"
     },
     {
       "id": "database:ledger.tax_lots.book_position_id",
@@ -68463,10 +69069,32 @@
       "label": "security_master.security_operator_overrides_security_id_fkey on security_master.security_operator_overrides"
     },
     {
+      "id": "database:security_master.security_price_selection_receipts",
+      "kind": "database-table",
+      "label": "security_master.security_price_selection_receipts",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_price_selection_receipts_security_id_fkey on security_master.security_price_selection_receipts",
+      "kind": "database-object",
+      "label": "security_master.security_price_selection_receipts_security_id_fkey on security_master.security_price_selection_receipts"
+    },
+    {
       "id": "database:security_master.security_pricing_hierarchy",
       "kind": "database-table",
       "label": "security_master.security_pricing_hierarchy",
       "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_pricing_hierarchy_history",
+      "kind": "database-table",
+      "label": "security_master.security_pricing_hierarchy_history",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_pricing_hierarchy_history_security_id_fkey on security_master.security_pricing_hierarchy_history",
+      "kind": "database-object",
+      "label": "security_master.security_pricing_hierarchy_history_security_id_fkey on security_master.security_pricing_hierarchy_history"
     },
     {
       "id": "database:security_master.security_pricing_hierarchy_security_id_fkey on security_master.security_pricing_hierarchy",
@@ -68480,9 +69108,19 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.security_raw_prices.price_unit",
+      "kind": "database-object",
+      "label": "security_master.security_raw_prices.price_unit"
+    },
+    {
       "id": "database:security_master.security_raw_prices_security_id_fkey on security_master.security_raw_prices",
       "kind": "database-object",
       "label": "security_master.security_raw_prices_security_id_fkey on security_master.security_raw_prices"
+    },
+    {
+      "id": "database:security_master.security_raw_prices_unit_check on security_master.security_raw_prices",
+      "kind": "database-object",
+      "label": "security_master.security_raw_prices_unit_check on security_master.security_raw_prices"
     },
     {
       "id": "database:security_master.security_snapshots",
@@ -68750,11 +69388,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3097,
-    "contract_set_memberships": 3673,
-    "edges": 7808,
-    "foreign_keys": 132,
+    "contract_references": 3106,
+    "contract_set_memberships": 3685,
+    "edges": 7864,
+    "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3765
+    "nodes": 3822
   }
 }

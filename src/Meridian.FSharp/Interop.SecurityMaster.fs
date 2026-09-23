@@ -290,10 +290,18 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    legs =
                         terms.Legs
                         |> List.map (fun leg ->
-                            {| legType = leg.LegType
+                            {| legId = leg.LegId
+                               legType = leg.LegType
                                currency = leg.Currency
+                               direction = leg.Direction
                                index = leg.Index
-                               fixedRate = leg.FixedRate |}) |})
+                               fixedRate = leg.FixedRate
+                               spreadBps = leg.SpreadBps
+                               currentIndexRate = leg.CurrentIndexRate
+                               notional = leg.Notional
+                               paymentFrequency = leg.PaymentFrequency
+                               dayCount = leg.DayCount
+                               exchangesPrincipal = leg.ExchangesPrincipal |}) |})
         | SecurityKind.DirectLoan terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion

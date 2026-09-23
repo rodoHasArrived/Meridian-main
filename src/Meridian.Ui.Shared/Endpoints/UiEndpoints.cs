@@ -341,7 +341,7 @@ public static class UiEndpoints
             options.AddPolicy(DirectLendingMutationRateLimitPolicy, httpContext => !forceEnable && CanBypassRateLimiting(httpContext)
                 ? RateLimitPartition.GetNoLimiter<string>("direct-lending-global")
                 : RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: httpContext.User.Identity?.Name is { } actor
+                    partitionKey: EndpointAuthorization.TryResolveActor(httpContext, out var actor)
                         ? $"actor:{actor}"
                         : $"ip:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}",
                     factory: _ => new FixedWindowRateLimiterOptions

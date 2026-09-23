@@ -31,6 +31,18 @@ public sealed record StatementRunMatchArtifact(
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<StatementRunMatchGroupRecord>? MatchGroups { get; init; }
+
+    /// <summary>Null on legacy artifacts. Only complete internal populations can establish source clearing.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? SourceComparisonComplete { get; init; }
+
+    /// <summary>Hash of the matcher revision and the exact executed tolerance profile, including rules/version.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceComparisonPolicyFingerprint { get; init; }
+
+    /// <summary>Population kinds actually compared; a narrower feed cannot clear a broader feed's breaks.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? SourceComparisonPopulationKinds { get; init; }
 }
 
 /// <summary>

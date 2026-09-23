@@ -38,6 +38,18 @@ Provider setup accepts the initiating actor from its HTTP boundary and retains i
 vault audit records. Operator endpoints reject missing identity; internal callers retain an explicit
 service attribution when no operator initiated the call.
 
+### Reviewed tenant maintenance and strict hosts
+
+The explicit `--fund-tenant-backfill --action preview|apply` command previews retained ownership
+and applies only the reviewed fingerprint; it performs no automatic migration or cutover.
+[The operator runbook](../../docs/operators/fund-structure-tenant-backfill.md) describes attribution,
+quarantine, immutable receipts, and recovery. Core hosts now register the configured tenant read
+posture and retained worker authority; HTTP hosts replace only that fallback with their request
+accessor. Direct-lending accrual/outbox workers are constructed and started only when the final
+DI-resolved posture permits unattributed process work. Strict hosts log that these workers are
+withheld, including when a host supplies a later instance/factory override. Strict operation still
+requires per-loan tenant authority before those workers can be enabled.
+
 ## Purpose
 
 `DirectLendingOutboxDispatcher` treats rejected projection and reconciliation command results as
@@ -52,6 +64,13 @@ Meridian application layer contains use cases, orchestration services, commands,
 coordination.
 
 ## Layer responsibility
+
+Security Master swap mapping preserves per-leg economics accepted by the shared cash-flow reader,
+including case-insensitive aliases and numeric/boolean strings. It rejects malformed supplied
+terms instead of silently discarding them, while retaining compatibility with the original
+four-field legs. Day-count aliases prefer `dayCountConvention`, then `dayCount`, then
+`dayCountBasis`. This persistence change does not add opening principal exchanges or alter
+cash-flow posting gates.
 
 This module owns application workflows that coordinate providers, storage, execution, ledger,
 reporting, and UI-facing services through contracts. Keep transport, persistence implementation,
@@ -652,6 +671,18 @@ node that could apply the change, so without that exit the row would be permanen
 Verify this lane with `SecurityMasterServiceSnapshotTests` and
 `SecurityAssetTermsSchemaRoundTripTests`.
 
+The file-based Security Master bulk ingest (`--security-master-ingest <file.csv|file.json>`) is
+fail-closed on caller identity: the import runs only when a registered
+`ISecurityMasterCliImportAuthority` resolves a validated operator or workload actor for the
+`importedBy` stamp, and otherwise refuses with `AuthenticationFailed` before the file is read.
+Command-line text and the ambient OS username are not authentication evidence — the former
+`--imported-by`/OS-username/`"meridian-cli"` fallback chain no longer exists — and no default
+authority implementation is registered, so in stock compositions the CLI file path is disabled and
+bulk imports go through the authenticated workstation/API import instead. Provider-workload
+ingests (`--provider polygon`, `--provider edgar`, `--provider corporate-actions`) dispatch before
+this guard and keep their existing provider attribution. Verify this lane with
+`SecurityMasterCommandsEdgarTests`.
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase
@@ -702,3 +733,22 @@ infrastructure details when an abstraction already exists.
 - `docs/architecture/module-map.md`
 - `docs/developer/build-test-run.md`
 - `docs/source/generated/source-module-index.md`
+
+### Cash-flow and price readiness
+
+Security Master calculated cash flows resolve class-specific canonical rates and repo dates,
+distinguish contractual zero from missing terms, and propagate economic blockers to both ledger
+bridges. Without actual principal/notional, per-100 analytical schedules remain explicitly
+nonpostable. Unresolved leg fixings, step coupons and inflation terms require supported economics
+or an authoritative provider schedule. Provider-only asset classes do not advertise default
+calculated capability.
+
+Golden-copy pricing consults retained source hierarchy and observation history at the supplied
+economic and knowledge cutoffs. It never invents par, straight-line accretion, or stable NAV from
+an asset-class name. Explicit quote units accompany every selected price and comparison.
+
+Each successful golden-copy evaluation persists an immutable selection receipt before returning it.
+Receipt replay returns its exact selected quote, comparisons, hierarchy and cutoff metadata under
+the original security/account scope, without consulting live prices. Timestamp-only re-evaluation
+can legitimately change after an earlier-started transaction commits; timestamps are eligibility
+filters, while `SelectionReceiptId` is the durable replay identity.

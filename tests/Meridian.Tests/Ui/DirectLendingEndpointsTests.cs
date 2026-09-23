@@ -590,6 +590,51 @@ public sealed class DirectLendingEndpointsTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DirectLendingLimiter_UsesResolvedActorAcrossAddressesAndPrincipalIdentities(bool hasAuthenticatedPrincipal)
+    {
+        using var quiet = new Meridian.Tests.Application.Composition.ProductionEnvironmentQuietScope();
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>(),
+            forceRateLimit: true,
+            configureRequest: context =>
+            {
+                var address = context.Request.Headers["X-Test-Address"].ToString();
+                context.Connection.RemoteIpAddress = IPAddress.Parse(address);
+                // API-key and optional local authentication can resolve the trusted actor in
+                // context.Items without authenticating a ClaimsPrincipal. The resolved actor
+                // must also take precedence when a separate principal identity is present.
+                context.User = new ClaimsPrincipal(hasAuthenticatedPrincipal
+                    ? new ClaimsIdentity([new Claim(ClaimTypes.Name, address)], "test-session")
+                    : new ClaimsIdentity());
+            });
+        using var client = app.GetTestClient();
+        for (var index = 1; index <= 20; index++)
+        {
+            client.DefaultRequestHeaders.Remove("X-Test-Address");
+            client.DefaultRequestHeaders.Add("X-Test-Address", $"192.0.2.{index}");
+            using var accepted = await client.PostAsJsonAsync("/api/loans", BuildCreateRequest());
+            accepted.StatusCode.Should().Be(HttpStatusCode.Created);
+        }
+
+        client.DefaultRequestHeaders.Remove("X-Test-Address");
+        client.DefaultRequestHeaders.Add("X-Test-Address", "192.0.2.21");
+        var rejectedRequest = BuildCreateRequest();
+        using var rejected = await client.PostAsJsonAsync("/api/loans", rejectedRequest);
+        rejected.StatusCode.Should().Be(HttpStatusCode.TooManyRequests,
+            "changing the remote address or principal must not multiply the resolved actor's budget");
+        rejected.Headers.RetryAfter!.Delta!.Value.Should().BeGreaterThan(TimeSpan.Zero);
+        var service = app.Services.GetRequiredService<IDirectLendingService>();
+        (await service.GetLoanAsync(rejectedRequest.LoanId!.Value)).Should().BeNull();
+
+        client.DefaultRequestHeaders.Add("X-Test-Actor", "second-operator");
+        using var secondOperator = await client.PostAsJsonAsync("/api/loans", rejectedRequest);
+        secondOperator.StatusCode.Should().Be(HttpStatusCode.Created,
+            "distinct resolved actors behind the same address must retain independent budgets");
+    }
+
+    [Theory]
     [InlineData("Development")]
     [InlineData("Test")]
     public async Task DirectLendingLimiter_ExplicitDevelopmentOverrideRetainsTestWorkflow(string environmentName)
@@ -694,7 +739,8 @@ public sealed class DirectLendingEndpointsTests
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ViewDirectLending | UserPermission.ManageDirectLending,
         string environmentName = "Development",
-        bool forceRateLimit = false)
+        bool forceRateLimit = false,
+        Action<HttpContext>? configureRequest = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -719,6 +765,7 @@ public sealed class DirectLendingEndpointsTests
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Admin;
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] =
                 permissions;
+            configureRequest?.Invoke(context);
             await next();
         });
 

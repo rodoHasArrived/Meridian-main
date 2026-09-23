@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Integrity;
 using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
@@ -21,8 +22,12 @@ public sealed class PostgresSecurityMasterPricingStore : ISecurityMasterPricingS
         _options = options;
     }
 
-    public async Task<SecurityPricingHierarchyDto?> GetHierarchyAsync(
+    public Task<SecurityPricingHierarchyDto?> GetHierarchyAsync(
         Guid securityId, string? accountId, CancellationToken ct = default)
+        => GetHierarchyAsOfAsync(securityId, accountId, DateTimeOffset.UtcNow, ct);
+
+    public async Task<SecurityPricingHierarchyDto?> GetHierarchyAsOfAsync(
+        Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null)
     {
         var accountIdKey = NormalizeAccountId(accountId);
 
@@ -30,110 +35,192 @@ public sealed class PostgresSecurityMasterPricingStore : ISecurityMasterPricingS
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-            select entries, as_of, updated_by
-            from {Qualified("security_pricing_hierarchy")}
-            where security_id = @security_id
-              and account_id = @account_id;
+            select entries, as_of, updated_by from (
+                select entries, as_of, updated_by from {Qualified("security_pricing_hierarchy")}
+                where security_id = @security_id and account_id = @account_id and as_of <= @as_of and recorded_at <= @known_at
+                union all
+                select entries, as_of, updated_by from {Qualified("security_pricing_hierarchy_history")}
+                where security_id = @security_id and account_id = @account_id and as_of <= @as_of and recorded_at <= @known_at
+            ) versions order by as_of desc limit 1;
             """;
         command.Parameters.AddWithValue("security_id", securityId);
         command.Parameters.AddWithValue("account_id", accountIdKey);
+        command.Parameters.AddWithValue("as_of", asOf.UtcDateTime);
+        command.Parameters.AddWithValue("known_at", (knownAt ?? DateTimeOffset.UtcNow).UtcDateTime);
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
             return null;
 
         var entriesJson = reader.GetString(0);
-        var asOf = reader.GetFieldValue<DateTimeOffset>(1);
+        var effectiveAt = reader.GetFieldValue<DateTimeOffset>(1);
         var updatedBy = reader.GetString(2);
 
         var entries = JsonSerializer.Deserialize<List<PricingHierarchyEntryDto>>(entriesJson, JsonOptions)
             ?? new List<PricingHierarchyEntryDto>();
 
-        return new SecurityPricingHierarchyDto(securityId, accountId, entries, asOf, updatedBy);
+        return new SecurityPricingHierarchyDto(securityId, accountId, entries, effectiveAt, updatedBy);
     }
 
-    public async Task UpsertHierarchyAsync(
-        SecurityPricingHierarchyDto hierarchy, CancellationToken ct = default)
+    public async Task UpsertHierarchyAsync(SecurityPricingHierarchyDto hierarchy, CancellationToken ct = default)
     {
-        var entriesJson = JsonSerializer.Serialize(hierarchy.Entries, JsonOptions);
-        var accountIdKey = NormalizeAccountId(hierarchy.AccountId);
-
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
-            insert into {Qualified("security_pricing_hierarchy")}
-                (security_id, account_id, entries, as_of, updated_by)
-            values (@security_id, @account_id, @entries::jsonb, @as_of, @updated_by)
-            on conflict (security_id, account_id) do update
-                set entries = excluded.entries,
-                    as_of = excluded.as_of,
-                    updated_by = excluded.updated_by;
+        command.Transaction = transaction;
+        command.CommandText = $"""
+            select pg_advisory_xact_lock(hashtextextended(@scope, 0));
+            insert into {Qualified("security_pricing_hierarchy_history")}
+                (security_id, account_id, entries, as_of, updated_by, recorded_at)
+            select security_id, account_id, entries, as_of, updated_by, recorded_at
+            from {Qualified("security_pricing_hierarchy")}
+            where security_id = @security_id and account_id = @account_id
+            on conflict do nothing;
             """;
+        command.Parameters.AddWithValue("scope", $"pricing:{hierarchy.SecurityId}:{NormalizeAccountId(hierarchy.AccountId)}");
         command.Parameters.AddWithValue("security_id", hierarchy.SecurityId);
-        command.Parameters.AddWithValue("account_id", accountIdKey);
-        command.Parameters.AddWithValue("entries", entriesJson);
+        command.Parameters.AddWithValue("account_id", NormalizeAccountId(hierarchy.AccountId));
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        command.Parameters.AddWithValue("entries", JsonSerializer.Serialize(hierarchy.Entries, JsonOptions));
         command.Parameters.AddWithValue("as_of", hierarchy.AsOf.UtcDateTime);
         command.Parameters.AddWithValue("updated_by", hierarchy.UpdatedBy);
-
+        command.CommandText = $"""
+            insert into {Qualified("security_pricing_hierarchy_history")} as retained
+                (security_id, account_id, entries, as_of, updated_by)
+            values (@security_id, @account_id, @entries::jsonb, @as_of, @updated_by)
+            on conflict (security_id, account_id, as_of) do update set entries = retained.entries
+            where retained.entries = excluded.entries and retained.updated_by = excluded.updated_by
+            returning 1;
+            """;
+        if (await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is null)
+            throw new InvalidOperationException("A retained pricing hierarchy version cannot be replaced; use a new effective timestamp.");
+        command.CommandText = $"""
+            insert into {Qualified("security_pricing_hierarchy")} as current
+                (security_id, account_id, entries, as_of, updated_by)
+            values (@security_id, @account_id, @entries::jsonb, @as_of, @updated_by)
+            on conflict (security_id, account_id) do update set entries = excluded.entries,
+                as_of = excluded.as_of, updated_by = excluded.updated_by, recorded_at = excluded.recorded_at
+            where excluded.as_of >= current.as_of;
+            """;
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
     private static string NormalizeAccountId(string? accountId)
         => string.IsNullOrWhiteSpace(accountId) ? string.Empty : accountId.Trim();
 
-    public async Task RecordRawPriceAsync(
-        Guid securityId, string sourceId, decimal price, DateTimeOffset priceAsOf,
-        string recordedBy, CancellationToken ct = default)
+    public async Task RecordRawPriceAsync(RecordRawPriceRequest request, CancellationToken ct = default)
     {
+        if (request.Unit == SecurityPriceUnit.Unspecified || !Enum.IsDefined(request.Unit))
+            throw new ArgumentException("An explicit price quote unit is required.", nameof(request));
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
-            insert into {Qualified("security_raw_prices")}
-                (security_id, source_id, price, price_as_of, recorded_by, recorded_at)
-            values (@security_id, @source_id, @price, @price_as_of, @recorded_by, now())
-            on conflict (security_id, source_id) do update
-                set price = excluded.price,
-                    price_as_of = excluded.price_as_of,
-                    recorded_by = excluded.recorded_by,
-                    recorded_at = now()
-                where excluded.price_as_of >= security_raw_prices.price_as_of;
+        command.CommandText = $"""
+            insert into {Qualified("security_raw_prices")} as retained
+                (security_id, source_id, price, price_as_of, price_unit, recorded_by, recorded_at)
+            values (@security_id, @source_id, @price, @price_as_of, @price_unit, @recorded_by, now())
+            on conflict (security_id, source_id, price_as_of) do update set price = retained.price
+            where retained.price = excluded.price and retained.price_unit = excluded.price_unit
+                and retained.recorded_by = excluded.recorded_by
+            returning 1;
             """;
-        command.Parameters.AddWithValue("security_id", securityId);
-        command.Parameters.AddWithValue("source_id", sourceId);
-        command.Parameters.AddWithValue("price", price);
-        command.Parameters.AddWithValue("price_as_of", priceAsOf.UtcDateTime);
-        command.Parameters.AddWithValue("recorded_by", recordedBy);
-
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        command.Parameters.AddWithValue("security_id", request.SecurityId);
+        command.Parameters.AddWithValue("source_id", request.SourceId.Trim().ToLowerInvariant());
+        command.Parameters.AddWithValue("price", request.Price);
+        command.Parameters.AddWithValue("price_as_of", request.PriceAsOf.UtcDateTime);
+        command.Parameters.AddWithValue("price_unit", request.Unit.ToString());
+        command.Parameters.AddWithValue("recorded_by", request.RecordedBy);
+        if (await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is null)
+            throw new InvalidOperationException("A retained price observation cannot be replaced; record a new observation timestamp.");
     }
 
-    public async Task<IReadOnlyList<(string SourceId, decimal Price, DateTimeOffset PriceAsOf)>> GetRawPricesAsync(
-        Guid securityId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<SecurityRawPriceDto>> GetRawPricesAsync(
+        Guid securityId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
-            select source_id, price, price_as_of
+        command.CommandText = $"""
+            select distinct on (source_id) source_id, price, price_as_of, price_unit
             from {Qualified("security_raw_prices")}
-            where security_id = @security_id
-            order by source_id;
+            where security_id = @security_id and price_as_of <= @as_of and recorded_at <= @known_at
+            order by source_id, price_as_of desc;
             """;
         command.Parameters.AddWithValue("security_id", securityId);
-
+        command.Parameters.AddWithValue("as_of", asOf.UtcDateTime);
+        command.Parameters.AddWithValue("known_at", (knownAt ?? DateTimeOffset.UtcNow).UtcDateTime);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        var results = new List<(string, decimal, DateTimeOffset)>();
+        var results = new List<SecurityRawPriceDto>();
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
-        {
-            var sourceId = reader.GetString(0);
-            var price = reader.GetDecimal(1);
-            var priceAsOf = reader.GetFieldValue<DateTimeOffset>(2);
-            results.Add((sourceId, price, priceAsOf));
-        }
-
+            results.Add(new SecurityRawPriceDto(reader.GetString(0), reader.GetDecimal(1),
+                reader.GetFieldValue<DateTimeOffset>(2), Enum.Parse<SecurityPriceUnit>(reader.GetString(3))));
         return results;
+    }
+
+    public async Task RetainPriceSelectionAsync(
+        SecurityPriceGoldenCopyDto selection, string? accountId, CancellationToken ct = default)
+    {
+        if (selection.SelectionReceiptId is not { } receiptId || receiptId == Guid.Empty
+            || selection.SecurityId == Guid.Empty || selection.HierarchySnapshot is not { } hierarchy
+            || hierarchy.SecurityId != selection.SecurityId
+            || NormalizeAccountId(hierarchy.AccountId) != NormalizeAccountId(accountId)
+            || selection.EvaluatedAsOf is null || selection.KnowledgeAsOf is null
+            || selection.HierarchyAsOf != hierarchy.AsOf || selection.Unit == SecurityPriceUnit.Unspecified)
+            throw new ArgumentException("A selection receipt requires complete retained pricing evidence and matching security/account scope.", nameof(selection));
+
+        var payload = JsonSerializer.Serialize(selection, JsonOptions);
+        var digest = Sha256Digest.ComputeUtf8(payload);
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            insert into {Qualified("security_price_selection_receipts")}
+                (receipt_id, security_id, account_id, payload, payload_sha256)
+            values (@receipt_id, @security_id, @account_id, @payload, @digest)
+            on conflict (receipt_id) do nothing
+            returning receipt_id;
+            """;
+        command.Parameters.AddWithValue("receipt_id", receiptId);
+        command.Parameters.AddWithValue("security_id", selection.SecurityId);
+        command.Parameters.AddWithValue("account_id", NormalizeAccountId(accountId));
+        command.Parameters.AddWithValue("payload", payload);
+        command.Parameters.AddWithValue("digest", digest);
+        if (await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is not null)
+            return;
+
+        // Idempotence never updates an immutable receipt. A colliding identity must retain the
+        // same scope and exact payload; differently scoped IDs are not disclosed by the reader.
+        command.CommandText = $"""
+            select payload_sha256 from {Qualified("security_price_selection_receipts")}
+            where receipt_id = @receipt_id and security_id = @security_id and account_id = @account_id;
+            """;
+        var existingDigest = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string;
+        if (!Sha256Digest.FixedEquals(existingDigest, digest))
+            throw new InvalidOperationException("The retained price-selection receipt cannot be replaced or moved to another scope.");
+    }
+
+    public async Task<SecurityPriceGoldenCopyDto?> GetPriceSelectionAsync(
+        Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            select payload, payload_sha256 from {Qualified("security_price_selection_receipts")}
+            where receipt_id = @receipt_id and security_id = @security_id and account_id = @account_id;
+            """;
+        command.Parameters.AddWithValue("receipt_id", receiptId);
+        command.Parameters.AddWithValue("security_id", securityId);
+        command.Parameters.AddWithValue("account_id", NormalizeAccountId(accountId));
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
+        var payload = reader.GetString(0);
+        if (!Sha256Digest.FixedEquals(Sha256Digest.ComputeUtf8(payload), reader.GetString(1)))
+            throw new InvalidOperationException("The retained price-selection receipt failed its integrity check.");
+        var selection = JsonSerializer.Deserialize<SecurityPriceGoldenCopyDto>(payload, JsonOptions);
+        if (selection is null || selection.SecurityId != securityId || selection.SelectionReceiptId != receiptId
+            || selection.HierarchySnapshot is not { } hierarchy || hierarchy.SecurityId != securityId
+            || NormalizeAccountId(hierarchy.AccountId) != NormalizeAccountId(accountId))
+            throw new InvalidOperationException("The retained price-selection receipt does not match its indexed scope.");
+        return selection;
     }
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)

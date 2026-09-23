@@ -12,6 +12,9 @@ namespace Meridian.Storage.Ledger;
 public static class AccountingPostingCommandValidator
 {
     internal const string PostingCommandFingerprintTag = "postingCommandFingerprint";
+    private const string PostingActorTag = "postingActor";
+    private const string PostingActorAttributionTag = "postingActorAttribution";
+    private const string PostingActorAttributionVersion = "command-v1";
 
     public static LedgerJournalEntryWrite NormalizeAndValidate(
         LedgerJournalEntryWrite write,
@@ -20,6 +23,14 @@ public static class AccountingPostingCommandValidator
     {
         ArgumentNullException.ThrowIfNull(write);
         ArgumentNullException.ThrowIfNull(write.Entry);
+
+        if (string.IsNullOrWhiteSpace(write.PostingCommand?.Actor) &&
+            write.Entry.Metadata.Tags?.Keys.Any(key =>
+                string.Equals(key, PostingActorTag, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(key, PostingActorAttributionTag, StringComparison.OrdinalIgnoreCase)) == true)
+        {
+            throw new LedgerValidationException("Reserved posting actor metadata requires an actor on the accounting posting command.");
+        }
 
         if (write.PostingCommand is not { } command)
         {
@@ -435,6 +446,9 @@ public static class AccountingPostingCommandValidator
         };
 
         AddTag(tags, "approvalId", command.ApprovalId);
+        AddTag(tags, PostingActorTag, command.Actor);
+        if (!string.IsNullOrWhiteSpace(command.Actor))
+            tags[PostingActorAttributionTag] = PostingActorAttributionVersion;
         AddTag(tags, "dataProvenance", command.Provenance.Label());
         AddTag(tags, "sourceEventId", (command.EconomicEvent?.EventId ?? command.SourceEventId)?.ToString("D"));
         AddTag(tags, "sourceEventType", command.EconomicEvent?.EventType ?? command.SourceEventType);
@@ -524,6 +538,18 @@ public static class AccountingPostingCommandValidator
         {
             tags[key] = value.Trim();
         }
+    }
+
+    /// <summary>Unversioned legacy metadata never supplies command actor attribution.</summary>
+    public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata)
+    {
+        var tags = new Dictionary<string, string>(metadata.Tags ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+        if (!tags.TryGetValue(PostingActorAttributionTag, out var version))
+            return null;
+        if (!string.Equals(version, PostingActorAttributionVersion, StringComparison.Ordinal) ||
+            !tags.TryGetValue(PostingActorTag, out var actor) || string.IsNullOrWhiteSpace(actor))
+            throw new LedgerValidationException("Retained posting actor attribution is incomplete or unsupported.");
+        return actor.Trim();
     }
 
     private static IReadOnlyDictionary<string, string> MergeCommandTags(

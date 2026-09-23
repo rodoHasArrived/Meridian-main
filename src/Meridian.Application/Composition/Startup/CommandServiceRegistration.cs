@@ -116,6 +116,7 @@ internal static class CommandServiceRegistration
             sp.GetRequiredService<ILogger>()));
         services.AddSingleton<ICliCommand>(sp => new SelfTestCommand(sp.GetRequiredService<ILogger>()));
         services.AddSingleton<ICliCommand, LedgerCliCommand>();
+        services.AddSingleton<ICliCommand, FundStructureTenantBackfillCommand>();
         services.AddSingleton<ICliCommand>(sp => new PackageCommands(
             sp.GetRequiredService<AppConfig>(),
             sp.GetRequiredService<ILogger>()));

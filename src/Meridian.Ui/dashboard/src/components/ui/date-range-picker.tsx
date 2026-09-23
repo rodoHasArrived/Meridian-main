@@ -19,7 +19,7 @@ export interface DateRangePickerProps {
 const DOW = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 const dayButtonClass =
-  "flex h-8 w-8 items-center justify-center border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[#EAEEF3] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]";
+  "flex h-8 w-8 items-center justify-center border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]";
 
 function shortLabel(value: string | null | undefined, fallback: string): string {
   return value ? new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : fallback;
@@ -75,7 +75,7 @@ export function DateRangePicker({ start, end, onChange, label, disabled = false,
               type="button"
               aria-label="Previous month"
               onClick={() => setMonth(new Date(base.getFullYear(), base.getMonth() - 1))}
-              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[#EAEEF3]"
+              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
             >
               ←
             </button>
@@ -88,7 +88,7 @@ export function DateRangePicker({ start, end, onChange, label, disabled = false,
               type="button"
               aria-label="Next month"
               onClick={() => setMonth(new Date(base.getFullYear(), base.getMonth() + 1))}
-              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[#EAEEF3]"
+              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
             >
               →
             </button>
@@ -142,8 +142,8 @@ export function DateRangePicker({ start, end, onChange, label, disabled = false,
         value={`${shortLabel(start, "Start")} — ${shortLabel(end, "End")}`}
         onClick={() => !disabled && setOpen((current) => !current)}
         className={cn(
-          "h-9 w-full cursor-pointer rounded-[2px] border border-border bg-[#F3F6F9] px-2.5 font-mono text-sm text-foreground",
-          "hover:border-[#ADB8C4] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          "h-9 w-full cursor-pointer rounded-[2px] border border-border bg-[var(--ws-surface-raised)] px-2.5 font-mono text-sm text-foreground",
+          "hover:border-[var(--ws-border-hover)] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
           disabled && "cursor-not-allowed opacity-55"
         )}
       />

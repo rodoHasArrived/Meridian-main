@@ -19,11 +19,11 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         rows={rows}
         aria-invalid={error ? true : undefined}
         className={cn(
-          "w-full rounded-[2px] border bg-[#F3F6F9] px-2.5 py-2 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/70",
+          "w-full rounded-[2px] border bg-[var(--ws-surface-raised)] px-2.5 py-2 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/70",
           "transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
           "disabled:cursor-not-allowed disabled:opacity-55",
           "resize-y",
-          error ? "border-danger/60 focus-visible:ring-danger/40" : "border-border hover:border-[#ADB8C4] focus-visible:border-primary",
+          error ? "border-danger/60 focus-visible:ring-danger/40" : "border-border hover:border-[var(--ws-border-hover)] focus-visible:border-primary",
           className
         )}
         {...props}

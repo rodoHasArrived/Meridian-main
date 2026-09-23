@@ -6,6 +6,11 @@ direction to a light WPF-first institutional workstation: paper canvas, white
 cards, near-black chrome bars, muted teal-blue accent, desaturated status
 washes, hairline borders, and compact operator density.
 
+**Since September 2026** the accent and material have moved on: the canvas is warm
+drafting stock and the accent is copper `#A85436` (Programmed Institutionalism). The
+structural direction this brief records — flat surfaces, hairline borders, operator
+density — carried forward unchanged; the colour did not.
+
 ## Bundled References
 
 | Reference | What it contributes |
