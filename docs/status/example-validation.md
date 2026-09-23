@@ -150,8 +150,8 @@ No invalid code examples found.
 | `docs/roadmap/schema-versioning.md` | 1 |
 | `docs/source/source-documentation-standard.md` | 3 |
 | `docs/source/source-todo-standard.md` | 1 |
+| `docs/status/README.md` | 1 |
 | `docs/status/evidence/dk1-pilot-parity-runbook.md` | 1 |
-| `docs/status/slo-reports/README.md` | 1 |
 | `docs/testing/WAVE2_ACCEPTANCE_TESTS.md` | 6 |
 | `docs/testing/wave2-cockpit-reliability-evidence-runbook.md` | 1 |
 

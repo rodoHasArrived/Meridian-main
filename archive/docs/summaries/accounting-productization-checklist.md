@@ -1,6 +1,15 @@
 # Meridian Accounting Productization Checklist
 
-Last updated: 2026-06-23
+**Status:** archived
+**Owner:** core-team
+**Archived:** 2026-09-23
+**Original last updated:** 2026-06-23
+
+Retained as historical implementation context. This unreferenced checklist duplicated current
+delivery/readiness tracking and mixed June claims with later implementation notes. Current work
+belongs in the [implementation and readiness tracker](../../../docs/product/implementation-todo-list.md)
+and [roadmap registry](../../../docs/roadmap/README.md). The checkboxes below are the preserved
+snapshot, not a fresh audit or a release certification.
 
 This checklist tracks progress toward production-grade, configurable, multi-ledger accounting. It is
 not a release certification; items stay open until current source, tests, and operator surfaces prove

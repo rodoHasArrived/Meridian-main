@@ -2,7 +2,7 @@
   "schemaVersion": "program-state-summary/v3",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-08-30",
+  "snapshotDate": "2026-09-23",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
@@ -348,13 +348,13 @@
       "Wave": "W9",
       "Title": "Kill-switch cancel-all and fat-finger, notional, and collar rules",
       "Workspaces": "Trading; Settings",
-      "Status": "ready_for_acceptance",
+      "Status": "accepted",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Execution and Fund Accounts",
-      "Evidence Posture": "implementation_complete",
-      "Evidence": "src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs; src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs; src/Meridian.Risk/CompositeRiskValidator.cs; src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs; src/Meridian.Wpf/Services/ExecutionSafetyControlClient.cs; src/Meridian.Wpf/Services/TradingSafetyCommandService.cs; src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs; src/Meridian.Risk/Rules/FatFingerRule.cs; src/Meridian.Risk/Rules/PriceCollarRule.cs; src/Meridian.Risk/Rules/OrderPriceLimbs.cs; src/Meridian.Risk/Rules/BracketChildLimbRule.cs; src/Meridian.Execution.Sdk/BracketOrderMetadata.cs; src/Meridian.FSharp/Risk/RiskRules.fs; tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs; tests/Meridian.Tests/Risk/FatFingerRuleTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFatFingerStatusTests.cs; tests/Meridian.Tests/Risk/PriceCollarRuleTests.cs; tests/Meridian.Tests/Risk/BracketChildLimbRuleTests.cs; tests/Meridian.Tests/Execution/KillSwitchCloseOnlyTests.cs; tests/Meridian.Wpf.Tests/Services/TradingSafetyCommandTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimePriceCollarConfigTests.cs; tests/Meridian.Tests/Execution/FixedIncomeFillBookingTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFirstRunDefaultsTests.cs; tests/Meridian.Tests/Execution/KillSwitchBrokerTruthTests.cs; tests/Meridian.Tests/Execution/KillSwitchTripRaceTests.cs; src/Meridian.Wpf/ViewModels/EventReplayViewModel.cs; tests/Meridian.Wpf.Tests/ViewModels/EventReplayViewModelTests.cs; src/Meridian.Wpf/ViewModels/PositionBlotterViewModel.cs; tests/Meridian.Wpf.Tests/ViewModels/PositionBlotterViewModelTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemGovernanceTests.cs",
-      "Last Reviewed": "2026-09-02"
+      "Evidence Posture": "complete",
+      "Evidence": "docs/roadmap/data/decision-log.yml; src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs; src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs; src/Meridian.Risk/CompositeRiskValidator.cs; src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs; src/Meridian.Wpf/Services/ExecutionSafetyControlClient.cs; src/Meridian.Wpf/Services/TradingSafetyCommandService.cs; src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs; src/Meridian.Risk/Rules/FatFingerRule.cs; src/Meridian.Risk/Rules/PriceCollarRule.cs; src/Meridian.Risk/Rules/OrderPriceLimbs.cs; src/Meridian.Risk/Rules/BracketChildLimbRule.cs; src/Meridian.Execution.Sdk/BracketOrderMetadata.cs; src/Meridian.FSharp/Risk/RiskRules.fs; tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs; tests/Meridian.Tests/Risk/FatFingerRuleTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFatFingerStatusTests.cs; tests/Meridian.Tests/Risk/PriceCollarRuleTests.cs; tests/Meridian.Tests/Risk/BracketChildLimbRuleTests.cs; tests/Meridian.Tests/Execution/KillSwitchCloseOnlyTests.cs; tests/Meridian.Wpf.Tests/Services/TradingSafetyCommandTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimePriceCollarConfigTests.cs; tests/Meridian.Tests/Execution/FixedIncomeFillBookingTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFirstRunDefaultsTests.cs; tests/Meridian.Tests/Execution/KillSwitchBrokerTruthTests.cs; tests/Meridian.Tests/Execution/KillSwitchTripRaceTests.cs; src/Meridian.Wpf/ViewModels/EventReplayViewModel.cs; tests/Meridian.Wpf.Tests/ViewModels/EventReplayViewModelTests.cs; src/Meridian.Wpf/ViewModels/PositionBlotterViewModel.cs; tests/Meridian.Wpf.Tests/ViewModels/PositionBlotterViewModelTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemGovernanceTests.cs",
+      "Last Reviewed": "2026-09-23"
     },
     {
       "ID": "W9-GOV-008",
@@ -432,7 +432,7 @@
       "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "in_progress",
       "Evidence": "src/Meridian.Ledger/ValuationFreshnessPolicy.cs; src/Meridian.Ledger/ValuationMarkEvidence.cs; src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs; src/Meridian.Ui/dashboard/src/components/meridian/mark-freshness-cell.tsx; src/Meridian.Wpf/Models/MarkFreshnessPresentation.cs; tests/Meridian.Tests/Application/Accounting/ValuationFreshnessAcceptanceTests.cs; tests/Meridian.Wpf.Tests/ViewModels/MarkFreshnessPresentationTests.cs",
-      "Last Reviewed": "2026-09-05"
+      "Last Reviewed": "2026-09-23"
     },
     {
       "ID": "W10-RECON-001",
@@ -510,7 +510,7 @@
       "Owner Lane": "Workstation Shell and UX",
       "Evidence Posture": "in_progress",
       "Evidence": "src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs; src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.CloseInputs.cs; src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseReadiness.cs; src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-command-center.view-model.ts; src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs; tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.ScopeTests.cs; tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.AcceptanceTests.cs; tests/Meridian.Tests/Ui/CloseReadinessSubjectSourceTests.cs; src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs; src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs; tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.cs; tests/Meridian.Tests/FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs",
-      "Last Reviewed": "2026-09-05"
+      "Last Reviewed": "2026-09-23"
     },
     {
       "ID": "W10-RECON-003",
@@ -575,7 +575,7 @@
       "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "in_progress",
       "Evidence": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AverageCostRelief.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.AverageCost.cs; src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs; src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs; src/Meridian.Ledger/OpenLotReliefService.cs; tests/Meridian.Tests/Storage/OpenLotConvergenceTests.cs; tests/Meridian.Tests/Storage/OpenLotPostgresTests.cs; docs/architecture/security-lot-convergence-blueprint.md; src/Meridian.Contracts/Accounting/Lots/OpenLotBackfillDtos.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs; src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs; tests/Meridian.Tests/Storage/CanonicalOpenLotConsumerTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.OpenLotBackfill.cs; src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs; tests/Meridian.Tests/AssetOperations/AssetAcquisitionLotPostgresRoundTripTests.cs",
-      "Last Reviewed": "2026-09-22"
+      "Last Reviewed": "2026-09-23"
     }
   ]
 }
