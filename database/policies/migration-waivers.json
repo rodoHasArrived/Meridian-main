@@ -35,6 +35,24 @@
       "rule_id": "migration-drop-object",
       "reason": "The migration drops only the superseded raw-value unique index and normalized non-unique index after its deterministic collision preflight succeeds, then immediately creates the normalized unique index. No table data or identifier history is removed.",
       "review_after": "2027-02-28"
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE match is a BEFORE TRUNCATE guard trigger that rejects deletion of immutable tenant-backfill receipts. This migration truncates no data; PostgreSQL regression coverage attempts truncation and verifies refusal with the receipt retained.",
+      "review_after": "2027-03-22"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/034_security_master_dated_price_history.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Requires human schema/storage and release-operations review. Replaces only security_raw_prices_pkey (security_id, source_id) with (security_id, source_id, price_as_of) so earlier observations remain retained; no row or column is removed. PostgresMigrationRunner executes the constraint replacement and migration-ledger append under one transaction and advisory migration lock, so failed DDL restores the original primary key. Drain legacy price writers before rollout because their old ON CONFLICT target is no longer valid. After multiple dated observations exist, prefer a forward fix; do not restore the old key by deleting history. Any reverse migration requires separately reviewed preservation of every retained observation and proof that the old uniqueness can be restored safely.",
+      "review_after": "2027-03-22"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/035_security_master_price_selection_receipts.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of immutable pricing-selection receipts; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the original receipt remains replayable.",
+      "review_after": "2027-03-22"
     }
   ],
   "removed_migrations": [

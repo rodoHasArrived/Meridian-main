@@ -8,7 +8,7 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class AtomicTaxLotJournalStoreTests
+public sealed partial class AtomicTaxLotJournalStoreTests
 {
     private static readonly Guid TestSecurityId = Guid.Parse("8f9c129c-acde-4b5b-98b0-92085bc38047");
     private static readonly Guid TestBookPositionId = Guid.Parse("90f82b97-c8b7-4d06-a3ad-e6142b35c867");
@@ -366,6 +366,7 @@ public sealed class AtomicTaxLotJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task FaceTerms_SurviveARealRoundTripAndTheAsOfScopedRead()
     {
         // The eleven tax_lots column lists in this store feed one ORDINAL-positional reader, so a
@@ -446,6 +447,7 @@ public sealed class AtomicTaxLotJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task FaceTerms_AreRejectedByTheDatabaseWhenIncomplete()
     {
         // ck_tax_lots_face_terms_complete is the durable half of the all-three-or-none rule; the

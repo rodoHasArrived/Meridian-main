@@ -11,6 +11,10 @@ last_reviewed: 2026-07-25
 
 # src/Meridian.Infrastructure
 
+Immutable statement match artifacts retain source-comparison completeness, represented population kinds,
+and the executed matcher/tolerance-policy fingerprint. Legacy artifacts omit these fields and cannot
+establish clearing. The optional fields preserve legacy artifact hashes when absent.
+
 ## Purpose
 
 Infrastructure contains provider adapters, HTTP integration, ETL adapters, resilience helpers, and concrete data-source implementations.

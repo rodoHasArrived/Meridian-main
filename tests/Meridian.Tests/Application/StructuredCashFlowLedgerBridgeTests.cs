@@ -26,6 +26,16 @@ public sealed class StructuredCashFlowLedgerBridgeTests
             staleness);
 
     [Fact]
+    public void NormalizedSchedule_RemainsBlockedEvenWithoutTextReason()
+    {
+        var result = new StructuredCashFlowLedgerBridge().BuildCouponAccrualPostings(
+            BuildProjection() with { IsNormalizedPer100 = true }, "ABC");
+        result.IsPostable.Should().BeFalse();
+        result.BlockedReason.Should().Contain("normalized");
+        result.Postings.Should().BeEmpty();
+    }
+
+    [Fact]
     public void BuildCouponAccrualPostings_FreshBaseProjection_ShouldReturnBalancedPostings()
     {
         var bridge = new StructuredCashFlowLedgerBridge();

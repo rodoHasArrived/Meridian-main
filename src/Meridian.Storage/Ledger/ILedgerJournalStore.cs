@@ -92,7 +92,9 @@ public interface ILedgerJournalStore
     /// reachable from the projection path. The acquisition bound matters because factors publish
     /// after the fact: a paydown is always posted with a lag, and a lot bought between the effective
     /// date and the posting would otherwise be paid down for a period it did not hold.
-    /// Served by <c>ix_tax_lots_asset_scope_open</c>.
+    /// Reconstructs open quantity at the end of that effective date from retained journal-backed
+    /// mutations, including lots fully disposed since then. Missing or inconsistent historical
+    /// quantity evidence fails closed; returned versions remain current concurrency tokens.
     /// </summary>
     Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsByAssetScopeAsync(
         Guid ledgerBookId,

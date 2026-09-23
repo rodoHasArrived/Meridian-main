@@ -11,6 +11,13 @@ last_reviewed: 2026-06-09
 
 # src/Meridian.Identity
 
+### Effective account deployment scope
+
+`UserProfileRegistry.GetConfiguredCompanyIds` exposes only company identifiers from the same
+effective account source used for authentication. Governed accounts take precedence; environment
+and development demo accounts are counted only when selected by that existing precedence.
+The deployment guard includes disabled accounts and exposes no credential material.
+
 ## Purpose
 
 Physical bounded-context module project for identity, scoped access, fund-structure scope lineage,

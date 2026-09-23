@@ -31,6 +31,10 @@ recovery scenarios in `AccountingCloseHttpRecoveryTests` retain the selected wor
 evidence refusal and refresh after repair. Close-readiness acceptance remains in progress
 pending the required hosted integration checks.
 
+The Accounting feature registers the same retained report-package authority as the browser.
+Close publication revalidates scoped report support through the shared guard; a client readiness
+flag cannot stand in for the retained package. Windows execution remains a separate acceptance gate.
+
 ## Purpose
 
 WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside

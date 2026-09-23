@@ -1412,6 +1412,16 @@ public sealed class AccountingPostingCandidateService :
                 .ListOpenTaxLotsByAssetScopeAsync(ledgerBookId, securityId, positionId, effectiveDate, ct)
                 .ConfigureAwait(false);
         }
+        catch (LedgerValidationException)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-lot-history-unavailable",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Held face cannot be established from retained lot quantity history for the event effective date.",
+                "bookPositionId",
+                "Reconcile the acquisition and disposal history before drafting the principal paydown."));
+            return null;
+        }
         catch (NotSupportedException)
         {
             issues.Add(Issue(
@@ -1423,6 +1433,7 @@ public sealed class AccountingPostingCandidateService :
             return null;
         }
 
+        // The store refuses historical reconstruction when quantity history is incomplete.
         if (lots.Count == 0)
         {
             issues.Add(Issue(
@@ -1449,7 +1460,7 @@ public sealed class AccountingPostingCandidateService :
             }
 
             // CurrentFace(1) restates the lot's face from the factor it was booked at to a factor of
-            // 1; the open share carries the part of the lot that has not already been relieved.
+            // 1; the store reconstructs the open share at the event effective date.
             var openShare = lot.OpenQuantity / lot.OriginalQuantity;
             heldFace += faceLot.CurrentFace(1m) * openShare;
         }
