@@ -1,11 +1,11 @@
 {
-  "total_files": 673,
-  "total_lines": 145752,
+  "total_files": 674,
+  "total_lines": 145918,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 270,
-  "average_lines": 216.6,
+  "average_lines": 216.5,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1625,7 +1625,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 5520,
+      "line_count": 5553,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2272,6 +2272,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/generated-merge-recovery.md",
+      "line_count": 75,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/live-trading-engine.md",
       "line_count": 107,
       "has_heading": true,
@@ -2305,7 +2313,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 322,
+      "line_count": 323,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2689,7 +2697,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11018,
+      "line_count": 11021,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3105,7 +3113,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 531,
+      "line_count": 556,
       "has_heading": true,
       "todo_count": 6,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3761,7 +3769,7 @@
     },
     {
       "path": "docs/security/threat-model-current-state.md",
-      "line_count": 118,
+      "line_count": 128,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3849,7 +3857,7 @@
     },
     {
       "path": "docs/testing/accounting-trust-corrections.md",
-      "line_count": 54,
+      "line_count": 57,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5265,7 +5273,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 754,
+      "line_count": 760,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5313,7 +5321,7 @@
     },
     {
       "path": "src/Meridian.DataIntegration/README.md",
-      "line_count": 285,
+      "line_count": 291,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5529,7 +5537,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 688,
+      "line_count": 692,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
