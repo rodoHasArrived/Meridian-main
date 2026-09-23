@@ -101,9 +101,19 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
 
     [SecurityMasterDatabaseFact]
     public async Task ResolveAsync_PersistsWinnerAndResolverAcrossInstances()
+        => await AssertResolutionPersistsAcrossInstancesAsync(reverseClaimants: false);
+
+    [SecurityMasterDatabaseFact]
+    public async Task ResolveAsync_PersistsWinnerAndResolverAcrossInstances_WhenClaimantsAreReverseOrdered()
+        => await AssertResolutionPersistsAcrossInstancesAsync(reverseClaimants: true);
+
+    private async Task AssertResolutionPersistsAcrossInstancesAsync(bool reverseClaimants)
     {
-        var securityA = Guid.NewGuid();
-        var securityB = Guid.NewGuid();
+        // Exercise both claimant orders on every run. Randomly choosing the anchor concealed the
+        // original lookup defect on approximately half of executions.
+        var securities = new[] { Guid.NewGuid(), Guid.NewGuid() }.Order().ToArray();
+        var securityA = securities[reverseClaimants ? 1 : 0];
+        var securityB = securities[reverseClaimants ? 0 : 1];
         var store = StoreReturning(
             MakeProjection(securityA, "Cusip", "037833100", "provA"),
             MakeProjection(securityB, "Cusip", "037833100", "provB"));
