@@ -11,6 +11,11 @@ last_reviewed: 2026-09-05
 
 # src/Meridian.FinancialOperations
 
+Statement matching retains exact tolerance rules/version and matcher revision with population
+availability. Missing/failed internal populations and empty statements cannot certify source clearing;
+a narrower source feed is a distinct comparison scope. This evidence is retained with the immutable
+match artifact so later profile updates cannot reinterpret historical breaks.
+
 Generated candidate posts retain the validated posting actor in the approved command. Replays
 use the journal's versioned, command-normalized `postingActor`; unversioned legacy metadata remains unattributed rather
 than acquiring the identity of a later caller. Durable mutation/audit atomicity is owned by the
@@ -21,6 +26,11 @@ command. PostgreSQL round-trip coverage verifies that seeded origins retain the 
 tag and that fixture evidence marked as real cannot commit a journal or a successful posting audit.
 
 ## Shared close and lot convergence
+
+Factor-paydown candidates require lot quantity as of the event effective date, reconstructed by
+the journal store from retained mutation history. Missing or inconsistent historical quantity
+evidence returns a critical candidate issue and cannot fall back to today's holdings.
+
 
 The Financial Operations command center owns the shared close decision. It requires an explicit fund profile, ledger book, fund account, entity, and period; validates book/profile binding and exact workflow identity; and includes workflow, calendar, version-matched close-plan, and private-capital contributors. Missing, ambiguous, failing, or older-than-five-minute contributor evaluations block. Asset coverage and fund-wide diagnostic metrics do not establish readiness. Focused proof: `FinancialOperationsCommandCenterReadServiceTests`.
 

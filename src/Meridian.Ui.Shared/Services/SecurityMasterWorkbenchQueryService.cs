@@ -956,6 +956,13 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Summary: summary);
     }
 
+    private static string PriceUnitLabel(SecurityPriceUnit unit) => unit switch
+    {
+        SecurityPriceUnit.PercentOfPar => "% of par",
+        SecurityPriceUnit.CurrencyPerUnit => "currency per unit",
+        _ => "(quote unit unspecified)"
+    };
+
     private async Task<ClearwaterReferenceDataEvidence> BuildClearwaterEvidenceAsync(
         Guid securityId,
         string? fundProfileId,
@@ -1329,7 +1336,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             SectionId: "pricing-hierarchy",
             Title: "Pricing hierarchy and stale fallback",
             Status: evidence.GoldenCopyPrice.IsStaleFallback ? "Review" : "Ready",
-            Summary: $"Golden-copy price {evidence.GoldenCopyPrice.GoldenCopyPrice.ToString("0.####", CultureInfo.InvariantCulture)} from {evidence.GoldenCopyPrice.SelectedSource}; {staleLabel}. {hierarchyCount} pricing source(s) configured.",
+            Summary: $"Golden-copy price {evidence.GoldenCopyPrice.GoldenCopyPrice.ToString("0.####", CultureInfo.InvariantCulture)} {PriceUnitLabel(evidence.GoldenCopyPrice.Unit)} from {evidence.GoldenCopyPrice.SelectedSource}; {staleLabel}. {hierarchyCount} pricing source(s) configured.",
             EvidenceCount: hierarchyCount + evidence.GoldenCopyPrice.ComparisonPrices.Count + 1,
             BlockingIssueCount: evidence.GoldenCopyPrice.IsStaleFallback ? 1 : 0);
     }

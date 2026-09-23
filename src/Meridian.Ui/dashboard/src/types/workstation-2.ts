@@ -427,6 +427,7 @@ export interface FinancialOperationsCommandCenter {
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";
 
 export interface EvidenceSubject {
+  ledgerBookId?: string | null;
   subjectId: string;
   subjectKind: string;
   label: string;

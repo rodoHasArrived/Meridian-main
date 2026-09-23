@@ -245,9 +245,11 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IAutomatedJournalScheduleStatusSource>()));
         services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
         services.TryAddSingleton<IWorkstationTenantContextAccessor, DesktopWorkstationTenantContextAccessor>();
+        services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();
         services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
             () => sp.GetService<IFinancialOperationsCommandCenterReadService>(),
-            sp.GetService<IWorkstationTenantContextAccessor>()));
+            sp.GetService<IWorkstationTenantContextAccessor>(),
+            () => sp.GetService<IOperationsReportPackAuthority>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),

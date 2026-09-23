@@ -366,6 +366,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task FaceTerms_SurviveARealRoundTripAndTheAsOfScopedRead()
     {
         // The eleven tax_lots column lists in this store feed one ORDINAL-positional reader, so a
@@ -446,6 +447,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task FaceTerms_AreRejectedByTheDatabaseWhenIncomplete()
     {
         // ck_tax_lots_face_terms_complete is the durable half of the all-three-or-none rule; the
