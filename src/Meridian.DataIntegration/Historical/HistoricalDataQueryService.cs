@@ -153,7 +153,7 @@ public sealed class HistoricalDataQueryService
 
         foreach (var file in files)
         {
-            var date = ExtractDateFromPath(file);
+            var date = ExtractDateFromPath(Path.GetRelativePath(_dataRoot, file));
             if (date.HasValue)
             {
                 if (!earliest.HasValue || date < earliest)
@@ -621,7 +621,7 @@ public sealed class HistoricalDataQueryService
         {
             files = files.Where(f =>
             {
-                var date = ExtractDateFromPath(f);
+                var date = ExtractDateFromPath(Path.GetRelativePath(_dataRoot, f));
                 if (!date.HasValue)
                     return true; // Include if can't determine date
 

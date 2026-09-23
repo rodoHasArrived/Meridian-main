@@ -52,6 +52,12 @@ requires per-loan tenant authority before those workers can be enabled.
 
 ## Purpose
 
+Provider-integration REST composition uses `ProviderIntegrationHttpClientTransport.CreateHttpClient`
+to validate DNS at connection time and connect only to the checked numeric addresses. It disables
+automatic redirects and system proxy routing; the transport checks every redirect against the
+approved HTTPS origin. See [the threat model](../../docs/security/threat-model-current-state.md)
+for the boundary and remaining certification requirements.
+
 `DirectLendingOutboxDispatcher` treats rejected projection and reconciliation command results as
 failed deliveries. The durable message is marked failed for retry and is acknowledged only after
 the command succeeds. `DirectLendingOutboxFailureTests` exercises failure followed by success for
@@ -64,6 +70,13 @@ Meridian application layer contains use cases, orchestration services, commands,
 coordination.
 
 ## Layer responsibility
+
+Security Master swap mapping preserves per-leg economics accepted by the shared cash-flow reader,
+including case-insensitive aliases and numeric/boolean strings. It rejects malformed supplied
+terms instead of silently discarding them, while retaining compatibility with the original
+four-field legs. Day-count aliases prefer `dayCountConvention`, then `dayCount`, then
+`dayCountBasis`. This persistence change does not add opening principal exchanges or alter
+cash-flow posting gates.
 
 This module owns application workflows that coordinate providers, storage, execution, ledger,
 reporting, and UI-facing services through contracts. Keep transport, persistence implementation,
