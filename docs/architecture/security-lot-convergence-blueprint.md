@@ -324,5 +324,11 @@ relief, and requires every retained slice to match exactly before a report proje
 proves a partial and a closing AverageCost disposal against PostgreSQL, including replay and a
 tampered-pool refusal. A discrete (FIFO/LIFO/HIFO/SpecificId) disposal of a restated lot fails
 closed, because its acquisition unit cost no longer equals its canonical basis; changing an
-account's relief policy across a restated pool is not a supported transition in this increment. Remaining phases: amortization, corporate-action
-successors, advance refunding, and shadow operation.
+account's relief policy across a restated pool is not a supported transition in this increment.
+The effective-dated lot read (`ListOpenTaxLotsByAssetScopeAsync`, which replays retained mutations to
+restate quantity as of an event date) treats a `BasisRedistribution` row as a zero-quantity
+restatement and rejects one that moves quantity. Its projection keeps the current governed basis
+adjustment, so `ToOpenLot` fails closed on an as-of quantity above the restated quantity rather than
+reporting an unrestated basis; that read is for held quantity only, never disposal selection. The
+replay now resolves each retained journal's ledger book through its accounting period. Remaining
+phases: amortization, corporate-action successors, advance refunding, and shadow operation.
