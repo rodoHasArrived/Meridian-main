@@ -11,6 +11,10 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+Parquet conversion derives session dates from paths beneath the configured storage root and from
+archive filenames. Dates in the root or its parent directories do not suppress completed-day
+conversion. Undated archives retain the existing file-modification-time fallback.
+
 Ledger migration `036` adds a separate ledger-event audit chain. Journal posting (including atomic
 lot acquisition/disposal and reversals), period creation, close, and reopen retain an audit in the
 same transaction. Verification scans the chain and its retained journal/leg, period, and close-event

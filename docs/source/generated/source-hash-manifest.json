@@ -51,8 +51,8 @@
       "id": "SRC-DESIGN-DATA-INTEGRATION",
       "path": "src/Meridian.DataIntegration",
       "readme": "src/Meridian.DataIntegration/README.md",
-      "readme_hash": "fdae357c7396ed3f7387216ea123558601133a81424e456df6fa270c6a674d67",
-      "source_hash": "cded6dbc3f0f729e8b13607d7334491268847d30ba382d62deffb1b1d8fff1cb"
+      "readme_hash": "af5f8f2eb1ae8f232558d15a963b6f38814d54b2641c54186c44582798e3ae15",
+      "source_hash": "77424996ea3f220ba6f82a1826dfda13f18d3dbecf443c533b45d4d5012adad7"
     },
     {
       "id": "SRC-DESIGN-DOCUMENTS",
@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "0d4a738e2b785a6134c2ad30d0eeecf7310a1582b1f5520246cb085ee4b1aaa9",
-      "source_hash": "92d1cebc41b8a75a7ce95d1b85b0929f9d786d3fde897e37f461557df0342a9e"
+      "readme_hash": "5c8eadcbd44d31ee8874a5fadd53a38e4c82e6245fdb5b67431640c6fd62923a",
+      "source_hash": "54174e4c45750fcd38ee1034d3177c943754e2d67537e4b408ef7f9f90bf7963"
     },
     {
       "id": "SRC-STRATEGIES",

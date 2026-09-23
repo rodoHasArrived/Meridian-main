@@ -2,7 +2,7 @@
 
 **Status:** implementation validation; operator acceptance pending  
 **Owner:** Accounting and Ledger / Security / Workstation  
-**Reviewed:** 2026-09-22
+**Reviewed:** 2026-09-23
 
 This checklist covers the accounting-trust correction branch. It does not accept a roadmap
 row, authorize a production migration, or certify a release. The roadmap registry and the
@@ -17,6 +17,7 @@ production-readiness tracker retain those responsibilities.
 | Reconciliation and proof | Stable lineage survives changed amounts and run dates. Recurrence has a new occurrence identity. Unavailable populations, changed comparison policies and older runs cannot clear newer observations; comparison clearing does not resolve governed casework. Amount proof uses retained subject identity. | Restart, replay, recurrence, failed-run and scope tests, plus keyboard and missing-evidence checks for the proof drawer. |
 | Trading calendar | Completeness, heatmap, recommendations and exports use one operational calendar policy. | Juneteenth, observed holidays, the 2026/2027 boundary and an injected shared closure policy. |
 | Certification discovery | Every ledger database fact belongs to the integration selection. Date fixtures test the intended behavior within a valid posting period. | Test discovery guard plus zero-skip PostgreSQL TRX results from the actual tested commit. |
+| Certification regression controls | Conflict-resolution persistence is exercised with both claimant-ID orders through fresh service instances. Atomic tax-lot posting rejects absent Security Master provenance before evaluating malformed economics, then reaches the asset-account guard when provenance is valid. Both refusals leave no journal, batch, lot, or audit suffix. | `PostgresSecurityMasterConflictServiceTests` and `AtomicTaxLotJournalStoreTests`, executed against PostgreSQL without skips. The same-identity valid retry must still succeed. |
 
 ## Operator walkthrough
 
@@ -42,10 +43,12 @@ for the recorded operator decision or installed Windows acceptance.
 
 ## Remaining roadmap boundaries
 
-The dated-lot correction does not enable AverageCost basis redistribution, amortization basis
-adjustments, or corporate-action predecessor/successor mutations. Those require coherent typed
-mutation, persistence, projection and approval support. Their existing unsupported-operation
-guards remain authoritative. Likewise, this branch does not declare complete multi-asset
+The dated-lot correction itself did not enable AverageCost basis redistribution. Subsequent
+`W10-LOT-002` work added atomic pooled relief and survivor basis restatement through migration
+`V_ledger_037`; its dedicated PostgreSQL cases remain part of the required evidence. Amortization
+basis adjustments, corporate-action predecessor/successor mutations, advance refunding, and
+shadow-operation acceptance remain open. Their existing unsupported-operation guards remain
+authoritative. Likewise, this checklist does not declare complete multi-asset
 valuation coverage or infer historical data that was never retained.
 
 Run the canonical repository CI and the relevant focused suites, then obtain PostgreSQL
