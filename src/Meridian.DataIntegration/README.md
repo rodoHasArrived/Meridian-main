@@ -82,6 +82,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
 
+Connection-health ping cancellation and linked-token disposal execute outside the operation-state
+lock, so provider callbacks and completion cleanup can re-enter the monitor without deadlocking.
+Cleanup requested during cancellation is deferred until the active cancellation calls return;
+shutdown still cancels scans and observes late faults from non-cooperative pings.
+
 Accounting-system integration lives in this module. The adapter family imports chart-of-accounts,
 journal-entry, and trial-balance evidence as read-only reconciliation input through
 `IAccountingSystemProvider`. QuickBooks Online refreshes OAuth access tokens through the server-side

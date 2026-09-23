@@ -1902,6 +1902,7 @@ Meridian-main
 │   │   ├── implementation-todo-list.md
 │   │   ├── meridian-design-document.md
 │   │   ├── next-work-determination-2026-09-20.md
+│   │   ├── next-work-determination-2026-09-23.md
 │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   ├── production-readiness-backlog-2026-08.md
@@ -6616,6 +6617,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.corporate-action-formatting.ts
 │   │   │   │   │   ├── accounting-screen.corporate-actions-panel.tsx
 │   │   │   │   │   ├── accounting-screen.evidence-timeline.ts
+│   │   │   │   │   ├── accounting-screen.formatting.test.ts
 │   │   │   │   │   ├── accounting-screen.formatting.ts
 │   │   │   │   │   ├── accounting-screen.governance-presenters.ts
 │   │   │   │   │   ├── accounting-screen.governance.view-model.test.ts
@@ -10501,6 +10503,7 @@ Meridian-main
 │   │   │   ├── BackfillCheckpointServiceTests.cs
 │   │   │   ├── BackfillProviderConfigServiceTests.cs
 │   │   │   ├── BackfillServiceTests.cs
+│   │   │   ├── BatchExportSchedulerServiceTests.cs
 │   │   │   ├── ChartingServiceTests.cs
 │   │   │   ├── CollectionSessionServiceTests.cs
 │   │   │   ├── CommandPaletteServiceTests.cs
