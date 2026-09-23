@@ -47,6 +47,10 @@ dashboard, and WPF.
 
 ## Layer responsibility
 
+`SecurityAssetTermsSchema.ElementFields("Swap", "legs")` declares the serialized swap-leg
+field names and types. Codec tests compare this nested contract with persisted terms and the
+cash-flow reader so a top-level `legs` array alone cannot conceal missing leg economics.
+
 This module owns stable transport payloads, compatibility-safe DTOs, and shared schema objects.
 Consumers depend on contracts; contracts should not depend on host, UI, application orchestration,
 or provider implementations.

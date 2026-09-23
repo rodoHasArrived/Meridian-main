@@ -10053,7 +10053,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
 │   │   │   ├── SecurityTermsProjectionRegistryTests.cs
-│   │   │   └── SecurityValidationServiceTests.cs
+│   │   │   ├── SecurityValidationServiceTests.cs
+│   │   │   └── SwapLegRoundTripTests.cs
 │   │   ├── Serialization
 │   │   │   └── HighPerformanceJsonTests.cs
 │   │   ├── Services

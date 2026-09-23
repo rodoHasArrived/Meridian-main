@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "5847aa604506e269857281a8e0ed32f1406a4e038a6564468f7cff51656072bd",
-      "source_hash": "f9513c917cc23b3174a821da3f8aee3f5cd2a27363c74c4baf40f4605ff98e1f"
+      "readme_hash": "b187ac3cd91e2c6f4157572d168475b787e4ef0ee028a95069c586ce9e1a1a78",
+      "source_hash": "0baf5fb6edda55f0ff63d6248923bae69f91f1bafc9154dc7d835e21267f839e"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "ca807fcfdba17d3cb30634dfa039f556b3bec98067f0f88e62ec234cbc915767",
-      "source_hash": "36bf38ab7858dd926c612afc08b7fc503f5fcaf90cd70070ed026366971fc5da"
+      "readme_hash": "1e6e0e0c193107671573eb4aeb2ffc1af79fd2c44af3aeb3941bf9b8c8be7c0c",
+      "source_hash": "65425d08d6fbb9662941d6a9e69ddd370e24d2799b9966145000332703739e63"
     },
     {
       "id": "SRC-CORE",
@@ -149,8 +149,8 @@
       "id": "SRC-FSHARP",
       "path": "src/Meridian.FSharp",
       "readme": "src/Meridian.FSharp/README.md",
-      "readme_hash": "2b82c8130339569d601f3a2a910eefadeabc70e116d3dd9fb8b860bcb0ddc4a5",
-      "source_hash": "391cf017514cfa02903f22d47030099e08e04b8920517fd39ee8e0383c962340"
+      "readme_hash": "f078cfc87e3091f7a334f510c227a6c70e118069623d31b0f4f02578d13fa3c0",
+      "source_hash": "d9f2afbfe2919f8383e2479ec54d7f7095a862692991205ffcf1ef9d8ca6ba30"
     },
     {
       "id": "SRC-FSHARP-DIRECTLENDING",
@@ -248,7 +248,7 @@
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
       "readme_hash": "0d4a738e2b785a6134c2ad30d0eeecf7310a1582b1f5520246cb085ee4b1aaa9",
-      "source_hash": "a3992f468a5a5d83a0adcbd085466508fd7b068543385ac8b9c4a19fac175a58"
+      "source_hash": "92d1cebc41b8a75a7ce95d1b85b0929f9d786d3fde897e37f461557df0342a9e"
     },
     {
       "id": "SRC-STRATEGIES",

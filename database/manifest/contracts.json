@@ -3847,7 +3847,7 @@
       ]
     }
   ],
-  "fingerprint": "1de69a8b9547a3b7c06f9e8b2a56a3e99101638f08b975c1e2715986b3ff12b6",
+  "fingerprint": "b55bef9e8497c630678ce79f6420098495d96683f50d92a9d73268ab5225de37",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5769,7 +5769,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "5ea5e61ca82a24edf1978b557fc63cf3c1dee9b038c5efcdf481e148313e26f1",
+      "fingerprint": "ce8548f7091df46fd62fa5562fad15981ec23d2a5ceff6cbc680347b5f4a1410",
       "mapped_schemas": [
         "security_master"
       ],
@@ -227477,7 +227477,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "caae4a84f370c2605dfd6282765c959ebe7fafe1b76854082a365b2525dfac93",
+      "fingerprint": "3755d5fc08b23fd24a367f9e9016da042cfe3ecc72b17e560f874cf520ef7d2f",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "kind": "class",
@@ -227496,7 +227496,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyCollection<string>",
-          "source_line": 473,
+          "source_line": 502,
           "type": "IReadOnlyCollection<string>"
         }
       ],
@@ -227506,12 +227506,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "references": [],
       "source": {
-        "line": 174,
+        "line": 175,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs"
       },
       "sources": [
         {
-          "line": 174,
+          "line": 175,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs"
         }
       ],
