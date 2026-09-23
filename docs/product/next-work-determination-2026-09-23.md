@@ -20,7 +20,9 @@ reproducible command.
 **Three days of merges closed the previous list's top two items. The queue did not move at all, and
 measuring it changed what to do about it.**
 
-- The trunk is green and the certification gate's two named failures were repaired and landed.
+- The trunk is green, the certification lane's two named failures were repaired and landed, and a
+  run dispatched by this change **confirms the lane green on current `main`** — the first success on
+  `main` in the three runs since 2026-09-13. The P0 *gate* is still blocked, on different rows.
 - The 2026-09-22 document's Tier 1 calendar defect was fixed on `main` before that document could
   merge — it is closed, not carried forward.
 - The pull-request queue is still 43. Every one of the 22 stranded `codex/*` branches now conflicts
@@ -52,14 +54,27 @@ require the PostgreSQL service the certification workflow starts.
 
 This change dispatched run
 [#76](https://github.com/rodoHasArrived/Meridian-main/actions/runs/35885778558) against `main` at
-`13aa7576`. <!-- RESULT -->
+`13aa7576`. **It passed — all four jobs green**, including `deterministic PostgreSQL integration and
+coverage evidence` and its `Reject failed or skipped deterministic tests` step, which had carried
+the two failures since 2026-09-13. On `main` the lane now reads: #74 (09-13) failed, #75 (09-20)
+failed, **#76 (09-23) success**.
 
-**Standing recommendation regardless of that result:** a weekly cadence is too slow for the only
-lane that executes the PostgreSQL-backed tests. Three roadmap rows — `W10-LOT-002`, `W10-MARK-001`,
-and `W10-SEAM-001` — each carry the sentence "broader Production Certification remains failed" in
-their registry evidence, and none of them can clear it on their own schedule. Either add a
-`push: branches: [main]` trigger, or dispatch the workflow as part of landing any change that
-touches a `[LedgerDatabaseFact]` subject.
+**State this precisely.** A green certification lane is not the P0 release gate. The gate in
+`docs/product/implementation-todo-list.md` requires every P0 row complete on one release commit, and
+`PRD-000` and `PRD-013` through `PRD-017` remain evidence-gated on external same-commit evidence
+this run does not supply. What run #76 does establish is that the lane itself no longer fails, which
+is the precondition three roadmap rows were waiting on.
+
+**Consequences to act on:**
+
+1. `W10-LOT-002`, `W10-MARK-001`, and `W10-SEAM-001` each carry the sentence "broader Production
+   Certification remains failed" in their registry evidence. **That sentence is now false.** It
+   should be corrected against run #76 — see Tier 3.
+2. The weekly cadence is still too slow for the only lane that executes the PostgreSQL-backed tests:
+   it left a five-day window in which the published evidence contradicted the code. Either add a
+   `push: branches: [main]` trigger, or dispatch the workflow as part of landing any change that
+   touches a `[LedgerDatabaseFact]` subject. Without that, this result decays the same way the last
+   one did.
 
 ## Tier 1 — The stranded queue is blocked by build output, not by code
 
@@ -174,17 +189,25 @@ Both are registry states, not work:
 
 Taking or declining either costs nothing and clears a lane. Declining is a result too.
 
-## Tier 3 — W10: two rows are one dependency away from closing
+## Tier 3 — W10: two rows are now one dependency away from closing
 
 `W10-MARK-001` and `W10-SEAM-001` are both implementation-complete with hosted CI and Windows
-automated acceptance passed at `d49fbc8e7`. What each registry record says remains is identical and
-is not code:
+automated acceptance passed at `d49fbc8e7`. Each registry record named two remaining blockers, and
+Tier 0 just removed one of them:
 
-- broader Production Certification (Tier 0), and
+- ~~broader Production Certification~~ — **green as of run #76**; both records still say "broader
+  Production Certification remains failed" and need correcting against it. `W10-LOT-002`'s record
+  carries the same stale sentence, plus a citation to run `33956884001` that "failed six other
+  tests and its dependency gate"; run #76 passed both.
 - live operator certification — WPF rendering and population-wide preview for `W10-MARK-001`, live
-  operator certification for `W10-SEAM-001`.
+  operator certification for `W10-SEAM-001`. **This is now the sole blocker on both**, and it is an
+  operator action, not engineering.
 
-So the engineering-shaped W10 work is one row: **`W10-LOT-002`**, the slate's only `critical`.
+Correcting those three records is the cheapest high-value work on this list: it converts two rows
+from "blocked on a failing gate" to "awaiting an operator session," which is a different and much
+shorter conversation.
+
+The engineering-shaped W10 work is one row: **`W10-LOT-002`**, the slate's only `critical`.
 Amortization, corporate-action successors, advance refunding, and shadow-operation acceptance remain
 open after the two closures of 2026-09-22/23. Continue there and do not start `W10-RECON-001` — nine
 lanes are still open at once, which is why none of them closes.
@@ -202,7 +225,9 @@ Cheap, and currently misleading:
   "on 2026-09-22" (correct) but the snapshot date contradicts it.
 - `docs/product/implementation-todo-list.md` is `Reviewed: 2026-08-19` — **35 days stale** — and its
   release-gate snapshot describes evidence on `65dc0107`, a frozen commit with no current green
-  certification behind it. Tier 0's run gives it a current anchor.
+  certification behind it. Tier 0's run gives it a current anchor on `13aa7576`. Its header still
+  reads "production certification blocked"; that remains correct for the *gate* (`PRD-000`,
+  `PRD-013`–`PRD-017`), but the *lane* is no longer the reason, and the tracker should say which.
 - The risk register has four entries. The 2026-09-20 document proposed a fifth for clock-coupled
   fixtures; the 2026-09-22 measurement narrowed that class to roughly nine candidates and the one
   production defect it found is now fixed. **Register it as a low-severity risk, not a work item** —
@@ -226,8 +251,9 @@ Cheap, and currently misleading:
 
 | Priority | Work | Why now |
 | --- | --- | --- |
-| P0 | Re-certify the P0 gate on current `main` | **Dispatched in this change**; the repairs landed 5 days before the next scheduled run |
-| P0 | Trigger `Production Certification` on `main` pushes, or on any `[LedgerDatabaseFact]` change | Weekly cadence gates three roadmap rows that cannot clear it themselves |
+| — | Re-certify the certification lane on current `main` | **Done in this change** — run #76 green on `13aa7576` |
+| P0 | Correct the "broader Production Certification remains failed" sentence on `W10-LOT-002`, `W10-MARK-001`, `W10-SEAM-001` | Now false; it is the stated blocker on two rows whose only real remainder is an operator session |
+| P0 | Trigger `Production Certification` on `main` pushes, or on any `[LedgerDatabaseFact]` change | Weekly cadence left a 5-day window where published evidence contradicted the code; without this the new result decays the same way |
 | P1 | Drain the ten stranded branches whose conflicts are entirely regenerable | Mechanical, no product decision, implemented P0/P1 value |
 | P1 | Resolve `FinancialOperationsCommandCenterReadService.PublicationTests.cs` once on `main` | Converts six more branches into the mechanical case |
 | P1 | Take or decline `W9-SAFETY-007` (22 days) and `W9-CORPACT-011` acceptances | Zero engineering; clears two lanes |
