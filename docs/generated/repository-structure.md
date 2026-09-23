@@ -6616,6 +6616,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.corporate-action-formatting.ts
 │   │   │   │   │   ├── accounting-screen.corporate-actions-panel.tsx
 │   │   │   │   │   ├── accounting-screen.evidence-timeline.ts
+│   │   │   │   │   ├── accounting-screen.formatting.test.ts
 │   │   │   │   │   ├── accounting-screen.formatting.ts
 │   │   │   │   │   ├── accounting-screen.governance-presenters.ts
 │   │   │   │   │   ├── accounting-screen.governance.view-model.test.ts
@@ -10501,6 +10502,7 @@ Meridian-main
 │   │   │   ├── BackfillCheckpointServiceTests.cs
 │   │   │   ├── BackfillProviderConfigServiceTests.cs
 │   │   │   ├── BackfillServiceTests.cs
+│   │   │   ├── BatchExportSchedulerServiceTests.cs
 │   │   │   ├── ChartingServiceTests.cs
 │   │   │   ├── CollectionSessionServiceTests.cs
 │   │   │   ├── CommandPaletteServiceTests.cs

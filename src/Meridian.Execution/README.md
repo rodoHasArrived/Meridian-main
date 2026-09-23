@@ -13,6 +13,8 @@ last_reviewed: 2026-08-11
 
 ## Purpose
 
+Broker reconciliation propagates caller cancellation from health and open-order queries so cancelled requests do not become unhealthy-broker or query-failure evidence.
+
 Execution owns order routing, execution services, allocation, margin, derivatives, tax-lot, and broker gateway behavior.
 
 ## Layer responsibility
