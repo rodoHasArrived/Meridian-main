@@ -20,7 +20,10 @@ public static class SecurityAssetPackRegistry
         "Maturity",
         "Default",
         "Amendment",
-        "CorporateAction"
+        "CorporateAction",
+        "Fee",
+        "Amortization",
+        "MarginSettlement"
     ];
 
     private static readonly IReadOnlyList<string> StandardValuationMethods =
@@ -165,7 +168,7 @@ public static class SecurityAssetPackRegistry
             "cash-bank",
             "Cash and bank accounts",
             ["Deposit", "CashSweep", "MoneyMarketFund"],
-            ["Purchase", "Sale", "Draw", "Repayment", "Maturity", "Default", "Amendment"],
+            ["Purchase", "Sale", "Draw", "Repayment", "Coupon", "Appraisal", "Maturity", "Default", "Amendment", "Fee"],
             ["MarketPrice", "AmortizedCost", "UserEstimate"],
             ["cash movement", "bank fee", "interest income", "FX remeasurement"],
             plannedAssetClasses: ["Cash", "BankAccount"]),
@@ -173,7 +176,7 @@ public static class SecurityAssetPackRegistry
             "public-equity-etf",
             "Public equities and exchange-traded funds",
             ["Equity", "InvestmentFund"],
-            ["Purchase", "Sale", "Dividend", "CorporateAction", "Impairment", "Amendment"],
+            ["Purchase", "Sale", "Dividend", "Appraisal", "CorporateAction", "Impairment", "Amendment"],
             ["MarketPrice", "UserEstimate", "ExternalModel"],
             ["trade", "dividend", "corporate action", "realized gain/loss", "unrealized gain/loss"],
             plannedAssetClasses: ["ExchangeTradedFund"]),
@@ -181,14 +184,14 @@ public static class SecurityAssetPackRegistry
             "fixed-income",
             "Fixed income",
             ["Bond", "StructuredCredit", "TreasuryBill", "CommercialPaper", "CertificateOfDeposit", "Repo"],
-            ["Purchase", "Sale", "Coupon", "Repayment", "Maturity", "Default", "Amendment", "CorporateAction", "Impairment"],
+            ["Purchase", "Sale", "Coupon", "Repayment", "Maturity", "Default", "Amendment", "CorporateAction", "Impairment", "Amortization"],
             ["MarketPrice", "DiscountedCashFlow", "AmortizedCost", "ExternalModel", "UserEstimate"],
             ["coupon accrual", "principal repayment", "amortization", "realized gain/loss", "impairment"]),
         DeepAutomation(
             "private-fund-partnership",
             "Private funds and partnerships",
             ["PrivateFundInterest", "PrivateCompanyEquity"],
-            ["Purchase", "Sale", "CapitalCall", "Distribution", "Appraisal", "Impairment", "Amendment", "Maturity"],
+            ["Purchase", "Sale", "CapitalCall", "Distribution", "Appraisal", "Impairment", "Amendment", "Maturity", "Fee"],
             ["ManagerReportedNav", "Appraisal", "DiscountedCashFlow", "UserEstimate", "ExternalModel"],
             ["capital call", "distribution", "NAV adjustment", "management fee", "performance allocation"],
             plannedAssetClasses: ["PrivateFund", "PartnershipInterest"]),
@@ -196,7 +199,7 @@ public static class SecurityAssetPackRegistry
             "private-loan-credit",
             "Private loans and credit",
             ["DirectLoan"],
-            ["Purchase", "Sale", "Coupon", "Draw", "Repayment", "Default", "Amendment", "Impairment", "Maturity"],
+            ["Purchase", "Sale", "Coupon", "Draw", "Repayment", "Default", "Amendment", "Impairment", "Maturity", "Fee"],
             ["DiscountedCashFlow", "AmortizedCost", "Appraisal", "UserEstimate", "ExternalModel"],
             ["interest accrual", "principal draw", "principal repayment", "fee income", "impairment", "default"],
             plannedAssetClasses: ["PrivateCredit", "CreditFacility"]),
@@ -212,7 +215,7 @@ public static class SecurityAssetPackRegistry
             "derivatives-fx",
             "Basic derivatives and FX",
             ["Option", "Future", "Swap", "FxSpot", "Cfd", "Warrant"],
-            ["Purchase", "Sale", "Draw", "Repayment", "Maturity", "Default", "Amendment", "CorporateAction"],
+            ["Purchase", "Sale", "Draw", "Repayment", "Appraisal", "Maturity", "Default", "Amendment", "CorporateAction", "MarginSettlement"],
             ["MarketPrice", "DiscountedCashFlow", "ExternalModel", "UserEstimate"],
             ["premium", "variation margin", "settlement", "FX remeasurement", "realized gain/loss"],
             plannedAssetClasses: ["Forward"]),
@@ -228,7 +231,7 @@ public static class SecurityAssetPackRegistry
             "commitment-guarantee",
             "Unfunded commitments and guarantees",
             ["CommitmentGuarantee"],
-            ["Purchase", "Sale", "Draw", "Repayment", "CapitalCall", "Distribution", "Default", "Amendment", "Maturity"],
+            ["Purchase", "Sale", "Draw", "Repayment", "Coupon", "CapitalCall", "Distribution", "Default", "Amendment", "Maturity", "Fee"],
             ["UserEstimate", "ExternalModel", "DiscountedCashFlow"],
             ["commitment recognition", "guarantee exposure", "drawdown", "fee accrual", "release"],
             plannedAssetClasses: ["UnfundedCommitment", "Guarantee", "CreditFacility"]),
@@ -440,7 +443,7 @@ public static class SecurityAssetPackRegistry
 
     private static AssetPackJournalTemplateRule ToJournalTemplateRule(string journalTemplateEvent)
         => new(
-            LifecycleEvent: InferLifecycleEvent(journalTemplateEvent),
+            LifecycleEvent: ResolveLifecycleEvent(journalTemplateEvent),
             TemplateId: $"asset-pack.{NormalizeTemplateToken(journalTemplateEvent)}",
             AccountingBases: ["GAAP", "IFRS", "Tax", "Management"],
             CurrencyScopes: ["base currency", "transaction currency", "reporting currency"],
@@ -479,43 +482,29 @@ public static class SecurityAssetPackRegistry
             .ToArray();
     }
 
-    private static string InferLifecycleEvent(string journalTemplateEvent)
-    {
-        var token = NormalizeTemplateToken(journalTemplateEvent);
-        return token switch
+    // Exact retained template names have explicit bindings. Unknown names are invalid, never
+    // guessed from substrings ("unrealized gain/loss" must not bind to Sale).
+    private static string ResolveLifecycleEvent(string journalTemplateEvent)
+        => NormalizeTemplateToken(journalTemplateEvent) switch
         {
-            var value when value.Contains("purchase", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("acquisition", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("trade", StringComparison.OrdinalIgnoreCase) => "Purchase",
-            var value when value.Contains("sale", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("disposal", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("realized-gain-loss", StringComparison.OrdinalIgnoreCase) => "Sale",
-            var value when value.Contains("coupon", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("interest", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("fee", StringComparison.OrdinalIgnoreCase) => "Coupon",
-            var value when value.Contains("dividend", StringComparison.OrdinalIgnoreCase) => "Dividend",
-            var value when value.Contains("draw", StringComparison.OrdinalIgnoreCase) => "Draw",
-            var value when value.Contains("repayment", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("paydown", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("release", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("settlement", StringComparison.OrdinalIgnoreCase) => "Repayment",
-            var value when value.Contains("capital-call", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("commitment", StringComparison.OrdinalIgnoreCase) => "CapitalCall",
-            var value when value.Contains("distribution", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("rental-income", StringComparison.OrdinalIgnoreCase) => "Distribution",
-            var value when value.Contains("appraisal", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("nav", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("valuation", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("unrealized-gain-loss", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("fx-remeasurement", StringComparison.OrdinalIgnoreCase) => "Appraisal",
-            var value when value.Contains("default", StringComparison.OrdinalIgnoreCase) => "Default",
-            var value when value.Contains("impairment", StringComparison.OrdinalIgnoreCase) => "Impairment",
-            var value when value.Contains("maturity", StringComparison.OrdinalIgnoreCase) ||
-                           value.Contains("amortization", StringComparison.OrdinalIgnoreCase) => "Maturity",
-            var value when value.Contains("corporate-action", StringComparison.OrdinalIgnoreCase) => "CorporateAction",
-            _ => "Amendment"
+            "trade" or "acquisition" or "property-acquisition" or "premium" => "Purchase",
+            "realized-gain-loss" or "disposal" => "Sale",
+            "coupon-accrual" or "interest-accrual" or "interest-income" => "Coupon",
+            "fee-income" or "fee-accrual" or "bank-fee" or "management-fee" => "Fee",
+            "amortization" => "Amortization",
+            "variation-margin" => "MarginSettlement",
+            "dividend" => "Dividend",
+            "principal-draw" or "drawdown" or "cash-movement" => "Draw",
+            "principal-repayment" or "settlement" or "release" => "Repayment",
+            "capital-call" or "commitment-recognition" => "CapitalCall",
+            "distribution" or "rental-income" or "performance-allocation" => "Distribution",
+            "appraisal-adjustment" or "nav-adjustment" or "unrealized-gain-loss" or "fx-remeasurement" => "Appraisal",
+            "default" => "Default",
+            "impairment" => "Impairment",
+            "corporate-action" => "CorporateAction",
+            "expense-allocation" or "intercompany-elimination" or "guarantee-exposure" => "Amendment",
+            _ => string.Empty
         };
-    }
 
     private static string NormalizeTemplateToken(string value)
         => string.Join(
@@ -623,6 +612,11 @@ public static class SecurityAssetPackRegistry
             RequireNonEmpty(template.AccountingBases, "AccountingRules.JournalTemplates.AccountingBases", "asset-pack.template-basis-required", issues);
             RequireNonEmpty(template.CurrencyScopes, "AccountingRules.JournalTemplates.CurrencyScopes", "asset-pack.template-currency-scope-required", issues);
             RequireNonEmpty(template.EntityScopes, "AccountingRules.JournalTemplates.EntityScopes", "asset-pack.template-entity-scope-required", issues);
+
+            if (!pack.LifecycleEvents.Contains(template.LifecycleEvent, StringComparer.OrdinalIgnoreCase))
+                issues.Add(Issue("asset-pack.template-undeclared-lifecycle-event", "Critical",
+                    "AccountingRules.JournalTemplates.LifecycleEvent",
+                    $"Journal template '{template.TemplateId}' must bind to an explicitly declared lifecycle event."));
 
             if (!pack.SupportedLifecycleEvents.Contains(template.LifecycleEvent, StringComparer.OrdinalIgnoreCase))
             {

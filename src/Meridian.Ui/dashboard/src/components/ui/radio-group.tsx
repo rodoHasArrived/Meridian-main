@@ -94,7 +94,7 @@ export function RadioGroup({
             <span
               aria-hidden="true"
               className={cn(
-                "mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full border bg-[#F3F6F9] transition-colors",
+                "mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full border bg-[var(--ws-surface-raised)] transition-colors",
                 checked ? "border-primary" : "border-border"
               )}
             >

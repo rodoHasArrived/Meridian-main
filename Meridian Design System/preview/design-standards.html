@@ -15,52 +15,52 @@
   .top h1 { font-family: var(--font-display); font-size: 26px; color: #FFF; margin: 0 0 4px; font-weight: 600; letter-spacing: -0.01em; }
   .top .sub { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.16em; }
   .top .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); text-align: right; }
-  .top .meta b { color: #2AB2D4; font-weight: 500; }
+  .top .meta b { color: #D98A64; font-weight: 500; }
 
   /* rule block */
   .rule { display: grid; grid-template-columns: 280px 1fr; gap: 0; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
-  .rule-left { background: #05101B; padding: 20px 22px; border-right: 1px solid var(--border-color); }
-  .rule-right { background: #0B1520; padding: 20px 24px; }
-  .rule-num { font-family: var(--font-mono); font-size: 10px; color: #2AB2D4; text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 8px; }
+  .rule-left { background: #100E0C; padding: 20px 22px; border-right: 1px solid var(--border-color); }
+  .rule-right { background: #201D19; padding: 20px 24px; }
+  .rule-num { font-family: var(--font-mono); font-size: 10px; color: #D98A64; text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 8px; }
   .rule-title { font-family: var(--font-display); font-size: 16px; color: #FFF; font-weight: 600; letter-spacing: -0.005em; margin-bottom: 10px; }
-  .rule-body { font-size: 12.5px; line-height: 1.65; color: #D4DCE6; }
+  .rule-body { font-size: 12.5px; line-height: 1.65; color: #E3DED6; }
   .rule-body p { margin: 0 0 8px; }
   .rule-body p:last-child { margin: 0; }
-  code { font-family: var(--font-mono); font-size: 11px; color: #2AB2D4; background: #08101A; padding: 1px 5px; border: 1px solid var(--border-color); border-radius: 3px; }
+  code { font-family: var(--font-mono); font-size: 11px; color: #D98A64; background: #14120F; padding: 1px 5px; border: 1px solid var(--border-color); border-radius: 3px; }
   .tag { display: inline-block; padding: 2px 7px; border-radius: 3px; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
-  .tag.do { background: rgba(38,191,134,0.12); color: #26BF86; border: 1px solid rgba(38,191,134,0.35); }
-  .tag.dont { background: rgba(222,88,120,0.12); color: #DE5878; border: 1px solid rgba(222,88,120,0.35); }
+  .tag.do { background: rgba(95,163,124,0.12); color: #5FA37C; border: 1px solid rgba(95,163,124,0.35); }
+  .tag.dont { background: rgba(206,112,104,0.12); color: #CE7068; border: 1px solid rgba(206,112,104,0.35); }
 
   /* demo containers */
-  .demo { background: #08101A; border: 1px solid var(--border-color); border-radius: 4px; padding: 14px 16px; margin-top: 12px; }
+  .demo { background: #14120F; border: 1px solid var(--border-color); border-radius: 4px; padding: 14px 16px; margin-top: 12px; }
   .demo-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
   .demo-row:last-child { margin-bottom: 0; }
   .demo-label { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); min-width: 60px; }
 
   /* comparison grid */
   .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-  .cmp-col { background: #08101A; border-radius: 4px; padding: 12px 14px; }
+  .cmp-col { background: #14120F; border-radius: 4px; padding: 12px 14px; }
   .cmp-col .lbl { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 8px; }
-  .cmp-col.good .lbl { color: #26BF86; }
-  .cmp-col.bad  .lbl { color: #DE5878; }
+  .cmp-col.good .lbl { color: #5FA37C; }
+  .cmp-col.bad  .lbl { color: #CE7068; }
   .strike { text-decoration: line-through; opacity: 0.45; }
 
   /* radius demos */
   .rad-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
   .rad-block { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .rad-block .box { width: 48px; height: 48px; background: #162334; border: 1px solid var(--border-color); }
+  .rad-block .box { width: 48px; height: 48px; background: #292520; border: 1px solid var(--border-color); }
   .rad-block .lbl { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted); }
 
   /* cyan demo */
   .cyan-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
-  .cyan-cell { padding: 10px 12px; border-radius: 4px; background: #08101A; border: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 11px; }
+  .cyan-cell { padding: 10px 12px; border-radius: 4px; background: #14120F; border: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 11px; }
   .cyan-cell .k { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); margin-bottom: 5px; }
   .cyan-cell .v { font-size: 12px; color: #FFF; font-variant-numeric: tabular-nums; }
   .cyan-cell .use { font-size: 10px; color: var(--fg-muted); margin-top: 4px; line-height: 1.4; }
 
   /* chart rule */
   .chart-tokens { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
-  .ct { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #08101A; border-radius: 3px; border: 1px solid var(--border-color); }
+  .ct { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #14120F; border-radius: 3px; border: 1px solid var(--border-color); }
   .ct .sw { width: 14px; height: 14px; border-radius: 2px; flex-shrink: 0; }
   .ct .body { display: flex; flex-direction: column; gap: 2px; }
   .ct .name { font-family: var(--font-mono); font-size: 10px; color: #FFF; }
@@ -68,30 +68,30 @@
 
   /* dense-data examples */
   .density-cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-  .density-cmp .col { background: #08101A; border-radius: 4px; overflow: hidden; }
+  .density-cmp .col { background: #14120F; border-radius: 4px; overflow: hidden; }
   .density-cmp .col-head { padding: 7px 12px; font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; border-bottom: 1px solid var(--border-color); }
-  .density-cmp .col-head.good { color: #26BF86; background: rgba(38,191,134,0.06); }
-  .density-cmp .col-head.bad  { color: #DE5878; background: rgba(222,88,120,0.06); }
+  .density-cmp .col-head.good { color: #5FA37C; background: rgba(95,163,124,0.06); }
+  .density-cmp .col-head.bad  { color: #CE7068; background: rgba(206,112,104,0.06); }
   .density-cmp table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; }
   .density-cmp td, .density-cmp th { padding: 6px 12px; text-align: left; border-bottom: 1px solid hsl(208 38% 22% / 0.35); color: var(--fg); font-variant-numeric: tabular-nums; }
-  .density-cmp th { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-muted); background: #0B1520; }
+  .density-cmp th { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-muted); background: #201D19; }
 
   /* command palette mini mockup */
-  .cmd-palette { background: #05101B; border: 1px solid var(--border-hi); border-radius: 6px; overflow: hidden; max-width: 480px; box-shadow: var(--shadow-float); }
+  .cmd-palette { background: #100E0C; border: 1px solid var(--border-hi); border-radius: 6px; overflow: hidden; max-width: 480px; box-shadow: var(--shadow-float); }
   .cmd-input { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-bottom: 1px solid var(--border-color); }
   .cmd-input .icon { color: var(--fg-muted); }
   .cmd-input input { background: transparent; border: 0; outline: none; font-family: var(--font-mono); font-size: 13px; color: #FFF; flex: 1; }
   .cmd-result { padding: 4px; }
-  .cmd-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 4px; font-size: 12.5px; color: #DEE6EF; }
-  .cmd-row.sel { background: rgba(42,178,212,0.10); color: #FFF; }
-  .cmd-row .ico { width: 20px; height: 20px; border-radius: 3px; background: #162334; display: grid; place-items: center; flex-shrink: 0; }
+  .cmd-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 4px; font-size: 12.5px; color: #EFEBE4; }
+  .cmd-row.sel { background: rgba(217,138,100,0.10); color: #FFF; }
+  .cmd-row .ico { width: 20px; height: 20px; border-radius: 3px; background: #292520; display: grid; place-items: center; flex-shrink: 0; }
   .cmd-row .ico svg { width: 12px; height: 12px; stroke: currentColor; color: var(--fg-muted); }
-  .cmd-row.sel .ico { background: rgba(42,178,212,0.14); }
-  .cmd-row.sel .ico svg { color: #2AB2D4; }
+  .cmd-row.sel .ico { background: rgba(217,138,100,0.14); }
+  .cmd-row.sel .ico svg { color: #D98A64; }
   .cmd-row .right { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
-  .cmd-row.sel .right { color: #2AB2D4; }
+  .cmd-row.sel .right { color: #D98A64; }
   .cmd-footer { padding: 8px 14px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
-  .cmd-footer kbd { background: #162334; border: 1px solid var(--border-color); padding: 1px 5px; border-radius: 3px; color: #DEE6EF; }
+  .cmd-footer kbd { background: #292520; border: 1px solid var(--border-color); padding: 1px 5px; border-radius: 3px; color: #EFEBE4; }
 </style>
 </head>
 <body>
@@ -145,26 +145,26 @@
       <div class="rule-num">Rule 02 / 08</div>
       <div class="rule-title">Cyan normalization</div>
       <div class="rule-body">
-        <p>Canonical primary: <code>#2AB2D4</code>. WPF uses <code>#20D3F7</code> and <code>#2D9CDB</code> in specific slots — these are not interchangeable.</p>
+        <p>Canonical primary: <code>#D98A64</code>. WPF uses <code>#E6A585</code> and <code>#E39A77</code> in specific slots — these are not interchangeable.</p>
         <p><span class="tag do">Do</span> Use <code>--cyan-primary</code> for all default interactive tints. Use <code>--cyan-focus</code> for keyboard focus rings only.</p>
-        <p><span class="tag dont">Don't</span> Use raw hex in components. Don't use <code>#20D3F7</code> as a general primary — it's too bright.</p>
+        <p><span class="tag dont">Don't</span> Use raw hex in components. Don't use <code>#E6A585</code> as a general primary — it's too bright.</p>
       </div>
     </div>
     <div class="rule-right">
       <div class="cyan-row">
         <div class="cyan-cell">
           <div class="k">PRIMARY · default</div>
-          <div class="v" style="color:#2AB2D4;">■ #2AB2D4</div>
+          <div class="v" style="color:#D98A64;">■ #D98A64</div>
           <div class="use">Nav active, chart lines, CTA tint, badges, crosshair</div>
         </div>
         <div class="cyan-cell">
           <div class="k">FOCUS · keyboard only</div>
-          <div class="v" style="color:#20D3F7;">■ #20D3F7</div>
+          <div class="v" style="color:#E6A585;">■ #E6A585</div>
           <div class="use">Focus ring on inputs, buttons, nav rows. WPF FocusBrush.</div>
         </div>
         <div class="cyan-cell">
           <div class="k">PRESSED · hover/active</div>
-          <div class="v" style="color:#2D9CDB;">■ #2D9CDB</div>
+          <div class="v" style="color:#E39A77;">■ #E39A77</div>
           <div class="use">Hover/pressed state on cyan interactive elements. WPF HoverBrush.</div>
         </div>
       </div>
@@ -185,13 +185,13 @@
     <div class="rule-right">
       <div class="demo">
         <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
-          <div style="text-align:center;"><div style="height:4px; background:#2AB2D4; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Trading</div><div style="font-family:var(--font-mono); font-size:9px; color:#2AB2D4; margin-top:2px;">--workspace-trading</div></div>
-          <div style="text-align:center;"><div style="height:4px; background:#60A5FA; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Portfolio</div><div style="font-family:var(--font-mono); font-size:9px; color:#60A5FA; margin-top:2px;">--workspace-portfolio</div></div>
-          <div style="text-align:center;"><div style="height:4px; background:#26BF86; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Accounting</div><div style="font-family:var(--font-mono); font-size:9px; color:#26BF86; margin-top:2px;">--workspace-accounting</div></div>
-          <div style="text-align:center;"><div style="height:4px; background:#D69E38; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Reporting</div><div style="font-family:var(--font-mono); font-size:9px; color:#D69E38; margin-top:2px;">--workspace-reporting</div></div>
-          <div style="text-align:center;"><div style="height:4px; background:#A78BFA; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Strategy</div><div style="font-family:var(--font-mono); font-size:9px; color:#A78BFA; margin-top:2px;">--workspace-strategy</div></div>
-          <div style="text-align:center;"><div style="height:4px; background:#93B4DA; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Data</div><div style="font-family:var(--font-mono); font-size:9px; color:#93B4DA; margin-top:2px;">--workspace-data</div></div>
-          <div style="text-align:center;"><div style="height:4px; background:#7C8A9B; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Settings</div><div style="font-family:var(--font-mono); font-size:9px; color:#7C8A9B; margin-top:2px;">--workspace-settings</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#D98A64; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Trading</div><div style="font-family:var(--font-mono); font-size:9px; color:#D98A64; margin-top:2px;">--workspace-trading</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#E39A77; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Portfolio</div><div style="font-family:var(--font-mono); font-size:9px; color:#E39A77; margin-top:2px;">--workspace-portfolio</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#5FA37C; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Accounting</div><div style="font-family:var(--font-mono); font-size:9px; color:#5FA37C; margin-top:2px;">--workspace-accounting</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#C29A4A; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Reporting</div><div style="font-family:var(--font-mono); font-size:9px; color:#C29A4A; margin-top:2px;">--workspace-reporting</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#9089B5; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Strategy</div><div style="font-family:var(--font-mono); font-size:9px; color:#9089B5; margin-top:2px;">--workspace-strategy</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#B5AEA4; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Data</div><div style="font-family:var(--font-mono); font-size:9px; color:#B5AEA4; margin-top:2px;">--workspace-data</div></div>
+          <div style="text-align:center;"><div style="height:4px; background:#9A9289; border-radius:1px; margin-bottom:6px;"></div><div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-muted);">Settings</div><div style="font-family:var(--font-mono); font-size:9px; color:#9A9289; margin-top:2px;">--workspace-settings</div></div>
         </div>
       </div>
     </div>
@@ -214,16 +214,16 @@
           <div class="col-head good">✓ Correct</div>
           <table><thead><tr><th>Symbol</th><th style="text-align:right;">Price</th><th style="text-align:right;">P&L</th></tr></thead>
           <tbody>
-            <tr><td>AAPL</td><td style="text-align:right; color:#FFF;">187.42</td><td style="text-align:right; color:#26BF86;">+3.20</td></tr>
-            <tr><td>TSLA</td><td style="text-align:right; color:#FFF;">176.55</td><td style="text-align:right; color:#DE5878;">−2.41</td></tr>
+            <tr><td>AAPL</td><td style="text-align:right; color:#FFF;">187.42</td><td style="text-align:right; color:#5FA37C;">+3.20</td></tr>
+            <tr><td>TSLA</td><td style="text-align:right; color:#FFF;">176.55</td><td style="text-align:right; color:#CE7068;">−2.41</td></tr>
           </tbody></table>
         </div>
         <div class="col">
           <div class="col-head bad">✕ Wrong</div>
           <table style="font-family:var(--font-sans);"><thead><tr><th>Symbol</th><th>Price</th><th>P&L</th></tr></thead>
           <tbody>
-            <tr><td>AAPL</td><td style="color:#FFF;">187.42</td><td style="color:#26BF86;">+3.20</td></tr>
-            <tr><td>TSLA</td><td style="color:#FFF;">176.55</td><td style="color:#DE5878;">−2.41</td></tr>
+            <tr><td>AAPL</td><td style="color:#FFF;">187.42</td><td style="color:#5FA37C;">+3.20</td></tr>
+            <tr><td>TSLA</td><td style="color:#FFF;">176.55</td><td style="color:#CE7068;">−2.41</td></tr>
           </tbody></table>
         </div>
       </div>
@@ -273,7 +273,7 @@
       <div class="rule-num">Rule 06 / 08</div>
       <div class="rule-title">Command palette polish</div>
       <div class="rule-body">
-        <p>The command palette is the primary keyboard surface. It uses <code>--border-hi</code> (#477089) border, <code>--shadow-float</code> elevation, and the focus ring token on its input.</p>
+        <p>The command palette is the primary keyboard surface. It uses <code>--border-hi</code> (#736B60) border, <code>--shadow-float</code> elevation, and the focus ring token on its input.</p>
         <p>Results use a 4px left inset on selection, no full background change. Keyboard shortcuts are mono, 10px, in a <code>kbd</code> element.</p>
         <p><span class="tag do">Do</span> Post <code>slideIndexChanged</code> and hook keyboard nav to <code>Ctrl+K</code>.</p>
         <p><span class="tag dont">Don't</span> Show more than 6 results without section headers. Don't use hover-only selection.</p>
@@ -328,10 +328,10 @@
       <div class="cmp">
         <div class="cmp-col good">
           <div class="lbl">✓ Meridian style</div>
-          <div style="font-family:var(--font-mono); font-size:12px; color:#FFF; background:#0B1520; padding:10px 12px; border-radius:4px; border:1px solid var(--border-color);">
+          <div style="font-family:var(--font-mono); font-size:12px; color:#FFF; background:#201D19; padding:10px 12px; border-radius:4px; border:1px solid var(--border-color);">
             <div style="color:var(--fg-muted); font-size:10px; text-transform:uppercase; letter-spacing:0.14em; margin-bottom:6px;">LAST PRICE</div>
             <div style="font-size:20px; letter-spacing:-0.01em; font-variant-numeric:tabular-nums; color:#FFF;">187.42</div>
-            <div style="color:#26BF86; font-size:11px; margin-top:4px;">+3.20 · +1.74%</div>
+            <div style="color:#5FA37C; font-size:11px; margin-top:4px;">+3.20 · +1.74%</div>
           </div>
         </div>
         <div class="cmp-col bad">
@@ -359,24 +359,24 @@
     </div>
     <div class="rule-right">
       <div class="chart-tokens">
-        <div class="ct"><div class="sw" style="background:#1A2D44;"></div><div class="body"><div class="name">grid</div><div class="hex">#1A2D44</div></div></div>
-        <div class="ct"><div class="sw" style="background:#26BF86;"></div><div class="body"><div class="name">up / bull</div><div class="hex">#26BF86</div></div></div>
-        <div class="ct"><div class="sw" style="background:#DE5878;"></div><div class="body"><div class="name">dn / bear</div><div class="hex">#DE5878</div></div></div>
-        <div class="ct"><div class="sw" style="background:#2AB2D4;"></div><div class="body"><div class="name">MA(20)</div><div class="hex">#2AB2D4</div></div></div>
-        <div class="ct"><div class="sw" style="background:#F2C94C;"></div><div class="body"><div class="name">MA(50)</div><div class="hex">#F2C94C</div></div></div>
-        <div class="ct"><div class="sw" style="background:#60A5FA;"></div><div class="body"><div class="name">benchmark</div><div class="hex">#60A5FA</div></div></div>
-        <div class="ct"><div class="sw" style="background:rgba(96,165,250,0.15);border:1px dashed rgba(96,165,250,0.6);"></div><div class="body"><div class="name">band fill</div><div class="hex">rgba 15%</div></div></div>
-        <div class="ct"><div class="sw" style="background:rgba(222,88,120,0.35);"></div><div class="body"><div class="name">drawdown</div><div class="hex">rgba 35%</div></div></div>
+        <div class="ct"><div class="sw" style="background:#302B25;"></div><div class="body"><div class="name">grid</div><div class="hex">#302B25</div></div></div>
+        <div class="ct"><div class="sw" style="background:#5FA37C;"></div><div class="body"><div class="name">up / bull</div><div class="hex">#5FA37C</div></div></div>
+        <div class="ct"><div class="sw" style="background:#CE7068;"></div><div class="body"><div class="name">dn / bear</div><div class="hex">#CE7068</div></div></div>
+        <div class="ct"><div class="sw" style="background:#D98A64;"></div><div class="body"><div class="name">MA(20)</div><div class="hex">#D98A64</div></div></div>
+        <div class="ct"><div class="sw" style="background:#D6B169;"></div><div class="body"><div class="name">MA(50)</div><div class="hex">#D6B169</div></div></div>
+        <div class="ct"><div class="sw" style="background:#E39A77;"></div><div class="body"><div class="name">benchmark</div><div class="hex">#E39A77</div></div></div>
+        <div class="ct"><div class="sw" style="background:rgba(227,154,119,0.15);border:1px dashed rgba(227,154,119,0.6);"></div><div class="body"><div class="name">band fill</div><div class="hex">rgba 15%</div></div></div>
+        <div class="ct"><div class="sw" style="background:rgba(206,112,104,0.35);"></div><div class="body"><div class="name">drawdown</div><div class="hex">rgba 35%</div></div></div>
       </div>
       <div class="demo" style="margin-top:10px;">
         <div class="demo-row">
           <span class="demo-label">Price tag</span>
-          <span style="background:#2AB2D4; color:#05101B; font-family:var(--font-mono); font-size:11px; font-weight:600; padding:3px 8px; border-radius:3px;">187.42</span>
+          <span style="background:#D98A64; color:#100E0C; font-family:var(--font-mono); font-size:11px; font-weight:600; padding:3px 8px; border-radius:3px;">187.42</span>
           <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-muted);">at right axis · always mono · always cyan bg</span>
         </div>
         <div class="demo-row">
           <span class="demo-label">Crosshair</span>
-          <span style="display:inline-block; width:60px; height:1px; background:#2AB2D4; vertical-align:middle; border-top:1px dashed #2AB2D4;"></span>
+          <span style="display:inline-block; width:60px; height:1px; background:#D98A64; vertical-align:middle; border-top:1px dashed #D98A64;"></span>
           <span style="font-family:var(--font-mono); font-size:11px; color:var(--fg-muted);">dashed · 0.6 opacity · 2px dash 3px gap</span>
         </div>
       </div>

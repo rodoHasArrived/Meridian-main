@@ -413,10 +413,13 @@ internal static class AssetAccountingEventProjectionRules
             batch.Journal.AggregateId != projection.Scope.LedgerBookId ||
             batch.Journal.PeriodId != projection.Scope.PeriodId ||
             batch.Journal.SourceEventId != projection.EventId ||
-            batch.Mutations.Count == 0 ||
+            batch.Mutations.All(mutation => mutation.MutationKind != expectedMutationKind) ||
             batch.Mutations.Any(mutation =>
                 mutation.MutationBatchId != mutationBatchId ||
-                mutation.MutationKind != expectedMutationKind ||
+                // An average-cost disposal also restates the surviving pool lots in its batch.
+                (mutation.MutationKind != expectedMutationKind &&
+                 !(expectedMutationKind == AtomicTaxLotMutationKind.Disposal &&
+                   mutation.MutationKind == AtomicTaxLotMutationKind.BasisRedistribution)) ||
                 mutation.JournalEntryId != impact.JournalEntryId ||
                 mutation.SourceEventId != projection.EventId ||
                 mutation.SecurityId != projection.Scope.SecurityId ||

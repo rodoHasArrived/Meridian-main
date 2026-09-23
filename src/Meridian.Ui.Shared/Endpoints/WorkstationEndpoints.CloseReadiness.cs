@@ -1,9 +1,13 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.AccountingClose;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
+using Meridian.Storage.Ledger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -13,6 +17,44 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class WorkstationEndpoints
 {
+    private static async Task<OperationsReportPackReadinessDto> ResolveOperationsReportPackAsync(
+        HttpContext context, IOperationsContinuityWorkflowService workflows, Guid workflowId, string? packageId,
+        bool requireRetainedRevision = true)
+    {
+        var packages = context.RequestServices.GetService<IAccountingReportPackageService>();
+        var books = context.RequestServices.GetService<ILedgerBookService>();
+        var ownership = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
+        var journals = context.RequestServices.GetService<ILedgerJournalStore>();
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        if (packages is null || books is null || ownership is null || journals is null
+            || string.IsNullOrWhiteSpace(tenant.TenantId) || string.IsNullOrWhiteSpace(tenant.CompanyId))
+            return new(false, null, "The retained report-package authority is unavailable.", []);
+        try
+        {
+            var workflow = await workflows.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            if (workflow is null)
+                return new(false, null, "The workflow was not found.", []);
+            var current = await new OperationsReportPackAuthority(packages, books, ownership, journals)
+                    .ResolveAsync(workflow, packageId, tenant.TenantId, tenant.CompanyId, context.RequestAborted)
+                    .ConfigureAwait(false);
+            return requireRetainedRevision && current.IsReady
+                && !OperationsReportPackAuthority.MatchesRetainedRevision(workflow.ReportPackReadiness, current)
+                ? new(false, null, "Retained report support changed after review. Refresh report posture and repeat the affected approvals.", [])
+                : current;
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested) { throw; }
+        catch (Exception)
+        {
+            return new(false, null, "The retained report-package authority could not be evaluated.", []);
+        }
+    }
+
+    private static IResult ReportPackAuthorityRefusal(OperationsReportPackReadinessDto readiness,
+        JsonSerializerOptions jsonOptions) => OperationsTransitionResult(
+        new OperationsTransitionResultDto(false, "REPORT_PACK_NOT_READY", readiness.BlockingReason ?? "Retained report support is required.",
+            null, [new("REPORT_PACK_NOT_READY", readiness.BlockingReason ?? "Retained report support is required.",
+                OperationsGateKeyDto.Approval, "Critical", [])], []), jsonOptions);
+
     private static async Task<IResult?> ValidateClosePublicationReadinessAsync(HttpContext context,
         Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope, JsonSerializerOptions jsonOptions)
     {

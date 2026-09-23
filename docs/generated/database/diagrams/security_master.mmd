@@ -934,20 +934,38 @@ erDiagram
         timestamp_with_time_zone reviewed_at
         jsonb audit_trail
     }
+    security_master_security_price_selection_receipts {
+        uuid receipt_id PK
+        uuid security_id FK
+        text account_id
+        text payload
+        character_64_ payload_sha256
+        timestamp_with_time_zone recorded_at
+    }
     security_master_security_pricing_hierarchy {
         uuid security_id PK,FK
         text account_id PK
         jsonb entries
         timestamp_with_time_zone as_of
         text updated_by
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_security_pricing_hierarchy_history {
+        uuid security_id PK,FK
+        text account_id PK
+        jsonb entries
+        timestamp_with_time_zone as_of PK
+        text updated_by
+        timestamp_with_time_zone recorded_at
     }
     security_master_security_raw_prices {
         uuid security_id PK,FK
         text source_id PK
         numeric_28_10_ price
-        timestamp_with_time_zone price_as_of
+        timestamp_with_time_zone price_as_of PK
         text recorded_by
         timestamp_with_time_zone recorded_at
+        text price_unit
     }
     security_master_security_snapshots {
         uuid security_id PK
@@ -1210,7 +1228,9 @@ erDiagram
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
     security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"
     security_master_securities ||--o{ security_master_security_operator_overrides : "security_operator_overrides_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_price_selection_receipts : "security_price_selection_receipts_security_id_fkey"
     security_master_securities ||--o{ security_master_security_pricing_hierarchy : "security_pricing_hierarchy_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_pricing_hierarchy_history : "security_pricing_hierarchy_history_security_id_fkey"
     security_master_securities ||--o{ security_master_security_raw_prices : "security_raw_prices_security_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_statement_import_batch : "servicer_statement_import_batch_servicer_report_batch_id_fkey"

@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-09-07T06:29:36Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-09-21T06:29:51Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Infrastructure/Reconciliation/IbFlexStatementService.cs` | Providers and Storage | `ac546aa33` (2026-09-06T14:21:59-07:00) | 2 |
-| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `010ac9cb6` (2026-09-06T14:16:08-07:00) | 2 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `c7734ccc5` (2026-09-06T00:31:37-07:00) | 7 |
-| `src/Meridian.Storage/Interfaces/IStorageCatalogService.cs` | Providers and Storage | `c7734ccc5` (2026-09-06T00:31:37-07:00) | 1 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `d76982aff` (2026-09-06T00:07:11-07:00) | 5 |
-| `src/Meridian.Contracts/Coordination/ICoordinationStore.cs` | Host and Composition | `d76982aff` (2026-09-06T00:07:11-07:00) | 1 |
-| `src/Meridian.Contracts/Coordination/IExecutionLease.cs` | Host and Composition | `d76982aff` (2026-09-06T00:07:11-07:00) | 1 |
-| `src/Meridian.Contracts/Coordination/ILeaseManager.cs` | Host and Composition | `d76982aff` (2026-09-06T00:07:11-07:00) | 1 |
-| `src/Meridian.DataIntegration/Etl/EtlServices.cs` | Unmapped | `d76982aff` (2026-09-06T00:07:11-07:00) | 1 |
-| `src/Meridian.DataIntegration/README.md` | Unmapped | `d76982aff` (2026-09-06T00:07:11-07:00) | 1 |
-| `src/Meridian.Platform/Coordination/LeaseManager.Execution.cs` | Unmapped | `d76982aff` (2026-09-06T00:07:11-07:00) | 1 |
-| `src/Meridian.Platform/Coordination/LeaseManager.cs` | Unmapped | `d76982aff` (2026-09-06T00:07:11-07:00) | 1 |
-| `src/Meridian.Platform/README.md` | Unmapped | `d76982aff` (2026-09-06T00:07:11-07:00) | 1 |
-| `src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs` | Providers and Storage | `d76982aff` (2026-09-06T00:07:11-07:00) | 1 |
-| `src/Meridian.Storage/Services/StorageCatalogService.ReadSnapshot.cs` | Providers and Storage | `d76982aff` (2026-09-06T00:07:11-07:00) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-approval.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-approval.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-certification.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-certification.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-distribution.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-distribution.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-publication.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-publication.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 3 |
+| `src/Meridian.Ui/dashboard/src/lib/report-health.test.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/lib/report-health.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.test.tsx` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.tsx` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-datum.test.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-datum.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
 

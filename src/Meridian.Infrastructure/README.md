@@ -11,6 +11,10 @@ last_reviewed: 2026-07-25
 
 # src/Meridian.Infrastructure
 
+Immutable statement match artifacts retain source-comparison completeness, represented population kinds,
+and the executed matcher/tolerance-policy fingerprint. Legacy artifacts omit these fields and cannot
+establish clearing. The optional fields preserve legacy artifact hashes when absent.
+
 ## Purpose
 
 Infrastructure contains provider adapters, HTTP integration, ETL adapters, resilience helpers, and concrete data-source implementations.
@@ -193,8 +197,9 @@ explicitly ownerless requests; owner-bound requests remain visible solely throug
 tenant/company snapshot/watch overloads and durable materialization paths.
 Its richer request callbacks publish bounded, request-correlated ProviderSdk read-model updates for
 option discovery, scanners, real-time bars, historical ticks, account/model-account P&L, and market
-rules. Each returned request and observation carries required provenance: provider and configured
-connection identity, source and receipt times, reported entitlement/feed/availability, request descriptor,
+rules. Callbacks that do not correlate to an active `IBDataServices` request are ignored. Each returned
+request and observation carries required provenance: provider and configured connection identity, source
+and receipt times, reported entitlement/feed/availability, request descriptor,
 provider-native identity, correlation, and a deterministic de-duplication key. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable

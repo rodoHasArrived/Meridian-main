@@ -41,10 +41,10 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           <span
             aria-hidden="true"
             className={cn(
-              "flex h-4 w-4 items-center justify-center rounded-[2px] border bg-[#F3F6F9]",
+              "flex h-4 w-4 items-center justify-center rounded-[2px] border bg-[var(--ws-surface-raised)]",
               "transition-[background-color,border-color] duration-150",
               "peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40",
-              checkedState ? "border-primary bg-primary" : "border-border peer-hover:border-[#ADB8C4]",
+              checkedState ? "border-primary bg-primary" : "border-border peer-hover:border-[var(--ws-border-hover)]",
               error ? "border-danger" : ""
             )}
           >
@@ -112,7 +112,7 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
           aria-hidden="true"
           className={cn(
             "relative h-5 w-9 rounded-full border transition-colors duration-150",
-            checkedState ? "border-primary bg-primary" : "border-border bg-[#F3F6F9]"
+            checkedState ? "border-primary bg-primary" : "border-border bg-[var(--ws-surface-raised)]"
           )}
         >
           <span

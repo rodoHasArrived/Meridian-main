@@ -38,50 +38,51 @@
 @layer base {
   /* Light appearance remains an explicit alias for nested panels that already
      opt into it. The workstation default below uses the same tokens.
-     Concrete palette: canvas #DEE3EA · panel #FFFFFF · steel accent #2F6F8F ·
-     border #CBD3DC. Radii unified to 2px; card shadow flattened to a hairline
-     (borders carry elevation). Keep in sync with the :root block below.
+     Programmed Institutionalism palette: canvas #F2F0EC (Soft Stone) · panel
+     #FBFAF8 (Architect White) · copper accent #A85436 · border #E4E3DE. Radii
+     stay at 2px; card shadow is a hairline (borders carry elevation).
+     Keep in sync with the :root block below.
   ──────────────────────────────────────────────────────────────────────────*/
   [data-appearance="light"] {
-    --background: 215 22% 89%;
-    --foreground: 215 15% 16%;
-    --card: 0 0% 100%;
-    --card-foreground: 215 15% 16%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 15% 16%;
-    --primary: 200 51% 37%;
+    --background: 40 19% 94%;
+    --foreground: 218 11% 15%;
+    --card: 40 27% 98%;
+    --card-foreground: 218 11% 15%;
+    --popover: 40 27% 98%;
+    --popover-foreground: 218 11% 15%;
+    --primary: 16 51% 44%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 213 29% 94%;
-    --secondary-foreground: 215 15% 16%;
-    --muted: 210 33% 96%;
-    --muted-foreground: 213 11% 39%;
-    --accent: 200 51% 37%;
+    --secondary: 40 20% 91%;
+    --secondary-foreground: 218 11% 15%;
+    --muted: 40 25% 95%;
+    --muted-foreground: 212 8% 40%;
+    --accent: 16 51% 44%;
     --accent-foreground: 0 0% 100%;
-    --border: 212 20% 83%;
-    --input: 212 20% 83%;
-    --ring: 200 51% 37%;
-    --paper: 200 51% 37%;
-    --live: 200 51% 37%;
-    --live-env: 349 49% 49%;
-    --warning: 33 82% 30%;
-    --success: 158 72% 31%;
-    --danger: 349 49% 49%;
-    --panel-strong: 0 0% 100%;
-    --panel-soft: 213 29% 94%;
-    --surface-raise: 210 33% 96%;
-    --sidebar: 213 29% 94%;
-    --sidebar-foreground: 212 14% 35%;
-    --sidebar-primary: 200 51% 37%;
+    --border: 50 10% 88%;
+    --input: 50 10% 88%;
+    --ring: 16 51% 44%;
+    --paper: 16 51% 44%;
+    --live: 16 51% 44%;
+    --live-env: 4 47% 45%;
+    --warning: 37 77% 31%;
+    --success: 146 36% 35%;
+    --danger: 4 47% 45%;
+    --panel-strong: 40 27% 98%;
+    --panel-soft: 40 20% 91%;
+    --surface-raise: 40 25% 95%;
+    --sidebar: 40 20% 91%;
+    --sidebar-foreground: 216 6% 33%;
+    --sidebar-primary: 16 51% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 208 48% 89%;
-    --sidebar-accent-foreground: 215 15% 16%;
-    --sidebar-border: 212 20% 83%;
-    --sidebar-ring: 200 51% 37%;
-    --chart-1: 200 51% 37%;
-    --chart-2: 158 72% 31%;
-    --chart-3: 349 49% 49%;
-    --chart-4: 33 82% 30%;
-    --chart-5: 206 16% 51%;
+    --sidebar-accent: 21 47% 90%;
+    --sidebar-accent-foreground: 218 11% 15%;
+    --sidebar-border: 50 10% 88%;
+    --sidebar-ring: 16 51% 44%;
+    --chart-1: 16 51% 44%;
+    --chart-2: 146 36% 35%;
+    --chart-3: 4 47% 45%;
+    --chart-4: 37 77% 31%;
+    --chart-5: 40 5% 47%;
     --shadow-color: 218 15% 11%;
     --shadow-opacity: 0.06;
     --shadow-blur: 1px;
@@ -101,58 +102,58 @@
        primitives consume ONLY these variables. Adjust here to change the
        Tailwind palette. Token architecture mirrors the Meridian Institutional
        Ops light design system and WPF theme tokens.
-       Concrete refresh: canvas #DEE3EA, steel accent #2F6F8F, load-bearing
-       #CBD3DC borders, unified 2px radii, and a flat hairline shadow.
+       Programmed Institutionalism v2.0: warm paper canvas #F2F0EC, copper
+       accent #A85436, #E4E3DE hairline rules, 2px radii, flat shadow.
        Changes here do NOT automatically update Track B.
     ──────────────────────────────────────────────────────────────────────────*/
-    --background: 215 22% 89%;
-    --foreground: 215 15% 16%;
-    --card: 0 0% 100%;
-    --card-foreground: 215 15% 16%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 15% 16%;
-    --primary: 200 51% 37%;
+    --background: 40 19% 94%;
+    --foreground: 218 11% 15%;
+    --card: 40 27% 98%;
+    --card-foreground: 218 11% 15%;
+    --popover: 40 27% 98%;
+    --popover-foreground: 218 11% 15%;
+    --primary: 16 51% 44%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 213 29% 94%;
-    --secondary-foreground: 215 15% 16%;
-    --muted: 210 33% 96%;
-    --muted-foreground: 213 11% 39%;
-    --accent: 200 51% 37%;
+    --secondary: 40 20% 91%;
+    --secondary-foreground: 218 11% 15%;
+    --muted: 40 25% 95%;
+    --muted-foreground: 212 8% 40%;
+    --accent: 16 51% 44%;
     --accent-foreground: 0 0% 100%;
-    --border: 212 20% 83%;
-    --input: 212 20% 83%;
-    --ring: 200 51% 37%;
-    --paper: 200 51% 37%;
-    --live: 200 51% 37%;
-    --live-env: 349 49% 49%;
-    --warning: 33 82% 30%;
-    --success: 158 72% 31%;
-    --danger: 349 49% 49%;
-    --panel-strong: 0 0% 100%;
-    --panel-soft: 213 29% 94%;
-    --surface-raise: 210 33% 96%;
+    --border: 50 10% 88%;
+    --input: 50 10% 88%;
+    --ring: 16 51% 44%;
+    --paper: 16 51% 44%;
+    --live: 16 51% 44%;
+    --live-env: 4 47% 45%;
+    --warning: 37 77% 31%;
+    --success: 146 36% 35%;
+    --danger: 4 47% 45%;
+    --panel-strong: 40 27% 98%;
+    --panel-soft: 40 20% 91%;
+    --surface-raise: 40 25% 95%;
     /* ─── Sidebar tokens ─────────────────────────────────────────────────────
        Maps the operator rail surface to the light institutional rail.
     ──────────────────────────────────────────────────────────────────────────*/
-    --sidebar: 213 29% 94%;
-    --sidebar-foreground: 212 14% 35%;
-    --sidebar-primary: 200 51% 37%;
+    --sidebar: 40 20% 91%;
+    --sidebar-foreground: 216 6% 33%;
+    --sidebar-primary: 16 51% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 208 48% 89%;
-    --sidebar-accent-foreground: 215 15% 16%;
-    --sidebar-border: 212 20% 83%;
-    --sidebar-ring: 200 51% 37%;
+    --sidebar-accent: 21 47% 90%;
+    --sidebar-accent-foreground: 218 11% 15%;
+    --sidebar-border: 50 10% 88%;
+    --sidebar-ring: 16 51% 44%;
     /* ─── Chart tokens ───────────────────────────────────────────────────────
        Named --chart-1…5 to match the existing Tailwind contract.
-       Mapped to Meridian's muted Concrete semantic chart palette:
-       steel #2F6F8F · spruce #16885F · brick #BA3F55 · ochre #8A520E ·
-       benchmark #6E8597.
+       Mapped to Meridian's muted Programmed Institutionalism semantic chart palette:
+       copper #A85436 · forest #3A7A56 · brick #A8443C · ochre #8A5C12 ·
+       warm slate benchmark #7E7A72.
     ──────────────────────────────────────────────────────────────────────────*/
-    --chart-1: 200 51% 37%;
-    --chart-2: 158 72% 31%;
-    --chart-3: 349 49% 49%;
-    --chart-4: 33 82% 30%;
-    --chart-5: 206 16% 51%;
+    --chart-1: 16 51% 44%;
+    --chart-2: 146 36% 35%;
+    --chart-3: 4 47% 45%;
+    --chart-4: 37 77% 31%;
+    --chart-5: 40 5% 47%;
     /* ─── Border radii — Concrete: unified 2px everywhere ────────────────────
        The Concrete system uses one tight 2px corner across chips, controls,
        and surfaces; structure comes from borders, not rounding. The named
@@ -184,30 +185,44 @@
        Canonical light Institutional Ops palette for hand-authored workstation
        CSS, aligned to the handoff --ws-* block. Compatibility aliases below
        must point at these --ws-* tokens.
-         canvas #DEE3EA · band #EBEFF4 · panel #FFFFFF · raised #F3F6F9
-         border #CBD3DC (hover #ADB8C4 · strong #99A5B2) · steel #2F6F8F
+         canvas #F2F0EC · band #EDEAE4 · panel #FBFAF8 · raised #F6F4F0
+         border #E4E3DE (hover #C6C3BB · strong #AFABA1) · copper #A85436
     ──────────────────────────────────────────────────────────────────────────*/
-    --ws-page-bg: #DEE3EA;
-    --ws-surface: #ffffff;
-    --ws-surface-subtle: #EBEFF4;
-    --ws-surface-raised: #F3F6F9;
-    --ws-border: #CBD3DC;
-    --ws-border-strong: #99A5B2;
-    --ws-text: #22272E;
-    --ws-text-muted: #59636F;
-    --ws-text-secondary: #4D5967;
-    --ws-masthead-bg: #171A1F;
-    --ws-masthead-fg: #F4F6F8;
-    --ws-rail-bg: #EBEFF4;
-    --ws-rail-active: #D7E5F1;
-    --ws-row-hover: #EAEEF3;
-    --ws-row-selected: #D7E5F1;
-    --ws-row-border: #CBD3DC;
-    --ws-inspector-bg: #ffffff;
-    --ws-canvas-bg: #ffffff;
-    --ws-accent: #2F6F8F;
-    --ws-accent-hover: #3B82A6;
-    --ws-accent-pressed: #255B75;
+    --ws-page-bg: #F2F0EC;
+    --ws-surface: #FBFAF8;
+    --ws-surface-subtle: #EDEAE4;
+    --ws-surface-raised: #F6F4F0;
+    --ws-border: #E4E3DE;
+    --ws-border-hover: #C6C3BB;
+    --ws-border-strong: #AFABA1;
+    --ws-text: #22252A;
+    --ws-text-muted: #5E666F;
+    --ws-text-secondary: #4E5258;
+    --ws-masthead-bg: #1F1D1A;
+    --ws-masthead-fg: #F4F2ED;
+    /* Chrome status colours. The bars are near-black in every scope, so these are the
+    same everywhere; the package has declared them since the restyle and the
+    workstation never did, which is why app-shell.css was still painting the
+    pre-restyle mint, yellow and pink. */
+    --chrome-ok: #56A37E;
+    --chrome-warn: #C79A4C;
+    --chrome-err: #D1746B;
+    /* Type faces as tokens. Thirteen call sites name these and the workstation declared
+    none of them, so every one resolved to nothing and inherited instead. Values mirror
+    the package's tokens/typography.css. */
+    --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    --ws-rail-bg: #EDEAE4;
+    --ws-rail-active: #F2E3DB;
+    --ws-row-hover: #F0EEE9;
+    --ws-row-selected: #F2E3DB;
+    --ws-row-border: #E4E3DE;
+    --ws-inspector-bg: #FBFAF8;
+    --ws-canvas-bg: #FBFAF8;
+    --ws-accent: #A85436;
+    --ws-accent-hover: #AF6143;  /* 4.55:1 under the white label */
+    --ws-accent-pressed: #8C4429;
     /* Concrete is flat: the workstation shadow token carries NO card shadow;
        borders carry structure. Only detached overlays float (--shadow-float). */
     --ws-shadow: none;
@@ -234,15 +249,24 @@
     --nav-item-active: var(--text-primary);
     --nav-section-label: var(--text-muted);
 
-    /* ─── Semantic palette (Tier 2) — Concrete steel/spruce/brick/ochre/slate.
+    /* ─── Semantic palette (Tier 2) — copper/forest/brick/ochre/slate-violet.
        Single source of truth for one-off semantic color and the derived
        severity/state/mode layers below. ────────────────────────────────────*/
-    --accent-ghost: #E1EAF2;
-    --green: #16885F;
-    --red: #BA3F55;
-    --orange: #8A520E;
+    --accent-ghost: #F4E7E0;
+    --green: #3A7A56;
+    --red: #A8443C;
+    --orange: #8A5C12;
     --amber: var(--orange);
-    --purple: #6F5BA7;
+    --purple: #5D5486;
+    /* The -dim variants the severity/state foregrounds below read. These are
+       derived exactly as the design-system package derives them, so the two
+       tracks cannot drift. The package declared them and this track did not,
+       so every --*-fg reading one resolved to nothing. */
+    --dim-mix: #000;
+    --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
+    --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
+    --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --bg: var(--ws-page-bg);
     --bg-medium: var(--ws-surface-subtle);
@@ -258,9 +282,9 @@
     --surface-raise-bg: var(--ws-surface-raised);
     --border-color: var(--ws-border);
     --border-hi: var(--ws-border-strong);
-    --border-hover: #ADB8C4;
-    --border-strong: #99A5B2;
-    --border-divider: #D2D9E2;
+    --border-hover: var(--ws-border-hover);
+    --border-strong: var(--ws-border-strong);
+    --border-divider: #DAD8D3;
     --surface-topbar: var(--ws-masthead-bg);
     --surface-input: var(--ws-surface-subtle);
     --cyan-primary: var(--ws-accent);
@@ -277,59 +301,84 @@
 
     /* ─── State layer (environment + evidence) — DERIVED trios (fg · bd · bg).
        Semantic hue · 32–42% alpha border · 10–12% alpha wash. ──────────────*/
-    --state-healthy-fg: var(--green);
+    --state-healthy-fg: var(--green-dim);
     --state-healthy-bd: color-mix(in srgb, var(--green) 32%, transparent);
     --state-healthy-bg: color-mix(in srgb, var(--green) 10%, transparent);
-    --state-warn-fg: var(--orange);
+    --state-warn-fg: var(--orange-dim);
     --state-warn-bd: color-mix(in srgb, var(--orange) 38%, transparent);
     --state-warn-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --state-danger-fg: var(--red);
+    --state-danger-fg: var(--red-dim);
     --state-danger-bd: color-mix(in srgb, var(--red) 35%, transparent);
     --state-danger-bg: color-mix(in srgb, var(--red) 10%, transparent);
-    --state-paper-fg: var(--ws-accent);
+    --state-paper-fg: var(--ws-accent-pressed);
     --state-paper-bd: color-mix(in srgb, var(--ws-accent) 34%, transparent);
     --state-paper-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
-    --state-strategy-fg: var(--purple);
+    --state-strategy-fg: var(--purple-dim);
     --state-strategy-bd: color-mix(in srgb, var(--purple) 34%, transparent);
     --state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent);
-    --state-live-fg: var(--red);
+    --state-live-fg: var(--red-dim);
     --state-live-bd: color-mix(in srgb, var(--red) 42%, transparent);
     --state-live-bg: color-mix(in srgb, var(--red) 12%, transparent);
     --state-muted-fg: var(--ws-text-muted);
     --state-muted-bd: var(--ws-border);
     --state-muted-bg: var(--ws-surface-subtle);
-    --state-pending-fg: var(--purple);
+    --state-pending-fg: var(--purple-dim);
     --state-pending-bd: color-mix(in srgb, var(--purple) 34%, transparent);
     --state-pending-bg: color-mix(in srgb, var(--purple) 10%, transparent);
 
     /* ─── Severity layer (operator status chips) — DERIVED trios ────────────
        Blocked (red) · Action (ochre) · Review (steel) · Ready (spruce) · Info.*/
-    --severity-blocked-fg: var(--red);
+    --severity-blocked-fg: var(--red-dim);
     --severity-blocked-bd: color-mix(in srgb, var(--red) 40%, transparent);
     --severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent);
-    --severity-action-fg: var(--orange);
+    --severity-action-fg: var(--orange-dim);
     --severity-action-bd: color-mix(in srgb, var(--orange) 42%, transparent);
     --severity-action-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --severity-review-fg: var(--ws-accent);
+    --severity-review-fg: var(--ws-accent-pressed);
     --severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent);
     --severity-review-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
-    --severity-ready-fg: var(--green);
+    --severity-ready-fg: var(--green-dim);
     --severity-ready-bd: color-mix(in srgb, var(--green) 36%, transparent);
     --severity-ready-bg: color-mix(in srgb, var(--green) 10%, transparent);
     --severity-info-fg: var(--ws-text-muted);
     --severity-info-bd: var(--ws-border);
     --severity-info-bg: var(--ws-surface-subtle);
 
-    /* ─── Charts — Concrete series + grid. ─────────────────────────────────*/
-    --chart-grid: #D2D9E2;
-    --chart-grid-major: #CBD3DC;
-    --chart-up: #16885F;
-    --chart-dn: #BA3F55;
-    --chart-ma20: #2F6F8F;
-    --chart-ma50: #8A520E;
-    --chart-bench: #6E8597;
+    /* ─── Charts — warm-paper series + grid. The analytical overlay (MA20) sits
+       deliberately outside the accent's hue: copper and brick are only ~11deg
+       apart, so an accent-coloured MA line is indistinguishable from the loss
+       series where they cross. Slate-violet restores ~114deg of separation.
+       The crosshair is chrome, not a series, so it separates by chroma rather
+       than hue — ~14% saturation against a 64%-saturated series reads as a grey
+       hairline at any intersection. ────────────────────────────────────────*/
+    --chart-grid: #E4E3DE;
+    --chart-grid-major: #D3D0C9;
+    --chart-up: #3A7A56;
+    --chart-dn: #A8443C;
+    --chart-ma20: #5D5486;
+    --chart-ma50: #8A5C12;
+    --chart-bench: #7E7A72;
     --chart-band: color-mix(in srgb, var(--ws-accent) 10%, transparent);
-    --chart-crosshair: #2F6F8F;
+    --chart-crosshair: #6B655C;
+    /* Overlay channels the historical chart reads: comparison symbols, moving averages,
+       Bollinger envelope and RSI. They were referenced and never declared, so every
+       overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
+       /pink — no matter what this block said. The seven series are the palette; the
+       named channels alias them, so an overlay follows the mode with everything else. */
+    --chart-series-1: #3A7A56;
+    --chart-series-2: #A85436;
+    --chart-series-3: #7C5CBF;
+    --chart-series-4: #B08A2E;
+    --chart-series-5: #A8443C;
+    --chart-series-6: #8A5C12;
+    --chart-series-7: #5E666F;
+    --chart-compare-1: var(--chart-series-2);
+    --chart-compare-2: var(--chart-series-4);
+    --chart-compare-3: var(--chart-series-1);
+    --chart-sma-20: var(--chart-ma20);
+    --chart-sma-50: var(--chart-ma50);
+    --chart-bollinger: var(--chart-bench);
+    --chart-rsi: var(--chart-series-3);
     --chart-dd: color-mix(in srgb, var(--red) 22%, transparent);
 
     /* ─── Elevation — flat by mandate. Panels/cards carry no shadow; only
@@ -342,8 +391,8 @@
   }
 
   /* ─── Dark mode — graphite charcoal, equally flat ───────────────────────────
-     Concrete dark (handoff colors-dark.css): canvas #0E1113 · panel #1A2026 ·
-     band #232A32 · steel accent #5790BE · border #45505C. Only the base tokens
+     Warm graphite dark (handoff colors-dark.css): canvas #14120F · panel #201D19 ·
+     band #292520 · copper accent #D98A64 · border #4A443C. Only the base tokens
      flip; every derived severity/state/mode trio re-derives from --green/--red/
      --orange/--purple/--ws-accent via color-mix(), so the ops layer follows for
      free. The dark block covers BOTH Track A (HSL channels for Tailwind) and
@@ -355,88 +404,130 @@
       color-scheme: dark;
 
       /* Track A — HSL channels */
-      --background: 204 15% 6%;
-      --foreground: 210 24% 92%;
-      --card: 210 19% 13%;
-      --card-foreground: 210 24% 92%;
-      --popover: 210 19% 13%;
-      --popover-foreground: 210 24% 92%;
-      --primary: 207 44% 54%;
-      --primary-foreground: 210 24% 96%;
-      --secondary: 212 18% 17%;
-      --secondary-foreground: 210 24% 92%;
-      --muted: 212 18% 17%;
-      --muted-foreground: 212 11% 58%;
-      --accent: 207 44% 54%;
-      --accent-foreground: 210 24% 96%;
-      --border: 211 14% 32%;
-      --input: 211 14% 32%;
-      --ring: 207 44% 54%;
-      --paper: 207 44% 54%;
-      --live: 207 44% 54%;
-      --live-env: 355 48% 59%;
-      --warning: 40 54% 48%;
-      --success: 152 34% 46%;
-      --danger: 355 48% 59%;
-      --panel-strong: 210 19% 13%;
-      --panel-soft: 212 18% 17%;
-      --surface-raise: 210 17% 15%;
-      --sidebar: 212 18% 17%;
-      --sidebar-foreground: 214 15% 69%;
-      --sidebar-primary: 207 44% 54%;
-      --sidebar-primary-foreground: 210 24% 96%;
-      --sidebar-accent: 204 22% 24%;
-      --sidebar-accent-foreground: 210 24% 92%;
-      --sidebar-border: 211 14% 32%;
-      --sidebar-ring: 207 44% 54%;
-      --chart-1: 207 44% 54%;
-      --chart-2: 152 34% 46%;
-      --chart-3: 355 48% 59%;
-      --chart-4: 40 54% 48%;
-      --chart-5: 212 13% 55%;
+      --background: 36 9% 7%;
+      --foreground: 40 20% 92%;
+      --card: 34 10% 11%;
+      --card-foreground: 40 20% 92%;
+      --popover: 34 10% 11%;
+      --popover-foreground: 40 20% 92%;
+      --primary: 21 60% 62%;
+      --primary-foreground: 26 20% 9%;
+      --secondary: 34 10% 16%;
+      --secondary-foreground: 40 20% 92%;
+      --muted: 34 10% 16%;
+      --muted-foreground: 33 8% 57%;
+      --accent: 21 60% 62%;
+      --accent-foreground: 26 20% 9%;
+      --border: 36 11% 27%;
+      --input: 36 11% 27%;
+      --ring: 21 60% 62%;
+      --paper: 21 60% 62%;
+      --live: 21 60% 62%;
+      --live-env: 5 52% 61%;
+      --warning: 41 51% 52%;
+      --success: 146 28% 50%;
+      --danger: 5 52% 61%;
+      --panel-strong: 34 10% 11%;
+      --panel-soft: 34 10% 16%;
+      --surface-raise: 34 10% 13%;
+      --sidebar: 34 10% 16%;
+      --sidebar-foreground: 33 10% 68%;
+      --sidebar-primary: 21 60% 62%;
+      --sidebar-primary-foreground: 26 20% 9%;
+      --sidebar-accent: 24 18% 19%;
+      --sidebar-accent-foreground: 40 20% 92%;
+      --sidebar-border: 36 11% 27%;
+      --sidebar-ring: 21 60% 62%;
+      --chart-1: 21 60% 62%;
+      --chart-2: 146 28% 50%;
+      --chart-3: 5 52% 61%;
+      --chart-4: 41 51% 52%;
+      --chart-5: 36 8% 58%;
 
       /* Track B — --ws-* + semantic hexes */
-      --ws-page-bg: #0E1113;
-      --ws-surface: #1A2026;
-      --ws-surface-subtle: #232A32;
-      --ws-surface-raised: #20272E;
-      --ws-border: #45505C;
-      --ws-border-strong: #6E7C8A;
-      --ws-text: #E5EAEF;
-      --ws-text-muted: #8F9AA7;
-      --ws-text-secondary: #A5AFBC;
-      --ws-masthead-bg: #0D1117;
-      --ws-masthead-fg: #E6EAF0;
-      --ws-rail-bg: #232A32;
-      --ws-rail-active: #2F3F4A;
-      --ws-row-hover: #283039;
-      --ws-row-selected: #2F3F4A;
-      --ws-row-border: #45505C;
-      --ws-inspector-bg: #1A2026;
-      --ws-canvas-bg: #1A2026;
-      --ws-accent: #5790BE;
-      --ws-accent-hover: #6BA6D4;
-      --ws-accent-pressed: #3C6688;
+      --ws-page-bg: #14120F;
+      --ws-surface: #201D19;
+      --ws-surface-subtle: #292520;
+      --ws-surface-raised: #252119;
+      --ws-border: #4A443C;
+      --ws-border-hover: #5F584E;
+      --ws-border-strong: #736B60;
+      --ws-text: #EFEBE4;
+      --ws-text-muted: #9A9289;
+      --ws-text-secondary: #B5AEA4;
+      --ws-masthead-bg: #100E0C;
+      --ws-masthead-fg: #EDE9E2;
+      /* Chrome status colours. The bars are near-black in every scope, so these are the
+      same everywhere; the package has declared them since the restyle and the
+      workstation never did, which is why app-shell.css was still painting the
+      pre-restyle mint, yellow and pink. */
+      --chrome-ok: #56A37E;
+      --chrome-warn: #C79A4C;
+      --chrome-err: #D1746B;
+      /* Type faces as tokens. Thirteen call sites name these and the workstation declared
+      none of them, so every one resolved to nothing and inherited instead. Values mirror
+      the package's tokens/typography.css. */
+      --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+      --ws-rail-bg: #292520;
+      --ws-rail-active: #3A2E26;
+      --ws-row-hover: #2E2A24;
+      --ws-row-selected: #3A2E26;
+      --ws-row-border: #4A443C;
+      --ws-inspector-bg: #201D19;
+      --ws-canvas-bg: #201D19;
+      --ws-accent: #D98A64;
+      --ws-accent-hover: #E6A585;
+      --ws-accent-pressed: #E39A77;
 
-      --accent-ghost: #1E2A33;
-      --green: #4D9E78;
-      --red: #C9656E;
-      --orange: #BD9038;
-      --purple: #8B83B8;
+      --accent-ghost: #2A211B;
+      --green: #5FA37C;
+      --red: #CE7068;
+      --orange: #C29A4A;
+      --purple: #9089B5;
+      /* The -dim variants the severity/state foregrounds below read. These are
+         derived exactly as the design-system package derives them, so the two
+         tracks cannot drift. The package declared them and this track did not,
+         so every --*-fg reading one resolved to nothing. */
+      --dim-mix: #FFFFFF;
+      --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
+      --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
+      --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+      --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
-      --border-hover: #5A6776;
-      --border-strong: #6E7C8A;
-      --border-divider: #2D353D;
+      --border-hover: var(--ws-border-hover);
+      --border-strong: var(--ws-border-strong);
+      --border-divider: #302B25;
 
       /* Charts — dark series/grid */
-      --chart-grid: #2D353D;
-      --chart-grid-major: #45505C;
-      --chart-up: #4D9E78;
-      --chart-dn: #C9656E;
-      --chart-ma20: #5790BE;
-      --chart-ma50: #BD9038;
-      --chart-bench: #7E8C9C;
-      --chart-crosshair: #5790BE;
+      --chart-grid: #302B25;
+      --chart-grid-major: #4A443C;
+      --chart-up: #5FA37C;
+      --chart-dn: #CE7068;
+      --chart-ma20: #9089B5;
+      --chart-ma50: #C29A4A;
+      --chart-bench: #8C857A;
+      --chart-crosshair: #9A9289;
+      /* Overlay channels the historical chart reads: comparison symbols, moving averages,
+         Bollinger envelope and RSI. They were referenced and never declared, so every
+         overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
+         /pink — no matter what this block said. The seven series are the palette; the
+         named channels alias them, so an overlay follows the mode with everything else. */
+      --chart-series-1: #5FA37C;
+      --chart-series-2: #D98A64;
+      --chart-series-3: #9089B5;
+      --chart-series-4: #C29A4A;
+      --chart-series-5: #CE7068;
+      --chart-series-6: #B8923F;
+      --chart-series-7: #8C857A;
+      --chart-compare-1: var(--chart-series-2);
+      --chart-compare-2: var(--chart-series-4);
+      --chart-compare-3: var(--chart-series-1);
+      --chart-sma-20: var(--chart-ma20);
+      --chart-sma-50: var(--chart-ma50);
+      --chart-bollinger: var(--chart-bench);
+      --chart-rsi: var(--chart-series-3);
     }
   }
 
@@ -444,87 +535,129 @@
     color-scheme: dark;
 
     /* Track A — HSL channels */
-    --background: 204 15% 6%;
-    --foreground: 210 24% 92%;
-    --card: 210 19% 13%;
-    --card-foreground: 210 24% 92%;
-    --popover: 210 19% 13%;
-    --popover-foreground: 210 24% 92%;
-    --primary: 207 44% 54%;
-    --primary-foreground: 210 24% 96%;
-    --secondary: 212 18% 17%;
-    --secondary-foreground: 210 24% 92%;
-    --muted: 212 18% 17%;
-    --muted-foreground: 212 11% 58%;
-    --accent: 207 44% 54%;
-    --accent-foreground: 210 24% 96%;
-    --border: 211 14% 32%;
-    --input: 211 14% 32%;
-    --ring: 207 44% 54%;
-    --paper: 207 44% 54%;
-    --live: 207 44% 54%;
-    --live-env: 355 48% 59%;
-    --warning: 40 54% 48%;
-    --success: 152 34% 46%;
-    --danger: 355 48% 59%;
-    --panel-strong: 210 19% 13%;
-    --panel-soft: 212 18% 17%;
-    --surface-raise: 210 17% 15%;
-    --sidebar: 212 18% 17%;
-    --sidebar-foreground: 214 15% 69%;
-    --sidebar-primary: 207 44% 54%;
-    --sidebar-primary-foreground: 210 24% 96%;
-    --sidebar-accent: 204 22% 24%;
-    --sidebar-accent-foreground: 210 24% 92%;
-    --sidebar-border: 211 14% 32%;
-    --sidebar-ring: 207 44% 54%;
-    --chart-1: 207 44% 54%;
-    --chart-2: 152 34% 46%;
-    --chart-3: 355 48% 59%;
-    --chart-4: 40 54% 48%;
-    --chart-5: 212 13% 55%;
+    --background: 36 9% 7%;
+    --foreground: 40 20% 92%;
+    --card: 34 10% 11%;
+    --card-foreground: 40 20% 92%;
+    --popover: 34 10% 11%;
+    --popover-foreground: 40 20% 92%;
+    --primary: 21 60% 62%;
+    --primary-foreground: 26 20% 9%;
+    --secondary: 34 10% 16%;
+    --secondary-foreground: 40 20% 92%;
+    --muted: 34 10% 16%;
+    --muted-foreground: 33 8% 57%;
+    --accent: 21 60% 62%;
+    --accent-foreground: 26 20% 9%;
+    --border: 36 11% 27%;
+    --input: 36 11% 27%;
+    --ring: 21 60% 62%;
+    --paper: 21 60% 62%;
+    --live: 21 60% 62%;
+    --live-env: 5 52% 61%;
+    --warning: 41 51% 52%;
+    --success: 146 28% 50%;
+    --danger: 5 52% 61%;
+    --panel-strong: 34 10% 11%;
+    --panel-soft: 34 10% 16%;
+    --surface-raise: 34 10% 13%;
+    --sidebar: 34 10% 16%;
+    --sidebar-foreground: 33 10% 68%;
+    --sidebar-primary: 21 60% 62%;
+    --sidebar-primary-foreground: 26 20% 9%;
+    --sidebar-accent: 24 18% 19%;
+    --sidebar-accent-foreground: 40 20% 92%;
+    --sidebar-border: 36 11% 27%;
+    --sidebar-ring: 21 60% 62%;
+    --chart-1: 21 60% 62%;
+    --chart-2: 146 28% 50%;
+    --chart-3: 5 52% 61%;
+    --chart-4: 41 51% 52%;
+    --chart-5: 36 8% 58%;
 
     /* Track B — --ws-* + semantic hexes */
-    --ws-page-bg: #0E1113;
-    --ws-surface: #1A2026;
-    --ws-surface-subtle: #232A32;
-    --ws-surface-raised: #20272E;
-    --ws-border: #45505C;
-    --ws-border-strong: #6E7C8A;
-    --ws-text: #E5EAEF;
-    --ws-text-muted: #8F9AA7;
-    --ws-text-secondary: #A5AFBC;
-    --ws-masthead-bg: #0B0E10;
-    --ws-masthead-fg: #E6EAF0;
-    --ws-rail-bg: #232A32;
-    --ws-rail-active: #2F3F4A;
-    --ws-row-hover: #283039;
-    --ws-row-selected: #2F3F4A;
-    --ws-row-border: #45505C;
-    --ws-inspector-bg: #1A2026;
-    --ws-canvas-bg: #1A2026;
-    --ws-accent: #5790BE;
-    --ws-accent-hover: #6BA6D4;
-    --ws-accent-pressed: #3C6688;
+    --ws-page-bg: #14120F;
+    --ws-surface: #201D19;
+    --ws-surface-subtle: #292520;
+    --ws-surface-raised: #252119;
+    --ws-border: #4A443C;
+    --ws-border-hover: #5F584E;
+    --ws-border-strong: #736B60;
+    --ws-text: #EFEBE4;
+    --ws-text-muted: #9A9289;
+    --ws-text-secondary: #B5AEA4;
+    --ws-masthead-bg: #100E0C;
+    --ws-masthead-fg: #EDE9E2;
+    /* Chrome status colours. The bars are near-black in every scope, so these are the
+    same everywhere; the package has declared them since the restyle and the
+    workstation never did, which is why app-shell.css was still painting the
+    pre-restyle mint, yellow and pink. */
+    --chrome-ok: #56A37E;
+    --chrome-warn: #C79A4C;
+    --chrome-err: #D1746B;
+    /* Type faces as tokens. Thirteen call sites name these and the workstation declared
+    none of them, so every one resolved to nothing and inherited instead. Values mirror
+    the package's tokens/typography.css. */
+    --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    --ws-rail-bg: #292520;
+    --ws-rail-active: #3A2E26;
+    --ws-row-hover: #2E2A24;
+    --ws-row-selected: #3A2E26;
+    --ws-row-border: #4A443C;
+    --ws-inspector-bg: #201D19;
+    --ws-canvas-bg: #201D19;
+    --ws-accent: #D98A64;
+    --ws-accent-hover: #E6A585;
+    --ws-accent-pressed: #E39A77;
 
-    --accent-ghost: #1E2A33;
-    --green: #4D9E78;
-    --red: #C9656E;
-    --orange: #BD9038;
-    --purple: #8B83B8;
+    --accent-ghost: #2A211B;
+    --green: #5FA37C;
+    --red: #CE7068;
+    --orange: #C29A4A;
+    --purple: #9089B5;
+    /* The -dim variants the severity/state foregrounds below read. These are
+       derived exactly as the design-system package derives them, so the two
+       tracks cannot drift. The package declared them and this track did not,
+       so every --*-fg reading one resolved to nothing. */
+    --dim-mix: #FFFFFF;
+    --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
+    --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
+    --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
-    --border-hover: #5A6776;
-    --border-strong: #6E7C8A;
-    --border-divider: #2D353D;
+    --border-hover: var(--ws-border-hover);
+    --border-strong: var(--ws-border-strong);
+    --border-divider: #302B25;
 
-    --chart-grid: #2D353D;
-    --chart-grid-major: #45505C;
-    --chart-up: #4D9E78;
-    --chart-dn: #C9656E;
-    --chart-ma20: #5790BE;
-    --chart-ma50: #BD9038;
-    --chart-bench: #7E8C9C;
-    --chart-crosshair: #5790BE;
+    --chart-grid: #302B25;
+    --chart-grid-major: #4A443C;
+    --chart-up: #5FA37C;
+    --chart-dn: #CE7068;
+    --chart-ma20: #9089B5;
+    --chart-ma50: #C29A4A;
+    --chart-bench: #8C857A;
+    --chart-crosshair: #9A9289;
+    /* Overlay channels the historical chart reads: comparison symbols, moving averages,
+       Bollinger envelope and RSI. They were referenced and never declared, so every
+       overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
+       /pink — no matter what this block said. The seven series are the palette; the
+       named channels alias them, so an overlay follows the mode with everything else. */
+    --chart-series-1: #5FA37C;
+    --chart-series-2: #D98A64;
+    --chart-series-3: #9089B5;
+    --chart-series-4: #C29A4A;
+    --chart-series-5: #CE7068;
+    --chart-series-6: #B8923F;
+    --chart-series-7: #8C857A;
+    --chart-compare-1: var(--chart-series-2);
+    --chart-compare-2: var(--chart-series-4);
+    --chart-compare-3: var(--chart-series-1);
+    --chart-sma-20: var(--chart-ma20);
+    --chart-sma-50: var(--chart-ma50);
+    --chart-bollinger: var(--chart-bench);
+    --chart-rsi: var(--chart-series-3);
   }
 
   /* ─── Forced-light opt-out ──────────────────────────────────────────────────
@@ -536,86 +669,128 @@
   :root[data-theme="light"] {
     color-scheme: light;
 
-    --background: 215 22% 89%;
-    --foreground: 215 15% 16%;
-    --card: 0 0% 100%;
-    --card-foreground: 215 15% 16%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 15% 16%;
-    --primary: 200 51% 37%;
+    --background: 40 19% 94%;
+    --foreground: 218 11% 15%;
+    --card: 40 27% 98%;
+    --card-foreground: 218 11% 15%;
+    --popover: 40 27% 98%;
+    --popover-foreground: 218 11% 15%;
+    --primary: 16 51% 44%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 213 29% 94%;
-    --secondary-foreground: 215 15% 16%;
-    --muted: 210 33% 96%;
-    --muted-foreground: 213 11% 39%;
-    --accent: 200 51% 37%;
+    --secondary: 40 20% 91%;
+    --secondary-foreground: 218 11% 15%;
+    --muted: 40 25% 95%;
+    --muted-foreground: 212 8% 40%;
+    --accent: 16 51% 44%;
     --accent-foreground: 0 0% 100%;
-    --border: 212 20% 83%;
-    --input: 212 20% 83%;
-    --ring: 200 51% 37%;
-    --paper: 200 51% 37%;
-    --live: 200 51% 37%;
-    --live-env: 349 49% 49%;
-    --warning: 33 82% 30%;
-    --success: 158 72% 31%;
-    --danger: 349 49% 49%;
-    --panel-strong: 0 0% 100%;
-    --panel-soft: 213 29% 94%;
-    --surface-raise: 210 33% 96%;
-    --sidebar: 213 29% 94%;
-    --sidebar-foreground: 212 14% 35%;
-    --sidebar-primary: 200 51% 37%;
+    --border: 50 10% 88%;
+    --input: 50 10% 88%;
+    --ring: 16 51% 44%;
+    --paper: 16 51% 44%;
+    --live: 16 51% 44%;
+    --live-env: 4 47% 45%;
+    --warning: 37 77% 31%;
+    --success: 146 36% 35%;
+    --danger: 4 47% 45%;
+    --panel-strong: 40 27% 98%;
+    --panel-soft: 40 20% 91%;
+    --surface-raise: 40 25% 95%;
+    --sidebar: 40 20% 91%;
+    --sidebar-foreground: 216 6% 33%;
+    --sidebar-primary: 16 51% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 208 48% 89%;
-    --sidebar-accent-foreground: 215 15% 16%;
-    --sidebar-border: 212 20% 83%;
-    --sidebar-ring: 200 51% 37%;
-    --chart-1: 200 51% 37%;
-    --chart-2: 158 72% 31%;
-    --chart-3: 349 49% 49%;
-    --chart-4: 33 82% 30%;
-    --chart-5: 206 16% 51%;
+    --sidebar-accent: 21 47% 90%;
+    --sidebar-accent-foreground: 218 11% 15%;
+    --sidebar-border: 50 10% 88%;
+    --sidebar-ring: 16 51% 44%;
+    --chart-1: 16 51% 44%;
+    --chart-2: 146 36% 35%;
+    --chart-3: 4 47% 45%;
+    --chart-4: 37 77% 31%;
+    --chart-5: 40 5% 47%;
 
-    --ws-page-bg: #DEE3EA;
-    --ws-surface: #ffffff;
-    --ws-surface-subtle: #EBEFF4;
-    --ws-surface-raised: #F3F6F9;
-    --ws-border: #CBD3DC;
-    --ws-border-strong: #99A5B2;
-    --ws-text: #22272E;
-    --ws-text-muted: #59636F;
-    --ws-text-secondary: #4D5967;
-    --ws-masthead-bg: #171A1F;
-    --ws-masthead-fg: #F4F6F8;
-    --ws-rail-bg: #EBEFF4;
-    --ws-rail-active: #D7E5F1;
-    --ws-row-hover: #EAEEF3;
-    --ws-row-selected: #D7E5F1;
-    --ws-row-border: #CBD3DC;
-    --ws-inspector-bg: #ffffff;
-    --ws-canvas-bg: #ffffff;
-    --ws-accent: #2F6F8F;
-    --ws-accent-hover: #3B82A6;
-    --ws-accent-pressed: #255B75;
+    --ws-page-bg: #F2F0EC;
+    --ws-surface: #FBFAF8;
+    --ws-surface-subtle: #EDEAE4;
+    --ws-surface-raised: #F6F4F0;
+    --ws-border: #E4E3DE;
+    --ws-border-hover: #C6C3BB;
+    --ws-border-strong: #AFABA1;
+    --ws-text: #22252A;
+    --ws-text-muted: #5E666F;
+    --ws-text-secondary: #4E5258;
+    --ws-masthead-bg: #1F1D1A;
+    --ws-masthead-fg: #F4F2ED;
+    /* Chrome status colours. The bars are near-black in every scope, so these are the
+    same everywhere; the package has declared them since the restyle and the
+    workstation never did, which is why app-shell.css was still painting the
+    pre-restyle mint, yellow and pink. */
+    --chrome-ok: #56A37E;
+    --chrome-warn: #C79A4C;
+    --chrome-err: #D1746B;
+    /* Type faces as tokens. Thirteen call sites name these and the workstation declared
+    none of them, so every one resolved to nothing and inherited instead. Values mirror
+    the package's tokens/typography.css. */
+    --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    --ws-rail-bg: #EDEAE4;
+    --ws-rail-active: #F2E3DB;
+    --ws-row-hover: #F0EEE9;
+    --ws-row-selected: #F2E3DB;
+    --ws-row-border: #E4E3DE;
+    --ws-inspector-bg: #FBFAF8;
+    --ws-canvas-bg: #FBFAF8;
+    --ws-accent: #A85436;
+    --ws-accent-hover: #AF6143;  /* 4.55:1 under the white label */
+    --ws-accent-pressed: #8C4429;
 
-    --accent-ghost: #E1EAF2;
-    --green: #16885F;
-    --red: #BA3F55;
-    --orange: #8A520E;
-    --purple: #6F5BA7;
+    --accent-ghost: #F4E7E0;
+    --green: #3A7A56;
+    --red: #A8443C;
+    --orange: #8A5C12;
+    --purple: #5D5486;
+    /* The -dim variants the severity/state foregrounds below read. These are
+       derived exactly as the design-system package derives them, so the two
+       tracks cannot drift. The package declared them and this track did not,
+       so every --*-fg reading one resolved to nothing. */
+    --dim-mix: #000;
+    --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
+    --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
+    --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
-    --border-hover: #ADB8C4;
-    --border-strong: #99A5B2;
-    --border-divider: #D2D9E2;
+    --border-hover: var(--ws-border-hover);
+    --border-strong: var(--ws-border-strong);
+    --border-divider: #DAD8D3;
 
-    --chart-grid: #D2D9E2;
-    --chart-grid-major: #CBD3DC;
-    --chart-up: #16885F;
-    --chart-dn: #BA3F55;
-    --chart-ma20: #2F6F8F;
-    --chart-ma50: #8A520E;
-    --chart-bench: #6E8597;
-    --chart-crosshair: #2F6F8F;
+    --chart-grid: #E4E3DE;
+    --chart-grid-major: #D3D0C9;
+    --chart-up: #3A7A56;
+    --chart-dn: #A8443C;
+    --chart-ma20: #5D5486;
+    --chart-ma50: #8A5C12;
+    --chart-bench: #7E7A72;
+    --chart-crosshair: #6B655C;
+    /* Overlay channels the historical chart reads: comparison symbols, moving averages,
+       Bollinger envelope and RSI. They were referenced and never declared, so every
+       overlay rendered its literal — the pre-restyle saturated violet/yellow/teal/blue
+       /pink — no matter what this block said. The seven series are the palette; the
+       named channels alias them, so an overlay follows the mode with everything else. */
+    --chart-series-1: #3A7A56;
+    --chart-series-2: #A85436;
+    --chart-series-3: #7C5CBF;
+    --chart-series-4: #B08A2E;
+    --chart-series-5: #A8443C;
+    --chart-series-6: #8A5C12;
+    --chart-series-7: #5E666F;
+    --chart-compare-1: var(--chart-series-2);
+    --chart-compare-2: var(--chart-series-4);
+    --chart-compare-3: var(--chart-series-1);
+    --chart-sma-20: var(--chart-ma20);
+    --chart-sma-50: var(--chart-ma50);
+    --chart-bollinger: var(--chart-bench);
+    --chart-rsi: var(--chart-series-3);
   }
 
   * {
@@ -635,7 +810,7 @@
   }
 
   ::selection {
-    background: rgba(47, 111, 143, 0.22);
+    background: rgba(168, 84, 54, 0.22);
   }
 
   /* Scrollbar refinement */
@@ -749,7 +924,7 @@
   .panel-state-title {
     min-width: 0;
     overflow: hidden;
-    color: #f6fbff;
+    color: #FDFAF5;
     font-size: 0.8125rem;
     font-weight: 750;
     line-height: 1.25;
@@ -783,7 +958,7 @@
 
   .panel-action-footer {
     justify-content: space-between;
-    border-top: 1px solid rgba(31, 52, 76, 0.72);
+    border-top: 1px solid rgba(74, 68, 60, 0.72);
     padding-top: 0.625rem;
   }
 
@@ -803,7 +978,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    border: 1px solid rgba(31, 52, 76, 0.78);
+    border: 1px solid rgba(74, 68, 60, 0.78);
     border-radius: var(--radius-sm);
     background: rgba(6, 18, 31, 0.92);
     box-shadow: var(--shadow-soft);
@@ -812,7 +987,7 @@
 
   .workspace-section-title {
     margin: 0;
-    color: #f6fbff;
+    color: #FDFAF5;
     font-size: 0.8125rem;
     font-weight: 780;
     line-height: 1.2;
@@ -832,10 +1007,10 @@
     align-items: center;
     gap: 0.375rem;
     min-height: 2rem;
-    border: 1px solid rgba(42, 178, 212, 0.3);
+    border: 1px solid rgba(217, 138, 100, 0.3);
     border-radius: var(--radius-xs);
-    background: rgba(42, 178, 212, 0.08);
-    color: #bcefff;
+    background: rgba(217, 138, 100, 0.08);
+    color: #E6A585;
     padding: 0.25rem 0.5rem;
     font-size: 0.6875rem;
     font-weight: 700;
@@ -867,8 +1042,8 @@
 
   .operator-mode-toggle [aria-pressed="true"],
   .operator-mode-toggle [aria-current="page"] {
-    background: rgba(42, 178, 212, 0.14);
-    color: #f6fbff;
+    background: rgba(217, 138, 100, 0.14);
+    color: #FDFAF5;
   }
 
   .development-fixture-notice {
@@ -919,7 +1094,7 @@
     min-height: 1.75rem;
     border: 1px solid rgba(214, 158, 56, 0.34);
     border-radius: var(--radius-sm);
-    background: rgba(8, 16, 26, 0.45);
+    background: rgba(20, 18, 15, 0.45);
     color: #f6e7ba;
     padding: 0 0.5rem;
     text-decoration: none;
@@ -1037,9 +1212,9 @@
   .workspace-header-card {
     min-width: 0;
     padding: 0.75rem 0.875rem;
-    border: 1px solid rgba(31, 52, 76, 0.95);
+    border: 1px solid rgba(74, 68, 60, 0.95);
     border-radius: var(--radius-lg);
-    background: rgba(8, 16, 26, 0.62);
+    background: rgba(20, 18, 15, 0.62);
     box-shadow: var(--shadow-panel);
     transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
   }
@@ -1052,7 +1227,7 @@
 
   .workspace-header-card-value {
     margin-top: 0.5rem;
-    color: #f6fbff;
+    color: #FDFAF5;
     font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.75rem;
     line-height: 1.5;
@@ -1078,9 +1253,9 @@
     --muted-foreground: 212 11% 70%;
     --border: 211 14% 32%;
     --secondary: 212 18% 17%;
-    border: 1px solid rgba(31, 52, 76, 0.95);
+    border: 1px solid rgba(74, 68, 60, 0.95);
     border-radius: var(--radius-xl);
-    background: #05101b;
+    background: #14120F;
     padding: 0.875rem;
     box-shadow: var(--shadow-panel);
   }
@@ -1097,7 +1272,7 @@
     gap: 0.25rem;
     height: 14rem;
     padding: 1rem 0.75rem;
-    border: 1px solid rgba(31, 52, 76, 0.95);
+    border: 1px solid rgba(74, 68, 60, 0.95);
     border-radius: var(--radius-lg);
     background: var(--surface-topbar);
   }

@@ -118,7 +118,7 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha80Brush}" />
+                <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentBlueHoverBrush}" />
                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ConsoleBorderFocusBrush}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">

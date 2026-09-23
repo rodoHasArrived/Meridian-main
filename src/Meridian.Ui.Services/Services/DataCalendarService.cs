@@ -1,3 +1,5 @@
+using Meridian.Contracts.Services;
+
 namespace Meridian.Ui.Services;
 
 /// <summary>
@@ -8,19 +10,17 @@ public sealed class DataCalendarService
 {
     private readonly DataCompletenessService _completenessService;
     private readonly StorageAnalyticsService _storageService;
+    private readonly IOperationalTradingCalendar _tradingCalendar;
 
-    public DataCalendarService()
+    public DataCalendarService() : this(new DataCompletenessService(ManifestService.Instance))
     {
-        var tradingCalendar = new TradingCalendarService();
-        var manifestService = ManifestService.Instance;
-        _completenessService = new DataCompletenessService(manifestService, tradingCalendar);
-        _storageService = StorageAnalyticsService.Instance;
     }
 
     public DataCalendarService(DataCompletenessService completenessService)
     {
         _completenessService = completenessService ?? throw new ArgumentNullException(nameof(completenessService));
         _storageService = StorageAnalyticsService.Instance;
+        _tradingCalendar = completenessService.TradingCalendar;
     }
 
     /// <summary>
@@ -367,122 +367,10 @@ public sealed class DataCalendarService
         return trend;
     }
 
-    private bool IsTradingDay(DateOnly date)
-    {
-        // Weekend check
-        if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
-            return false;
+    private bool IsTradingDay(DateOnly date) => _tradingCalendar.IsTradingDay(date);
 
-        // Holiday check
-        if (IsMarketHoliday(date))
-            return false;
+    private bool IsMarketHoliday(DateOnly date) => _tradingCalendar.GetHolidays(date.Year).Contains(date);
 
-        return true;
-    }
-
-    private bool IsMarketHoliday(DateOnly date)
-    {
-        // US market holidays (simplified - would need full calendar in production)
-        var holidays = GetUsMarketHolidays(date.Year);
-        return holidays.Contains(date);
-    }
-
-    private HashSet<DateOnly> GetUsMarketHolidays(int year)
-    {
-        var holidays = new HashSet<DateOnly>();
-
-        // New Year's Day
-        var newYear = new DateOnly(year, 1, 1);
-        if (newYear.DayOfWeek == DayOfWeek.Saturday)
-            holidays.Add(new DateOnly(year - 1, 12, 31));
-        else if (newYear.DayOfWeek == DayOfWeek.Sunday)
-            holidays.Add(new DateOnly(year, 1, 2));
-        else
-            holidays.Add(newYear);
-
-        // MLK Day (3rd Monday of January)
-        holidays.Add(GetNthDayOfMonth(year, 1, DayOfWeek.Monday, 3));
-
-        // Presidents Day (3rd Monday of February)
-        holidays.Add(GetNthDayOfMonth(year, 2, DayOfWeek.Monday, 3));
-
-        // Good Friday (varies)
-        holidays.Add(GetGoodFriday(year));
-
-        // Memorial Day (last Monday of May)
-        holidays.Add(GetLastDayOfMonth(year, 5, DayOfWeek.Monday));
-
-        // Juneteenth (June 19)
-        var juneteenth = new DateOnly(year, 6, 19);
-        if (juneteenth.DayOfWeek == DayOfWeek.Saturday)
-            holidays.Add(juneteenth.AddDays(-1));
-        else if (juneteenth.DayOfWeek == DayOfWeek.Sunday)
-            holidays.Add(juneteenth.AddDays(1));
-        else
-            holidays.Add(juneteenth);
-
-        // Independence Day (July 4)
-        var july4 = new DateOnly(year, 7, 4);
-        if (july4.DayOfWeek == DayOfWeek.Saturday)
-            holidays.Add(july4.AddDays(-1));
-        else if (july4.DayOfWeek == DayOfWeek.Sunday)
-            holidays.Add(july4.AddDays(1));
-        else
-            holidays.Add(july4);
-
-        // Labor Day (1st Monday of September)
-        holidays.Add(GetNthDayOfMonth(year, 9, DayOfWeek.Monday, 1));
-
-        // Thanksgiving (4th Thursday of November)
-        holidays.Add(GetNthDayOfMonth(year, 11, DayOfWeek.Thursday, 4));
-
-        // Christmas (December 25)
-        var christmas = new DateOnly(year, 12, 25);
-        if (christmas.DayOfWeek == DayOfWeek.Saturday)
-            holidays.Add(christmas.AddDays(-1));
-        else if (christmas.DayOfWeek == DayOfWeek.Sunday)
-            holidays.Add(christmas.AddDays(1));
-        else
-            holidays.Add(christmas);
-
-        return holidays;
-    }
-
-    private DateOnly GetNthDayOfMonth(int year, int month, DayOfWeek dayOfWeek, int n)
-    {
-        var first = new DateOnly(year, month, 1);
-        var daysUntil = ((int)dayOfWeek - (int)first.DayOfWeek + 7) % 7;
-        return first.AddDays(daysUntil + (n - 1) * 7);
-    }
-
-    private DateOnly GetLastDayOfMonth(int year, int month, DayOfWeek dayOfWeek)
-    {
-        var last = new DateOnly(year, month, DateTime.DaysInMonth(year, month));
-        var daysSince = ((int)last.DayOfWeek - (int)dayOfWeek + 7) % 7;
-        return last.AddDays(-daysSince);
-    }
-
-    private DateOnly GetGoodFriday(int year)
-    {
-        // Easter calculation (Anonymous Gregorian algorithm)
-        int a = year % 19;
-        int b = year / 100;
-        int c = year % 100;
-        int d = b / 4;
-        int e = b % 4;
-        int f = (b + 8) / 25;
-        int g = (b - f + 1) / 3;
-        int h = (19 * a + b - d - g + 15) % 30;
-        int i = c / 4;
-        int k = c % 4;
-        int l = (32 + 2 * e + 2 * i - h - k) % 7;
-        int m = (a + 11 * h + 22 * l) / 451;
-        int month = (h + l - 7 * m + 114) / 31;
-        int day = ((h + l - 7 * m + 114) % 31) + 1;
-
-        var easter = new DateOnly(year, month, day);
-        return easter.AddDays(-2); // Good Friday is 2 days before Easter
-    }
 }
 
 /// <summary>

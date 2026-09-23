@@ -8,7 +8,7 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class AtomicTaxLotJournalStoreTests
+public sealed partial class AtomicTaxLotJournalStoreTests
 {
     private static readonly Guid TestSecurityId = Guid.Parse("8f9c129c-acde-4b5b-98b0-92085bc38047");
     private static readonly Guid TestBookPositionId = Guid.Parse("90f82b97-c8b7-4d06-a3ad-e6142b35c867");
@@ -366,6 +366,7 @@ public sealed class AtomicTaxLotJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task FaceTerms_SurviveARealRoundTripAndTheAsOfScopedRead()
     {
         // The eleven tax_lots column lists in this store feed one ORDINAL-positional reader, so a
@@ -446,6 +447,7 @@ public sealed class AtomicTaxLotJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task FaceTerms_AreRejectedByTheDatabaseWhenIncomplete()
     {
         // ck_tax_lots_face_terms_complete is the durable half of the all-three-or-none rule; the
@@ -597,6 +599,7 @@ public sealed class AtomicTaxLotJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AppendAssetPostingAsync_AcquisitionReplayDisposalAndRollbackShareOneTransaction()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -627,6 +630,17 @@ public sealed class AtomicTaxLotJournalStoreTests
                 ClosedAt: null,
                 Version: 0),
             expectedVersion: 0);
+        // Authoritative disposal resolves relief from the effective account policy, and the
+        // disposals below request FIFO under revision tax-policy-v1.
+        await database.JournalStore.SaveTaxLotPolicyAsync(new LedgerAccountTaxLotPolicyRecord(
+            Guid.NewGuid(),
+            ledgerBookId,
+            new LedgerAccount("Investment lots", LedgerAccountType.Asset),
+            LedgerTaxLotReliefMethod.Fifo,
+            "tax-policy-v1",
+            new DateOnly(2026, 5, 1),
+            openedAt,
+            openedAt));
 
         var acquisition = BuildAcquisitionCommand(
             ledgerBookId,
@@ -691,6 +705,7 @@ public sealed class AtomicTaxLotJournalStoreTests
             .WithMessage("*one exact asset-account debit*");
 
         var acquired = await database.JournalStore.AppendAssetPostingAsync(acquisition);
+        (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(2);
 
         acquired.IsExactReplay.Should().BeFalse();
         acquired.Journal.Entry.JournalEntryId.Should().Be(acquisition.Journal.Entry.JournalEntryId);
@@ -714,6 +729,7 @@ public sealed class AtomicTaxLotJournalStoreTests
         acquisitionReplay.IsExactReplay.Should().BeTrue();
         acquisitionReplay.Mutations[0].MutationRecordId.Should().Be(acquired.Mutations[0].MutationRecordId);
         acquisitionReplay.MutatedLots[0].Version.Should().Be(1);
+        (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(3);
 
         var changedReplay = (acquisition with
         {
@@ -831,6 +847,7 @@ public sealed class AtomicTaxLotJournalStoreTests
         disposalReplay.Mutations[0].MutationRecordId.Should().Be(disposed.Mutations[0].MutationRecordId);
         disposalReplay.MutatedLots[0].Version.Should().Be(2);
         disposalReplay.MutatedLots[0].OpenQuantity.Should().Be(60m);
+        (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(4);
 
         var staleSourceEventId = Guid.NewGuid();
         var staleJournal = BuildJournalWrite(
@@ -861,7 +878,9 @@ public sealed class AtomicTaxLotJournalStoreTests
                     disposalEvidence.EvidenceId,
                     ExpectedUnitCost: 100m,
                     ExpectedCostBasis: 1_000m)
-            ]);
+            ],
+            reliefMethod: "Fifo",
+            policyRevision: "tax-policy-v1");
 
         var staleAct = () => database.JournalStore.AppendAssetPostingAsync(stale);
         await staleAct.Should().ThrowAsync<LedgerValidationException>()
@@ -895,7 +914,9 @@ public sealed class AtomicTaxLotJournalStoreTests
                     disposalEvidence.EvidenceId,
                     ExpectedUnitCost: 100m,
                     ExpectedCostBasis: 500m)
-            ]);
+            ],
+            reliefMethod: "Fifo",
+            policyRevision: "tax-policy-v1");
         var collisionAct = () => database.JournalStore.AppendAssetPostingAsync(idempotencyCollision);
         await collisionAct.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*identity collision*");
@@ -919,6 +940,8 @@ public sealed class AtomicTaxLotJournalStoreTests
         openLots[0].Version.Should().Be(2);
         openLots[0].OpenQuantity.Should().Be(60m);
         openLots[0].LastMutationBatchId.Should().Be(disposal.MutationBatchId);
+        (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(4,
+            "failed lot CAS operations must roll back their journal and audit together");
     }
 
     private static AtomicTaxLotJournalCommand BuildAcquisitionCommand(
@@ -1024,11 +1047,26 @@ public sealed class AtomicTaxLotJournalStoreTests
                 new JournalEntryMetadata(
                     SecurityId: scopedSecurityId,
                     EffectiveDate: new DateOnly(2026, 5, 12),
-                    IdempotencyKey: idempotencyKey)),
+                    IdempotencyKey: idempotencyKey,
+                    Tags: SecurityMasterLineageTags(scopedSecurityId))),
             AggregateId: ledgerBookId,
             PeriodId: periodId,
             SourceEventId: sourceEventId,
             LedgerBookId: ledgerBookId);
+    }
+
+    // A journal carrying a SecurityId is instrument-bearing, so the period posting guard requires
+    // approved, active Security Master provenance and a ledger mapping for that security before
+    // the atomic lot economics are ever evaluated.
+    private static Dictionary<string, string> SecurityMasterLineageTags(Guid securityId)
+    {
+        var provenance = $"security-master:{securityId:N};snapshot:test-source-hash;approved:true";
+        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["securityMasterProvenance"] = provenance,
+            ["securityMasterLineage"] =
+                $"LOT:{securityId:N}:ledger-map:investment-lots:sm-approval:lot-controller:security-status:active:{provenance}"
+        };
     }
 
     private static RetainedEvidenceIdentityDto BuildEvidence(string evidenceId, char hashCharacter)

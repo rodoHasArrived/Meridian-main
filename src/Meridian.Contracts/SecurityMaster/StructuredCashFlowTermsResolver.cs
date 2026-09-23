@@ -67,11 +67,11 @@ public static class StructuredCashFlowTermsResolver
         var sources = EnumerateTermSources(security).ToArray();
 
         return new StructuredCashFlowTerms(
-            MaturityDate: SecurityTermReader.ReadDate(sources, MaturityAliases),
-            IssueDate: SecurityTermReader.ReadDate(sources, IssueAliases),
+            MaturityDate: SecurityTermReader.ReadDate(sources, string.Equals(SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AssetClass, "Repo", StringComparison.Ordinal) ? ["endDate", .. MaturityAliases] : MaturityAliases),
+            IssueDate: SecurityTermReader.ReadDate(sources, string.Equals(SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AssetClass, "Repo", StringComparison.Ordinal) ? ["startDate", .. IssueAliases] : IssueAliases),
             PrincipalFace: SecurityTermReader.ReadDecimal(sources, PrincipalFaceAliases),
             CurrentFactor: SecurityTermReader.ReadDecimal(sources, CurrentFactorAliases),
-            CouponRate: SecurityTermReader.ReadDecimal(sources, CouponRateAliases),
+            CouponRate: ResolveCouponRate(security.AssetClass, sources),
             PaymentFrequency: SecurityTermReader.ReadString(sources, PaymentFrequencyAliases),
             DayCountConvention: SecurityTermReader.ReadString(sources, DayCountAliases),
             FactorSchedule: ReadFactorSchedule(sources),
@@ -82,6 +82,20 @@ public static class StructuredCashFlowTermsResolver
             InflationBaseIndexValue: SecurityTermReader.ReadDecimal(sources, InflationBaseIndexValueAliases),
             InflationIndexRatio: SecurityTermReader.ReadDecimal(sources, InflationIndexRatioAliases));
     }
+
+    // Discount yield is not a contractual coupon. Bills and discount paper pay principal only;
+    // discount accretion belongs to the carrying-value calculation, not coupon accrual.
+    private static decimal? ResolveCouponRate(string assetClass, JsonElement[] sources)
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).AssetClass switch
+        {
+            "TreasuryBill" or "CommercialPaper" => 0m,
+            "Deposit" => SecurityTermReader.ReadDecimal(sources, ["interestRate", .. CouponRateAliases]),
+            "Repo" => SecurityTermReader.ReadDecimal(sources, ["repoRate", .. CouponRateAliases]),
+            "DirectLoan" => SecurityTermReader.ReadDecimal(sources, ["currentCouponRate", .. CouponRateAliases]),
+            // Only a numeric couponOrIndex is a fixed rate. An index name is unresolved economics.
+            "StructuredCredit" => SecurityTermReader.ReadDecimal(sources, [.. CouponRateAliases, "couponOrIndex"]),
+            _ => SecurityTermReader.ReadDecimal(sources, CouponRateAliases)
+        };
 
     private static IReadOnlyList<StructuredStepCouponEntry>? ReadStepCouponSchedule(
         IReadOnlyList<JsonElement> sources)

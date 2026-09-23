@@ -36,11 +36,15 @@ jobs:
           POSTGRES_DB: meridian
         ports:
           - 5432:5432
+        # Postgres is accepting connections ~3s after start, but a 10s probe interval
+        # kept reporting it unready until the 4th poll, idling the runner for ~8s before
+        # any step ran. Poll every 2s and keep the total tolerance window at 100s
+        # (2s x 50) so a genuinely slow start still gets the same grace it had before.
         options: >-
           --health-cmd "pg_isready -U postgres -d meridian"
-          --health-interval 10s
+          --health-interval 2s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 50
     env:
       MERIDIAN_DISABLE_DOCKER_TESTS: "false"
       MERIDIAN_LEDGER_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
@@ -69,40 +73,17 @@ jobs:
         with:
           python-version: "3.12"
 
-      # The runner image ships PostgreSQL 16 client tools; pg_dump refuses to dump the
-      # newer postgres:17 service, which would void the schema evidence capture.
-      - name: Install PostgreSQL 17 client tools to match the service major
-        # postgresql.org and apt.postgresql.org are third-party hosts, and none of these calls
-        # was bounded. When apt.postgresql.org stalled during run #28 the step hung for 35
-        # minutes, the job was cancelled, and the certification reported no cause at all. Bound
-        # every network call and retry the whole install: a transient outage now costs seconds,
-        # and a sustained one fails inside the step timeout naming the host that is unreachable.
-        timeout-minutes: 12
-        run: |
-          set -euo pipefail
-
-          install_client_tools() {
-            curl -fsSL --max-time 60 --retry 3 --retry-delay 5 --retry-all-errors \
-              https://www.postgresql.org/media/keys/ACCC4CF8.asc |
-              sudo gpg --dearmor --yes -o /usr/share/keyrings/pgdg.gpg
-            echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" |
-              sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
-            sudo apt-get update -o Acquire::http::Timeout=30 -o Acquire::Retries=3
-            sudo apt-get install --yes --no-install-recommends \
-              -o Acquire::http::Timeout=30 -o Acquire::Retries=3 postgresql-client-17
-          }
-
-          for attempt in 1 2 3; do
-            if install_client_tools; then
-              echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
-              exit 0
-            fi
-            echo "postgresql-client-17 install attempt ${attempt} failed; retrying" >&2
-            sleep $((attempt * 15))
-          done
-
-          echo "Could not install postgresql-client-17 from apt.postgresql.org after 3 attempts." >&2
-          exit 1
+      # The restore below pulls the full Meridian.Tests dependency graph from nuget.org on
+      # every run. Reuse the package cache across runs so a slow or rate-limited feed cannot
+      # add minutes to the certification's critical path.
+      - name: Cache NuGet packages
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-production-certification-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.Config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-production-certification-
+            ${{ runner.os }}-nuget-
 
       - name: Restore deterministic integration projects
         run: |
@@ -136,19 +117,43 @@ jobs:
           --require-trx-prefix meridian-integrations
           --require-trx-prefix direct-lending-integrations
 
+      # The runner image ships PostgreSQL 16 client tools and pg_dump refuses to dump the
+      # newer postgres:17 service, so this job used to apt-install postgresql-client-17 from
+      # apt.postgresql.org before anything else could run. That put a third-party host on the
+      # critical path for ~17s per run, and when it stalled during run #28 the job burned its
+      # whole budget and reported no cause. The service container already contains client
+      # tools at exactly the server's major, so run them in there instead: no install, no
+      # third-party fetch, and the major can never drift from the service image again.
       - name: Capture migrated database schema and ledger evidence
         if: always()
         env:
-          PGPASSWORD: meridian-certification
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
         run: |
-          mkdir -p artifacts/test-results/production-certification
-          pg_dump --host localhost --username postgres --dbname meridian --schema-only --no-owner --no-privileges > artifacts/test-results/production-certification/database-schema.sql
-          psql --host localhost --username postgres --dbname meridian --csv \
+          set -euo pipefail
+
+          evidence_dir=artifacts/test-results/production-certification
+          mkdir -p "$evidence_dir"
+
+          if [ -z "${POSTGRES_CONTAINER_ID:-}" ]; then
+            echo "The postgres service container is gone; schema evidence cannot be captured." >&2
+            exit 1
+          fi
+
+          # Connect over the container's local socket as the postgres OS user, with the
+          # password supplied as well, so capture works whichever way the image's pg_hba.conf
+          # authenticates local connections (trust today, peer or scram if that ever changes).
+          pg_client() {
+            docker exec -e PGPASSWORD=meridian-certification -u postgres "$POSTGRES_CONTAINER_ID" "$@"
+          }
+
+          pg_client pg_dump --username postgres --dbname meridian \
+            --schema-only --no-owner --no-privileges > "$evidence_dir/database-schema.sql"
+          pg_client psql --username postgres --dbname meridian --csv \
             --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_schema, table_name" \
-            --output artifacts/test-results/production-certification/database-table-inventory.csv
-          psql --host localhost --username postgres --dbname meridian --csv \
+            > "$evidence_dir/database-table-inventory.csv"
+          pg_client psql --username postgres --dbname meridian --csv \
             --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND (table_name LIKE '%migration%' OR table_name LIKE '%schema%') ORDER BY table_schema, table_name" \
-            --output artifacts/test-results/production-certification/migration-ledger-inventory.csv
+            > "$evidence_dir/migration-ledger-inventory.csv"
 
       - name: Upload deterministic integration evidence
         if: always()
@@ -163,6 +168,9 @@ jobs:
     name: NuGet and npm dependency evidence
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    env:
+      # Reuse cached tarballs; npm still fetches missing packages and enforces the lockfile.
+      npm_config_prefer_offline: "true"
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
@@ -186,6 +194,15 @@ jobs:
         uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.12"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-production-certification-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.Config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-production-certification-
+            ${{ runner.os }}-nuget-
 
       - name: Restore packages
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
@@ -261,11 +278,13 @@ jobs:
           POSTGRES_DB: meridian
         ports:
           - 5432:5432
+        # Poll every 2s rather than every 10s so the drill starts as soon as Postgres accepts
+        # connections. Total tolerance stays at 100s (2s x 50), unchanged from before.
         options: >-
           --health-cmd "pg_isready -U postgres -d meridian"
-          --health-interval 10s
+          --health-interval 2s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 50
     env:
       MDC_RECOVERY_ENCRYPTION_KEY_BASE64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
       PGPASSWORD: meridian-recovery
@@ -363,6 +382,8 @@ jobs:
         uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: build/scripts/docs/requirements.txt
 
       # The core docs profile includes validate-agent-definitions.py, whose frontmatter parser
       # requires PyYAML. Keep this lane aligned with the canonical docs validation jobs.

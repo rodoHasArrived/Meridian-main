@@ -1493,22 +1493,22 @@ public sealed partial class AccountingCloseServicesTests
                 closeSequence.Add("ledger-finalize");
             });
         var service = new AccountingCloseManagementService(workflowService, postingWorkbench, CreateApprovedCloseReadinessGuard());
-        var reconciliationEvidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
+        var reconciliationEvidence = $"evidence:close-task:close-gate-reconciliation:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
         await service.SignOffCloseTaskAsync(
             new SignOffCloseTaskRequestDto(
                 workflowId,
-                "reconciliation-review",
+                "close-gate-reconciliation",
                 "Controller",
                 ManualJournalEntryStatusDto.Approved,
                 "controller-reviewer",
                 "Retained reconciliation close sign-off.",
                 [reconciliationEvidence]),
             "controller-reviewer");
-        var reportEvidence = $"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
+        var reportEvidence = $"evidence:close-task:close-gate-approval:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
         await service.SignOffCloseTaskAsync(
             new SignOffCloseTaskRequestDto(
                 workflowId,
-                "report-certification",
+                "close-gate-approval",
                 "Controller",
                 ManualJournalEntryStatusDto.Approved,
                 "controller-reviewer",
