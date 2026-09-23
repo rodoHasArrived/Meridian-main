@@ -1082,11 +1082,6 @@ Meridian-main
 │   │   └── __init__.py
 │   ├── rules
 │   │   └── doc-rules.yaml
-│   ├── schema-control
-│   │   └── candidate
-│   │       └── reports
-│   │           ├── migration-report.json
-│   │           └── summary.md
 │   └── scripts
 │       ├── ai
 │       │   ├── tests
