@@ -511,9 +511,23 @@ def run_tests(
         try:
             shard_dir.mkdir(parents=True, exist_ok=True)
             # Fixture data is isolated outside uploaded results and removed after exit.
-            with tempfile.TemporaryDirectory(prefix=f"meridian-ci-{project.name}-") as temporary_dir:
+            temp_root = str(Path(tempfile.gettempdir()).resolve())
+            if os.name == "nt" and not temp_root.startswith("\\\\?\\"):
+                temp_root = (
+                    "\\\\?\\UNC\\" + temp_root[2:]
+                    if temp_root.startswith("\\\\") else "\\\\?\\" + temp_root
+                )
+            with tempfile.TemporaryDirectory(prefix=f"meridian-ci-{project.name}-", dir=temp_root) as temporary_dir:
                 child_env = os.environ.copy()
-                child_env.update({name: str(Path(temporary_dir).resolve()) for name in ("TMPDIR", "TMP", "TEMP")})
+                child_temp = str(Path(temporary_dir).resolve())
+                if os.name == "nt":
+                    # Keep Python's extended path for long-name cleanup, while application
+                    # URI, drive and relative-path APIs receive a normal Windows path.
+                    if child_temp.startswith("\\\\?\\UNC\\"):
+                        child_temp = "\\\\" + child_temp[8:]
+                    elif child_temp.startswith("\\\\?\\"):
+                        child_temp = child_temp[4:]
+                child_env.update({name: child_temp for name in ("TMPDIR", "TMP", "TEMP")})
                 # Send output straight to disk: a long-running/noisy shard must not consume
                 # unbounded memory or interleave GitHub workflow commands with another shard.
                 with log_path.open("w", encoding="utf-8") as log:

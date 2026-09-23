@@ -2,8 +2,8 @@
 
 **Status:** active; production certification blocked  
 **Owner:** core-team  
-**Reviewed:** 2026-08-19
-**Baseline:** current `main` through `6f687653d` plus repair candidate `b3bd557876523b81a2791f4bfd814647035f389a`; `PRD-018` through `PRD-020` verified and corrected 2026-08-09 against `e7e9528b8`; production readiness remains blocked pending frozen-release evidence, operator review, and required GitHub Actions activation
+**Reviewed:** 2026-09-23 (current release-gate snapshot; historical row evidence retains its recorded dates)
+**Baseline:** source and registry reviewed at `main` commit `13aa7576575e7816c14ec3b9b5b002a3f4494c97`; production readiness remains blocked pending passing certification on the final release commit, operator review, signed release evidence, and required GitHub Actions activation
 **Previous production audit:** `f0ac384a2` on 2026-07-11
 **Sources:** [Meridian Design Document (Version 1.0)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
 
@@ -30,6 +30,31 @@ Priority meanings:
 - `P2`: cleanup and maintainability work that follows the critical migrations; it must not preserve a second policy implementation.
 
 ### Current Release-Gate Snapshot
+
+The current review uses `13aa7576575e7816c14ec3b9b5b002a3f4494c97` on 2026-09-23.
+The `65dc0107` evidence set below is historical; it does not certify this commit or a later
+release. Ordinary CI excludes the PostgreSQL integration lane and cannot replace it.
+
+| Current concern | Source-backed disposition | Evidence and remaining boundary |
+| --- | --- | --- |
+| Security Master conflict persistence | The integration fixture now locates the unordered claimant pair instead of assuming which random security ID anchors the conflict. It still checks the persisted winner, resolver, reason, and timestamp through a fresh service instance. | Passed in the baseline certification run below; the added deterministic claimant-order regression requires the same-commit hosted check. |
+| Atomic tax-lot guard ordering | The acquisition fixture now supplies the Security Master lineage required by the production posting guard before testing malformed asset-account economics. Provenance remains an earlier fail-closed guard. | Acquisition, replay, disposal, rollback, and AverageCost database cases passed without skips on the baseline below; the added explicit guard-order regression requires the same-commit hosted check. |
+| Trading-calendar convergence | Merged PR #2987 routes completeness and calendar cells through the shared operational calendar. Regression cases cover Juneteenth, observed holidays, an injected closure, and the 2026/2027 boundary. The 2026-only seed is retired. | Retain passing calendar/completeness results with the tested source; preserve population and operator acceptance boundaries. |
+| Corporate-action posting | `W9-CORPACT-011` is now `ready_for_acceptance`. Current source contains #2947's retained 500-share/USD 120 dividend round trip with independent approval, one balanced journal, reload, replay, and unchanged holdings. It passed in the baseline certification and the focused local check. | Operator acceptance under `DEC-W9-ACCEPTANCE-002`; source and CI do not supply that decision. The old branch's incidental generated assets are not a reason to replace current-main assets. |
+| W10 completion order | Continue `W10-LOT-002`, then `W10-MARK-001`, then `W10-SEAM-001`. Acquisition convergence and AverageCost relief are implemented; amortization, successor mutations, advance refunding, and shadow-operation acceptance still prevent lot closure. | Complete and validate the remaining lot economics before progressing the next W10 lane. MARK and SEAM still require their recorded live acceptance evidence. |
+
+Production Certification [run 35885778558](https://github.com/rodoHasArrived/Meridian-main/actions/runs/35885778558)
+passed all four jobs on this exact baseline on 2026-09-23. The database job executed **1,016 core
+integration tests and 12 Direct Lending integration tests, with zero failures and zero skips**;
+documentation, encrypted backup/clean restore, and dependency evidence also passed. The two
+historical certification failures are therefore closed on `13aa7576`. This does not certify a
+later commit, complete the remaining W10 lot economics, provide operator acceptance, or replace
+signed installer and supported-release evidence.
+
+### Historical Implementation and Release Evidence
+
+The following counts and runs describe earlier closure candidates. They remain an audit trail,
+not a renewed assessment of every implementation row on the current baseline.
 
 | Gate | Closure-candidate state | Interpretation |
 | --- | --- | --- |
@@ -95,7 +120,7 @@ and `MDC_SIGNING_CERT_PASSWORD` secrets in the protected `desktop-release-signin
 (`PRD-014`), core-team sign-off on ADR-019/ADR-020 (`PRD-000`), operator review of the recovery
 drill receipt (`PRD-015`), and required-check activation (`PRD-016`).
 
-**A frozen commit with all three evidence lanes green now exists: `65dc0107`.** This was the true
+**Historical frozen evidence candidate: `65dc0107`.** This was the true
 sequencing blocker across all six evidence-gated rows — each lane's evidence had sat on a different
 commit, while the release gate requires every `P0` row to be complete on one:
 
@@ -106,8 +131,8 @@ commit, while the release gate requires every `P0` row to be complete on one:
 | `Desktop Installer Release` | [#17 / 32287384452](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32287384452) | All seven jobs green; the tag-only publish job correctly skipped |
 | `Meridian CI` / `quality-gate` | [#2872 / 32287375296](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32287375296) | Green |
 
-`65dc0107` contains `main` at `7785c566`, so it is also mergeable, and it is the first commit on
-this branch to carry both the three release-evidence lanes and the authoritative merge gate green
+`65dc0107` contains the historical `main` at `7785c566`, and it was the first commit on
+that branch to carry both the three release-evidence lanes and the authoritative merge gate green
 together. An earlier set was produced on `9ae0a3a3`, which had the three lanes but never received a
 `quality-gate` run at all: a merge conflict was suppressing `pull_request` events at the time.
 
