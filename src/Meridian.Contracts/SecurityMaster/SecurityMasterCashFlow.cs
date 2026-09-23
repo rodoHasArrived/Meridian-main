@@ -162,7 +162,9 @@ public sealed record StructuredCashFlowProjectionDto(
     DateTimeOffset? SourceLastUpdatedUtc = null,
     IReadOnlyList<StructuredFactorScheduleEntry>? FactorSchedule = null,
     StructuredCashFlowTerms? TermsUsed = null,
-    IReadOnlyList<StructuredCashFlowLegSchedule>? LegSchedules = null);
+    IReadOnlyList<StructuredCashFlowLegSchedule>? LegSchedules = null,
+    string? BlockedReason = null,
+    bool IsNormalizedPer100 = false);
 
 /// <summary>
 /// One balanced ledger journal line projected from a structured cash flow accrual.

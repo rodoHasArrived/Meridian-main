@@ -79,6 +79,13 @@ public sealed record AccountingPostingCommandDto(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     Guid? LedgerBookId = null)
 {
+    /// <summary>
+    /// The actual posting actor, supplied by the validated command boundary. Null retains an
+    /// explicitly unattributed legacy command; it never means that an approver posted it.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Actor { get; init; }
+
     public IReadOnlyList<AccountingPostingEvidenceReferenceDto> Evidence { get; init; } =
         Evidence ?? [];
 

@@ -113,8 +113,16 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         if (assignment.SourceKind is StructuredCashFlowSourceKind.CalculatedBullet
             or StructuredCashFlowSourceKind.CalculatedSinker)
         {
-            return BuildCalculatedProjection(
+            var projection = BuildCalculatedProjection(
                 security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc);
+            var terms = projection.TermsUsed!;
+            var usesNormalizedBasis = terms.PrincipalFace is not > 0m
+                && (!terms.HasLegs || terms.Legs!.Any(leg => leg.Notional is not > 0m));
+            return usesNormalizedBasis ? projection with
+            {
+                IsNormalizedPer100 = true,
+                BlockedReason = projection.BlockedReason ?? "Schedule is normalized per 100 units; retained principal or leg notional is required before ledger posting."
+            } : projection;
         }
 
         var isin = security.Identifiers
@@ -213,12 +221,15 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
         var factorSchedule = terms.FactorSchedule;
 
-        StructuredCashFlowProjectionDto Empty() => new(
-            security.SecurityId, sourceKind, scenario, asOf, [], staleness, sourceLastUpdatedUtc, factorSchedule, terms);
+        StructuredCashFlowProjectionDto Empty(string? reason = null) => new(
+            security.SecurityId, sourceKind, scenario, asOf, [], staleness, sourceLastUpdatedUtc, factorSchedule, terms, BlockedReason: reason);
+
+        if (!SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).SupportsCashflowScheduleByDefault)
+            return Empty($"Calculated cash flows are unsupported for {security.AssetClass}; provide an authoritative schedule.");
 
         if (terms.MaturityDate is not DateOnly maturity)
         {
-            return Empty();
+            return Empty("Maturity is missing; no calculated cash flows may post.");
         }
 
         var issueDate = terms.IssueDate ?? DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime.Date);
@@ -236,6 +247,12 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
                 security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
                 terms, factorSchedule, issueDate, maturity, asOf, asOfDate);
         }
+
+        if (terms.HasStepCouponSchedule || terms.InflationIndex is not null)
+            return Empty("Step-coupon or inflation-linked terms require a supported provider schedule; the fixed-rate calculation cannot represent them.");
+
+        if (terms.CouponRate is null)
+            return Empty("Contractual coupon rate is missing or unresolved; confirm the rate, including an explicit zero, before projection.");
 
         var principalBasis = terms.PrincipalFace is > 0m ? terms.PrincipalFace.Value : 100m;
 
@@ -311,7 +328,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             // Undated scalar factor: assumed to already reflect every completed payment — reducing
             // again would double-count.
         }
-        var annualRate = NormalizeAnnualRate(terms.CouponRate ?? 0m) + ScenarioRateShift(scenario);
+        var annualRate = NormalizeAnnualRate(terms.CouponRate.Value) + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
             annualRate = 0m;
@@ -487,6 +504,8 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         DateOnly asOfDate)
     {
         var legs = terms.Legs!;
+        var missingLegRate = legs.Any(leg => leg.RateKind == CashFlowLegRateKind.Fixed
+            ? leg.FixedRate is null : leg.CurrentIndexRate is null);
         var legSchedules = new List<StructuredCashFlowLegSchedule>(legs.Count);
         foreach (var leg in legs)
         {
@@ -499,13 +518,14 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         // leg projects as Receive). A multi-leg structure with an unknown direction cannot be
         // netted honestly, so the flat schedule stays empty (never posted) and consumers read the
         // per-leg schedules instead.
-        var netSchedule = legs.Count == 1 || legs.All(static leg => leg.Direction is not null)
+        var netSchedule = !missingLegRate && (legs.Count == 1 || legs.All(static leg => leg.Direction is not null))
             ? BuildNetSchedule(legs, legSchedules)
             : [];
 
         return new StructuredCashFlowProjectionDto(
             security.SecurityId, sourceKind, scenario, asOf, netSchedule, staleness,
-            sourceLastUpdatedUtc, factorSchedule, terms, legSchedules);
+            sourceLastUpdatedUtc, factorSchedule, terms, legSchedules,
+            missingLegRate ? "A cash-flow leg is missing its fixed rate or index fixing; zero is not a substitute for missing terms." : null);
     }
 
     private static IReadOnlyList<StructuredCashFlowScheduleEntry> BuildLegSchedule(
@@ -516,6 +536,9 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         DateOnly maturity,
         DateOnly asOfDate)
     {
+        if (leg.RateKind == CashFlowLegRateKind.Fixed ? leg.FixedRate is null : leg.CurrentIndexRate is null)
+            return [];
+
         var notional = leg.Notional ?? terms.PrincipalFace ?? 100m;
         if (notional <= 0m)
         {

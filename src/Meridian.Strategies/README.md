@@ -13,6 +13,18 @@ last_reviewed: 2026-08-03
 
 Portfolio position read models carry shared mark-freshness assessments. A position snapshot timestamp is not a mark observation date: when historical mark provenance is absent, the projection reports review required rather than treating the snapshot as current valuation evidence.
 
+## Reconciliation source lineage
+
+The durable break queue retains successful complete statement comparisons separately from governed
+casework. Source lineage is bound to tenant, company, fund profile, fund account, ledger book,
+accounting period, institution, source account, mapping and retained matcher/tolerance policy fingerprint. Amounts, dates,
+import IDs and row ordinals do not establish lineage. New and aging observations share an occurrence;
+a break reappearing after an observed clearing creates another occurrence under the same lineage.
+Comparisons require immutable evidence of available internal populations and identical represented population kinds. Old or equally dated successful runs retain a non-comparable receipt without blocking intake or replacing the newer comparison head.
+Run receipts and observation metadata commit in the queue's integrity-checked atomic snapshot and
+survive restart. Failed, partial, older, ambiguous or differently scoped comparisons cannot clear
+prior observations. Source clearing leaves casework disposition, approval and close blockers intact.
+
 ## Purpose
 
 Strategies owns strategy lifecycle, run storage, promotion records, strategy read services, and

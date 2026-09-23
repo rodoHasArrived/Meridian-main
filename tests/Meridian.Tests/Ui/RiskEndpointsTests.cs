@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
@@ -582,6 +583,16 @@ public sealed class RiskEndpointsTests
         return await response.Content.ReadAsStringAsync();
     }
 
+    // The payload's asOf stamps read the run's own clock, and their fractional seconds can
+    // reproduce the seeded leak digits by chance (05:44:59.6420076 contains "4200"), so the
+    // leak scan excises the timestamp tokens themselves — and nothing around them, keeping a
+    // genuine leak beside a timestamp visible.
+    private static string WithoutClockTimestamps(string body)
+        => Regex.Replace(
+            body,
+            @"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?",
+            "<timestamp>");
+
     [Theory]
     [InlineData("/api/risk/rules")]
     [InlineData("/api/risk/rules/PositionLimit/status")]
@@ -592,7 +603,8 @@ public sealed class RiskEndpointsTests
 
         var body = await ReadRulesBodyAsync(app, route);
 
-        body.Should().NotContain(RedactionLeakQuantity, "an account-scoped operator must not read another account's order size")
+        WithoutClockTimestamps(body)
+            .Should().NotContain(RedactionLeakQuantity, "an account-scoped operator must not read another account's order size")
             .And.NotContain(RedactionLeakPrice, "nor the price it was entered at");
         body.Should().Contain("violation(s)", "the rule must still read as explained, not as a breach with no cause");
     }
@@ -649,7 +661,7 @@ public sealed class RiskEndpointsTests
 
         // Being unable to establish that the caller is unrestricted is not a reason to hand them
         // the whole book.
-        (await ReadRulesBodyAsync(app, "/api/risk/rules"))
+        WithoutClockTimestamps(await ReadRulesBodyAsync(app, "/api/risk/rules"))
             .Should().NotContain(RedactionLeakQuantity);
     }
 

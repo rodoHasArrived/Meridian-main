@@ -8,16 +8,16 @@
 <link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
-  .card { background: #0B1520; border: 1px solid #477089; border-radius: 8px; padding: 16px; }
-  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #477089; }
-  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #A8B5C4; }
+  .card { background: #201D19; border: 1px solid #736B60; border-radius: 8px; padding: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #736B60; }
+  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #B5AEA4; }
   .title b { color: #FFF; margin-right: 10px; }
-  .stats { display: flex; gap: 16px; font-family: var(--font-mono); font-size: 11px; color: #A8B5C4; }
+  .stats { display: flex; gap: 16px; font-family: var(--font-mono); font-size: 11px; color: #B5AEA4; }
   .stats b { color: #FFF; font-weight: 500; margin-left: 4px; }
   svg { display: block; width: 100%; height: 340px; }
-  .legend { display: flex; gap: 14px; margin-top: 6px; font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; text-transform: uppercase; letter-spacing: 0.12em; }
+  .legend { display: flex; gap: 14px; margin-top: 6px; font-family: var(--font-mono); font-size: 10px; color: #B5AEA4; text-transform: uppercase; letter-spacing: 0.12em; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
-  .ax { font-family: var(--font-mono); font-size: 10px; fill: #A8B5C4; }
+  .ax { font-family: var(--font-mono); font-size: 10px; fill: #B5AEA4; }
 </style>
 </head>
 <body class="bg-app">
@@ -36,14 +36,14 @@
   </div>
   <svg viewBox="0 0 900 340" preserveAspectRatio="none">
     <!-- grid -->
-    <g stroke="#1A2D44" stroke-width="1">
+    <g stroke="#302B25" stroke-width="1">
       <line x1="60" y1="40"  x2="880" y2="40"/>
       <line x1="60" y1="100" x2="880" y2="100"/>
       <line x1="60" y1="160" x2="880" y2="160"/>
       <line x1="60" y1="220" x2="880" y2="220"/>
       <line x1="60" y1="280" x2="880" y2="280"/>
     </g>
-    <g stroke="#1A2D44" stroke-width="1">
+    <g stroke="#302B25" stroke-width="1">
       <line x1="60"  y1="40" x2="60"  y2="290"/>
       <line x1="200" y1="40" x2="200" y2="290"/>
       <line x1="340" y1="40" x2="340" y2="290"/>
@@ -76,7 +76,7 @@
     <text class="ax" x="18" y="165" text-anchor="middle" transform="rotate(-90 18 165)">3m Imp Vol (%)</text>
 
     <!-- scatter points (history, light cyan) -->
-    <g fill="#2AB2D4" fill-opacity="0.32">
+    <g fill="#D98A64" fill-opacity="0.32">
       <circle cx="120" cy="262" r="2.5"/><circle cx="138" cy="248" r="2.5"/><circle cx="95"  cy="270" r="2.5"/>
       <circle cx="156" cy="244" r="2.5"/><circle cx="172" cy="232" r="2.5"/><circle cx="188" cy="226" r="2.5"/>
       <circle cx="204" cy="215" r="2.5"/><circle cx="222" cy="210" r="2.5"/><circle cx="240" cy="200" r="2.5"/>
@@ -91,7 +91,7 @@
       <circle cx="675" cy="58" r="2.5"/><circle cx="692" cy="56" r="2.5"/><circle cx="710" cy="54" r="2.5"/>
     </g>
     <!-- scatter dense cluster (core) -->
-    <g fill="#2AB2D4" fill-opacity="0.65">
+    <g fill="#D98A64" fill-opacity="0.65">
       <circle cx="180" cy="238" r="2.2"/><circle cx="195" cy="232" r="2.2"/><circle cx="210" cy="226" r="2.2"/>
       <circle cx="220" cy="220" r="2.2"/><circle cx="232" cy="216" r="2.2"/><circle cx="244" cy="212" r="2.2"/>
       <circle cx="256" cy="208" r="2.2"/><circle cx="268" cy="204" r="2.2"/><circle cx="278" cy="198" r="2.2"/>
@@ -116,7 +116,7 @@
       <circle cx="586" cy="88" r="2.2"/><circle cx="600" cy="84" r="2.2"/><circle cx="614" cy="80" r="2.2"/>
     </g>
     <!-- outliers -->
-    <g fill="#2AB2D4" fill-opacity="0.35">
+    <g fill="#D98A64" fill-opacity="0.35">
       <circle cx="150" cy="180" r="2"/><circle cx="170" cy="160" r="2"/><circle cx="190" cy="140" r="2"/>
       <circle cx="240" cy="130" r="2"/><circle cx="280" cy="120" r="2"/><circle cx="320" cy="110" r="2"/>
       <circle cx="380" cy="100" r="2"/><circle cx="440" cy="90" r="2"/><circle cx="500" cy="80" r="2"/>
@@ -127,23 +127,23 @@
       <circle cx="540" cy="195" r="2"/><circle cx="600" cy="180" r="2"/><circle cx="660" cy="165" r="2"/>
     </g>
     <!-- regression line -->
-    <line x1="60" y1="278" x2="880" y2="44" stroke="#DE5878" stroke-width="2" opacity="0.9"/>
+    <line x1="60" y1="278" x2="880" y2="44" stroke="#CE7068" stroke-width="2" opacity="0.9"/>
     <!-- confidence band -->
-    <path d="M60,288 L880,54 L880,34 L60,268 Z" fill="#DE5878" fill-opacity="0.06" stroke="none"/>
+    <path d="M60,288 L880,54 L880,34 L60,268 Z" fill="#CE7068" fill-opacity="0.06" stroke="none"/>
 
     <!-- current marker -->
     <g>
-      <circle cx="420" cy="148" r="6" fill="#E6A93C" stroke="#05101B" stroke-width="2"/>
-      <line x1="420" y1="30" x2="420" y2="290" stroke="#E6A93C" stroke-dasharray="2 3" opacity="0.5"/>
-      <line x1="60" y1="148" x2="880" y2="148" stroke="#E6A93C" stroke-dasharray="2 3" opacity="0.5"/>
-      <rect x="428" y="136" width="78" height="22" fill="#0B1520" stroke="#E6A93C" stroke-width="1" rx="2"/>
-      <text x="434" y="151" font-family="IBM Plex Mono" font-size="10" fill="#E6A93C">128.4, 72.1</text>
+      <circle cx="420" cy="148" r="6" fill="#D6B169" stroke="#100E0C" stroke-width="2"/>
+      <line x1="420" y1="30" x2="420" y2="290" stroke="#D6B169" stroke-dasharray="2 3" opacity="0.5"/>
+      <line x1="60" y1="148" x2="880" y2="148" stroke="#D6B169" stroke-dasharray="2 3" opacity="0.5"/>
+      <rect x="428" y="136" width="78" height="22" fill="#201D19" stroke="#D6B169" stroke-width="1" rx="2"/>
+      <text x="434" y="151" font-family="Cascadia Mono, ui-monospace, monospace" font-size="10" fill="#D6B169">128.4, 72.1</text>
     </g>
   </svg>
   <div class="legend">
-    <span><i class="dot" style="background:#2AB2D4;"></i>History (n=2,184)</span>
-    <span><i class="dot" style="background:#E6A93C;"></i>Current</span>
-    <span><i class="dot" style="background:#DE5878;"></i>OLS fit · y = 0.48x + 21.3</span>
+    <span><i class="dot" style="background:#D98A64;"></i>History (n=2,184)</span>
+    <span><i class="dot" style="background:#D6B169;"></i>Current</span>
+    <span><i class="dot" style="background:#CE7068;"></i>OLS fit · y = 0.48x + 21.3</span>
     <span style="margin-left:auto;">last update 14:02:37</span>
   </div>
 </div>

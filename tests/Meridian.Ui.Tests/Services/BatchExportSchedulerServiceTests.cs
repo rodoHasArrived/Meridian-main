@@ -297,6 +297,106 @@ public sealed class BatchExportSchedulerServiceTests : IDisposable
         (await service.ReadPersistedJobsAsync()).Should().ContainSingle().Which.RunHistory.Should().HaveCount(2);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancelOrRemove_WhenPersistenceFails_PreservesQueuedJobAndCanRetry(bool remove)
+    {
+        await using var service = new BatchExportSchedulerService(jobStorePath: Store);
+        var job = service.CreateJob(Request());
+        var previousVersion = job.QueueVersion;
+        var savedStore = Store + ".saved";
+        File.Move(Store, savedStore);
+        Directory.CreateDirectory(Store);
+        try
+        {
+            var change = () => remove ? service.RemoveJob(job.Id) : service.CancelJob(job.Id);
+            change.Should().Throw<Exception>();
+            service.LastPersistenceError.Should().NotBeNull();
+            service.GetJob(job.Id).Should().BeSameAs(job);
+            job.Status.Should().Be(ExportJobStatus.Queued);
+            job.QueueVersion.Should().Be(previousVersion);
+            var persisted = JsonSerializer.Deserialize<List<ExportJob>>(await File.ReadAllTextAsync(savedStore), DesktopJsonOptions.PrettyPrint);
+            persisted.Should().ContainSingle().Which.Status.Should().Be(ExportJobStatus.Queued);
+        }
+        finally
+        {
+            Directory.Delete(Store);
+            File.Move(savedStore, Store);
+        }
+
+        (remove ? service.RemoveJob(job.Id) : service.CancelJob(job.Id)).Should().BeTrue();
+        service.LastPersistenceError.Should().BeNull();
+        var durable = await service.ReadPersistedJobsAsync();
+        if (remove)
+        {
+            service.GetJob(job.Id).Should().BeNull();
+            durable.Should().BeEmpty();
+        }
+        else
+        {
+            durable.Should().ContainSingle().Which.Status.Should().Be(ExportJobStatus.Cancelled);
+        }
+
+        // A new process must not resurrect the cancelled or removed queue entry.
+        await using var restarted = new BatchExportSchedulerService(maxConcurrentJobs: 1, jobStorePath: Store, queuePollIntervalMs: 5);
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var started = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        restarted.JobStarted += (_, args) => started.Enqueue(args.Job.Id);
+        restarted.JobCompleted += (_, _) => completed.TrySetResult();
+        await restarted.StartAsync();
+        var next = restarted.CreateJob(Request());
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await restarted.StopAsync();
+        started.Should().ContainSingle().Which.Should().Be(next.Id);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancelOrRemove_WhenRunningPersistenceFails_DoesNotSignalExecutionToken(bool remove)
+    {
+        await using var service = new BatchExportSchedulerService(jobStorePath: Store, queuePollIntervalMs: 5);
+        var job = service.CreateJob(Request());
+        var inspected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        service.JobCompleted += (_, _) => completed.TrySetResult();
+        service.JobStarted += (_, args) =>
+        {
+            try
+            {
+                var token = args.Job.CancellationSource!.Token;
+                var savedStore = Store + ".saved";
+                File.Move(Store, savedStore);
+                Directory.CreateDirectory(Store);
+                try
+                {
+                    var change = () => remove ? service.RemoveJob(job.Id) : service.CancelJob(job.Id);
+                    change.Should().Throw<Exception>();
+                    args.Job.Status.Should().Be(ExportJobStatus.Running);
+                    service.GetJob(job.Id).Should().BeSameAs(job);
+                    token.IsCancellationRequested.Should().BeFalse();
+                }
+                finally
+                {
+                    Directory.Delete(Store);
+                    File.Move(savedStore, Store);
+                }
+                inspected.TrySetResult();
+            }
+            catch (Exception ex)
+            {
+                inspected.TrySetException(ex);
+            }
+        };
+
+        await service.StartAsync();
+        await inspected.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await service.StopAsync();
+        service.GetJobHistory(job.Id).Should().ContainSingle(run => run.Success);
+    }
+
     private ExportJobRequest Request(ExportFormat format = ExportFormat.Raw) => new()
     {
         SourcePath = Source,

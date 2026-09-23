@@ -114,7 +114,7 @@ export function LinearGauge({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(percent)}
-        className="relative w-full overflow-hidden rounded-[2px] border border-border bg-[#F3F6F9]"
+        className="relative w-full overflow-hidden rounded-[2px] border border-border bg-[var(--ws-surface-raised)]"
         style={{ height }}
       >
         <div

@@ -704,8 +704,10 @@ public sealed partial class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
-    public async Task MapWorkstationEndpoints_OperationsContinuityCommandRoutes_ShouldAdvanceToClosed()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MapWorkstationEndpoints_OperationsContinuityCommandRoutes_ShouldRequireAccountingCloseAuthority(bool controller)
     {
         var scope = new CloseReadinessScopeDto("test-fund-profile", Guid.NewGuid(), Guid.NewGuid(),
             Guid.NewGuid().ToString("D"), "2026-05");
@@ -713,14 +715,21 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             RegisterOperationsContinuityServices(services);
+            RegisterRetainedReportBook(services, scope.LedgerBookId!.Value, scope.FundAccountId!.Value);
             services.AddHttpContextAccessor();
             services.AddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
             services.AddSingleton<IFundProfileTenantGuard, RegistryFundProfileTenantGuard>();
             services.AddSingleton<IFinancialOperationsCommandCenterReadService>(closeAuthority);
             services.AddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
                 () => sp.GetRequiredService<IFinancialOperationsCommandCenterReadService>(),
-                sp.GetRequiredService<IWorkstationTenantContextAccessor>()));
-        });
+                sp.GetRequiredService<IWorkstationTenantContextAccessor>(),
+                () => new OperationsReportPackAuthority(
+                    sp.GetRequiredService<Meridian.FinancialOperations.AccountingClose.IAccountingReportPackageService>(),
+                    sp.GetRequiredService<ILedgerBookService>(),
+                    sp.GetRequiredService<IFundProfileTenancyRegistry>(),
+                    sp.GetRequiredService<ILedgerJournalStore>())));
+        }, currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: controller ? UserRole.Controller : UserRole.FundAccountant);
         var client = app.GetTestClient();
 
         var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
@@ -752,8 +761,9 @@ public sealed partial class WorkstationEndpointsTests
                 JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
+        var retainedPackageId = await RetainPreCloseReportAsync(app.Services, scope.LedgerBookId!.Value);
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
-            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
+            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: retainedPackageId));
         var acknowledged = await AcknowledgeOperationsChecklistAsync(client, posture.Workflow!);
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
             new OperationsSubmitApprovalRequestDto(
@@ -761,7 +771,7 @@ public sealed partial class WorkstationEndpointsTests
                 "spoofed-user",
                 "independent-reviewer",
                 "Submit evidence",
-                "report-pack-1",
+                retainedPackageId,
                 ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(acknowledged)));
         client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "independent-reviewer");
         var approved = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
@@ -770,13 +780,13 @@ public sealed partial class WorkstationEndpointsTests
                 "spoofed-user",
                 "spoofed-reviewer",
                 "Approve close",
-                "report-pack-1",
+                retainedPackageId,
                 ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(submitted.Workflow!)));
         closeAuthority.Workflow = approved.Workflow;
         client.DefaultRequestHeaders.Remove("X-Meridian-Test-User");
         var closeRoute = $"/api/workstation/operations/continuity/{workflowId}/close";
         var closeRequest = new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user",
-            "Close period", "report-pack-1", ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(approved.Workflow!), CloseScope: scope);
+            "Close period", retainedPackageId, ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(approved.Workflow!), CloseScope: scope);
         using var missingScope = await client.PostAsJsonAsync(closeRoute, closeRequest with { CloseScope = null }, ServerJsonOptions);
         missingScope.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var refusal = await missingScope.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
@@ -792,32 +802,52 @@ public sealed partial class WorkstationEndpointsTests
         wrongScope.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         (await wrongScope.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions))!.Success.Should().BeFalse();
 
-        var closed = await PostTransitionAsync(client, closeRoute, closeRequest);
+        using var deniedClose = await client.PostAsJsonAsync(closeRoute, closeRequest, ServerJsonOptions);
+        if (controller)
+        {
+            deniedClose.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            var accountingRefusal = await deniedClose.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+            accountingRefusal!.ErrorCode.Should().Be("ACCOUNTING_CLOSE_REQUIRED");
+            accountingRefusal.Blockers.Should().Contain(blocker => blocker.Code == "ClosePeriodMutationConsistencyGateUnavailable",
+                "Controller compatibility requests must execute the governed accounting hard-close service");
+        }
+        else
+        {
+            deniedClose.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+                "Operations mutation permission does not confer Controller authority for hard close");
+        }
+        var retained = await app.Services.GetRequiredService<IOperationsContinuityWorkflowService>().GetAsync(workflowId);
         closeAuthority.Requests.Last().Scope.Should().Be(scope);
         closeAuthority.Requests.Should().OnlyContain(request => request.TenantId == "tenant-test" && request.CompanyId == "tenant-test");
 
-        closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
-        closed.Workflow.Timeline.Should().Contain(entry => entry.EventType == "workflow-closed" && entry.Actor == "ops-user");
-        closed.Workflow.Approvals.Should().Contain(approval =>
+        retained!.Status.Should().Be(OperationsWorkflowStatusDto.ReadyForClose);
+        retained.Timeline.Should().NotContain(entry => entry.EventType == "workflow-closed");
+        retained.Approvals.Should().Contain(approval =>
             approval.Status == OperationsApprovalStateDto.Approved &&
             approval.Operator == "ops-user" &&
             approval.Reviewer == "independent-reviewer");
-        closed.Workflow.Timeline.Should().Contain(entry =>
+        retained.Timeline.Should().Contain(entry =>
             entry.EventType == "approval-approved" && entry.Actor == "independent-reviewer");
     }
 
     [Fact]
     public async Task MapWorkstationEndpoints_OperationsContinuityApprovalSubmit_ShouldPreserveAssignedReviewerFromRequest()
     {
-        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var bookId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterOperationsContinuityServices(services);
+            RegisterRetainedReportBook(services, bookId, accountId);
+        });
         var client = app.GetTestClient();
 
         var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
-            Guid.NewGuid(),
+            accountId,
             "2026-05",
             null,
             "custodian",
-            "spoofed-user"));
+            "spoofed-user", LedgerBookId: bookId));
         var workflowId = start.Workflow!.WorkflowId;
         var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
             new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
@@ -839,8 +869,9 @@ public sealed partial class WorkstationEndpointsTests
                 JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
+        var retainedPackageId = await RetainPreCloseReportAsync(app.Services, bookId);
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
-            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
+            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: retainedPackageId));
 
         const string assignedReviewer = "independent-reviewer";
         var acknowledged = await AcknowledgeOperationsChecklistAsync(client, posture.Workflow!);
@@ -850,7 +881,7 @@ public sealed partial class WorkstationEndpointsTests
                 "spoofed-user",
                 assignedReviewer,
                 "Submit evidence",
-                "report-pack-1",
+                retainedPackageId,
                 ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals(acknowledged)));
 
         submitted.Workflow!.Approvals.Should().Contain(approval =>
@@ -9748,6 +9779,7 @@ public sealed partial class WorkstationEndpointsTests
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
     {
         public List<LedgerJournalEntryWrite> Appended { get; } = [];
+        private readonly Dictionary<Guid, DateTimeOffset> _recordedAt = [];
 
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
         {
@@ -9758,7 +9790,19 @@ public sealed partial class WorkstationEndpointsTests
             }
 
             Appended.Add(entry);
+            _recordedAt[entry.Entry.JournalEntryId] = DateTimeOffset.UtcNow;
             return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(LedgerJournalEntryQuery query, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(Appended
+                .Select((entry, index) => (entry, sequence: index + 1L))
+                .Where(item => item.entry.PeriodId == query.PeriodId && item.entry.LedgerBookId == query.LedgerBookId)
+                .Select(item => new LedgerJournalEntryRecord(item.entry.Entry, item.entry.AggregateId,
+                    item.entry.PeriodId, item.entry.CommandId, item.entry.CorrelationId, item.sequence,
+                    _recordedAt[item.entry.Entry.JournalEntryId], item.entry.AccountingBasis)).ToArray());
         }
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)

@@ -27,22 +27,25 @@ namespace Meridian.Ui.Shared.Services;
 /// check states the incompatibility once, before any data is served, in the same shape as ADR-019's
 /// <c>ProductionRegistrationGuardService</c> re-validating the composed graph.</para>
 ///
+/// <para>Configured companies come from the effective authentication account source, including
+/// environment and development demo accounts when the governed store does not take precedence.</para>
+///
 /// <para>Single-company deployments — the overwhelming majority of this posture — are unaffected, as
 /// are deployments that configure no company at all.</para>
 /// </remarks>
 public sealed class InMemoryFundStructureTenancyGuard : IStartupRefusalGuard
 {
     private readonly IFundStructureService _fundStructureService;
-    private readonly IUserAccountStore _userAccountStore;
+    private readonly UserProfileRegistry _userProfiles;
     private readonly ILogger<InMemoryFundStructureTenancyGuard> _logger;
 
     public InMemoryFundStructureTenancyGuard(
         IFundStructureService fundStructureService,
-        IUserAccountStore userAccountStore,
+        UserProfileRegistry userProfiles,
         ILogger<InMemoryFundStructureTenancyGuard> logger)
     {
         _fundStructureService = fundStructureService;
-        _userAccountStore = userAccountStore;
+        _userProfiles = userProfiles;
         _logger = logger;
     }
 
@@ -55,11 +58,7 @@ public sealed class InMemoryFundStructureTenancyGuard : IStartupRefusalGuard
             return Task.CompletedTask;
         }
 
-        var companies = _userAccountStore.LoadAccounts()
-            .Select(account => account.CompanyId)
-            .Where(companyId => !string.IsNullOrWhiteSpace(companyId))
-            .Select(companyId => companyId!.Trim())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var companies = _userProfiles.GetConfiguredCompanyIds();
 
         if (companies.Count <= 1)
         {

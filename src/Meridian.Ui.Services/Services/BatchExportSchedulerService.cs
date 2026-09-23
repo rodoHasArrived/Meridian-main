@@ -200,31 +200,53 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
     }
 
     /// <summary>Cancels a running or queued job.</summary>
-    public bool CancelJob(string jobId)
-    {
-        lock (_stateGate)
-        {
-            if (!_jobs.TryGetValue(jobId, out var job))
-                return false;
-            job.CancellationSource?.Cancel();
-            job.Status = ExportJobStatus.Cancelled;
-        }
-        SaveJobs();
-        return true;
-    }
+    public bool CancelJob(string jobId) => CancelOrRemoveJobDurably(jobId, remove: false);
 
     /// <summary>Removes a job from the system.</summary>
-    public bool RemoveJob(string jobId)
+    public bool RemoveJob(string jobId) => CancelOrRemoveJobDurably(jobId, remove: true);
+
+    private bool CancelOrRemoveJobDurably(string jobId, bool remove)
     {
-        lock (_stateGate)
+        _saveGate.Wait();
+        try
         {
-            if (!_jobs.TryRemove(jobId, out var job))
-                return false;
-            job.CancellationSource?.Cancel();
-            job.Status = ExportJobStatus.Cancelled;
+            lock (_stateGate)
+            {
+                if (!_jobs.TryGetValue(jobId, out var job))
+                    return false;
+
+                var previousStatus = job.Status;
+                job.Status = ExportJobStatus.Cancelled;
+                try
+                {
+                    var retainedJobs = remove ? _jobs.Values.Where(candidate => candidate.Id != jobId) : _jobs.Values;
+                    var json = JsonSerializer.Serialize(retainedJobs.ToList(), DesktopJsonOptions.PrettyPrint);
+                    AtomicFileWriter.Write(_jobStorePath, json);
+                }
+                catch
+                {
+                    job.Status = previousStatus;
+                    throw;
+                }
+
+                // Keep queue ownership and the execution token intact on failed saves.
+                // A successful durable transition must precede irreversible cancellation.
+                if (remove)
+                    _jobs.TryRemove(jobId, out _);
+                LastPersistenceError = null;
+                job.CancellationSource?.Cancel();
+                return true;
+            }
         }
-        SaveJobs();
-        return true;
+        catch (Exception ex)
+        {
+            LastPersistenceError = ex;
+            throw;
+        }
+        finally
+        {
+            _saveGate.Release();
+        }
     }
 
     /// <summary>
@@ -721,28 +743,6 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             // The synchronous compatibility APIs share this gate; do not let a writer
             // capture a UI context that may be synchronously waiting for the gate.
             await Task.Run(() => AtomicFileWriter.Write(_jobStorePath, json, ct), ct).ConfigureAwait(false);
-            LastPersistenceError = null;
-        }
-        catch (Exception ex)
-        {
-            LastPersistenceError = ex;
-            throw;
-        }
-        finally
-        {
-            _saveGate.Release();
-        }
-    }
-
-    private void SaveJobs()
-    {
-        _saveGate.Wait();
-        try
-        {
-            string json;
-            lock (_stateGate)
-                json = JsonSerializer.Serialize(_jobs.Values.ToList(), DesktopJsonOptions.PrettyPrint);
-            AtomicFileWriter.Write(_jobStorePath, json);
             LastPersistenceError = null;
         }
         catch (Exception ex)

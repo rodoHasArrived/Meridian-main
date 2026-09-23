@@ -34,6 +34,30 @@ public sealed class SecurityAssetClassCatalogTests
     }
 
     [Fact]
+    public void Templates_HaveExactDeclaredBindings_AndUnrealizedIsNeverSale()
+    {
+        foreach (var pack in SecurityAssetPackRegistry.All)
+            pack.AccountingRules.JournalTemplates.Should().OnlyContain(t => pack.LifecycleEvents.Contains(t.LifecycleEvent));
+        SecurityAssetPackRegistry.Find("public-equity-etf")!.AccountingRules.JournalTemplates
+            .Single(t => t.TemplateId == "asset-pack.unrealized-gain-loss").LifecycleEvent.Should().Be("Appraisal");
+        SecurityAssetPackRegistry.Find("private-loan-credit")!.AccountingRules.JournalTemplates
+            .Single(t => t.TemplateId == "asset-pack.fee-income").LifecycleEvent.Should().Be("Fee");
+        SecurityAssetPackRegistry.Find("fixed-income")!.AccountingRules.JournalTemplates
+            .Single(t => t.TemplateId == "asset-pack.amortization").LifecycleEvent.Should().Be("Amortization");
+        SecurityAssetPackRegistry.Find("derivatives-fx")!.AccountingRules.JournalTemplates
+            .Single(t => t.TemplateId == "asset-pack.variation-margin").LifecycleEvent.Should().Be("MarginSettlement");
+    }
+
+    [Theory]
+    [InlineData("MoneyMarketFund")]
+    [InlineData("CashSweep")]
+    [InlineData("PrivateFundInterest")]
+    [InlineData("RealEstateHolding")]
+    [InlineData("CommitmentGuarantee")]
+    public void ProviderOnlyClasses_DoNotAdvertiseCalculatedSchedule(string assetClass)
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsCashflowScheduleByDefault.Should().BeFalse();
+
+    [Fact]
     public void GetOrDefault_UnknownClass_FallsBackToNonThrowingDefault()
     {
         var descriptor = SecurityAssetClassCatalog.GetOrDefault("EsotericBasketCertificate");
@@ -255,7 +279,10 @@ public sealed class SecurityAssetClassCatalogTests
             "Maturity",
             "Default",
             "Amendment",
-            "CorporateAction"
+            "CorporateAction",
+            "Fee",
+            "Amortization",
+            "MarginSettlement"
         };
         var valuationMethods = new[]
         {

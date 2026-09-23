@@ -11,6 +11,15 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Ui/dashboard
 
+`EvidenceAmount` opens an exact retained evidence subject in the shared sheet primitive. Manual
+journal detail debit/credit cells carry the entry and ledger-book identity; values without a supported
+retained subject are never assigned inferred provenance. Reads disable development fallback and
+show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
+use the shared sheet behavior. Full evidence links retain the selected ledger book.
+
+Reconciliation break details expose source observation state (New, Aging, Cleared, Recurring),
+lineage, occurrence and successful-run clearing independently of governed casework status.
+
 The build lockfile resolves Browserslist 4.28.9, removing the high-severity cache-growth and
 custom-stats parsing advisories reported by the September 6 production-certification scan.
 

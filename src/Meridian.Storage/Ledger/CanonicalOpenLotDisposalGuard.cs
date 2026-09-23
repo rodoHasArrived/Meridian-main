@@ -20,15 +20,16 @@ public static class CanonicalOpenLotDisposalGuard
             if (canonical.Any(lot => lot.Acquisition.FunctionalCurrency != functionalCurrency))
                 throw new LedgerValidationException("Canonical acquisition functional currency differs from the disposal journal.");
 
-            // Atomic journal storage supports discrete relief. Average cost also needs a governed
-            // redistribution of the surviving lot bases and cannot be enabled by changing a selector.
+            // Average cost relieves the pooled basis in FIFO order; the atomic store commits the
+            // governed restatement of every surviving pool lot in the same transaction.
             var canonicalMethod = method switch
             {
                 LedgerTaxLotReliefMethod.Fifo => OpenLotReliefMethod.Fifo,
                 LedgerTaxLotReliefMethod.Lifo => OpenLotReliefMethod.Lifo,
                 LedgerTaxLotReliefMethod.Hifo => OpenLotReliefMethod.Hifo,
                 LedgerTaxLotReliefMethod.SpecificId => OpenLotReliefMethod.SpecificId,
-                _ => throw new LedgerValidationException("Atomic canonical disposal requires a supported discrete relief policy.")
+                LedgerTaxLotReliefMethod.AverageCost => OpenLotReliefMethod.AverageCost,
+                _ => throw new LedgerValidationException("Atomic canonical disposal requires a supported relief policy.")
             };
             var scale = canonical[0].Acquisition.QuantityBasis == LotQuantityBasis.Face
                 ? LedgerTaxLotFaceValueTerms.LedgerLotParBasis : 1m;
