@@ -1244,6 +1244,7 @@ Meridian-main
 │       ├── duplication-audit.ps1
 │       ├── generate-ui-api-routes-ts.py
 │       ├── generate-workspace-catalog-ts.py
+│       ├── resolve-generated-merge-conflicts.py
 │       ├── schema-control.py
 │       ├── validate-tooling-metadata.py
 │       └── validate_budget.py
@@ -1736,6 +1737,7 @@ Meridian-main
 │   │   ├── docs-regeneration-automation-design.md
 │   │   ├── etl-execution-ownership.md
 │   │   ├── free-development-tools.md
+│   │   ├── generated-merge-recovery.md
 │   │   ├── live-trading-engine.md
 │   │   ├── practical-csharp-wpf-financial-markets.md
 │   │   ├── production-certification-evidence-chain.md
@@ -10870,6 +10872,7 @@ Meridian-main
 │   │   ├── test_release_evidence_manifest.py
 │   │   ├── test_release_evidence_workflows.py
 │   │   ├── test_render_roadmap_diagrams.py
+│   │   ├── test_resolve_generated_merge_conflicts.py
 │   │   ├── test_roadmap_source_docs.py
 │   │   ├── test_roadmap_validator_compatibility.py
 │   │   ├── test_robinhood_options_smoke.py
