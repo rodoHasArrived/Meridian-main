@@ -1,7 +1,7 @@
 # Changelog
 
 > Auto-generated from git commit history using conventional commits.
-> Generated: 2026-09-23 20:33:53 UTC
+> Generated: 2026-09-23 20:40:21 UTC
 
 ## Summary
 
@@ -10,10 +10,10 @@
 | Features | 1 |
 | Bug Fixes | 5 |
 | Refactoring | 1 |
-| Documentation | 3 |
+| Documentation | 2 |
 | Tests | 1 |
 | Build & CI | 5 |
-| Other | 34 |
+| Other | 35 |
 | **Total** | **50** |
 
 ## Features
@@ -36,7 +36,6 @@
 
 - refresh status reports and retire obsolete snapshots ([`9719a9a45`](https://github.com/rodoHasArrived/Meridian-main/commit/9719a9a453a0c8ef180636d6e45a3afabc00596e))
 - regenerate the roadmap register for the W9-CORPACT-011 row update ([`c3053880a`](https://github.com/rodoHasArrived/Meridian-main/commit/c3053880a59f8fd06aaf6f1f588cebb223e95a0b))
-- regenerate the doc-health dashboard with the arguments that write it ([`6e106ea1b`](https://github.com/rodoHasArrived/Meridian-main/commit/6e106ea1bbf42d4a895a729e5b5f0665044b850d))
 
 ## Tests
 
@@ -52,8 +51,15 @@
 
 ## Other
 
+- Merge current main and regenerate status evidence ([`74b2940cf`](https://github.com/rodoHasArrived/Meridian-main/commit/74b2940cf64d066d908409852907f36581c2c210))
+- Merge pull request #2926 from rodoHasArrived/codex/p0-mutation-throttle-retry [#2926](https://github.com/rodoHasArrived/Meridian-main/issues/2926) ([`2449678b3`](https://github.com/rodoHasArrived/Meridian-main/commit/2449678b3c3e00337ebd12cac8bfd201769f752b))
+- Merge pull request #2912 from rodoHasArrived/codex/service-robustness-fixes [#2912](https://github.com/rodoHasArrived/Meridian-main/issues/2912) ([`7595ea979`](https://github.com/rodoHasArrived/Meridian-main/commit/7595ea97982ab8f61a8866e542a34b2906820112))
+- Merge certified main and refresh throttle documentation evidence ([`08b32cf70`](https://github.com/rodoHasArrived/Meridian-main/commit/08b32cf70b6796697235c34460db7d8489f993ff))
+- Merge main and align workstation bundle with verified Linux CI output ([`6db22aed8`](https://github.com/rodoHasArrived/Meridian-main/commit/6db22aed896ed7b4285a9ccf7e537ffb424cabe4))
 - Merge pull request #2916 from rodoHasArrived/codex/p0-provider-egress [#2916](https://github.com/rodoHasArrived/Meridian-main/issues/2916) ([`2c1724537`](https://github.com/rodoHasArrived/Meridian-main/commit/2c1724537820e36f9f8a31744f0d311e6e3bfc3d))
 - Regenerate documentation health after main merge ([`9f8843442`](https://github.com/rodoHasArrived/Meridian-main/commit/9f88434427100374eea45fa993be05878e26b5bd))
+- Merge branch 'main' into codex/p0-mutation-throttle-retry ([`0fa9b5be3`](https://github.com/rodoHasArrived/Meridian-main/commit/0fa9b5be309a659858d4aa47f6b5c7005dc60bdb))
+- Refresh mutation throttles and partition by trusted operator identity ([`e0656d439`](https://github.com/rodoHasArrived/Meridian-main/commit/e0656d43984c84cc7bee799df1b6a95333f0934f))
 - Merge branch 'main' into codex/p0-provider-egress ([`746870dd4`](https://github.com/rodoHasArrived/Meridian-main/commit/746870dd423fb16f3baa8d7421e2bca3a2425591))
 - Merge pull request #2993 from rodoHasArrived/codex/w10-certification-completion [#2993](https://github.com/rodoHasArrived/Meridian-main/issues/2993) ([`57b9cb9e4`](https://github.com/rodoHasArrived/Meridian-main/commit/57b9cb9e47e45c7f13135d61e5db71b03d41c351))
 - Merge branch 'main' into codex/w10-certification-completion ([`0fcf87864`](https://github.com/rodoHasArrived/Meridian-main/commit/0fcf8786401b45a0b6870863a41a007362b70e8d))
@@ -64,6 +70,7 @@
 - Merge pull request #2991 from rodoHasArrived/automation/desktop-screenshot-capture [#2991](https://github.com/rodoHasArrived/Meridian-main/issues/2991) ([`13aa75765`](https://github.com/rodoHasArrived/Meridian-main/commit/13aa7576575e7816c14ec3b9b5b002a3f4494c97))
 - Merge pull request #2989 from rodoHasArrived/codex/preserve-swap-leg-economics [#2989](https://github.com/rodoHasArrived/Meridian-main/issues/2989) ([`0a54f1f88`](https://github.com/rodoHasArrived/Meridian-main/commit/0a54f1f88d5896b22534c47a03961ceeabeafd1d))
 - Merge pull request #2990 from rodoHasArrived/automation/web-screenshot-capture [#2990](https://github.com/rodoHasArrived/Meridian-main/issues/2990) ([`5d7d6797c`](https://github.com/rodoHasArrived/Meridian-main/commit/5d7d6797ccda49331f60ef75f8cc3e5870b46997))
+- Fix durable export cancellation and bound timeout regression ([`3247f9bff`](https://github.com/rodoHasArrived/Meridian-main/commit/3247f9bff3af9a453cbbc787fffb6981c2a38abb))
 - Merge pull request #2988 from rodoHasArrived/claude/next-highest-value-work-15bvkb [#2988](https://github.com/rodoHasArrived/Meridian-main/issues/2988) ([`75c4791c9`](https://github.com/rodoHasArrived/Meridian-main/commit/75c4791c9592893594cc05c2268bb69876a4802f))
 - Document AverageCost restatements in the effective-dated lot read [#2987](https://github.com/rodoHasArrived/Meridian-main/issues/2987) ([`93fa44f17`](https://github.com/rodoHasArrived/Meridian-main/commit/93fa44f17edc893edfb04645d0f5ad3aa9df776c))
 - Merge main into AverageCost relief branch [#2987](https://github.com/rodoHasArrived/Meridian-main/issues/2987) ([`8e1bd5781`](https://github.com/rodoHasArrived/Meridian-main/commit/8e1bd57818b3e37b1549dd9d3170484274894c68))
@@ -79,13 +86,6 @@
 - Fix accounting trust gaps across lots, tenant rollout, close, pricing, and reconciliation ([`1aba79418`](https://github.com/rodoHasArrived/Meridian-main/commit/1aba7941894f786622f9b59825860227bc1f470c))
 - Merge pull request #2986 from rodoHasArrived/claude/next-highest-value-work-15bvkb [#2986](https://github.com/rodoHasArrived/Meridian-main/issues/2986) ([`4465d5a17`](https://github.com/rodoHasArrived/Meridian-main/commit/4465d5a17d0d705c972d16dbb45e500d6aaf0919))
 - Merge pull request #2985 from rodoHasArrived/claude/next-highest-value-work-15bvkb [#2985](https://github.com/rodoHasArrived/Meridian-main/issues/2985) ([`f4b81d1f4`](https://github.com/rodoHasArrived/Meridian-main/commit/f4b81d1f434c6b77dee88c1b7229d53ee0319662))
-- Merge pull request #2977 from rodoHasArrived/claude/meridian-reporting-workstation-mz5mza [#2977](https://github.com/rodoHasArrived/Meridian-main/issues/2977) ([`95f72c78c`](https://github.com/rodoHasArrived/Meridian-main/commit/95f72c78cd226d9c9d78ead31b47355c5edaa490))
-- make the token layer reach the places that were reading past it [#2](https://github.com/rodoHasArrived/Meridian-main/issues/2) ([`3548b34cb`](https://github.com/rodoHasArrived/Meridian-main/commit/3548b34cb28542fcd122bfb1dd6766e519b95072))
-- Merge pull request #2979 from rodoHasArrived/automation/ai-navigation-refresh [#2979](https://github.com/rodoHasArrived/Meridian-main/issues/2979) ([`ab58115b2`](https://github.com/rodoHasArrived/Meridian-main/commit/ab58115b2559153b89c965dd2fd8277d8532d3f4))
-- take the accent off its own wash, and the old identity out of the marks [#06](https://github.com/rodoHasArrived/Meridian-main/issues/06), [#14120](https://github.com/rodoHasArrived/Meridian-main/issues/14120) ([`670b36cec`](https://github.com/rodoHasArrived/Meridian-main/commit/670b36ceca1a2e257fad316a73f626dd11f1e818))
-- finish the surfaces that render outside the stylesheet [#2](https://github.com/rodoHasArrived/Meridian-main/issues/2), [#59636](https://github.com/rodoHasArrived/Meridian-main/issues/59636) ([`b68de250f`](https://github.com/rodoHasArrived/Meridian-main/commit/b68de250f4b32ede718828f00b8323996872b01c))
-- bring origin/main into the restyle branch ([`58b9bfa36`](https://github.com/rodoHasArrived/Meridian-main/commit/58b9bfa36b2be3f7c88b5e12b6ab82e8c9b2cc92))
-- **design-system:** move the catalogue off the navy/cyan identity [#08101](https://github.com/rodoHasArrived/Meridian-main/issues/08101), [#14120](https://github.com/rodoHasArrived/Meridian-main/issues/14120), [#171](https://github.com/rodoHasArrived/Meridian-main/issues/171), [#2](https://github.com/rodoHasArrived/Meridian-main/issues/2) ([`0ffbd1735`](https://github.com/rodoHasArrived/Meridian-main/commit/0ffbd173590c5096fc3e27120f08433722a8493c))
 
 ---
 
