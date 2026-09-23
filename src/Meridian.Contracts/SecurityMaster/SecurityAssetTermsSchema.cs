@@ -159,7 +159,8 @@ public sealed record SecurityAssetTermField(
 /// <remarks>
 /// Keys and types are taken from the authoritative serialize contract (the F# <c>SecurityKind</c>
 /// term records). Fields carrying nested/collection shapes are typed <see cref="SecurityAssetTermFieldType.Array"/>
-/// or <see cref="SecurityAssetTermFieldType.Object"/>; their inner shapes are not enumerated here.
+/// or <see cref="SecurityAssetTermFieldType.Object"/>. Registered inner shapes are exposed through
+/// <see cref="ElementFields"/> so codec guards can check the contents as well as the container.
 /// <para>A field declared with <c>ReqOneOf</c>/<c>OptOneOf</c> carries a CLOSED vocabulary that the
 /// write-mode codec and the operator edit surface enforce. Only the string fields whose domain type
 /// genuinely cannot round-trip an unlisted value get one: <c>classification</c>, <c>putCall</c>,
@@ -358,7 +359,7 @@ public static class SecurityAssetTermsSchema
             [
                 Req("effectiveDate", SecurityAssetTermFieldType.Date),
                 Req("maturityDate", SecurityAssetTermFieldType.Date),
-                Req("legs", SecurityAssetTermFieldType.Array)
+                Req("legs", SecurityAssetTermFieldType.Array, "swapLegs", "cashFlowLegs")
             ],
             ["DirectLoan"] =
             [
@@ -468,6 +469,34 @@ public static class SecurityAssetTermsSchema
                 Opt("pricingSource", SecurityAssetTermFieldType.String)
             ]
         };
+
+    private static readonly IReadOnlyDictionary<string, IReadOnlyList<SecurityAssetTermField>> ElementFieldsByPath =
+        new Dictionary<string, IReadOnlyList<SecurityAssetTermField>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Swap.legs"] =
+            [
+                Opt("legId", SecurityAssetTermFieldType.String, "id", "name"),
+                Req("legType", SecurityAssetTermFieldType.String, "rateType", "type"),
+                Req("currency", SecurityAssetTermFieldType.String),
+                Opt("direction", SecurityAssetTermFieldType.String, "payReceive", "payOrReceive", "side"),
+                Opt("index", SecurityAssetTermFieldType.String, "indexName", "referenceIndex"),
+                Opt("fixedRate", SecurityAssetTermFieldType.Decimal, "rate", "couponRate"),
+                Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
+                Opt("currentIndexRate", SecurityAssetTermFieldType.Decimal, "lastFixing", "currentRate", "indexRate"),
+                Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount", "faceAmount", "principal"),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency"),
+                Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention", "dayCountBasis"),
+                Req("exchangesPrincipal", SecurityAssetTermFieldType.Boolean, "principalExchange", "notionalExchange")
+            ]
+        };
+
+    /// <summary>
+    /// The declared fields within an array element or nested object, or an empty list when no
+    /// inner shape is registered. These describe the serialized shape; optional legacy input may
+    /// omit fields such as a swap leg's principal-exchange flag, which defaults to false.
+    /// </summary>
+    public static IReadOnlyList<SecurityAssetTermField> ElementFields(string assetClass, string key)
+        => ElementFieldsByPath.TryGetValue($"{assetClass}.{key}", out var fields) ? fields : [];
 
     /// <summary>The asset classes with a declared terms schema.</summary>
     public static IReadOnlyCollection<string> AssetClasses { get; } = FieldsByAssetClass.Keys.ToArray();

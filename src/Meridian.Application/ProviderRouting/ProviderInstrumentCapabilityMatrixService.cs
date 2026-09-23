@@ -89,7 +89,7 @@ public sealed class ProviderInstrumentCapabilityMatrixService : IProviderInstrum
             Stream: supported && provider.HasStreaming && provider.SupportedStreamingInstrumentTypes.Contains(instrument.InstrumentType),
             Backfill: supported && provider.HasHistorical,
             CorporateActions: supported && provider.HasCorporateActions && carriesCorporateActions,
-            SymbolSearch: supported && provider.HasSearch,
+            SymbolSearch: supported && provider.HasSearch && provider.SupportedSearchInstrumentTypes.Contains(instrument.InstrumentType),
             OptionsChain: supported && provider.HasOptions && isOptionInstrument);
     }
 }

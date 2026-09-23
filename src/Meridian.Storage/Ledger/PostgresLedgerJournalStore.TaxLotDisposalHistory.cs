@@ -19,7 +19,8 @@ public sealed record LedgerTaxLotDisposalHistoryRecord(
     IReadOnlyList<LedgerTaxLotDisposalHistoryLot> Lots,
     IReadOnlyList<WashSaleBasisIncrease> WashSaleBasisIncreases,
     decimal MatchedReplacementQuantity,
-    IReadOnlyList<OpenLotDto>? CanonicalLots = null);
+    IReadOnlyList<OpenLotDto>? CanonicalLots = null,
+    IReadOnlyList<OpenLotDto>? PoolLots = null);
 
 /// <summary>
 /// Reads retained tax-lot disposal history so realized-gain reporting can be rebuilt from the
@@ -64,6 +65,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
             return [];
         }
 
+        var poolByBatch = await LoadAverageCostPoolsAsync(connection, ledgerBookId, lotsByBatch, ct)
+            .ConfigureAwait(false);
         var deferralsByBatch = await LoadDeferralsByBatchAsync(
                 connection,
                 ledgerBookId,
@@ -83,7 +86,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
                     batch.Value.Lots,
                     hasDeferrals ? retained.Increases : Array.Empty<WashSaleBasisIncrease>(),
                     hasDeferrals ? retained.MatchedQuantity : 0m,
-                    batch.Value.CanonicalLots);
+                    batch.Value.CanonicalLots,
+                    poolByBatch.GetValueOrDefault(batch.Key));
             })
             .OrderBy(static record => record.MutationBatchId)
             .ToArray();
@@ -199,6 +203,56 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         }
 
         return batches;
+    }
+
+    /// <summary>
+    /// Rebuilds each average-cost batch's full pool as it stood before relief: the relieved lots'
+    /// snapshots plus every survivor the batch restated, so reporting can re-run the pooled relief
+    /// instead of trusting the retained slice bases.
+    /// </summary>
+    private async Task<Dictionary<Guid, IReadOnlyList<OpenLotDto>>> LoadAverageCostPoolsAsync(
+        NpgsqlConnection connection,
+        Guid ledgerBookId,
+        Dictionary<Guid, DisposalBatchAccumulator> lotsByBatch,
+        CancellationToken ct)
+    {
+        var averageCostBatches = lotsByBatch
+            .Where(static batch => batch.Value.ReliefMethod == LedgerTaxLotReliefMethod.AverageCost)
+            .ToDictionary(static batch => batch.Key, static batch => new List<OpenLotDto>(batch.Value.CanonicalLots));
+        if (averageCostBatches.Count == 0)
+        {
+            return [];
+        }
+
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select mutation.mutation_batch_id, mutation.tax_lot_record_id, mutation.lot_snapshot_before::text
+            from {Qualified("tax_lot_mutations")} mutation
+            join {Qualified("atomic_tax_lot_posting_batches")} batch
+              on batch.mutation_batch_id = mutation.mutation_batch_id
+            where batch.ledger_book_id = @ledger_book_id
+              and mutation.mutation_kind = 'BasisRedistribution'
+              and mutation.mutation_batch_id = any(@batch_ids)
+            order by mutation.mutation_batch_id, mutation.selection_ordinal;
+            """;
+        command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
+        command.Parameters.AddWithValue("batch_ids", averageCostBatches.Keys.ToArray());
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            if (reader.IsDBNull(2))
+                throw new LedgerValidationException("Average-cost restatement lacks its immutable pool snapshot; canonical reporting is blocked.");
+            var before = DeserializeTaxLotSnapshot(reader.GetString(2));
+            if (before.TaxLotRecordId != reader.GetGuid(1) || before.LedgerBookId != ledgerBookId)
+                throw new LedgerValidationException("Retained average-cost pool snapshot does not bind the exact durable lot and ledger book.");
+            averageCostBatches[reader.GetGuid(0)].Add(before.ToOpenLot());
+        }
+
+        return averageCostBatches.ToDictionary(
+            static batch => batch.Key,
+            static batch => (IReadOnlyList<OpenLotDto>)batch.Value);
     }
 
     private async Task<Dictionary<Guid, (IReadOnlyList<WashSaleBasisIncrease> Increases, decimal MatchedQuantity)>>

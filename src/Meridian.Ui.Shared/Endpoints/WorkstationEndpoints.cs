@@ -903,6 +903,22 @@ public static partial class WorkstationEndpoints
             }
 
             var trustedRequest = request with { Actor = currentUser };
+            if (request.ReportPackReady == true ||
+                (request.ReportPackReady != false && !string.IsNullOrWhiteSpace(request.ReportPackId)))
+            {
+                var retained = await ResolveOperationsReportPackAsync(context, service, workflowId, request.ReportPackId,
+                    requireRetainedRevision: false).ConfigureAwait(false);
+                if (!retained.IsReady)
+                    return ReportPackAuthorityRefusal(retained, jsonOptions);
+                trustedRequest = trustedRequest with
+                {
+                    ReportPackReady = retained.IsReady,
+                    ReportPackId = retained.ReportPackId,
+                    EvidenceLinks = (request.EvidenceLinks ?? [])
+                        .Where(link => link.Source is not ("accounting-report-pack" or "accounting-report-package-revision"))
+                        .Concat(retained.EvidenceLinks).ToArray()
+                };
+            }
             var result = await service.RefreshGatePostureAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1221,6 +1237,9 @@ public static partial class WorkstationEndpoints
             }
 
             var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
+            var reportSupport = await ResolveOperationsReportPackAsync(context, service, workflowId, trustedRequest.ReportPackId).ConfigureAwait(false);
+            if (!reportSupport.IsReady)
+                return ReportPackAuthorityRefusal(reportSupport, jsonOptions);
             var result = await service.SubmitForApprovalAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1253,6 +1272,9 @@ public static partial class WorkstationEndpoints
             }
 
             var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
+            var reportSupport = await ResolveOperationsReportPackAsync(context, service, workflowId, trustedRequest.ReportPackId).ConfigureAwait(false);
+            if (!reportSupport.IsReady)
+                return ReportPackAuthorityRefusal(reportSupport, jsonOptions);
             var result = await service.ApproveWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1325,8 +1347,22 @@ public static partial class WorkstationEndpoints
             var readinessRefusal = await ValidateClosePublicationReadinessAsync(context, workflowId, trustedRequest.ExpectedVersion, trustedRequest.CloseScope, jsonOptions).ConfigureAwait(false);
             if (readinessRefusal is not null)
                 return readinessRefusal;
-            var result = await service.CloseWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return OperationsTransitionResult(result, jsonOptions);
+            var reportSupport = await ResolveOperationsReportPackAsync(context, service, workflowId, trustedRequest.ReportPackId).ConfigureAwait(false);
+            if (!reportSupport.IsReady)
+                return ReportPackAuthorityRefusal(reportSupport, jsonOptions);
+            return await LedgerEndpoints.ExecuteClosePeriodLockAsync(
+                new LockClosePeriodRequestDto(
+                    workflowId, trustedRequest.ExpectedVersion, currentUser, trustedRequest.Rationale,
+                    trustedRequest.ReportPackId,
+                    EvidenceLinks: trustedRequest.EvidenceLinks?.Select(link => link.EvidenceId).ToArray(),
+                    ChecklistControlApprovals: trustedRequest.ChecklistControlApprovals,
+                    CorrelationId: trustedRequest.CorrelationId,
+                    ClosePackageId: trustedRequest.ClosePackageId,
+                    ClosePackageManifestId: trustedRequest.ClosePackageManifestId,
+                    ClosePackageRetainedManifestRoute: trustedRequest.ClosePackageRetainedManifestRoute,
+                    ActionOrigin: trustedRequest.ActionOrigin,
+                    CloseScope: trustedRequest.CloseScope),
+                context, jsonOptions, operationsEnvelope: true).ConfigureAwait(false);
         })
         .WithName("CloseOperationsContinuityWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 

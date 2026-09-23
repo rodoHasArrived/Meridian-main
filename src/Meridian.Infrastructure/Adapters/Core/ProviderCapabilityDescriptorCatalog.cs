@@ -36,7 +36,8 @@ public static class ProviderCapabilityDescriptorCatalog
                 new(nameof(ICorporateActionProvider), "SyntheticHistoricalDataProvider emits historical corporate-action evidence through ICorporateActionSource; it is not an on-demand ICorporateActionProvider.")
             ],
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption],
-            StreamingInstrumentTypes: [InstrumentType.Equity]),
+            StreamingInstrumentTypes: [InstrumentType.Equity],
+            SearchInstrumentTypes: [InstrumentType.Equity]),
         new("ibkr", Streaming: typeof(IBMarketDataClient), Historical: typeof(IBHistoricalDataProvider), Brokerage: typeof(IBBrokerageGateway),
             ExecutionMode: IBProviderCapabilityExecutionMode.SimulationWhenVendorSdkUnavailable,
             InstrumentTypes:
@@ -112,7 +113,8 @@ public sealed record ProviderCapabilityDescriptor(
     IReadOnlyList<InstrumentType>? InstrumentTypes = null,
     IReadOnlyList<MarketDataAssetClass>? StreamingAssetClasses = null,
     IReadOnlyList<ProviderCapabilityExclusion>? Exclusions = null,
-    IReadOnlyList<InstrumentType>? StreamingInstrumentTypes = null)
+    IReadOnlyList<InstrumentType>? StreamingInstrumentTypes = null,
+    IReadOnlyList<InstrumentType>? SearchInstrumentTypes = null)
 {
     /// <summary>
     /// Instrument types this provider is declared to cover. Declared here, next to the adapter
@@ -125,6 +127,9 @@ public sealed record ProviderCapabilityDescriptor(
 
     /// <summary>Streaming coverage can be narrower than historical or reference-data coverage.</summary>
     public IReadOnlyList<InstrumentType> SupportedStreamingInstrumentTypes { get; } = StreamingInstrumentTypes ?? InstrumentTypes ?? [InstrumentType.Equity];
+
+    /// <summary>Search coverage follows the reference catalog, independently of option-chain coverage.</summary>
+    public IReadOnlyList<InstrumentType> SupportedSearchInstrumentTypes { get; } = SearchInstrumentTypes ?? InstrumentTypes ?? [InstrumentType.Equity];
 
     public IReadOnlyList<ProviderCapabilityExclusion> ExplicitExclusions { get; } = Exclusions ?? [];
 

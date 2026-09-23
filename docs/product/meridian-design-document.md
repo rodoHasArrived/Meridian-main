@@ -170,7 +170,7 @@ means the capability exists in source with tests but is not the wired operator p
 | Kill-switch, cancel-all, and pre-trade notional/collar controls | Partial foundation; WPF safety surfaces must be wired or visibly demoted | `W9-SAFETY-007` |
 | Hash-chained audit for the accounting ledger; route-level authorization; fail-closed tenancy (`AuditChainService` exists for storage; the journal ledger chain and blanket route coverage do not) | Partial foundation | `W9-GOV-008` |
 | Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | Complete | `W9-ASSET-010` |
-| Corporate action approval and posting lane (`CorporateActionOperationsService` in `src/Meridian.Application/SecurityMaster/CorporateActions/`, `CorporateActionAccountingProjectionService` in `src/Meridian.Instruments/AssetOperations/`, `PostgresCorporateActionOperationsStore` in `src/Meridian.Storage/SecurityMaster/`) | Delivered foundation; acceptance reopened under `DEC-W9-ACCEPTANCE-002` because the approval lane is unreachable and unchanged exit criterion four remains unmet | `W9-CORPACT-011` |
+| Corporate action approval and posting lane (`CorporateActionOperationsService` in `src/Meridian.Application/SecurityMaster/CorporateActions/`, `CorporateActionAccountingProjectionService` in `src/Meridian.Instruments/AssetOperations/`, `PostgresCorporateActionOperationsStore` in `src/Meridian.Storage/SecurityMaster/`) | Delivered and proven end to end on PostgreSQL (post and replay included); `ready_for_acceptance` since 2026-09-22 after `DEC-W9-ACCEPTANCE-002` reopened acceptance | `W9-CORPACT-011` |
 | Operational Evidence Graph as a shared product surface | Planned; explorer, proof-drawer, and manifest primitives exist | `W5X-OEG-001` |
 
 Rules of the doctrine:
@@ -446,7 +446,7 @@ operational record baseline:
 | `W9-SAFETY-007` | Execution-safety controls and visible WPF safety posture |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting and ledger audit |
 | `W9-INGEST-009` | Institutional statement ingestion and deterministic split matching on the live path |
-| `W9-CORPACT-011` | Corporate-action approval and posting completion against unchanged exit criterion four; acceptance reopened by `DEC-W9-ACCEPTANCE-002` |
+| `W9-CORPACT-011` | Corporate-action approval and posting lane, `ready_for_acceptance` since 2026-09-22; acceptance is a fresh operator decision after `DEC-W9-ACCEPTANCE-002` |
 
 **Planned** (registry status `planned`): `W5X-OEG-001` (Operational Evidence Graph product surface).
 
@@ -465,8 +465,8 @@ current registry state rather than presenting the slate as still planned:
 | 8 | `W9-GOV-008` | `in_progress` | Route-level authorization, fail-closed tenancy, hash-chained accounting audit |
 | 9 | `W9-INGEST-009` | `in_progress` | Institutional file ingestion (CAMT.053/BAI2) and the sided reconciliation matcher on the live path |
 
-`W9-ASSET-010` is `done`. The later-registered `W9-CORPACT-011` is `in_progress` after
-`DEC-W9-ACCEPTANCE-002` reopened its acceptance on corrected evidence.
+`W9-ASSET-010` is `done`. The later-registered `W9-CORPACT-011` reached `ready_for_acceptance` on
+2026-09-22, after `DEC-W9-ACCEPTANCE-002` had reopened its acceptance on corrected evidence.
 
 The W9 ordering is strategy, not backlog trivia: truth before demonstration, honest gates before
 surface, deliverables before breadth, safety and governance never overpromised, trusted intake

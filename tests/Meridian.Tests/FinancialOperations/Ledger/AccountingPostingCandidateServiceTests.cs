@@ -14,7 +14,7 @@ namespace Meridian.Tests.FinancialOperations.Ledger;
 /// Guards the fund-accounting source-event scenario where promoted posting rules may draft
 /// journal impact, but posting remains behind retained evidence and approval gates.
 /// </summary>
-public sealed class AccountingPostingCandidateServiceTests
+public sealed partial class AccountingPostingCandidateServiceTests
 {
     [Fact]
     public async Task Scenario_AccountingRulesStudio_SourceEventBuildsApprovalGatedJournalCandidate()
@@ -940,6 +940,7 @@ public sealed class AccountingPostingCandidateServiceTests
         appended.PostingCommand.LedgerBookId.Should().Be(ledgerBookId);
         appended.PostingCommand.SourceEventId.Should().Be(sourceEventId);
         appended.PostingCommand.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Approved);
+        appended.PostingCommand.Actor.Should().Be("reviewer@meridian.local");
         appended.PostingCommand.Evidence.Should().Contain(evidence =>
             evidence.Kind == AccountingPostingEvidenceKindDto.Approval &&
             evidence.EvidenceId == "approval-generated-interest-202605");
@@ -2519,6 +2520,7 @@ public sealed class AccountingPostingCandidateServiceTests
     private sealed class StaticTaxLotStore : ILedgerJournalStore
     {
         public List<LedgerTaxLotRecord> OpenLots { get; } = [];
+        public Exception? HistoryReadFailure { get; set; }
 
         public Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsByAssetScopeAsync(
             Guid ledgerBookId,
@@ -2526,7 +2528,9 @@ public sealed class AccountingPostingCandidateServiceTests
             Guid bookPositionId,
             DateOnly effectiveDate,
             CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<LedgerTaxLotRecord>>(OpenLots
+            => HistoryReadFailure is { } failure
+                ? Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(failure)
+                : Task.FromResult<IReadOnlyList<LedgerTaxLotRecord>>(OpenLots
                 .Where(lot => lot.LedgerBookId == ledgerBookId &&
                               lot.SecurityId == securityId &&
                               lot.BookPositionId == bookPositionId &&

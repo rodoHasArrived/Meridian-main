@@ -104,6 +104,18 @@ jobs:
         self.assertIn("--output artifacts/publish/publish-smoke/release-evidence.json", workflow)
         self.assertIn("release-evidence.json", workflow)
 
+    def test_publish_smoke_only_installs_node_for_browser_publish(self) -> None:
+        workflow = PUBLISH_SMOKE.read_text(encoding="utf-8")
+        setup = workflow.split("      - name: Set up Node.js\n", 1)[1].split("      - name:", 1)[0]
+        self.assertIn("if: inputs.project == 'web-workstation'", setup)
+        self.assertIn("cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json", setup)
+        for step_name in ("Run publish script", "Generate release evidence manifest"):
+            with self.subTest(step=step_name):
+                step = workflow.split(f"      - name: {step_name}\n", 1)[1].split("      - name:", 1)[0]
+                self.assertNotIn("        if:", step)
+        self.assertIn("if: inputs.project == 'web-workstation' && inputs.runtime == 'win-x64'", workflow)
+        self.assertIn("Start the published WebWorkstation artifact with required authentication", workflow)
+
     def test_desktop_installer_uploads_release_evidence_manifest(self) -> None:
         workflow = DESKTOP_INSTALLER.read_text(encoding="utf-8")
 

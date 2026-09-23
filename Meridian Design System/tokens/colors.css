@@ -1,4 +1,5 @@
 /* Meridian — Functional Color System (light defaults / base layer)
+   Programmed Institutionalism v2.0: warm paper foundation, copper accent.
    ───────────────────────────────────────────────────────────────
    This file defines the COMPLETE token surface every component consumes,
    in light mode. theme.css (white-label) overrides a small set of BASE
@@ -21,42 +22,42 @@
 ─────────────────────────────────────────────────────────────────────────────── */
 :root {
   /* ── Canvas / Backgrounds — neutral industrial gray, no warm tint ── */
-  --bg:                 #DEE3EA;  /* window canvas — concrete gray, deeper so panels read */
-  --bg-light:           #FFFFFF;  /* card surface — the brightest lifted surface */
-  --bg-medium:          #EBEFF4;  /* header / sticky thead / nav rail — structural mid band */
-  --bg-hover:           #EAEEF3;  /* hover state — flat shift off white */
-  --bg-active:          #D7E5F1;  /* active / selected — cool blue engagement */
+  --bg:                 #F2F0EC;  /* window canvas — Soft Stone, the drafting table */
+  --bg-light:           #FBFAF8;  /* card surface — Architect White, the lifted work surface */
+  --bg-medium:          #EDEAE4;  /* header / sticky thead / nav rail — structural mid band */
+  --bg-hover:           #F0EEE9;  /* hover state — flat shift off paper */
+  --bg-active:          #F2E3DB;  /* active / selected — warm engagement, tinted off the accent */
   --card-surface:       var(--bg-light);  /* card / panel surface (tracks dark) */
-  --card-surface-raised:#F3F6F9;  /* zebra rows, raised cells — visible flat step, no glow */
+  --card-surface-raised:#F6F4F0;  /* zebra rows, raised cells — visible flat step, no glow */
 
   /* ── Borders — structural & present. In a concrete system the border IS
      the elevation: visible, darker, load-bearing. ── */
-  --border:             #CBD3DC;  /* default line — clearly visible, load-bearing */
-  --border-hover:       #ADB8C4;  /* hovered control — firm */
-  --border-focus:       #2F6F8F;  /* focus ring */
-  --border-strong:      #99A5B2;  /* emphasized / totals / headers — heavy rule */
-  --border-divider:     #D2D9E2;  /* divider between sections — still readable */
+  --border:             #E4E3DE;  /* default line — the 1px rule that does the separating */
+  --border-hover:       #C6C3BB;  /* hovered control — firm */
+  --border-focus:       #A85436;  /* focus ring */
+  --border-strong:      #AFABA1;  /* emphasized / totals / headers — heavy rule */
+  --border-divider:     #DAD8D3;  /* divider between sections — still readable */
 
   /* ── Text — high-contrast, functional ── */
-  --text-primary:       #22272E;  /* headings, values — near-black ink */
-  --text-secondary:     #4D5967;  /* secondary text, labels */
-  --text-muted:         #59636F;  /* captions, hints */
-  --text-disabled:      #889099;  /* disabled — flat gray */
+  --text-primary:       #22252A;  /* headings, values — Carbon */
+  --text-secondary:     #4E5258;  /* secondary text, labels — Warm Graphite */
+  --text-muted:         #5E666F;  /* captions, hints — Slate, taken down from #69717A for AA on --bg-medium */
+  --text-disabled:      #94999F;  /* disabled — flat warm gray */
 
   /* ── Accent (primary action / info) — steel blue, muted & industrial ── */
-  --accent:             #2F6F8F;  /* steel blue — desaturated, functional */
-  --accent-dim:         #255B75;  /* pressed — heavy */
-  --accent-hover:       #3B82A6;  /* hover — controlled */
-  --accent-ghost:       #E1EAF2;  /* ghost button bg (neutral gray-blue) */
+  --accent:             #A85436;  /* copper — desaturated, functional, deliberately not blue */
+  --accent-dim:         #8C4429;  /* pressed — heavy */
+  --accent-hover:       #AF6143;  /* hover — controlled, 4.55:1 under white */
+  --accent-ghost:       #F4E7E0;  /* ghost button bg (warm paper tint) */
   --text-on-accent:     #FFFFFF;  /* text/icon on a solid --accent or semantic fill (buttons, live pills) */
   --text-on-fill:       var(--text-on-accent);  /* alias: label ink on ANY solid semantic fill (mode chips,
                                                    stepper complete) — flips to dark ink in dark mode */
 
   /* ── Semantic base — desaturated, industrial. Legible signal, no candy. ── */
-  --green:              #16885F;  /* success — muted spruce */
-  --red:                #BA3F55;  /* danger — muted brick */
-  --orange:             #8A520E;  /* warning — muted ochre */
-  --purple:             #6F5BA7;  /* pending — muted slate-violet */
+  --green:              #3A7A56;  /* success — muted forest */
+  --red:                #A8443C;  /* danger — brick */
+  --orange:             #8A5C12;  /* warning — amber ochre */
+  --purple:             #5D5486;  /* pending — muted slate-violet */
   --amber:              var(--orange);  /* alias */
 
   /* ── Derived tints + dims (computed off base; auto-track theme + dark) ──
@@ -80,7 +81,8 @@
   --purple-a10:         color-mix(in srgb, var(--purple) 10%, transparent);
   --purple-a20:         color-mix(in srgb, var(--purple) 20%, transparent);
 
-  --blue-a10:           color-mix(in srgb, var(--accent) 10%, transparent);
+  --accent-a10:         color-mix(in srgb, var(--accent) 10%, transparent);
+  --blue-a10:           var(--accent-a10);  /* pre-restyle name, kept for consumers */
 
   /* ── Environment modes (Badge: live / paper / fixture) ── */
   --mode-live:          var(--red);
@@ -88,29 +90,29 @@
   --mode-fixture:       var(--orange);
 
   /* ── Chrome (near-black masthead + status bar — dark in both modes) ── */
-  --topbar-bg:          #171A1F;
-  --topbar-text:        #F4F6F8;
-  --statusbar-bg:       #171A1F;
-  --statusbar-text:     #D7DCE2;
-  --statusbar-border:   #262B31;
+  --topbar-bg:          #1F1D1A;
+  --topbar-text:        #F4F2ED;
+  --statusbar-bg:       #1F1D1A;
+  --statusbar-text:     #D8D3CA;
+  --statusbar-border:   #2E2A24;
   --topbar-border:      var(--statusbar-border);  /* masthead divider */
 
   /* ── Overlay scrim — the dim behind modals / dialogs / drawers / command
      palette / hotkeys sheet. Near-black in both modes (tracks the chrome
      family), standardized so every overlay dims identically. ── */
-  --scrim:              rgba(14, 17, 19, 0.5);
+  --scrim:              rgba(20, 18, 15, 0.5);
 
   /* Chrome interior details — the bars stay near-black in BOTH modes, so these need no dark override */
-  --topbar-text-muted:  #AEB7C0;  /* module label, clock, statusbar values */
-  --topbar-text-faint:  #8A929B;  /* search placeholder, kbd hints, statusbar labels */
-  --topbar-sep:         #3A4048;  /* breadcrumb separator on chrome */
-  --topbar-field-bg:    #0F1216;  /* inset search field on chrome */
-  --topbar-field-border:#2C323A;  /* hairlines inside chrome (search field, kbd caps) */
-  --topbar-field-border-hover: #3A424B;
-  /* Status dots on near-black chrome — brighter than the panel semantics so they read on #171A1F */
-  --chrome-ok:          #2FA377;
-  --chrome-warn:        #D6A84A;
-  --chrome-err:         #E27087;
+  --topbar-text-muted:  #B8B3AA;  /* module label, clock, statusbar values */
+  --topbar-text-faint:  #9B958A;  /* search placeholder, kbd hints, statusbar labels */
+  --topbar-sep:         #453F36;  /* breadcrumb separator on chrome */
+  --topbar-field-bg:    #13120F;  /* inset search field on chrome */
+  --topbar-field-border:#36312A;  /* hairlines inside chrome (search field, kbd caps) */
+  --topbar-field-border-hover: #474037;
+  /* Status dots on near-black chrome — brighter than the panel semantics so they read on #1F1D1A */
+  --chrome-ok:          #56A37E;
+  --chrome-warn:        #C79A4C;
+  --chrome-err:         #D1746B;
 
   /* ── Shell: nav rail (light surface — aliases track white-label + dark) ── */
   --sidebar-bg:         var(--bg-medium);
@@ -128,38 +130,51 @@
   --chart-grid:         var(--border);        /* gridlines */
   --chart-axis:         var(--text-muted);    /* axis labels / ticks */
   --chart-border:       var(--border-strong); /* axis frame */
-  --chart-crosshair:    var(--accent);        /* crosshair + price chip */
+  --chart-crosshair:    #6B655C;             /* crosshair + price chip — chrome, not a
+                                                 series: it crosses --chart-drawdown in every
+                                                 candle/equity plot, and copper sits only ~11deg
+                                                 from brick. A ~11%-saturated neutral separates
+                                                 by chroma where hue cannot. Warm rather than
+                                                 --text-secondary, matching the workstation: a
+                                                 cool graphite sat out of family with every
+                                                 other light neutral. */
   --chart-equity:       var(--green);         /* equity / up candle */
   --chart-drawdown:     var(--red);           /* drawdown / down candle */
   --chart-primary:      var(--accent);        /* primary / strategy line (brand) */
   --chart-secondary:    var(--text-muted);    /* benchmark / secondary series */
   --chart-warning:      var(--orange);        /* warning / threshold line */
+  /* Moving-average overlays. The accent is 11 degrees from --chart-drawdown, so an MA
+     crossing falling candles disappears into them; these are the roles that keep the
+     hue separation the restyle's first review round measured. */
+  --chart-ma20:         var(--purple);        /* MA(20) overlay */
+  --chart-ma50:         var(--orange);        /* MA(50) overlay */
 }
 
 /* ── Meridian app compatibility aliases (Track B --ws-* + working names) ───────
    The real Meridian browser workstation (src/Meridian.Ui/dashboard) authors CSS
    against these names. Declared here so app component CSS resolves verbatim when
-   pasted into a consumer. Values are the canonical light Institutional Ops palette. */
+   pasted into a consumer. Values track the canonical light palette (Programmed Institutionalism v2.0);
+   keep them in step with the --theme-* and base tokens above when the brand changes. */
 :root {
-  --ws-page-bg:        #ECEFF3;
-  --ws-surface:        #FFFFFF;
-  --ws-surface-subtle: #F5F7FA;
-  --ws-surface-raised: #FAFBFC;
-  --ws-border:         #D7DCE2;
-  --ws-border-strong:  #B8C2CC;
-  --ws-text:           #22272E;
-  --ws-text-muted:     #59636F;
-  --ws-text-secondary: #4D5967;
-  --ws-masthead-bg:    #171A1F;
-  --ws-masthead-fg:    #F4F6F8;
-  --ws-rail-bg:        #F4F6F8;
-  --ws-rail-active:    #E1EAF2;
-  --ws-row-hover:      #F1F4F7;
-  --ws-row-selected:   #E6EEF5;
-  --ws-row-border:     #DDE3EA;
-  --ws-accent:         #2F6F8F;
-  --ws-accent-hover:   #3B82A6;
-  --ws-accent-pressed: #255B75;
+  --ws-page-bg:        #F2F0EC;
+  --ws-surface:        #FBFAF8;
+  --ws-surface-subtle: #EDEAE4;
+  --ws-surface-raised: #F6F4F0;
+  --ws-border:         #E4E3DE;
+  --ws-border-strong:  #AFABA1;
+  --ws-text:           #22252A;
+  --ws-text-muted:     #5E666F;
+  --ws-text-secondary: #4E5258;
+  --ws-masthead-bg:    #1F1D1A;
+  --ws-masthead-fg:    #F4F2ED;
+  --ws-rail-bg:        #EDEAE4;
+  --ws-rail-active:    #F2E3DB;
+  --ws-row-hover:      #F0EEE9;
+  --ws-row-selected:   #F2E3DB;
+  --ws-row-border:     #E4E3DE;
+  --ws-accent:         #A85436;
+  --ws-accent-hover:   #AF6143;
+  --ws-accent-pressed: #8C4429;
 
   /* Working-name aliases used across app component CSS (.dense-data-table, .metric-tile, masthead…) */
   --fg:               var(--ws-text);
@@ -181,21 +196,21 @@
    so white-label and dark flow through automatically. Never hardcode a Tier-3 hex. */
 :root {
   /* Severity (operator status chips) — DERIVED from the semantic palette. */
-  --severity-blocked-fg: var(--red);    --severity-blocked-bd: color-mix(in srgb, var(--red) 40%, transparent);    --severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent);
-  --severity-action-fg:  var(--orange); --severity-action-bd:  color-mix(in srgb, var(--orange) 42%, transparent); --severity-action-bg:  color-mix(in srgb, var(--orange) 11%, transparent);
-  --severity-review-fg:  var(--accent); --severity-review-bd:  color-mix(in srgb, var(--accent) 36%, transparent); --severity-review-bg:  color-mix(in srgb, var(--accent) 10%, transparent);
-  --severity-ready-fg:   var(--green);  --severity-ready-bd:   color-mix(in srgb, var(--green) 36%, transparent);  --severity-ready-bg:   color-mix(in srgb, var(--green) 10%, transparent);
+  --severity-blocked-fg: var(--red-dim);    --severity-blocked-bd: color-mix(in srgb, var(--red) 40%, transparent);    --severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent);
+  --severity-action-fg:  var(--orange-dim); --severity-action-bd:  color-mix(in srgb, var(--orange) 42%, transparent); --severity-action-bg:  color-mix(in srgb, var(--orange) 11%, transparent);
+  --severity-review-fg:  var(--accent-dim); --severity-review-bd:  color-mix(in srgb, var(--accent) 36%, transparent); --severity-review-bg:  color-mix(in srgb, var(--accent) 10%, transparent);
+  --severity-ready-fg:   var(--green-dim);  --severity-ready-bd:   color-mix(in srgb, var(--green) 36%, transparent);  --severity-ready-bg:   color-mix(in srgb, var(--green) 10%, transparent);
   --severity-info-fg:    var(--text-muted); --severity-info-bd: var(--border);   --severity-info-bg: var(--bg-medium);
 
   /* State (environment + evidence) — DERIVED from the semantic palette. */
-  --state-healthy-fg:  var(--green);      --state-healthy-bd:  color-mix(in srgb, var(--green) 32%, transparent);  --state-healthy-bg:  color-mix(in srgb, var(--green) 10%, transparent);
-  --state-warn-fg:     var(--orange);     --state-warn-bd:     color-mix(in srgb, var(--orange) 38%, transparent); --state-warn-bg:     color-mix(in srgb, var(--orange) 11%, transparent);
-  --state-danger-fg:   var(--red);        --state-danger-bd:   color-mix(in srgb, var(--red) 35%, transparent);    --state-danger-bg:   color-mix(in srgb, var(--red) 10%, transparent);
-  --state-paper-fg:    var(--accent);     --state-paper-bd:    color-mix(in srgb, var(--accent) 34%, transparent); --state-paper-bg:    color-mix(in srgb, var(--accent) 10%, transparent);
-  --state-strategy-fg: var(--purple);     --state-strategy-bd: color-mix(in srgb, var(--purple) 34%, transparent); --state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent);
-  --state-live-fg:     var(--red);        --state-live-bd:     color-mix(in srgb, var(--red) 42%, transparent);    --state-live-bg:     color-mix(in srgb, var(--red) 12%, transparent);
+  --state-healthy-fg:  var(--green-dim);      --state-healthy-bd:  color-mix(in srgb, var(--green) 32%, transparent);  --state-healthy-bg:  color-mix(in srgb, var(--green) 10%, transparent);
+  --state-warn-fg:     var(--orange-dim);     --state-warn-bd:     color-mix(in srgb, var(--orange) 38%, transparent); --state-warn-bg:     color-mix(in srgb, var(--orange) 11%, transparent);
+  --state-danger-fg:   var(--red-dim);        --state-danger-bd:   color-mix(in srgb, var(--red) 35%, transparent);    --state-danger-bg:   color-mix(in srgb, var(--red) 10%, transparent);
+  --state-paper-fg:    var(--accent-dim);     --state-paper-bd:    color-mix(in srgb, var(--accent) 34%, transparent); --state-paper-bg:    color-mix(in srgb, var(--accent) 10%, transparent);
+  --state-strategy-fg: var(--purple-dim);     --state-strategy-bd: color-mix(in srgb, var(--purple) 34%, transparent); --state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent);
+  --state-live-fg:     var(--red-dim);        --state-live-bd:     color-mix(in srgb, var(--red) 42%, transparent);    --state-live-bg:     color-mix(in srgb, var(--red) 12%, transparent);
   --state-muted-fg:    var(--text-muted); --state-muted-bd:    var(--border);                                     --state-muted-bg:    var(--bg-medium);
-  --state-pending-fg:  var(--purple);     --state-pending-bd:  color-mix(in srgb, var(--purple) 34%, transparent); --state-pending-bg:  color-mix(in srgb, var(--purple) 10%, transparent);
+  --state-pending-fg:  var(--purple-dim);     --state-pending-bd:  color-mix(in srgb, var(--purple) 34%, transparent); --state-pending-bg:  color-mix(in srgb, var(--purple) 10%, transparent);
 }
 
 

@@ -86,7 +86,7 @@ public sealed class ProviderInstrumentCapabilityMatrixServiceTests
     }
 
     [Fact]
-    public void GetMatrix_SyntheticOptionsRemainVisibleWithoutClaimingOptionStreaming()
+    public void GetMatrix_SyntheticOptionsRemainVisibleWithoutClaimingOptionStreamingOrSearch()
     {
         var matrix = new ProviderInstrumentCapabilityMatrixService().GetMatrix();
         var synthetic = matrix.Providers.Single(row => row.ProviderId == "synthetic");
@@ -95,7 +95,9 @@ public sealed class ProviderInstrumentCapabilityMatrixServiceTests
             var cell = synthetic.Cells.Single(cell => cell.InstrumentType == instrument);
             cell.OptionsChain.Should().BeTrue();
             cell.Stream.Should().BeFalse();
+            cell.SymbolSearch.Should().BeFalse("the synthetic reference catalog has no option instruments");
         }
+        synthetic.Cells.Single(cell => cell.InstrumentType == "Equity").SymbolSearch.Should().BeTrue();
         matrix.Providers.Should().NotContain(row => row.ProviderId == "openfigi",
             "the matrix has no symbol-resolution surface and must not render a misleading empty row");
     }

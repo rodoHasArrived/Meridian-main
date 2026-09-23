@@ -13,6 +13,10 @@ on:
       - "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs"
       - "src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs"
       - "src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs"
+      # The Data desk reads the seeded market history through this service's discovery rules, so a
+      # change to them can empty the demo's Data desk without touching any file above.
+      - "src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs"
+      - "src/Meridian.Storage/Policies/JsonlStoragePolicy.cs"
       - "tests/Meridian.Tests/Demo/**"
       - "README.md"
       - "docs/start/README.md"
@@ -30,6 +34,10 @@ on:
       - "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs"
       - "src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs"
       - "src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs"
+      # The Data desk reads the seeded market history through this service's discovery rules, so a
+      # change to them can empty the demo's Data desk without touching any file above.
+      - "src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs"
+      - "src/Meridian.Storage/Policies/JsonlStoragePolicy.cs"
       - "tests/Meridian.Tests/Demo/**"
       - "README.md"
       - "docs/start/README.md"

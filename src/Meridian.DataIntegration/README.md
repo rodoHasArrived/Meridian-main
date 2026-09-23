@@ -54,7 +54,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   event-type, and processing-tier matching.
 - `Historical/HistoricalDataQueryService.cs` - JSONL-backed historical market-data query and
   OHLCV bar aggregation service used by CLI, diagnostics, simulation, and shared-data access
-  adapters.
+  adapters. File-date filtering and date-range discovery inspect paths relative to the configured
+  data root, so dated workspace or backup directories cannot replace the data's own session date.
 - `Monitoring/BadTickFilter.cs`, `Monitoring/TickSizeValidator.cs`,
   `Monitoring/TimestampMonotonicityChecker.cs`, `Monitoring/ValidationMetrics.cs`,
   `Monitoring/ClockSkewEstimator.cs`, `Monitoring/SpreadMonitor.cs`,

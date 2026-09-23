@@ -238,7 +238,8 @@ export function JournalEntryDetailScreen() {
     memo: line.description ?? "",
     account: line.account,
     debit: line.debit,
-    credit: line.credit
+    credit: line.credit,
+    evidenceSubject: draft ? { subjectKind: "journal-entry", subjectId: draft.journalEntryId, ledgerBookId: draft.ledgerBookId } : undefined
   }));
 
   return (

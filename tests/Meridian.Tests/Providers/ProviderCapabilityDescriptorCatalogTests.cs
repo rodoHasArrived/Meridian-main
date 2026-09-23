@@ -19,10 +19,12 @@ using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.YahooFinance;
+using Meridian.Infrastructure.DataSources;
 using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ProviderCapabilityDescriptor = Meridian.Infrastructure.Adapters.Core.ProviderCapabilityDescriptor;
 
 namespace Meridian.Tests.Providers;
 

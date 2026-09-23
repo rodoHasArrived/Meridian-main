@@ -21,7 +21,7 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
         aria-valuemin={0}
         aria-valuemax={safeMax}
         aria-valuenow={safeValue}
-        className={cn("h-2 overflow-hidden rounded-[2px] border border-border bg-[#F3F6F9]", className)}
+        className={cn("h-2 overflow-hidden rounded-[2px] border border-border bg-[var(--ws-surface-raised)]", className)}
         {...props}
       >
         <div

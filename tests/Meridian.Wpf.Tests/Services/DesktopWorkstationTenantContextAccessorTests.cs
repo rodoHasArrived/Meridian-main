@@ -1,5 +1,6 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Features.Accounting;
 using Meridian.Wpf.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,26 +21,43 @@ public sealed class DesktopWorkstationTenantContextAccessorTests
         var scope = new CloseReadinessScopeDto("fund-alpha", Guid.NewGuid(), Guid.NewGuid(), "entity-alpha", "2026-07");
         var workflowId = Guid.NewGuid();
         var now = DateTimeOffset.UtcNow;
+        var reviewedRevision = new OperationsEvidenceLinkDto(
+            $"accounting-report-package-revision:{new string('a', 64)}",
+            "Retained package and journal revision", null, "accounting-report-package-revision", now);
+        var reviewedReport = new OperationsReportPackReadinessDto(true, "report-1", null, [reviewedRevision]);
         var workflow = new OperationsContinuityWorkflowDto(workflowId, scope.FundAccountId!.Value, scope.PeriodId!,
             null, "official-close", now, now, 7, default, default, default, default, default, default,
-            [], [], [], null, [], new(true, "report-1", null, []), [], [], [], [], LedgerBookId: scope.LedgerBookId);
+            [], [], [], null, [], reviewedReport, [], [], [], [], LedgerBookId: scope.LedgerBookId);
         var authority = Substitute.For<IFinancialOperationsCommandCenterReadService>();
         authority.GetCommandCenterAsync(scope.FundProfileId, scope.LedgerBookId, scope.FundAccountId, scope.PeriodId,
             scope.EntityId, Arg.Any<CancellationToken>(), "company-alpha", "company-alpha")
             .Returns(new FinancialOperationsCommandCenterDto(now, scope.FundProfileId, scope.LedgerBookId,
                 scope.FundAccountId, scope.PeriodId, "Ready", true, "Complete retained evidence", 0, 0, 0, [], [],
                 ActiveWorkflow: workflow, CloseReadiness: new(scope, now, "Ready", true, true, [], [])));
+        // This session-boundary fixture supplies both evidence ports consumed by the registered
+        // guard. Package retention and canonical journal validation are covered by shared tests.
+        var reportAuthority = Substitute.For<IOperationsReportPackAuthority>();
+        var reportAvailable = true;
+        var currentReport = reviewedReport;
+        reportAuthority.ResolveAsync(workflow, "report-1", "company-alpha", "company-alpha", Arg.Any<CancellationToken>())
+            .Returns(_ => reportAvailable
+                ? Task.FromResult(currentReport)
+                : Task.FromException<OperationsReportPackReadinessDto>(new InvalidOperationException("Report source unavailable.")));
         var services = new ServiceCollection();
         services.AddSingleton(session);
         services.AddSingleton(authority);
+        services.AddSingleton(reportAuthority);
         new AccountingFeatureModule().Register(services);
         using var provider = services.BuildServiceProvider();
         var guard = provider.GetRequiredService<IClosePublicationReadinessGuard>();
         var accessor = provider.GetRequiredService<IWorkstationTenantContextAccessor>();
+        guard.Should().BeOfType<ClosePublicationReadinessGuard>();
+        provider.GetRequiredService<IOperationsReportPackAuthority>().Should().BeSameAs(reportAuthority);
 
         (await guard.ValidateAsync(workflowId, 7, scope)).Should()
             .ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_REQUIRED");
         authority.ReceivedCalls().Should().BeEmpty();
+        reportAuthority.ReceivedCalls().Should().BeEmpty();
 
         session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
         accessor.GetRequired().Should().BeEquivalentTo(new
@@ -51,6 +69,24 @@ public sealed class DesktopWorkstationTenantContextAccessorTests
         (await guard.ValidateAsync(workflowId, 7, scope)).Should().BeEmpty();
         await authority.Received(1).GetCommandCenterAsync(scope.FundProfileId, scope.LedgerBookId, scope.FundAccountId,
             scope.PeriodId, scope.EntityId, Arg.Any<CancellationToken>(), "company-alpha", "company-alpha");
+        await reportAuthority.Received(1).ResolveAsync(workflow, "report-1", "company-alpha", "company-alpha", Arg.Any<CancellationToken>());
+
+        reportAvailable = false;
+        (await guard.ValidateAsync(workflowId, 7, scope)).Should()
+            .ContainSingle(blocker => blocker.Code == "CLOSE_READINESS_UNAVAILABLE");
+        reportAvailable = true;
+        currentReport = new(false, null, "Canonical report support requires repair.", []);
+        (await guard.ValidateAsync(workflowId, 7, scope)).Should()
+            .ContainSingle(blocker => blocker.Code == "CLOSE_REPORT_SUPPORT_NOT_READY");
+        currentReport = reviewedReport with
+        {
+            EvidenceLinks = [reviewedRevision with { EvidenceId = $"accounting-report-package-revision:{new string('b', 64)}" }]
+        };
+        (await guard.ValidateAsync(workflowId, 7, scope)).Should()
+            .ContainSingle(blocker => blocker.Code == "CLOSE_REPORT_SUPPORT_CHANGED");
+        currentReport = reviewedReport;
+        (await guard.ValidateAsync(workflowId, 7, scope)).Should().BeEmpty();
+
         (await guard.ValidateAsync(workflowId, 7, scope, "other-company", "other-company")).Should()
             .ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_MISMATCH");
 
@@ -59,6 +95,9 @@ public sealed class DesktopWorkstationTenantContextAccessorTests
         signedOut.HasTenantScope.Should().BeFalse();
         (await guard.ValidateAsync(workflowId, 7, scope)).Should()
             .ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_REQUIRED");
+        await authority.Received(5).GetCommandCenterAsync(scope.FundProfileId, scope.LedgerBookId, scope.FundAccountId,
+            scope.PeriodId, scope.EntityId, Arg.Any<CancellationToken>(), "company-alpha", "company-alpha");
+        await reportAuthority.Received(5).ResolveAsync(workflow, "report-1", "company-alpha", "company-alpha", Arg.Any<CancellationToken>());
     }
 
     [Fact]

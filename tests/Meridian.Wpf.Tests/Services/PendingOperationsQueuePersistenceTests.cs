@@ -281,6 +281,74 @@ public sealed class PendingOperationsQueuePersistenceTests : IDisposable
     }
 
     [Fact]
+    public async Task ProcessAllAsync_CancelledHandler_PreservesOrderOfDependentOperationsAcrossSessions()
+    {
+        var service = new PendingOperationsQueueService();
+        service.RegisterHandler("test.review", _ => throw new OperationCanceledException());
+        service.RegisterHandler("test.resolve", _ => Task.CompletedTask);
+        service.Enqueue("test.review", null);
+        service.Enqueue("test.resolve", null);
+
+        var act = () => service.ProcessAllAsync();
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        service.GetAll().Select(operation => operation.OperationType)
+            .Should().Equal("test.review", "test.resolve");
+        service.Peek()!.RetryCount.Should().Be(0);
+
+        var reader = new PendingOperationsQueueService();
+        await reader.InitializeAsync();
+
+        reader.GetAll().Select(operation => operation.OperationType)
+            .Should().Equal(new[] { "test.review", "test.resolve" },
+                "the durable rescue snapshot must retain the original replay order");
+    }
+
+    [Fact]
+    public async Task ProcessAllAsync_AfterARescue_DrainsTheReplayFrontAndTheRestOfTheQueue()
+    {
+        // The replay front holds the rescued operation until the next drain, so that drain has
+        // more work than the queue alone reports: bounding it by the queue would leave the last
+        // operation behind even though it is pending and has a handler.
+        var service = new PendingOperationsQueueService();
+        var processed = new List<string>();
+        var cancelTheFirstAttempt = true;
+        service.RegisterHandler("test.review", _ =>
+        {
+            if (cancelTheFirstAttempt)
+            {
+                cancelTheFirstAttempt = false;
+                throw new OperationCanceledException();
+            }
+
+            processed.Add("test.review");
+            return Task.CompletedTask;
+        });
+        service.RegisterHandler("test.resolve", _ =>
+        {
+            processed.Add("test.resolve");
+            return Task.CompletedTask;
+        });
+        service.RegisterHandler("test.close", _ =>
+        {
+            processed.Add("test.close");
+            return Task.CompletedTask;
+        });
+        service.Enqueue("test.review", null);
+        service.Enqueue("test.resolve", null);
+        service.Enqueue("test.close", null);
+
+        var act = () => service.ProcessAllAsync();
+        await act.Should().ThrowAsync<OperationCanceledException>();
+
+        await service.ProcessAllAsync();
+
+        processed.Should().Equal(new[] { "test.review", "test.resolve", "test.close" },
+            "the rescued operation replays first and the queue behind it still drains");
+        service.PendingCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task PersistAsync_AfterShutdown_DoesNotOverwriteFinalSnapshot()
     {
         // An enqueue-scheduled background persist that loses the race with shutdown must not

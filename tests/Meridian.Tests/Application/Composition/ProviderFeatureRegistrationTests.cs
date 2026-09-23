@@ -6,6 +6,7 @@ using Meridian.Application.Composition.Features;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.Services;
 using Meridian.Core.Config;
+using Meridian.Core.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Alpaca;
@@ -13,6 +14,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.NYSE;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Robinhood;
+using Meridian.Infrastructure.DataSources;
 using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -163,7 +165,7 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
     public async Task Register_NyseStreamingUsesConfiguredAuthenticationOptions(string section)
     {
         var services = CreateServices(WriteConfig(new AppConfig()));
-        services.AddNYSEDataSource(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"{section}:ApiKey"] = "catalog-nyse-key",
             [$"{section}:ApiSecret"] = "catalog-nyse-secret",
@@ -180,6 +182,26 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
         failure.Should().NotBeNull("the fake endpoint refuses authentication before opening any socket");
         handler.RequestUri.Should().Be(new Uri("https://nyse-catalog.test/oauth/token"));
         handler.RequestBody.Should().Contain("client_id=catalog-client").And.Contain("client_secret=catalog-nyse-secret");
+    }
+
+    [Fact]
+    public async Task CompositionRoot_RegistersNyseCompatibilityAcrossItsImplementedSurfaces()
+    {
+        using var quiet = new ProductionEnvironmentQuietScope();
+        using var environment = new EnvironmentVariableScope("DOTNET_ENVIRONMENT", "Development");
+        using var governance = new EnvironmentVariableScope("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddMarketDataServices(CompositionOptions.WebDashboard with
+        {
+            ConfigPath = WriteConfig(new AppConfig())
+        });
+        await using var provider = services.BuildServiceProvider();
+
+        var nyse = provider.GetServices<IDataSource>().OfType<NYSEDataSource>()
+            .Should().ContainSingle("the normal host must register the advertised compatibility adapter").Subject;
+        provider.GetServices<IRealtimeDataSource>().Should().ContainSingle(source => ReferenceEquals(source, nyse));
+        provider.GetServices<IHistoricalDataSource>().Should().ContainSingle(source => ReferenceEquals(source, nyse));
     }
 
     private sealed class NyseTestHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
@@ -220,6 +242,7 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
         services.AddLogging();
         services.AddHttpClient();
         services.AddSingleton<IMarketEventPublisher, TestMarketEventPublisher>();
+        services.AddSingleton<IReconnectionMetrics, NullReconnectionMetrics>();
 
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         new ConfigurationFeatureRegistration().Register(services, options);

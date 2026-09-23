@@ -44,7 +44,7 @@ export function SegmentedControl({
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex items-stretch gap-0.5 rounded-[2px] border border-border bg-[#F3F6F9] p-0.5",
+        "inline-flex items-stretch gap-0.5 rounded-[2px] border border-border bg-[var(--ws-surface-raised)] p-0.5",
         fullWidth && "flex w-full",
         className
       )}
@@ -65,7 +65,7 @@ export function SegmentedControl({
               size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
               active
                 ? "bg-card font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"
-                : "bg-transparent text-muted-foreground hover:bg-[#EAEEF3] hover:text-foreground",
+                : "bg-transparent text-muted-foreground hover:bg-[var(--ws-row-hover)] hover:text-foreground",
               option.disabled && "cursor-not-allowed opacity-45"
             )}
           >
