@@ -1,5 +1,13 @@
 # DK1 Baseline Trust Thresholds and FP/FN Review Process
 
+**Status:** supporting-contract
+**Owner:** Data and Provider Reliability
+**Reviewed:** 2026-09-23
+
+These are retained DK1 pilot defaults, not measured production thresholds. Recalibrate against the
+current incident window and retain approval evidence before applying a changed profile. The dated
+baseline below is unchanged by this documentation review.
+
 **Last Updated:** 2026-04-21  
 **Owners:** Data + Provider Reliability + Trading
 **Scope:** Baseline trust thresholds for DK1 pilot and required false-positive/false-negative governance loop
@@ -44,7 +52,7 @@
 ### Required evidence packet per review
 
 1. Run-date parity packet from [`dk1-pilot-parity-runbook.md`](./dk1-pilot-parity-runbook.md)
-2. Threshold and calibration context from [`archive/docs/operations/provider-degradation-calibration.md`](../../../archive/docs/operations/provider-degradation-calibration.md)
+2. The baseline threshold profile and recorded FP/FN calibration decision from this document
 3. Alert rationale mapping from [`dk1-trust-rationale-mapping.md`](./dk1-trust-rationale-mapping.md)
 
 ### Decision workflow

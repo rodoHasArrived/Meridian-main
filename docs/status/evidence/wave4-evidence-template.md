@@ -1,8 +1,15 @@
 # Wave 4 Evidence Template
 
+**Status:** active-template
 **Owner:** Accounting and Ledger
+**Reviewed:** 2026-09-23
+
+This is an evidence-capture template, not an executed acceptance result. Attach the release commit,
+actual command results, run time, and retained artifact identity for every new record. Current delivery
+status belongs in the [roadmap registry](../../roadmap/README.md); release gates belong in the
+[implementation and readiness tracker](../../product/implementation-todo-list.md).
+
 **Last Updated:** 2026-04-21  
-**Status:** Active
 
 This template standardizes Wave 4 evidence capture so each scenario can be replayed and audited without relying on implicit context.
 

@@ -2256,9 +2256,6 @@ Meridian-main
 │   │   │   ├── dk1-trust-rationale-mapping.md
 │   │   │   ├── wave2-cockpit-evidence-packet.md
 │   │   │   └── wave4-evidence-template.md
-│   │   ├── slo-reports
-│   │   │   └── README.md
-│   │   ├── accounting-productization-checklist.md
 │   │   ├── ai-handoff-checklist-report.json
 │   │   ├── ai-handoff-checklist-report.md
 │   │   ├── ai-handoff-packet.json
@@ -2284,7 +2281,6 @@ Meridian-main
 │   │   ├── governance-readiness-dashboard.md
 │   │   ├── kernel-readiness-dashboard.md
 │   │   ├── link-repair-report.md
-│   │   ├── metrics-dashboard.md
 │   │   ├── paper-replay-reliability-dashboard.json
 │   │   ├── paper-replay-reliability-dashboard.md
 │   │   ├── pilot-readiness-dashboard.json
