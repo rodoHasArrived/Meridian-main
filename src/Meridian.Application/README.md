@@ -34,6 +34,14 @@ legacy new-run behavior and must not be treated as safe automatic retries.
 
 ## Provider setup attribution
 
+The shared provider capability matrix uses per-instrument streaming coverage independently of
+historical and options coverage. Runtime Polygon factories retain the configured feed and resolved
+API key; NYSE factories consume the registered options used by its compatibility data source, so
+both supported configuration sections reach the same authentication path.
+Normal host composition registers the NYSE compatibility source and its realtime/historical aliases
+from that same configuration. Symbol-search coverage is projected independently, so synthetic
+option-chain cells remain visible without advertising unavailable option-symbol searches.
+
 Provider setup accepts the initiating actor from its HTTP boundary and retains it in credential
 vault audit records. Operator endpoints reject missing identity; internal callers retain an explicit
 service attribution when no operator initiated the call.
