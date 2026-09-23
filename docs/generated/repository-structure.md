@@ -5661,7 +5661,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_033__tax_lot_face_terms.sql
 │   │   │   │   ├── V_ledger_034__open_lot_acquisition.sql
 │   │   │   │   ├── V_ledger_035__open_lot_backfill.sql
-│   │   │   │   └── V_ledger_036__ledger_event_audit_chain.sql
+│   │   │   │   ├── V_ledger_036__ledger_event_audit_chain.sql
+│   │   │   │   └── V_ledger_037__open_lot_basis_adjustment.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5688,6 +5689,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerCurrencyBackfill.cs
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
+│   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
 │   │   │   ├── PostgresLedgerJournalStore.HistoricalTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.OpenLotBackfill.cs
@@ -10095,6 +10097,7 @@ Meridian-main
 │   │   │   ├── AssetAccountingPostingEvidenceValidatorTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
 │   │   │   ├── AuditChainProcessTests.cs

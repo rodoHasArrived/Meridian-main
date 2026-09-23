@@ -60,7 +60,8 @@ public sealed partial class PostgresLedgerJournalStore
                    original_face,
                    booked_factor,
                    par_basis,
-                   acquisition_terms
+                   acquisition_terms,
+                   basis_adjustment
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and security_id = @security_id
@@ -101,10 +102,11 @@ public sealed partial class PostgresLedgerJournalStore
             select m.tax_lot_record_id, m.mutation_batch_id, m.mutation_kind,
                    m.quantity_before, m.quantity_delta, m.quantity_after,
                    m.expected_version, m.result_version, j.metadata ->> 'effectiveDate',
-                   m.security_id, m.book_position_id, b.ledger_book_id, j.ledger_book_id
+                   m.security_id, m.book_position_id, b.ledger_book_id, p.ledger_book_id
             from {Qualified("tax_lot_mutations")} m
             left join {Qualified("atomic_tax_lot_posting_batches")} b on b.mutation_batch_id = m.mutation_batch_id
             left join {Qualified("journal_entries")} j on j.journal_entry_id = m.journal_entry_id
+            left join {Qualified("accounting_periods")} p on p.period_id = j.period_id
             where m.tax_lot_record_id = any(@lot_ids)
             order by m.tax_lot_record_id, m.result_version;
             """;

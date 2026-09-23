@@ -793,6 +793,15 @@
       "sha256": "c085d7e99a17c3d2c12d1e5e6dd937aca7b1fa7d5bd9cd1d471fd1af539178f9"
     },
     {
+      "filename": "V_ledger_037__open_lot_basis_adjustment.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
+      "schema": "ledger",
+      "sha256": "c2d4ad2242a51114218180a852d1e5e88f03d0b2a0c6132037669648fa1d1140"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1037,7 +1046,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "0090efb51d681ee5d3e5e420187823372e27f0bf09b2dcf4a3b9078a47184ccd",
+  "fingerprint": "77fced67f4485ce3ca135bd40f02533762b4b8e007e8b7de517fa268dcd8895e",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1275,9 +1284,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 115,
+    "files": 116,
     "migration_sets": 10,
-    "waivers": 10,
+    "waivers": 11,
     "warnings": 0
   },
   "waivers": [
@@ -1322,6 +1331,13 @@
       "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger, which rejects truncation of the journal integrity tables. The migration truncates nothing.",
       "review_after": "2027-02-01",
       "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
+      "reason": "Constraint widening, not data loss: ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, and ck_tax_lot_mutations_cost are dropped and immediately re-created in the same transaction as strict supersets that admit the governed AverageCost BasisRedistribution mutation kind and pooled relief basis. Every existing row still satisfies the re-created checks, and no column or data is removed.",
+      "review_after": "2027-03-01",
+      "rule_id": "migration-drop-table-member"
     },
     {
       "category": "destructive_changes",

@@ -304,3 +304,31 @@ colliding on the fact-bearing fingerprint. `AssetAcquisitionLotPostgresRoundTrip
 and face acquisitions post, project through `ToOpenLot`, pass `CanonicalOpenLotDisposalGuard`, and
 replay. Remaining phases are unchanged: AverageCost redistribution, amortization, corporate-action
 successors, advance refunding, and shadow operation.
+
+## Implementation receipt - 2026-09-23
+
+Atomic AverageCost relief: the durable disposal transaction now accepts the `AverageCost` account
+policy. `CanonicalOpenLotDisposalGuard` certifies each selection against the pooled canonical relief
+(FIFO depletion order, pooled functional basis, decimal residual on the last slice), and the journal
+credits that pooled basis. In the same transaction every surviving lot in the pool is restated to the
+pooled basis through a governed `OpenLotBasisAdjustmentDto` (`V_ledger_037`: `tax_lots.basis_adjustment`,
+append-only under a trigger that requires a version increment stamped with a new mutation batch).
+Unselected survivors receive an append-only `BasisRedistribution` mutation row carrying their
+immutable before-snapshot; a partially relieved lot carries its restatement on its own `Disposal`
+row, so each lot still mutates at most once per batch. Acquisition facts never change: `ToOpenLot`
+projects the adjusted basis scaled by later relief and fails closed on an adjustment that does not
+bind the open quantity. The lots of record therefore tie to the asset account after every pooled
+disposal. Reporting rebuilds the pre-relief pool from the batch's retained snapshots, re-runs pooled
+relief, and requires every retained slice to match exactly before a report projection is produced.
+`AtomicTaxLotJournalStoreTests.AppendAssetPostingAsync_AverageCostReliefRestatesThePoolAndReportingCertifiesIt`
+proves a partial and a closing AverageCost disposal against PostgreSQL, including replay and a
+tampered-pool refusal. A discrete (FIFO/LIFO/HIFO/SpecificId) disposal of a restated lot fails
+closed, because its acquisition unit cost no longer equals its canonical basis; changing an
+account's relief policy across a restated pool is not a supported transition in this increment.
+The effective-dated lot read (`ListOpenTaxLotsByAssetScopeAsync`, which replays retained mutations to
+restate quantity as of an event date) treats a `BasisRedistribution` row as a zero-quantity
+restatement and rejects one that moves quantity. Its projection keeps the current governed basis
+adjustment, so `ToOpenLot` fails closed on an as-of quantity above the restated quantity rather than
+reporting an unrestated basis; that read is for held quantity only, never disposal selection. The
+replay now resolves each retained journal's ledger book through its accounting period. Remaining
+phases: amortization, corporate-action successors, advance refunding, and shadow operation.

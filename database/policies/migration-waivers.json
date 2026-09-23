@@ -53,6 +53,12 @@
       "rule_id": "migration-truncate",
       "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of immutable pricing-selection receipts; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the original receipt remains replayable.",
       "review_after": "2027-03-22"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Constraint widening, not data loss: ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, and ck_tax_lot_mutations_cost are dropped and immediately re-created in the same transaction as strict supersets that admit the governed AverageCost BasisRedistribution mutation kind and pooled relief basis. Every existing row still satisfies the re-created checks, and no column or data is removed.",
+      "review_after": "2027-03-01"
     }
   ],
   "removed_migrations": [
