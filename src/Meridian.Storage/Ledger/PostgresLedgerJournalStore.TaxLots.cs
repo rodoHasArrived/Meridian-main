@@ -123,7 +123,8 @@ public sealed partial class PostgresLedgerJournalStore
                       original_face,
                       booked_factor,
                       par_basis,
-                      acquisition_terms;
+                      acquisition_terms,
+                      basis_adjustment;
             """;
         command.Parameters.AddWithValue("tax_lot_record_id", lot.TaxLotRecordId);
         command.Parameters.AddWithValue("ledger_book_id", lot.LedgerBookId);
@@ -202,7 +203,8 @@ public sealed partial class PostgresLedgerJournalStore
                    original_face,
                    booked_factor,
                    par_basis,
-                   acquisition_terms
+                   acquisition_terms,
+                   basis_adjustment
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
@@ -272,7 +274,8 @@ public sealed partial class PostgresLedgerJournalStore
                    original_face,
                    booked_factor,
                    par_basis,
-                   acquisition_terms
+                   acquisition_terms,
+                   basis_adjustment
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and tax_lot_record_id = any(@tax_lot_record_ids)
@@ -369,7 +372,24 @@ public sealed partial class PostgresLedgerJournalStore
             reader.IsDBNull(21) ? null : reader.GetDecimal(21),
             reader.IsDBNull(22) ? null : reader.GetDecimal(22),
             reader.IsDBNull(23) ? null : reader.GetDecimal(23),
-            reader.IsDBNull(24) ? null : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto>(reader.GetString(24)));
+            reader.IsDBNull(24) ? null : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto>(reader.GetString(24)),
+            ReadBasisAdjustment(reader));
+
+    // Every lot query selects basis_adjustment at ordinal 25. Requiring it by name means a query
+    // that omits it fails loudly instead of projecting a restated lot at its acquisition basis.
+    private static Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? ReadBasisAdjustment(NpgsqlDataReader reader)
+    {
+        const int Ordinal = 25;
+        if (reader.FieldCount <= Ordinal ||
+            !string.Equals(reader.GetName(Ordinal), "basis_adjustment", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("Tax-lot queries must select basis_adjustment at ordinal 25.");
+        }
+
+        return reader.IsDBNull(Ordinal)
+            ? null
+            : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto>(reader.GetString(Ordinal));
+    }
 
     /// <summary>
     /// Enforces the acquisition-time par conventions the lot of record now carries, mirroring the
@@ -463,7 +483,8 @@ public sealed partial class PostgresLedgerJournalStore
                    original_face,
                    booked_factor,
                    par_basis,
-                   acquisition_terms
+                   acquisition_terms,
+                   basis_adjustment
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and security_id = @security_id

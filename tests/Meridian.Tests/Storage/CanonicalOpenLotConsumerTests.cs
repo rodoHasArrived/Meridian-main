@@ -93,11 +93,18 @@ public sealed class CanonicalOpenLotConsumerTests
     }
 
     [Fact]
-    public void DurableRelief_AverageCostRequiresGovernedSurvivingBasisRedistribution()
+    public void DurableRelief_AverageCostCertifiesThePooledBasis()
     {
-        var lot = DurableLot(1);
-        var act = () => CanonicalOpenLotDisposalGuard.Validate([lot], [Selection(lot, 2m)], LedgerTaxLotReliefMethod.AverageCost, "USD");
-        act.Should().Throw<LedgerValidationException>().WithMessage("*supported discrete relief policy*");
+        // Functional bases 1,100 and 1,400 pool to 125 per unit; the lot's own 110 is refused.
+        var first = DurableLot(1, 100m, 1.1m);
+        var second = DurableLot(2, 100m, 1.4m);
+        var discrete = () => CanonicalOpenLotDisposalGuard.Validate([first, second], [Selection(first, 2m)],
+            LedgerTaxLotReliefMethod.AverageCost, "USD");
+        discrete.Should().Throw<LedgerValidationException>().WithMessage("*AverageCost*functional-basis relief plan*");
+        var pooled = CanonicalOpenLotDisposalGuard.Validate([first, second],
+            [Selection(first, 2m) with { ExpectedCostBasis = 250m }], LedgerTaxLotReliefMethod.AverageCost, "USD");
+        pooled.FunctionalCostBasis.Should().Be(250m);
+        pooled.Selections.Should().ContainSingle().Which.TaxLotRecordId.Should().Be(first.TaxLotRecordId);
     }
 
     internal static LedgerTaxLotRecord DurableLot(int day, decimal price = 100m, decimal fx = 1.2m)

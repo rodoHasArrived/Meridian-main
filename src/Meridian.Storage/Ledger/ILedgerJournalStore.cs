@@ -386,7 +386,10 @@ public sealed record LedgerTaxLotRecord(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     decimal? ParBasis = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto? Acquisition = null)
+    Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto? Acquisition = null,
+    // The latest governed open-basis restatement; absent on every lot that was never restated.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? BasisAdjustment = null)
 {
     /// <summary>
     /// True when the lot recorded the acquisition-time par conventions
@@ -401,7 +404,9 @@ public sealed record LedgerTaxLotRecord(
 public enum AtomicTaxLotMutationKind
 {
     Acquisition = 0,
-    Disposal = 1
+    Disposal = 1,
+    // Mutation rows only: a surviving pool lot restated within a disposal batch.
+    BasisRedistribution = 2
 }
 
 public sealed record LedgerTaxLotDisposalSelection(
