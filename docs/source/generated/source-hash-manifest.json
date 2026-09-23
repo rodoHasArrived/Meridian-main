@@ -51,8 +51,8 @@
       "id": "SRC-DESIGN-DATA-INTEGRATION",
       "path": "src/Meridian.DataIntegration",
       "readme": "src/Meridian.DataIntegration/README.md",
-      "readme_hash": "af5f8f2eb1ae8f232558d15a963b6f38814d54b2641c54186c44582798e3ae15",
-      "source_hash": "77424996ea3f220ba6f82a1826dfda13f18d3dbecf443c533b45d4d5012adad7"
+      "readme_hash": "ae5bebb48f46aecc0740c30cc3387e77fcc1b4247dd42243ee1d4d94668827a1",
+      "source_hash": "61cd4dc2f6b59b051da149d1671ea05b2592d76cdf3e8687cdc934245704f59f"
     },
     {
       "id": "SRC-DESIGN-DOCUMENTS",
