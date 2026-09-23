@@ -2272,6 +2272,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/generated-merge-recovery.md",
+      "line_count": 75,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/live-trading-engine.md",
       "line_count": 107,
       "has_heading": true,
@@ -2305,7 +2313,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 322,
+      "line_count": 323,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2689,7 +2697,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11017,
+      "line_count": 11020,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
