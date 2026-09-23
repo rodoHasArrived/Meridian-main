@@ -64,6 +64,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentReasons"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotDto"
     },
     {
@@ -41634,6 +41646,12 @@
       "kind": "normal",
       "label": "",
       "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.relief_method"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
       "target": "database:ledger.tax_lot_mutations.unit_cost"
     },
     {
@@ -41683,6 +41701,12 @@
       "label": "",
       "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
       "target": "database:ledger.tax_lot_mutations.quantity_delta"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.relief_method"
     },
     {
       "kind": "normal",
@@ -41755,6 +41779,18 @@
       "label": "",
       "source": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
       "target": "database:ledger.tax_lots.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_basis_adjustment on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.acquisition_terms"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_basis_adjustment on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.basis_adjustment"
     },
     {
       "kind": "normal",
@@ -47111,7 +47147,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "255babaf56447432025f0da60650b325e92052e1e1ac6a2592586ced3180d74a",
+  "fingerprint": "d5d20f3973247dc62dac94cc29a6a2cd97067ab7a314e6ba420e183de5400ce5",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -47223,6 +47259,18 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBackfillReceiptDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.OpenLotBackfillReceiptDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentReasons",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentReasons"
     },
     {
       "classification": "dto",
@@ -64671,6 +64719,11 @@
       "label": "ledger.ck_tax_lots_asset_scope on ledger.tax_lots"
     },
     {
+      "id": "database:ledger.ck_tax_lots_basis_adjustment on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_basis_adjustment on ledger.tax_lots"
+    },
+    {
       "id": "database:ledger.ck_tax_lots_currency on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.ck_tax_lots_currency on ledger.tax_lots"
@@ -65317,6 +65370,11 @@
       "label": "ledger.tax_lot_mutations.quantity_delta"
     },
     {
+      "id": "database:ledger.tax_lot_mutations.relief_method",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.relief_method"
+    },
+    {
       "id": "database:ledger.tax_lot_mutations.result_version",
       "kind": "database-object",
       "label": "ledger.tax_lot_mutations.result_version"
@@ -65402,6 +65460,11 @@
       "id": "database:ledger.tax_lots.acquisition_terms",
       "kind": "database-object",
       "label": "ledger.tax_lots.acquisition_terms"
+    },
+    {
+      "id": "database:ledger.tax_lots.basis_adjustment",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.basis_adjustment"
     },
     {
       "id": "database:ledger.tax_lots.book_position_id",
@@ -69014,10 +69077,10 @@
   ],
   "summary": {
     "contract_references": 3098,
-    "contract_set_memberships": 3675,
-    "edges": 7827,
+    "contract_set_memberships": 3677,
+    "edges": 7833,
     "foreign_keys": 132,
     "logical_references": 6,
-    "nodes": 3794
+    "nodes": 3799
   }
 }

@@ -775,6 +775,15 @@
       "sha256": "c085d7e99a17c3d2c12d1e5e6dd937aca7b1fa7d5bd9cd1d471fd1af539178f9"
     },
     {
+      "filename": "V_ledger_037__open_lot_basis_adjustment.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
+      "schema": "ledger",
+      "sha256": "c2d4ad2242a51114218180a852d1e5e88f03d0b2a0c6132037669648fa1d1140"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1010,7 +1019,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "66681e2c359aa906e306329ecf48bab0d259cca1dbe9c36fb6625c23dd3ec2bb",
+  "fingerprint": "1c946020d48c68aeaa075bb89fd3466fc9ddefdaccda37eeb21f0d939ea3759e",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1248,9 +1257,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 112,
+    "files": 113,
     "migration_sets": 10,
-    "waivers": 7,
+    "waivers": 8,
     "warnings": 0
   },
   "waivers": [
@@ -1288,6 +1297,13 @@
       "reason": "The lexical TRUNCATE match is the migration's own BEFORE TRUNCATE guard trigger, which rejects truncation of the journal integrity tables. The migration truncates nothing.",
       "review_after": "2027-02-01",
       "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
+      "reason": "Constraint widening, not data loss: ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, and ck_tax_lot_mutations_cost are dropped and immediately re-created in the same transaction as strict supersets that admit the governed AverageCost BasisRedistribution mutation kind and pooled relief basis. Every existing row still satisfies the re-created checks, and no column or data is removed.",
+      "review_after": "2027-03-01",
+      "rule_id": "migration-drop-table-member"
     },
     {
       "category": "destructive_changes",
