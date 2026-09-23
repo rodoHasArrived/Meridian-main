@@ -10,6 +10,22 @@ namespace Meridian.Tests.Execution;
 
 public sealed class BrokerageExecutionReconciliationServiceTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReconcileOpenOrdersAsync_CallerCancellationIsPropagated(bool cancelHealthCheck)
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        var gateway = CreateGateway([]);
+        if (cancelHealthCheck)
+            gateway.CheckHealthAsync(Arg.Any<CancellationToken>()).Returns(Task.FromCanceled<BrokerHealthStatus>(cts.Token));
+        else
+            gateway.GetOpenOrdersAsync(Arg.Any<CancellationToken>()).Returns(Task.FromCanceled<IReadOnlyList<BrokerOrder>>(cts.Token));
+        var act = () => CreateService().ReconcileOpenOrdersAsync(gateway, CreateOrderManager([]), cts.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
     [Fact]
     public async Task ReconcileOpenOrdersAsync_WhenBrokerAndOmsMatch_ReturnsCleanReport()
     {

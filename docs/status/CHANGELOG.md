@@ -1,7 +1,7 @@
 # Changelog
 
 > Auto-generated from git commit history using conventional commits.
-> Generated: 2026-09-23 20:12:29 UTC
+> Generated: 2026-09-23 20:33:53 UTC
 
 ## Summary
 
@@ -10,10 +10,10 @@
 | Features | 1 |
 | Bug Fixes | 5 |
 | Refactoring | 1 |
-| Documentation | 2 |
+| Documentation | 3 |
 | Tests | 1 |
 | Build & CI | 5 |
-| Other | 35 |
+| Other | 34 |
 | **Total** | **50** |
 
 ## Features
@@ -34,6 +34,7 @@
 
 ## Documentation
 
+- refresh status reports and retire obsolete snapshots ([`9719a9a45`](https://github.com/rodoHasArrived/Meridian-main/commit/9719a9a453a0c8ef180636d6e45a3afabc00596e))
 - regenerate the roadmap register for the W9-CORPACT-011 row update ([`c3053880a`](https://github.com/rodoHasArrived/Meridian-main/commit/c3053880a59f8fd06aaf6f1f588cebb223e95a0b))
 - regenerate the doc-health dashboard with the arguments that write it ([`6e106ea1b`](https://github.com/rodoHasArrived/Meridian-main/commit/6e106ea1bbf42d4a895a729e5b5f0665044b850d))
 
@@ -85,7 +86,6 @@
 - finish the surfaces that render outside the stylesheet [#2](https://github.com/rodoHasArrived/Meridian-main/issues/2), [#59636](https://github.com/rodoHasArrived/Meridian-main/issues/59636) ([`b68de250f`](https://github.com/rodoHasArrived/Meridian-main/commit/b68de250f4b32ede718828f00b8323996872b01c))
 - bring origin/main into the restyle branch ([`58b9bfa36`](https://github.com/rodoHasArrived/Meridian-main/commit/58b9bfa36b2be3f7c88b5e12b6ab82e8c9b2cc92))
 - **design-system:** move the catalogue off the navy/cyan identity [#08101](https://github.com/rodoHasArrived/Meridian-main/issues/08101), [#14120](https://github.com/rodoHasArrived/Meridian-main/issues/14120), [#171](https://github.com/rodoHasArrived/Meridian-main/issues/171), [#2](https://github.com/rodoHasArrived/Meridian-main/issues/2) ([`0ffbd1735`](https://github.com/rodoHasArrived/Meridian-main/commit/0ffbd173590c5096fc3e27120f08433722a8493c))
-- Merge pull request #2978 from rodoHasArrived/claude/practical-faraday-xmc68s [#2978](https://github.com/rodoHasArrived/Meridian-main/issues/2978) ([`8455dc58b`](https://github.com/rodoHasArrived/Meridian-main/commit/8455dc58bf90408c402f4e521170216e6385bb6f))
 
 ---
 
