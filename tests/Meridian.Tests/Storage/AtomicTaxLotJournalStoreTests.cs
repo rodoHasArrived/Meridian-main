@@ -700,9 +700,38 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                     acquisition.Journal.Entry.Metadata)
             }
         }).WithComputedFingerprint();
+        var auditBeforeRefusal = (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents;
+        // Provenance deliberately precedes lot economics. Removing it from the same malformed
+        // journal must refuse before the asset-account guard, without retaining any side effects.
+        var unprovenOffsettingAcquisition = (offsettingAcquisition with
+        {
+            Journal = offsettingAcquisition.Journal with
+            {
+                Entry = new JournalEntry(
+                    offsettingAcquisition.Journal.Entry.JournalEntryId,
+                    offsettingAcquisition.Journal.Entry.Timestamp,
+                    offsettingAcquisition.Journal.Entry.Description,
+                    offsettingAcquisition.Journal.Entry.Lines,
+                    offsettingAcquisition.Journal.Entry.Metadata with { Tags = null })
+            }
+        }).WithComputedFingerprint();
+        var unprovenOffsettingAct = () => database.JournalStore.AppendAssetPostingAsync(unprovenOffsettingAcquisition);
+        await unprovenOffsettingAct.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*without Security Master provenance*");
+        (await database.JournalStore.GetByPeriodAsync(periodId)).Should().BeEmpty();
+        (await database.JournalStore.GetAtomicTaxLotPostingAsync(acquisition.MutationBatchId)).Should().BeNull();
+        (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBeforeRefusal);
+
+        // With valid provenance retained, the malformed economics must still be rejected by the
+        // narrower guard. The later valid retry uses the same identities to prove full rollback.
         var offsettingAcquisitionAct = () => database.JournalStore.AppendAssetPostingAsync(offsettingAcquisition);
         await offsettingAcquisitionAct.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*one exact asset-account debit*");
+        (await database.JournalStore.GetByPeriodAsync(periodId)).Should().BeEmpty();
+        (await database.JournalStore.GetAtomicTaxLotPostingAsync(acquisition.MutationBatchId)).Should().BeNull();
+        (await database.JournalStore.ListOpenTaxLotsAsync(ledgerBookId, acquisition.AcquisitionLot!.Account))
+            .Should().BeEmpty();
+        (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBeforeRefusal);
 
         var acquired = await database.JournalStore.AppendAssetPostingAsync(acquisition);
         (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(2);
