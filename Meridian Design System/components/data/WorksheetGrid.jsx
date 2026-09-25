@@ -11,26 +11,26 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-ws{display:flex;flex-direction:column;border:1px solid var(--border,#D7DCE2);background:var(--card-surface,#fff);}
-.mds-ws__bar{display:flex;align-items:stretch;border-bottom:1px solid var(--border,#D7DCE2);}
-.mds-ws__ref{width:60px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#D7DCE2);background:var(--bg-medium,#F5F7FA);font:600 13px var(--font-data);color:var(--text-primary,#22272E);}
-.mds-ws__fx{width:32px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#D7DCE2);font:italic 600 12px var(--font-display);color:var(--text-muted,#59636F);}
-.mds-ws__formula{flex:1;display:flex;align-items:center;padding:0 10px;min-height:30px;font:13px var(--font-data);color:var(--text-primary,#22272E);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mds-ws{display:flex;flex-direction:column;border:1px solid var(--border,#E4E3DE);background:var(--card-surface,#FBFAF8);}
+.mds-ws__bar{display:flex;align-items:stretch;border-bottom:1px solid var(--border,#E4E3DE);}
+.mds-ws__ref{width:60px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#E4E3DE);background:var(--bg-medium,#EDEAE4);font:600 13px var(--font-data);color:var(--text-primary,#22252A);}
+.mds-ws__fx{width:32px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#E4E3DE);font:italic 600 12px var(--font-display);color:var(--text-muted,#5E666F);}
+.mds-ws__formula{flex:1;display:flex;align-items:center;padding:0 10px;min-height:30px;font:13px var(--font-data);color:var(--text-primary,#22252A);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mds-ws__scroll{overflow:auto;}
 .mds-ws__grid{display:inline-block;min-width:100%;outline:none;}
 .mds-ws__grid:focus-visible{outline:none;}
 .mds-ws__row{display:flex;}
 .mds-ws__corner{position:sticky;top:0;z-index:3;}
-.mds-ws__cell{box-sizing:border-box;display:flex;align-items:center;padding:0 8px;border-right:1px solid var(--border,#D7DCE2);border-bottom:1px solid var(--border,#D7DCE2);font:13px var(--font-data);color:var(--text-primary,#22272E);background:var(--card-surface,#fff);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:cell;position:relative;user-select:none;transition:background-color 100ms ease;}
-.mds-ws__cell:hover{background:var(--bg-hover,#F1F4F7);}
-.mds-ws__cell--active{outline:2px solid var(--accent,#2F6F8F);outline-offset:-2px;z-index:2;}
-.mds-ws__cell--active,.mds-ws__cell--active:hover{background:var(--card-surface,#fff);}
+.mds-ws__cell{box-sizing:border-box;display:flex;align-items:center;padding:0 8px;border-right:1px solid var(--border,#E4E3DE);border-bottom:1px solid var(--border,#E4E3DE);font:13px var(--font-data);color:var(--text-primary,#22252A);background:var(--card-surface,#FBFAF8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:cell;position:relative;user-select:none;transition:background-color 100ms ease;}
+.mds-ws__cell:hover{background:var(--bg-hover,#F0EEE9);}
+.mds-ws__cell--active{outline:2px solid var(--accent,#A85436);outline-offset:-2px;z-index:2;}
+.mds-ws__cell--active,.mds-ws__cell--active:hover{background:var(--card-surface,#FBFAF8);}
 .mds-ws__cell--error,.mds-ws__cell--error:hover{background:var(--red-a10);color:var(--red-dim);}
-.mds-ws__hdr,.mds-ws__rownum{box-sizing:border-box;display:flex;align-items:center;justify-content:center;font:600 11px var(--font-data);color:var(--text-muted,#59636F);background:var(--bg-medium,#F5F7FA);}
-.mds-ws__hdr{border-right:1px solid var(--border,#D7DCE2);border-bottom:1px solid var(--border-strong,#AAB4BF);letter-spacing:.06em;}
-.mds-ws__rownum{border-right:1px solid var(--border-strong,#AAB4BF);border-bottom:1px solid var(--border,#D7DCE2);position:sticky;left:0;z-index:2;}
-.mds-ws__fxmark{position:absolute;top:0;left:0;width:0;height:0;border-top:6px solid var(--accent,#2F6F8F);border-right:6px solid transparent;}
-.mds-ws__input{width:100%;height:100%;box-sizing:border-box;border:none;outline:2px solid var(--accent,#2F6F8F);outline-offset:-2px;background:var(--card-surface,#fff);color:var(--text-primary,#22272E);font:13px var(--font-data);padding:0 6px;}
+.mds-ws__hdr,.mds-ws__rownum{box-sizing:border-box;display:flex;align-items:center;justify-content:center;font:600 11px var(--font-data);color:var(--text-muted,#5E666F);background:var(--bg-medium,#EDEAE4);}
+.mds-ws__hdr{border-right:1px solid var(--border,#E4E3DE);border-bottom:1px solid var(--border-strong,#AFABA1);letter-spacing:.06em;}
+.mds-ws__rownum{border-right:1px solid var(--border-strong,#AFABA1);border-bottom:1px solid var(--border,#E4E3DE);position:sticky;left:0;z-index:2;}
+.mds-ws__fxmark{position:absolute;top:0;left:0;width:0;height:0;border-top:6px solid var(--accent,#A85436);border-right:6px solid transparent;}
+.mds-ws__input{width:100%;height:100%;box-sizing:border-box;border:none;outline:2px solid var(--accent,#A85436);outline-offset:-2px;background:var(--card-surface,#FBFAF8);color:var(--text-primary,#22252A);font:13px var(--font-data);padding:0 6px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "worksheet-grid");
@@ -138,7 +138,7 @@ export function WorksheetGrid({
       width: w, minWidth: w, height: rowHeight,
       justifyContent: align === "right" ? "flex-end" : "flex-start",
     };
-    if (t === "label") { s.color = "var(--text-secondary,#4D5967)"; s.fontWeight = 600; s.fontFamily = "var(--font-body)"; }
+    if (t === "label") { s.color = "var(--text-secondary,#4E5258)"; s.fontWeight = 600; s.fontFamily = "var(--font-body)"; }
     else if (t === "text") { s.fontFamily = "var(--font-body)"; }
     return s;
   };
@@ -150,21 +150,21 @@ export function WorksheetGrid({
           <div className="mds-ws__ref">{active || "—"}</div>
           <div className="mds-ws__fx">fx</div>
           <div className="mds-ws__formula" style={barIsError ? { color: "var(--red-dim)" } : undefined}>
-            {barText || <span style={{ color: "var(--text-disabled,#889099)" }}>{emptyFormulaText}</span>}
+            {barText || <span style={{ color: "var(--text-disabled,#94999F)" }}>{emptyFormulaText}</span>}
           </div>
         </div>
       )}
       <div className="mds-ws__scroll">
         <div className="mds-ws__grid" tabIndex={0} role="grid" onKeyDown={onKeyDown}>
           <div className="mds-ws__row mds-ws__corner">
-            <div className="mds-ws__hdr" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: headerHeight, borderRightColor: "var(--border-strong,#AAB4BF)", position: "sticky", left: 0, zIndex: 4 }} />
+            <div className="mds-ws__hdr" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: headerHeight, borderRightColor: "var(--border-strong,#AFABA1)", position: "sticky", left: 0, zIndex: 4 }} />
             {cols.map((col) => {
               const on = activeParsed && activeParsed.col === col.key;
               const w = col.width || 92;
               return (
                 <div key={col.key} className="mds-ws__hdr" style={{
                   width: w, minWidth: w, height: headerHeight,
-                  color: on ? "var(--accent,#2F6F8F)" : undefined,
+                  color: on ? "var(--accent,#A85436)" : undefined,
                   background: on ? "color-mix(in srgb, var(--accent) 12%, transparent)" : undefined,
                 }}>{col.label != null ? col.label : col.key}</div>
               );
@@ -174,7 +174,7 @@ export function WorksheetGrid({
             const rowOn = activeParsed && activeParsed.row === r;
             return (
               <div key={r} className="mds-ws__row">
-                <div className="mds-ws__rownum" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: rowHeight, color: rowOn ? "var(--accent,#2F6F8F)" : undefined }}>{r}</div>
+                <div className="mds-ws__rownum" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: rowHeight, color: rowOn ? "var(--accent,#A85436)" : undefined }}>{r}</div>
                 {cols.map((col) => {
                   const ref = col.key + r;
                   const c = cells[ref];

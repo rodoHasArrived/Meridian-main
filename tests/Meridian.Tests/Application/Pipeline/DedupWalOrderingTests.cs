@@ -384,7 +384,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         var wal = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
         await wal.InitializeAsync();
 
-        var innerLedger = await CreateLedgerAsync("ledger_dedupfail");
+        await using var innerLedger = await CreateLedgerAsync("ledger_dedupfail");
         var sink = new FaultSink();
         var dedupStore = new ObservingDedupStore(innerLedger) { CommitFailuresRemaining = 2 };
 
@@ -400,7 +400,8 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             var ledgerPath = Path.Combine(Path.Combine(_rootDir, "ledger_dedupfail"), "dedup_ledger.jsonl");
             if (File.Exists(ledgerPath))
             {
-                (await File.ReadAllTextAsync(ledgerPath)).Should().NotContain("\"v\":2",
+                using var ledgerReader = OpenLiveLedgerReader(ledgerPath);
+                (await ledgerReader.ReadToEndAsync()).Should().NotContain("\"v\":2",
                     "a failed dedup commit must not have persisted any durability confirmation");
             }
 
@@ -412,7 +413,6 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             dedupStore.CommitAttempts.Should().BeGreaterThanOrEqualTo(3);
         }
 
-        await innerLedger.DisposeAsync();
     }
 
     [Fact]
@@ -450,7 +450,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         var wal = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
         await wal.InitializeAsync();
 
-        var ledger = await CreateLedgerAsync("ledger_reject");
+        await using var ledger = await CreateLedgerAsync("ledger_reject");
         var sink = new FaultSink();
         // The validator keys rejection on the event sequence, which is NOT part of the trade's
         // dedup identity: both events below share one identity but only the first is invalid.
@@ -471,8 +471,40 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
                 "a validation-rejected payload must never consume the dedup identity of a later, corrected event")
                 .Which.Sequence.Should().Be(667);
         }
+    }
 
-        await ledger.DisposeAsync();
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    public async Task FlushAfterRejectedBatches_WaitsForTheLaterValidEvent(int rejectedEvents)
+    {
+        var sink = new GatedSink();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var pipeline = new EventPipeline(sink, capacity: 100, batchSize: 1,
+            enablePeriodicFlush: false, validator: new SequenceRejectingValidator(rejectedSequence: 666));
+        try
+        {
+            for (var i = 0; i < rejectedEvents; i++)
+                pipeline.TryPublish(CreateTradeEvent("VAL", 666)).Should().BeTrue();
+            await WaitUntilAsync(() => pipeline.ConsumedCount == rejectedEvents);
+
+            pipeline.TryPublish(CreateTradeEvent("VAL", 667)).Should().BeTrue();
+            await sink.FirstAppendEntered.Task.WaitAsync(timeout.Token);
+            var flush = pipeline.FlushAsync(timeout.Token);
+
+            flush.IsCompleted.Should().BeFalse(
+                "completed rejected batches must not satisfy a later event's flush boundary");
+            sink.ReleaseAll();
+            await flush.WaitAsync(timeout.Token);
+
+            sink.AppendedEvents.Should().ContainSingle().Which.Sequence.Should().Be(667);
+            pipeline.RejectedCount.Should().Be(rejectedEvents);
+            pipeline.ConsumedCount.Should().Be(rejectedEvents + 1);
+        }
+        finally
+        {
+            sink.ReleaseAll();
+        }
     }
 
     [Fact]

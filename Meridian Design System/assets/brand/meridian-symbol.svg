@@ -2,11 +2,11 @@
   <title id="title">Meridian symbol (compact)</title>
   <desc id="desc">Simplified meridian symbol optimized for small sizes, favicons, and tight layouts.</desc>
 
-  <circle cx="128" cy="128" r="80" fill="none" stroke="#D8DFE8" stroke-width="8" stroke-linecap="round"></circle>
+  <circle cx="128" cy="128" r="80" fill="none" stroke="#E4E3DE" stroke-width="8" stroke-linecap="round"></circle>
 
-  <line x1="48" y1="128" x2="208" y2="128" stroke="#D8DFE8" stroke-width="8" stroke-linecap="round"></line>
+  <line x1="48" y1="128" x2="208" y2="128" stroke="#E4E3DE" stroke-width="8" stroke-linecap="round"></line>
 
-  <line x1="128" y1="48" x2="128" y2="208" stroke="#D8DFE8" stroke-width="8" stroke-linecap="round"></line>
+  <line x1="128" y1="48" x2="128" y2="208" stroke="#E4E3DE" stroke-width="8" stroke-linecap="round"></line>
 
-  <line x1="98" y1="96" x2="158" y2="96" stroke="#00D9FF" stroke-width="10" stroke-linecap="round"></line>
+  <line x1="98" y1="96" x2="158" y2="96" stroke="#D98A64" stroke-width="10" stroke-linecap="round"></line>
 </svg>

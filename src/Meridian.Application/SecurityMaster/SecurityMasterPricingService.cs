@@ -1,178 +1,127 @@
-using System.Collections.Generic;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
-
-
 namespace Meridian.Application.SecurityMaster;
 
-/// <summary>
-/// Implements the Clearwater pricing hierarchy model: golden copy selection, stale-price
-/// fallback, calculated-price rules for specific asset classes, and multi-source comparison.
-/// </summary>
+/// <summary>Selects retained source prices using the hierarchy in force at the requested date.</summary>
 public sealed class SecurityMasterPricingService : ISecurityMasterPricingService
 {
     private readonly ISecurityMasterPricingStore _store;
     private readonly ISecurityMasterQueryService _queryService;
     private readonly ILogger<SecurityMasterPricingService> _logger;
 
-    public SecurityMasterPricingService(
-        ISecurityMasterPricingStore store,
-        ISecurityMasterQueryService queryService,
-        ILogger<SecurityMasterPricingService> logger)
-    {
-        _store = store;
-        _queryService = queryService;
-        _logger = logger;
-    }
+    public SecurityMasterPricingService(ISecurityMasterPricingStore store,
+        ISecurityMasterQueryService queryService, ILogger<SecurityMasterPricingService> logger)
+        => (_store, _queryService, _logger) = (store, queryService, logger);
 
     public Task<SecurityPricingHierarchyDto?> GetPricingHierarchyAsync(
         Guid securityId, string? accountId, CancellationToken ct = default)
         => _store.GetHierarchyAsync(securityId, accountId, ct);
 
-    public Task UpsertPricingHierarchyAsync(
-        SecurityPricingHierarchyDto hierarchy, CancellationToken ct = default)
-        => _store.UpsertHierarchyAsync(hierarchy, ct);
+    public Task UpsertPricingHierarchyAsync(SecurityPricingHierarchyDto hierarchy, CancellationToken ct = default)
+    {
+        if (hierarchy.SecurityId == Guid.Empty || string.IsNullOrWhiteSpace(hierarchy.UpdatedBy)
+            || hierarchy.Entries.Any(e => string.IsNullOrWhiteSpace(e.SourceId) || e.MaxDaysStale < 0)
+            || hierarchy.Entries.Select(e => e.SourceId.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Count() != hierarchy.Entries.Count
+            || hierarchy.Entries.Select(e => e.Priority).Distinct().Count() != hierarchy.Entries.Count)
+            throw new ArgumentException("A pricing hierarchy requires a security, actor, distinct priorities and sources, and nonnegative staleness limits.");
+        return _store.UpsertHierarchyAsync(hierarchy, ct);
+    }
 
     public Task RecordRawPriceAsync(RecordRawPriceRequest request, CancellationToken ct = default)
-        => _store.RecordRawPriceAsync(
-            request.SecurityId, request.SourceId, request.Price, request.PriceAsOf, request.RecordedBy, ct);
-
-    public async Task<SecurityPriceGoldenCopyDto?> GetGoldenCopyPriceAsync(
-        Guid securityId, string? accountId, CancellationToken ct = default)
     {
-        var security = await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null)
+        if (request.SecurityId == Guid.Empty || string.IsNullOrWhiteSpace(request.SourceId)
+            || string.IsNullOrWhiteSpace(request.RecordedBy) || request.PriceAsOf == default
+            || request.Unit == SecurityPriceUnit.Unspecified || !Enum.IsDefined(request.Unit))
+            throw new ArgumentException("A price requires a security, source, observation date, actor, and explicit quote unit.");
+        return _store.RecordRawPriceAsync(request with { SourceId = request.SourceId.Trim() }, ct);
+    }
+
+    public Task<SecurityPriceGoldenCopyDto?> GetGoldenCopyPriceAsync(
+        Guid securityId, string? accountId, CancellationToken ct = default)
+        => GetGoldenCopyPriceAsOfAsync(securityId, accountId, DateTimeOffset.UtcNow, ct);
+
+    public async Task<SecurityPriceGoldenCopyDto?> GetGoldenCopyPriceAsOfAsync(
+        Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null)
+    {
+        var knowledgeAsOf = knownAt ?? DateTimeOffset.UtcNow;
+        if (await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false) is null)
             return null;
 
-        // Calculated-price rules: certain asset classes are priced without external sources.
-        if (TryGetCalculatedPrice(security.AssetClass, out var calculatedKind, out var calculatedPrice))
+        // No asset-class shortcuts: par, stable NAV and straight-line accretion require actual
+        // economic evidence. They cannot silently override a configured market hierarchy.
+        var hierarchy = await _store.GetHierarchyAsOfAsync(securityId, accountId, asOf, ct, knowledgeAsOf).ConfigureAwait(false);
+        if (hierarchy is null || hierarchy.AsOf > asOf || hierarchy.Entries.Count == 0)
         {
-            return new SecurityPriceGoldenCopyDto(
-                securityId, calculatedPrice, calculatedKind, "calculated",
-                DateTimeOffset.UtcNow, false, null, []);
-        }
-
-        var hierarchy = await _store.GetHierarchyAsync(securityId, accountId, ct).ConfigureAwait(false);
-        if (hierarchy is null || hierarchy.Entries.Count == 0)
-        {
-            _logger.LogDebug("No pricing hierarchy configured for security {SecurityId}.", securityId);
+            _logger.LogDebug("No eligible pricing hierarchy for security {SecurityId} at {AsOf}.", securityId, asOf);
             return null;
         }
 
-        var rawPrices = await _store.GetRawPricesAsync(securityId, ct).ConfigureAwait(false);
-
-        // Source IDs are persisted as case-sensitive text, so the same security can hold rows whose
-        // IDs differ only by casing. Collapse them case-insensitively (keeping the freshest price)
-        // instead of letting an OrdinalIgnoreCase ToDictionary throw on the duplicate key.
-        var priceMap = new Dictionary<string, (decimal Price, DateTimeOffset PriceAsOf)>(
-            StringComparer.OrdinalIgnoreCase);
-        foreach (var p in rawPrices)
+        var priceMap = LatestEligible(await _store.GetRawPricesAsync(securityId, asOf, ct, knowledgeAsOf).ConfigureAwait(false), asOf);
+        SecurityRawPriceDto? selected = null;
+        var stale = false;
+        var daysStale = 0;
+        foreach (var entry in hierarchy.Entries.OrderBy(e => e.Priority).ThenBy(e => e.SourceId, StringComparer.Ordinal))
         {
-            if (!priceMap.TryGetValue(p.SourceId, out var existing) || p.PriceAsOf > existing.PriceAsOf)
-                priceMap[p.SourceId] = (p.Price, p.PriceAsOf);
-        }
-
-        var now = DateTimeOffset.UtcNow;
-        var orderedEntries = hierarchy.Entries.OrderBy(e => e.Priority);
-
-        (string SourceId, decimal Price, DateTimeOffset PriceAsOf, bool IsStaleFallback, int? DaysStale)? selected = null;
-
-        foreach (var entry in orderedEntries)
-        {
-            if (!priceMap.TryGetValue(entry.SourceId, out var rawPrice))
+            if (!priceMap.TryGetValue(entry.SourceId.Trim(), out var price)
+                || price.Unit == SecurityPriceUnit.Unspecified || !Enum.IsDefined(price.Unit))
                 continue;
-
-            var age = (int)(now - rawPrice.PriceAsOf).TotalDays;
+            var age = (int)(asOf - price.PriceAsOf).TotalDays;
             if (age <= entry.MaxDaysStale)
             {
-                selected = (entry.SourceId, rawPrice.Price, rawPrice.PriceAsOf, false, age);
+                selected = price;
+                stale = false;
+                daysStale = age;
                 break;
             }
-
-            // Source is stale; carry as fallback candidate if nothing better found.
             if (selected is null)
-                selected = (entry.SourceId, rawPrice.Price, rawPrice.PriceAsOf, true, age);
+            {
+                selected = price;
+                stale = true;
+                daysStale = age;
+            }
         }
-
         if (selected is null)
             return null;
 
-        var comparison = BuildComparisons(selected.Value.SourceId, selected.Value.Price, priceMap);
-
-        return new SecurityPriceGoldenCopyDto(
-            securityId,
-            selected.Value.Price,
-            SecurityPriceKind.MarketGoldenCopy,
-            selected.Value.SourceId,
-            selected.Value.PriceAsOf,
-            selected.Value.IsStaleFallback,
-            selected.Value.DaysStale,
-            comparison);
+        var comparisons = priceMap.Values
+            .Where(p => !string.Equals(p.SourceId, selected.SourceId, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(p => p.SourceId, StringComparer.Ordinal)
+            .Select(p => new SecurityComparisonPriceDto(p.SourceId, p.Price, p.PriceAsOf,
+                p.Unit == selected.Unit && selected.Price != 0m
+                    ? Math.Round((p.Price - selected.Price) / selected.Price * 100m, 4) : null,
+                p.Unit)).ToArray();
+        var selection = new SecurityPriceGoldenCopyDto(securityId, selected.Price, SecurityPriceKind.MarketGoldenCopy,
+            selected.SourceId, selected.PriceAsOf, stale, daysStale, comparisons, selected.Unit, asOf, hierarchy.AsOf,
+            knowledgeAsOf, Guid.NewGuid(), hierarchy);
+        // Timestamp predicates are eligibility filters, not a PostgreSQL commit snapshot. A writer
+        // can commit later with an earlier recorded timestamp; retain the exact evaluated result
+        // and inputs so receipt replay remains stable even in that case.
+        await _store.RetainPriceSelectionAsync(selection, accountId, ct).ConfigureAwait(false);
+        return selection;
     }
+
+    public Task<SecurityPriceGoldenCopyDto?> GetGoldenCopySelectionAsync(
+        Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default)
+        => _store.GetPriceSelectionAsync(securityId, accountId, receiptId, ct);
 
     public async Task<IReadOnlyList<SecurityComparisonPriceDto>> GetComparisonPricesAsync(
         Guid securityId, CancellationToken ct = default)
     {
-        var rawPrices = await _store.GetRawPricesAsync(securityId, ct).ConfigureAwait(false);
-        return rawPrices
-            .Select(p => new SecurityComparisonPriceDto(p.SourceId, p.Price, p.PriceAsOf, null))
-            .ToList();
+        var asOf = DateTimeOffset.UtcNow;
+        var prices = LatestEligible(await _store.GetRawPricesAsync(securityId, asOf, ct).ConfigureAwait(false), asOf);
+        return prices.Values.OrderBy(p => p.SourceId, StringComparer.Ordinal)
+            .Select(p => new SecurityComparisonPriceDto(p.SourceId, p.Price, p.PriceAsOf, null, p.Unit)).ToArray();
     }
 
-    private static bool TryGetCalculatedPrice(
-        string assetClass, out SecurityPriceKind kind, out decimal price)
-    {
-        // Repo and auction-rate: priced at par per Clearwater calculated-price rules.
-        if (string.Equals(assetClass, "Repo", StringComparison.OrdinalIgnoreCase))
-        {
-            kind = SecurityPriceKind.CalculatedPar;
-            price = 100m;
-            return true;
-        }
-
-        // Commercial paper and certificates of deposit use straight-line accretion to par.
-        // The service returns par here; callers requiring full accretion use the ledger projector.
-        if (string.Equals(assetClass, "CommercialPaper", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "CertificateOfDeposit", StringComparison.OrdinalIgnoreCase))
-        {
-            kind = SecurityPriceKind.CalculatedStraightLine;
-            price = 100m;
-            return true;
-        }
-
-        // Non-institutional-prime money-market funds: priced at 1.0 (stable NAV).
-        if (string.Equals(assetClass, "MoneyMarketFund", StringComparison.OrdinalIgnoreCase))
-        {
-            kind = SecurityPriceKind.CalculatedPar;
-            price = 1m;
-            return true;
-        }
-
-        kind = default;
-        price = default;
-        return false;
-    }
-
-    private static IReadOnlyList<SecurityComparisonPriceDto> BuildComparisons(
-        string goldenSourceId,
-        decimal goldenPrice,
-        Dictionary<string, (decimal Price, DateTimeOffset PriceAsOf)> priceMap)
-    {
-        var result = new List<SecurityComparisonPriceDto>();
-        foreach (var (sourceId, (price, asOf)) in priceMap)
-        {
-            if (string.Equals(sourceId, goldenSourceId, StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            decimal? pctDiff = goldenPrice != 0m
-                ? Math.Round((price - goldenPrice) / goldenPrice * 100m, 4)
-                : null;
-
-            result.Add(new SecurityComparisonPriceDto(sourceId, price, asOf, pctDiff));
-        }
-
-        return result;
-    }
+    private static Dictionary<string, SecurityRawPriceDto> LatestEligible(
+        IReadOnlyList<SecurityRawPriceDto> prices, DateTimeOffset asOf)
+        => prices.Where(p => p.PriceAsOf <= asOf)
+            .GroupBy(p => p.SourceId.Trim(), StringComparer.OrdinalIgnoreCase)
+            // A same-time legacy case-variant conflict is ambiguous and cannot drive valuation.
+            .Select(g => g.Where(p => p.PriceAsOf == g.Max(v => v.PriceAsOf)).ToArray())
+            .Where(latest => latest.Select(p => (p.Price, p.Unit)).Distinct().Count() == 1)
+            .Select(latest => latest.OrderBy(p => p.SourceId, StringComparer.Ordinal).First())
+            .ToDictionary(p => p.SourceId.Trim(), StringComparer.OrdinalIgnoreCase);
 }

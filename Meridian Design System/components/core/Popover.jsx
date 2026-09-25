@@ -10,11 +10,11 @@ function inject() {
   const css = `
 .mds-popover-root { position: fixed; z-index: 1001; pointer-events: none; }
 .mds-popover-wrap {
-  background: var(--bg-light, #FAFBFC); border: 1px solid var(--border, #D7DCE2);
+  background: var(--bg-light, #FBFAF8); border: 1px solid var(--border, #E4E3DE);
   border-radius: var(--radius-card, 2px); padding: var(--space-md, 12px);
   box-shadow: var(--shadow-menu); pointer-events: auto;
   font-family: var(--font-body); font-size: var(--type-body, 13px);
-  color: var(--text-primary, #22272E); max-width: 280px;
+  color: var(--text-primary, #22252A); max-width: 280px;
   animation: mds-popover-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out);
 }
 @keyframes mds-popover-fade-in {

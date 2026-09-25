@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-08-30
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Application
@@ -94,11 +94,37 @@ the provider-wide OAuth runtime.
 the retained tenant, provider and environment before saving scoped secrets, preserves its external
 account, and does not recreate routing or bindings. Credential verification remains a separate step.
 
+The shared provider capability matrix uses per-instrument streaming coverage independently of
+historical and options coverage. Runtime Polygon factories retain the configured feed and resolved
+API key; NYSE factories consume the registered options used by its compatibility data source, so
+both supported configuration sections reach the same authentication path.
+Normal host composition registers the NYSE compatibility source and its realtime/historical aliases
+from that same configuration. Symbol-search coverage is projected independently, so synthetic
+option-chain cells remain visible without advertising unavailable option-symbol searches.
+
 Provider setup accepts the initiating actor from its HTTP boundary and retains it in credential
 vault audit records. Operator endpoints reject missing identity; internal callers retain an explicit
 service attribution when no operator initiated the call.
 
+### Reviewed tenant maintenance and strict hosts
+
+The explicit `--fund-tenant-backfill --action preview|apply` command previews retained ownership
+and applies only the reviewed fingerprint; it performs no automatic migration or cutover.
+[The operator runbook](../../docs/operators/fund-structure-tenant-backfill.md) describes attribution,
+quarantine, immutable receipts, and recovery. Core hosts now register the configured tenant read
+posture and retained worker authority; HTTP hosts replace only that fallback with their request
+accessor. Direct-lending accrual/outbox workers are constructed and started only when the final
+DI-resolved posture permits unattributed process work. Strict hosts log that these workers are
+withheld, including when a host supplies a later instance/factory override. Strict operation still
+requires per-loan tenant authority before those workers can be enabled.
+
 ## Purpose
+
+Provider-integration REST composition uses `ProviderIntegrationHttpClientTransport.CreateHttpClient`
+to validate DNS at connection time and connect only to the checked numeric addresses. It disables
+automatic redirects and system proxy routing; the transport checks every redirect against the
+approved HTTPS origin. See [the threat model](../../docs/security/threat-model-current-state.md)
+for the boundary and remaining certification requirements.
 
 `DirectLendingOutboxDispatcher` treats rejected projection and reconciliation command results as
 failed deliveries. The durable message is marked failed for retry and is acknowledged only after
@@ -112,6 +138,13 @@ Meridian application layer contains use cases, orchestration services, commands,
 coordination.
 
 ## Layer responsibility
+
+Security Master swap mapping preserves per-leg economics accepted by the shared cash-flow reader,
+including case-insensitive aliases and numeric/boolean strings. It rejects malformed supplied
+terms instead of silently discarding them, while retaining compatibility with the original
+four-field legs. Day-count aliases prefer `dayCountConvention`, then `dayCount`, then
+`dayCountBasis`. This persistence change does not add opening principal exchanges or alter
+cash-flow posting gates.
 
 This module owns application workflows that coordinate providers, storage, execution, ledger,
 reporting, and UI-facing services through contracts. Keep transport, persistence implementation,
@@ -151,8 +184,10 @@ Core workstation host. Do not introduce a second listener or independent monitor
   isolated verification of this boundary. OAuth tokens now persist through the Data Integration-owned
   encrypted vault. Await `InitializeAsync` before synchronous token inspection; asynchronous mutations
   initialize automatically and construction never blocks a desktop synchronization context. Initialization
-  imports legacy JSON without replacing retained tokens, renames completed imports before erasure,
-  resumes interrupted cleanup, and fails closed on unreadable evidence. After an audit failure the cache
+  imports legacy JSON through Data Integration's cross-process migration lease without replacing retained tokens.
+  Both encrypted generations retain the import before the source is renamed and erased; interrupted cleanup
+  resumes without parsing erased bytes. Failed initialization can be retried on the same service instance,
+  and a failed refresh-loop start can be stopped and restarted. Unreadable evidence fails closed. After an audit failure the cache
   reloads the committed token or evicts it if recovery is unavailable. Disposal never rewrites a cached
   token snapshot. Non-Windows key protection and credential scoping remain open PRD-002 requirements.
   Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
@@ -262,6 +297,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   entries: version 2 confirms sink durability and suppresses WAL replay, while legacy version-1
   entries only suppress live ingress and are replayed (then upgraded) during recovery, keeping
   crash semantics at-least-once — a replayed duplicate is possible, silent loss is not.
+  Explicit flush waits for completed consumption, which already includes rejected events.
+  Rejected batches cannot be counted twice to acknowledge a later valid event before its
+  storage append finishes; gated regression cases cover that ordering across separate batches.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`
@@ -718,6 +756,18 @@ node that could apply the change, so without that exit the row would be permanen
 Verify this lane with `SecurityMasterServiceSnapshotTests` and
 `SecurityAssetTermsSchemaRoundTripTests`.
 
+The file-based Security Master bulk ingest (`--security-master-ingest <file.csv|file.json>`) is
+fail-closed on caller identity: the import runs only when a registered
+`ISecurityMasterCliImportAuthority` resolves a validated operator or workload actor for the
+`importedBy` stamp, and otherwise refuses with `AuthenticationFailed` before the file is read.
+Command-line text and the ambient OS username are not authentication evidence — the former
+`--imported-by`/OS-username/`"meridian-cli"` fallback chain no longer exists — and no default
+authority implementation is registered, so in stock compositions the CLI file path is disabled and
+bulk imports go through the authenticated workstation/API import instead. Provider-workload
+ingests (`--provider polygon`, `--provider edgar`, `--provider corporate-actions`) dispatch before
+this guard and keep their existing provider attribution. Verify this lane with
+`SecurityMasterCommandsEdgarTests`.
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase
@@ -768,3 +818,22 @@ infrastructure details when an abstraction already exists.
 - `docs/architecture/module-map.md`
 - `docs/developer/build-test-run.md`
 - `docs/source/generated/source-module-index.md`
+
+### Cash-flow and price readiness
+
+Security Master calculated cash flows resolve class-specific canonical rates and repo dates,
+distinguish contractual zero from missing terms, and propagate economic blockers to both ledger
+bridges. Without actual principal/notional, per-100 analytical schedules remain explicitly
+nonpostable. Unresolved leg fixings, step coupons and inflation terms require supported economics
+or an authoritative provider schedule. Provider-only asset classes do not advertise default
+calculated capability.
+
+Golden-copy pricing consults retained source hierarchy and observation history at the supplied
+economic and knowledge cutoffs. It never invents par, straight-line accretion, or stable NAV from
+an asset-class name. Explicit quote units accompany every selected price and comparison.
+
+Each successful golden-copy evaluation persists an immutable selection receipt before returning it.
+Receipt replay returns its exact selected quote, comparisons, hierarchy and cutoff metadata under
+the original security/account scope, without consulting live prices. Timestamp-only re-evaluation
+can legitimately change after an earlier-started transaction commits; timestamps are eligibility
+filters, while `SelectionReceiptId` is the durable replay identity.

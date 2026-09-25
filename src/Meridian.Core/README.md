@@ -6,7 +6,7 @@ module_id: SRC-CORE
 path: src/Meridian.Core
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Core

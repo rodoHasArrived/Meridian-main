@@ -38,6 +38,32 @@ public sealed class HistoricalDataQueryServiceTests : IDisposable
         result.Records[0].EventType.Should().Be("HistoricalBar");
     }
 
+    [Theory]
+    [InlineData("2026-09-23")]
+    [InlineData("20260923")]
+    public async Task QueryAndDateRange_IgnoreDateInConfiguredDataRoot(string rootDate)
+    {
+        var dataRoot = Path.Combine(_root, rootDate, "archive");
+        WriteGzipJsonl(
+            Path.Combine(dataRoot, "INDI", "HistoricalBar", "2026-05-15.jsonl.gz"),
+            BuildHistoricalBarJson("INDI", "2026-05-15"));
+        WriteGzipJsonl(
+            Path.Combine(dataRoot, "INDI", "HistoricalBar", "2026-05-16.jsonl.gz"),
+            BuildHistoricalBarJson("INDI", "2026-05-16"));
+        var service = new HistoricalDataQueryService(dataRoot);
+
+        var result = await service.QueryAsync(new HistoricalDataQuery(
+            Symbol: "INDI", From: new DateOnly(2026, 5, 15), To: new DateOnly(2026, 5, 15)));
+
+        result.Success.Should().BeTrue();
+        result.TotalFiles.Should().Be(1);
+        result.TotalRecords.Should().Be(1);
+        result.Records.Single().Timestamp.Date.Should().Be(new DateTime(2026, 5, 15));
+        var range = service.GetDateRange("INDI");
+        range.EarliestDate.Should().Be(new DateOnly(2026, 5, 15));
+        range.LatestDate.Should().Be(new DateOnly(2026, 5, 16));
+    }
+
     [Fact]
     public void GetAvailableSymbols_ReturnsSymbolRootsAndTopLevelFlatFilesOnly()
     {

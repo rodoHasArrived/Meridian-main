@@ -81,7 +81,11 @@ Key properties:
   durable only when PostgreSQL is configured — set
   `MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian` before seeding for a
   fully database-backed demo.
-- **Idempotent.** Re-running `--seed-demo` never duplicates casework or runs.
+- **Idempotent.** Re-running `--seed-demo` never duplicates casework or runs, and re-seeding
+  converges the seeded market history back on its documented session window rather than
+  stacking sessions onto the previous seed. Seeded market history is written in the same
+  `{SYMBOL}/{eventType}/{date}.jsonl` layout a live capture produces, so the Data desk reads
+  it through its ordinary discovery rules; every seeded print carries the `SAMPLE` source.
 - **Reversible and safe.** `--reset-demo` deletes only the demo workspace; a teardown guard refuses to
   touch any directory that is not the dedicated, sentinel-marked demo root.
 

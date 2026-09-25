@@ -116,7 +116,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ProviderIntegrationDryRunService>();
         services.TryAddSingleton<IProviderIntegrationHttpTransport>(sp =>
             new ProviderIntegrationHttpClientTransport(
-                new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }),
+                ProviderIntegrationHttpClientTransport.CreateHttpClient(),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ProviderIntegrationHttpClientTransport>>()));
         services.TryAddSingleton<ProviderIntegrationRestDryRunService>();
         services.TryAddSingleton<ProviderIntegrationOpenApiImportService>();
@@ -481,10 +481,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
+            // These workers enumerate loans across the process and the retained direct-lending
+            // model does not yet carry a tenant authority per loan. Registering them under a
+            // fail-closed ledger posture would make every ledger read fail and leave accruals and
+            // outbox deliveries retrying forever. A deferred host gate reads the final DI posture
+            // and withholds their construction/start until that attribution exists.
             if (options.EnableProcessWideHostedServices)
             {
-                services.AddHostedService<DirectLendingOutboxDispatcher>();
-                services.AddHostedService<DailyAccrualWorker>();
+                services.AddHostedService<TenantPostureHostedService<DirectLendingOutboxDispatcher>>();
+                services.AddHostedService<TenantPostureHostedService<DailyAccrualWorker>>();
             }
         }
 

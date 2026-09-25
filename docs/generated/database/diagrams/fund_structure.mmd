@@ -75,6 +75,16 @@ erDiagram
         text checksum
         timestamp_with_time_zone applied_at
     }
+    fund_structure_fund_structure_tenant_backfill_receipt {
+        uuid run_id PK
+        text plan_hash
+        text operator_id
+        text review_reference
+        timestamp_with_time_zone applied_at_utc
+        integer stamped_rows
+        integer quarantined_rows
+        jsonb plan
+    }
     fund_structure_fund_structure_tenant_quarantine {
         uuid node_id PK
         text node_kind

@@ -101,31 +101,24 @@ public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderC
                 return;
             }
 
-            if (!File.Exists(_legacyPath))
+            await LegacyCredentialFileMigration.MigrateAsync(_legacyPath, async (json, migrationToken) =>
             {
-                _migrationChecked = true;
-                return;
-            }
+                var legacy = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(
+                    json, LegacyJsonOptions) ?? [];
+                if (_vault is not ILegacyProviderCredentialImporter importer)
+                    throw new InvalidOperationException("Credential vault does not support atomic legacy migration.");
 
-            var json = await File.ReadAllTextAsync(_legacyPath, ct).ConfigureAwait(false);
-            var legacy = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(
-                json,
-                LegacyJsonOptions) ?? [];
-            if (_vault is not ILegacyProviderCredentialImporter importer)
-                throw new InvalidOperationException("Credential vault does not support atomic legacy migration.");
-
-            var requests = legacy.Select(pair => new ProviderCredentialSaveRequest(
-                pair.Key,
-                pair.Value.ToDictionary(field => field.Key, field => (string?)field.Value, StringComparer.OrdinalIgnoreCase),
-                Actor: "credential-vault-migration",
-                Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["migratedFrom"] = "provider-credentials.json",
-                    ["credentialOwner"] = "Meridian.DataIntegration"
-                })).ToArray();
-            await importer.ImportLegacyAsync(requests, ct).ConfigureAwait(false);
-
-            SecurelyRemoveLegacySidecar(_legacyPath);
+                var requests = legacy.Select(pair => new ProviderCredentialSaveRequest(
+                    pair.Key,
+                    pair.Value.ToDictionary(field => field.Key, field => (string?)field.Value, StringComparer.OrdinalIgnoreCase),
+                    Actor: "credential-vault-migration",
+                    Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["migratedFrom"] = "provider-credentials.json",
+                        ["credentialOwner"] = "Meridian.DataIntegration"
+                    })).ToArray();
+                await importer.ImportLegacyAsync(requests, migrationToken).ConfigureAwait(false);
+            }, ct).ConfigureAwait(false);
             _migrationChecked = true;
         }
         finally
@@ -143,24 +136,4 @@ public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderC
         }
     }
 
-    private static void SecurelyRemoveLegacySidecar(string path)
-    {
-        var length = new FileInfo(path).Length;
-        using (var stream = new FileStream(path, FileMode.Open, FileAccess.Write, FileShare.None))
-        {
-            var zeros = new byte[Math.Min(64 * 1024, Math.Max(1, (int)Math.Min(length, 64 * 1024)))];
-            long remaining = length;
-            while (remaining > 0)
-            {
-                var count = (int)Math.Min(remaining, zeros.Length);
-                stream.Write(zeros, 0, count);
-                remaining -= count;
-            }
-
-            stream.SetLength(length);
-            stream.Flush(flushToDisk: true);
-        }
-
-        File.Delete(path);
-    }
 }
