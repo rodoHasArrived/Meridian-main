@@ -4803,6 +4803,7 @@ Meridian-main
 │   │   ├── FundStructure
 │   │   │   └── FundAccountTraversalQueryService.cs
 │   │   ├── Infrastructure
+│   │   │   ├── LoginSessionStoreLock.cs
 │   │   │   ├── RolePermissionProfileStore.cs
 │   │   │   ├── ScopedAccessAssignmentStore.cs
 │   │   │   └── UserAccountStore.cs
@@ -9593,6 +9594,7 @@ Meridian-main
 │   │   ├── Identity
 │   │   │   ├── FundStructure
 │   │   │   │   └── FundAccountTraversalQueryServiceTests.cs
+│   │   │   ├── DurableLoginSessionTests.cs
 │   │   │   ├── FileUserAccountStoreTests.cs
 │   │   │   ├── FundStructureAccessScopeLineageProviderTests.cs
 │   │   │   ├── GovernanceStoreDataIntegrityTests.cs

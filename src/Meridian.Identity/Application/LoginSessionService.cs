@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Identity.Auth;
+using Meridian.Identity.Infrastructure;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Hosting;
 
@@ -34,16 +35,20 @@ public sealed class LoginSessionService
     private readonly object _failedAttemptGate = new();
     private readonly object _persistenceGate = new();
     private readonly string? _sessionStorePath;
+    private readonly TimeProvider _timeProvider;
 
     public LoginSessionService(
         IHostEnvironment environment,
         UserProfileRegistry profileRegistry,
-        LoginSessionStoreOptions? options = null)
+        LoginSessionStoreOptions? options = null,
+        TimeProvider? timeProvider = null)
     {
         this.environment = environment ?? throw new ArgumentNullException(nameof(environment));
         this.profileRegistry = profileRegistry ?? throw new ArgumentNullException(nameof(profileRegistry));
+        _ = AuthenticationModeResolver.Resolve(environment);
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _sessionStorePath = ResolveStorePath(options);
-        LoadSessions();
+        WithAuthoritativeState(() => true, persist: false);
     }
 
     /// <summary>
@@ -71,9 +76,12 @@ public sealed class LoginSessionService
     /// The caller supplies a stable client discriminator, normally the remote IP address.
     /// </summary>
     public LoginAttemptResult TryCreateSession(string username, string password, string clientKey)
+        => WithAuthoritativeState(() => TryCreateSessionCore(username, password, clientKey));
+
+    private LoginAttemptResult TryCreateSessionCore(string username, string password, string clientKey)
     {
         var attemptKey = BuildAttemptKey(username, clientKey);
-        var now = DateTimeOffset.UtcNow;
+        var now = _timeProvider.GetUtcNow();
         var throttle = GetPreAuthenticationThrottle(attemptKey, now);
         if (throttle is not null)
         {
@@ -100,9 +108,8 @@ public sealed class LoginSessionService
         var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         _sessions[HashToken(token)] = new SessionEntry(
             profile.Username,
-            DateTimeOffset.UtcNow + SessionDuration);
+            now + SessionDuration);
         PruneExpiredSessions();
-        PersistSessions();
         return LoginAttemptResult.Succeeded(token);
     }
 
@@ -110,43 +117,24 @@ public sealed class LoginSessionService
     /// Returns <see langword="true"/> when the token corresponds to a valid, non-expired session.
     /// </summary>
     public bool ValidateSession(string token)
-    {
-        var tokenHash = HashToken(token);
-        if (!_sessions.TryGetValue(tokenHash, out var entry))
-            return false;
-
-        if (entry.ExpiresAt <= DateTimeOffset.UtcNow)
-        {
-            _sessions.TryRemove(tokenHash, out _);
-            PersistSessions();
-            return false;
-        }
-
-        var profile = profileRegistry.GetProfile(entry.Username);
-        if (profile is null)
-        {
-            _sessions.TryRemove(tokenHash, out _);
-            PersistSessions();
-            return false;
-        }
-
-        return true;
-    }
+        => GetSessionProfile(token) is not null;
 
     /// <summary>
     /// Returns the <see cref="UserProfile"/> for the given session token, or
     /// <see langword="null"/> when the token is missing or expired.
     /// </summary>
     public UserProfile? GetSessionProfile(string token)
+        => WithAuthoritativeState(() => GetSessionProfileCore(token), persist: false);
+
+    private UserProfile? GetSessionProfileCore(string token)
     {
         var tokenHash = HashToken(token);
         if (!_sessions.TryGetValue(tokenHash, out var entry))
             return null;
 
-        if (entry.ExpiresAt <= DateTimeOffset.UtcNow)
+        if (entry.ExpiresAt <= _timeProvider.GetUtcNow())
         {
             _sessions.TryRemove(tokenHash, out _);
-            PersistSessions();
             return null;
         }
 
@@ -154,6 +142,8 @@ public sealed class LoginSessionService
         if (profile is null)
         {
             _sessions.TryRemove(tokenHash, out _);
+            // Disabling/removing an account or its role profile invalidates this token
+            // permanently, including after the account is subsequently re-enabled.
             PersistSessions();
         }
 
@@ -164,14 +154,12 @@ public sealed class LoginSessionService
     /// Removes the session associated with the given token (logout).
     /// </summary>
     public void RemoveSession(string token)
-    {
-        if (_sessions.TryRemove(HashToken(token), out _))
-        {
-            PersistSessions();
-        }
-    }
+        => WithAuthoritativeState(() => _sessions.TryRemove(HashToken(token), out _));
 
     public int RevokeSessionsForUser(string username)
+        => WithAuthoritativeState(() => RevokeSessionsForUserCore(username));
+
+    private int RevokeSessionsForUserCore(string username)
     {
         if (string.IsNullOrWhiteSpace(username))
         {
@@ -188,25 +176,22 @@ public sealed class LoginSessionService
             }
         }
 
-        if (removed > 0)
-        {
-            PersistSessions();
-        }
-
         return removed;
     }
 
     public int RevokeAllSessions()
+        => WithAuthoritativeState(RevokeAllSessionsCore);
+
+    private int RevokeAllSessionsCore()
     {
         var removed = _sessions.Count;
         _sessions.Clear();
-        PersistSessions();
         return removed;
     }
 
     private void PruneExpiredSessions()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = _timeProvider.GetUtcNow();
         foreach (var (token, entry) in _sessions)
         {
             if (entry.ExpiresAt <= now)
@@ -306,26 +291,84 @@ public sealed class LoginSessionService
         return null;
     }
 
+    private T WithAuthoritativeState<T>(Func<T> operation, bool persist = true)
+    {
+        lock (_persistenceGate)
+        {
+            using var lease = _sessionStorePath is null ? null : LoginSessionStoreLock.Acquire(_sessionStorePath + ".lock");
+            // Never merge a stale process-local snapshot back into the store. Reload while
+            // holding the same cross-process lease used by every reader and writer.
+            LoadSessions();
+            try
+            {
+                var result = operation();
+                if (persist)
+                    PersistSessions();
+                return result;
+            }
+            catch
+            {
+                if (_sessionStorePath is not null)
+                {
+                    _sessions.Clear();
+                    _failedAttempts.Clear();
+                }
+                throw;
+            }
+        }
+    }
+
     private void LoadSessions()
     {
-        if (_sessionStorePath is null || !File.Exists(_sessionStorePath))
+        if (_sessionStorePath is null)
+            return;
+
+        _sessions.Clear();
+        _failedAttempts.Clear();
+        string json;
+        try
+        {
+            json = File.ReadAllText(_sessionStorePath);
+        }
+        catch (FileNotFoundException)
         {
             return;
         }
 
-        var persisted = JsonSerializer.Deserialize<PersistedSession[]>(
-            File.ReadAllText(_sessionStorePath),
-            JsonOptions) ?? [];
-        var now = DateTimeOffset.UtcNow;
-        foreach (var session in persisted.Where(candidate => candidate.ExpiresAt > now))
+        using var document = JsonDocument.Parse(json);
+        // Read the former array format without changing existing token hashes. The next
+        // mutation upgrades it atomically to include the durable lockout windows.
+        var state = document.RootElement.ValueKind == JsonValueKind.Array
+            ? new PersistedState(1, JsonSerializer.Deserialize<PersistedSession[]>(json, JsonOptions)!, [])
+            : JsonSerializer.Deserialize<PersistedState>(json, JsonOptions);
+        if (state is null || state.Version != 1 || state.Sessions is null || state.FailedAttempts is null ||
+            state.FailedAttempts.Length > MaximumTrackedFailedAttemptWindows)
+            throw new InvalidDataException("The login session store has an invalid or unsupported format.");
+
+        var now = _timeProvider.GetUtcNow();
+        foreach (var session in state.Sessions)
         {
-            if (!string.IsNullOrWhiteSpace(session.TokenHash) &&
-                !string.IsNullOrWhiteSpace(session.Username))
-            {
-                _sessions[session.TokenHash] = new SessionEntry(session.Username, session.ExpiresAt);
-            }
+            if (session is null || !IsHash(session.TokenHash) || string.IsNullOrWhiteSpace(session.Username))
+                throw new InvalidDataException("The login session store contains an invalid session.");
+            if (session.ExpiresAt > now)
+                _sessions.AddOrUpdate(session.TokenHash, new SessionEntry(session.Username, session.ExpiresAt),
+                    (_, _) => throw new InvalidDataException("The login session store contains a duplicate session."));
+        }
+        foreach (var attempt in state.FailedAttempts)
+        {
+            if (attempt is null || !IsHash(attempt.Key) || attempt.Window is null ||
+                attempt.Window.Count is < 1 or > MaximumFailedAttempts ||
+                attempt.Window.WindowStartedAt == default ||
+                (attempt.Window.Count == MaximumFailedAttempts) != attempt.Window.LockedUntil.HasValue ||
+                attempt.Window.LockedUntil <= attempt.Window.WindowStartedAt)
+                throw new InvalidDataException("The login session store contains an invalid lockout window.");
+            if (attempt.Window.ExpiresAt > now && !_failedAttempts.TryAdd(attempt.Key, attempt.Window))
+                throw new InvalidDataException("The login session store contains a duplicate lockout window.");
         }
     }
+
+    private static bool IsHash(string? value)
+        => value is { Length: 64 } && value.All(character => character is >= '0' and <= '9' or >= 'A' and <= 'F');
 
     private void PersistSessions()
     {
@@ -334,17 +377,20 @@ public sealed class LoginSessionService
             return;
         }
 
-        lock (_persistenceGate)
-        {
-            var now = DateTimeOffset.UtcNow;
-            var persisted = _sessions
-                .Where(pair => pair.Value.ExpiresAt > now)
-                .OrderBy(pair => pair.Value.Username, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(pair => pair.Key, StringComparer.Ordinal)
-                .Select(pair => new PersistedSession(pair.Key, pair.Value.Username, pair.Value.ExpiresAt))
-                .ToArray();
-            AtomicFileWriter.Write(_sessionStorePath, JsonSerializer.Serialize(persisted, JsonOptions));
-        }
+        var now = _timeProvider.GetUtcNow();
+        var persisted = _sessions
+            .Where(pair => pair.Value.ExpiresAt > now)
+            .OrderBy(pair => pair.Value.Username, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(pair => pair.Key, StringComparer.Ordinal)
+            .Select(pair => new PersistedSession(pair.Key, pair.Value.Username, pair.Value.ExpiresAt))
+            .ToArray();
+        var attempts = _failedAttempts
+            .Where(pair => pair.Value.ExpiresAt > now)
+            .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .Select(pair => new PersistedAttempt(pair.Key, pair.Value))
+            .ToArray();
+        AtomicFileWriter.Write(_sessionStorePath,
+            JsonSerializer.Serialize(new PersistedState(1, persisted, attempts), JsonOptions));
     }
 
     private sealed record SessionEntry(
@@ -352,6 +398,8 @@ public sealed class LoginSessionService
         DateTimeOffset ExpiresAt);
 
     private sealed record PersistedSession(string TokenHash, string Username, DateTimeOffset ExpiresAt);
+    private sealed record PersistedAttempt(string Key, FailedAttemptWindow Window);
+    private sealed record PersistedState(int Version, PersistedSession[] Sessions, PersistedAttempt[] FailedAttempts);
 
     private sealed record FailedAttemptWindow(int Count, DateTimeOffset WindowStartedAt, DateTimeOffset? LockedUntil)
     {
