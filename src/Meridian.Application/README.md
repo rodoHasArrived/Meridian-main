@@ -237,6 +237,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   entries: version 2 confirms sink durability and suppresses WAL replay, while legacy version-1
   entries only suppress live ingress and are replayed (then upgraded) during recovery, keeping
   crash semantics at-least-once — a replayed duplicate is possible, silent loss is not.
+  Explicit flush waits for completed consumption, which already includes rejected events.
+  Rejected batches cannot be counted twice to acknowledge a later valid event before its
+  storage append finishes; gated regression cases cover that ordering across separate batches.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`
