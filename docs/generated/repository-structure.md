@@ -9795,6 +9795,7 @@ Meridian-main
 │   │   │   ├── GracefulShutdownIntegrationTests.cs
 │   │   │   ├── ProviderGoldenPathScenarioGenerator.cs
 │   │   │   ├── ProviderGoldenPathTransactionLedgerReconciliationTests.cs
+│   │   │   ├── StatementImportCaseworkEvidenceTests.cs
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
 │   │   ├── Ledger
 │   │   │   ├── AutomatedJournalPostingTargetTests.cs
