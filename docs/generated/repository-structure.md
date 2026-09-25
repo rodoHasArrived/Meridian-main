@@ -1860,6 +1860,7 @@ Meridian-main
 │   ├── operators
 │   │   ├── browser-workstation-installer.md
 │   │   ├── deployment-packaging.md
+│   │   ├── external-gl-providers.md
 │   │   ├── failover-and-recovery.md
 │   │   ├── fund-ops-persistence-cutover.md
 │   │   ├── fund-structure-tenant-backfill.md
@@ -4260,10 +4261,14 @@ Meridian-main
 │   │   ├── AccountingSystem
 │   │   │   ├── Fixtures
 │   │   │   │   └── FixtureAccountingProviders.cs
-│   │   │   └── QuickBooks
-│   │   │       ├── QuickBooksFixtureAccountingProvider.cs
-│   │   │       ├── QuickBooksOnlineAccountingProvider.cs
-│   │   │       └── QuickBooksOnlineProviderCredentialConnectionStore.cs
+│   │   │   ├── QuickBooks
+│   │   │   │   ├── QuickBooksFixtureAccountingProvider.cs
+│   │   │   │   ├── QuickBooksOnlineAccountingProvider.cs
+│   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStore.cs
+│   │   │   ├── AccountingProviderJson.cs
+│   │   │   ├── CredentialedAccountingProvider.cs
+│   │   │   ├── NetSuiteAccountingProvider.cs
+│   │   │   └── XeroAccountingProvider.cs
 │   │   ├── Canonicalization
 │   │   │   ├── CanonicalizationMetrics.cs
 │   │   │   ├── CanonicalizingPublisher.cs
@@ -5345,6 +5350,7 @@ Meridian-main
 │   │   └── Meridian.ProcessIsolation.csproj
 │   ├── Meridian.ProviderSdk
 │   │   ├── AccountingSystem
+│   │   │   ├── IAccountingSystemExportValidator.cs
 │   │   │   └── IAccountingSystemProvider.cs
 │   │   ├── Backfill
 │   │   │   └── BackfillJob.cs
@@ -9399,8 +9405,11 @@ Meridian-main
 │   │   │   └── CryptoProjectionServiceTests.cs
 │   │   ├── DataIntegration
 │   │   │   ├── AccountingSystem
-│   │   │   │   └── QuickBooks
-│   │   │   │       └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── QuickBooks
+│   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── ExternalGlFailureBoundaryTests.cs
+│   │   │   │   ├── ExternalGlLiveProviderTests.cs
+│   │   │   │   └── ExternalGlTestSupport.cs
 │   │   │   ├── Canonicalization
 │   │   │   │   ├── Fixtures
 │   │   │   │   │   ├── alpaca_trade_extended_hours.json
@@ -10284,6 +10293,7 @@ Meridian-main
 │   │   │   ├── AccountingProjectionQueryServiceTests.cs
 │   │   │   ├── AccountingReportPackageServiceTests.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
+│   │   │   ├── AccountingSystemIntegrationServiceTests.LiveProviders.cs
 │   │   │   ├── AggregatePortfolioExposureProviderTests.cs
 │   │   │   ├── AlpacaBrokerageConnectionServiceTests.cs
 │   │   │   ├── AlpacaCredentialEnvironmentCollection.cs

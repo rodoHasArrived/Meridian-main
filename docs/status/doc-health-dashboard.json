@@ -1,11 +1,11 @@
 {
-  "total_files": 674,
-  "total_lines": 146000,
+  "total_files": 675,
+  "total_lines": 146159,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 270,
-  "average_lines": 216.6,
+  "average_lines": 216.5,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1249,7 +1249,7 @@
     },
     {
       "path": "docs/ai/context/accounting-context.md",
-      "line_count": 33,
+      "line_count": 38,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2697,7 +2697,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11022,
+      "line_count": 11032,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2824,6 +2824,14 @@
       "stale": false
     },
     {
+      "path": "docs/operators/external-gl-providers.md",
+      "line_count": 116,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operators/failover-and-recovery.md",
       "line_count": 315,
       "has_heading": true,
@@ -2921,7 +2929,7 @@
     },
     {
       "path": "docs/operators/README.md",
-      "line_count": 195,
+      "line_count": 196,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5321,7 +5329,7 @@
     },
     {
       "path": "src/Meridian.DataIntegration/README.md",
-      "line_count": 314,
+      "line_count": 325,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5369,7 +5377,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 766,
+      "line_count": 772,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5489,7 +5497,7 @@
     },
     {
       "path": "src/Meridian.ProviderSdk/README.md",
-      "line_count": 107,
+      "line_count": 112,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5561,7 +5569,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2398,
+      "line_count": 2403,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
