@@ -37,6 +37,18 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
     ahead of the W9 close-out because they serve the release gate
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [Reporting Operating Model (2026-09)](reporting-operating-model-2026-09.md) — refined
+    reporting semantics: the `Report`/`Edition`/`Publication` object split, the four-destination
+    consolidation inside the existing Reporting root, the scope contract with separated effective
+    and recorded time, change classification by meaning, four independent status dimensions, and
+    the release-candidate publication boundary. Grounded in current `src/Meridian.Reporting`
+    source evidence with a named gap list, six open decisions, and six acceptance tests
+    (`W4-RPT-001`, `W9-REPORT-005`); changes no behaviour and sets no roadmap status. Its
+    Section 2a reconciles the document against the landed
+    [Reporting Workstation Model](../architecture/reporting-workstation-model.md): the four
+    lifecycle axes, change-since-review and per-class gate policies now exist in the browser
+    workstation's TypeScript modules, so the remaining gap is promoting them into the shared
+    contract seam, and the two documents' competing navigation models are left as an open decision
   - [Adversarial Program Review (2026-08-25)](adversarial-program-review-2026-08-25.md) — latest
     independent whole-program adverse review; re-tests the 2026-08-24 open items against the 39
     commits landed since, then extends into cross-catalog consistency between the authorization
@@ -145,9 +157,9 @@ capability claims, not blanket production certification.
 
 As of 2026-08-30 the W9 slate is mostly closed: `W9-ASSET-010` is `done`; `W9-TRUTH-001`,
 `W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` remain `accepted` on operator
-decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011` is reopened as `in_progress` with
-`evidence_posture: in_progress` and `health: red` under `DEC-W9-ACCEPTANCE-002` pending unchanged
-exit criterion four. Both decisions and their chronology are recorded in the
+decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011`, reopened under `DEC-W9-ACCEPTANCE-002`,
+reached `ready_for_acceptance` on 2026-09-22 with all five exit criteria evidenced and awaits a
+fresh operator acceptance decision. Both decisions and their chronology are recorded in the
 [2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md).
 `W9-ALPACA-004` was deliberately held over three recorded fill-path caveats and moved to
 `accepted` on 2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source;

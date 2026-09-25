@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Meridian.Contracts.Services;
 using Meridian.Ui.Services;
+using Moq;
 
 namespace Meridian.Ui.Tests.Services;
 
@@ -8,6 +10,48 @@ namespace Meridian.Ui.Tests.Services;
 /// </summary>
 public sealed class DataCalendarServiceTests
 {
+    [Theory]
+    [InlineData(2026, 6, 19)]
+    [InlineData(2027, 1, 1)]
+    [InlineData(2027, 6, 18)]
+    public async Task HolidayCells_AgreeWithCompletenessCalendar(int year, int month, int day)
+    {
+        var date = new DateOnly(year, month, day);
+        var completeness = new DataCompletenessService(ManifestService.Instance);
+        var calendar = new DataCalendarService(completeness);
+
+        var cell = await calendar.GetDayDataAsync(date, []);
+        var report = await completeness.GetCompletenessReportAsync("./data", date, date, []);
+
+        cell.IsHoliday.Should().BeTrue();
+        cell.IsTradingDay.Should().BeFalse();
+        cell.CompletenessLevel.Should().Be(CompletenessLevel.NonTrading);
+        cell.HasGaps.Should().BeFalse();
+        report.ExpectedTradingDays.Should().Be(0);
+        report.CalendarData.Should().ContainSingle().Which.IsHoliday.Should().Be(cell.IsHoliday);
+    }
+
+    [Fact]
+    public async Task CalendarAndCompleteness_UseTheSameInjectedPolicy()
+    {
+        // A policy-supplied closure must affect both the day cell and its denominator.
+        var closure = new DateOnly(2027, 3, 10);
+        var policy = new Mock<IOperationalTradingCalendar>(MockBehavior.Strict);
+        policy.Setup(calendar => calendar.IsTradingDay(closure, "US")).Returns(false);
+        policy.Setup(calendar => calendar.GetHolidays(closure.Year, "US")).Returns([closure]);
+        var completeness = new DataCompletenessService(ManifestService.Instance, policy.Object);
+        var calendar = new DataCalendarService(completeness);
+
+        var cell = await calendar.GetDayDataAsync(closure, []);
+        var report = await completeness.GetCompletenessReportAsync("./data", closure, closure, []);
+
+        cell.IsHoliday.Should().BeTrue();
+        cell.IsTradingDay.Should().BeFalse();
+        report.ExpectedTradingDays.Should().Be(0);
+        report.DaysWithGaps.Should().Be(0);
+        policy.Verify(calendar => calendar.IsTradingDay(closure, "US"), Times.AtLeast(2));
+    }
+
     // ── CalendarYearData model ───────────────────────────────────────
 
     [Fact]

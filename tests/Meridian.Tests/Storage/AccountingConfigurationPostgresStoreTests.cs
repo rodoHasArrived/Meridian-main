@@ -51,6 +51,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task Migration_CreatesAccountingConfigurationTables()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -68,6 +69,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task SaveAndGetAsync_RoundTripsConfigurationWorkspace()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -169,6 +171,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task SaveAndGetAsync_IsolatesConfigurationByLedgerBook()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -210,6 +213,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task SaveAndGetAsync_IsolatesConfigurationByTenantAndCompany()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -255,6 +259,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AuditStore_AppendsAndFiltersAccountingActionEvents()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -288,6 +293,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AuditStore_AppendIsIdempotentOnTheEventId()
     {
         // audit_event_id is the primary key, so a repeat raised a unique violation and the append
@@ -308,6 +314,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AuditStore_RefusesTwoDifferentEventsSharingOneId()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -322,6 +329,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AuditStore_RefusesToAppendOntoAChainWrittenByANewerSchema()
     {
         // The head records schema_version so a build that cannot implement a chain's hashing rules
@@ -369,6 +377,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
             TenantId: "tenant-alpha");
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AuditStore_FiltersAccountingActionEventsByTenantAndCompany()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -429,6 +438,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AnEventRecordedFinerThanAMicrosecond_DoesNotMakeTheNextAppendReportTampering()
     {
         // Fifteenth Codex review round asked whether the audit chain survives a sub-microsecond
@@ -463,6 +473,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task ARetriedAppendOfAnEventRecordedFinerThanAMicrosecond_StaysIdempotent()
     {
         // The same invariant on the path recovery actually takes: RecoverPendingAuditAsync replays
@@ -484,6 +495,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AMarkerLeftByAMutationThisStoreRetained_IsClearedRatherThanRaised()
     {
         // Fifteenth Codex review round. AfterHash was taken over the workspace as it stood in
@@ -514,6 +526,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AMutationFollowingAnInterruptedOne_IsNotBlockedByTheRecoveryItRunsFirst()
     {
         // The consequence that makes the digest mismatch severe rather than cosmetic: every
@@ -544,6 +557,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AnEventEditedInTheMiddleOfTheChain_StopsTheNextAppend()
     {
         // Seventeenth Codex review round. VerifyChainHeadAsync read only the newest chained row, so
@@ -576,6 +590,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AnEventDeletedFromTheMiddleOfTheChain_StopsTheNextAppend()
     {
         // The other shape of the same gap. Every surviving link still digests and binds correctly,
@@ -600,6 +615,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AnUntouchedChain_StillAppends()
     {
         // The control the two tests above need: verifying every link must not make an intact chain
@@ -620,6 +636,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AnEventRetainedOutsideTheChain_StopsTheNextAppend()
     {
         // Eighteenth Codex review round. The scan filters on `chain_sequence is not null`, so a row
@@ -656,6 +673,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AMarkerFromAMutationCarryingPaddedOptionalText_IsClearedRatherThanRaised()
     {
         // Seventeenth Codex review round. ReplaceChartAsync writes ParentPath, Symbol and
@@ -690,6 +708,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AMarkerFromAMutationCarryingNoncanonicalDimensionKeys_IsClearedRatherThanRaised()
     {
         // Codex review finding on PR #2871. ReplaceRulesAsync persists rule payloads as jsonb,
@@ -729,6 +748,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AMarkerFromAMutationWhoseTestCaseDisplayOrderInvertsIdOrder_IsClearedRatherThanRaised()
     {
         // Control for a Codex round-23 finding on PR #2871, kept because it pins the property the

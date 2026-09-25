@@ -8,16 +8,16 @@
 <link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
-  .card { background: #0B1520; border: 1px solid #477089; border-radius: 8px; padding: 16px; }
-  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #477089; }
-  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #A8B5C4; }
+  .card { background: #201D19; border: 1px solid #736B60; border-radius: 8px; padding: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #736B60; }
+  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #B5AEA4; }
   .title b { color: #FFF; margin-right: 10px; }
   table { border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; }
-  th, td { padding: 8px 10px; text-align: center; width: 56px; border: 1px solid #05101B; font-variant-numeric: tabular-nums; }
-  th { color: #A8B5C4; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; background: transparent; border: 0; padding-bottom: 4px; }
+  th, td { padding: 8px 10px; text-align: center; width: 56px; border: 1px solid #100E0C; font-variant-numeric: tabular-nums; }
+  th { color: #B5AEA4; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; background: transparent; border: 0; padding-bottom: 4px; }
   td.label { text-align: left; color: #FFF; border: 0; padding-right: 12px; font-weight: 500; }
-  .legend { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: #A8B5C4; }
-  .legend .bar { display: inline-block; width: 160px; height: 6px; background: linear-gradient(90deg, #DE5878 0%, #1F344C 50%, #2AB2D4 100%); border-radius: 1px; }
+  .legend { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: #B5AEA4; }
+  .legend .bar { display: inline-block; width: 160px; height: 6px; background: linear-gradient(90deg, #CE7068 0%, #4A443C 50%, #D98A64 100%); border-radius: 1px; }
 </style>
 </head>
 <body class="bg-app">
@@ -50,9 +50,9 @@
     for (let j=0;j<syms.length;j++){
       const v = m[i][j];
       let bg;
-      if (i===j) bg = '#1B2A3C';
-      else if (v >= 0) bg = `rgba(42, 178, 212, ${0.12 + v*0.65})`;
-      else bg = `rgba(222, 88, 120, ${0.12 + (-v)*0.65})`;
+      if (i===j) bg = '#2E2A24';
+      else if (v >= 0) bg = `rgba(217, 138, 100, ${0.12 + v*0.65})`;
+      else bg = `rgba(206, 112, 104, ${0.12 + (-v)*0.65})`;
       h += `<td style="background:${bg};color:#FFF;">${v.toFixed(2)}</td>`;
     }
     h += '</tr>';

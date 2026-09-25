@@ -1,15 +1,14 @@
-# Archived Legacy Status Item: ROADMAP
+# Roadmap Compatibility Entry Point
 
-This status file has been migrated to [ROADMAP.md](../../archive/docs/status/ROADMAP.md). Active status and planning context should be read from canonical owners:
-
-- [`docs/product/README.md`](../product/README.md)
-- [`docs/roadmap/README.md`](../roadmap/README.md)
-- [`docs/engineering/README.md`](../engineering/README.md)
-- [`docs/reference/README.md`](../reference/README.md)
-
-**Status:** archive-migration-stub
+**Status:** compatibility-redirect
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-09-23
 
-Use the archive copy for history only; do not treat it as current truth.
+Current source: [Roadmap registry](../roadmap/README.md) and [generated roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md).
 
+The golden-path documentation validator still expects this path. This page supplies navigation only; it contains no independent delivery,
+test, provider sign-off, or release-readiness claim. Update the canonical source and regenerate
+its reports when status changes.
+
+The former archive target is absent from the current repository. Earlier snapshots remain in Git
+history; use the current sources above for active work.

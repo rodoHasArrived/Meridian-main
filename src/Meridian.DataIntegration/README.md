@@ -6,14 +6,14 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-08-05
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.DataIntegration
 
 ## Credential migration recovery
 
-Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Vault reads and mutations share a bounded, cancellable file lock across store instances; reads with no vault remain available without writing to a read-only data root. Audit failure retains the sidecar for retry.
+Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Mutations share a bounded, cancellable file lock across store instances. Readers open one immutable published generation without a writable lock, including on read-only secret volumes; primary and backup generations are both replaced atomically. Audit failure retains the sidecar for retry.
 
 ## Purpose
 
@@ -58,7 +58,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   event-type, and processing-tier matching.
 - `Historical/HistoricalDataQueryService.cs` - JSONL-backed historical market-data query and
   OHLCV bar aggregation service used by CLI, diagnostics, simulation, and shared-data access
-  adapters.
+  adapters. File-date filtering and date-range discovery inspect paths relative to the configured
+  data root, so dated workspace or backup directories cannot replace the data's own session date.
 - `Monitoring/BadTickFilter.cs`, `Monitoring/TickSizeValidator.cs`,
   `Monitoring/TimestampMonotonicityChecker.cs`, `Monitoring/ValidationMetrics.cs`,
   `Monitoring/ClockSkewEstimator.cs`, `Monitoring/SpreadMonitor.cs`,
@@ -84,6 +85,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Important workflows
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+
+Connection-health ping cancellation and linked-token disposal execute outside the operation-state
+lock, so provider callbacks and completion cleanup can re-enter the monitor without deadlocking.
+Cleanup requested during cancellation is deferred until the active cancellation calls return;
+shutdown still cancels scans and observes late faults from non-cooperative pings.
 
 Accounting-system integration lives in this module. The adapter family imports chart-of-accounts,
 journal-entry, and trial-balance evidence as read-only reconciliation input through

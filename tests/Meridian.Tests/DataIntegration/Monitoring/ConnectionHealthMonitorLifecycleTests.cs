@@ -57,6 +57,49 @@ public sealed class ConnectionHealthMonitorLifecycleTests
     }
 
     [Fact]
+    public async Task PingTimeout_CancellationCallbackCanUnregisterConnectionFromAnotherThread()
+    {
+        var clock = new ManualTimeProvider(Start);
+        var monitor = CreateMonitor(clock, pingTimeoutSeconds: 1);
+        var pingStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var callbackCompleted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pendingPing = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var unregisterTask = Task.CompletedTask;
+        CancellationTokenRegistration cancellationRegistration = default;
+        monitor.PingSender = (connectionId, ct) =>
+        {
+            cancellationRegistration = ct.Register(() =>
+            {
+                unregisterTask = Task.Run(() => monitor.UnregisterConnection(connectionId));
+                callbackCompleted.TrySetResult(unregisterTask.Wait(TimeSpan.FromSeconds(5)));
+            });
+            pingStarted.TrySetResult();
+            return pendingPing.Task;
+        };
+        monitor.RegisterConnection("connection-1", "provider-1");
+        clock.Advance(TimeSpan.FromSeconds(60));
+        var scan = monitor.CheckHeartbeatsOnceAsync();
+
+        try
+        {
+            await pingStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+            clock.Advance(TimeSpan.FromSeconds(1));
+
+            var callbackWasReentrant = await callbackCompleted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            callbackWasReentrant.Should().BeTrue("cancellation must not hold a monitor lock while invoking provider callbacks");
+            await scan.WaitAsync(TimeSpan.FromSeconds(2));
+            monitor.GetConnectionStatus("connection-1").Should().BeNull();
+        }
+        finally
+        {
+            pendingPing.TrySetResult(false);
+            await unregisterTask.WaitAsync(TimeSpan.FromSeconds(2));
+            await monitor.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+            cancellationRegistration.Dispose();
+        }
+    }
+
+    [Fact]
     public async Task DisposeAsync_CancelsAndDrainsCooperativeInFlightPing()
     {
         var clock = new ManualTimeProvider(Start);
@@ -82,10 +125,10 @@ public sealed class ConnectionHealthMonitorLifecycleTests
         var scan = monitor.CheckHeartbeatsOnceAsync();
 
         await pingStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
-        await monitor.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+        await Task.Run(() => monitor.DisposeAsync().AsTask()).WaitAsync(TimeSpan.FromSeconds(2));
 
         await pingCancelled.Task.WaitAsync(TimeSpan.FromSeconds(2));
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scan);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scan.WaitAsync(TimeSpan.FromSeconds(2)));
     }
 
     [Fact]

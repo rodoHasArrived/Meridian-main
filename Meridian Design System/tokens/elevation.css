@@ -33,7 +33,7 @@
   --radius-xl:     6px;
 
   /* Focus ring — concrete: tight, hard, square. 1px offset reads utilitarian. */
-  --focus-ring:        2px solid var(--border-focus, #2F6F8F);
+  --focus-ring:        2px solid var(--border-focus, #A85436);
   --focus-ring-offset: 1px;
 
   /* Elevation — concrete: surfaces are FLAT. Structure is carried by visible

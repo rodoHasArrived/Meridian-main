@@ -64,10 +64,10 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // An absent vault can be read without creating a directory or writable lock.
+            // Both generations are published by atomic replacement. Read the published
+            // snapshot without creating or opening a writable lock on a secret volume.
             if (File.Exists(VaultPath) || File.Exists(_vaultBackupPath))
             {
-                using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
                 var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
                 if (vault.Providers.TryGetValue(descriptor.ProviderId, out var localRecord))
                 {
@@ -704,7 +704,19 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             return new ProviderCredentialVault();
         }
 
-        var envelopeJson = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
+        await using var stream = new FileStream(path, new FileStreamOptions
+        {
+            Mode = FileMode.Open,
+            Access = FileAccess.Read,
+            Share = FileShare.Read | FileShare.Delete,
+            Options = FileOptions.Asynchronous | FileOptions.SequentialScan
+        });
+        // Holding one file handle keeps this generation stable while a writer replaces
+        // the path. Delete sharing allows that replacement on Windows without writing
+        // through the handle from which credentials are being decrypted.
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true,
+            bufferSize: 4096, leaveOpen: true);
+        var envelopeJson = await reader.ReadToEndAsync(ct).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(envelopeJson))
         {
             return new ProviderCredentialVault();
@@ -733,7 +745,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
 
         // Roll the current (readable) vault to the last-known-good backup before replacing
         // it, so a corrupting write can always fall back one generation in LoadVaultAsync.
-        // Callers hold _gate, so the copy/write pair cannot interleave with another writer.
+        // Callers hold the cross-instance writer lock. Publish the backup atomically too,
+        // so readers never observe an in-place copy's truncated intermediate generation.
         if (discardPreviousGeneration)
         {
             // Deletion must remove every recoverable copy before it can be acknowledged.
@@ -743,7 +756,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         {
             try
             {
-                File.Copy(VaultPath, _vaultBackupPath, overwrite: true);
+                var previousGeneration = await File.ReadAllBytesAsync(VaultPath, ct).ConfigureAwait(false);
+                await AtomicFileWriter.WriteAsync(_vaultBackupPath, previousGeneration, ct).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {

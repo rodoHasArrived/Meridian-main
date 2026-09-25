@@ -50,6 +50,13 @@ documents:
       - W9-SAFETY-007
       - W9-GOV-008
       - W9-INGEST-009
+  - id: DOC-W9-DEMO-002-CLOSURE-2026-09-16
+    path: docs/product/w9-demo-002-closure-2026-09-16.md
+    title: 2026-09-16 W9-DEMO-002 closure record
+    role: readable_status
+    owner_lane: Workstation Shell and UX
+    roadmap_items:
+      - W9-DEMO-002
   - id: DOC-W9-ACCEPTANCE-2026-08-29
     path: docs/product/w9-operator-acceptance-2026-08-29.md
     title: 2026-08-29 W9 operator acceptance record

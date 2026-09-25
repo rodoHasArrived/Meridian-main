@@ -22,23 +22,23 @@
   .index .sub { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted);
                 text-transform: uppercase; letter-spacing: 0.16em; margin-top: 4px; }
   .index .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); text-align: right; }
-  .index .meta b { color: #2AB2D4; font-weight: 500; }
+  .index .meta b { color: #D98A64; font-weight: 500; }
 
   /* ---------- panel ---------- */
-  .panel { background: #0B1520; border: 1px solid var(--border-color); border-radius: 4px;
+  .panel { background: #201D19; border: 1px solid var(--border-color); border-radius: 4px;
            overflow: hidden; }
   .panel-head {
     display: grid; grid-template-columns: auto 1fr auto auto; gap: 14px;
-    align-items: center; padding: 10px 16px; background: #05101B;
+    align-items: center; padding: 10px 16px; background: #100E0C;
     border-bottom: 1px solid var(--border-color);
     font-family: var(--font-mono); font-size: 10px;
     text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted);
   }
-  .panel-head .num { color: #2AB2D4; font-weight: 600; }
+  .panel-head .num { color: #D98A64; font-weight: 600; }
   .panel-head .title { color: #FFF; letter-spacing: 0.18em; font-weight: 500; }
-  .panel-head .file { color: #BEC8D4; }
+  .panel-head .file { color: #D4CEC5; }
   .panel-head .copy { color: var(--fg-muted); cursor: pointer; }
-  .panel-head .copy:hover { color: #2AB2D4; }
+  .panel-head .copy:hover { color: #D98A64; }
 
   /* ---------- primary block ---------- */
   .primary {
@@ -47,8 +47,8 @@
   .primary .stage {
     position: relative; padding: 56px 40px; min-height: 280px;
     background:
-      radial-gradient(circle at 30% 40%, rgba(42,178,212,0.06), transparent 60%),
-      #08131F;
+      radial-gradient(circle at 30% 40%, rgba(217,138,100,0.06), transparent 60%),
+      #1A1712;
     border-right: 1px solid var(--border-color);
     display: flex; align-items: center; justify-content: center;
   }
@@ -57,19 +57,19 @@
   .construct {
     position: absolute; inset: 24px; pointer-events: none;
     background-image:
-      linear-gradient(to right, rgba(42,178,212,0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(42,178,212,0.05) 1px, transparent 1px);
+      linear-gradient(to right, rgba(217,138,100,0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(217,138,100,0.05) 1px, transparent 1px);
     background-size: 16px 16px;
   }
   /* clearspace ring */
   .clearspace {
     position: absolute; left: 50%; top: 50%; width: 220px; height: 220px;
     transform: translate(-50%, -50%);
-    border: 1px dashed rgba(42,178,212,0.45); border-radius: 4px;
+    border: 1px dashed rgba(217,138,100,0.45); border-radius: 4px;
   }
   .clearspace::before, .clearspace::after,
   .clearspace .l, .clearspace .r {
-    content: ""; position: absolute; background: #2AB2D4;
+    content: ""; position: absolute; background: #D98A64;
   }
   .clearspace::before { left: -4px; top: -4px; width: 8px; height: 8px; }
   .clearspace::after  { right: -4px; bottom: -4px; width: 8px; height: 8px; }
@@ -77,7 +77,7 @@
   .clearspace .r { right: -4px; top: -4px; width: 8px; height: 8px; }
   .stage .axis-label {
     position: absolute; font-family: var(--font-mono); font-size: 9px;
-    color: rgba(42,178,212,0.7); letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(217,138,100,0.7); letter-spacing: 0.15em; text-transform: uppercase;
   }
   .stage .axis-label.tl { top: 18px; left: 18px; }
   .stage .axis-label.br { bottom: 18px; right: 18px; }
@@ -89,7 +89,7 @@
   .spec .v { font-family: var(--font-mono); font-size: 12px; color: #FFF; font-variant-numeric: tabular-nums; }
   .spec .v small { color: var(--fg-muted); }
   .spec.full { grid-column: 1 / -1; }
-  .anatomy { display: flex; flex-direction: column; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: #DEE6EF; }
+  .anatomy { display: flex; flex-direction: column; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: #EFEBE4; }
   .anatomy .item { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: center; }
   .anatomy .swatch { width: 12px; height: 12px; border-radius: 1px; }
   .anatomy .meta { font-size: 10px; color: var(--fg-muted); }
@@ -97,7 +97,7 @@
   /* ---------- size ramp ---------- */
   .ramp {
     display: grid; grid-template-columns: repeat(7, 1fr); gap: 0;
-    background: #08131F;
+    background: #1A1712;
   }
   .ramp .step { padding: 18px 8px 12px; border-right: 1px solid var(--border-color);
                 display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 130px;
@@ -109,16 +109,16 @@
                      text-transform: uppercase; letter-spacing: 0.12em; text-align: center; }
   .ramp .step.min::after {
     content: "MIN"; position: absolute; top: 8px; right: 8px;
-    font-family: var(--font-mono); font-size: 8.5px; color: #DE5878;
-    border: 1px solid rgba(222,88,120,0.4); padding: 1px 5px; border-radius: 2px; letter-spacing: 0.1em;
+    font-family: var(--font-mono); font-size: 8.5px; color: #CE7068;
+    border: 1px solid rgba(206,112,104,0.4); padding: 1px 5px; border-radius: 2px; letter-spacing: 0.1em;
   }
 
   /* ---------- wordmark ---------- */
   .wordmark-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
   .wordmark-row .stage { padding: 30px 36px; min-height: 140px;
                          display: flex; align-items: center; justify-content: center;
-                         border-right: 1px solid var(--border-color); background: #08131F; }
-  .wordmark-row .stage:last-child { border-right: 0; background: #DEE6EF; }
+                         border-right: 1px solid var(--border-color); background: #1A1712; }
+  .wordmark-row .stage:last-child { border-right: 0; background: #EFEBE4; }
   .wordmark-row .stage img { height: 60px; }
   .wordmark-row .stage.light img { filter: invert(95%) hue-rotate(180deg) saturate(0.4) brightness(0.4); }
   .wordmark-row .label-pill {
@@ -128,7 +128,7 @@
   }
   .wordmark-row .stage { position: relative; }
   .wordmark-row .stage.dark .label-pill { color: var(--fg-muted); }
-  .wordmark-row .stage.light .label-pill { color: #5A6878; }
+  .wordmark-row .stage.light .label-pill { color: #736B60; }
 
   /* ---------- variants grid ---------- */
   .variants { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
@@ -144,16 +144,16 @@
     font-family: var(--font-mono); font-size: 11px; color: #FFF; letter-spacing: 0.1em;
   }
   .variants .cell .meta { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted); }
-  .variants .stage-dark { background: #08131F; }
-  .variants .stage-deep { background: #05101B; }
-  .variants .stage-light { background: #DEE6EF; }
-  .variants .stage-cyan { background: #2AB2D4; }
-  .variants .stage-light .name { color: #08101A; }
-  .variants .stage-light .meta { color: #5A6878; }
-  .variants .stage-light .tag { color: #5A6878; }
-  .variants .stage-cyan .name { color: #05101B; }
-  .variants .stage-cyan .meta { color: #05101B; opacity: 0.7; }
-  .variants .stage-cyan .tag { color: #05101B; opacity: 0.7; }
+  .variants .stage-dark { background: #1A1712; }
+  .variants .stage-deep { background: #100E0C; }
+  .variants .stage-light { background: #EFEBE4; }
+  .variants .stage-cyan { background: #D98A64; }
+  .variants .stage-light .name { color: #14120F; }
+  .variants .stage-light .meta { color: #736B60; }
+  .variants .stage-light .tag { color: #736B60; }
+  .variants .stage-cyan .name { color: #100E0C; }
+  .variants .stage-cyan .meta { color: #100E0C; opacity: 0.7; }
+  .variants .stage-cyan .tag { color: #100E0C; opacity: 0.7; }
 
   .variants .cell img.mono { width: 72px; height: 72px; }
 
@@ -161,14 +161,14 @@
   .misuse { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
   .misuse .cell { padding: 22px 16px 16px; border-right: 1px solid var(--border-color);
                   display: flex; flex-direction: column; align-items: center; gap: 10px;
-                  background: #08131F; position: relative; min-height: 160px; }
+                  background: #1A1712; position: relative; min-height: 160px; }
   .misuse .cell:last-child { border-right: 0; }
   .misuse .cell .x {
     position: absolute; top: 10px; right: 12px;
-    color: #DE5878; font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+    color: #CE7068; font-family: var(--font-mono); font-size: 14px; font-weight: 600;
   }
   .misuse .cell .label {
-    font-family: var(--font-mono); font-size: 10px; color: #DE5878;
+    font-family: var(--font-mono); font-size: 10px; color: #CE7068;
     text-transform: uppercase; letter-spacing: 0.14em;
   }
   .misuse .cell .desc { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-align: center; line-height: 1.4; }
@@ -182,71 +182,71 @@
 
   /* favicon mockup */
   .favicon-mock {
-    background: #1A1F2E;
+    background: #252119;
     height: 100%; display: flex; flex-direction: column;
   }
   .favicon-mock .browser-bar {
-    background: #2A3142; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
-    border-bottom: 1px solid #0B0E16;
+    background: #302B25; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
+    border-bottom: 1px solid #100E0C;
   }
   .favicon-mock .traffic { display: flex; gap: 5px; }
-  .favicon-mock .traffic span { width: 9px; height: 9px; border-radius: 50%; background: #4A5060; }
+  .favicon-mock .traffic span { width: 9px; height: 9px; border-radius: 50%; background: #5F584E; }
   .favicon-mock .tab {
-    background: #1A1F2E; padding: 6px 10px; border-radius: 4px 4px 0 0;
-    font-family: var(--font-sans); font-size: 11px; color: #DEE6EF;
+    background: #252119; padding: 6px 10px; border-radius: 4px 4px 0 0;
+    font-family: var(--font-sans); font-size: 11px; color: #EFEBE4;
     display: flex; align-items: center; gap: 7px; max-width: 200px;
   }
   .favicon-mock .tab img { width: 14px; height: 14px; }
   .favicon-mock .tab .ttl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .favicon-mock .tab .close { color: #7C8A9B; margin-left: 4px; font-size: 11px; }
+  .favicon-mock .tab .close { color: #9A9289; margin-left: 4px; font-size: 11px; }
   .favicon-mock .body-area { flex: 1; padding: 16px; }
   .favicon-mock .label-pill { color: var(--fg-muted); font-family: var(--font-mono); font-size: 9px;
                               text-transform: uppercase; letter-spacing: 0.14em; }
 
   /* avatar / icon mockup */
-  .avatar-mock { padding: 20px; display: flex; flex-direction: column; gap: 16px; background: #08131F; height: 100%; box-sizing: border-box; }
+  .avatar-mock { padding: 20px; display: flex; flex-direction: column; gap: 16px; background: #1A1712; height: 100%; box-sizing: border-box; }
   .avatar-mock .label-pill { font-family: var(--font-mono); font-size: 9px; color: var(--fg-muted);
                              text-transform: uppercase; letter-spacing: 0.14em; }
   .avatar-mock .row { display: flex; align-items: center; gap: 14px; }
   .avatar-mock .pill {
     display: inline-flex; align-items: center; gap: 8px;
-    background: #0B1520; border: 1px solid var(--border-color); border-radius: 999px;
+    background: #201D19; border: 1px solid var(--border-color); border-radius: 999px;
     padding: 6px 12px 6px 6px;
   }
   .avatar-mock .pill img { width: 22px; height: 22px; border-radius: 50%; }
   .avatar-mock .pill .t { font-family: var(--font-mono); font-size: 11px; color: #FFF; }
   .avatar-mock .ios-icon {
     width: 56px; height: 56px; border-radius: 12px;
-    background: #08131F; border: 1px solid var(--border-color);
+    background: #1A1712; border: 1px solid var(--border-color);
     display: grid; place-items: center;
   }
   .avatar-mock .ios-icon img { width: 38px; height: 38px; }
-  .avatar-mock .ios-label { font-family: var(--font-sans); font-size: 10.5px; color: #DEE6EF; }
+  .avatar-mock .ios-label { font-family: var(--font-sans); font-size: 10.5px; color: #EFEBE4; }
 
   /* monogram mockup */
-  .mono-mock { padding: 20px; height: 100%; box-sizing: border-box; background: #08131F;
+  .mono-mock { padding: 20px; height: 100%; box-sizing: border-box; background: #1A1712;
                 display: flex; flex-direction: column; gap: 14px; }
   .mono-mock .label-pill { font-family: var(--font-mono); font-size: 9px; color: var(--fg-muted);
                             text-transform: uppercase; letter-spacing: 0.14em; }
   .mono-mock .lockup {
-    background: #05101B; border: 1px solid var(--border-color); padding: 10px 14px;
+    background: #100E0C; border: 1px solid var(--border-color); padding: 10px 14px;
     display: flex; align-items: center; gap: 10px; border-radius: 4px;
   }
   .mono-mock .lockup img { width: 20px; height: 20px; }
   .mono-mock .lockup .stack { display: flex; flex-direction: column; line-height: 1.1; }
   .mono-mock .lockup .top { font-family: var(--font-display); font-weight: 600; color: #FFF; font-size: 13px; letter-spacing: 0.06em; }
-  .mono-mock .lockup .bot { font-family: var(--font-mono); font-size: 9px; color: #2AB2D4; letter-spacing: 0.18em; }
+  .mono-mock .lockup .bot { font-family: var(--font-mono); font-size: 9px; color: #D98A64; letter-spacing: 0.18em; }
 
   /* ---------- color tokens ---------- */
   .tokens { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
   .tokens .tok { padding: 14px 16px; border-right: 1px solid var(--border-color);
-                 display: flex; gap: 12px; align-items: center; background: #08131F; }
+                 display: flex; gap: 12px; align-items: center; background: #1A1712; }
   .tokens .tok:last-child { border-right: 0; }
   .tokens .sw { width: 36px; height: 36px; border-radius: 4px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.06); }
   .tokens .info { display: flex; flex-direction: column; gap: 2px; }
   .tokens .info .nm { font-family: var(--font-mono); font-size: 11px; color: #FFF; letter-spacing: 0.04em; }
   .tokens .info .hex { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
-  .tokens .info .role { font-family: var(--font-mono); font-size: 9.5px; color: #2AB2D4;
+  .tokens .info .role { font-family: var(--font-mono); font-size: 9.5px; color: #D98A64;
                         text-transform: uppercase; letter-spacing: 0.14em; }
 </style>
 </head>
@@ -292,15 +292,15 @@
           <div class="spec full">
             <div class="k">Anatomy</div>
             <div class="anatomy">
-              <div class="item"><span class="swatch" style="background:#DEE6EF;"></span><span>Celestial circle</span><span class="meta">Bone · stroke 10</span></div>
-              <div class="item"><span class="swatch" style="background:#DEE6EF;"></span><span>Vertical &amp; horizontal axes</span><span class="meta">Bone · square caps</span></div>
-              <div class="item"><span class="swatch" style="background:#2AB2D4;"></span><span>Latitude tick</span><span class="meta">Cyan · sight-line accent</span></div>
-              <div class="item"><span class="swatch" style="background:#2AB2D4; border-radius:50%;"></span><span>Origin point</span><span class="meta">Cyan · r 8</span></div>
+              <div class="item"><span class="swatch" style="background:#EFEBE4;"></span><span>Celestial circle</span><span class="meta">Bone · stroke 10</span></div>
+              <div class="item"><span class="swatch" style="background:#EFEBE4;"></span><span>Vertical &amp; horizontal axes</span><span class="meta">Bone · square caps</span></div>
+              <div class="item"><span class="swatch" style="background:#D98A64;"></span><span>Latitude tick</span><span class="meta">Cyan · sight-line accent</span></div>
+              <div class="item"><span class="swatch" style="background:#D98A64; border-radius:50%;"></span><span>Origin point</span><span class="meta">Cyan · r 8</span></div>
             </div>
           </div>
           <div class="spec full">
             <div class="k">Concept</div>
-            <div class="v" style="font-family: var(--font-sans); font-size: 12.5px; color: #DEE6EF; line-height: 1.5;">
+            <div class="v" style="font-family: var(--font-sans); font-size: 12.5px; color: #EFEBE4; line-height: 1.5;">
               Sight along a meridian. The circle is the celestial sphere, the cross is the observer's frame, and the cyan tick is the moment of fix — the line at which a measurement becomes a position.
             </div>
           </div>
@@ -337,11 +337,11 @@
       </div>
       <div class="wordmark-row">
         <div class="stage dark">
-          <span class="label-pill">ON DARK · #08101A</span>
+          <span class="label-pill">ON DARK · #14120F</span>
           <img src="../assets/brand/meridian-wordmark.svg" alt="Meridian wordmark">
         </div>
         <div class="stage light">
-          <span class="label-pill">ON LIGHT · #DEE6EF</span>
+          <span class="label-pill">ON LIGHT · #EFEBE4</span>
           <img src="../assets/brand/meridian-wordmark.svg" alt="Meridian wordmark">
         </div>
       </div>
@@ -369,11 +369,11 @@
         <div class="cell stage-deep">
           <span class="tag">B · MONO LIGHT</span>
           <svg class="mono" viewBox="0 0 256 256">
-            <circle cx="128" cy="128" r="88" fill="none" stroke="#DEE6EF" stroke-width="10"/>
-            <line x1="40" y1="128" x2="216" y2="128" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"/>
-            <line x1="128" y1="28" x2="128" y2="228" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"/>
-            <line x1="96" y1="88" x2="160" y2="88" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"/>
-            <circle cx="128" cy="128" r="8" fill="#DEE6EF"/>
+            <circle cx="128" cy="128" r="88" fill="none" stroke="#EFEBE4" stroke-width="10"/>
+            <line x1="40" y1="128" x2="216" y2="128" stroke="#EFEBE4" stroke-width="10" stroke-linecap="square"/>
+            <line x1="128" y1="28" x2="128" y2="228" stroke="#EFEBE4" stroke-width="10" stroke-linecap="square"/>
+            <line x1="96" y1="88" x2="160" y2="88" stroke="#EFEBE4" stroke-width="10" stroke-linecap="square"/>
+            <circle cx="128" cy="128" r="8" fill="#EFEBE4"/>
           </svg>
           <div>
             <div class="name">BONE MONO</div>
@@ -384,11 +384,11 @@
         <div class="cell stage-light">
           <span class="tag">C · ON LIGHT</span>
           <svg class="mono" viewBox="0 0 256 256">
-            <circle cx="128" cy="128" r="88" fill="none" stroke="#08101A" stroke-width="10"/>
-            <line x1="40" y1="128" x2="216" y2="128" stroke="#08101A" stroke-width="10" stroke-linecap="square"/>
-            <line x1="128" y1="28" x2="128" y2="228" stroke="#08101A" stroke-width="10" stroke-linecap="square"/>
-            <line x1="96" y1="88" x2="160" y2="88" stroke="#2AB2D4" stroke-width="10" stroke-linecap="square"/>
-            <circle cx="128" cy="128" r="8" fill="#2AB2D4"/>
+            <circle cx="128" cy="128" r="88" fill="none" stroke="#14120F" stroke-width="10"/>
+            <line x1="40" y1="128" x2="216" y2="128" stroke="#14120F" stroke-width="10" stroke-linecap="square"/>
+            <line x1="128" y1="28" x2="128" y2="228" stroke="#14120F" stroke-width="10" stroke-linecap="square"/>
+            <line x1="96" y1="88" x2="160" y2="88" stroke="#D98A64" stroke-width="10" stroke-linecap="square"/>
+            <circle cx="128" cy="128" r="8" fill="#D98A64"/>
           </svg>
           <div>
             <div class="name">INVERSE</div>
@@ -399,11 +399,11 @@
         <div class="cell stage-cyan">
           <span class="tag">D · KNOCKOUT</span>
           <svg class="mono" viewBox="0 0 256 256">
-            <circle cx="128" cy="128" r="88" fill="none" stroke="#05101B" stroke-width="10"/>
-            <line x1="40" y1="128" x2="216" y2="128" stroke="#05101B" stroke-width="10" stroke-linecap="square"/>
-            <line x1="128" y1="28" x2="128" y2="228" stroke="#05101B" stroke-width="10" stroke-linecap="square"/>
-            <line x1="96" y1="88" x2="160" y2="88" stroke="#05101B" stroke-width="10" stroke-linecap="square"/>
-            <circle cx="128" cy="128" r="8" fill="#05101B"/>
+            <circle cx="128" cy="128" r="88" fill="none" stroke="#100E0C" stroke-width="10"/>
+            <line x1="40" y1="128" x2="216" y2="128" stroke="#100E0C" stroke-width="10" stroke-linecap="square"/>
+            <line x1="128" y1="28" x2="128" y2="228" stroke="#100E0C" stroke-width="10" stroke-linecap="square"/>
+            <line x1="96" y1="88" x2="160" y2="88" stroke="#100E0C" stroke-width="10" stroke-linecap="square"/>
+            <circle cx="128" cy="128" r="8" fill="#100E0C"/>
           </svg>
           <div>
             <div class="name">KNOCKOUT</div>
@@ -452,13 +452,13 @@
                 <span class="ios-label">Meridian</span>
               </div>
               <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
-                <div class="ios-icon" style="background:#2AB2D4; border-color:#2AB2D4;">
+                <div class="ios-icon" style="background:#D98A64; border-color:#D98A64;">
                   <svg width="38" height="38" viewBox="0 0 256 256">
-                    <circle cx="128" cy="128" r="88" fill="none" stroke="#05101B" stroke-width="14"/>
-                    <line x1="40" y1="128" x2="216" y2="128" stroke="#05101B" stroke-width="14"/>
-                    <line x1="128" y1="28" x2="128" y2="228" stroke="#05101B" stroke-width="14"/>
-                    <line x1="96" y1="88" x2="160" y2="88" stroke="#05101B" stroke-width="14"/>
-                    <circle cx="128" cy="128" r="10" fill="#05101B"/>
+                    <circle cx="128" cy="128" r="88" fill="none" stroke="#100E0C" stroke-width="14"/>
+                    <line x1="40" y1="128" x2="216" y2="128" stroke="#100E0C" stroke-width="14"/>
+                    <line x1="128" y1="28" x2="128" y2="228" stroke="#100E0C" stroke-width="14"/>
+                    <line x1="96" y1="88" x2="160" y2="88" stroke="#100E0C" stroke-width="14"/>
+                    <circle cx="128" cy="128" r="10" fill="#100E0C"/>
                   </svg>
                 </div>
                 <span class="ios-label">Terminal</span>
@@ -503,11 +503,11 @@
           <span class="x">✕</span>
           <div class="demo">
             <svg width="64" height="64" viewBox="0 0 256 256" style="transform: scaleX(0.6);">
-              <circle cx="128" cy="128" r="88" fill="none" stroke="#DEE6EF" stroke-width="10"/>
-              <line x1="40" y1="128" x2="216" y2="128" stroke="#DEE6EF" stroke-width="10"/>
-              <line x1="128" y1="28" x2="128" y2="228" stroke="#DEE6EF" stroke-width="10"/>
-              <line x1="96" y1="88" x2="160" y2="88" stroke="#2AB2D4" stroke-width="10"/>
-              <circle cx="128" cy="128" r="8" fill="#2AB2D4"/>
+              <circle cx="128" cy="128" r="88" fill="none" stroke="#EFEBE4" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="#EFEBE4" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="#EFEBE4" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="#D98A64" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="#D98A64"/>
             </svg>
           </div>
           <div class="label">DON'T DISTORT</div>
@@ -518,11 +518,11 @@
           <span class="x">✕</span>
           <div class="demo">
             <svg width="64" height="64" viewBox="0 0 256 256">
-              <circle cx="128" cy="128" r="88" fill="none" stroke="#F2C94C" stroke-width="10"/>
-              <line x1="40" y1="128" x2="216" y2="128" stroke="#F2C94C" stroke-width="10"/>
-              <line x1="128" y1="28" x2="128" y2="228" stroke="#F2C94C" stroke-width="10"/>
-              <line x1="96" y1="88" x2="160" y2="88" stroke="#DE5878" stroke-width="10"/>
-              <circle cx="128" cy="128" r="8" fill="#DE5878"/>
+              <circle cx="128" cy="128" r="88" fill="none" stroke="#D6B169" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="#D6B169" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="#D6B169" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="#CE7068" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="#CE7068"/>
             </svg>
           </div>
           <div class="label">DON'T RECOLOR</div>
@@ -533,11 +533,11 @@
           <span class="x">✕</span>
           <div class="demo">
             <svg width="64" height="64" viewBox="0 0 256 256" style="transform: rotate(28deg);">
-              <circle cx="128" cy="128" r="88" fill="none" stroke="#DEE6EF" stroke-width="10"/>
-              <line x1="40" y1="128" x2="216" y2="128" stroke="#DEE6EF" stroke-width="10"/>
-              <line x1="128" y1="28" x2="128" y2="228" stroke="#DEE6EF" stroke-width="10"/>
-              <line x1="96" y1="88" x2="160" y2="88" stroke="#2AB2D4" stroke-width="10"/>
-              <circle cx="128" cy="128" r="8" fill="#2AB2D4"/>
+              <circle cx="128" cy="128" r="88" fill="none" stroke="#EFEBE4" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="#EFEBE4" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="#EFEBE4" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="#D98A64" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="#D98A64"/>
             </svg>
           </div>
           <div class="label">DON'T ROTATE</div>
@@ -546,7 +546,7 @@
 
         <div class="cell">
           <span class="x">✕</span>
-          <div class="demo" style="background: linear-gradient(135deg,#F2C94C,#DE5878); border-radius: 4px; width:80px; height:64px; padding: 8px;">
+          <div class="demo" style="background: linear-gradient(135deg,#D6B169,#CE7068); border-radius: 4px; width:80px; height:64px; padding: 8px;">
             <svg width="48" height="48" viewBox="0 0 256 256">
               <circle cx="128" cy="128" r="88" fill="none" stroke="#FFF" stroke-width="10"/>
               <line x1="40" y1="128" x2="216" y2="128" stroke="#FFF" stroke-width="10"/>
@@ -572,20 +572,20 @@
       </div>
       <div class="tokens">
         <div class="tok">
-          <span class="sw" style="background:#08101A;"></span>
-          <div class="info"><span class="role">SURFACE</span><span class="nm">brand.bg</span><span class="hex">#08101A</span></div>
+          <span class="sw" style="background:#14120F;"></span>
+          <div class="info"><span class="role">SURFACE</span><span class="nm">brand.bg</span><span class="hex">#14120F</span></div>
         </div>
         <div class="tok">
-          <span class="sw" style="background:#DEE6EF;"></span>
-          <div class="info"><span class="role">PRIMARY INK</span><span class="nm">brand.bone</span><span class="hex">#DEE6EF</span></div>
+          <span class="sw" style="background:#EFEBE4;"></span>
+          <div class="info"><span class="role">PRIMARY INK</span><span class="nm">brand.bone</span><span class="hex">#EFEBE4</span></div>
         </div>
         <div class="tok">
-          <span class="sw" style="background:#2AB2D4;"></span>
-          <div class="info"><span class="role">ACCENT</span><span class="nm">brand.cyan</span><span class="hex">#2AB2D4</span></div>
+          <span class="sw" style="background:#D98A64;"></span>
+          <div class="info"><span class="role">ACCENT</span><span class="nm">brand.cyan</span><span class="hex">#D98A64</span></div>
         </div>
         <div class="tok">
-          <span class="sw" style="background:#05101B;"></span>
-          <div class="info"><span class="role">DEEP</span><span class="nm">brand.deep</span><span class="hex">#05101B</span></div>
+          <span class="sw" style="background:#100E0C;"></span>
+          <div class="info"><span class="role">DEEP</span><span class="nm">brand.deep</span><span class="hex">#100E0C</span></div>
         </div>
       </div>
     </div>

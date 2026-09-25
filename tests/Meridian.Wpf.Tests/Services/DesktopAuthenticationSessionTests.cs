@@ -108,12 +108,66 @@ public sealed class DesktopAuthenticationSessionTests
             .Set("MDC_USERS", null)
             .Set("MDC_USERNAME", null)
             .Set("MDC_PASSWORD_HASH", null)
-            .Set("MDC_AUTH_MODE", "optional");
+            .Set("MDC_AUTH_MODE", "optional")
+            .Set("MDC_ANONYMOUS_ROLE", null);
 
         var session = CreateSession("Development");
 
         // No signed-in operator profile: gating defers (returns true) so local development is not blocked.
         session.HasPermission(UserPermission.ManageProviders).Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasPermission_WhenAnonymousReadOnlyRoleIsConfigured_UsesThatRolesPermissions()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", null)
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", "optional")
+            .Set("MDC_ANONYMOUS_ROLE", "ReadOnly");
+
+        var session = CreateSession("Development");
+        session.ContinueWithoutCredentials().Succeeded.Should().BeTrue();
+
+        session.HasPermission(UserPermission.ViewMarketData).Should().BeTrue();
+        session.HasPermission(UserPermission.ModifySecurityMaster).Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasPermission_WhenAnonymousRoleIsInvalid_FailsClosed()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", null)
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", "optional")
+            .Set("MDC_ANONYMOUS_ROLE", "0");
+
+        var session = CreateSession("Development");
+        session.ContinueWithoutCredentials().Succeeded.Should().BeTrue();
+
+        session.HasPermission(UserPermission.ViewSecurityMaster).Should().BeFalse();
+        session.HasPermission(UserPermission.ModifySecurityMaster).Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasPermission_WhenSignedInSessionIsRevoked_FailsClosed()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", HashedDesktopAdminUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null)
+            .Set("MDC_ANONYMOUS_ROLE", null);
+
+        var session = CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
+        session.SignOut();
+
+        session.HasPermission(UserPermission.ModifySecurityMaster).Should().BeFalse();
+        session.TryGetAuthenticatedActor(out _).Should().BeFalse();
+        session.TryAuthorize(UserPermission.ModifySecurityMaster, out _).Should().BeFalse();
     }
 
     [Fact]

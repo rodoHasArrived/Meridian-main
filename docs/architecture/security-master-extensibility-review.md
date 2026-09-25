@@ -8,6 +8,39 @@
 
 ---
 
+## Consolidated review queue — 2026-09-23
+
+This document is the single rolling review record. The nine unconsumed review PRs below are
+retained historical inputs, pinned to their original commits; consolidating the queue does not
+accept their findings as current or discard their distinct observations. Finding labels such as
+`B1`, `C4`, and `E1` are local to a pass and must be qualified by date and PR number.
+
+| Retained pass | Immutable review | Distinct scope to reconcile against current source |
+| --- | --- | --- |
+| 2026-09-01, [#2892](https://github.com/rodoHasArrived/Meridian-main/pull/2892) | [d67f261a](https://github.com/rodoHasArrived/Meridian-main/blob/d67f261a2ca5678b0a9989599abb6d27e7783772/docs/architecture/security-master-extensibility-review.md) | Identifier-constraint failure classification and event/projection atomicity. |
+| 2026-09-03, [#2904](https://github.com/rodoHasArrived/Meridian-main/pull/2904) | [b5a5ab01](https://github.com/rodoHasArrived/Meridian-main/blob/b5a5ab015b5625d669684e1b22e49c216fb5a04c/docs/architecture/security-master-extensibility-review.md) | Price currency, quote units, history, overrides, and vendor entitlement enforcement. |
+| 2026-09-04, [#2905](https://github.com/rodoHasArrived/Meridian-main/pull/2905) | [b8d5b855](https://github.com/rodoHasArrived/Meridian-main/blob/b8d5b855ba8e48802765a489bbda836bdf86ddbf/docs/architecture/security-master-extensibility-review.md) | Normalized identifier collisions reported as skips and orphaned event streams. |
+| 2026-09-07, [#2935](https://github.com/rodoHasArrived/Meridian-main/pull/2935) | [b520a3bc](https://github.com/rodoHasArrived/Meridian-main/blob/b520a3bc7bce30af33e63ac905efca5e90cd6c1e/docs/architecture/security-master-extensibility-review.md) | Issuer/classification ownership, capability parity, client schemas, and cash-flow coverage. |
+| 2026-09-09, [#2937](https://github.com/rodoHasArrived/Meridian-main/pull/2937) | [933ab5d9](https://github.com/rodoHasArrived/Meridian-main/blob/933ab5d94a5becb32758e04732bce40122eb919d/docs/architecture/security-master-extensibility-review.md) | No-drift interval; the pass's dated source checks remain historical. |
+| 2026-09-11, [#2961](https://github.com/rodoHasArrived/Meridian-main/pull/2961) | [7b2f3ada](https://github.com/rodoHasArrived/Meridian-main/blob/7b2f3adaff8378e4a568029de20ec6eb8ff1b0a3/docs/architecture/security-master-extensibility-review.md) | Payload-family discrimination, cache/registry refresh, universe-load cost, and value-consistency scope. |
+| 2026-09-16, [#2975](https://github.com/rodoHasArrived/Meridian-main/pull/2975) | [40b77352](https://github.com/rodoHasArrived/Meridian-main/blob/40b773523c09bfb77fbb517cf7c6919cdeffd71e/docs/architecture/security-master-extensibility-review.md) | Alias ambiguity, normalization, check digits, conflict IDs, bounded loading, and vacuous coverage assertions. |
+| 2026-09-21, [#2982](https://github.com/rodoHasArrived/Meridian-main/pull/2982) | [25d2c209](https://github.com/rodoHasArrived/Meridian-main/blob/25d2c209b84de9dfcbc2012ef7b82002fa98c869/docs/architecture/security-master-extensibility-review.md) | Cash-flow dispatch, journal-template binding, asset-pack validation, and unmodeled readiness. Its separate futures-fixture repair is already present on main. |
+| 2026-09-22, [#2984](https://github.com/rodoHasArrived/Meridian-main/pull/2984) | [03810312](https://github.com/rodoHasArrived/Meridian-main/blob/03810312228b97f7f1a8f1dc5057f785a980ec33/docs/architecture/security-master-extensibility-review.md) | Pricing history/units, hierarchy governance, valuation integration, and scoped entitlements. |
+
+Current-main evidence is `13aa7576575e7816c14ec3b9b5b002a3f4494c97`. Subsequent accounting-trust
+work in PR 2987 changed cash-flow dispatch, lifecycle bindings, and effective-date/quote-unit price
+selection, so the corresponding September 21/22 claims require comparison before being carried
+forward. Production Certification run 35885778558 passed all four jobs on that baseline, including
+1,028 database tests with no failures or skips; it does not establish that every architectural
+finding above is resolved.
+
+Future review work should update this record with changed source, a dated finding disposition,
+and validation evidence. An unchanged interval needs no new review PR. Reuse an open consolidation
+PR while it is awaiting review. This queue policy does not claim that the external scheduler has
+been disabled; no matching local automation was found during this consolidation.
+
+---
+
 ## Purpose
 
 An evidence-based assessment of the Security Master against institutional-finance reference-data

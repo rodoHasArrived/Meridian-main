@@ -285,3 +285,50 @@ and the advance-refunding scenario reconciles from source evidence through repor
 Contract and persistence foundation in progress: shared decimal `OpenLotDto` and acquisition facts, canonical relief selection, Execution/Backtesting parity adapters, an additive nullable `acquisition_terms` column, immutable acquisition guards, and ledger-to-canonical face/unit projection. Missing identity, FX, or subject-bound acquisition evidence is refused. Legacy null fields remain absent in fingerprints; populated evidence participates in atomic replay identity.
 
 The governed legacy exception/backfill workflow and durable disposal/Reporting consumers are implemented as described in section 1. No acquisition-writer cutover is claimed. Remaining phases include acquisition writer convergence; atomic AverageCost basis redistribution and currency-precision/selector/amortization parity across remaining production consumers; append-only corporate-action successor and adjustment posting; the advance-refunding/reporting acceptance scenario; and shadow-operation evidence before retiring legacy contracts. Changed basis without a governed adjustment projection currently blocks canonical projection. Short positions require the explicit direction decision in section 9. This increment is not full production certification.
+
+## Implementation receipt - 2026-09-22
+
+Acquisition writer convergence: `AccountingPostingCandidatePostService`, the only production code
+that creates lots, now writes canonical `OpenLotAcquisitionDto` facts on spine acquisitions. Unit lots
+always receive them; face lots receive them when the acquisition instruction states
+`AmortizationMethod` (and `EffectiveYield` for constant yield), which `AssetAcquisitionLotDto` now
+carries as optional fields omitted from serialization when absent so retained instruction
+fingerprints are unchanged. No fact is defaulted: the spine refuses foreign-currency events and the
+store requires lot currency to equal the journal functional currency, so FX is exactly one and
+transaction and functional bases both equal the asserted quantity-times-cost event amount. The
+lot-bound `OpenLotAcquisition` evidence restates each retained source record (URI, content hash,
+source reference) as reviewed and retained with the independent maker-checker approval that covered
+the drafted candidate. A face lot without a stated method keeps its par terms and no canonical
+facts. A retried batch committed before this change replays its retained shape rather than
+colliding on the fact-bearing fingerprint. `AssetAcquisitionLotPostgresRoundTripTests` proves unit
+and face acquisitions post, project through `ToOpenLot`, pass `CanonicalOpenLotDisposalGuard`, and
+replay. Remaining phases are unchanged: AverageCost redistribution, amortization, corporate-action
+successors, advance refunding, and shadow operation.
+
+## Implementation receipt - 2026-09-23
+
+Atomic AverageCost relief: the durable disposal transaction now accepts the `AverageCost` account
+policy. `CanonicalOpenLotDisposalGuard` certifies each selection against the pooled canonical relief
+(FIFO depletion order, pooled functional basis, decimal residual on the last slice), and the journal
+credits that pooled basis. In the same transaction every surviving lot in the pool is restated to the
+pooled basis through a governed `OpenLotBasisAdjustmentDto` (`V_ledger_037`: `tax_lots.basis_adjustment`,
+append-only under a trigger that requires a version increment stamped with a new mutation batch).
+Unselected survivors receive an append-only `BasisRedistribution` mutation row carrying their
+immutable before-snapshot; a partially relieved lot carries its restatement on its own `Disposal`
+row, so each lot still mutates at most once per batch. Acquisition facts never change: `ToOpenLot`
+projects the adjusted basis scaled by later relief and fails closed on an adjustment that does not
+bind the open quantity. The lots of record therefore tie to the asset account after every pooled
+disposal. Reporting rebuilds the pre-relief pool from the batch's retained snapshots, re-runs pooled
+relief, and requires every retained slice to match exactly before a report projection is produced.
+`AtomicTaxLotJournalStoreTests.AppendAssetPostingAsync_AverageCostReliefRestatesThePoolAndReportingCertifiesIt`
+proves a partial and a closing AverageCost disposal against PostgreSQL, including replay and a
+tampered-pool refusal. A discrete (FIFO/LIFO/HIFO/SpecificId) disposal of a restated lot fails
+closed, because its acquisition unit cost no longer equals its canonical basis; changing an
+account's relief policy across a restated pool is not a supported transition in this increment.
+The effective-dated lot read (`ListOpenTaxLotsByAssetScopeAsync`, which replays retained mutations to
+restate quantity as of an event date) treats a `BasisRedistribution` row as a zero-quantity
+restatement and rejects one that moves quantity. Its projection keeps the current governed basis
+adjustment, so `ToOpenLot` fails closed on an as-of quantity above the restated quantity rather than
+reporting an unrestated basis; that read is for held quantity only, never disposal selection. The
+replay now resolves each retained journal's ledger book through its accounting period. Remaining
+phases: amortization, corporate-action successors, advance refunding, and shadow operation.

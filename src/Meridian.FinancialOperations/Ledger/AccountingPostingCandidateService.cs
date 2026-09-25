@@ -1,6 +1,7 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.Ledger;
@@ -48,7 +49,8 @@ public sealed record AssetAccountingCandidateAuthorityContext(
     Guid PeriodId,
     long ExpectedPeriodVersion,
     string RulePackId,
-    string RulePackVersion);
+    string RulePackVersion,
+    long SecurityVersion = 0);
 
 public sealed record AccountingPostingCandidateWriteResult(
     PostingRuleJournalCandidateResultDto Candidate,
@@ -321,7 +323,11 @@ public sealed class AccountingPostingCandidateService :
             : null;
         var write = draft.Write is null
             ? null
-            : draft.Write with { PostingCommand = postingCommand };
+            : draft.Write with
+            {
+                Entry = WithSecurityMasterLineage(draft.Write.Entry, authority, request.Currency),
+                PostingCommand = postingCommand
+            };
 
         return new AccountingPostingCandidateWriteResult(
             new PostingRuleJournalCandidateResultDto(
@@ -766,7 +772,18 @@ public sealed class AccountingPostingCandidateService :
             return existing;
         }
 
+        // The draft turns every candidate evidence link into a bare reference keyed by its URI,
+        // and the spine links each retained record's URI. A bare reference for a URI that typed
+        // retained evidence carries is the same evidence without its identity: left in place it
+        // survives the id-keyed merge (retained ids are not URIs) and the posting validator
+        // refuses the whole command as incomplete evidence.
+        var retainedUris = retainedEvidence
+            .Select(static evidence => evidence.EvidenceUri)
+            .Where(static uri => !string.IsNullOrWhiteSpace(uri))
+            .Select(static uri => uri.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         return existing
+            .Where(evidence => !IsBareReferenceFor(evidence, retainedUris))
             .Concat(retainedEvidence.Select(static evidence =>
                 new AccountingPostingEvidenceReferenceDto(
                     EvidenceId: evidence.EvidenceId,
@@ -788,6 +805,55 @@ public sealed class AccountingPostingCandidateService :
             .Select(static group => group.Last())
             .ToArray();
     }
+
+    // An asset event's journal carries the event's SecurityId, so the ledger period guard treats it
+    // as instrument-bearing and requires approved, active Security Master provenance and a ledger
+    // mapping for that security. The lineage is stamped only under spine authority, after the spine
+    // has server-resolved the event-recorded Security Master record at the exact expected version and
+    // asserted it Active, effective, and in the event currency - the same rule the manual journal
+    // path applies - so a generic caller can never assert it. Post-time re-derivation reproduces the
+    // same tags from the retained spine scope.
+    private static JournalEntry WithSecurityMasterLineage(
+        JournalEntry entry,
+        AssetAccountingCandidateAuthorityContext? authority,
+        string currency)
+    {
+        if (authority is null || authority.SecurityId == Guid.Empty || authority.SecurityVersion <= 0)
+        {
+            return entry;
+        }
+
+        var securityIdToken = authority.SecurityId.ToString("N");
+        var provenance =
+            $"security-master:{securityIdToken};server-resolved:true;approved:true;status:{SecurityStatusDto.Active};version:{authority.SecurityVersion};currency:{currency.Trim().ToUpperInvariant()}";
+        var lineage =
+            $"asset-spine:{securityIdToken}:ledger-map:asset-spine:{authority.RulePackId}:{authority.RulePackVersion}:{securityIdToken}:sm-approval:security-master-active:{securityIdToken}:security-status:{SecurityStatusDto.Active}:{provenance}";
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (entry.Metadata.Tags is { } existing)
+        {
+            foreach (var (key, value) in existing)
+            {
+                tags[key] = value;
+            }
+        }
+
+        tags["securityMasterProvenance"] = provenance;
+        tags["securityMasterLineage"] = lineage;
+        return new JournalEntry(
+            entry.JournalEntryId,
+            entry.Timestamp,
+            entry.Description,
+            entry.Lines,
+            entry.Metadata with { Tags = tags });
+    }
+
+    private static bool IsBareReferenceFor(
+        AccountingPostingEvidenceReferenceDto evidence,
+        IReadOnlySet<string> retainedUris) =>
+        string.IsNullOrWhiteSpace(evidence.ContentHash) &&
+        evidence.EvidenceVersion is null &&
+        !string.IsNullOrWhiteSpace(evidence.Uri) &&
+        retainedUris.Contains(evidence.Uri.Trim());
 
     // Posting-candidate fingerprints arrive from external authority projections, so surrounding
     // whitespace is tolerated here before the shared digest contract is applied.
@@ -1346,6 +1412,16 @@ public sealed class AccountingPostingCandidateService :
                 .ListOpenTaxLotsByAssetScopeAsync(ledgerBookId, securityId, positionId, effectiveDate, ct)
                 .ConfigureAwait(false);
         }
+        catch (LedgerValidationException)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-lot-history-unavailable",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Held face cannot be established from retained lot quantity history for the event effective date.",
+                "bookPositionId",
+                "Reconcile the acquisition and disposal history before drafting the principal paydown."));
+            return null;
+        }
         catch (NotSupportedException)
         {
             issues.Add(Issue(
@@ -1357,6 +1433,7 @@ public sealed class AccountingPostingCandidateService :
             return null;
         }
 
+        // The store refuses historical reconstruction when quantity history is incomplete.
         if (lots.Count == 0)
         {
             issues.Add(Issue(
@@ -1383,7 +1460,7 @@ public sealed class AccountingPostingCandidateService :
             }
 
             // CurrentFace(1) restates the lot's face from the factor it was booked at to a factor of
-            // 1; the open share carries the part of the lot that has not already been relieved.
+            // 1; the store reconstructs the open share at the event effective date.
             var openShare = lot.OpenQuantity / lot.OriginalQuantity;
             heldFace += faceLot.CurrentFace(1m) * openShare;
         }
