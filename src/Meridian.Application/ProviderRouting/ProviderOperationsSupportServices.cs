@@ -27,27 +27,27 @@ public sealed class ProviderPresetService
 
     public async Task<ProviderPresetDto?> ApplyAsync(string presetId, CancellationToken ct = default)
     {
-        var cfg = _store.Load();
-        var section = ProviderRoutingConfigExtensions.GetSection(cfg);
-        var presets = ProviderRoutingConfigExtensions.GetEffectivePresets(cfg).ToList();
-        var target = presets.FirstOrDefault(p => string.Equals(p.PresetId, presetId, StringComparison.OrdinalIgnoreCase));
-        if (target is null)
-            return null;
-
-        presets = presets
-            .Select(p => p with { IsEnabled = string.Equals(p.PresetId, presetId, StringComparison.OrdinalIgnoreCase) })
-            .ToList();
-
-        var persisted = presets.Where(p => !p.IsBuiltIn || p.IsEnabled).ToArray();
-        await _store.SaveAsync(cfg with
+        return await _store.UpdateRequiredAsync<ProviderPresetDto?>(cfg =>
         {
-            ProviderConnections = section with
-            {
-                Presets = persisted
-            }
-        }, ct).ConfigureAwait(false);
+            var section = ProviderRoutingConfigExtensions.GetSection(cfg);
+            var presets = ProviderRoutingConfigExtensions.GetEffectivePresets(cfg).ToList();
+            var target = presets.FirstOrDefault(p => string.Equals(p.PresetId, presetId, StringComparison.OrdinalIgnoreCase));
+            if (target is null)
+                return (cfg, null);
 
-        return ProviderRoutingMapper.ToDto(presets.First(p => p.IsEnabled));
+            presets = presets
+                .Select(p => p with { IsEnabled = string.Equals(p.PresetId, presetId, StringComparison.OrdinalIgnoreCase) })
+                .ToList();
+
+            var persisted = presets.Where(p => !p.IsBuiltIn || p.IsEnabled).ToArray();
+            return (cfg with
+            {
+                ProviderConnections = section with
+                {
+                    Presets = persisted
+                }
+            }, ProviderRoutingMapper.ToDto(presets.First(p => p.IsEnabled)));
+        }, ct).ConfigureAwait(false);
     }
 }
 
@@ -68,7 +68,17 @@ public sealed class ProviderTrustScoringService
         _healthSource = healthSource;
     }
 
-    public async Task<IReadOnlyList<ProviderTrustSnapshotDto>> GetTrustSnapshotsAsync(CancellationToken ct = default)
+    public Task<IReadOnlyList<ProviderTrustSnapshotDto>> GetTrustSnapshotsAsync(CancellationToken ct = default)
+        => GetTrustSnapshotsCoreAsync(null, ct);
+
+    /// <summary>Evaluates only connections belonging to the authorized tenant in the captured configuration.</summary>
+    public Task<IReadOnlyList<ProviderTrustSnapshotDto>> GetTrustSnapshotsForTenantAsync(string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        return GetTrustSnapshotsCoreAsync(tenantId.Trim(), ct);
+    }
+
+    private async Task<IReadOnlyList<ProviderTrustSnapshotDto>> GetTrustSnapshotsCoreAsync(string? tenantId, CancellationToken ct)
     {
         var cfg = _store.Load();
         var section = ProviderRoutingConfigExtensions.GetSection(cfg);
@@ -76,8 +86,12 @@ public sealed class ProviderTrustScoringService
             .ToDictionary(c => c.ConnectionId, StringComparer.OrdinalIgnoreCase);
 
         var snapshots = new List<ProviderTrustSnapshotDto>();
-        foreach (var connection in section.Connections ?? Array.Empty<ProviderConnectionConfig>())
+        var visibleConnections = (section.Connections ?? []).GroupBy(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1).Select(group => group.Single());
+        foreach (var connection in visibleConnections)
         {
+            if (tenantId is not null && connection.TenantId != tenantId)
+                continue;
             var health = await _healthSource.GetHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct).ConfigureAwait(false);
             certifications.TryGetValue(connection.ConnectionId, out var certification);
             var reasons = new List<DecisionReason>();
@@ -206,12 +220,16 @@ public sealed class ProviderCertificationService
 
     public async Task<ProviderCertificationDto?> RunAsync(string connectionId, CancellationToken ct = default)
     {
-        var cfg = _store.Load();
+        var cfg = _store.LoadRequired();
         var section = ProviderRoutingConfigExtensions.GetSection(cfg);
-        var connection = (section.Connections ?? Array.Empty<ProviderConnectionConfig>())
-            .FirstOrDefault(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
-        if (connection is null)
+        var matches = (section.Connections ?? Array.Empty<ProviderConnectionConfig>())
+            .Where(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (matches.Length == 0)
             return null;
+        if (matches.Length != 1)
+            throw new InvalidOperationException("Certification connection is ambiguous.");
+        var connection = matches[0];
+        var expectedConnection = System.Text.Json.JsonSerializer.Serialize(connection);
 
         var adapter = _catalog.GetFamily(connection.ProviderFamilyId);
         if (adapter is null)
@@ -219,38 +237,46 @@ public sealed class ProviderCertificationService
 
         var result = await _runner.RunAsync(connection.ConnectionId, adapter, ct).ConfigureAwait(false);
 
-        var certifications = (section.Certifications ?? Array.Empty<ProviderCertificationConfig>()).ToList();
-        var nextCertification = new ProviderCertificationConfig(
-            ConnectionId: connection.ConnectionId,
-            Status: result.Status,
-            LastRunAt: result.RanAt,
-            ExpiresAt: result.Success ? result.RanAt.AddDays(30) : result.RanAt.AddDays(7),
-            ProductionReady: result.Success,
-            Checks: result.Checks.ToArray(),
-            Notes: result.Success ? ["Certification passed."] : ["Certification failed."]);
-
-        var existingIndex = certifications.FindIndex(c => string.Equals(c.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase));
-        if (existingIndex >= 0)
-            certifications[existingIndex] = nextCertification;
-        else
-            certifications.Add(nextCertification);
-
-        var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>())
-            .Select(c => string.Equals(c.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase)
-                ? c with { ProductionReady = result.Success }
-                : c)
-            .ToArray();
-
-        await _store.SaveAsync(cfg with
+        if (!string.Equals(result.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Certification result does not match the requested connection.");
+        return await _store.UpdateRequiredAsync<ProviderCertificationDto?>(current =>
         {
-            ProviderConnections = section with
-            {
-                Connections = connections,
-                Certifications = certifications.ToArray()
-            }
-        }, ct).ConfigureAwait(false);
+            var currentSection = ProviderRoutingConfigExtensions.GetSection(current);
+            var retained = (currentSection.Connections ?? [])
+                .Where(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (retained.Length != 1 || System.Text.Json.JsonSerializer.Serialize(retained[0]) != expectedConnection)
+                throw new InvalidOperationException("Connection changed while certification was running; retry against current configuration.");
+            var certifications = (currentSection.Certifications ?? Array.Empty<ProviderCertificationConfig>()).ToList();
+            var nextCertification = new ProviderCertificationConfig(
+                ConnectionId: connection.ConnectionId,
+                Status: result.Status,
+                LastRunAt: result.RanAt,
+                ExpiresAt: result.Success ? result.RanAt.AddDays(30) : result.RanAt.AddDays(7),
+                ProductionReady: result.Success,
+                Checks: result.Checks.ToArray(),
+                Notes: result.Success ? ["Certification passed."] : ["Certification failed."]);
 
-        return ProviderRoutingMapper.ToDto(nextCertification);
+            var existingIndex = certifications.FindIndex(c => string.Equals(c.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase));
+            if (existingIndex >= 0)
+                certifications[existingIndex] = nextCertification;
+            else
+                certifications.Add(nextCertification);
+
+            var connections = (currentSection.Connections ?? Array.Empty<ProviderConnectionConfig>())
+                .Select(c => string.Equals(c.ConnectionId, connection.ConnectionId, StringComparison.OrdinalIgnoreCase)
+                    ? c with { ProductionReady = result.Success }
+                    : c)
+                .ToArray();
+
+            return (current with
+            {
+                ProviderConnections = currentSection with
+                {
+                    Connections = connections,
+                    Certifications = certifications.ToArray()
+                }
+            }, ProviderRoutingMapper.ToDto(nextCertification));
+        }, ct).ConfigureAwait(false);
     }
 }
 
@@ -273,6 +299,12 @@ public sealed class ProviderRouteExplainabilityService
     public async Task<RoutePreviewResponse> PreviewAsync(RoutePreviewRequest request, CancellationToken ct = default)
     {
         var result = await _selector.SelectAsync(ProviderRoutingMapper.ToRouteContext(request), ct).ConfigureAwait(false);
+        return ProviderRoutingMapper.ToDto(result);
+    }
+
+    public async Task<RoutePreviewResponse> PreviewForTenantAsync(RoutePreviewRequest request, string tenantId, CancellationToken ct = default)
+    {
+        var result = await _selector.SelectForTenantAsync(ProviderRoutingMapper.ToRouteContext(request), tenantId, ct).ConfigureAwait(false);
         return ProviderRoutingMapper.ToDto(result);
     }
 

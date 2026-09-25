@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services.Services;
-using CredentialFieldInfo = Meridian.Contracts.Api.CredentialFieldInfo;
 using ProviderCatalogEntry = Meridian.Ui.Services.Services.ProviderCatalogEntry;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -21,9 +20,10 @@ public sealed class CredentialEntryViewModel : BindableBase
     private bool _isTesting;
 
     public string ProviderId { get; init; } = string.Empty;
+    public string ConnectionId { get; init; } = string.Empty;
     public string DisplayName { get; init; } = string.Empty;
     public string CredentialType { get; init; } = string.Empty;
-    public bool HasCredentials { get; init; }
+    public bool HasCredentials { get; set; }
     public bool RequiresCredentials { get; init; }
 
     public string StatusText
@@ -52,6 +52,7 @@ public sealed class CredentialFieldViewModel : BindableBase
 
     public string Label { get; init; } = string.Empty;
     public string EnvVarName { get; init; } = string.Empty;
+    public string FieldName { get; init; } = string.Empty;
     public bool IsSecret { get; init; }
 
     public string Value
@@ -68,8 +69,8 @@ public sealed class CredentialFieldViewModel : BindableBase
 /// </summary>
 public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 {
-    private readonly WpfServices.CredentialService _credentialService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly SettingsConfigurationService _settingsService;
 
     private bool _isBusy;
     private string _statusMessage = string.Empty;
@@ -87,7 +88,11 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
     public bool IsBusy
     {
         get => _isBusy;
-        private set => SetProperty(ref _isBusy, value);
+        private set
+        {
+            if (SetProperty(ref _isBusy, value))
+                NotifyCredentialCommands();
+        }
     }
 
     public string StatusMessage
@@ -111,9 +116,8 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             {
                 IsEditPanelVisible = false;
                 IsTestResultVisible = false;
-                ((RelayCommand)EditCredentialCommand).NotifyCanExecuteChanged();
-                ((RelayCommand)RemoveCredentialCommand).NotifyCanExecuteChanged();
-                ((RelayCommand)TestCredentialCommand).NotifyCanExecuteChanged();
+                NotifyCredentialCommands();
+                SelectionStatusLoad = LoadSelectedStatusAsync(value);
             }
         }
     }
@@ -158,58 +162,92 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
     public CredentialManagementViewModel(
         WpfServices.CredentialService credentialService,
         WpfServices.NotificationService notificationService)
+        : this(SettingsConfigurationService.Instance, notificationService)
     {
-        _credentialService = credentialService;
-        _notificationService = notificationService;
+        ArgumentNullException.ThrowIfNull(credentialService);
+    }
 
-        EditCredentialCommand = new RelayCommand(BeginEdit, () => SelectedCredential != null);
-        RemoveCredentialCommand = new RelayCommand(() => _ = RemoveCredentialAsync(), () => SelectedCredential != null);
-        TestCredentialCommand = new RelayCommand(() => _ = TestSelectedCredentialAsync(), () => SelectedCredential != null);
-        TestAllCredentialsCommand = new RelayCommand(() => _ = TestAllCredentialsAsync());
-        SaveCredentialCommand = new RelayCommand(() => _ = SaveCredentialAsync());
+    internal CredentialManagementViewModel(SettingsConfigurationService settingsService, WpfServices.NotificationService notificationService)
+    {
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+
+        EditCredentialCommand = new RelayCommand(BeginEdit, () => SelectedCredential != null && !IsBusy);
+        RemoveCredentialCommand = new AsyncRelayCommand(RemoveCredentialAsync, () => SelectedCredential != null && !IsBusy);
+        TestCredentialCommand = new AsyncRelayCommand(TestSelectedCredentialAsync, () => SelectedCredential != null && !IsBusy);
+        TestAllCredentialsCommand = new AsyncRelayCommand(TestAllCredentialsAsync, () => !IsBusy && Credentials.Any(row => row.RequiresCredentials));
+        SaveCredentialCommand = new AsyncRelayCommand(SaveCredentialAsync, () => SelectedCredential != null && !IsBusy);
         CancelEditCommand = new RelayCommand(CancelEdit);
     }
 
-    public void LoadCredentials()
+    private void NotifyCredentialCommands()
     {
+        ((RelayCommand)EditCredentialCommand).NotifyCanExecuteChanged();
+        ((AsyncRelayCommand)RemoveCredentialCommand).NotifyCanExecuteChanged();
+        ((AsyncRelayCommand)TestCredentialCommand).NotifyCanExecuteChanged();
+        ((AsyncRelayCommand)SaveCredentialCommand).NotifyCanExecuteChanged();
+        ((AsyncRelayCommand)TestAllCredentialsCommand).NotifyCanExecuteChanged();
+    }
+
+    internal Task SelectionStatusLoad { get; private set; } = Task.CompletedTask;
+
+    private int _credentialLoadVersion;
+    private int _selectedStatusVersion;
+
+    public async Task LoadCredentialsAsync()
+    {
+        var version = ++_credentialLoadVersion;
+        SelectedCredential = null;
         Credentials.Clear();
-        var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
-        var statuses = SettingsConfigurationService.Instance.GetProviderCredentialStatuses();
-
-        foreach (var provider in catalog)
+        StatusMessage = "Loading owned connections…";
+        try
         {
-            var status = statuses.FirstOrDefault(s => s.ProviderId == provider.Id);
-            var state = status?.State ?? CredentialState.NotRequired;
-
-            Credentials.Add(new CredentialEntryViewModel
+            var connections = await _settingsService.GetOwnedCredentialConnectionsAsync();
+            if (version != _credentialLoadVersion)
+                return;
+            var catalog = _settingsService.GetProviderCatalog();
+            foreach (var connection in connections)
             {
-                ProviderId = provider.Id,
-                DisplayName = provider.DisplayName,
-                CredentialType = GetCredentialType(provider),
-                HasCredentials = state is CredentialState.Configured or CredentialState.Partial,
-                RequiresCredentials = provider.CredentialFields.Length > 0,
-                StatusText = state switch
+                var provider = catalog.FirstOrDefault(item => string.Equals(item.Id, connection.ProviderFamilyId, StringComparison.OrdinalIgnoreCase));
+                if (provider is null)
+                    continue;
+                Credentials.Add(new CredentialEntryViewModel
                 {
-                    CredentialState.Configured => "Configured",
-                    CredentialState.Partial => "Partial",
-                    CredentialState.Missing => "Missing",
-                    CredentialState.NotRequired => "Not required",
-                    _ => "Unknown"
-                },
-                StatusColor = state switch
-                {
-                    CredentialState.Configured => "#3FB950",
-                    CredentialState.Partial => "#D29922",
-                    CredentialState.Missing => "#F85149",
-                    _ => "#AABCCD"
-                }
-            });
+                    ProviderId = provider.Id,
+                    ConnectionId = connection.ConnectionId,
+                    DisplayName = $"{connection.DisplayName} · {connection.ExternalAccountId} · {connection.CredentialEnvironment}",
+                    CredentialType = GetCredentialType(provider),
+                    RequiresCredentials = provider.CredentialFields.Length > 0,
+                    StatusText = "Select to load status",
+                    StatusColor = "#AABCCD"
+                });
+            }
+            StatusMessage = Credentials.Count == 0
+                ? "No owned credential connections are available. Establish connection ownership before editing credentials."
+                : $"{Credentials.Count} owned connections. Select an account and environment to manage credentials.";
         }
-
-        var configured = Credentials.Count(c => c.HasCredentials);
-        var total = Credentials.Count(c => c.RequiresCredentials);
-        StatusMessage = $"{configured} of {total} providers configured";
+        catch (Exception)
+        {
+            if (version == _credentialLoadVersion)
+                StatusMessage = "Owned connections are unavailable from the authenticated service.";
+        }
         StatusMessageColor = "#AABCCD";
+        NotifyCredentialCommands();
+    }
+
+    private async Task LoadSelectedStatusAsync(CredentialEntryViewModel? selected)
+    {
+        var statusVersion = ++_selectedStatusVersion;
+        if (selected is null)
+            return;
+        var version = _credentialLoadVersion;
+        var statuses = await _settingsService.GetProviderCredentialStatusesAsync(connectionId: selected.ConnectionId);
+        if (version != _credentialLoadVersion || statusVersion != _selectedStatusVersion || !ReferenceEquals(SelectedCredential, selected) || selected.IsTesting)
+            return;
+        var status = statuses.FirstOrDefault(item => item.ProviderId == selected.ProviderId);
+        selected.HasCredentials = status?.State is CredentialState.Configured or CredentialState.Partial;
+        selected.StatusText = status?.StatusMessage ?? "Credential status is unavailable from the service.";
+        selected.StatusColor = status?.State == CredentialState.Configured ? "#3FB950" : "#AABCCD";
     }
 
     private void BeginEdit()
@@ -219,7 +257,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         EditFields.Clear();
         IsTestResultVisible = false;
 
-        var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
+        var catalog = _settingsService.GetProviderCatalog();
         var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
         if (provider is null)
             return;
@@ -243,7 +281,6 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             foreach (var field in provider.CredentialFields)
             {
                 var envVar = field.EnvironmentVariable ?? string.Empty;
-                var existing = GetConfiguredEnvironmentValue(field) ?? string.Empty;
                 var isSecret = field.DisplayName.Contains("secret", StringComparison.OrdinalIgnoreCase)
                     || field.Name.Contains("secret", StringComparison.OrdinalIgnoreCase)
                     || field.Name.Contains("token", StringComparison.OrdinalIgnoreCase)
@@ -253,8 +290,9 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
                 {
                     Label = field.DisplayName,
                     EnvVarName = envVar,
+                    FieldName = field.Name,
                     IsSecret = isSecret,
-                    Value = existing
+                    Value = string.Empty
                 });
             }
         }
@@ -264,84 +302,31 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     private async Task SaveCredentialAsync()
     {
-        if (SelectedCredential is null)
+        var selected = SelectedCredential;
+        if (selected is null || IsBusy)
             return;
-
-        var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
-        var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
-
-        if (provider is null || provider.CredentialFields.Length == 0)
-        {
-            IsEditPanelVisible = false;
+        var fields = EditFields.Where(field => !string.IsNullOrWhiteSpace(field.FieldName))
+            .ToDictionary(field => field.FieldName, field => (string?)field.Value, StringComparer.OrdinalIgnoreCase);
+        if (fields.Count == 0)
             return;
-        }
-
         IsBusy = true;
         try
         {
-            foreach (var field in EditFields)
-            {
-                if (string.IsNullOrEmpty(field.EnvVarName))
-                    continue;
-                Environment.SetEnvironmentVariable(field.EnvVarName, field.Value, EnvironmentVariableTarget.User);
-            }
-
-            PersistToVault(provider.Id);
-
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                IsEditPanelVisible = false;
-                LoadCredentials();
-            });
-
-            _notificationService.ShowNotification(
-                "Credentials Saved",
-                $"Credentials for {SelectedCredential.DisplayName} have been saved.",
-                NotificationType.Success);
+            await _settingsService.SaveProviderCredentialsAsync(selected.ProviderId, fields, selected.ConnectionId);
+            IsEditPanelVisible = false;
+            EditFields.Clear();
+            await LoadCredentialsAsync();
+            _notificationService.ShowNotification("Credentials Saved",
+                $"Credentials for {selected.DisplayName} have been saved.", NotificationType.Success);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _notificationService.ShowNotification(
-                "Save Failed",
-                $"Could not save credentials: {ex.Message}",
-                NotificationType.Error);
+            _notificationService.ShowNotification("Save Failed",
+                "Credential persistence was not confirmed by the authenticated service.", NotificationType.Error);
         }
         finally
         {
             IsBusy = false;
-        }
-    }
-
-    private void PersistToVault(string providerId)
-    {
-        switch (providerId)
-        {
-            case "alpaca":
-                {
-                    var keyId = EditFields.FirstOrDefault(f =>
-                        f.EnvVarName.Contains("KEYID", StringComparison.OrdinalIgnoreCase) ||
-                        f.EnvVarName.Contains("KEY_ID", StringComparison.OrdinalIgnoreCase))?.Value;
-                    var secret = EditFields.FirstOrDefault(f =>
-                        f.EnvVarName.Contains("SECRET", StringComparison.OrdinalIgnoreCase))?.Value;
-                    if (!string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secret))
-                        _credentialService.SaveAlpacaCredentials(keyId, secret);
-                    break;
-                }
-            case "nasdaq":
-            case "nasdaqdatalink":
-                {
-                    var key = EditFields.FirstOrDefault()?.Value;
-                    if (!string.IsNullOrWhiteSpace(key))
-                        _credentialService.SaveNasdaqApiKey(key);
-                    break;
-                }
-            default:
-                {
-                    var key = EditFields.FirstOrDefault()?.Value;
-                    if (!string.IsNullOrWhiteSpace(key))
-                        _credentialService.SaveApiKey($"Meridian.{providerId}", key);
-                    break;
-                }
         }
     }
 
@@ -354,44 +339,24 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     private async Task RemoveCredentialAsync()
     {
-        if (SelectedCredential is null)
+        var selected = SelectedCredential;
+        if (selected is null || IsBusy)
             return;
         IsBusy = true;
         try
         {
-            var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
-            var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
-            if (provider is not null)
-            {
-                foreach (var field in provider.CredentialFields)
-                {
-                    foreach (var envVar in field.AllEnvironmentVariables)
-                    {
-                        Environment.SetEnvironmentVariable(envVar, null, EnvironmentVariableTarget.User);
-                    }
-                }
-            }
-
-            RemoveFromVault(SelectedCredential.ProviderId);
-
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                IsEditPanelVisible = false;
-                IsTestResultVisible = false;
-                LoadCredentials();
-            });
-
-            _notificationService.ShowNotification(
-                "Credentials Removed",
-                $"Credentials for {SelectedCredential.DisplayName} have been removed.",
-                NotificationType.Info);
+            await _settingsService.RemoveProviderCredentialsAsync(selected.ProviderId, selected.ConnectionId);
+            IsEditPanelVisible = false;
+            IsTestResultVisible = false;
+            EditFields.Clear();
+            await LoadCredentialsAsync();
+            _notificationService.ShowNotification("Credentials Removed",
+                $"Credentials for {selected.DisplayName} have been removed.", NotificationType.Info);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _notificationService.ShowNotification(
-                "Remove Failed",
-                $"Could not remove credentials: {ex.Message}",
-                NotificationType.Error);
+            _notificationService.ShowNotification("Remove Failed",
+                "Credential removal was not confirmed by the authenticated service.", NotificationType.Error);
         }
         finally
         {
@@ -399,80 +364,78 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         }
     }
 
-    private void RemoveFromVault(string providerId)
+    private async Task TestSelectedCredentialAsync()
     {
-        switch (providerId)
+        var selected = SelectedCredential;
+        if (selected is null || IsBusy)
+            return;
+        IsBusy = true;
+        try
         {
-            case "alpaca":
-                _credentialService.RemoveAlpacaCredentials();
-                break;
-            default:
-                if (_credentialService.HasCredential($"Meridian.{providerId}"))
-                    _credentialService.RemoveCredential($"Meridian.{providerId}");
-                break;
+            await VerifyCredentialAsync(selected);
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 
-    private async Task TestSelectedCredentialAsync()
+    private async Task VerifyCredentialAsync(CredentialEntryViewModel selected)
     {
-        if (SelectedCredential is null)
+        if (selected.IsTesting)
             return;
-
-        SelectedCredential.IsTesting = true;
+        selected.IsTesting = true;
+        ++_selectedStatusVersion;
         IsTestResultVisible = true;
-        TestResultText = $"Testing {SelectedCredential.DisplayName}…";
+        TestResultText = $"Testing {selected.DisplayName}�";
         TestResultColor = "#AABCCD";
-
-        await Task.Delay(600, CancellationToken.None).ConfigureAwait(false);
-
-        var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
-        var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
-
-        bool success = provider is null || provider.CredentialFields.Length == 0
-            || provider.CredentialFields
-                .Where(field => field.Required)
-                .All(HasConfiguredEnvironmentValue);
-
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        var success = false;
+        try
         {
-            SelectedCredential.IsTesting = false;
-            if (success)
-            {
-                TestResultText = $"✓ {SelectedCredential.DisplayName} credentials are present and ready.";
-                TestResultColor = "#3FB950";
-                SelectedCredential.StatusText = "Configured";
-                SelectedCredential.StatusColor = "#3FB950";
-            }
-            else
-            {
-                TestResultText = $"✗ {SelectedCredential.DisplayName} credentials are missing or incomplete.";
-                TestResultColor = "#F85149";
-                SelectedCredential.StatusText = "Missing";
-                SelectedCredential.StatusColor = "#F85149";
-            }
-        });
+            success = await _settingsService.VerifyProviderCredentialsAsync(selected.ProviderId, selected.ConnectionId);
+        }
+        catch (Exception)
+        {
+            // Transport failure cannot establish verification or expose response details.
+        }
+        finally
+        {
+            selected.IsTesting = false;
+        }
+        selected.StatusText = success ? "Verified" : "Not verified";
+        selected.StatusColor = success ? "#3FB950" : "#D29922";
+        if (ReferenceEquals(SelectedCredential, selected))
+        {
+            TestResultText = success
+                ? $"{selected.DisplayName}: verification acknowledged by the service."
+                : $"{selected.DisplayName}: verification was not confirmed by the service.";
+            TestResultColor = selected.StatusColor;
+        }
     }
 
     private async Task TestAllCredentialsAsync()
     {
+        if (IsBusy)
+            return;
         IsBusy = true;
-        StatusMessage = "Testing all credentials…";
+        StatusMessage = "Testing all credentials�";
         StatusMessageColor = "#AABCCD";
-
-        foreach (var cred in Credentials.Where(c => c.RequiresCredentials).ToList())
+        try
         {
-            SelectedCredential = cred;
-            await TestSelectedCredentialAsync().ConfigureAwait(false);
+            var entries = Credentials.Where(c => c.RequiresCredentials).ToList();
+            foreach (var cred in entries)
+            {
+                SelectedCredential = cred;
+                await VerifyCredentialAsync(cred);
+            }
+            var ok = entries.Count(c => c.StatusText == "Verified");
+            StatusMessage = $"{ok} of {entries.Count} providers verified by the service";
+            StatusMessageColor = ok == entries.Count ? "#3FB950" : "#D29922";
         }
-
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        finally
         {
-            var ok = Credentials.Count(c => c.StatusText == "Configured");
-            var total = Credentials.Count(c => c.RequiresCredentials);
-            StatusMessage = $"{ok} of {total} providers verified";
-            StatusMessageColor = ok == total ? "#3FB950" : "#D29922";
             IsBusy = false;
-        });
+        }
     }
 
     private static string GetCredentialType(ProviderCatalogEntry provider)
@@ -486,25 +449,9 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         };
     }
 
-    private static bool HasConfiguredEnvironmentValue(CredentialFieldInfo field)
+    public void Dispose()
     {
-        return field.AllEnvironmentVariables
-            .Any(envVar => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(envVar)));
+        ++_credentialLoadVersion;
+        SelectedCredential = null;
     }
-
-    private static string? GetConfiguredEnvironmentValue(CredentialFieldInfo field)
-    {
-        foreach (var envVar in field.AllEnvironmentVariables)
-        {
-            var value = Environment.GetEnvironmentVariable(envVar);
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                return value;
-            }
-        }
-
-        return null;
-    }
-
-    public void Dispose() { }
 }

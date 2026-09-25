@@ -6,12 +6,31 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-05
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Ui.Services
 
 ## Purpose
+
+Owned credential connection discovery excludes incomplete ownership and duplicate connection IDs.
+Status reads accept an explicit connection ID so credential-management selection does not borrow
+provider-wide state. Account and environment metadata remain attached to each connection.
+
+Credential-management save, remove and verification operations use the shared authenticated API
+client. Saves send canonical field names; mutations require a matching provider and an acknowledged
+result state. Verification requires a successful, dated server result. Optional connection IDs route
+to retained scoped ownership. Fixed failure messages do not echo secrets or server response bodies.
+
+`SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
+credential states. Missing, ambiguous or refused responses remain unavailable, even when environment
+variables contain keys. The synchronous environment method remains a legacy diagnostic helper and
+is no longer used by the WPF settings, credential management or add-provider status surfaces.
+
+Setup wizard credential saves use the authenticated canonical credential API through the shared
+session/CSRF client. They no longer write secrets to application configuration, process environment,
+or user environment. An optional retained connection ID selects scoped persistence. Missing or refused
+API acknowledgements fail the save with fixed error text; there is no local plaintext fallback.
 
 Batch exports reject duplicate queue entries, skip cancelled attempts, and serialize atomic job-store writes with observable failures. Initial creation and manual or scheduled requeues persist before publishing to workers. Cancellation and removal persist before signalling an execution token or releasing job ownership; failed writes restore the previous status and keep queued work retryable. Successful cancellations and removals remain effective after restart; completion and failure notifications follow durable history and execution cleanup so subscribers can queue a repeat or retry. Raw, JSONL, and CSV are supported; Parquet is rejected until a physical writer exists. JSONL accounting uses the actual decompressed artifact path. CSV discovers all columns, quotes every cell, and fails with rejected row numbers before replacing an artifact. Backfill checkpoint mutations serialize per job and reclaim locks after the last holder or waiter leaves, including cancellation and persistence failures. Activity-feed persistence coalesces pending snapshots while preserving waiter completion and shutdown draining.
 

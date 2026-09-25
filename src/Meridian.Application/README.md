@@ -32,7 +32,67 @@ legacy new-run behavior and must not be treated as safe automatic retries.
 
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
 
+## Credential source ownership
+
+`ProviderConnectionService.GetConnectionsForTenantAsync` lists connections only when retained
+tenant ownership matches the authorized tenant. Unassigned legacy connections require explicit
+ownership establishment and are not implicitly claimed by discovery.
+Duplicate connection IDs, including case variants, cannot establish credential ownership. Discovery
+omits ambiguous records; scoped setup, scope resolution and connection mutations refuse them.
+Connection upsert and deletion use `ConfigStore.LoadRequired` so missing, corrupt or JSON-null
+configuration cannot be replaced by an empty default ownership model. Failed reads preserve the file.
+Connection and binding upsert/deletion and preset application use `ConfigStore.UpdateRequiredAsync` to hold a shared sidecar file
+lock across the required read, ownership validation and atomic write. Separate store instances cannot
+lose each other's connection additions or deletions. Waiting operations honor cancellation and re-read
+ownership after acquiring the lock. Whole-configuration saves and capability override writes take the
+same lock; callers that prepare whole-configuration snapshots before acquisition still need conversion
+to transactional updates to prevent stale snapshot replacement. External editors do not honor this lock.
+Certification persistence re-reads configuration inside the transaction after the runner completes.
+Deleted, ambiguous or changed connections and results naming another connection are refused without
+writing certification state. Unrelated concurrent connection changes are retained. This compares the
+current connection record with the checked record; it does not provide a durable revision fence for
+changes that are subsequently reverted or certify the provenance of every runner implementation.
+Provider setup performs this strict read before credential persistence and returns a fixed failure
+without creating a vault when required configuration is unreadable. Its later source/connection/binding
+update re-reads configuration under the shared transaction, preserving concurrent ownership changes
+and assigning source IDs from current state. Credential and configuration commits remain separate;
+this does not resolve cross-store commit ambiguity or make legacy setup tenant-owned.
+
+Tenant-aware route preview filters connections and bindings before ranking, health queries and
+failover expansion. It reads fresh configuration and does not add tenant results to unscoped route
+history or result telemetry. Unscoped latency/quality metrics are excluded with explicit neutral-score
+reasons; default runtime routing and tenant-aware operational history remain separate work.
+
+`ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
+environment with the external account. Scope resolution uses that retained ownership, returns no scope
+to another tenant, and refuses incomplete records. Owned connections cannot be reassigned or modified
+through legacy mutation methods; legacy connections require an explicit ownership migration. Shared
+configuration and API DTOs preserve the fields on reload. Default runtime ownership propagation and
+remaining whole-configuration snapshot callers still require integration; external editors do not honor the sidecar transaction.
+
+`StoredProviderCredentialResolver` uses the credential store as the complete authority for catalog-managed
+providers, including the store's permitted environment fallback. Missing records remain unconfigured;
+partial or deliberately removed fields cannot be filled from legacy configuration or another credential
+source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
+
+The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScopedProviderCredentialStore`
+and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and
+environment, rejects unmanaged provider types, and never falls back to provider-wide records or config.
+The scoped store registration aliases the existing vault instance. Default host construction and the
+legacy setup route still use provider-wide resolution until authorized scope is propagated by callers;
+this constructor alone does not establish end-to-end tenant isolation.
+
+`OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
+only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
+and leave unassigned legacy sidecars alone. Initialization is asynchronous in both ownership modes;
+completed remote rotations commit independently of lifecycle cancellation while preserving scope.
+Default host registration still needs connection ownership propagation before scoped services replace
+the provider-wide OAuth runtime.
 ## Provider setup attribution
+
+`ConfigureForConnectionAsync` configures credentials for an already-owned connection. It validates
+the retained tenant, provider and environment before saving scoped secrets, preserves its external
+account, and does not recreate routing or bindings. Credential verification remains a separate step.
 
 The shared provider capability matrix uses per-instrument streaming coverage independently of
 historical and options coverage. Runtime Polygon factories retain the configured feed and resolved
@@ -237,6 +297,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   entries: version 2 confirms sink durability and suppresses WAL replay, while legacy version-1
   entries only suppress live ingress and are replayed (then upgraded) during recovery, keeping
   crash semantics at-least-once — a replayed duplicate is possible, silent loss is not.
+  Explicit flush waits for completed consumption, which already includes rejected events.
+  Rejected batches cannot be counted twice to acknowledge a later valid event before its
+  storage append finishes; gated regression cases cover that ordering across separate batches.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`

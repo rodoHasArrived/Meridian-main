@@ -6,12 +6,16 @@ module_id: SRC-CORE
 path: src/Meridian.Core
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Core
 
 ## Purpose
+
+Provider connection configuration retains optional `TenantId` and `CredentialEnvironment` ownership
+fields. Missing fields identify legacy, unassigned connections; callers must not infer an owner from
+the current session. Application services enforce ownership before scoped credential resolution.
 
 Core contains cross-cutting primitives used throughout Meridian: configuration, validation,
 exceptions, logging, monitoring, scheduling, serialization, redaction, masking, and pipeline

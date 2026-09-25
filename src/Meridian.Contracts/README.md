@@ -6,10 +6,15 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-08-03
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Contracts
+
+Provider connection API and configuration DTOs retain optional `TenantId` and `CredentialEnvironment`
+alongside connection and external-account identity. These additive fields preserve server-owned
+credential scope across both workstation lanes. They are not accepted as tenant authority in the
+connection creation request; absent fields remain unassigned legacy ownership.
 
 Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
 first/last observation and successful-run clearing evidence. This metadata is omitted when absent

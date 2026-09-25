@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -26,7 +27,10 @@ public static class ProviderRoutingEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!tenant.HasTenantScope)
+                return EndpointHelpers.Forbidden();
+            var result = await service.GetConnectionsForTenantAsync(tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetProviderRoutingConnections").RequirePermission(UserPermission.ManageCredentials)
@@ -42,7 +46,10 @@ public static class ProviderRoutingEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!tenant.HasTenantScope)
+                return EndpointHelpers.Forbidden();
+            var result = await service.GetBindingsForTenantAsync(tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetProviderRoutingBindings").RequirePermission(UserPermission.ManageCredentials)
@@ -58,7 +65,10 @@ public static class ProviderRoutingEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!tenant.HasTenantScope)
+                return EndpointHelpers.Forbidden();
+            var result = await service.GetTrustSnapshotsForTenantAsync(tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetProviderRoutingTrustSnapshots").RequirePermission(UserPermission.ManageCredentials)
@@ -75,7 +85,10 @@ public static class ProviderRoutingEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.PreviewAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!tenant.HasTenantScope)
+                return EndpointHelpers.Forbidden();
+            var result = await service.PreviewForTenantAsync(request, tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("PreviewProviderRoute").RequirePermission(UserPermission.ManageCredentials)

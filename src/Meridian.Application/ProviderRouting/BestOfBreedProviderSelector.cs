@@ -8,6 +8,8 @@ namespace Meridian.Application.ProviderRouting;
 public interface IBestOfBreedProviderSelector
 {
     Task<ProviderRouteResult> SelectAsync(ProviderRouteContext context, CancellationToken ct = default);
+    Task<ProviderRouteResult> SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default)
+        => throw new NotSupportedException("Tenant-scoped provider selection is unavailable.");
 }
 
 public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
@@ -35,14 +37,25 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
         _dataQualityService = dataQualityService;
     }
 
-    public async Task<ProviderRouteResult> SelectAsync(ProviderRouteContext context, CancellationToken ct = default)
+    public Task<ProviderRouteResult> SelectAsync(ProviderRouteContext context, CancellationToken ct = default)
+        => SelectCoreAsync(context, null, ct);
+
+    public Task<ProviderRouteResult> SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default)
     {
-        var routeResult = await _routingService.RouteAsync(context, ct).ConfigureAwait(false);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        return SelectCoreAsync(context, tenantId, ct);
+    }
+
+    private async Task<ProviderRouteResult> SelectCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct)
+    {
+        var routeResult = tenantId is null ? await _routingService.RouteAsync(context, ct).ConfigureAwait(false) :
+            await _routingService.RouteForTenantAsync(context, tenantId, ct).ConfigureAwait(false);
         if (routeResult.Candidates.Count == 0)
             return routeResult;
 
-        var qualityScores = await LoadQualityScoresAsync(context, ct).ConfigureAwait(false);
-        var metricsByProvider = (_store.TryLoadProviderMetrics()?.Providers ?? Array.Empty<ProviderMetrics>())
+        var qualityScores = tenantId is null ? await LoadQualityScoresAsync(context, ct).ConfigureAwait(false) :
+            new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+        var metricsByProvider = (tenantId is null ? _store.TryLoadProviderMetrics()?.Providers ?? Array.Empty<ProviderMetrics>() : Array.Empty<ProviderMetrics>())
             .ToDictionary(static m => m.ProviderId, StringComparer.OrdinalIgnoreCase);
 
         var scored = new List<ProviderRouteDecision>(routeResult.Candidates.Count);
@@ -70,6 +83,8 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
                 $"Weights h={HealthWeight:F2}, l={LatencyWeight:F2}, q={DataQualityWeight:F2}, c={CoverageWeight:F2}, p={PolicyGateWeight:F2}.",
                 $"Component scores health={healthScore:F3}, latency={latencyScore:F3}, quality={dataQualityScore:F3}, coverage={coverageScore:F3}, policy={policyGateScore:F3}."
             ]).ToArray();
+            if (tenantId is not null)
+                reasons = reasons.Append("Unscoped latency and quality metrics excluded; these score components use neutral defaults.").ToArray();
 
             scored.Add(candidate with
             {

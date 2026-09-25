@@ -835,9 +835,9 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
             var consumed = Interlocked.Read(ref _consumedCount);
 
-            // All published events have been consumed (accounting for rejected events
-            // which were read from the channel but not persisted to the primary sink)
-            if (consumed + Interlocked.Read(ref _rejectedCount) >= targetPublished)
+            // Completed batches count every consumed event, including validation rejects.
+            // Counting rejects again could acknowledge a later event still awaiting storage.
+            if (consumed >= targetPublished)
                 break;
 
             // Channel is empty — check if the consumer has finished its batch.

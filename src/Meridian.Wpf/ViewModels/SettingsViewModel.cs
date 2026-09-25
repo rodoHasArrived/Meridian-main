@@ -420,7 +420,7 @@ public sealed partial class SettingsViewModel : BindableBase
         RefreshCapabilityToggles();
         ConfigPath = _configService.ConfigPath;
         RefreshStoredCredentials();
-        RefreshCredentialVault();
+        _ = RefreshCredentialVaultAsync();
         RefreshStoragePreview("BySymbol", "gzip");
         RefreshProfiles();
         _ = RefreshAssetProfilesAsync();
@@ -472,21 +472,19 @@ public sealed partial class SettingsViewModel : BindableBase
 
     // ── Credential Vault ──────────────────────────────────────────────────────
 
-    public void RefreshCredentialVault()
+    private int _credentialRefreshVersion;
+
+    public async Task RefreshCredentialVaultAsync()
     {
-        var statuses = _settingsConfigService.GetProviderCredentialStatuses();
+        var version = ++_credentialRefreshVersion;
+        var statuses = await _settingsConfigService.GetProviderCredentialStatusesAsync();
+        if (version != _credentialRefreshVersion)
+            return;
         CredentialVaultItems = statuses.Select(s => new CredentialVaultItem
         {
             ProviderId = s.ProviderId,
             DisplayName = s.DisplayName,
-            StatusMessage = s.State switch
-            {
-                CredentialState.Configured => "Configured via environment",
-                CredentialState.Partial => $"Missing: {string.Join(", ", s.MissingEnvVars)}",
-                CredentialState.Missing => $"Not configured ({string.Join(", ", s.MissingEnvVars)})",
-                CredentialState.NotRequired => "No credentials required",
-                _ => "Unknown",
-            },
+            StatusMessage = s.StatusMessage,
             StatusBrush = s.State switch
             {
                 CredentialState.Configured => new SolidColorBrush(Color.FromRgb(63, 185, 80)),
