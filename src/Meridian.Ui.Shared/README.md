@@ -11,6 +11,11 @@ last_reviewed: 2026-09-25
 
 # src/Meridian.Ui.Shared
 
+The shared workstation registers credentialed Xero and NetSuite accounting
+providers alongside the existing fixtures. Their HTTP client disables redirects;
+provider-neutral credential setup and connection verification expose them to
+both workstation lanes. Transport and export-control policy stay in Data Integration.
+
 The provider setup compatibility store passes a complete legacy sidecar snapshot to the
 Data Integration vault's atomic importer. It validates all entries before publication,
 preserves existing credentials and deletion markers on retries, and removes the plaintext

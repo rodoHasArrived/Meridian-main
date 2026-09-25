@@ -11,6 +11,11 @@ last_reviewed: 2026-07-25
 
 # src/Meridian.ProviderSdk
 
+`AccountingSystem/IAccountingSystemExportValidator.cs` lets each external GL
+provider validate retained import scope, generated lines, and provider-specific
+human review evidence during controlled export certification. It exposes no
+posting method and does not grant external posting capability.
+
 ## Purpose
 
 ProviderSdk defines provider-facing abstractions for streaming, historical, symbol-search, backfill

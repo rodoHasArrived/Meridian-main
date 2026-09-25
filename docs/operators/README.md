@@ -37,6 +37,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | First local setup | [Start](../start/README.md) | fastest contributor/operator orientation |
 | Product operating scope | [Meridian Design Document](../product/meridian-design-document.md) | stakeholder design context for operator posture |
 | Daily operator controls | [Operators](./README.md) | this page |
+| Xero and NetSuite GL evidence | [External GL Providers](./external-gl-providers.md) | credential setup, import boundaries, and controlled export certification |
 | Startup, restart, and shutdown control | [Lifecycle Control Plane](../reference/lifecycle-control-plane.md) | states, supervisor commands, database ownership, and receipts |
 | Failed, blocked, or warning operation | [Verified Outcome Recovery](./verified-outcome-recovery.md) | terminal receipt triage, evidence verification, safe retry, and escalation |
 | Historical journal legs missing their currency | [Ledger Currency Backfill](./ledger-currency-backfill.md) | why legs are currency-blind, what the repair may assert, and the survey/affirm workflow |

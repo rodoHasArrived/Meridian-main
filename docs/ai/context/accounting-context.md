@@ -19,6 +19,11 @@
 
 ## AI Usage
 
+External GL provider work also follows [External GL Providers](../../operators/external-gl-providers.md).
+Xero and NetSuite credentialed imports remain external evidence. Their provider-owned
+export checks require current connection/import scope and exact retained human control
+references; a certified review artifact still cannot post externally.
+
 Load this context before generating or reviewing code for ledgers, journal entries, capital accounts, close workflows, reconciliation postings, reports with accounting balances, or audit evidence involving accounting records.
 
 ## Review Checklist
