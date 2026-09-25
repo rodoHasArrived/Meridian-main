@@ -24,6 +24,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.Contracts;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
+using Meridian.DataIntegration.AccountingSystem;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Documents;
@@ -290,6 +291,14 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksOnlineAccountingProvider>());
+        services.AddHttpClient("external-gl-read-only")
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+        services.TryAddSingleton<XeroAccountingProvider>(sp => new XeroAccountingProvider(
+            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(), sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-read-only")));
+        services.TryAddSingleton<NetSuiteAccountingProvider>(sp => new NetSuiteAccountingProvider(
+            sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(), sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-read-only")));
+        services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<XeroAccountingProvider>());
+        services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<NetSuiteAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.TryAddSingleton<IAccountingMigrationRunArtifactStore>(sp =>
             new FileAccountingMigrationRunArtifactStore(

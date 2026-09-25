@@ -11,6 +11,16 @@ last_reviewed: 2026-09-25
 
 # src/Meridian.DataIntegration
 
+## External GL providers
+
+`AccountingSystem/XeroAccountingProvider.cs` and `NetSuiteAccountingProvider.cs`
+import credentialed read-only evidence through `CredentialedAccountingProvider`.
+The shared base serializes token rotation, persists rotated refresh tokens in the
+provider vault, and sanitizes transport failures. Provider adapters own scope,
+pagination, strict mapping, and controlled export validation. They never post
+journals. See [External GL Providers](../../docs/operators/external-gl-providers.md)
+for supported scope, permissions, failure recovery and human review evidence.
+
 ## OAuth token ownership
 
 `IOAuthTokenVault` stores refreshable tokens in the same encrypted vault as provider credentials.
@@ -117,7 +127,8 @@ Accounting-system integration lives in this module. The adapter family imports c
 journal-entry, and trial-balance evidence as read-only reconciliation input through
 `IAccountingSystemProvider`. QuickBooks Online refreshes OAuth access tokens through the server-side
 QuickBooks client seam, records connection verification posture, and maps provider-vault
-credentials into the QuickBooks connection store. QuickBooks, Xero, and NetSuite fixture providers
+credentials into the QuickBooks connection store. Xero and NetSuite also have credentialed
+read-only adapters registered alongside their fixtures. QuickBooks, Xero, and NetSuite fixture providers
 publish deterministic read-only import evidence for mapping, reconciliation, browser, and WPF
 validation. Posting/export to an external GL remains disabled; UI Shared registers the Data
 Integration providers and connection store but does not own transport, credential persistence

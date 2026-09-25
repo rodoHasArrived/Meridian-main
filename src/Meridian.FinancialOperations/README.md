@@ -11,6 +11,12 @@ last_reviewed: 2026-09-05
 
 # src/Meridian.FinancialOperations
 
+Accounting-system export package creation, certification, and manifest reads call
+`IAccountingSystemExportValidator` when the selected provider implements it.
+Xero and NetSuite use this seam to require current live import scope and their
+own retained control evidence in addition to the existing mapping, reconciliation,
+and human-origin checks. Successful certification never enables posting.
+
 Statement matching retains exact tolerance rules/version and matcher revision with population
 availability. Missing/failed internal populations and empty statements cannot certify source clearing;
 a narrower source feed is a distinct comparison scope. This evidence is retained with the immutable

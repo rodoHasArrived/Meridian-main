@@ -31,15 +31,15 @@ public sealed class AccountingSystemIntegrationService
         new(
             "xero",
             "Xero",
-            "Xero chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
-            ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"],
-            BuildProviderMappingRequirements("xero-fixture")),
+            "Credentialed Xero read-only GL import requires the Xero provider registration; live posting remains disabled.",
+            ["XeroAccount", "XeroJournal", "XeroTrialBalance"],
+            BuildProviderMappingRequirements("xero")),
         new(
             "netsuite",
             "NetSuite",
-            "NetSuite chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
+            "Credentialed NetSuite read-only GL import requires the NetSuite provider registration; live posting remains disabled.",
             ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"],
-            BuildProviderMappingRequirements("netsuite-fixture"))
+            BuildProviderMappingRequirements("netsuite"))
     ];
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -211,6 +211,8 @@ public sealed class AccountingSystemIntegrationService
             generatedLines,
             packageReconciliationSnapshotHash: reconciliationSnapshotHash);
         var evidenceLinks = BuildExportEvidenceLinks(request, mappingProfile, reconciliation);
+        validationIssues = [.. validationIssues, .. await ValidateProviderExportAsync(providerId, fundProfileId,
+            request.LedgerBookId, periodStart, periodEnd, generatedLines, evidenceLinks, tenantId, companyId, ct).ConfigureAwait(false)];
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var certificationState = hasCritical
             ? AccountingCertificationStateDto.Draft
@@ -626,7 +628,7 @@ public sealed class AccountingSystemIntegrationService
         var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation, package.LedgerBookId);
         var currentReconciliationSnapshotHash = ComputeReconciliationSnapshotHash(reconciliation);
 
-        return BuildExportValidationIssues(
+        var issues = BuildExportValidationIssues(
             package.ProviderId,
             package.FundProfileId,
             ProviderSupportsPosting(package.ProviderId),
@@ -641,6 +643,21 @@ public sealed class AccountingSystemIntegrationService
             package.ReconciliationId,
             package.ReconciliationSnapshotHash,
             currentReconciliationSnapshotHash);
+        return [.. issues, .. await ValidateProviderExportAsync(package.ProviderId, package.FundProfileId,
+            package.LedgerBookId, package.PeriodStart, package.PeriodEnd, generatedLines, package.EvidenceLinks,
+            package.TenantId, package.CompanyId, ct).ConfigureAwait(false)];
+    }
+
+    private Task<IReadOnlyList<AccountingConfigurationValidationIssueDto>> ValidateProviderExportAsync(
+        string providerId, string fundProfileId, Guid? ledgerBookId, DateOnly periodStart, DateOnly periodEnd,
+        IReadOnlyList<ExternalGlExportLineDto> lines, IReadOnlyList<string> evidenceLinks,
+        string? tenantId, string? companyId, CancellationToken ct)
+    {
+        var provider = _providers.FirstOrDefault(p => string.Equals(p.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
+        if (provider is not IAccountingSystemExportValidator validator)
+            return Task.FromResult<IReadOnlyList<AccountingConfigurationValidationIssueDto>>([]);
+        _latestImports.TryGetValue(ImportKey(providerId, fundProfileId, ledgerBookId, tenantId, companyId), out var import);
+        return validator.ValidateExportAsync(new(ledgerBookId, periodStart, periodEnd, import, lines, evidenceLinks), ct);
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildExportValidationIssues(
@@ -885,7 +902,8 @@ public sealed class AccountingSystemIntegrationService
         => validationIssues
             .Where(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
             .Select(static issue => issue.Code)
-            .Where(static code => ExternalGlReconciliationSafeguardIssueCodes.Contains(code))
+            .Where(static code => ExternalGlReconciliationSafeguardIssueCodes.Contains(code) ||
+                code.StartsWith("ExternalGlProvider", StringComparison.Ordinal))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -1728,7 +1746,8 @@ public sealed class AccountingSystemIntegrationService
         };
         var journalEvidenceKind = normalized switch
         {
-            "xero" or "xero-fixture" => "XeroManualJournal",
+            "xero" => "XeroJournal",
+            "xero-fixture" => "XeroManualJournal",
             "netsuite" or "netsuite-fixture" => "NetSuiteJournalEntry",
             _ => "QuickBooksJournalEntry"
         };

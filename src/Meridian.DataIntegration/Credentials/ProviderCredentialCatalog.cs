@@ -176,6 +176,38 @@ public static class ProviderCredentialCatalog
             RecommendedActionWhenMissing: "Add QuickBooks Online OAuth client ID, client secret, refresh token, and company realm ID before importing read-only GL evidence.",
             ActionHref: "/settings#provider-quickbooks-connection"),
         new(
+            ProviderId: "xero",
+            DisplayName: "Xero",
+            Capability: ProviderConnectionCapabilityDto.AccountingSystem,
+            RequiredFields:
+            [
+                new ProviderCredentialFieldDefinition("ClientId", ["XERO_CLIENT_ID"]),
+                new ProviderCredentialFieldDefinition("ClientSecret", ["XERO_CLIENT_SECRET"]),
+                new ProviderCredentialFieldDefinition("RefreshToken", ["XERO_REFRESH_TOKEN"]),
+                new ProviderCredentialFieldDefinition("TenantId", ["XERO_TENANT_ID"]),
+                new ProviderCredentialFieldDefinition("CompanyName", [], Required: false)
+            ],
+            DefaultEnvironment: "production",
+            RecommendedActionWhenMissing: "Add OAuth credentials and the Xero tenant ID for read-only accounting evidence.",
+            AffectedWorkflows: ["External GL reconciliation", "Controlled export review"]),
+        new(
+            ProviderId: "netsuite",
+            DisplayName: "NetSuite",
+            Capability: ProviderConnectionCapabilityDto.AccountingSystem,
+            RequiredFields:
+            [
+                new ProviderCredentialFieldDefinition("ClientId", ["NETSUITE_CLIENT_ID"]),
+                new ProviderCredentialFieldDefinition("ClientSecret", ["NETSUITE_CLIENT_SECRET"]),
+                new ProviderCredentialFieldDefinition("RefreshToken", ["NETSUITE_REFRESH_TOKEN"]),
+                new ProviderCredentialFieldDefinition("AccountId", ["NETSUITE_ACCOUNT_ID"]),
+                new ProviderCredentialFieldDefinition("SubsidiaryId", ["NETSUITE_SUBSIDIARY_ID"]),
+                new ProviderCredentialFieldDefinition("AccountingBookId", ["NETSUITE_ACCOUNTING_BOOK_ID"]),
+                new ProviderCredentialFieldDefinition("CompanyName", [], Required: false)
+            ],
+            DefaultEnvironment: "sandbox",
+            RecommendedActionWhenMissing: "Add OAuth credentials, NetSuite account, subsidiary and primary accounting book IDs for read-only SuiteQL evidence.",
+            AffectedWorkflows: ["External GL reconciliation", "Controlled export review"]),
+        new(
             ProviderId: "ib-flex",
             DisplayName: "Interactive Brokers Flex Web Service",
             Capability: ProviderConnectionCapabilityDto.DataAndBrokerage,
@@ -319,7 +351,7 @@ public static class ProviderCredentialCatalog
         {
             "alpaca" => [AlpacaCredentialEnvironment.PaperEnvironment, AlpacaCredentialEnvironment.LiveEnvironment],
             "plaid" => ["sandbox", "development", "production"],
-            "quickbooks" => ["sandbox", "production"],
+            "quickbooks" or "netsuite" => ["sandbox", "production"],
             _ when !string.IsNullOrWhiteSpace(entry.DefaultEnvironment) => [entry.DefaultEnvironment],
             _ => []
         };
@@ -332,7 +364,8 @@ public static class ProviderCredentialCatalog
             return ProviderCredentialInputKindDto.Url;
         }
 
-        if (fieldName.Equals("RealmId", StringComparison.OrdinalIgnoreCase) ||
+        if (fieldName is "TenantId" or "AccountId" or "SubsidiaryId" or "AccountingBookId" ||
+            fieldName.Equals("RealmId", StringComparison.OrdinalIgnoreCase) ||
             fieldName.Equals("CompanyName", StringComparison.OrdinalIgnoreCase))
         {
             return ProviderCredentialInputKindDto.Text;
