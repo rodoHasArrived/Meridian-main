@@ -277,7 +277,10 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             }
             else
                 vault.OAuthTokens[providerName] = token;
-            await WriteVaultAsync(vault, ct, discardPreviousGeneration: token is null).ConfigureAwait(false);
+            // Rotation can invalidate the previous refresh token at the provider immediately.
+            // Acknowledging the save requires the replacement in both recovery generations.
+            await WriteVaultAsync(vault, ct, discardPreviousGeneration: token is null,
+                retainCurrentGenerationAsBackup: true).ConfigureAwait(false);
             await AppendOAuthAuditAsync(providerName, token is null ? "oauth-delete" : "oauth-save", ct).ConfigureAwait(false);
         }
         finally { _gate.Release(); }
