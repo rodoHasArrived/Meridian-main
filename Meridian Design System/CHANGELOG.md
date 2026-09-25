@@ -5,6 +5,46 @@ Semver from here forward: **MAJOR** = breaking component API or token removal ·
 **PATCH** = fixes with no API surface change. Pre-1.9 history lives in
 `docs/changelog/` (process reports, unversioned).
 
+## 2.0.0 — 2026-09-22
+
+Identity change. Meridian's design language moves off the navy/cyan "Institutional Ops"
+palette onto warm graphite and copper. Every consumer's colours change, and one token was
+removed, so this is a major bump under the rule above.
+
+### Changed
+- **Identity:** the catalogue — `colors_and_type.css`, `index.html`, `preview/` and
+  `ui_kits/` — now renders the canonical palette in `tokens/colors.css` +
+  `tokens/colors-dark.css`. Canvas `#08101A` → `#14120F`, accent `#2AB2D4` → `#D98A64`,
+  and the surface, line, text, chart and semantic ladders move with them. 1,537 literals
+  across 39 files; the catalogue had been a parallel token system carrying the whole
+  pre-restyle identity, so its values were re-derived from the canonical tokens rather
+  than remapped one for one.
+- **Chart overlays** follow their canonical roles: MA(20) `--chart-ma20` is the violet
+  series, MA(50) the brass, the benchmark and crosshair are warm greys. They are chrome
+  and comparison series, not the accent.
+- **Workspace accents** are retuned so the seven lanes stay tellable apart at chip size.
+- **Typography:** platform stacks only — Segoe UI Variable Display/Text and Cascadia Mono,
+  matching the desktop app. The Google Fonts `@import` is gone: the catalogue is opened
+  from disk and served under a CSP with no font CDN, so it was a request that only failed.
+  49 SVG `font-family="IBM Plex Mono"` attributes in the chart sheets follow.
+- **`--bg-ambient` is flat** (`none`). The two radial glows are gone; separation is a 1px
+  rule, per the restyle brief's "no glowing grids, saturated gradients or glass".
+- **`--cyan-*` names are kept** for call-site compatibility — they are the repo's
+  working-name layer and `tokens/colors.css` maps them onto `--ws-accent*`. Only the
+  identity behind them changed; nothing they hold is cyan.
+
+### Added
+- `--cyan-secondary` in `colors_and_type.css`. Six call sites referenced it and only
+  `tokens/colors.css` declared it, so in the catalogue it resolved to nothing.
+- `check_catalog_palette` in `scripts/check_contrast.py`: the catalogue's own literals are
+  now checked against the 50 retired identity values, in hex and `rgb()` form. This
+  surface survived nine review rounds because every existing check pointed at `tokens/`,
+  `guidelines/`, the cards and the dashboard, and nothing read the catalogue.
+
+### Removed
+- `--grid-lines`. Declared in `colors_and_type.css`, referenced nowhere, and a background
+  grid is the thing the brief rules out.
+
 ## 1.18.0 — 2026-07-05
 
 ### Added

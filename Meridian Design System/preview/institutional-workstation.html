@@ -15,15 +15,15 @@
   .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
   .chart-title { font-size: 13px; font-weight: 600; color: #FFFFFF; }
   .chart-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.12em; }
-  .chart-box { min-height: 260px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #05101B; overflow: hidden; }
+  .chart-box { min-height: 260px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #100E0C; overflow: hidden; }
   .chart-box svg { display: block; width: 100%; height: 100%; min-height: 260px; }
   .inspector { display: grid; grid-template-rows: auto auto minmax(260px, 1fr) auto; min-height: 0; }
-  .action-row { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border-color); background: #05101B; }
-  .action-row button { height: 28px; padding: 0 11px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: #0B1520; color: var(--fg); font-family: var(--font-mono); font-size: 11px; }
-  .action-row button.primary { border-color: var(--cyan-primary); background: var(--cyan-primary); color: #05101B; font-weight: 600; }
+  .action-row { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border-color); background: #100E0C; }
+  .action-row button { height: 28px; padding: 0 11px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: #201D19; color: var(--fg); font-family: var(--font-mono); font-size: 11px; }
+  .action-row button.primary { border-color: var(--cyan-primary); background: var(--cyan-primary); color: #100E0C; font-weight: 600; }
   .note { padding: 12px 14px; font-size: 12px; line-height: 1.55; color: var(--fg-muted); }
   .note b { color: #FFFFFF; font-weight: 500; }
-  .guide-strip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--border-color); background: rgba(222,88,120,0.08); color: var(--state-danger-fg); font-family: var(--font-mono); font-size: 10.5px; }
+  .guide-strip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--border-color); background: rgba(206,112,104,0.08); color: var(--state-danger-fg); font-family: var(--font-mono); font-size: 10.5px; }
 </style>
 </head>
 <body>
@@ -165,15 +165,15 @@
               </div>
               <div class="chart-box">
                 <svg viewBox="0 0 640 260" preserveAspectRatio="none">
-                  <g stroke="#1A2D44" stroke-width="1">
+                  <g stroke="#302B25" stroke-width="1">
                     <line x1="44" y1="28" x2="612" y2="28"/><line x1="44" y1="78" x2="612" y2="78"/><line x1="44" y1="128" x2="612" y2="128"/><line x1="44" y1="178" x2="612" y2="178"/><line x1="44" y1="228" x2="612" y2="228"/>
                     <line x1="44" y1="28" x2="44" y2="228"/><line x1="180" y1="28" x2="180" y2="228"/><line x1="316" y1="28" x2="316" y2="228"/><line x1="452" y1="28" x2="452" y2="228"/><line x1="588" y1="28" x2="588" y2="228"/>
                   </g>
-                  <line x1="316" y1="28" x2="316" y2="228" stroke="#DE5878" stroke-dasharray="4 4"/>
-                  <path d="M44 174 C84 178 128 164 180 160 C226 152 268 122 316 118 C360 110 400 92 452 78 C502 96 548 82 612 58" fill="none" stroke="#2AB2D4" stroke-width="2"/>
-                  <path d="M316 118 C352 128 384 112 420 132 C470 102 520 146 612 86" fill="none" stroke="#60A5FA" stroke-width="1.4" opacity=".75"/>
-                  <path d="M316 118 C354 144 388 156 432 142 C480 166 530 148 612 172" fill="none" stroke="#D69E38" stroke-width="1.4" opacity=".72"/>
-                  <path d="M316 118 C360 98 400 68 444 46 C494 76 542 52 612 38" fill="none" stroke="#A78BFA" stroke-width="1.4" opacity=".72"/>
+                  <line x1="316" y1="28" x2="316" y2="228" stroke="#CE7068" stroke-dasharray="4 4"/>
+                  <path d="M44 174 C84 178 128 164 180 160 C226 152 268 122 316 118 C360 110 400 92 452 78 C502 96 548 82 612 58" fill="none" stroke="#D98A64" stroke-width="2"/>
+                  <path d="M316 118 C352 128 384 112 420 132 C470 102 520 146 612 86" fill="none" stroke="#E39A77" stroke-width="1.4" opacity=".75"/>
+                  <path d="M316 118 C354 144 388 156 432 142 C480 166 530 148 612 172" fill="none" stroke="#C29A4A" stroke-width="1.4" opacity=".72"/>
+                  <path d="M316 118 C360 98 400 68 444 46 C494 76 542 52 612 38" fill="none" stroke="#9089B5" stroke-width="1.4" opacity=".72"/>
                 </svg>
               </div>
             </div>

@@ -105,7 +105,7 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
     }
 
     [Fact]
-    public async Task SplitSettlement_RetainedMatchGroupFeedsOnlyTheUnmatchedCaseAfterRestart()
+    public async Task SplitSettlement_MissingCaseworkRecoversWithoutReadingTheCurrentBook()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var ct = timeout.Token;
@@ -126,7 +126,13 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
             "CUSTODY-MAY,XYZ,1,42,-42,trade,2026-05-27,2026-05-27,USD,0,XYZ-MAY\n");
         var request = Request(new StatementSourceDocument("may-settlements.csv", sourceBytes),
             CsvStatementConnector.ConnectorId, externalAccountId);
-        var committed = await CreateImportService(CreateWorkflow(populations)).CommitAsync(request, ct);
+        var initialWorkflow = CreateWorkflow(populations);
+        var committed = await CreateImportService(initialWorkflow).CommitAsync(request, ct);
+        var retainedRun = await initialWorkflow.GetAsync(committed.RunId, ct);
+        retainedRun.Should().NotBeNull();
+        var checkpoints = new FileStatementRunRecoveryRepository(_root);
+        var checkpointBefore = await checkpoints.GetAsync(committed.RunId, ct);
+        checkpointBefore!.Stage.Should().Be(StatementRunRecoveryStage.Completed);
 
         committed.CaseCount.Should().Be(1);
         committed.BreakCount.Should().Be(1);
@@ -140,9 +146,49 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
         split.StatementEvidenceReferences.Should().Equal($"{committed.RunId}:2");
         split.InternalEvidenceReferences.Should().Equal("internal:journal:leg-a", "internal:journal:leg-b");
 
-        // A restarted read/replay must use the retained match, even when the current book is unavailable.
-        var restarted = CreateWorkflow();
+        // Remove the mutable projections and their receipts, while retaining the
+        // completed checkpoint and immutable match artifact as recovery authority.
+        var breakName = ReconciliationRecordFileName.For(committed.BreakIds.Single());
+        var caseId = committed.CaseIds.Single();
+        var runName = ReconciliationRecordFileName.For(committed.RunId);
+        var projectionPaths = new[]
+        {
+            Path.Combine(_root, "reconciliation", "statement-breaks", $"{breakName}.json"),
+            Path.Combine(_root, "reconciliation", "statement-breaks", "_run-projections", runName, $"{breakName}.json"),
+            Path.Combine(_root, "reconciliation", "cases", $"{Uri.EscapeDataString(caseId)}.json"),
+            Path.Combine(_root, "reconciliation", "cases", "_run-projections", runName, $"{ReconciliationRecordFileName.For(caseId)}.json")
+        };
+        foreach (var path in projectionPaths)
+        {
+            File.Exists(path).Should().BeTrue("the first commit must have materialized every projection");
+            File.Delete(path);
+        }
+
+        var currentBook = new RejectPopulationReads();
+        var restarted = CreateWorkflow(populationProvider: currentBook);
         var feed = await CreateFeedAsync(restarted, externalAccountId, "USD", ct);
+        (await feed.ListOpenCasesAsync(AccessScope, ct)).Should().BeEmpty();
+        (await feed.ListOpenStatementBreaksAsync(AccessScope, ct)).Should().BeEmpty();
+
+        // Invoke workflow recovery directly: a duplicate import only reads existing
+        // projections and cannot prove that a missing projection is rematerialized.
+        var imported = retainedRun!.Import;
+        var recovered = await restarted.CreateAsync(new StatementRunRequest(
+            imported.Broker, imported.SourceInstitution, imported.FundAccountId, imported.ExternalAccountId,
+            imported.StatementPeriodStart, imported.StatementPeriodEnd,
+            imported.SourcePath, imported.OriginalFileName,
+            imported.MappingProfileId, imported.ToleranceProfileId, imported.ImportedBy, imported.SourceFileHash)
+        {
+            CanonicalSourcePath = Path.GetFullPath(Path.Combine(_root, committed.RetainedCanonicalPath)),
+            CanonicalArtifactHash = imported.CanonicalArtifactHash,
+            AccountingScope = imported.AccountingScope
+        }, ct);
+
+        currentBook.Calls.Should().Be(0, "recovery must reuse the retained split instead of rematching today's book");
+        recovered.Should().BeEquivalentTo(retainedRun);
+        projectionPaths.Should().OnlyContain(path => File.Exists(path));
+        (await checkpoints.GetAsync(committed.RunId, ct)).Should().BeEquivalentTo(checkpointBefore,
+            "repairing missing projections must not rewrite or regress the completed checkpoint");
         await AssertCaseFeedAsync(feed, committed, ct);
         (await feed.ListOpenStatementBreaksAsync(AccessScope, ct)).Should().ContainSingle()
             .Which.StatementReference.Should().Be($"{committed.RunId}:4");
@@ -215,13 +261,14 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
         return new ReconciliationApiService(workflow, accounts, tenancy);
     }
 
-    private StatementRunWorkflowService CreateWorkflow(InternalReconciliationPopulations? populations = null)
+    private StatementRunWorkflowService CreateWorkflow(InternalReconciliationPopulations? populations = null,
+        IInternalReconciliationPopulationProvider? populationProvider = null)
     {
         var imports = new JsonCanonicalStatementStore(_root);
         return new StatementRunWorkflowService(imports, new JsonReconciliationCaseStore(_root),
             new JsonReconciliationBreakStore(_root), new CsvBrokerStatementService(imports),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
-            new RetainedBookPopulationProvider(populations ?? InternalReconciliationPopulations.Empty),
+            populationProvider ?? new RetainedBookPopulationProvider(populations ?? InternalReconciliationPopulations.Empty),
             IdentityReconciliationFxRateProvider.Instance, new InMemoryStatementToleranceProfileProvider(),
             new FileStatementRunRecoveryRepository(_root), new FileStatementRunMatchArtifactStore(_root),
             caseworkCommitStore: new FileStatementCaseworkCommitStore(_root));
@@ -245,6 +292,18 @@ public sealed class StatementImportCaseworkEvidenceTests : IDisposable
         public Task<InternalReconciliationPopulations> GetPopulationsAsync(
             InternalReconciliationPopulationContext context, CancellationToken ct = default)
             => Task.FromResult(populations);
+    }
+
+    private sealed class RejectPopulationReads : IInternalReconciliationPopulationProvider
+    {
+        public int Calls { get; private set; }
+
+        public Task<InternalReconciliationPopulations> GetPopulationsAsync(
+            InternalReconciliationPopulationContext context, CancellationToken ct = default)
+        {
+            Calls++;
+            throw new InvalidOperationException("The current book is unavailable during retained-match recovery.");
+        }
     }
 
     public void Dispose() => Directory.Delete(_root, recursive: true);

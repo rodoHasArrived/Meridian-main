@@ -480,8 +480,9 @@ public class EventPipelineTests : IAsyncLifetime
         // Act
         _pipeline.Complete();
 
-        // Wait for pipeline to drain
-        await Task.Delay(5);
+        // Wait for the pipeline to drain. A fixed delay races the consumer loop under CI load and
+        // fails this assertion on a commit that changed nothing; poll the sink instead.
+        await WaitForConsumption(expectedCount: 1);
 
         // Assert - Further publishes may fail
         // The channel is marked complete

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -36,13 +38,25 @@ class SchemaControlCliTests(unittest.TestCase):
                             },
                         )
 
-    def test_configured_output_paths_reject_symlink_escaping_repository(self) -> None:
+    def test_configured_output_paths_reject_directory_link_escaping_repository(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repository"
             root.mkdir()
             outside = Path(directory) / "outside"
             outside.mkdir()
-            (root / "linked-output").symlink_to(outside, target_is_directory=True)
+            linked_output = root / "linked-output"
+            if os.name == "nt":
+                # A real directory junction exercises path resolution without the
+                # Windows privilege required to create symbolic links.
+                subprocess.run(
+                    ["cmd", "/c", "mklink", "/J", str(linked_output), str(outside)],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+            else:
+                linked_output.symlink_to(outside, target_is_directory=True)
+            self.assertEqual(outside.resolve(), linked_output.resolve())
 
             with self.assertRaisesRegex(ValueError, "inside the repository"):
                 _configured_output_paths(

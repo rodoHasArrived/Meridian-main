@@ -28,14 +28,14 @@ const { useState, useMemo } = React;
 .acct-search{height:30px;box-sizing:border-box;padding:5px 10px;border:1px solid var(--border);
   border-radius:var(--radius-button,6px);background:var(--bg-light);color:var(--text-primary);
   font-family:var(--font-data);font-size:12px;min-width:220px;transition:border-color .12s,box-shadow .12s;}
-.acct-search:focus{outline:none;border-color:var(--border-focus,#2F6F8F);box-shadow:0 0 0 2px rgba(47,111,143,.2);}
-.acct-search::placeholder{color:var(--text-disabled,#9AA4AF);}
+.acct-search:focus{outline:none;border-color:var(--border-focus,#A85436);box-shadow:0 0 0 2px color-mix(in srgb, var(--border-focus) 20%, transparent);}
+.acct-search::placeholder{color:var(--text-disabled,#94999F);}
 .seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-button,6px);overflow:hidden;}
 .seg button{appearance:none;border:none;background:var(--bg-light);cursor:pointer;font-family:var(--font-body);
   font-size:12px;color:var(--text-secondary);padding:6px 12px;border-right:1px solid var(--border);transition:all .12s;}
 .seg button:last-child{border-right:none;}
 .seg button:hover{background:var(--bg-hover);color:var(--text-primary);}
-.seg button[aria-pressed="true"]{background:var(--bg-active,#E6EEF5);color:var(--accent);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
+.seg button[aria-pressed="true"]{background:var(--bg-active,#F2E3DB);color:var(--accent-dim);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
 .acct-overlay{position:fixed;inset:0;background:rgba(23,26,31,.42);z-index:40;display:flex;justify-content:flex-end;animation:acct-fade .14s ease;}
 @keyframes acct-fade{from{opacity:0;}}
 .acct-drawer{width:660px;max-width:92vw;height:100%;background:var(--bg);overflow-y:auto;
@@ -49,7 +49,7 @@ const { useState, useMemo } = React;
 .acct-empty{padding:22px;text-align:center;font-family:var(--font-body);font-size:12px;color:var(--text-muted);
   border:1px dashed var(--border);border-radius:var(--radius-chip,4px);}
 .acct-flash{animation:acct-flash 1.1s ease;}
-@keyframes acct-flash{0%{background:var(--green-a10,rgba(22,136,95,.18));}100%{background:transparent;}}
+@keyframes acct-flash{0%{background:var(--green-a10,rgba(58,122,86,.18));}100%{background:transparent;}}
 `;
   document.head.appendChild(el);
 })();
