@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Identity;
+using Meridian.ProcessTestHelper;
 
 namespace Meridian.Tests.Identity;
 
@@ -21,6 +23,86 @@ public sealed class DurableLoginSessionTests : IDisposable
             .Set("MDC_USERS", $$"""[{"username":"operator","passwordHash":"{{hash}}","role":"Accounting"}]""")
             .Set("MDC_DEMO_USERS", null).Set("MDC_USERNAME", null).Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", "required");
+    }
+
+    [Fact]
+    public async Task SeparateProcesses_ShareCreationAndRevocationWithoutResurrectingStaleSessions()
+    {
+        Directory.CreateDirectory(_root);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(75));
+        var children = new List<(Process Process, Task<string> Error)>();
+        try
+        {
+            var startGate = Path.Combine(_root, "start.gate");
+            var revokedGate = Path.Combine(_root, "revoked.gate");
+            var readyFiles = new List<string>();
+            var tokenFiles = new List<string>();
+            for (var index = 0; index < 3; index++)
+            {
+                var ready = Path.Combine(_root, $"node-{index}.ready");
+                var tokenFile = Path.Combine(_root, $"node-{index}.token");
+                readyFiles.Add(ready);
+                tokenFiles.Add(tokenFile);
+                var start = new ProcessStartInfo("dotnet")
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true
+                };
+                foreach (var argument in new[]
+                {
+                    "exec", "--depsfile", Path.Combine(AppContext.BaseDirectory, "Meridian.Tests.deps.json"),
+                    "--runtimeconfig", Path.Combine(AppContext.BaseDirectory, "Meridian.Tests.runtimeconfig.json"),
+                    typeof(ProcessTestHelperMarker).Assembly.Location,
+                    "session-create-and-observe-revocation", StorePath, ready, startGate, tokenFile, revokedGate
+                })
+                    start.ArgumentList.Add(argument);
+                var process = Process.Start(start) ?? throw new InvalidOperationException("Session node did not start.");
+                children.Add((process, process.StandardError.ReadToEndAsync()));
+            }
+
+            async Task WaitForFiles(IReadOnlyList<string> files)
+            {
+                while (!files.All(path => File.Exists(path) && new FileInfo(path).Length > 0))
+                {
+                    foreach (var child in children.Where(child => child.Process.HasExited))
+                        Assert.Fail($"Session node exited before the barrier: {await child.Error}");
+                    await Task.Delay(20, timeout.Token);
+                }
+            }
+
+            await WaitForFiles(readyFiles);
+            children.Select(child => child.Process.Id).Should().OnlyHaveUniqueItems();
+            await File.WriteAllTextAsync(startGate, "start", timeout.Token);
+            await WaitForFiles(tokenFiles);
+            var tokens = tokenFiles.Select(File.ReadAllText).ToArray();
+            tokens.Should().OnlyHaveUniqueItems();
+            var observer = new LoginSessionService(new FakeHostEnvironment("Production"), new UserProfileRegistry(),
+                new LoginSessionStoreOptions(StorePath));
+            foreach (var token in tokens)
+                observer.ValidateSession(token).Should().BeTrue();
+            observer.RevokeAllSessions().Should().Be(3);
+            await File.WriteAllTextAsync(revokedGate, "revoked", timeout.Token);
+            await Task.WhenAll(children.Select(child => child.Process.WaitForExitAsync(timeout.Token)));
+            foreach (var child in children)
+                Assert.True(child.Process.ExitCode == 0, await child.Error);
+
+            var restarted = new LoginSessionService(new FakeHostEnvironment("Production"), new UserProfileRegistry(),
+                new LoginSessionStoreOptions(StorePath));
+            foreach (var token in tokens)
+                restarted.ValidateSession(token).Should().BeFalse();
+            restarted.RevokeAllSessions().Should().Be(3);
+        }
+        finally
+        {
+            foreach (var child in children)
+            {
+                if (!child.Process.HasExited)
+                    child.Process.Kill(entireProcessTree: true);
+                await child.Process.WaitForExitAsync();
+                child.Process.Dispose();
+            }
+        }
     }
 
     [Fact]

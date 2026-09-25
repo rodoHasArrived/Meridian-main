@@ -8528,7 +8528,8 @@ Meridian-main
 │   │   ├── Meridian.ProcessTestHelper.csproj
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json
 │   │   ├── Program.cs
-│   │   └── Program.Etl.cs
+│   │   ├── Program.Etl.cs
+│   │   └── Program.Identity.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── Helpers
 │   │   │   ├── FakeQuantDataContext.cs
