@@ -27,7 +27,10 @@ for supported scope, permissions, failure recovery and human review evidence.
 Mutations hold the shared writer lock and update only the named provider token; readers open a stable
 published generation without requiring a writable lock. Legacy imports preserve existing tokens and
 audit every attempted provider, retaining the imported generation in both primary and backup before
-acknowledging the import. Durable markers and sanitized recovery generations prevent deletion reversal;
+acknowledging the import. OAuth saves also mirror the replacement token to the backup before success,
+because remote rotation can invalidate the previous refresh token immediately. Backup-write failures
+are reported; the retained replacement can be saved again without another remote rotation.
+Durable markers and sanitized recovery generations prevent deletion reversal;
 empty or missing primaries recover from the retained backup. Both audit surfaces append under the vault
 lock without copying accumulated history. Before appending, an incomplete final record is durably retained
 in a uniquely named `.partial-*` file, preserving every newline-terminated record in the original log.
