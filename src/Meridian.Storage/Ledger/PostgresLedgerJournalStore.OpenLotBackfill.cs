@@ -15,7 +15,8 @@ public sealed partial class PostgresLedgerJournalStore
         tax_lot_record_id, ledger_book_id, account_name, account_type, symbol, financial_account_id,
         lot_id, acquired_date, original_quantity, open_quantity, unit_cost, currency, source_journal_entry_id,
         evidence_ref, version, originating_mutation_batch_id, last_mutation_batch_id, created_at, updated_at,
-        security_id, book_position_id, original_face, booked_factor, par_basis, acquisition_terms
+        security_id, book_position_id, original_face, booked_factor, par_basis, acquisition_terms,
+        basis_adjustment
         """;
 
     public async Task<IReadOnlyList<OpenLotBackfillExceptionDto>> SurveyAsync(Guid ledgerBookId, CancellationToken ct = default)

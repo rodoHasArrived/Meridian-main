@@ -254,7 +254,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             Status: OpenStatus,
             OpenedAt: now,
             ClosedAt: null,
-            Version: 0);
+            Version: 0)
+        {
+            MutationActor = NormalizeOptional(request.CreatedBy)
+        };
 
         var saved = await _store.SavePeriodAsync(period, expectedVersion: 0, closeEvent: null, ct).ConfigureAwait(false);
         return MapPeriod(saved, book);

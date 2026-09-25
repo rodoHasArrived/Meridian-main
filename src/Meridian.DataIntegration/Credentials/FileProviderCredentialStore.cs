@@ -64,10 +64,10 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // An absent vault can be read without creating a directory or writable lock.
+            // Both generations are published by atomic replacement. Read the published
+            // snapshot without creating or opening a writable lock on a secret volume.
             if (File.Exists(VaultPath) || File.Exists(_vaultBackupPath))
             {
-                using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
                 var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
                 if (vault.Providers.TryGetValue(descriptor.ProviderId, out var localRecord))
                 {
@@ -220,22 +220,21 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         {
             using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-            var changed = false;
             foreach (var item in prepared)
             {
                 // The marker survives deletion and is committed with the first import. Audit
                 // retries must never interpret an operator deletion as a missing legacy import.
                 if (!vault.LegacyImportedProviderIds.Add(item.Descriptor.ProviderId))
                     continue;
-                changed = true;
                 if (vault.Providers.ContainsKey(item.Descriptor.ProviderId))
                     continue;
                 var record = CreateUpdatedRecord(item.Descriptor, item.Request, item.Fields, null, DateTimeOffset.UtcNow);
                 vault.Providers.Add(item.Descriptor.ProviderId, record);
             }
 
-            if (changed)
-                await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            // A successful import acknowledges that the plaintext source may be erased.
+            // Refresh both encrypted generations even on retry after an audit failure.
+            await WriteVaultAsync(vault, ct, retainCurrentGenerationAsBackup: true).ConfigureAwait(false);
             // Record every attempted provider, including retries after an audit-write failure.
             // The sidecar is retained until all these audit appends succeed.
             foreach (var item in prepared)
@@ -257,7 +256,6 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             return new Dictionary<string, OAuthToken>(vault.OAuthTokens, StringComparer.Ordinal);
         }
@@ -298,32 +296,77 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         {
             using var vaultLock = await AcquireVaultLockAsync(ct).ConfigureAwait(false);
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
-            var changed = false;
             foreach (var pair in tokens)
             {
                 if (!vault.LegacyImportedOAuthProviders.Add(pair.Key))
                     continue;
-                changed = true;
                 vault.OAuthTokens.TryAdd(pair.Key, pair.Value);
             }
-            if (changed)
-                await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            // A successful import acknowledges that the plaintext source may be erased.
+            // Refresh both encrypted generations even on retry after an audit failure.
+            await WriteVaultAsync(vault, ct, retainCurrentGenerationAsBackup: true).ConfigureAwait(false);
             foreach (var provider in tokens.Keys)
                 await AppendOAuthAuditAsync(provider, "oauth-import-or-preserve", ct).ConfigureAwait(false);
         }
         finally { _gate.Release(); }
     }
 
-    private async Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct)
+    private Task AppendOAuthAuditAsync(string providerName, string action, CancellationToken ct)
     {
-        // The vault file lock serializes every audit writer. Token refreshes append one
-        // record without copying the entire history while holding that exclusive lock.
         var line = JsonSerializer.Serialize(new { Timestamp = DateTimeOffset.UtcNow, ProviderId = providerName, Action = action }, JsonOptions);
-        await using var stream = new FileStream(_auditPath, FileMode.Append, FileAccess.Write, FileShare.Read,
+        return AppendAuditLineAsync(line, ct);
+    }
+
+    private async Task AppendAuditLineAsync(string line, CancellationToken ct)
+    {
+        // Every caller holds the vault writer lock. A newline commits a complete record;
+        // interrupted suffixes are retained separately before either audit surface appends.
+        var created = !File.Exists(_auditPath);
+        await using var stream = new FileStream(_auditPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read,
             4096, FileOptions.Asynchronous | FileOptions.WriteThrough);
+        await RecoverAuditTailAsync(stream, ct).ConfigureAwait(false);
+        stream.Seek(0, SeekOrigin.End);
         await stream.WriteAsync(Encoding.UTF8.GetBytes(line + "\n"), ct).ConfigureAwait(false);
         await stream.FlushAsync(ct).ConfigureAwait(false);
         stream.Flush(flushToDisk: true);
+        if (created)
+            await AtomicFileWriter.SyncDirectoryAsync(_directoryPath, CancellationToken.None).ConfigureAwait(false);
+    }
+
+    private async Task RecoverAuditTailAsync(FileStream stream, CancellationToken ct)
+    {
+        if (stream.Length == 0)
+            return;
+        stream.Seek(-1, SeekOrigin.End);
+        if (stream.ReadByte() == '\n')
+            return;
+
+        var prefixLength = stream.Length;
+        var buffer = new byte[4096];
+        while (prefixLength > 0)
+        {
+            var count = (int)Math.Min(prefixLength, buffer.Length);
+            var start = prefixLength - count;
+            stream.Position = start;
+            await stream.ReadExactlyAsync(buffer.AsMemory(0, count), ct).ConfigureAwait(false);
+            var newline = Array.LastIndexOf(buffer, (byte)'\n', count - 1, count);
+            if (newline >= 0)
+            {
+                prefixLength = start + newline + 1;
+                break;
+            }
+            prefixLength = start;
+        }
+
+        // Stream only the incomplete final record. Normal appends inspect one byte and
+        // never copy the accumulated audit history. Preserve interrupted bytes for review.
+        stream.Position = prefixLength;
+        var interruptedPath = _auditPath + ".partial-" + Guid.NewGuid().ToString("N");
+        await AtomicFileWriter.WriteStreamAsync(interruptedPath,
+            destination => stream.CopyToAsync(destination, ct), ct).ConfigureAwait(false);
+        stream.SetLength(prefixLength);
+        stream.Flush(flushToDisk: true);
+        Log.Warning("Retained an interrupted credential audit suffix at {AuditRecoveryPath}", interruptedPath);
     }
 
     private async Task<FileStream> AcquireVaultLockAsync(CancellationToken ct)
@@ -780,7 +823,19 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             return new ProviderCredentialVault();
         }
 
-        var envelopeJson = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
+        await using var stream = new FileStream(path, new FileStreamOptions
+        {
+            Mode = FileMode.Open,
+            Access = FileAccess.Read,
+            Share = FileShare.Read | FileShare.Delete,
+            Options = FileOptions.Asynchronous | FileOptions.SequentialScan
+        });
+        // Holding one file handle keeps this generation stable while a writer replaces
+        // the path. Delete sharing allows that replacement on Windows without writing
+        // through the handle from which credentials are being decrypted.
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true,
+            bufferSize: 4096, leaveOpen: true);
+        var envelopeJson = await reader.ReadToEndAsync(ct).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(envelopeJson))
         {
             throw new InvalidOperationException("Provider credential vault is empty or truncated.");
@@ -795,7 +850,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         return vault ?? throw new InvalidOperationException("Provider credential vault payload is invalid.");
     }
 
-    private async Task WriteVaultAsync(ProviderCredentialVault vault, CancellationToken ct, bool discardPreviousGeneration = false)
+    private async Task WriteVaultAsync(ProviderCredentialVault vault, CancellationToken ct,
+        bool discardPreviousGeneration = false, bool retainCurrentGenerationAsBackup = false)
     {
         EnsureVaultDirectory();
         vault.Version = VaultVersion;
@@ -809,7 +865,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
 
         // Roll the current (readable) vault to the last-known-good backup before replacing
         // it, so a corrupting write can always fall back one generation in LoadVaultAsync.
-        // Callers hold _gate, so the copy/write pair cannot interleave with another writer.
+        // Callers hold the cross-instance writer lock. Publish the backup atomically too,
+        // so readers never observe an in-place copy's truncated intermediate generation.
         if (discardPreviousGeneration)
         {
             // Deletion must remove every recoverable copy before it can be acknowledged.
@@ -821,7 +878,8 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             {
                 // Keep a usable recovery copy when this mutation follows primary corruption.
                 await LoadVaultFromFileAsync(VaultPath, ct).ConfigureAwait(false);
-                File.Copy(VaultPath, _vaultBackupPath, overwrite: true);
+                var previousGeneration = await File.ReadAllBytesAsync(VaultPath, ct).ConfigureAwait(false);
+                await AtomicFileWriter.WriteAsync(_vaultBackupPath, previousGeneration, ct).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsVaultCorruption(ex))
             {
@@ -834,7 +892,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         }
 
         await AtomicFileWriter.WriteAsync(VaultPath, envelopeJson, ct).ConfigureAwait(false);
-        if (discardPreviousGeneration)
+        if (discardPreviousGeneration || retainCurrentGenerationAsBackup)
             await AtomicFileWriter.WriteAsync(_vaultBackupPath, envelopeJson, CancellationToken.None).ConfigureAwait(false);
     }
 
@@ -1002,7 +1060,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             Environment: status.Environment,
             ExternalAccountId: status.ExternalAccountId);
         var json = JsonSerializer.Serialize(entry, JsonOptions);
-        await AtomicFileWriter.AppendLinesAsync(_auditPath, [json], ct).ConfigureAwait(false);
+        await AppendAuditLineAsync(json, ct).ConfigureAwait(false);
     }
 
     private static string? SanitizeError(string? message)

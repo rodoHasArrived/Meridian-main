@@ -31,6 +31,10 @@ recovery scenarios in `AccountingCloseHttpRecoveryTests` retain the selected wor
 evidence refusal and refresh after repair. Close-readiness acceptance remains in progress
 pending the required hosted integration checks.
 
+The Accounting feature registers the same retained report-package authority as the browser.
+Close publication revalidates scoped report support through the shared guard; a client readiness
+flag cannot stand in for the retained package. Windows execution remains a separate acceptance gate.
+
 ## Purpose
 
 WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside
@@ -120,6 +124,8 @@ returns to the startup login screen with a fresh startup view model.
 Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden by default, exposes
 an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
 together when a flow resets the input.
+
+Reusable value-adjacent confidence badges use `DataConfidenceIndicator` and `DataConfidenceIndicatorModel` so Portfolio, Accounting, Reporting, and Data screens can display the same Current, Stale, Partial, Reconciled, Unreconciled, Estimated, and Provider Degraded labels with source/provider metadata, freshness, reconciliation status, fallback notes, and click-through explanations sourced from shared evidence or provider read models where available.
 
 Desktop configuration is preflighted before the generic host parses `appsettings.json`. Invalid
 configuration is moved to a timestamped retained backup, a valid last-known-good copy is restored
@@ -308,6 +314,11 @@ Runtime desktop capability toggles are declared by feature modules and surfaced 
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
+Security Master create, edit, deactivate, and file-import commands require an active desktop actor
+with `ModifySecurityMaster`; trading-parameter backfill requires `TriggerBackfill`. WPF resolves
+actor and permission together again at the in-process application-service boundary, and configured
+anonymous roles use the shared `RolePermissions` mapping rather than inheriting unrestricted
+local-development access.
 
 The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
 The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer
@@ -331,6 +342,11 @@ posture used by shared workstation continuity endpoints.
 The drill-in uses compact action-strip chrome, shared dense cash-ladder and cash-flow event tables,
 and right-side inspectors for the selected event, ladder bucket, continuity posture, and run actions;
 Security Master remains disabled until a symbol-linked cash-flow event is selected.
+Shared dense workstation grids centralize keyboard behavior in `DenseGridKeyboardCommands` and
+`DenseDataGridControl` rather than per-page key handlers. Grids and table-inspector compositions
+now expose reusable command hooks for Ctrl+F filter focus, Enter selected-row details, Escape detail
+closure, Ctrl+C selected-row copy, Ctrl+Shift+F filter clearing, and Ctrl+J related-record
+navigation; row traversal remains the virtualized list's native Up/Down/Page/Home/End behavior.
 Desktop backtest services register the Backtesting-owned `IBacktestPreflightService` implementation
 and attach it to the singleton `BacktestService`, so WPF strategy runs use the same date-range,
 replay-coverage, execution-model, and optional Security Master preflight checks as shared

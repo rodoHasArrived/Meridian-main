@@ -208,7 +208,17 @@ module SecurityMaster =
                |> List.collect (fun leg ->
                    []
                    @ requireNotBlank "swap_leg_type_required" "SwapLeg.LegType" leg.LegType
-                   @ requireNotBlank "swap_leg_currency_required" "SwapLeg.Currency" leg.Currency))
+                   @ requireNotBlank "swap_leg_currency_required" "SwapLeg.Currency" leg.Currency
+                   @ require (leg.Notional |> Option.forall (fun notional -> notional > 0m))
+                       (error "swap_leg_notional_invalid" "SwapLeg Notional must be greater than zero when present.")
+                   @ require
+                       (leg.Direction
+                        |> Option.forall (fun direction ->
+                            String.Equals(direction, "Pay", StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(direction, "Receive", StringComparison.OrdinalIgnoreCase)))
+                       (error "swap_leg_direction_invalid" "SwapLeg Direction must be either 'Pay' or 'Receive' when present.")
+                   @ require (leg.PaymentFrequency |> Option.forall (String.IsNullOrWhiteSpace >> not))
+                       (error "swap_leg_payment_frequency_invalid" "SwapLeg PaymentFrequency must not be blank when present.")))
         | SecurityKind.DirectLoan terms ->
             []
             @ requireNotBlank "direct_loan_borrower_required" "Borrower" terms.Borrower

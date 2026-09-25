@@ -7,7 +7,7 @@ export function Sparkline({
   width = 80,
   height = 28,
   variant = "line", // "line" | "area" | "bar"
-  color = "var(--chart-equity,#16885F)",
+  color = "var(--chart-equity,#3A7A56)",
   strokeWidth = 1.5,
   baseline = null, // reference line (e.g. 0 for P&L)
 }) {
@@ -40,7 +40,7 @@ export function Sparkline({
             <rect key={i}
               x={xScale(i) - barW / 2} y={height - barH}
               width={barW} height={barH}
-              fill={isPos ? color : "var(--chart-drawdown,#BA3F55)"}
+              fill={isPos ? color : "var(--chart-drawdown,#A8443C)"}
               opacity="0.85"
             />
           );

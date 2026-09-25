@@ -1,5 +1,15 @@
 # Wave 2 Cockpit Evidence Packet
 
+**Status:** historical-evidence
+**Owner:** Execution and Fund Accounts
+**Reviewed:** 2026-09-23
+
+The test counts, pass/fail results, sign-off identity, and artifact paths below describe the May 2026
+snapshot only. They have not been re-certified on the current release commit. This packet remains
+at its compatibility path for evidence references. Use the [current evidence runbook](../../testing/wave2-cockpit-reliability-evidence-runbook.md),
+[acceptance matrix](../workstation-cockpit-acceptance-matrix.json), and
+[production-readiness tracker](../../product/implementation-todo-list.md) for new reviews.
+
 **Last Updated:** 2026-05-21
 
 ## Overview

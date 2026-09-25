@@ -23,20 +23,46 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
     [InlineData("version")]
     [InlineData("nav")]
     [InlineData("cockpit-stale")]
+    [InlineData("report-stale")]
+    [InlineData("report-revision")]
+    [InlineData("report-authority")]
     public async Task DirectClose_RechecksRealSharedEvidenceAndPublishesOnlyAfterRepair(string defect)
     {
         IFinancialOperationsCommandCenterReadService? authority = null;
-        var guard = new ClosePublicationReadinessGuard(() => authority, new PublicationTenantContext());
+        var reportSupport = new Mock<IOperationsReportPackAuthority>(MockBehavior.Strict);
+        var supportReady = true;
+        var reportAuthorityAvailable = true;
+        var reportChanged = false;
+        var reportRevision = new OperationsEvidenceLinkDto("accounting-report-package-revision:fixture",
+            "Retained report revision fixture", null, "accounting-report-package-revision", DateTimeOffset.UtcNow);
+        reportSupport.Setup(source => source.ResolveAsync(It.IsAny<OperationsContinuityWorkflowDto>(),
+                "report-pack-1", "tenant-alpha", "company-alpha", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => new OperationsReportPackReadinessDto(supportReady,
+                supportReady ? "report-pack-1" : null, supportReady ? null : "Retained report support is stale.", [reportChanged ? reportRevision with { EvidenceId = "accounting-report-package-revision:replacement" } : reportRevision]));
+        var guard = new ClosePublicationReadinessGuard(() => authority, new PublicationTenantContext(),
+            () => reportAuthorityAvailable ? reportSupport.Object : null);
         var workflowService = OperationsContinuityWorkflowServiceTests.CreateGuardedService(guard, out var repository, out var audit);
         var activity = PrivateCapitalCloseCockpitServiceTests.BuildActivity() with { ProjectedAtUtc = DateTimeOffset.UtcNow };
         var submitted = await OperationsContinuityWorkflowServiceTests.CreateApprovalSubmittedWorkflowAsync(
             workflowService, activity.LedgerBookId, "2026-06");
-        var approvals = OperationsContinuityWorkflowServiceTests.RequiredChecklistControlApprovals();
+        var retainedWorkflow = (await repository.GetAsync(submitted.WorkflowId))!;
+        retainedWorkflow.ReportPackReadiness = retainedWorkflow.ReportPackReadiness with
+        {
+            EvidenceLinks = retainedWorkflow.ReportPackReadiness.EvidenceLinks.Append(reportRevision).ToArray()
+        };
+        await repository.SaveAsync(retainedWorkflow);
+        submitted.LedgerBookId.Should().Be(activity.LedgerBookId);
+        submitted.PeriodId.Should().Be("2026-06");
+        var approvals = await OperationsContinuityWorkflowServiceTests.ReadChecklistControlApprovalsAsync(workflowService, submitted.WorkflowId);
         var approved = await workflowService.ApproveWorkflowAsync(submitted.WorkflowId, new(
-            submitted.Version, "ops-user", "reviewer", "Review retained close evidence", "report-pack-1",
+            submitted.Version, "reviewer", "reviewer", "Review retained close evidence", "report-pack-1",
             ChecklistControlApprovals: approvals));
         approved.Success.Should().BeTrue();
-        var workflow = approved.Workflow!;
+        var acknowledged = await workflowService.AcknowledgeChecklistTaskAsync(submitted.WorkflowId,
+            "close-gate-approval", new(approved.Workflow!.Version, "reviewer", "Acknowledge completed approval evidence"));
+        acknowledged.Success.Should().BeTrue();
+        approvals = await OperationsContinuityWorkflowServiceTests.ReadChecklistControlApprovalsAsync(workflowService, submitted.WorkflowId);
+        var workflow = acknowledged.Workflow!;
         var scope = new CloseReadinessScopeDto("fund-alpha", workflow.LedgerBookId,
             workflow.FundAccountId, "entity-master", workflow.PeriodId);
         var plans = new AccountingCloseManagementService(workflowService, ReadyPostingWorkbench());
@@ -92,6 +118,9 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
             { ProjectedAtUtc = DateTimeOffset.UtcNow };
         if (defect == "cockpit-stale")
             currentActivity = activity with { ProjectedAtUtc = DateTimeOffset.UtcNow.AddHours(-1) };
+        supportReady = defect != "report-stale";
+        reportChanged = defect == "report-revision";
+        reportAuthorityAvailable = defect != "report-authority";
         var request = new OperationsCloseWorkflowRequestDto(workflow.Version, "ops-user", "Publish close", "report-pack-1",
             ChecklistControlApprovals: approvals, CloseScope: scope);
 
@@ -103,6 +132,9 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
 
         currentPlan = await plans.GetPeriodPlanAsync(workflow.WorkflowId);
         currentActivity = activity with { ProjectedAtUtc = DateTimeOffset.UtcNow };
+        supportReady = true;
+        reportChanged = false;
+        reportAuthorityAvailable = true;
         var repaired = await workflowService.CloseWorkflowAsync(workflow.WorkflowId, request);
         repaired.Success.Should().BeTrue("repair must restore publication through the actual backend boundary");
         repaired.Workflow!.ClosePackage.Should().NotBeNull();

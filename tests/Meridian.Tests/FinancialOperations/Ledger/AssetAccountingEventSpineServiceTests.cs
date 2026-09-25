@@ -341,6 +341,8 @@ public sealed class AssetAccountingEventSpineServiceTests
         capturedAuthority.ExpectedPeriodVersion.Should().Be(fixture.Period.Version);
         capturedAuthority.RulePackId.Should().Be("pack-asset");
         capturedAuthority.RulePackVersion.Should().Be("v7");
+        capturedAuthority.SecurityVersion.Should().Be(fixture.Security.Version,
+            "the candidate builder stamps Security Master lineage at the version the spine resolved and asserted Active");
         await eventStore.Received(1).AppendAsync(
             Arg.Is<AssetAccountingEventSpineDto>(spine =>
                 spine.SpineVersion == 3 &&

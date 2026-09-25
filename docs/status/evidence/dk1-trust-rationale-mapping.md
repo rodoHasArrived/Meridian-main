@@ -1,5 +1,13 @@
 # DK1 Operator Trust Rationale Mapping
 
+**Status:** supporting-contract
+**Owner:** Data and Trading
+**Reviewed:** 2026-09-23
+
+This retained pilot contract describes reason-code explanations. Its presence does not establish a
+healthy provider or an approved packet; current acceptance requires the [DK1 parity runbook](dk1-pilot-parity-runbook.md)
+and the [canonical provider matrix](../../reference/provider-validation-matrix.md).
+
 **Last Updated:** 2026-04-24
 **Owners:** Data + Trading
 **Scope:** Operator-facing trust rationale for DK1 alerts (signal source, reason code, recommended action)
@@ -31,9 +39,9 @@ Define the required explainability contract for DK1 trust alerts so every alert 
 
 ## Evidence and reference links
 
-- Kernel readiness dashboard DK1 explainability gate: [archived dashboard entry](../../../archive/docs/status/kernel-readiness-dashboard.md)
-- Provider validation evidence source: [`provider-validation-matrix.md`](../provider-validation-matrix.md)
-- Calibration workflow reference: [`archive/docs/operations/provider-degradation-calibration.md`](../../../archive/docs/operations/provider-degradation-calibration.md)
+- Kernel readiness dashboard DK1 explainability gate: [current readiness sources](../kernel-readiness-dashboard.md)
+- Provider validation evidence source: [canonical provider validation matrix](../../reference/provider-validation-matrix.md)
+- Calibration workflow reference: [DK1 threshold calibration and FP/FN review](dk1-baseline-trust-thresholds.md)
 
 ## Minimum operator UX requirement
 

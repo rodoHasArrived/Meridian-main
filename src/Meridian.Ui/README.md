@@ -11,6 +11,10 @@ last_reviewed: 2026-07-27
 
 # src/Meridian.Ui
 
+The checked-in workstation bundle includes retained manual-journal amount proof and durable
+reconciliation lineage display. Regenerate it from the dashboard after related source changes;
+close and report authority remains in the shared endpoint and service layer.
+
 ## Purpose
 
 Meridian.Ui contains the browser workstation source folder and built host-served workstation assets.
@@ -36,6 +40,8 @@ state so host-served workstation assets retain the same financial-operations flo
 The dashboard Accounting Closeout trail also mirrors the design-document Financial Operations flow:
 `Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, and `Produce Evidence`.
 The browser Accounting screen renders that same lane above its detailed closeout panels.
+Accounting amount labels use the supplied currency code once and display negative zero as zero;
+the host-served bundle carries the same formatting as the dashboard source.
 The Accounting `Import statement` route supports file upload and provider-backed scheduled fetches,
 including canonical confidence preview, broker/custodian classification, and direct Evidence Vault
 and reconciliation-queue handoff; persistence and import policy remain server-owned.

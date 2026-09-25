@@ -6,7 +6,8 @@ namespace Meridian.Ui.Shared.Services;
 /// <summary>Resolves the shared reader lazily because that reader also consumes workflow state.</summary>
 public sealed class ClosePublicationReadinessGuard(
     Func<IFinancialOperationsCommandCenterReadService?> authorityFactory,
-    IWorkstationTenantContextAccessor? tenantAccessor = null) : IClosePublicationReadinessGuard
+    IWorkstationTenantContextAccessor? tenantAccessor = null,
+    Func<IOperationsReportPackAuthority?>? reportAuthorityFactory = null) : IClosePublicationReadinessGuard
 {
     public async Task<IReadOnlyList<OperationsWorkflowBlockerDto>> ValidateAsync(
         Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope,
@@ -46,7 +47,18 @@ public sealed class ClosePublicationReadinessGuard(
                 workflow.FundAccountId != scope.FundAccountId || workflow.PeriodId != scope.PeriodId)
                 return Block("CLOSE_READINESS_STALE_OR_MISMATCHED", "Refresh close evidence for the exact workflow version and selected subject.");
             if (readiness is { IsComplete: true, IsReadyToClose: true } && readiness.Blockers.Count == 0)
+            {
+                var reportAuthority = reportAuthorityFactory?.Invoke();
+                if (reportAuthority is null)
+                    return Block("CLOSE_REPORT_AUTHORITY_UNAVAILABLE", "Retained accounting report support must be revalidated before closing.");
+                var report = await reportAuthority.ResolveAsync(workflow, workflow.ReportPackReadiness.ReportPackId,
+                    tenantId, companyId, ct).ConfigureAwait(false);
+                if (!report.IsReady || report.ReportPackId != workflow.ReportPackReadiness.ReportPackId)
+                    return Block("CLOSE_REPORT_SUPPORT_NOT_READY", report.BlockingReason ?? "Refresh retained report support for the exact close scope.");
+                if (!OperationsReportPackAuthority.MatchesRetainedRevision(workflow.ReportPackReadiness, report))
+                    return Block("CLOSE_REPORT_SUPPORT_CHANGED", "Retained report support changed after review. Refresh report posture and repeat the affected approvals.");
                 return [];
+            }
             var blockers = readiness.Blockers.Select(static blocker => new OperationsWorkflowBlockerDto(
                 blocker.Code, blocker.Message, null, blocker.Severity, [])).ToArray();
             return blockers.Length > 0 ? blockers : Block("CLOSE_READINESS_REQUIRED", "Resolve missing or incomplete shared close evidence before closing.");

@@ -32,7 +32,7 @@ function BoundEquityCurve({ timestamps, points }: { timestamps: number[]; points
   const sync = useChartCrosshairSync(timestamps);
   return (
     <EquityCurve
-      series={[{ label: "Equity", color: "var(--chart-equity)", points }]}
+      series={[{ label: "Equity", color: "var(--chart-up)", points }]}
       crosshairIndex={sync.crosshairIndex}
       onCrosshairChange={sync.onCrosshairChange}
       onPointActivate={sync.onPointActivate}

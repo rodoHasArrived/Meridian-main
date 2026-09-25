@@ -46,14 +46,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           type={type}
           className={cn(
-            "w-full rounded-[2px] border bg-[#F3F6F9] text-sm text-foreground placeholder:text-muted-foreground/60",
+            "w-full rounded-[2px] border bg-[var(--ws-surface-raised)] text-sm text-foreground placeholder:text-muted-foreground/60",
             "min-h-9 px-3 py-2",
             "transition-[background-color,border-color] duration-150",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
             "disabled:cursor-not-allowed disabled:opacity-50",
             error
               ? "border-danger/60 focus-visible:ring-danger/40"
-              : "border-border hover:border-[#ADB8C4] focus-visible:border-primary",
+              : "border-border hover:border-[var(--ws-border-hover)] focus-visible:border-primary",
             hasLeading && "pl-9",
             hasTrailing && "pr-9",
             className

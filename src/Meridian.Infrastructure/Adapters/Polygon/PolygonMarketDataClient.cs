@@ -41,6 +41,10 @@ namespace Meridian.Infrastructure.Adapters.Polygon;
 [ImplementsAdr("ADR-001", "Polygon.io streaming data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("POLYGON_API_KEY",
+    EnvironmentVariables = new[] { "POLYGON_API_KEY", "POLYGON__APIKEY" },
+    DisplayName = "API Key",
+    Description = "Polygon.io streaming API key")]
 public sealed class PolygonMarketDataClient : WebSocketProviderBase
 {
     private static readonly TimeZoneInfo UsEasternTimeZone = ResolveUsEasternTimeZone();

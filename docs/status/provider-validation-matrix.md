@@ -1,15 +1,14 @@
-# Archived Legacy Status Item: provider-validation-matrix
+# Provider Validation Compatibility Entry Point
 
-This status file has been migrated to [provider-validation-matrix.md](../../archive/docs/status/provider-validation-matrix.md). Active status and planning context should be read from canonical owners:
-
-- [`docs/product/README.md`](../product/README.md)
-- [`docs/roadmap/README.md`](../roadmap/README.md)
-- [`docs/engineering/README.md`](../engineering/README.md)
-- [`docs/reference/README.md`](../reference/README.md)
-
-**Status:** archive-migration-stub
+**Status:** compatibility-redirect
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-09-23
 
-Use the archive copy for history only; do not treat it as current truth.
+Current source: [Provider validation matrix](../reference/provider-validation-matrix.md) and [provider capability matrix](../reference/provider-capability-matrix.md).
 
+Pilot-readiness and governance reporting still consume this compatibility path. This page supplies navigation only; it contains no independent delivery,
+test, provider sign-off, or release-readiness claim. Update the canonical source and regenerate
+its reports when status changes.
+
+The former archive target is absent from the current repository. Earlier snapshots remain in Git
+history; use the current sources above for active work.

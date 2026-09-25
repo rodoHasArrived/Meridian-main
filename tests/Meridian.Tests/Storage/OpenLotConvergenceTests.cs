@@ -93,6 +93,48 @@ public sealed class OpenLotConvergenceTests
     }
 
     [Fact]
+    public void BasisAdjustment_ProjectsRestatedOpenBasisAndScalesWithLaterRelief()
+    {
+        // 10 EUR units acquired at 12 (FX 1.25): 120 EUR / 150 USD. Restated to 100 EUR / 125 USD.
+        var record = Lot(1, 10m, 12m, 1.25m) with
+        {
+            BasisAdjustment = new(Guid.NewGuid(), OpenLotBasisAdjustmentReasons.AverageCostRedistribution, 10m, 100m, 125m)
+        };
+        var restated = record.ToOpenLot();
+        restated.OpenTransactionCostBasis.Should().Be(100m);
+        restated.OpenFunctionalCostBasis.Should().Be(125m);
+        restated.Acquisition.TransactionCostBasis.Should().Be(120m, "acquisition facts stay provable");
+
+        var afterRelief = (record with { OpenQuantity = 4m }).ToOpenLot();
+        afterRelief.OpenTransactionCostBasis.Should().Be(40m);
+        afterRelief.OpenFunctionalCostBasis.Should().Be(50m);
+    }
+
+    [Theory]
+    [InlineData(0, 100, 125)]
+    [InlineData(11, 100, 125)]
+    [InlineData(10, -1, 125)]
+    public void BasisAdjustment_ThatDoesNotBindTheOpenQuantityFailsClosed(
+        int adjustedQuantity, int transactionBasis, int functionalBasis)
+    {
+        var record = Lot(1, 10m, 12m, 1.25m) with
+        {
+            BasisAdjustment = new(Guid.NewGuid(), OpenLotBasisAdjustmentReasons.AverageCostRedistribution,
+                adjustedQuantity, transactionBasis, functionalBasis)
+        };
+        var project = () => record.ToOpenLot();
+        project.Should().Throw<LedgerValidationException>().WithMessage("*basis adjustment*");
+    }
+
+    [Fact]
+    public void BasisAdjustment_IsAbsentFromSerializationWhenNeverRestated()
+    {
+        // Lot snapshots and atomic fingerprints serialize the record whole; an unrestated lot must
+        // keep the exact bytes it had before adjustments existed.
+        JsonSerializer.Serialize(Lot(1)).Should().NotContain(nameof(LedgerTaxLotRecord.BasisAdjustment));
+    }
+
+    [Fact]
     public void FaceProjection_ConvertsPerHundredStorageUnitsToDeclaredFace()
     {
         var record = Lot(1, 1000m, 102m);
