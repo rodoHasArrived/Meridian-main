@@ -3138,7 +3138,7 @@
       "directories": [
         "src/Meridian.Identity"
       ],
-      "fingerprint": "ac84289c652914b2aac01ac81c6376cf7e12552ac457c04e31768418273f623d",
+      "fingerprint": "974728a4d30639087b60927b9ec2bb822bb492e66d21b84f192dd9db38b2d3c6",
       "id": "identity-access-contracts",
       "namespace_prefixes": [
         "Meridian.Identity"
@@ -3171,6 +3171,8 @@
         "Meridian.Identity.Auth.UserRole",
         "Meridian.Identity.Auth.UserSessionRevokeRequestDto",
         "Meridian.Identity.Auth.UserSessionRevokeResultDto",
+        "Meridian.Identity.AuthenticationMode",
+        "Meridian.Identity.AuthenticationModeResolver",
         "Meridian.Identity.DesignModule",
         "Meridian.Identity.FileRolePermissionProfileStore",
         "Meridian.Identity.FileScopedAccessAssignmentStore",
@@ -3847,7 +3849,7 @@
       ]
     }
   ],
-  "fingerprint": "b55bef9e8497c630678ce79f6420098495d96683f50d92a9d73268ab5225de37",
+  "fingerprint": "4633f71f44d9479c8488fe84fce9dd9538ab4aa91a92abf5757c294a88b7a901",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -7128,13 +7130,15 @@
       "contract_sets": [
         "identity-access-contracts"
       ],
-      "fingerprint": "99b772f5f4f007cd037d976d0ba8bfa2421bc254701a61f9dd87924484eebd31",
+      "fingerprint": "86c6e5dea2e4704f5b0de7559fb9ddaaf190ea6eae292dccca326bf69c12940f",
       "mapped_schemas": [
         "identity_access"
       ],
       "namespace": "Meridian.Identity",
       "object_ids": [
         "Meridian.Identity.AccessScopeRef",
+        "Meridian.Identity.AuthenticationMode",
+        "Meridian.Identity.AuthenticationModeResolver",
         "Meridian.Identity.DesignModule",
         "Meridian.Identity.FileRolePermissionProfileStore",
         "Meridian.Identity.FileScopedAccessAssignmentStore",
@@ -389696,6 +389700,93 @@
     },
     {
       "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "identity-access-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "identity-access-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Optional",
+          "source_line": 7,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Required",
+          "source_line": 8,
+          "value": null
+        }
+      ],
+      "fingerprint": "2398ded374e085a043ea070be2100b51184594f757fc81262a398aa817a5af56",
+      "full_name": "Meridian.Identity.AuthenticationMode",
+      "id": "Meridian.Identity.AuthenticationMode",
+      "kind": "enum",
+      "mapped_schemas": [
+        "identity_access"
+      ],
+      "members": [],
+      "name": "AuthenticationMode",
+      "namespace": "Meridian.Identity",
+      "partial": false,
+      "qualified_name": "Meridian.Identity.AuthenticationMode",
+      "references": [],
+      "source": {
+        "line": 5,
+        "path": "src/Meridian.Identity/Application/AuthenticationMode.cs"
+      },
+      "sources": [
+        {
+          "line": 5,
+          "path": "src/Meridian.Identity/Application/AuthenticationMode.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "identity-access-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "identity-access-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "26124ba5b5c73762cd5088382ba0ea8a5073c93ad1e897a812ff32b4bc59b54a",
+      "full_name": "Meridian.Identity.AuthenticationModeResolver",
+      "id": "Meridian.Identity.AuthenticationModeResolver",
+      "kind": "class",
+      "mapped_schemas": [
+        "identity_access"
+      ],
+      "members": [],
+      "name": "AuthenticationModeResolver",
+      "namespace": "Meridian.Identity",
+      "partial": false,
+      "qualified_name": "Meridian.Identity.AuthenticationModeResolver",
+      "references": [],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Identity/Application/AuthenticationMode.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Identity/Application/AuthenticationMode.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "class",
       "containing_type": null,
       "contract_sets": [
@@ -390170,7 +390261,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "d34cf3f07681c17eeb67d5a5a6c7ab3d26505dbcdc1bd09bce0340afdf49143a",
+      "fingerprint": "47c2d2740d50ad745aadfee217699880d61246e5c760fd00c100dd3bc5bca3cb",
       "full_name": "Meridian.Identity.LoginAttemptResult",
       "id": "Meridian.Identity.LoginAttemptResult",
       "kind": "record",
@@ -390189,7 +390280,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 395,
+          "source_line": 443,
           "type": "int"
         },
         {
@@ -390203,7 +390294,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "TimeSpan?",
-          "source_line": 396,
+          "source_line": 444,
           "type": "TimeSpan?"
         },
         {
@@ -390217,7 +390308,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "LoginAttemptStatus",
-          "source_line": 393,
+          "source_line": 441,
           "type": "LoginAttemptStatus"
         },
         {
@@ -390231,7 +390322,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 394,
+          "source_line": 442,
           "type": "string?"
         }
       ],
@@ -390243,12 +390334,12 @@
         "Meridian.Identity.LoginAttemptStatus"
       ],
       "source": {
-        "line": 392,
+        "line": 440,
         "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
       },
       "sources": [
         {
-          "line": 392,
+          "line": 440,
           "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
         }
       ],
@@ -390269,23 +390360,23 @@
         {
           "explicit_value": false,
           "name": "Succeeded",
-          "source_line": 387,
+          "source_line": 435,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "InvalidCredentials",
-          "source_line": 388,
+          "source_line": 436,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "LockedOut",
-          "source_line": 389,
+          "source_line": 437,
           "value": null
         }
       ],
-      "fingerprint": "143be847cb5c75a50f7b1dec3c9bd222c22f9a164649eb73747b772f28d17447",
+      "fingerprint": "4d203d297abfb3b9bbcae1ec76abf5ba7a5dba1335b0172c48a37306453706d4",
       "full_name": "Meridian.Identity.LoginAttemptStatus",
       "id": "Meridian.Identity.LoginAttemptStatus",
       "kind": "enum",
@@ -390299,12 +390390,12 @@
       "qualified_name": "Meridian.Identity.LoginAttemptStatus",
       "references": [],
       "source": {
-        "line": 385,
+        "line": 433,
         "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
       },
       "sources": [
         {
-          "line": 385,
+          "line": 433,
           "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
         }
       ],
@@ -390322,7 +390413,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "4cbd45f34a92b0142a998fc625b61fd55a35927c1400dd6bc1aa7201e54e088c",
+      "fingerprint": "df6301508ba58da9f08c4fc82ccf7f5cd6b616d514f969813c8b5b0a8ad85064",
       "full_name": "Meridian.Identity.LoginSessionService",
       "id": "Meridian.Identity.LoginSessionService",
       "kind": "class",
@@ -390336,12 +390427,12 @@
       "qualified_name": "Meridian.Identity.LoginSessionService",
       "references": [],
       "source": {
-        "line": 18,
+        "line": 19,
         "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
       },
       "sources": [
         {
-          "line": 18,
+          "line": 19,
           "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
         }
       ],
@@ -390359,7 +390450,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "d9a7c237cef5118d28808bfc1ea627b74ddcb13ea7711157a39e1b14aa339488",
+      "fingerprint": "e2206f1c32e09210657743a649dbe1313b9dfe43621dae1de5141c7b4a9a4e90",
       "full_name": "Meridian.Identity.LoginSessionStoreOptions",
       "id": "Meridian.Identity.LoginSessionStoreOptions",
       "kind": "record",
@@ -390379,7 +390470,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 380,
+          "source_line": 428,
           "type": "string?"
         }
       ],
@@ -390389,12 +390480,12 @@
       "qualified_name": "Meridian.Identity.LoginSessionStoreOptions",
       "references": [],
       "source": {
-        "line": 380,
+        "line": 428,
         "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
       },
       "sources": [
         {
-          "line": 380,
+          "line": 428,
           "path": "src/Meridian.Identity/Application/LoginSessionService.cs"
         }
       ],
@@ -390599,7 +390690,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e511b64380ca6aac89be6e5ef1f6788d618694272f5fd03202572d9e55748fc4",
+      "fingerprint": "39f4d5e67b2603a1ffffadea24a5785dce95e94a604c15490d2ca83fd43ef5c8",
       "full_name": "Meridian.Identity.UserAccountConfig",
       "id": "Meridian.Identity.UserAccountConfig",
       "kind": "record",
@@ -390619,7 +390710,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 249,
+          "source_line": 278,
           "type": "string?"
         },
         {
@@ -390634,7 +390725,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 247,
+          "source_line": 276,
           "type": "bool"
         },
         {
@@ -390648,7 +390739,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 243,
+          "source_line": 272,
           "type": "string"
         },
         {
@@ -390663,7 +390754,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 248,
+          "source_line": 277,
           "type": "bool"
         },
         {
@@ -390678,7 +390769,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 246,
+          "source_line": 275,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -390692,7 +390783,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "UserRole",
-          "source_line": 244,
+          "source_line": 273,
           "type": "UserRole"
         },
         {
@@ -390707,7 +390798,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 245,
+          "source_line": 274,
           "type": "string?"
         },
         {
@@ -390721,7 +390812,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 242,
+          "source_line": 271,
           "type": "string"
         }
       ],
@@ -390733,12 +390824,12 @@
         "Meridian.Identity.Auth.UserRole"
       ],
       "source": {
-        "line": 241,
+        "line": 270,
         "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs"
       },
       "sources": [
         {
-          "line": 241,
+          "line": 270,
           "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs"
         }
       ],
@@ -390756,7 +390847,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e9eb488d55e2bde22ceebb5d11bd877fb191e3e73ac0f2c50f41cd2b932310ca",
+      "fingerprint": "30e6eee5dc43ec598b3c3b96ce09d1b3bef5a968171a3dfd6444cce9b1b0d8bb",
       "full_name": "Meridian.Identity.UserProfile",
       "id": "Meridian.Identity.UserProfile",
       "kind": "record",
@@ -390776,7 +390867,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 232,
+          "source_line": 261,
           "type": "string?"
         },
         {
@@ -390791,7 +390882,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 230,
+          "source_line": 259,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -390806,7 +390897,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 231,
+          "source_line": 260,
           "type": "bool"
         },
         {
@@ -390821,7 +390912,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "UserPermission?",
-          "source_line": 228,
+          "source_line": 257,
           "type": "UserPermission?"
         },
         {
@@ -390835,7 +390926,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "UserRole",
-          "source_line": 227,
+          "source_line": 256,
           "type": "UserRole"
         },
         {
@@ -390850,7 +390941,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 229,
+          "source_line": 258,
           "type": "string?"
         },
         {
@@ -390864,7 +390955,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 226,
+          "source_line": 255,
           "type": "string"
         }
       ],
@@ -390877,12 +390968,12 @@
         "Meridian.Identity.Auth.UserRole"
       ],
       "source": {
-        "line": 225,
+        "line": 254,
         "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs"
       },
       "sources": [
         {
-          "line": 225,
+          "line": 254,
           "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs"
         }
       ],
@@ -390900,7 +390991,7 @@
         "identity-access-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "f9cff0f3e70a1e86881aa7b732c934699d2a4b451f86314889263c46d94b1558",
+      "fingerprint": "1db76ad7ce88cde22fb8c3bec74aab76568ec08fb6834db48f21749d6f17b692",
       "full_name": "Meridian.Identity.UserProfileRegistry",
       "id": "Meridian.Identity.UserProfileRegistry",
       "kind": "class",
@@ -390914,12 +391005,12 @@
       "qualified_name": "Meridian.Identity.UserProfileRegistry",
       "references": [],
       "source": {
-        "line": 12,
+        "line": 13,
         "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs"
       },
       "sources": [
         {
-          "line": 12,
+          "line": 13,
           "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs"
         }
       ],
