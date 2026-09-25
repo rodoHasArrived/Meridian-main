@@ -6,10 +6,17 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-30
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Ui.Shared
+
+The provider setup compatibility store passes a complete legacy sidecar snapshot to the
+Data Integration vault's atomic importer. It validates all entries before publication,
+preserves existing credentials and deletion markers on retries, and removes the plaintext
+sidecar only after both encrypted generations and the import audit are retained. Data Integration's
+shared migration helper owns the cross-process source lease and restartable rename/erasure sequence,
+so simultaneous setup adapters cannot race during cleanup.
 
 Statement intake publishes durable run-over-run break observations from retained canonical rows
 and immutable match artifacts after exact accounting/access scope validation and case publication.

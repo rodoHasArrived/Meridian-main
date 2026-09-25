@@ -6,10 +6,33 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-08-05
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.DataIntegration
+
+## OAuth token ownership
+
+`IOAuthTokenVault` stores refreshable tokens in the same encrypted vault as provider credentials.
+Mutations hold the shared writer lock and update only the named provider token; readers open a stable
+published generation without requiring a writable lock. Legacy imports preserve existing tokens and
+audit every attempted provider, retaining the imported generation in both primary and backup before
+acknowledging the import. Durable markers and sanitized recovery generations prevent deletion reversal;
+empty or missing primaries recover from the retained backup. Both audit surfaces append under the vault
+lock without copying accumulated history. Before appending, an incomplete final record is durably retained
+in a uniquely named `.partial-*` file, preserving every newline-terminated record in the original log.
+The service never writes plaintext OAuth JSON.
+The existing non-Windows local key file remains a production-hardening gap; this does not certify PRD-002.
+
+## Credential migration recovery
+
+Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Mutations share a bounded, cancellable file lock across store instances. Readers open one immutable published generation without a writable lock, including on read-only secret volumes; primary and backup generations are both replaced atomically. Audit failure retains the sidecar for retry.
+
+`LegacyCredentialFileMigration` serializes source discovery, import and cleanup across processes for
+both provider setup and OAuth callers. Successful imports retain both encrypted generations before
+the helper moves the plaintext source to `.migrated`, synchronizes the directory, then erases it.
+A restart completes cleanup without deserializing partly erased bytes. Empty migration lock files
+remain in place so every process continues to acquire the same lock identity.
 
 ## Purpose
 

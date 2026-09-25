@@ -4277,6 +4277,7 @@ Meridian-main
 │   │   │   ├── FileProviderCredentialStore.cs
 │   │   │   ├── ICredentialStore.cs
 │   │   │   ├── IProviderCredentialStore.cs
+│   │   │   ├── LegacyCredentialFileMigration.cs
 │   │   │   ├── OAuthToken.cs
 │   │   │   ├── ProviderCredentialCatalog.cs
 │   │   │   └── ProviderSetupHandlers.cs
@@ -9193,6 +9194,7 @@ Meridian-main
 │   │   │   │   ├── ConfigValidatorCliTests.cs
 │   │   │   │   ├── OAuthTokenPersistencePermissionTests.cs
 │   │   │   │   ├── OAuthTokenRefreshFailureTests.cs
+│   │   │   │   ├── OAuthVaultRecoveryTests.cs
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
 │   │   │   │   └── ProviderCredentialStoreTests.cs
 │   │   │   ├── Coordination
