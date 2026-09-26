@@ -32,7 +32,14 @@ documentation each row's lane owns.
 > documents a correction to the evidence this acceptance was taken on. The other rows below are
 > unaffected, and this file remains the acceptance record for all of them.
 
-## Currently accepted (six)
+> **W9-TRUTH-001 reassessment — 2026-09-25.** Issue #2626 is reopened after source review at
+> `a03238c69f86c7455e03c0f6be2196d55719a044` found that reconciliation `SaveAsync` omitted the
+> entry-provenance guard, the actual legacy rekey path could discard an incoming mark, and
+> duplicate-create identity excluded provenance. The original acceptance remains historical
+> evidence; the row is now `in_progress` pending the correction, required validation, and focused
+> review. This does not withdraw the other rows' decisions or certify a release.
+
+## Recorded acceptances (six)
 
 | Row | Priority | Accepted on the evidence of |
 | --- | --- | --- |

@@ -254,8 +254,8 @@
       "id": "SRC-STRATEGIES",
       "path": "src/Meridian.Strategies",
       "readme": "src/Meridian.Strategies/README.md",
-      "readme_hash": "664db68fb25302bc61e212e8d9a46f8afa918d3b13d7e920b0aa2c0ea0230fe5",
-      "source_hash": "8b3055a291d0e7f743a2200d3b2cd7a14fb098ec09cfee950cb8ce22d625c28d"
+      "readme_hash": "0390a547d1847de579456d2c876d9768c600c6a474b032b7db11e58779700bc1",
+      "source_hash": "8da1602c35dcc35e41ddc6d1ff383e13c2e090cb73c11405f28925474df7cf29"
     },
     {
       "id": "SRC-UI",
