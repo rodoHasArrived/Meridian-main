@@ -111,6 +111,124 @@ public sealed class FileReconciliationBreakQueueLineageTests : IDisposable
         (await Repository().GetByIdAsync("one"))!.Lineage!.ClearedAt.Should().NotBeNull();
     }
 
+    [Fact]
+    public async Task Policy_changes_preserve_occurrence_but_absence_under_another_policy_cannot_clear()
+    {
+        var repo = Repository();
+        await Add(repo, "one");
+        await repo.ObserveCompletedRunAsync(PolicyRun("one", 0, "a", new ReconciliationBreakObservation("one", "cash")));
+        var first = (await repo.GetByIdAsync("one"))!.Lineage!;
+        await Repository().ObserveCompletedRunAsync(PolicyRun("empty-b", 1, "b"));
+        (await Repository().GetByIdAsync("one"))!.Lineage.Should().BeEquivalentTo(first);
+        await Add(repo, "two", 20m);
+        await Repository().ObserveCompletedRunAsync(PolicyRun("two", 2, "b", new ReconciliationBreakObservation("two", "cash")));
+        var current = (await Repository().GetByIdAsync("two"))!.Lineage!;
+        current.LineageId.Should().Be(first.LineageId);
+        current.OccurrenceId.Should().Be(first.OccurrenceId);
+        current.OccurrenceFirstObservedAt.Should().Be(first.OccurrenceFirstObservedAt);
+        current.ComparisonScopeId.Should().NotBe(first.ComparisonScopeId);
+        await Repository().ObserveCompletedRunAsync(PolicyRun("clear-b", 3, "b"));
+        var cleared = (await Repository().GetByIdAsync("one"))!;
+        cleared.Lineage!.ClearedByRunId.Should().Be("clear-b");
+        cleared.Status.Should().Be(ReconciliationBreakQueueStatus.Open);
+        cleared.BlockedOutputs.Should().Contain("PeriodClose");
+        await Add(repo, "three");
+        await Repository().ObserveCompletedRunAsync(PolicyRun("three", 4, "c", new ReconciliationBreakObservation("three", "cash")));
+        var recurring = (await Repository().GetByIdAsync("three"))!.Lineage!;
+        recurring.LineageId.Should().Be(first.LineageId);
+        recurring.OccurrenceId.Should().NotBe(first.OccurrenceId);
+        recurring.OccurrenceNumber.Should().Be(2);
+        recurring.OccurrenceFirstObservedAt.Should().Be(_start.AddDays(4));
+        (await Repository().GetByIdAsync("one"))!.Lineage.Should().BeEquivalentTo(cleared.Lineage);
+    }
+
+    [Fact]
+    public async Task Policy_changes_cannot_rebind_a_completed_run_or_replace_a_newer_head()
+    {
+        var repo = Repository();
+        await Add(repo, "newer");
+        await repo.ObserveCompletedRunAsync(PolicyRun("newer", 3, "b", new ReconciliationBreakObservation("newer", "cash")));
+        await Repository().ObserveCompletedRunAsync(PolicyRun("older", 1, "a"));
+        (await Repository().GetByIdAsync("newer"))!.Lineage!.ClearedAt.Should().BeNull();
+        var original = PolicyRun("empty", 4, "b");
+        await Repository().ObserveCompletedRunAsync(original);
+        await Repository().ObserveCompletedRunAsync(original);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Repository().ObserveCompletedRunAsync(PolicyRun("empty", 4, "c")));
+    }
+
+    [Fact]
+    public async Task Legacy_identity_is_preserved_and_policy_forks_are_not_silently_merged()
+    {
+        var repo = Repository();
+        await Add(repo, "legacy");
+        var legacy = Run("legacy", 0, new ReconciliationBreakObservation("legacy", "cash")) with
+        { Scope = _scope with { SourceSystem = LegacySource("a") } };
+        await repo.ObserveCompletedRunAsync(legacy);
+        var original = (await repo.GetByIdAsync("legacy"))!.Lineage!;
+        original.IdentityScopeId.Should().BeNull();
+        await Add(repo, "current");
+        await Repository().ObserveCompletedRunAsync(PolicyRun("current", 2, "b", new ReconciliationBreakObservation("current", "cash")));
+        var current = (await Repository().GetByIdAsync("current"))!.Lineage!;
+        current.LineageId.Should().Be(original.LineageId);
+        current.OccurrenceId.Should().Be(original.OccurrenceId);
+        await Repository().ObserveCompletedRunAsync(legacy);
+        await Add(repo, "fork");
+        await Repository().ObserveCompletedRunAsync(Run("fork", 1, new ReconciliationBreakObservation("fork", "cash")) with
+        { Scope = _scope with { SourceSystem = LegacySource("c") } });
+        await Add(repo, "ambiguous");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Repository().ObserveCompletedRunAsync(
+            PolicyRun("ambiguous", 4, "d", new ReconciliationBreakObservation("ambiguous", "cash"))));
+    }
+
+    [Fact]
+    public async Task Legacy_upgrade_replay_accepts_only_the_original_payload()
+    {
+        var original = Run("legacy", 1) with { Scope = _scope with { SourceSystem = LegacySource("a") } };
+        await Repository().ObserveCompletedRunAsync(original);
+        var upgraded = original with { Scope = original.Scope with { LineageSourceIdentity = "custodian" } };
+        await Repository().ObserveCompletedRunAsync(upgraded);
+        foreach (var changed in new[] { upgraded with { ObservedAt = _start.AddDays(2) },
+            upgraded with { Scope = upgraded.Scope with { SourceSystem = LegacySource("b") } },
+            upgraded with { Breaks = [new ReconciliationBreakObservation("unexpected", "cash")] } })
+            await Assert.ThrowsAsync<InvalidOperationException>(() => Repository().ObserveCompletedRunAsync(changed));
+    }
+
+    [Fact]
+    public async Task Legacy_publication_sequence_cannot_clear_a_later_observation()
+    {
+        var repo = Repository();
+        await Add(repo, "latest");
+        await repo.ObserveCompletedRunAsync(Run("latest", 5, new ReconciliationBreakObservation("latest", "cash")) with
+        { Scope = _scope with { SourceSystem = LegacySource("a") } });
+        await repo.ObserveCompletedRunAsync(Run("older", 2) with { Scope = _scope with { SourceSystem = LegacySource("b") } });
+        await repo.ObserveCompletedRunAsync(Run("middle", 3) with
+        { Scope = _scope with { SourceSystem = LegacySource("a"), LineageSourceIdentity = "custodian" } });
+        (await Repository().GetByIdAsync("latest"))!.Lineage!.ClearedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Different_institution_cannot_inherit_or_clear_another_occurrence()
+    {
+        var repo = Repository();
+        await Add(repo, "one");
+        await repo.ObserveCompletedRunAsync(PolicyRun("one", 0, "a", new ReconciliationBreakObservation("one", "cash")));
+        var first = (await repo.GetByIdAsync("one"))!.Lineage!;
+        await Add(repo, "two");
+        var foreign = PolicyRun("two", 1, "a", new ReconciliationBreakObservation("two", "cash"));
+        await repo.ObserveCompletedRunAsync(foreign with { Scope = foreign.Scope with { LineageSourceIdentity = "other" } });
+        (await repo.GetByIdAsync("two"))!.Lineage!.LineageId.Should().NotBe(first.LineageId);
+        (await repo.GetByIdAsync("one"))!.Lineage.Should().BeEquivalentTo(first);
+    }
+
+    private static string LegacySource(string policy) => System.Text.Json.JsonSerializer.Serialize(new
+    {
+        institution = "custodian", MappingProfileId = policy, ToleranceProfileId = policy,
+        SourceComparisonPolicyFingerprint = new string(policy[0], 64), SourceComparisonPopulationKinds = new[] { "cash" }
+    });
+
+    private ReconciliationCompletedRunObservation PolicyRun(string id, int day, string policy, params ReconciliationBreakObservation[] breaks)
+        => Run(id, day, breaks) with { Scope = _scope with { SourceSystem = policy, LineageSourceIdentity = "custodian" } };
+
     private ReconciliationCompletedRunObservation Run(string id, int day, params ReconciliationBreakObservation[] breaks)
         => new(id, _scope, _start.AddDays(day), true, true, breaks);
 

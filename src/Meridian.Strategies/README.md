@@ -11,6 +11,13 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Strategies
 
+The source-lineage contract separates optional `IdentityScopeId` (business identity) from
+`ComparisonScopeId` (executed comparison policy). Presence preserves an occurrence across policy
+changes; absence clears only its current comparison policy. Verified legacy receipts preserve
+original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
+are omitted from legacy JSON. Source clearing never resolves governed casework.
+
+
 Portfolio position read models carry shared mark-freshness assessments. A position snapshot timestamp is not a mark observation date: when historical mark provenance is absent, the projection reports review required rather than treating the snapshot as current valuation evidence.
 
 ## Reconciliation source lineage

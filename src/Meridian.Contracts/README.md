@@ -11,6 +11,13 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Contracts
 
+The source-lineage contract separates optional `IdentityScopeId` (business identity) from
+`ComparisonScopeId` (executed comparison policy). Presence preserves an occurrence across policy
+changes; absence clears only its current comparison policy. Verified legacy receipts preserve
+original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
+are omitted from legacy JSON. Source clearing never resolves governed casework.
+
+
 Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
 first/last observation and successful-run clearing evidence. This metadata is omitted when absent
 so legacy integrity-checked snapshots keep their serialized shape. Source clearing is distinct from
