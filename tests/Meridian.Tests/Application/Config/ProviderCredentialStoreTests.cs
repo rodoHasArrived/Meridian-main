@@ -59,6 +59,84 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         status.AuditMetadata.Should().Contain("verificationRequired", "true");
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task ReadForProviderAsync_ReadOnlyVaultDoesNotRequireWritableLock(
+        bool recoverBackup, bool retainLock)
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(new ProviderCredentialSaveRequest("polygon",
+            new Dictionary<string, string?> { ["ApiKey"] = "retained-secret" }));
+        await store.SaveAsync(new ProviderCredentialSaveRequest("polygon",
+            new Dictionary<string, string?> { ["ApiKey"] = "current-secret" }));
+        if (recoverBackup)
+            await File.WriteAllTextAsync(store.VaultPath, "corrupt-primary");
+        if (!retainLock)
+            File.Delete(store.VaultPath + ".lock");
+
+        var directory = Path.GetDirectoryName(store.VaultPath)!;
+        var before = Directory.GetFiles(directory).ToDictionary(path => path, File.ReadAllBytes);
+        using var permissions = new ReadOnlyVaultScope(directory);
+        var reopened = new FileProviderCredentialStore(_root);
+
+        var read = await reopened.ReadForProviderAsync("polygon");
+        var status = await reopened.GetStatusAsync("polygon");
+
+        read.Should().NotBeNull();
+        read!.Get("ApiKey").Should().Be(recoverBackup ? "retained-secret" : "current-secret");
+        status.CredentialSource.Should().Be(ProviderCredentialSourceDto.LocalEncryptedStore);
+        Directory.GetFiles(directory).Should().BeEquivalentTo(before.Keys,
+            "a credential read must not create a lock or recovery file");
+        foreach (var (path, bytes) in before)
+            (await File.ReadAllBytesAsync(path)).Should().Equal(bytes);
+    }
+
+    [Fact]
+    public async Task ReadForProviderAsync_WriterLockHeldReadsThePublishedGeneration()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(new ProviderCredentialSaveRequest("polygon",
+            new Dictionary<string, string?> { ["ApiKey"] = "published-secret" }));
+        using var writer = new FileStream(store.VaultPath + ".lock", FileMode.Open,
+            FileAccess.ReadWrite, FileShare.None);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var read = await new FileProviderCredentialStore(_root).ReadForProviderAsync("polygon", timeout.Token);
+
+        read!.Get("ApiKey").Should().Be("published-secret");
+    }
+
+    [Fact]
+    public async Task ConcurrentReadsAndRotations_ReturnCompleteCredentialGenerations()
+    {
+        var writer = new FileProviderCredentialStore(_root);
+        var reader = new FileProviderCredentialStore(_root);
+        await writer.SaveAsync(Generation(0));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        for (var generation = 1; generation <= 12; generation++)
+        {
+            var save = writer.SaveAsync(Generation(generation), timeout.Token);
+            var read = reader.ReadForProviderAsync("alpaca", timeout.Token);
+            await Task.WhenAll(save, read);
+            var snapshot = await read;
+            snapshot.Should().NotBeNull();
+            snapshot!.Get("KeyId").Should().Be(snapshot.Get("SecretKey"),
+                "a reader must see both fields from the same published generation");
+        }
+
+        (await reader.ReadForProviderAsync("alpaca", timeout.Token))!.Get("KeyId").Should().Be("generation-12");
+
+        static ProviderCredentialSaveRequest Generation(int number) => new("alpaca",
+            new Dictionary<string, string?>
+            {
+                ["KeyId"] = $"generation-{number}",
+                ["SecretKey"] = $"generation-{number}"
+            });
+    }
+
     [Fact]
     public async Task RecordVerificationAsync_SuccessClearsVerificationRequiredMetadata()
     {
@@ -471,6 +549,22 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task ReadForProviderAsync_EnvironmentFallbackDoesNotRequireWritableVaultDirectory()
+    {
+        using var env = new EnvironmentScope("POLYGON_API_KEY", "read-only-polygon-key");
+        using var overrideFallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", "true");
+        // A file at the directory path deterministically prohibits creating the vault/lock,
+        // including when the test process has privileges that bypass read-only directory ACLs.
+        await File.WriteAllTextAsync(Path.Combine(_root, ".mdc"), "read-only-root-marker");
+
+        var read = await new FileProviderCredentialStore(_root).ReadForProviderAsync("polygon");
+
+        read!.Source.Should().Be(ProviderCredentialSourceDto.Environment);
+        read.Get("ApiKey").Should().Be("read-only-polygon-key");
+        (await File.ReadAllTextAsync(Path.Combine(_root, ".mdc"))).Should().Be("read-only-root-marker");
+    }
+
+    [Fact]
     public async Task ReadForProviderAsync_DoesNotUseEnvironmentFallbackInProductionOrPackagedBuilds()
     {
         using var env = new EnvironmentScope("POLYGON_API_KEY", "legacy-polygon-key");
@@ -595,6 +689,50 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         File.GetUnixFileMode(keyPath).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
         read.Should().NotBeNull();
         read!.Get("ApiKey").Should().Be("finnhub-secret", "tightening permissions must not break decryption");
+    }
+
+    private sealed class ReadOnlyVaultScope : IDisposable
+    {
+        private readonly string _directory;
+        private readonly Dictionary<string, FileAttributes> _attributes;
+        private readonly Dictionary<string, UnixFileMode> _modes = [];
+        private readonly UnixFileMode _directoryMode;
+
+        public ReadOnlyVaultScope(string directory)
+        {
+            _directory = directory;
+            _attributes = Directory.GetFiles(directory).ToDictionary(path => path, File.GetAttributes);
+            if (OperatingSystem.IsWindows())
+            {
+                foreach (var (path, attributes) in _attributes)
+                    File.SetAttributes(path, attributes | FileAttributes.ReadOnly);
+            }
+            else
+            {
+                _directoryMode = File.GetUnixFileMode(directory);
+                foreach (var path in _attributes.Keys)
+                {
+                    _modes[path] = File.GetUnixFileMode(path);
+                    File.SetUnixFileMode(path, UnixFileMode.UserRead);
+                }
+                File.SetUnixFileMode(directory, UnixFileMode.UserRead | UnixFileMode.UserExecute);
+            }
+        }
+
+        public void Dispose()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                foreach (var (path, attributes) in _attributes)
+                    File.SetAttributes(path, attributes);
+            }
+            else
+            {
+                File.SetUnixFileMode(_directory, _directoryMode);
+                foreach (var (path, mode) in _modes)
+                    File.SetUnixFileMode(path, mode);
+            }
+        }
     }
 
     private sealed class EnvironmentScope : IDisposable

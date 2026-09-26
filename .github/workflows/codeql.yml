@@ -46,25 +46,33 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
-        with:
-          languages: ${{ matrix.language }}
-          build-mode: ${{ matrix.build-mode }}
-
       - name: Set up .NET SDK
         if: matrix.language == 'csharp'
         uses: actions/setup-dotnet@v5.4.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      # Restore runs before init: it produces no compiler invocations for CodeQL to
+      # observe, so keeping it outside the traced window avoids tracing overhead.
+      # Deliberately uncached: measured cold at 9s (run #7092), while caching
+      # ~/.nuget/packages cost 21s to restore plus 24s to save (run #7091).
       - name: Restore C# solution
         if: matrix.language == 'csharp'
         run: dotnet restore Meridian.WebWorkstation.slnf /p:EnableWindowsTargeting=true
 
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          config-file: .github/codeql/codeql-config.yml
+
+      # RunAnalyzers=false skips Roslyn diagnostic analyzers, which this job never
+      # consumes; source generators still run, so CodeQL extracts the same
+      # compilations. The build-warning gate stays in Meridian CI (ci.yml).
       - name: Build C# solution
         if: matrix.language == 'csharp'
-        run: dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
+        run: dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false /p:RunAnalyzers=false
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v4

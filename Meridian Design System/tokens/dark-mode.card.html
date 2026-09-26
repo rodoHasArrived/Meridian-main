@@ -16,7 +16,7 @@
     .swatch-label { font-family: var(--font-data); font-size: 12px; }
     .mode-toggle { display: flex; gap: 8px; margin: 20px 0; }
     .mode-toggle button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-light); cursor: pointer; border-radius: 4px; font-family: inherit; font-size: 13px; }
-    .mode-toggle button.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .mode-toggle button.active { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); }
     .example-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 16px 0; }
     .example-card { padding: 16px; background: var(--bg-light); border: 1px solid var(--border); border-radius: 4px; }
     .note { background: var(--bg-active); border-left: 3px solid var(--accent); padding: 12px 14px; margin: 16px 0; font-size: 13px; border-radius: 4px; }
@@ -44,16 +44,16 @@
     <div class="example-grid">
       <div class="example-card">
         <h3 style="margin-top: 0;">Light Mode (Default)</h3>
-        <p>Canvas: <code>#DEE3EA</code></p>
-        <p>Text: <code>#22272E</code></p>
-        <p>Accent: <code>#2F6F8F</code></p>
+        <p>Canvas: <code>#F2F0EC</code></p>
+        <p>Text: <code>#22252A</code></p>
+        <p>Accent: <code>#A85436</code></p>
         <p>Best for: Daytime, outdoor use, high ambient light.</p>
       </div>
       <div class="example-card">
         <h3 style="margin-top: 0;">Dark Mode</h3>
-        <p>Canvas: <code>#0E1113</code></p>
-        <p>Text: <code>#E5EAEF</code></p>
-        <p>Accent: <code>#5790BE</code> (cooler blue for night)</p>
+        <p>Canvas: <code>#14120F</code></p>
+        <p>Text: <code>#EFEBE4</code></p>
+        <p>Accent: <code>#D98A64</code> (lifted copper for night)</p>
         <p>Best for: Nighttime, low-light environments, reduced eye strain.</p>
       </div>
     </div>
@@ -65,14 +65,14 @@
       <div class="swatch-box" style="background: var(--bg);"></div>
       <div class="swatch-label">
         <strong>--bg</strong><br>
-        Light: #DEE3EA | Dark: #0E1113
+        Light: #F2F0EC | Dark: #14120F
       </div>
     </div>
     <div class="swatch">
       <div class="swatch-box" style="background: var(--bg-light);"></div>
       <div class="swatch-label">
         <strong>--bg-light</strong><br>
-        Light: #FFFFFF | Dark: #1A2026
+        Light: #FBFAF8 | Dark: #201D19
       </div>
     </div>
 
@@ -81,14 +81,14 @@
       <div class="swatch-box" style="background: var(--text-primary); opacity: 0.3;"></div>
       <div class="swatch-label">
         <strong>--text-primary</strong><br>
-        Light: #22272E | Dark: #E5EAEF
+        Light: #22252A | Dark: #EFEBE4
       </div>
     </div>
     <div class="swatch">
       <div class="swatch-box" style="background: var(--text-muted); opacity: 0.3;"></div>
       <div class="swatch-label">
         <strong>--text-muted</strong><br>
-        Light: #59636F | Dark: #7A8591
+        Light: #5E666F | Dark: #9A9289
       </div>
     </div>
 
@@ -97,29 +97,29 @@
       <div class="swatch-box" style="background: var(--green);"></div>
       <div class="swatch-label">
         <strong>--green</strong><br>
-        Light: #16885F | Dark: #4D9E78
+        Light: #3A7A56 | Dark: #5FA37C
       </div>
     </div>
     <div class="swatch">
       <div class="swatch-box" style="background: var(--red);"></div>
       <div class="swatch-label">
         <strong>--red</strong><br>
-        Light: #BA3F55 | Dark: #C9656E
+        Light: #A8443C | Dark: #CE7068
       </div>
     </div>
     <div class="swatch">
       <div class="swatch-box" style="background: var(--amber);"></div>
       <div class="swatch-label">
         <strong>--orange</strong> (alias --amber)<br>
-        Light: #8A520E | Dark: #BD9038
+        Light: #8A5C12 | Dark: #C29A4A
       </div>
     </div>
 
     <h2>Implementation Notes</h2>
     <ul style="line-height: 1.8;">
       <li><strong>No manual switching in code:</strong> OS preference is automatic. Only override <code>data-theme="dark"</code> if user explicitly requests dark mode.</li>
-      <li><strong>Accent color:</strong> Becomes a cooler blue in dark mode (<code>#5790BE</code>) for night-friendly contrast. Primary actions remain clear.</li>
-      <li><strong>Border colors:</strong> Become lighter in dark mode (<code>#45505C</code>) to remain visible on dark canvas.</li>
+      <li><strong>Accent color:</strong> Lifts to a lighter copper in dark mode (<code>#D98A64</code>) and carries dark ink rather than white. Primary actions remain clear.</li>
+      <li><strong>Border colors:</strong> Become lighter in dark mode (<code>#4A443C</code>) to remain visible on dark canvas.</li>
       <li><strong>Transitions:</strong> Background and color shift smoothly (200ms) when theme changes.</li>
       <li><strong>All components inherit:</strong> Button, Input, Modal, Table — all automatically adapt to dark mode via CSS variables.</li>
     </ul>

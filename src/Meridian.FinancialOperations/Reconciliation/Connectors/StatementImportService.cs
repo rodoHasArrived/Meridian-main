@@ -5,6 +5,7 @@ using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.IO;
 using Meridian.Domain.Reconciliation;
+using Meridian.Ledger;
 using Meridian.Storage.Archival;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
@@ -509,12 +510,12 @@ public sealed class StatementImportService(
         for (var index = 0; index < parse.Records.Count; index++)
         {
             var currency = parse.Records[index].Currency?.Trim().ToUpperInvariant();
-            if (currency is not { Length: 3 } || currency.Any(static value => value is < 'A' or > 'Z'))
+            if (!CurrencyCodeCatalog.IsRecognized(currency))
             {
                 return parse with
                 {
                     Issues = [.. parse.Issues, StatementParseIssue.Error(
-                        "ROW_INVALID_CURRENCY", "Rows require explicit three-letter currency evidence before import.", index + 1, "Currency")]
+                        "ROW_INVALID_CURRENCY", "Rows require explicit recognized currency evidence before import.", index + 1, "Currency")]
                 };
             }
         }

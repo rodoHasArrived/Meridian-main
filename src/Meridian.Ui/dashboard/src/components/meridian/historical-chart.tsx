@@ -793,7 +793,7 @@ function CandlestickChartView({ viewModel: vm }: { viewModel: CandlestickChartVi
               <span
                 aria-hidden="true"
                 className="inline-block h-0.5 w-4 rounded"
-                style={{ backgroundColor: "var(--chart-rsi, #ec4899)" }}
+                style={{ backgroundColor: "var(--chart-rsi, #7C5CBF)" }}
               />
               <span>
                 {vm.rsiPanel.label}
@@ -910,7 +910,7 @@ function RsiPanelView({ panel }: { panel: CandlestickRsiPanel }) {
       </text>
       <polyline
         fill="none"
-        stroke="var(--chart-rsi, #ec4899)"
+        stroke="var(--chart-rsi, #7C5CBF)"
         strokeOpacity="0.95"
         strokeWidth="1.4"
         strokeLinejoin="round"

@@ -7,6 +7,31 @@ namespace Meridian.Tests.Application;
 public sealed class StructuredCashFlowTermsResolverTests
 {
     [Fact]
+    public void RepoCanonicalDatesAndRate_AreResolvedWithoutBondAliases()
+    {
+        var security = Build(JsonSerializer.SerializeToElement(new
+        {
+            startDate = "2026-06-01",
+            endDate = "2026-06-08",
+            repoRate = 5m
+        })) with
+        { AssetClass = "Repo" };
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+        terms.IssueDate.Should().Be(new DateOnly(2026, 6, 1));
+        terms.MaturityDate.Should().Be(new DateOnly(2026, 6, 8));
+        terms.CouponRate.Should().Be(5m);
+    }
+
+    [Fact]
+    public void StructuredCreditIndexName_IsUnresolvedRatherThanZeroCoupon()
+    {
+        var security = Build(JsonSerializer.SerializeToElement(new { couponOrIndex = "SOFR + 300" }))
+            with
+        { AssetClass = "StructuredCredit" };
+        StructuredCashFlowTermsResolver.Resolve(security).CouponRate.Should().BeNull();
+    }
+
+    [Fact]
     public void Resolve_ShouldReadTypedTermsAndTypedFactorSchedule()
     {
         var security = Build(JsonSerializer.SerializeToElement(new

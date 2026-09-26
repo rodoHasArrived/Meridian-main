@@ -34,7 +34,11 @@ public interface ISecurityMasterImportService
     /// <summary>
     /// Imports securities from a file.
     /// </summary>
-    /// <param name="fileContent">The raw file content (CSV or JSON)</param>
+    /// <param name="fileContent">
+    /// The raw file content (CSV or JSON). Attribution, source-record lineage, source identity,
+    /// reason, effective time, and identifier validity/normalization fields in the file are not
+    /// authoritative and are replaced by the import workflow.
+    /// </param>
     /// <param name="fileExtension">File extension (csv or json)</param>
     /// <param name="actor">
     /// The operator or workload on whose authority the import runs, recorded as the author of every
@@ -68,6 +72,8 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
 
     private const int ProgressReportInterval = 10;
     private const int DelayBetweenRequestsMs = 50;
+    private const string ImportSourceSystem = "SecurityMasterImport";
+    private const string ImportReason = "Bulk import through Security Master import workflow";
 
     public SecurityMasterImportService(
         ISecurityMasterService securityMasterService,
@@ -109,22 +115,22 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
         {
             if (normalizedFileExtension.Equals(".csv", StringComparison.OrdinalIgnoreCase))
             {
-                requests = _csvParser.Parse(fileContent, out var parseErrors, actor)
+                requests = _csvParser.Parse(fileContent, out var parseErrors, actor, startedAtUtc)
+                    .Select(request => StampImportAuthority(request, actor, startedAtUtc))
                     .ToList();
                 errors = parseErrors.ToList();
             }
             else if (normalizedFileExtension.Equals(".json", StringComparison.OrdinalIgnoreCase))
             {
-                // A JSON import file carries a full CreateSecurityRequest, UpdatedBy included, so the
-                // file itself would otherwise choose who the golden record credits for the write.
-                // Restamp every row with the importing actor. SourceSystem is left as the file
-                // declares it: that names the upstream SOURCE the rows came from, which conflict
-                // detection and source precedence key on, and is not the actor's to assert.
+                // A bulk-import file is untrusted payload, not authority for attribution, source,
+                // or valid time. Restamp every row and nested identifier from one server timestamp;
+                // otherwise a forged file could backdate a golden record, expire an identifier, or
+                // claim another operator/provider's precedence and source-record lineage.
                 requests = (JsonSerializer.Deserialize(
                     fileContent,
                     SecurityMasterJsonContext.Default.ListCreateSecurityRequest)
                     ?? new List<CreateSecurityRequest>())
-                    .Select(request => request with { UpdatedBy = actor })
+                    .Select(request => StampImportAuthority(request, actor, startedAtUtc))
                     .ToList();
                 errors = new List<string>();
             }
@@ -251,6 +257,29 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
         => string.IsNullOrWhiteSpace(fileExtension)
             ? string.Empty
             : fileExtension.StartsWith(".", StringComparison.Ordinal) ? fileExtension : $".{fileExtension}";
+
+    private static CreateSecurityRequest StampImportAuthority(
+        CreateSecurityRequest request,
+        string actor,
+        DateTimeOffset ingestedAtUtc)
+        => request with
+        {
+            Identifiers = request.Identifiers
+                .Select(identifier => identifier with
+                {
+                    ValidFrom = ingestedAtUtc,
+                    ValidTo = null,
+                    Provider = null,
+                    NormalizedValue = null,
+                    NormalizedProvider = null
+                })
+                .ToArray(),
+            EffectiveFrom = ingestedAtUtc,
+            SourceSystem = ImportSourceSystem,
+            UpdatedBy = actor,
+            SourceRecordId = null,
+            Reason = ImportReason
+        };
 
     private Guid BeginImport(string fileExtension, int total, DateTimeOffset startedAtUtc)
     {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T06:29:36Z",
+  "generatedAt": "2026-09-21T06:29:51Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2225,324 +2225,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Infrastructure/Reconciliation/IbFlexStatementService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T14:21:59-07:00",
-      "lastCommit": "ac546aa33",
-      "lastSummary": "fix: delegate asynchronous XML value reads",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Infrastructure/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T14:16:08-07:00",
-      "lastCommit": "010ac9cb6",
-      "lastSummary": "fix: bound legacy IB Flex parsing and reject missing evidence",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T00:31:37-07:00",
-      "lastCommit": "c7734ccc5",
-      "lastSummary": "Prove ETL restart deduplication and exclude its ledger from the catalog",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Storage/Interfaces/IStorageCatalogService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T00:31:37-07:00",
-      "lastCommit": "c7734ccc5",
-      "lastSummary": "Prove ETL restart deduplication and exclude its ledger from the catalog",
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-approval.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-approval.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-certification.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-certification.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-distribution.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-distribution.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-publication.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-publication.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-health.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-health.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-datum.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-datum.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-impact.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-impact.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-materiality.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-materiality.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-provenance-adapter.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-provenance-adapter.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-trace.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-trace.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-15T16:30:17Z",
+      "lastCommit": "e3300a8a9",
+      "lastSummary": "Fix the formatting and generated-docs drift CI caught",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-15T16:20:05Z",
+      "lastCommit": "2af229a27",
+      "lastSummary": "Seed demo market history where the Data desk can read it",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-lifecycle.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-lifecycle.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-production.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-production.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.production-surface.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.production-surface.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/Services/PendingOperationsQueueService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T12:35:19Z",
+      "lastCommit": "3820d604d",
+      "lastSummary": "Bound the replay drain by both queues, and assert against a collection",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-production-surface.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-production-surface.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-change-since-review.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-change-since-review.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-period-object.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-period-object.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Wpf/Controls/DataConfidenceIndicator.xaml",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:24:39Z",
+      "lastCommit": "e4cf27a99",
+      "lastSummary": "Drop the click affordance when the explanation command cannot execute",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.IBApi.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-12T10:47:02Z",
+      "lastCommit": "404211a4a",
+      "lastSummary": "End depth-exchange liveness when the vendor rejects the submission",
       "touches": 5
-    },
-    {
-      "path": "src/Meridian.Contracts/Coordination/ICoordinationStore.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/Coordination/IExecutionLease.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/Coordination/ILeaseManager.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Etl/EtlServices.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Coordination/LeaseManager.Execution.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Coordination/LeaseManager.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Services/StorageCatalogService.ReadSnapshot.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Services/StorageCatalogService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-06T00:07:11-07:00",
-      "lastCommit": "d76982aff",
-      "lastSummary": "Fence ETL ownership and retain source files through interrupted commits",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Services/AuditChainService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-05T22:26:20-07:00",
-      "lastCommit": "ccfc48437",
-      "lastSummary": "Reject damaged audit history and prove independent process appends",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T22:03:59-07:00",
-      "lastCommit": "d0fd41763",
-      "lastSummary": "Repair production certification provenance and integration regressions",
-      "touches": 21
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T22:03:59-07:00",
-      "lastCommit": "d0fd41763",
-      "lastSummary": "Repair production certification provenance and integration regressions",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-05T22:03:59-07:00",
-      "lastCommit": "d0fd41763",
-      "lastSummary": "Repair production certification provenance and integration regressions",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T22:03:59-07:00",
-      "lastCommit": "d0fd41763",
-      "lastSummary": "Repair production certification provenance and integration regressions",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/package-lock.json",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T22:03:59-07:00",
-      "lastCommit": "d0fd41763",
-      "lastSummary": "Repair production certification provenance and integration regressions",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-05T02:00:23-07:00",
-      "lastCommit": "d49fbc8e7",
-      "lastSummary": "Harden log rendering and verify retained lot review versions",
-      "touches": 16
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.OpenLotBackfill.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-05T02:00:23-07:00",
-      "lastCommit": "d49fbc8e7",
-      "lastSummary": "Harden log rendering and verify retained lot review versions",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-05T02:00:23-07:00",
-      "lastCommit": "d49fbc8e7",
-      "lastSummary": "Harden log rendering and verify retained lot review versions",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Reporting/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T02:00:23-07:00",
-      "lastCommit": "d49fbc8e7",
-      "lastSummary": "Harden log rendering and verify retained lot review versions",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Reporting/ReportGenerationService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T02:00:23-07:00",
-      "lastCommit": "d49fbc8e7",
-      "lastSummary": "Harden log rendering and verify retained lot review versions",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-cockpit.view-model.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-scope.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Services/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-05T00:50:55-07:00",
-      "lastCommit": "acfce77a2",
-      "lastSummary": "Scope close support to source records and recover desktop authority over HTTP",
-      "touches": 1
     }
   ],
   "recentChangesWindowDays": 14,

@@ -74,10 +74,17 @@ internal sealed partial class ProviderFeatureRegistration
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
             var quoteCollector = sp.GetRequiredService<QuoteCollector>();
             var reconnMetrics = sp.GetRequiredService<IReconnectionMetrics>();
+            var credentialContext = credentialResolver.CreateContext(
+                typeof(PolygonMarketDataClient),
+                new Dictionary<string, string?>(StringComparer.Ordinal)
+                {
+                    ["POLYGON_API_KEY"] = config.Polygon?.ApiKey
+                });
             return new PolygonMarketDataClient(
                 publisher,
                 tradeCollector,
                 quoteCollector,
+                options: (config.Polygon ?? new PolygonOptions()) with { ApiKey = credentialContext.Get("POLYGON_API_KEY") ?? string.Empty },
                 reconnectionMetrics: reconnMetrics);
         });
 
@@ -91,7 +98,8 @@ internal sealed partial class ProviderFeatureRegistration
                 tradeCollector,
                 depthCollector,
                 quoteCollector,
-                httpClientFactory);
+                httpClientFactory,
+                sp.GetService<Infrastructure.Adapters.NYSE.NYSEOptions>());
         }
 
         // Retain the short legacy route while also registering the canonical [DataSource] id.

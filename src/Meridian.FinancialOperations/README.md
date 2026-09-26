@@ -15,11 +15,26 @@ OFX canonical rows retain the containing statement's `CURDEF` currency when no r
 currency is supplied. The parser does not borrow currency from another statement; explicit
 row evidence takes precedence. Missing currency remains absent for downstream refusal.
 
+Statement matching retains exact tolerance rules/version and matcher revision with population
+availability. Missing/failed internal populations and empty statements cannot certify source clearing;
+a narrower source feed is a distinct comparison scope. This evidence is retained with the immutable
+match artifact so later profile updates cannot reinterpret historical breaks.
+
+Generated candidate posts retain the validated posting actor in the approved command. Replays
+use the journal's versioned, command-normalized `postingActor`; unversioned legacy metadata remains unattributed rather
+than acquiring the identity of a later caller. Durable mutation/audit atomicity is owned by the
+PostgreSQL journal store, including the atomic tax-lot posting path.
+
 Operations Continuity forwards the journal candidate's typed provenance to the governed posting
 command. PostgreSQL round-trip coverage verifies that seeded origins retain the `SEEDED` journal
 tag and that fixture evidence marked as real cannot commit a journal or a successful posting audit.
 
 ## Shared close and lot convergence
+
+Factor-paydown candidates require lot quantity as of the event effective date, reconstructed by
+the journal store from retained mutation history. Missing or inconsistent historical quantity
+evidence returns a critical candidate issue and cannot fall back to today's holdings.
+
 
 The Financial Operations command center owns the shared close decision. It requires an explicit fund profile, ledger book, fund account, entity, and period; validates book/profile binding and exact workflow identity; and includes workflow, calendar, version-matched close-plan, and private-capital contributors. Missing, ambiguous, failing, or older-than-five-minute contributor evaluations block. Asset coverage and fund-wide diagnostic metrics do not establish readiness. Focused proof: `FinancialOperationsCommandCenterReadServiceTests`.
 
@@ -35,7 +50,7 @@ Private-capital close evidence is selected by fund event, period, and ledger ent
 ## Purpose
 
 Bank statement currency is source evidence. BAI2 requires an explicit account or containing-group
-currency before converting minor units, and each group resets inherited currency. camt.053 uses
+currency recognized by `CurrencyCodeCatalog` before converting minor units, and each group resets inherited currency. camt.053 uses
 explicit amount currency or an explicit account currency when the attribute is absent; a blank
 amount attribute remains invalid. Neither parser supplies USD when all currency evidence is missing.
 IB Flex preserves absent account, activity, lot and borrow currency as unknown instead of
@@ -43,7 +58,9 @@ supplying USD; canonical activity rows without currency fail before artifact ret
 
 Canonical CSV connector validation rejects blank required amounts, ambiguous grouped decimals, malformed nonblank fees,
 and missing or invalid currency before rendering financial values. Statement import preview,
-validation, and commit all require explicit three-letter currency before retaining artifacts.
+validation, and commit all require explicit currency recognized by `CurrencyCodeCatalog` before
+retaining artifacts. Alphabetic but unknown codes such as `ZZZ` are refused, including before
+BAI2 minor-unit conversion and camt.053 amount admission.
 OFX statement currency fills only absent row currency; explicit blank or self-closing row tags
 remain invalid; mixed explicit and inherited currency rows map through the same canonical key.
 Alpaca legacy fills use the account currency verified against the snapshot identity. Position

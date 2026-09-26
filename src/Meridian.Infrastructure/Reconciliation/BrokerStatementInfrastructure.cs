@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Globalization;
 using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
+using Meridian.Ledger;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Infrastructure.Reconciliation;
@@ -467,8 +468,8 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
             if (fields.Count <= 8 || string.IsNullOrWhiteSpace(fields[8]))
                 throw new InvalidDataException($"Statement CSV row {recordStartLine} requires explicit currency evidence.");
             var currency = fields[8].Trim().ToUpperInvariant();
-            if (currency.Length != 3 || currency.Any(c => c is < 'A' or > 'Z'))
-                throw new InvalidDataException($"Statement CSV row {recordStartLine} requires a three-letter currency code.");
+            if (!CurrencyCodeCatalog.IsRecognized(currency))
+                throw new InvalidDataException($"Statement CSV row {recordStartLine} requires a recognized currency code.");
             decimal? feesCommission = null;
             string? externalTransactionId = null;
             if (fields.Count > 7 && !string.IsNullOrWhiteSpace(fields[7]))

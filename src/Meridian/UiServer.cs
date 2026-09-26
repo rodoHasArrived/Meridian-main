@@ -844,10 +844,13 @@ public sealed class UiServer : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(environment);
         ArgumentNullException.ThrowIfNull(apiHostOptions);
 
+        // Resolve before any environment/transport exemption: a typo must refuse startup
+        // even in Development or when credentials have already been configured.
+        var authenticationRequired = IsAuthenticationRequired(environment);
         if (environment.IsDevelopment() || environment.IsEnvironment("Test"))
             return;
 
-        if (!IsAuthenticationRequired(environment))
+        if (!authenticationRequired)
             return;
 
         if (apiHostOptions.AllowInsecureTransportForReverseProxy ||
@@ -862,17 +865,7 @@ public sealed class UiServer : IAsyncDisposable
     }
 
     internal static bool IsAuthenticationRequired(IHostEnvironment environment)
-    {
-        var mode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
-        if (!string.IsNullOrWhiteSpace(mode))
-        {
-            return mode.Trim().Equals("required", StringComparison.OrdinalIgnoreCase) ||
-                   mode.Trim().Equals("auto", StringComparison.OrdinalIgnoreCase) &&
-                   !(environment.IsDevelopment() || environment.IsEnvironment("Test"));
-        }
-
-        return !(environment.IsDevelopment() || environment.IsEnvironment("Test"));
-    }
+        => AuthenticationModeResolver.Resolve(environment) == AuthenticationMode.Required;
 
     private static bool HasHttpsBinding(IEnumerable<string> configuredUrls)
     {

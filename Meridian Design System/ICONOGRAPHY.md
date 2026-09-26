@@ -8,7 +8,7 @@ provider-health, …).
 
 - 24px grid, **1.5px strokes**, round caps/joins, no fills.
 - `stroke="currentColor"` — icons inherit the color of their context (muted in a resting nav
-  item, teal-blue when active, text-color in a button). Do not hard-code icon colors.
+  item, copper when active, text-color in a button). Do not hard-code icon colors.
 - Geometric and restrained — they read as instrument markings, not illustrations.
 
 ## Usage
@@ -28,7 +28,7 @@ provider-health, …).
 
 ## Brand marks (`assets/brand/`)
 
-- `meridian-mark.svg` — primary mark (use on the dark `#171A1F` chrome bar)
+- `meridian-mark.svg` — primary mark (use on the dark `#1F1D1A` chrome bar)
 - `meridian-mark-light.svg` — light mark for dark/colored contexts
 - `meridian-mark-monochrome.svg` — single-color contexts
 - `meridian-wordmark.svg`, `meridian-wordmark-stacked.svg`

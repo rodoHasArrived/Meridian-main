@@ -9,7 +9,7 @@ import os
 import sys
 from pathlib import Path
 
-from common import EXCLUDE_DIRS, Finding, emit_findings, load_data, repo_path, repo_root, sha256_file, sha256_manifest_file, sha256_text, write_text_if_changed
+from common import EXCLUDE_DIRS, Finding, emit_findings, load_data, repo_path, repo_root, sha256_manifest_file, sha256_text, write_text_if_changed
 
 HASH_MANIFEST = Path("docs/source/generated/source-hash-manifest.json")
 SOURCE_SUFFIXES = {
@@ -46,13 +46,17 @@ def iter_source_files(path: Path) -> list[Path]:
             candidate = current_path / filename
             if candidate.suffix.lower() in SOURCE_SUFFIXES:
                 files.append(candidate)
-    return sorted(files)
+    # Path ordering folds case on Windows but is ordinal on Linux. Hash the same
+    # repository-relative POSIX ordering on both hosts, independent of checkout root.
+    return sorted(files, key=lambda file_path: file_path.relative_to(path).as_posix())
 
 
 def tree_hash(root: Path, module_path: Path) -> str:
     parts: list[str] = []
     for file_path in iter_source_files(module_path):
-        parts.append(f"{repo_path(file_path, root)}:{sha256_file(file_path)}")
+        # Git text checkouts can use LF or CRLF; the source content is unchanged.
+        # The shared manifest hasher normalizes UTF-8 text and preserves binary bytes.
+        parts.append(f"{repo_path(file_path, root)}:{sha256_manifest_file(file_path)}")
     return sha256_text("\n".join(parts))
 
 
@@ -68,13 +72,13 @@ def build_manifest(root: Path) -> dict:
                 "path": module["path"],
                 "readme": module["readme"],
                 "source_hash": tree_hash(root, module_path),
-                "readme_hash": sha256_file(readme_path) if readme_path.exists() else None,
+                "readme_hash": sha256_manifest_file(readme_path) if readme_path.exists() else None,
             }
         )
     return {
         "schema": {"id": "meridian.source-doc-hashes", "version": "1.0.0"},
-        "generator": {"name": "build/scripts/docs/validate-doc-hashes.py", "version": "1.0.0"},
-        "contract": "Hash drift means code or README content changed after the last source-doc hash refresh.",
+        "generator": {"name": "build/scripts/docs/validate-doc-hashes.py", "version": "1.1.0"},
+        "contract": "Hash drift means code or README content changed after the last source-doc hash refresh. Source paths use ordinal POSIX ordering; UTF-8 text uses LF-normalized content hashes.",
         "modules": modules,
     }
 

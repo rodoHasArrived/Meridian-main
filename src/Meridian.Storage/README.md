@@ -11,6 +11,32 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Storage
 
+Parquet conversion derives session dates from paths beneath the configured storage root and from
+archive filenames. Dates in the root or its parent directories do not suppress completed-day
+conversion. Undated archives retain the existing file-modification-time fallback.
+
+Ledger migration `036` adds a separate ledger-event audit chain. Journal posting (including atomic
+lot acquisition/disposal and reversals), period creation, close, and reopen retain an audit in the
+same transaction. Verification scans the chain and its retained journal/leg, period, and close-event
+facts before further writes; an audit failure rolls back the mutation. A locked head serializes
+appenders, and Serializable callers retain the existing whole-transaction retry requirement.
+Each append scans all prior events and covered facts: N new writes recheck at least N(N-1)/2
+prior events, in addition to existing history. This requires volume validation before production
+acceptance. The hashed genesis inventory identifies pre-upgrade facts without claiming their old
+contents were protected. A coherent rollback of the audit head, suffix, and corresponding facts
+requires an external checkpoint to detect, even when the rest of the database remains unchanged.
+The same limitation applies to coordinated rewriting of facts, their event hashes, and the database
+head; a locally recomputed chain is not independent authentication of its history.
+Coverage permits new SQL columns but compares retained column values, including nested JSON, exactly.
+`LedgerEventAuditPostgresTests` exercises these boundaries; hosted PostgreSQL proof is required.
+
+Audit actors come from validated posting commands or period transitions. Missing legacy attribution
+remains null. The period-creation endpoint stamps the authenticated creator; generated candidate
+posts retain the actual posting actor in command metadata, preserving old unattributed retries.
+The normalizer reserves `postingActor` and `postingActorAttribution`: either tag requires an actor
+on the typed command, and retained attribution must carry the supported `command-v1` marker.
+Unversioned legacy metadata never supplies an actor; inconsistent or unknown markers fail closed.
+
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
 the publisher. The outbox worker publishes retained state and retries failures; missing publisher
@@ -43,11 +69,28 @@ and recovers the single retained record through a fresh WAL instance.
 
 ## Shared close and lot convergence
 
+Asset-scoped lot reads reconstruct end-of-effective-date quantities from immutable journal-backed
+mutation history, including lots fully disposed after the requested date. Lot and history reads use
+one repeatable-read snapshot. Missing dates, inconsistent quantity chains, and legacy relief without
+retained history block paydown candidates; current holdings are never rewritten by the read.
+
+
 Migration `V_ledger_034__open_lot_acquisition.sql` adds nullable retained acquisition facts to the existing tax-lot record, without backfilling legacy rows. Canonical identity and acquisition economics cannot be rewritten; ordinary partial relief preserves acquisition evidence. `LedgerOpenLotProjection` refuses missing evidence or unexplained basis drift and translates the legacy per-100 face convention into explicit face quantity. Atomic fingerprints include populated acquisition facts while absent fields preserve legacy fingerprints. Focused proof: `OpenLotConvergenceTests`, `OpenLotPostgresTests`, and `AtomicTaxLotJournalStoreTests`.
 
 `V_ledger_035__open_lot_backfill.sql` adds immutable source bytes, independent reviews, application receipts, and unresolved lot exceptions. `IOpenLotBackfillStore` surveys a book, retains hashed acquisition facts, checks Security Master and book-position ownership, and applies approved evidence with optimistic versions and idempotency. Only the atomic application receipt can resolve its exception. Existing acquisition facts cannot be replaced through backfill.
 
 Durable disposal now uses the canonical decimal relief guard. Missing identity, quantity basis, or acquisition FX blocks relief and authoritative reporting until repaired. Reporting carries canonical lot evidence alongside retained disposal history; current market FX never substitutes for acquisition FX. Durable AverageCost posting remains refused until remaining-lot basis redistribution has its own atomic proof.
+
+### Reviewed fund tenant backfill
+
+`PostgresFundStructureTenantBackfillStore` locks retained ledger ownership evidence and the fund
+graph in a stable order, then commits reviewed tenant stamps, quarantine, and an immutable receipt
+together. Legacy Account nodes inferred from retained links/assignments are included in preview
+and materialized only with an attributable stamp in that same transaction. Entity kinds match
+ledger-book contracts. Retry reads a committed receipt directly before connecting to source
+ledger storage or taking mutation locks, then rechecks after locks to handle concurrent attempts.
+Explicit unscoped tenant sentinels cannot become ownership seeds. Migration 005 creates receipt
+storage and protection; no tenant attribution is performed by a migration or by startup.
 
 ## Purpose
 
@@ -272,6 +315,11 @@ process failure. Cancellation, rollback, a hash mismatch, or a non-empty store r
 for operator recovery.
 
 ### Accounting and Security Master evidence
+
+Security Master cache refreshes build a complete candidate map without blocking writers, capture
+every accepted upsert during that build, reconcile those writes by record version, and publish the
+result with one reference swap. Readers therefore see a complete old or new master, while a write
+accepted during `ReplaceAll` materialization is not discarded by the swap.
 
 Ledger journal writes fail closed for instrument-bearing postings. In practice, this means Meridian
 will not save a securities, dividend, accrued-interest, corporate-action, option, futures, short, or
@@ -609,3 +657,36 @@ Route durable writes through WAL or atomic file helpers. Avoid direct unguarded 
 - `docs/operators/governed-reporting-operations.md`
 - `docs/operators/statement-reconciliation-report-operations.md`
 - `docs/source/generated/source-roadmap-traceability.md`
+
+### Dated Security Master prices
+
+Migration 034 retains raw price observations by security/source/effective timestamp and adds
+versioned pricing-hierarchy history. Exact observation/version retries are accepted; changed
+payloads at the same identity are refused. Queries apply both effective-date and recorded-date
+cutoffs, preserving late-arrival history. Existing raw observations retain an Unspecified quote
+unit; no missing historical prices or units are invented. Legacy hierarchy knowledge begins at
+migration, and the prior current hierarchy is retained transactionally when an operator changes it.
+
+Migration 034 requires schema/storage and release-operations review of its narrowly scoped
+primary-key replacement waiver. Drain old pricing writers before applying it: their two-column
+`ON CONFLICT` target is incompatible with the new three-column history key. The migration runner
+holds the schema advisory lock and commits all DDL plus its checksum receipt in one transaction;
+a failed replacement leaves the prior primary key and rows intact. Re-running startup skips an
+already applied matching checksum. After multiple dates exist per source, use a forward fix;
+never delete retained observations to make the old key fit. A reverse migration requires separate
+human review and an explicit plan preserving all history.
+
+Legacy raw prices already have non-null `recorded_at` from migration 022. The previous writer
+updated that timestamp when accepting its latest observation, so migration 034 preserves the
+retained observation's available arrival evidence unchanged. It cannot recover observations the
+previous overwrite model discarded. Legacy hierarchies had no recorded timestamp; their first
+known time is the migration timestamp, and earlier knowledge queries correctly return no version.
+
+Migration 035 adds immutable Security Master price-selection receipts. Each receipt stores the
+exact golden-copy result, all retained comparisons, hierarchy snapshot, cutoffs, indexed
+security/account scope, and payload SHA-256. Replay checks both indexed scope and payload
+integrity; unknown or differently scoped IDs return no result. Database triggers reject update,
+delete, and truncate. Identical retain retries never update the row. This closes the precommit
+visibility gap in timestamp-only queries: a transaction can begin before a knowledge cutoff and
+commit after evaluation, so only receipt replay guarantees the original evaluated result.
+Receipts preserve an evaluation; they do not independently certify accounting-close approval.

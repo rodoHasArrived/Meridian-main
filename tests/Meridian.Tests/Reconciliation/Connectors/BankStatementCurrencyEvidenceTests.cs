@@ -17,8 +17,11 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
     [InlineData("camt", "missing")]
     [InlineData("camt", "blank-amount")]
     [InlineData("camt", "invalid-amount")]
+    [InlineData("camt", "unrecognized-amount")]
+    [InlineData("camt", "unrecognized-account")]
     [InlineData("bai2", "missing")]
     [InlineData("bai2", "invalid")]
+    [InlineData("bai2", "unrecognized")]
     [InlineData("bai2", "previous-group")]
     public async Task MonthEndBankStatement_UnknownCurrencyCannotCreateAmountsOrRetainedEvidence(string format, string defect)
     {
@@ -29,12 +32,19 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
             {
                 "missing" => source.Replace("<Ccy>EUR</Ccy>", "").Replace(" Ccy=\"EUR\"", ""),
                 "blank-amount" => source.Replace("Ccy=\"EUR\"", "Ccy=\" \""),
+                "unrecognized-amount" => source.Replace("Ccy=\"EUR\"", "Ccy=\"ZZZ\""),
+                "unrecognized-account" => source.Replace("<Ccy>EUR</Ccy>", "<Ccy>ZZZ</Ccy>").Replace(" Ccy=\"EUR\"", ""),
                 _ => source.Replace("Ccy=\"EUR\"", "Ccy=\"???\"")
             };
         }
         else
         {
-            source = source.Replace(",USD,", defect == "invalid" ? ",???," : ",,");
+            source = source.Replace(",USD,", defect switch
+            {
+                "invalid" => ",???,",
+                "unrecognized" => ",ZZZ,",
+                _ => ",,"
+            });
             if (defect == "previous-group")
             {
                 source = source.Replace("02,MERIDIAN", "02,MERIDIAN,CITIBANK,1,260531,,JPY,2/\n98,0,0,0/\n02,MERIDIAN");

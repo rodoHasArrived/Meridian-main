@@ -1,3 +1,5 @@
+using Meridian.Contracts.Services;
+using Meridian.Platform.Scheduling;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,12 +16,34 @@ namespace Meridian.Ui.Services;
 public sealed class DataCompletenessService
 {
     private readonly ManifestService _manifestService;
-    private readonly TradingCalendarService _tradingCalendar;
+    private readonly IOperationalTradingCalendar _tradingCalendar;
 
-    public DataCompletenessService(ManifestService manifestService, TradingCalendarService tradingCalendar)
+    public DataCompletenessService(ManifestService manifestService)
+        : this(manifestService, new TradingCalendar())
     {
-        _manifestService = manifestService;
-        _tradingCalendar = tradingCalendar;
+    }
+
+    public DataCompletenessService(ManifestService manifestService, IOperationalTradingCalendar tradingCalendar)
+    {
+        _manifestService = manifestService ?? throw new ArgumentNullException(nameof(manifestService));
+        _tradingCalendar = tradingCalendar ?? throw new ArgumentNullException(nameof(tradingCalendar));
+    }
+
+    internal IOperationalTradingCalendar TradingCalendar => _tradingCalendar;
+
+    private bool IsHoliday(DateOnly date) => _tradingCalendar.GetHolidays(date.Year).Contains(date);
+
+    private List<DateOnly> GetTradingDays(DateOnly start, DateOnly end)
+    {
+        var days = new List<DateOnly>();
+        for (var date = start; date <= end; date = date.AddDays(1))
+        {
+            if (_tradingCalendar.IsTradingDay(date))
+                days.Add(date);
+            if (date == end)
+                break;
+        }
+        return days;
     }
 
     /// <summary>
@@ -40,7 +64,7 @@ public sealed class DataCompletenessService
         };
 
         // Get all trading days in the range
-        var tradingDays = _tradingCalendar.GetTradingDays(startDate, endDate);
+        var tradingDays = GetTradingDays(startDate, endDate);
         report.ExpectedTradingDays = tradingDays.Count;
 
         // Get all available symbols if not specified
@@ -80,11 +104,11 @@ public sealed class DataCompletenessService
         var result = new DailyCompleteness
         {
             Date = date,
-            IsHoliday = _tradingCalendar.IsHoliday(date),
+            IsHoliday = IsHoliday(date),
             IsWeekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
         };
 
-        if (result.IsHoliday || result.IsWeekend)
+        if (!_tradingCalendar.IsTradingDay(date))
         {
             result.Status = CompletenessStatus.NonTradingDay;
             return result;
@@ -381,7 +405,7 @@ public sealed class DataCompletenessService
             {
                 Date = currentDate,
                 IsWeekend = currentDate.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday,
-                IsHoliday = _tradingCalendar.IsHoliday(currentDate),
+                IsHoliday = IsHoliday(currentDate),
                 IsTradingDay = isTradingDay,
                 SymbolsWithData = symbolsWithData,
                 TotalSymbols = totalSymbols,
@@ -499,7 +523,7 @@ public sealed class DataCompletenessService
         DateOnly toDate,
         CancellationToken ct = default)
     {
-        var tradingDays = _tradingCalendar.GetTradingDays(fromDate, toDate);
+        var tradingDays = GetTradingDays(fromDate, toDate);
         return await AnalyzeSymbolCompletenessAsync(dataPath, symbol, tradingDays, ct);
     }
 
@@ -572,49 +596,45 @@ public sealed class DataCompletenessService
 /// <summary>
 /// Service for trading calendar information.
 /// </summary>
-public sealed class TradingCalendarService
+public sealed class TradingCalendarService : IOperationalTradingCalendar
 {
-    private readonly HashSet<DateOnly> _holidays = new();
+    private readonly IOperationalTradingCalendar _calendar;
 
-    public TradingCalendarService()
+    public TradingCalendarService() : this(new TradingCalendar())
     {
-        // Add common US market holidays (simplified - would load from config in production)
-        AddHolidays2026();
     }
 
-    private void AddHolidays2026()
+    public TradingCalendarService(IOperationalTradingCalendar calendar)
     {
-        // 2026 US Market Holidays
-        _holidays.Add(new DateOnly(2026, 1, 1));   // New Year's Day
-        _holidays.Add(new DateOnly(2026, 1, 19));  // MLK Day
-        _holidays.Add(new DateOnly(2026, 2, 16));  // Presidents Day
-        _holidays.Add(new DateOnly(2026, 4, 3));   // Good Friday
-        _holidays.Add(new DateOnly(2026, 5, 25));  // Memorial Day
-        _holidays.Add(new DateOnly(2026, 7, 3));   // Independence Day (observed)
-        _holidays.Add(new DateOnly(2026, 9, 7));   // Labor Day
-        _holidays.Add(new DateOnly(2026, 11, 26)); // Thanksgiving
-        _holidays.Add(new DateOnly(2026, 12, 25)); // Christmas
+        _calendar = calendar ?? throw new ArgumentNullException(nameof(calendar));
     }
 
-    public bool IsHoliday(DateOnly date) => _holidays.Contains(date);
+    public bool IsHoliday(DateOnly date) => _calendar.GetHolidays(date.Year).Contains(date);
 
-    public bool IsTradingDay(DateOnly date) =>
-        date.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday) && !IsHoliday(date);
+    public bool IsTradingDay(DateOnly date) => _calendar.IsTradingDay(date);
 
     public List<DateOnly> GetTradingDays(DateOnly start, DateOnly end)
     {
         var days = new List<DateOnly>();
-        var current = start;
-        while (current <= end)
+        for (var date = start; date <= end; date = date.AddDays(1))
         {
-            if (IsTradingDay(current))
-                days.Add(current);
-            current = current.AddDays(1);
+            if (IsTradingDay(date))
+                days.Add(date);
+            if (date == end)
+                break;
         }
         return days;
     }
-}
 
+    bool IOperationalTradingCalendar.IsTradingDay(DateOnly date, string market) => _calendar.IsTradingDay(date, market);
+
+    public IReadOnlyList<TradingSession> GetTradingSessions(DateOnly date, string market = "US") =>
+        _calendar.GetTradingSessions(date, market);
+
+    public DateOnly GetNextTradingDay(DateOnly after, string market = "US") => _calendar.GetNextTradingDay(after, market);
+
+    public IReadOnlyList<DateOnly> GetHolidays(int year, string market = "US") => _calendar.GetHolidays(year, market);
+}
 
 public sealed record CompletenessReport
 {
@@ -777,4 +797,3 @@ public enum GapType : byte
     StartOfRange,
     EndOfRange
 }
-

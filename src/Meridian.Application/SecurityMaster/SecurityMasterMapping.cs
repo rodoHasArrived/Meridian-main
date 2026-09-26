@@ -326,7 +326,7 @@ internal static class SecurityMasterMapping
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
-                ToFSharpList(GetRequiredArray(json, "legs").EnumerateArray().Select(ToSwapLeg)))),
+                ToFSharpList(GetSwapLegItems(json).Select(ToSwapLeg)))),
             "DirectLoan" => SecurityKind.NewDirectLoan(new DirectLoanTerms(
                 GetRequiredString(json, "borrower"),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
@@ -620,12 +620,138 @@ internal static class SecurityMasterMapping
             ToFSharpList(GetOptionalArrayItemsStrict(json, "principalSchedule").Select(ToPrincipalPaymentEntry)));
     }
 
+    // Match the cash-flow resolver's alias priority, while refusing malformed supplied economics
+    // instead of persisting them as absent. The pre-widening four-field leg remains readable.
     private static SwapLeg ToSwapLeg(JsonElement json)
-        => new(
-            GetRequiredString(json, "legType"),
-            GetRequiredString(json, "currency"),
-            ToOption(GetOptionalString(json, "index")),
-            ToOption(GetOptionalDecimal(json, "fixedRate")));
+    {
+        if (json.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException("Each swap leg must be a JSON object.");
+        }
+
+        return new SwapLeg(
+            ToOption(ReadSwapLegString(json, "legId", "id", "name")),
+            ReadSwapLegString(json, "legType", "rateType", "type")
+                ?? throw new InvalidOperationException("Missing required string 'legType' in a swap leg."),
+            ReadSwapLegString(json, "currency")
+                ?? throw new InvalidOperationException("Missing required string 'currency' in a swap leg."),
+            ToOption(NormalizeSwapLegDirection(ReadSwapLegString(json, "direction", "payReceive", "payOrReceive", "side"))),
+            ToOption(ReadSwapLegString(json, "index", "indexName", "referenceIndex")),
+            ToOption(ReadSwapLegDecimal(json, "fixedRate", "rate", "couponRate")),
+            ToOption(ReadSwapLegDecimal(json, "spreadBps")),
+            ToOption(ReadSwapLegDecimal(json, "currentIndexRate", "lastFixing", "currentRate", "indexRate")),
+            ToOption(ReadSwapLegDecimal(json, "notional", "notionalAmount", "faceAmount", "principal")),
+            ToOption(ReadSwapLegString(json, "paymentFrequency", "frequency")),
+            ToOption(ReadSwapLegString(json, "dayCountConvention", "dayCount", "dayCountBasis")),
+            ReadSwapLegPrincipalExchange(json));
+    }
+
+    private static IEnumerable<JsonElement> GetSwapLegItems(JsonElement json)
+    {
+        JsonElement? emptyArray = null;
+        foreach (var alias in new[] { "legs", "swapLegs", "cashFlowLegs" })
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value))
+            {
+                continue;
+            }
+
+            if (value.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidOperationException($"Swap leg container '{alias}' must be a JSON array.");
+            }
+
+            if (value.GetArrayLength() > 0)
+            {
+                return value.EnumerateArray();
+            }
+
+            // The resolver tries the next alias when an array is empty. An entirely empty set
+            // still reaches the domain's existing nonempty-legs validation.
+            emptyArray = value;
+        }
+
+        return emptyArray?.EnumerateArray()
+            ?? throw new InvalidOperationException("Missing required array 'legs'.");
+    }
+
+    private static string? ReadSwapLegString(JsonElement json, params string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            if (value.ValueKind != JsonValueKind.String)
+            {
+                throw new InvalidOperationException($"Swap leg property '{alias}' must be a JSON string.");
+            }
+
+            if (SecurityTermReader.ReadString(json, alias) is { } text)
+            {
+                return text;
+            }
+        }
+
+        return null;
+    }
+
+    private static decimal? ReadSwapLegDecimal(JsonElement json, params string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            return SecurityTermReader.ReadDecimal(json, alias)
+                ?? throw new InvalidOperationException($"Swap leg property '{alias}' must be a number or numeric string.");
+        }
+
+        return null;
+    }
+
+    private static bool ReadSwapLegPrincipalExchange(JsonElement json)
+    {
+        foreach (var alias in new[] { "exchangesPrincipal", "principalExchange", "notionalExchange" })
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            if (value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                return value.GetBoolean();
+            }
+
+            if (value.ValueKind == JsonValueKind.String && bool.TryParse(value.GetString(), out var parsed))
+            {
+                return parsed;
+            }
+
+            throw new InvalidOperationException($"Swap leg property '{alias}' must be a boolean or boolean string.");
+        }
+
+        return false;
+    }
+
+    private static string? NormalizeSwapLegDirection(string? direction)
+    {
+        var normalized = direction?.Trim().ToUpperInvariant();
+        if (normalized?.Contains("PAY", StringComparison.Ordinal) == true)
+        {
+            return "Pay";
+        }
+
+        return normalized?.Contains("REC", StringComparison.Ordinal) == true ? "Receive" : direction;
+    }
 
     private static Covenant ToCovenant(JsonElement json)
         => new(

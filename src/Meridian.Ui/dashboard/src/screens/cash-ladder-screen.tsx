@@ -27,20 +27,20 @@ import {
 import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
 
 const SOURCE_PALETTE = [
-  "var(--chart-series-1, #16885F)",
-  "var(--chart-series-2, #2F6F8F)",
+  "var(--chart-series-1, #3A7A56)",
+  "var(--chart-series-2, #A85436)",
   "var(--chart-series-3, #7C5CBF)",
   "var(--chart-series-4, #B08A2E)",
-  "var(--chart-series-5, #BA3F55)",
-  "var(--chart-series-6, #8A520E)",
-  "var(--chart-series-7, #59636F)"
+  "var(--chart-series-5, #A8443C)",
+  "var(--chart-series-6, #8A5C12)",
+  "var(--chart-series-7, #5E666F)"
 ] as const;
 
-const GRID = "var(--chart-grid, #CBD3DC)";
-const AXIS = "var(--chart-axis, #59636F)";
-const BORDER = "var(--chart-border, #99A5B2)";
-const CUMULATIVE = "var(--chart-equity, #16885F)";
-const THRESHOLD = "var(--chart-warning, #8A520E)";
+const GRID = "var(--chart-grid, #E4E3DE)";
+const AXIS = "var(--chart-axis, #5E666F)";
+const BORDER = "var(--chart-border, #AFABA1)";
+const CUMULATIVE = "var(--chart-equity, #3A7A56)";
+const THRESHOLD = "var(--chart-warning, #8A5C12)";
 
 const metricToneMap = {
   default: "neutral",

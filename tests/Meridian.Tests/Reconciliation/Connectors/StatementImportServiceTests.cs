@@ -96,6 +96,7 @@ public sealed class StatementImportServiceTests : IDisposable
     [InlineData("missing-currency")]
     [InlineData("blank-currency")]
     [InlineData("invalid-currency")]
+    [InlineData("unrecognized-currency")]
     [InlineData("quantity-comma")]
     [InlineData("price-comma")]
     [InlineData("cash-comma")]
@@ -119,6 +120,9 @@ public sealed class StatementImportServiceTests : IDisposable
                 break;
             case "invalid-currency":
                 values[8] = "???";
+                break;
+            case "unrecognized-currency":
+                values[8] = "ZZZ";
                 break;
             case "quantity-comma":
                 values[2] = "1,25";
@@ -251,7 +255,8 @@ public sealed class StatementImportServiceTests : IDisposable
     [InlineData(null)]
     [InlineData("")]
     [InlineData(" ")]
-    public async Task MonthEndFlexActivity_MissingCurrencyCannotBecomeUsd(string? currency)
+    [InlineData("ZZZ")]
+    public async Task MonthEndFlexActivity_UnknownCurrencyFailsBeforeRetention(string? currency)
     {
         var attribute = currency is null ? string.Empty : $" currency=\"{currency}\"";
         var content = "<FlexQueryResponse><FlexStatements><FlexStatement accountId=\"FUND-A\">"

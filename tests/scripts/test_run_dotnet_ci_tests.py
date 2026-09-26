@@ -440,6 +440,30 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             self.assertEqual(len(set(temporary_dirs)), 2)
             self.assertCountEqual(result_directories, [Path(tmp).resolve() / project.name for project in projects])
 
+    def test_long_fixture_cleanup_preserves_normal_paths_for_child_processes(self):
+        child_script = """
+import json, os, pathlib
+temporary = os.environ['TMPDIR']
+assert not temporary.startswith('\\\\\\\\?\\\\'), temporary
+target = pathlib.Path(temporary) / ('nested-' + 'x' * 100) / ('fixture-' + 'y' * 100) / 'evidence.json'
+assert len(str(target)) > 260
+native = str(target)
+if os.name == 'nt':
+    native = '\\\\\\\\?\\\\UNC\\\\' + native[2:] if native.startswith('\\\\\\\\') else '\\\\\\\\?\\\\' + native
+target = pathlib.Path(native)
+target.parent.mkdir(parents=True)
+target.write_text('retained fixture')
+print(json.dumps({'temporary': temporary}), flush=True)
+"""
+        project = MODULE.TestProject("long-path", "tests/long-path.csproj")
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.object(MODULE, "build_dotnet_test_command", return_value=[sys.executable, "-c", child_script]):
+                result = self.run_projects([project], tmp)[0]
+            self.assertEqual(result.exit_code, 0, Path(result.log_path).read_text(encoding="utf-8"))
+            lines = Path(result.log_path).read_text(encoding="utf-8").splitlines()
+            observed = json.loads(next(line for line in lines if line.startswith('{"temporary":')))
+            self.assertFalse(Path(observed["temporary"]).exists(), "all fixture files must be removed")
+
     def test_noisy_failure_keeps_full_disk_log_but_only_prints_bounded_tail(self):
         project = MODULE.TestProject("noisy", "tests/noisy.csproj")
 

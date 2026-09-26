@@ -14,6 +14,7 @@ using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
+using Meridian.Infrastructure.Adapters.NYSE;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Synthetic;
@@ -36,6 +37,7 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
         services.TryAddSingleton<IConfiguration>(static _ => new ConfigurationBuilder().Build());
+        services.AddNYSEDataSource();
 
         // DataSourceRegistry - discovers providers decorated with [DataSource] (ADR-005).
         services.AddSingleton<DataSourceRegistry>(sp =>

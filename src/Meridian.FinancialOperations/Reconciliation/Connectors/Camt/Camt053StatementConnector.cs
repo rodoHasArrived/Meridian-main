@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Meridian.Contracts.Integrity;
+using Meridian.Ledger;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
 
@@ -279,7 +280,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                             if (balanceAmount != CamtAmountResult.Ok)
                             {
                                 var (code, message) = balanceAmount == CamtAmountResult.BadCurrency
-                                    ? ("CAMT_BALANCE_BAD_CURRENCY", "Closing balance requires explicit three-letter amount or account currency.")
+                                    ? ("CAMT_BALANCE_BAD_CURRENCY", "Closing balance requires explicit recognized amount or account currency.")
                                     : balanceAmount == CamtAmountResult.BadDirection
                                     ? ("CAMT_BALANCE_BAD_DIRECTION",
                                         "Closing balance has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
@@ -358,7 +359,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
                             if (entryAmount != CamtAmountResult.Ok)
                             {
                                 var (code, message) = entryAmount == CamtAmountResult.BadCurrency
-                                    ? ("CAMT_ENTRY_BAD_CURRENCY", "Entry requires explicit three-letter amount or account currency.")
+                                    ? ("CAMT_ENTRY_BAD_CURRENCY", "Entry requires explicit recognized amount or account currency.")
                                     : entryAmount == CamtAmountResult.BadDirection
                                     ? ("CAMT_ENTRY_BAD_DIRECTION",
                                         "Entry has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
@@ -803,7 +804,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
             return CamtAmountResult.BadDirection;
         }
 
-        if (currency.Length != 3 || currency.Any(static value => value is < 'A' or > 'Z'))
+        if (!CurrencyCodeCatalog.IsRecognized(currency))
         {
             return CamtAmountResult.BadCurrency;
         }

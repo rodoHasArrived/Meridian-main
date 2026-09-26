@@ -1,3 +1,5 @@
+using Meridian.Ledger;
+
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
 /// <summary>
@@ -135,10 +137,10 @@ internal static class StatementRecordMapper
 
         var currency = GetValue(values, StatementCanonicalField.Currency)?.Trim().ToUpperInvariant();
         if (string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase)
-            && (currency is not { Length: 3 } || currency.Any(static value => value is < 'A' or > 'Z')))
+            && !CurrencyCodeCatalog.IsRecognized(currency))
         {
             issues.Add(StatementParseIssue.Error(
-                "ROW_INVALID_CURRENCY", "Canonical rows require explicit three-letter currency evidence.", rowNumber, "Currency"));
+                "ROW_INVALID_CURRENCY", "Canonical rows require explicit recognized currency evidence.", rowNumber, "Currency"));
             return null;
         }
 

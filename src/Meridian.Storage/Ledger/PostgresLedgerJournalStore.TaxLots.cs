@@ -123,7 +123,8 @@ public sealed partial class PostgresLedgerJournalStore
                       original_face,
                       booked_factor,
                       par_basis,
-                      acquisition_terms;
+                      acquisition_terms,
+                      basis_adjustment;
             """;
         command.Parameters.AddWithValue("tax_lot_record_id", lot.TaxLotRecordId);
         command.Parameters.AddWithValue("ledger_book_id", lot.LedgerBookId);
@@ -202,7 +203,8 @@ public sealed partial class PostgresLedgerJournalStore
                    original_face,
                    booked_factor,
                    par_basis,
-                   acquisition_terms
+                   acquisition_terms,
+                   basis_adjustment
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
@@ -272,7 +274,8 @@ public sealed partial class PostgresLedgerJournalStore
                    original_face,
                    booked_factor,
                    par_basis,
-                   acquisition_terms
+                   acquisition_terms,
+                   basis_adjustment
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and tax_lot_record_id = any(@tax_lot_record_ids)
@@ -369,7 +372,24 @@ public sealed partial class PostgresLedgerJournalStore
             reader.IsDBNull(21) ? null : reader.GetDecimal(21),
             reader.IsDBNull(22) ? null : reader.GetDecimal(22),
             reader.IsDBNull(23) ? null : reader.GetDecimal(23),
-            reader.IsDBNull(24) ? null : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto>(reader.GetString(24)));
+            reader.IsDBNull(24) ? null : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto>(reader.GetString(24)),
+            ReadBasisAdjustment(reader));
+
+    // Every lot query selects basis_adjustment at ordinal 25. Requiring it by name means a query
+    // that omits it fails loudly instead of projecting a restated lot at its acquisition basis.
+    private static Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? ReadBasisAdjustment(NpgsqlDataReader reader)
+    {
+        const int Ordinal = 25;
+        if (reader.FieldCount <= Ordinal ||
+            !string.Equals(reader.GetName(Ordinal), "basis_adjustment", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("Tax-lot queries must select basis_adjustment at ordinal 25.");
+        }
+
+        return reader.IsDBNull(Ordinal)
+            ? null
+            : System.Text.Json.JsonSerializer.Deserialize<Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto>(reader.GetString(Ordinal));
+    }
 
     /// <summary>
     /// Enforces the acquisition-time par conventions the lot of record now carries, mirroring the
@@ -411,80 +431,4 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Tax-lot par basis must be positive.");
         }
     }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsByAssetScopeAsync(
-        Guid ledgerBookId,
-        Guid securityId,
-        Guid bookPositionId,
-        DateOnly effectiveDate,
-        CancellationToken ct = default)
-    {
-        if (ledgerBookId == Guid.Empty)
-        {
-            throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
-        }
-
-        if (securityId == Guid.Empty)
-        {
-            throw new ArgumentException("Security Master identity is required.", nameof(securityId));
-        }
-
-        if (bookPositionId == Guid.Empty)
-        {
-            throw new ArgumentException("Book-position identity is required.", nameof(bookPositionId));
-        }
-
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
-            select tax_lot_record_id,
-                   ledger_book_id,
-                   account_name,
-                   account_type,
-                   symbol,
-                   financial_account_id,
-                   lot_id,
-                   acquired_date,
-                   original_quantity,
-                   open_quantity,
-                   unit_cost,
-                   currency,
-                   source_journal_entry_id,
-                   evidence_ref,
-                   version,
-                   originating_mutation_batch_id,
-                   last_mutation_batch_id,
-                   created_at,
-                   updated_at,
-                   security_id,
-                   book_position_id,
-                   original_face,
-                   booked_factor,
-                   par_basis,
-                   acquisition_terms
-            from {Qualified("tax_lots")}
-            where ledger_book_id = @ledger_book_id
-              and security_id = @security_id
-              and book_position_id = @book_position_id
-              and acquired_date <= @effective_date
-              and open_quantity > 0
-            order by acquired_date, lot_id;
-            """;
-        command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
-        command.Parameters.AddWithValue("security_id", securityId);
-        command.Parameters.AddWithValue("book_position_id", bookPositionId);
-        command.Parameters.AddWithValue("effective_date", effectiveDate);
-
-        var lots = new List<LedgerTaxLotRecord>();
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false))
-        {
-            lots.Add(ReadTaxLot(reader));
-        }
-
-        return lots;
-    }
-
 }

@@ -4,7 +4,7 @@
 
 This is a source inventory of public DTOs and related contract objects. Database-to-contract links are explicit module associations; they do not assert one-to-one structural equivalence.
 
-- Public contract objects: 2733
+- Public contract objects: 2744
 - Namespaces: 57
 
 ## Classifications
@@ -12,13 +12,13 @@ This is a source inventory of public DTOs and related contract objects. Database
 | Classification | Count |
 | --- | ---: |
 | `catalog` | 11 |
-| `class` | 220 |
+| `class` | 223 |
 | `configuration` | 20 |
-| `dto` | 1328 |
-| `enum` | 377 |
+| `dto` | 1331 |
+| `enum` | 379 |
 | `event` | 5 |
 | `payload` | 63 |
-| `record` | 320 |
+| `record` | 323 |
 | `record_struct` | 3 |
 | `request` | 150 |
 | `response` | 91 |
@@ -29,11 +29,11 @@ This is a source inventory of public DTOs and related contract objects. Database
 ## Database-adjacent diagrams
 
 - [`ledger-contracts`](contracts/ledger-contracts.md): 298 objects; mapped schemas: `ledger`.
-- [`security-master-contracts`](contracts/security-master-contracts.md): 257 objects; mapped schemas: `security_master`.
+- [`security-master-contracts`](contracts/security-master-contracts.md): 260 objects; mapped schemas: `security_master`.
 - [`direct-lending-contracts`](contracts/direct-lending-contracts.md): 98 objects; mapped schemas: `security_master`.
 - [`asset-operations-contracts`](contracts/asset-operations-contracts.md): 112 objects; mapped schemas: `asset_operations`.
 - [`fund-governance-contracts`](contracts/fund-governance-contracts.md): 141 objects; mapped schemas: `fund_accounts`, `fund_structure`.
 - [`banking-contracts`](contracts/banking-contracts.md): 11 objects; mapped schemas: `banking`.
 - [`money-market-contracts`](contracts/money-market-contracts.md): 1 objects; mapped schemas: `money_market`.
 - [`reporting-contracts`](contracts/reporting-contracts.md): 22 objects; mapped schemas: `reporting`.
-- [`identity-access-contracts`](contracts/identity-access-contracts.md): 50 objects; mapped schemas: `identity_access`.
+- [`identity-access-contracts`](contracts/identity-access-contracts.md): 52 objects; mapped schemas: `identity_access`.

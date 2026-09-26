@@ -5,40 +5,53 @@ and trading operations — a domain where accessibility is frequently a procurem
 requirement, not a nicety. This guide states what the system guarantees, what it measures, and
 what the consuming application is responsible for.
 
-All contrast figures below are **measured** against the actual Concrete tokens (sRGB, WCAG 2.x
+All contrast figures below are **measured** against the actual Programmed Institutionalism tokens (sRGB, WCAG 2.x
 relative-luminance formula), not estimated. Re-run them whenever a base color token changes.
 
 ---
 
 ## 1. Color & contrast
 
-### Text — light mode (foreground on `--bg-light` #FFFFFF panel, unless noted)
+### Text — light mode (foreground on `--bg-light` #FBFAF8 panel, unless noted)
 
 | Token | Hex | Ratio | Normal text | Large text |
 | --- | --- | --- | --- | --- |
-| `--text-primary` | `#22272E` | **15.0:1** | ✅ AAA | ✅ AAA |
-| `--text-secondary` | `#4D5967` | **7.1:1** | ✅ AAA | ✅ AAA |
-| `--text-secondary` on canvas `#DEE3EA` | — | **5.5:1** | ✅ AA | ✅ AAA |
-| `--text-muted` | `#59636F` | **6.1:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on canvas `#DEE3EA` | — | **4.7:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on `--bg-medium` `#EBEFF4` | — | **5.3:1** | ✅ AA | ✅ AAA |
-| `--text-disabled` | `#889099` | 3.2:1 | exempt¹ | exempt¹ |
-| `--accent` | `#2F6F8F` | **5.5:1** | ✅ AA | ✅ AAA |
-| `--accent-dim` (pressed) | `#255B75` | **7.4:1** | ✅ AAA | ✅ AAA |
-| White on `--accent` (primary button) | — | **5.5:1** | ✅ AA | ✅ AAA |
-| White on `--accent-dim` (pressed button) | — | **7.4:1** | ✅ AAA | ✅ AAA |
-| `--red` | `#BA3F55` | **5.3:1** | ✅ AA | ✅ AAA |
-| `--orange` | `#8A520E` | **6.4:1** | ✅ AA | ✅ AAA |
-| `--purple` | `#6F5BA7` | **5.6:1** | ✅ AA | ✅ AAA |
-| `--green` | `#16885F` | 4.45:1 | ⚠️ see below | ✅ AA |
-| `--topbar-text` `#F4F6F8` on `--topbar-bg` `#171A1F` | — | **16.1:1** | ✅ AAA | ✅ AAA |
+| `--text-primary` | `#22252A` | **14.7:1** | ✅ AAA | ✅ AAA |
+| `--text-secondary` | `#4E5258` | **7.5:1** | ✅ AAA | ✅ AAA |
+| `--text-secondary` on canvas `#F2F0EC` | — | **6.9:1** | ✅ AA | ✅ AAA |
+| `--text-muted` | `#5E666F` | **5.6:1** | ✅ AA | ✅ AAA |
+| `--text-muted` on canvas `#F2F0EC` | — | **5.1:1** | ✅ AA | ✅ AAA |
+| `--text-muted` on `--bg-medium` `#EDEAE4` | — | **4.9:1** | ✅ AA | ✅ AAA |
+| `--text-disabled` | `#94999F` | 2.8:1 | exempt¹ | exempt¹ |
+| `--accent` | `#A85436` | **5.1:1** | ✅ AA | ✅ AAA |
+| `--accent-dim` (pressed) | `#8C4429` | **6.8:1** | ✅ AAA | ✅ AAA |
+| White on `--accent` (primary button) | — | **5.3:1** | ✅ AA | ✅ AAA |
+| White on `--accent-hover` (hovered button) | — | **4.6:1** | ✅ AA | ✅ AAA |
+| White on `--accent-dim` (pressed button) | — | **7.1:1** | ✅ AAA | ✅ AAA |
+| `--red` | `#A8443C` | **5.7:1** | ✅ AA | ✅ AAA |
+| `--orange` | `#8A5C12` | **5.6:1** | ✅ AA | ✅ AAA |
+| `--purple` | `#5D5486` | **6.5:1** | ✅ AA | ✅ AAA |
+| `--green` | `#3A7A56` | **4.9:1** | ✅ AA | ✅ AAA |
+| `--topbar-text` `#F4F2ED` on `--topbar-bg` `#1F1D1A` | — | **15.0:1** | ✅ AAA | ✅ AAA |
+
+> `--accent-hover` is a **fill**, never a text colour: as text on a panel it measures 4.4:1.
+>
+> **`--accent` is not a text colour on the header band either.** It is 5.05:1 on the card
+> and 4.63:1 on the canvas, but only **4.39:1** on `--bg-medium` — under AA. On the band it
+> is a borders-and-icons colour (3:1 role); band text takes `--accent-dim` (5.88:1). The
+> sticky sort arrow and multi-column rank in `DenseDataTable` sit there and were caught by
+> this rule. Both band pairs are now rows in `scripts/check_contrast.py`.
+> All three button states are checked against their white label by `scripts/check_contrast.py`,
+> which also checks every `data-brand` variant.
 
 ¹ WCAG 1.4.3 exempts disabled/inactive controls from contrast minimums. Disabled text is
 deliberately low-contrast to read as inactive.
 
 > **The one rule that matters: semantic text uses the `-dim` variant, never the raw hue.**
-> Raw `--green` (#16885F) is 4.45:1 — *marginally under* the 4.5:1 AA threshold for normal text.
-> This is exactly why every chip, badge, and status row renders its label in `--green-dim`
+> Under the superseded palette raw `--green` (#16885F) was 4.45:1 — *marginally under* the 4.5:1
+> AA threshold. The restyle lifted it to 4.9:1, so it now clears AA on its own, but the rule
+> stands: the `-dim` variants carry a margin that survives a brand swap, and a white-label
+> deployment can move the raw hue anywhere. Every chip, badge, and status row renders its label in `--green-dim`
 > (the hue mixed 75% toward `--dim-mix`), which is darker and clears AA comfortably. The raw
 > hues (`--green`/`--red`/`--orange`/`--purple`) are for **borders and ≥18px/▲ icons** (the
 > trio's solid-border role), where the 3:1 non-text / large-text threshold applies and all pass.
@@ -46,50 +59,54 @@ deliberately low-contrast to read as inactive.
 
 ### Non-text contrast (WCAG 2.2 · 1.4.11)
 
-- **Focus ring** `--border-focus` (#2F6F8F) on a white panel is **5.5:1** — comfortably above the
+- **Focus ring** `--border-focus` (#A85436) on a paper panel is **5.1:1** — comfortably above the
   3:1 requirement for focus indicators. Every interactive control exposes it via `:focus-visible`.
-- **Structural borders are decorative and intentionally below 3:1** (`--border` #CBD3DC ≈ 1.5:1,
-  `--border-strong` #99A5B2 ≈ 2.5:1). This is conformant because the border is **never the sole
+- **Structural borders are decorative and intentionally below 3:1** (`--border` #E4E3DE ≈ 1.2:1,
+  `--border-strong` #AFABA1 ≈ 2.2:1). This is conformant because the border is **never the sole
   indicator** of a control or its state: inputs also change background on hover/focus and show a
   high-contrast focus ring; selected table rows carry a 3px accent inset *plus* a background wash;
   active nav items carry a 3px accent bar *plus* a wash. Do not rely on border color alone to
   communicate state — pair it with the wash/inset the components already provide.
 
-### Dark mode — measured (graphite charcoal tokens)
+### Dark mode — measured (warm graphite tokens)
 
-Dark mode was fully swept July 2026 with the same measured methodology as the light table.
-Foreground on the dark panel `--bg-light` `#1A2026` unless noted.
+Re-measured September 2026 against the current default dark tokens, with the same methodology
+as the light table. The figures below were the steel identity's until this pass; the restyle
+moved the tokens and left the table behind, which made the "measured against the actual tokens"
+claim above false for this section. Foreground on the dark panel `--bg-light` `#201D19` unless noted.
 
 | Token | Hex | Ratio | Normal text | Large text |
 | --- | --- | --- | --- | --- |
-| `--text-primary` | `#E5EAEF` | **13.6:1** | ✅ AAA | ✅ AAA |
-| `--text-primary` on canvas `#0E1113` | — | **15.7:1** | ✅ AAA | ✅ AAA |
-| `--text-secondary` | `#A5AFBC` | **7.4:1** | ✅ AAA | ✅ AAA |
-| `--text-muted` | `#8F9AA7` | **5.8:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on header band `#232A32` | — | **5.1:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on hover row `#283039` | — | **4.7:1** | ✅ AA | ✅ AAA |
-| `--text-disabled` | `#5A6574` | 2.8:1 | exempt¹ | exempt¹ |
-| `--accent` | `#5790BE` | **4.8:1** | ✅ AA | ✅ AAA |
-| `--accent` on canvas `#0E1113` | — | **5.5:1** | ✅ AA | ✅ AAA |
-| `--accent-dim` (pressed / accent text) | `#609BC9` | **5.5:1** | ✅ AA | ✅ AAA |
-| Dark ink `--text-on-accent` on `--accent` | — | **5.5:1** | ✅ AA | ✅ AAA |
-| Dark ink `--text-on-accent` on `--accent-dim` (pressed) | — | **6.3:1** | ✅ AA | ✅ AAA |
-| Focus ring `--border-focus` `#5B9FD9` | — | **5.8:1** | (3:1 non-text) ✅ | — |
-| `--green-dim` / `--red-dim` / `--orange-dim` / `--purple-dim` | — | **7.0 / 6.3 / 7.6 / 6.8:1** | ✅ AA(A) | ✅ AAA |
-| Raw `--green` / `--red` / `--orange` / `--purple` (borders, ≥3:1 role) | — | **5.1 / 4.4 / 5.6 / 4.7:1** | ⚠️ see rule | ✅ AA |
-| `--text-on-fill` ink on solid green / red / orange / purple | — | **5.8 / 5.0 / 6.5 / 5.4:1** | ✅ AA | ✅ AAA |
-| `--topbar-text` / muted / faint on chrome `#0D1117` | — | **15.7 / 9.3 / 6.0:1** | ✅ AAA/AA | ✅ AAA |
+| `--text-primary` | `#EFEBE4` | **14.1:1** | ✅ AAA | ✅ AAA |
+| `--text-primary` on canvas `#14120F` | — | **15.7:1** | ✅ AAA | ✅ AAA |
+| `--text-secondary` | `#B5AEA4` | **7.6:1** | ✅ AAA | ✅ AAA |
+| `--text-muted` | `#9A9289` | **5.5:1** | ✅ AA | ✅ AAA |
+| `--text-muted` on header band `#292520` | — | **5.0:1** | ✅ AA | ✅ AAA |
+| `--text-muted` on hover row `#2E2A24` | — | **4.6:1** | ✅ AA | ✅ AAA |
+| `--text-disabled` | `#6A635A` | 2.8:1 | exempt¹ | exempt¹ |
+| `--accent` | `#D98A64` | **6.2:1** | ✅ AA | ✅ AAA |
+| `--accent` on canvas `#14120F` | — | **6.9:1** | ✅ AA | ✅ AAA |
+| `--accent-dim` (pressed / accent text) | `#E39A77` | **7.3:1** | ✅ AAA | ✅ AAA |
+| Dark ink `--text-on-accent` on `--accent` | — | **6.7:1** | ✅ AA | ✅ AAA |
+| Dark ink `--text-on-accent` on `--accent-dim` (pressed) | — | **7.9:1** | ✅ AAA | ✅ AAA |
+| Focus ring `--border-focus` `#D98A64` | — | **6.2:1** | (3:1 non-text) ✅ | — |
+| `--green-dim` / `--red-dim` / `--orange-dim` / `--purple-dim` | — | **7.6 / 6.9 / 8.4 / 7.2:1** | ✅ AAA | ✅ AAA |
+| Raw `--green` / `--red` / `--orange` / `--purple` (borders, ≥3:1 role) | — | **5.6 / 4.9 / 6.4 / 5.1:1** | ⚠️ see rule | ✅ AA |
+| `--text-on-fill` ink on solid green / red / orange / purple | — | **6.1 / 5.3 / 6.9 / 5.5:1** | ✅ AA | ✅ AAA |
+| `--topbar-text` / muted / faint on chrome `#1A1511` | — | **15.0 / 8.7 / 6.1:1** | ✅ AAA/AA | ✅ AAA |
 
 ¹ Same WCAG 1.4.3 exemption as light mode.
 
 **The alpha-10/20 washes.** The trio pattern puts `-dim` text on translucent hue washes, so the
 effective background is the wash composited over the panel. Measured over the dark panel:
-`-dim` text on its own **a10** wash is **6.1 / 5.6 / 6.6 / 6.0:1** (green/red/orange/purple) and
-on the heavier **a20** wash **5.2 / 4.9 / 5.5 / 5.1:1** — all AA. The light-mode equivalents
-(6.1–8.0:1 on a10 over white) pass too. These composite pairs are now locked in
+`-dim` text on its own **a10** wash is **6.6 / 6.0 / 7.1 / 6.3:1** (green/red/orange/purple) and
+on the heavier **a20** wash **5.6 / 5.2 / 5.9 / 5.4:1** — all AA. The light-mode equivalents
+(6.6–8.1:1 on a10 over the card) pass too. These composite pairs are now locked in
 `scripts/check_contrast.py` (`WASH_PAIRS`), so a wash or hue edit that breaks a chip fails the suite.
 
-**What the sweep changed** (dark tokens only — light mode untouched):
+**What the July 2026 sweep changed** (dark tokens only — light mode untouched). The values
+below are the *steel* identity's, which this package now ships as `data-brand="steel"`; the
+reasoning is what carried forward, not the hexes:
 
 - **`--accent-dim` `#3C6688` → `#609BC9`.** The old value failed two ways: dark ink on the
   pressed primary button was **3.11:1**, and `accent-dim`-as-text (Toast action, ColumnManager
@@ -105,8 +122,8 @@ The same rule as light mode holds: **semantic text uses `-dim`, never the raw hu
 `dark-mode-validation` cards visually verify every surface/text pair in dark.
 
 **Text sitting *on* a solid fill is a separate question from text on a panel.** White text on
-the dark-mode accent measures only **~3.45:1** — this is why `--text-on-accent` flips to dark
-ink `#0D1117` in dark mode. **Swept July 2026:** every
+the dark-mode accent measures only **2.70:1** — this is why `--text-on-accent` flips to dark
+ink `#1A1511` in dark mode. **Swept July 2026:** every
 other solid-fill + white-text pairing now routes through the same token — accent fills
 (`Pagination`, `Stepper`, `Checkbox`, `DatePicker`/`DateRangePicker`, `ColumnChooser`,
 `SelectionToolbar`, `BulkActionBar`, `Modal`'s primary button) use `--text-on-accent`; non-accent

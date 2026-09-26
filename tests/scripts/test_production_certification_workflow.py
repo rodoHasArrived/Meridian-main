@@ -1,6 +1,8 @@
 import unittest
 from pathlib import Path
 
+import yaml
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "production-certification.yml"
@@ -17,11 +19,17 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
         cls.coverlet_settings = COVERLET_SETTINGS_PATH.read_text(encoding="utf-8")
 
-    def test_runs_on_release_tags_schedule_and_manual_dispatch(self) -> None:
-        self.assertIn("workflow_dispatch:", self.workflow)
-        self.assertIn("schedule:", self.workflow)
-        self.assertIn('cron: "17 3 * * 0"', self.workflow)
-        self.assertIn('tags:\n      - "v*"', self.workflow)
+    def test_certifies_main_pushes_without_path_filters_and_retains_other_triggers(self) -> None:
+        # BaseLoader keeps the YAML 1.1 word "on" as a string, as GitHub does.
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        triggers = workflow["on"]
+        self.assertEqual(triggers["push"]["branches"], ["main"])
+        self.assertEqual(triggers["push"]["tags"], ["v*"])
+        self.assertNotIn("paths", triggers["push"])
+        self.assertNotIn("paths-ignore", triggers["push"])
+        self.assertEqual(triggers["schedule"], [{"cron": "17 3 * * 0"}])
+        self.assertIn("workflow_dispatch", triggers)
+        self.assertEqual(workflow["concurrency"]["cancel-in-progress"], "false")
 
     def test_runs_service_backed_integrations_with_cobertura_coverage(self) -> None:
         self.assertIn("image: postgres:17", self.workflow)

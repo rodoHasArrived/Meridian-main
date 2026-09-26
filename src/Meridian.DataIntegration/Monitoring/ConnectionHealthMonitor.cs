@@ -1021,7 +1021,8 @@ public sealed class ConnectionHealthMonitor : IConnectionHealthMonitor, IDisposa
     {
         private readonly object _sync = new();
         private Task<bool>? _task;
-        private bool _cancellationDisposed;
+        private bool _cancellationDisposeRequested;
+        private int _activeCancellationCalls;
 
         public ConnectionState ConnectionState { get; } = connectionState;
         public CancellationTokenSource Cancellation { get; } = cancellation;
@@ -1037,30 +1038,52 @@ public sealed class ConnectionHealthMonitor : IConnectionHealthMonitor, IDisposa
         {
             lock (_sync)
             {
-                if (!_cancellationDisposed)
+                if (_cancellationDisposeRequested)
+                    return;
+
+                _activeCancellationCalls++;
+            }
+
+            // Cancel invokes provider callbacks, which can re-enter the monitor.
+            // Retain ownership of the source without holding the state lock.
+            try
+            {
+                Cancellation.Cancel();
+            }
+            catch (AggregateException)
+            {
+                // Delegate-owned cancellation callbacks must not break monitor shutdown.
+            }
+            finally
+            {
+                bool disposeCancellation;
+                lock (_sync)
                 {
-                    try
-                    {
-                        Cancellation.Cancel();
-                    }
-                    catch (AggregateException)
-                    {
-                        // Delegate-owned cancellation callbacks must not break monitor shutdown.
-                    }
+                    _activeCancellationCalls--;
+                    disposeCancellation = _cancellationDisposeRequested && _activeCancellationCalls == 0;
                 }
+
+                if (disposeCancellation)
+                    Cancellation.Dispose();
             }
         }
 
         public void DisposeCancellation()
         {
+            bool disposeCancellation;
             lock (_sync)
             {
-                if (_cancellationDisposed)
+                if (_cancellationDisposeRequested)
                     return;
 
-                _cancellationDisposed = true;
-                Cancellation.Dispose();
+                _cancellationDisposeRequested = true;
+                disposeCancellation = _activeCancellationCalls == 0;
             }
+
+            // A linked source's disposal can wait for an upstream callback that
+            // also needs _sync. Never wait for that callback while holding it.
+            if (disposeCancellation)
+                Cancellation.Dispose();
         }
     }
 

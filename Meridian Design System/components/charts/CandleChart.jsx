@@ -16,7 +16,7 @@ function niceTicks(min, max, count) {
 }
 
 export function CandleChart({
-  bars, overlays = [{ label: "MA20", color: "var(--accent)", win: 20 }, { label: "MA50", color: "var(--orange)", win: 50 }],
+  bars, overlays = [{ label: "MA20", color: "var(--chart-ma20)", win: 20 }, { label: "MA50", color: "var(--orange)", win: 50 }],
   crosshairIndex = null, showVolume = true, priceTicks = 6, timeTicks = 7,
 }) {
   const W = 960, H = 540;

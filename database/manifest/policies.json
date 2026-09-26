@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 240,
-    "warning": 240
+    "total": 242,
+    "warning": 242
   },
   "failed": false,
   "findings": [
@@ -564,6 +564,26 @@
       },
       "message": "Business table ledger.ledger_books does not have a table comment.",
       "object": "ledger.ledger_books",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "ledger_event_audit_genesis"
+      },
+      "message": "Business table ledger.ledger_event_audit_genesis does not have a table comment.",
+      "object": "ledger.ledger_event_audit_genesis",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "ledger_event_audit_head"
+      },
+      "message": "Business table ledger.ledger_event_audit_head does not have a table comment.",
+      "object": "ledger.ledger_event_audit_head",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2625,5 +2645,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "c56ab176cae549bb952b0b133170ef2f91f83f6bc4f94df8c04e28f95194e037"
+  "fingerprint": "5f42a5569c832ebb0cb47298c898ec7d2c3add0cb56163f91609fab2bdcde32d"
 }

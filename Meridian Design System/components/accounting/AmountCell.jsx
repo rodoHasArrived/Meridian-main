@@ -41,12 +41,12 @@ export function AmountCell({
     text = formatMoney(value, { currency, decimals: dp, parens: useParens, zeroDash, signed: useSigned });
   }
 
-  let color = "var(--text-primary, #22272E)";
-  if (mode === "muted") color = "var(--text-muted, #59636F)";
+  let color = "var(--text-primary, #22252A)";
+  if (mode === "muted") color = "var(--text-muted, #5E666F)";
   else if (mode === "pnl") {
     color = !isFinite(num) || num === 0
-      ? "var(--text-muted, #59636F)"
-      : num < 0 ? "var(--red-dim, #8C2F40)" : "var(--green-dim, #10663F)";
+      ? "var(--text-muted, #5E666F)"
+      : num < 0 ? "var(--red-dim, #7E332D)" : "var(--green-dim, #2C5C40)";
   }
 
   return (
@@ -73,7 +73,7 @@ export function AmountCell({
             fontWeight: 600,
             fontVariant: "all-small-caps",
             letterSpacing: ".03em",
-            color: "var(--text-muted, #59636F)",
+            color: "var(--text-muted, #5E666F)",
             marginLeft: 5,
           }}
         >

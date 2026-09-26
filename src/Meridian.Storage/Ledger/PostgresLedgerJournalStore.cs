@@ -132,8 +132,12 @@ public sealed partial class PostgresLedgerJournalStore :
 
         LedgerPeriodPostingGuard.Validate(entry, period);
         await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
+        var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
         await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await AppendLedgerAuditAsync(connection, transaction, auditHead, "journal", entry.Entry.JournalEntryId, 1,
+            entry.PostingCommand?.Intent == AccountingPostingIntentDto.Reversal ? "JournalReversed" : "JournalPosted",
+            entry.PostingCommand?.Actor, closeEvent: null, ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
@@ -470,6 +474,7 @@ public sealed partial class PostgresLedgerJournalStore :
                 ct: ct)
             .ConfigureAwait(false);
 
+        var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
         LedgerAccountingPeriod saved;
         if (current is null)
         {
@@ -518,6 +523,10 @@ public sealed partial class PostgresLedgerJournalStore :
             await InsertCloseEventAsync(connection, transaction, closeEvent, saved.Version, ct).ConfigureAwait(false);
         }
 
+        await AppendLedgerAuditAsync(connection, transaction, auditHead, "period", saved.PeriodId, saved.Version,
+            current is null ? "PeriodCreated" : saved.Status == "Open" && current.Status != "Open" ? "PeriodReopened"
+                : saved.Status != current.Status ? "PeriodClosed" : "PeriodUpdated",
+            closeEvent?.ClosedBy ?? period.MutationActor, closeEvent, ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return saved;
     }

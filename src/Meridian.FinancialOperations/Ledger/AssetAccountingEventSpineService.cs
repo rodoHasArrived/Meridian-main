@@ -520,7 +520,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             period.PeriodId,
             period.Version,
             rulePack.RulePackId,
-            rulePack.RulePackVersion);
+            rulePack.RulePackVersion,
+            source.Scope.ExpectedSecurityVersion);
 
         var candidateWrite = await _authorityBuilder
             .BuildAuthoritativeCandidateWriteAsync(candidateRequest, authority, ct)
