@@ -563,16 +563,16 @@ Reactivated 2026-07-06. The WPF desktop workstation returns to the active produc
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | ready_for_acceptance |
-| Health | yellow |
+| Status | accepted |
+| Health | green |
 | Priority | critical |
 | Owner lane | Data Confidence and Validation |
-| Evidence posture | implementation_complete |
+| Evidence posture | complete |
 | Last reviewed | 2026-09-26 |
 
 ### Current Summary
 
-Review gate reopened 2026-09-26 under issue
+Bounded acceptance restored 2026-09-26 under DEC-W9-ACCEPTANCE-005 and issue 2626 comment 5845555204. After PR 3003 merged as 6bd732dcbc83db70e97c18f7ecca0e0adce2a789 at 10:36 UTC, the owner explicitly satisfied both security/storage and reconciliation-lineage review lanes at 10:39 UTC by accepting completed owner self-review in place of independent non-author reviews. Independent non-author verdicts were not obtained; no detailed findings, inspected-artifact list, or reviewed SHA is inferred from that attestation. The row returns to accepted with complete evidence and green health for this bounded target only. PR 3000 merged the reconciliation save/rekey and create-replay provenance correction at f96917619ea357aad3759449d9ea69bb6596a9b5; all nine hosted workflows passed on 432d8882bd6bcafe730408d6a64ba32600921c56 and 106 focused repository tests passed, including 35 new regressions. Production Certification run 36214217538 passed all four jobs on 13f2a11df9fb95c548a50c9e60449fee2353dfb4 with 1030 integration tests passed and zero failures or skips. That retained evidence is unchanged and is not a new validation run or human review. The W9 acceptance record preserves the premature closure, reopened review gate, retained artifact digest, and subsequent case-specific owner exception. The exception does not change repository rules, branch protections, CI requirements, other review gates, done status, or release certification. The prior acceptance history follows. Implementation completed 2026-08-09; the three items that remained after the 2026-08-08 core slice are closed. Per-screen WPF labeling - the shared workspace context strip's Environment badge now resolves the server-reported provenance token fail-closed (a connected seeded backend can never read "Live"; unknown tokens degrade to SIMULATED), and the Portfolio and Reporting shells, which previously rendered an empty strip, now compose the shared context service so all seven workspaces carry the badge. Hard entry-time blocks - reconciliation-break intake refuses an unmarked item whose source declares a simulated/seeded/sample origin at the single durable chokepoint (FileReconciliationBreakQueueRepository, mirroring the ledger append boundary; carried marks are normalized to the canonical vocabulary), and report packs that cite simulated/seeded runs inherit the strongest non-real mark, always fail validation with a Critical provenance issue (ResolveStatus can never return Validated), and the durable report-pack boundary refuses to persist a marked pack in any approvable/exported/retained state. Startup wiring - the ADR-019 startup guard now runs the supported-local durability assertion (an unlabeled local composition with in-memory durable-role bindings refuses startup naming the bindings; a pinned non-real provenance declaration is the sanctioned labeled alternative), UiServer pins the composed provenance into the graph (seeded for demo hosts, forced-simulated for in-memory local durables), and /api/demo/mode plus the status-poll parser surface the pinned label to both workstation shells even when demo heuristics say disabled. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate.
 
 ### Exit Criteria
 

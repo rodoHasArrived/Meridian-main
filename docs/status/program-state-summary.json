@@ -2,7 +2,7 @@
   "schemaVersion": "program-state-summary/v3",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-09-23",
+  "snapshotDate": "2026-09-26",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
@@ -276,7 +276,7 @@
       "Owner Lane": "Data Confidence and Validation",
       "Evidence Posture": "complete",
       "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; tests/Meridian.Tests/Application/Composition/ProductionProhibitedDurableBindingTests.cs; src/Meridian.Ui/dashboard/src/app.tsx; src/Meridian.Ui/dashboard/src/components/meridian/data-provenance-banner.tsx; src/Meridian.Ui.Services/Services/FixtureModeDetector.cs; src/Meridian.Ui.Services/Services/StatusServiceBase.cs; src/Meridian.Strategies/Services/PromotionService.cs; tests/Meridian.Tests/Strategies/PromotionServiceTests.cs; src/Meridian.Ui/dashboard/src/app.test.tsx; src/Meridian.Wpf/Services/WorkspaceShellContextService.cs; tests/Meridian.Wpf.Tests/ViewModels/WorkspaceShellProvenanceBadgeTests.cs; src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs; tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs; src/Meridian.Ui.Shared/Services/ReportPackValidationService.cs; src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs; tests/Meridian.Tests/Application/Services/FundOperationsWorkspaceReadServiceTests.cs; src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs; tests/Meridian.Tests/Application/Composition/ProductionRegistrationGuardServiceTests.cs",
-      "Last Reviewed": "2026-08-29"
+      "Last Reviewed": "2026-09-26"
     },
     {
       "ID": "W9-DEMO-002",
@@ -301,8 +301,8 @@
       "Priority": "critical",
       "Owner Lane": "Execution and Fund Accounts",
       "Evidence Posture": "complete",
-      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs; src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs; src/Meridian.Execution/Adapters/PaperTradingGateway.cs; src/Meridian.Execution/PaperTradingGateway.cs; src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs; tests/Meridian.Tests/Execution/PaperOrderMatchingPolicyTests.cs; tests/Meridian.Tests/Execution/PaperTradingCostModelTests.cs; tests/Meridian.Tests/Execution/PaperFillEnvelopeRegressionTests.cs; tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs",
-      "Last Reviewed": "2026-08-29"
+      "Evidence": "docs/product/w9-operator-acceptance-2026-08-29.md; src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs; src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs; src/Meridian.Execution/Adapters/PaperTradingGateway.cs; src/Meridian.Execution/PaperTradingGateway.cs; src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs; tests/Meridian.Tests/Execution/PaperOrderMatchingPolicyTests.cs; tests/Meridian.Tests/Execution/PaperTradingCostModelTests.cs; tests/Meridian.Tests/Execution/PaperFillEnvelopeRegressionTests.cs; tests/Meridian.Tests/Execution/PaperGatewayTickSizeBoundaryTests.cs; tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs",
+      "Last Reviewed": "2026-09-25"
     },
     {
       "ID": "W9-ALPACA-004",
@@ -379,8 +379,8 @@
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "in_progress",
-      "Evidence": "",
-      "Last Reviewed": "2026-09-01"
+      "Evidence": "tests/Meridian.Tests/Integration/StatementImportCaseworkEvidenceTests.cs",
+      "Last Reviewed": "2026-09-25"
     },
     {
       "ID": "W9-ASSET-010",
