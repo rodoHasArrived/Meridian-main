@@ -18490,6 +18490,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:identity-access-contracts",
+      "target": "contract:Meridian.Identity.AuthenticationMode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:identity-access-contracts",
+      "target": "contract:Meridian.Identity.AuthenticationModeResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:identity-access-contracts",
       "target": "contract:Meridian.Identity.DesignModule"
     },
     {
@@ -47335,7 +47347,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "136bad8b2273bd404fe03eb367cc8a5e3ff27fc0f051e0f5a96bc61b7754a326",
+  "fingerprint": "adf4c4df6ccc68d2ea1f38c66cddccd10631ea4177d7ac19cf2f78316b4459b0",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -63703,6 +63715,18 @@
       "label": "Meridian.Identity.Auth.UserSessionRevokeResultDto"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Identity.AuthenticationMode",
+      "kind": "contract-type",
+      "label": "Meridian.Identity.AuthenticationMode"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Identity.AuthenticationModeResolver",
+      "kind": "contract-type",
+      "label": "Meridian.Identity.AuthenticationModeResolver"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Identity.DesignModule",
       "kind": "contract-type",
@@ -69389,10 +69413,10 @@
   ],
   "summary": {
     "contract_references": 3106,
-    "contract_set_memberships": 3685,
-    "edges": 7864,
+    "contract_set_memberships": 3687,
+    "edges": 7866,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3822
+    "nodes": 3824
   }
 }

@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-08-11
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Execution
@@ -31,6 +31,13 @@ This layer implements execution behavior and broker-facing runtime services whil
 ## Important workflows
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
+
+Both paper gateways resolve the final fill price through the shared trading-parameter helper.
+Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays
+inside the captured market-data envelope, and respects any limit or stop-limit price. Otherwise,
+the gateway retains the price already admitted by the matching policy, even if the observed print
+is off the configured tick grid. Costs are calculated from that final price. This applies to both
+immediate and resting-order fills; tick rounding cannot invalidate matching admission.
 
 The OMS owns settlement of pre-trade risk reservations. `IRiskValidator` returns a
 `RiskValidationResult` whose `Reservations` carry any capacity a stateful rule took while evaluating
