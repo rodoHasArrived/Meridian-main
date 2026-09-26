@@ -365,9 +365,10 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
     {
         var harness = CreateHarness([Book(LedgerBookId)],
             [Period(AccountingPeriodId, LedgerBookId, LedgerPeriodStatusDto.Open)], corruptCompletion: true);
-        var act = () => harness.Workflow.StartAsync(Command());
-        await act.Should().ThrowAsync<StatementReconciliationIntakeAuthorityException>()
-            .Where(error => error.Code == "STATEMENT_LINEAGE_CHECKPOINT_MISMATCH");
+        var execution = await harness.Workflow.StartAsync(Command());
+        execution.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Failed);
+        execution.Workflow.FailureReason.Should().Be(
+            "Source comparison requires the exact import and match artifacts bound to the completed run checkpoint.");
         (await harness.Queue.GetAllAsync()).Should().OnlyContain(item => item.Lineage == null);
     }
 
