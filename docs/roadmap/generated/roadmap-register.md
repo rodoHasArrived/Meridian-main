@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-09-23
+Snapshot date: 2026-09-26
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -563,16 +563,16 @@ Reactivated 2026-07-06. The WPF desktop workstation returns to the active produc
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | accepted |
-| Health | green |
+| Status | ready_for_acceptance |
+| Health | yellow |
 | Priority | critical |
 | Owner lane | Data Confidence and Validation |
-| Evidence posture | complete |
-| Last reviewed | 2026-09-25 |
+| Evidence posture | implementation_complete |
+| Last reviewed | 2026-09-26 |
 
 ### Current Summary
 
-Reopened 2026-09-25 under issue
+Review gate reopened 2026-09-26 under issue
 
 ### Exit Criteria
 

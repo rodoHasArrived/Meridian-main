@@ -1,6 +1,6 @@
 {
   "total_files": 674,
-  "total_lines": 146173,
+  "total_lines": 146224,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -3209,7 +3209,7 @@
     },
     {
       "path": "docs/product/w9-operator-acceptance-2026-08-29.md",
-      "line_count": 235,
+      "line_count": 286,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
