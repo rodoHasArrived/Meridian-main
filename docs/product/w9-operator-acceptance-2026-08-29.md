@@ -36,8 +36,8 @@ documentation each row's lane owns.
 > `a03238c69f86c7455e03c0f6be2196d55719a044` found that reconciliation `SaveAsync` omitted the
 > entry-provenance guard, the actual legacy rekey path could discard an incoming mark, and
 > duplicate-create identity excluded provenance. The original acceptance remains historical
-> evidence; the row is now `in_progress` pending the correction, required validation, and focused
-> review. This does not withdraw the other rows' decisions or certify a release.
+> evidence; the row moved to `in_progress` pending correction, validation, and review. This status
+> was superseded by the W9-TRUTH-001 correction closure below; other rows' decisions are unchanged.
 
 ## W9-TRUTH-001 correction closure — 2026-09-25
 
