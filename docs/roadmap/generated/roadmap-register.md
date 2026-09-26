@@ -628,11 +628,11 @@ Implementation completed 2026-08-08 on the pre-existing --seed-demo/--demo/--res
 | Priority | critical |
 | Owner lane | Execution and Fund Accounts |
 | Evidence posture | complete |
-| Last reviewed | 2026-08-29 |
+| Last reviewed | 2026-09-25 |
 
 ### Current Summary
 
-Implementation completed 2026-08-08. Both paper gateways now match through the shared documented PaperOrderMatchingPolicy (paper-match/1) - market orders transact against the observed ask/bid (falling back to last trade, then bar close) and never at placeholder prices, limit orders fill only at or better than their limit and otherwise rest, stops trigger per the documented trade-preferred policy with a quote fallback, and resting orders re-evaluate event-driven as the market event tap records fresh trades, quotes, and bars (bars now feed the observed envelope). Every fill applies the PaperTradingCostModel (paper-cost/1) commission/fee/slippage schedule with per-fill spread reporting, costs flow into paper-session economics (portfolio cost booking, per-fill report fields, session TradingCosts totals), and an FsCheck-backed regression suite proves no fill can print outside the observed market-data envelope for the bar or tick in effect. Paper sessions durably record the matching and cost model versions, and paper-to-live promotions now require the PAPER_EXECUTION_MODEL_REVIEWED evidence reference recording those versions, validated at approval and at the durable promotion-record store. The explicitly opted-in scaffold pricing escape hatch (default off, loudly warned) is unchanged. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate.
+Correction 2026-09-25 under issue
 
 ### Exit Criteria
 
