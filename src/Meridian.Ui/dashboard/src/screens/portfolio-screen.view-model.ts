@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   buildMultiAssetCoverageGroups,
@@ -63,6 +64,7 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  markFreshness: MarkFreshnessPresentation;
   id: string;
   symbol: string;
   side: string;
@@ -138,6 +140,7 @@ export interface PortfolioBrokerageAccountRow {
 }
 
 export interface PortfolioBrokeragePositionRow {
+  markFreshness: MarkFreshnessPresentation;
   id: string;
   accountLabel: string;
   accountKind: string;
@@ -666,6 +669,7 @@ export function buildPortfolioScreenViewModel({
       side: p.side,
       quantity: p.quantity,
       avgPrice: p.averagePrice,
+      markFreshness: presentMarkFreshness(p.markFreshness),
       markPrice: p.markPrice,
       dayPnl: p.dayPnl,
       unrealizedPnl: p.unrealizedPnl,
@@ -1707,6 +1711,7 @@ function toBrokeragePositionRow(
     quantity: formatNumber(position.quantity),
     averagePrice: formatCurrencyPrecise(position.averageEntryPrice),
     markPrice: formatCurrencyPrecise(position.marketPrice),
+    markFreshness: presentMarkFreshness(position.markFreshness),
     marketValue: formatCurrency(position.marketValue),
     unrealizedPnl: pnl,
     pnlTone: pnlTone(pnl),
@@ -1730,6 +1735,7 @@ function buildSelectedBrokeragePositionDetail(
   accounts: BrokerageHouseholdAccount[],
   providerLabel: string
 ): PortfolioBrokeragePositionDetail {
+  const mark = presentMarkFreshness(position.markFreshness);
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
@@ -1746,7 +1752,7 @@ function buildSelectedBrokeragePositionDetail(
     subtitle: `${providerLabel} / ${accountLabel} / ${position.assetClass}`,
     ariaLabel: `${position.symbol} brokerage position detail`,
     statusTitle: "Brokerage position inspector",
-    statusDetail: `${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatCurrency(position.marketValue)} market value and ${pnl} unrealized P&L.`,
+    statusDetail: `${mark.label}: ${mark.reason} Recorded ${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatCurrency(position.marketValue)} market value and ${pnl} unrealized P&L.`,
     statusTone,
     statusBadgeLabel: coverageLabel,
     statusBadgeVariant,
@@ -1755,7 +1761,8 @@ function buildSelectedBrokeragePositionDetail(
       { label: "Account kind", value: accountKind, tone: "muted" },
       { label: "Quantity", value: formatNumber(position.quantity), tone: "default" },
       { label: "Average entry", value: formatCurrencyPrecise(position.averageEntryPrice), tone: "muted" },
-      { label: "Mark price", value: formatCurrencyPrecise(position.marketPrice), tone: "muted" },
+      { label: "Recorded mark price", value: formatCurrencyPrecise(position.marketPrice), tone: "muted" },
+      ...markFreshnessFields(mark),
       { label: "Market value", value: formatCurrency(position.marketValue), tone: "default" },
       { label: "Unrealized P&L", value: pnl, tone: pnlStatusTone },
       { label: "Security coverage", value: coverageLabel, tone: coverageTone },
@@ -2296,7 +2303,7 @@ function buildSelectedPositionDetail(
   risk: PortfolioRiskState | null,
   brokerage: PortfolioBrokerageStatus | null
 ): PortfolioPositionDetail {
-  const statusTone = riskTone(risk?.state, position.pnlTone);
+  const statusTone = position.markFreshness.reviewRequired ? "warning" : riskTone(risk?.state, position.pnlTone);
   const guardrailSummary = risk?.activeGuardrails.length
     ? risk.activeGuardrails.join(" · ")
     : "No active guardrails";
@@ -2306,14 +2313,15 @@ function buildSelectedPositionDetail(
     title: position.symbol,
     subtitle: `${position.side} · ${position.quantity} shares`,
     ariaLabel: `${position.symbol} holding detail`,
-    statusTitle: `${position.symbol} selected`,
-    statusDetail: `${position.exposure} exposure with ${position.unrealizedPnl} unrealized P&L. ${risk?.summary ?? "Risk context unavailable."}`,
+    statusTitle: position.markFreshness.reviewRequired ? `${position.symbol} · Review required` : `${position.symbol} selected`,
+    statusDetail: `${position.markFreshness.reason} Recorded: ${position.exposure} exposure with ${position.unrealizedPnl} unrealized P&L. ${risk?.summary ?? "Risk context unavailable."}`,
     statusTone,
     fields: [
       { label: "Side", value: position.side, tone: "default" },
       { label: "Quantity", value: position.quantity, tone: "default" },
       { label: "Average price", value: position.avgPrice, tone: "muted" },
-      { label: "Mark price", value: position.markPrice, tone: "muted" },
+      { label: "Recorded mark price", value: position.markPrice, tone: "muted" },
+      ...markFreshnessFields(position.markFreshness),
       { label: "Exposure", value: position.exposure, tone: "default" },
       { label: "Day P&L", value: position.dayPnl, tone: pnlFieldTone(position.dayPnl) },
       { label: "Unrealized P&L", value: position.unrealizedPnl, tone: pnlFieldTone(position.unrealizedPnl) },

@@ -11,6 +11,13 @@ last_reviewed: 2026-06-09
 
 # src/Meridian.Identity
 
+### Effective account deployment scope
+
+`UserProfileRegistry.GetConfiguredCompanyIds` exposes only company identifiers from the same
+effective account source used for authentication. Governed accounts take precedence; environment
+and development demo accounts are counted only when selected by that existing precedence.
+The deployment guard includes disabled accounts and exposes no credential material.
+
 ## Purpose
 
 Physical bounded-context module project for identity, scoped access, fund-structure scope lineage,
@@ -68,6 +75,21 @@ dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --filter Fu
 ```
 
 ### API and contract notes
+
+`AuthenticationModeResolver` is the shared strict parser used by host startup and sessions.
+Invalid modes refuse construction, including Development/Test and configured-account hosts.
+Durable sessions reload authoritative state under an exclusive cross-process file lease for
+every operation. Session hashes and bounded login-failure windows commit atomically together;
+logout, user/global revocation, lockout, and expiry are observed by every instance using the same
+store. The previous hashed-session array upgrades on its next mutation. Corrupt or inaccessible
+state refuses access without falling back to cached permissions. All cooperating instances must
+use the same store on a filesystem that honors exclusive file sharing and atomic replacement;
+this does not expand ADR-019's supported single-node production envelope.
+
+Selected role profiles must resolve successfully; missing or invalid profiles never restore the
+account's base role. Multiple configured companies require strict tenant enforcement both at
+startup and whenever a login or existing session resolves its current profile. The migration
+deployment-boundary posture is restricted to one company per isolated deployment.
 
 Identity contracts publish role/profile, permission, and scoped-access DTOs through
 `Meridian.Identity.Auth`. `LoginSessionService`, `UserProfileRegistry`, and

@@ -9,7 +9,7 @@ namespace Meridian.Strategies.Live;
 /// execution without a rewrite. The adapter contributes the lifecycle state machine; every
 /// market-event callback is forwarded to the wrapped strategy unchanged.
 /// </summary>
-public sealed class BacktestStrategyLiveAdapter : LiveStrategyBase
+public sealed class BacktestStrategyLiveAdapter : LiveStrategyBase, ILiveOrderOutcomeObserver
 {
     private readonly IBacktestStrategy _inner;
     private readonly string _strategyId;
@@ -55,4 +55,17 @@ public sealed class BacktestStrategyLiveAdapter : LiveStrategyBase
 
     /// <inheritdoc/>
     public override void OnFinished(IBacktestContext ctx) => _inner.OnFinished(ctx);
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Forwarded only when the wrapped strategy tracks its own working orders. Terminal outcomes
+    /// have no meaning on the replay path, so most strategies do not implement the seam.
+    /// </remarks>
+    public void OnOrderTerminated(Guid orderId, LiveOrderOutcome outcome)
+    {
+        if (_inner is ILiveOrderOutcomeObserver observer)
+        {
+            observer.OnOrderTerminated(orderId, outcome);
+        }
+    }
 }

@@ -1,5 +1,6 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.OperationsContinuity;
 using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingClose;
@@ -375,6 +376,74 @@ public sealed partial class AccountingCloseManagementService
                 $"Workflow version {workflow.Version} does not match expected version {request.ExpectedWorkflowVersion}.",
                 plan.ClosePlanId,
                 "Refresh the close plan before posting closing entries or locking the period."));
+        }
+
+        if (!request.PrepareClosingEntriesOnly)
+        {
+            if (workflow.CloseReadiness?.IsReadyToClose != true)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodOperationsReadinessFailed",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    "Ledger hard close requires a current ready Operations close evaluation.",
+                    plan.ClosePlanId,
+                    "Resolve the Operations close-readiness blockers before locking the period."));
+            }
+
+            if (!OperationsWorkflowAuditHashing.TryValidateTimeline(workflow.Timeline, out var auditCode, out var auditMessage))
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    auditCode, AccountingConfigurationValidationSeverityDto.Critical,
+                    auditMessage, plan.ClosePlanId,
+                    "Restore the intact retained Operations audit chain before locking the period."));
+            }
+
+            var controls = OperationsChecklistControlEvidence.Collect(
+                workflow.CloseChecklist, workflow.Approvals, workflow.ApprovalState);
+            foreach (var gate in Enum.GetValues<OperationsGateKeyDto>())
+            {
+                var taskId = $"close-gate-{gate.ToString().ToLowerInvariant()}";
+                var matchingTasks = workflow.CloseChecklist.Where(task =>
+                    task.Gate == gate && string.Equals(task.TaskId, taskId, StringComparison.Ordinal)).ToArray();
+                var requiredCount = gate == OperationsGateKeyDto.Approval ? 2 : 1;
+                var retainedControls = controls.Where(control =>
+                    string.Equals(control.TaskId, taskId, StringComparison.Ordinal)).ToArray();
+                if (matchingTasks.Length != 1 ||
+                    !workflow.Gates.Any(item => item.GateKey == gate && item.Status == OperationsGateStatusDto.Passed) ||
+                    retainedControls.Length != requiredCount || retainedControls.Any(control => control.ApprovedAtUtc == default) ||
+                    retainedControls.Select(control => control.ApprovedBy.Trim())
+                        .Distinct(StringComparer.OrdinalIgnoreCase).Count() != requiredCount)
+                {
+                    issues.Add(new AccountingConfigurationValidationIssueDto(
+                        "ClosePeriodOperationsControlMissing",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Close task '{taskId}' requires current retained workflow acknowledgments and independent approval evidence before ledger hard close.",
+                        taskId,
+                        "Refresh the Operations workflow, acknowledge current prerequisite evidence, and complete independent approval."));
+                }
+            }
+
+            if (workflow.ApprovalState != OperationsApprovalStateDto.Approved ||
+                workflow.Approvals.LastOrDefault()?.Status != OperationsApprovalStateDto.Approved)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodOperationsApprovalRequired",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    "Ledger hard close requires a current approved Operations workflow decision.",
+                    plan.ClosePlanId,
+                    "Complete the current independent approval cycle before locking the period."));
+            }
+
+            if (!workflow.ReportPackReadiness.IsReady ||
+                !string.Equals(workflow.ReportPackReadiness.ReportPackId, request.ReportPackId, StringComparison.Ordinal))
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodOperationsReportPackMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    "Ledger hard close requires the current ready Operations report package.",
+                    plan.ClosePlanId,
+                    "Refresh and certify the current report package before locking the period."));
+            }
         }
 
         var unique = new List<AccountingConfigurationValidationIssueDto>(issues.Count);

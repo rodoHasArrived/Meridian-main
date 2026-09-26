@@ -32,13 +32,20 @@ public sealed class SecurityMasterCsvParser
     /// <c>SourceSystem</c>, which stays the constant import-source identifier that conflict detection
     /// and source precedence key on.
     /// </param>
+    /// <param name="ingestedAtUtc">
+    /// Server-controlled ingest time used for the request effective date and every identifier
+    /// validity start. The import coordinator supplies one value for the entire file so a batch
+    /// cannot acquire row-by-row or identifier-by-identifier valid times.
+    /// </param>
     /// <returns>List of successfully parsed CreateSecurityRequest records</returns>
     public IReadOnlyList<CreateSecurityRequest> Parse(
         string csvContent,
         out IReadOnlyList<string> errors,
-        string actor)
+        string actor,
+        DateTimeOffset? ingestedAtUtc = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+        var authorityTimestamp = ingestedAtUtc ?? DateTimeOffset.UtcNow;
 
         var commands = new List<CreateSecurityRequest>();
         var errorList = new List<string>();
@@ -71,7 +78,13 @@ public sealed class SecurityMasterCsvParser
             }
 
             // Parse data row
-            var record = ParseRow(values.ToArray(), headers, rowNumber, actor, out var rowError);
+            var record = ParseRow(
+                values.ToArray(),
+                headers,
+                rowNumber,
+                actor,
+                authorityTimestamp,
+                out var rowError);
             if (rowError != null)
             {
                 errorList.Add(rowError);
@@ -86,7 +99,13 @@ public sealed class SecurityMasterCsvParser
         return commands;
     }
 
-    private CreateSecurityRequest? ParseRow(string[] values, string[] headers, int rowNumber, string actor, out string? error)
+    private CreateSecurityRequest? ParseRow(
+        string[] values,
+        string[] headers,
+        int rowNumber,
+        string actor,
+        DateTimeOffset ingestedAtUtc,
+        out string? error)
     {
         error = null;
 
@@ -143,17 +162,17 @@ public sealed class SecurityMasterCsvParser
         // Build identifiers
         var identifiers = new List<SecurityIdentifierDto>
         {
-            new(SecurityIdentifierKind.Ticker, ticker, true, DateTimeOffset.UtcNow)
+            new(SecurityIdentifierKind.Ticker, ticker, true, ingestedAtUtc)
         };
 
         if (!string.IsNullOrWhiteSpace(isin))
-            identifiers.Add(new(SecurityIdentifierKind.Isin, isin, false, DateTimeOffset.UtcNow));
+            identifiers.Add(new(SecurityIdentifierKind.Isin, isin, false, ingestedAtUtc));
 
         if (!string.IsNullOrWhiteSpace(cusip))
-            identifiers.Add(new(SecurityIdentifierKind.Cusip, cusip, false, DateTimeOffset.UtcNow));
+            identifiers.Add(new(SecurityIdentifierKind.Cusip, cusip, false, ingestedAtUtc));
 
         if (!string.IsNullOrWhiteSpace(figi))
-            identifiers.Add(new(SecurityIdentifierKind.Figi, figi, false, DateTimeOffset.UtcNow));
+            identifiers.Add(new(SecurityIdentifierKind.Figi, figi, false, ingestedAtUtc));
 
         return new CreateSecurityRequest(
             SecurityId: Guid.NewGuid(),
@@ -161,7 +180,7 @@ public sealed class SecurityMasterCsvParser
             CommonTerms: BuildCommonTerms(name, currency, exchange),
             AssetSpecificTerms: BuildAssetSpecificTerms(),
             Identifiers: identifiers,
-            EffectiveFrom: DateTimeOffset.UtcNow,
+            EffectiveFrom: ingestedAtUtc,
             SourceSystem: "SecurityMasterImport",
             UpdatedBy: actor,
             SourceRecordId: null,

@@ -16,7 +16,7 @@ namespace Meridian.Storage.Services;
 /// Service for managing the storage catalog and manifest system.
 /// Provides comprehensive indexing, integrity verification, and metadata management.
 /// </summary>
-public sealed class StorageCatalogService : IStorageCatalogService
+public sealed partial class StorageCatalogService : IStorageCatalogService
 {
     private const string CatalogDirectoryName = "_catalog";
     private const string ManifestFileName = "manifest.json";
@@ -200,6 +200,19 @@ public sealed class StorageCatalogService : IStorageCatalogService
                         });
                     }
                 });
+
+            foreach (var entry in candidateFileIndex.Values)
+            {
+                ct.ThrowIfCancellationRequested();
+                try
+                {
+                    EnsureReadSnapshotUnchanged(Path.Combine(_rootPath, entry.RelativePath), entry.SizeBytes, entry.LastModified);
+                }
+                catch (IOException ex)
+                {
+                    errors.Add(ex.Message);
+                }
+            }
 
             stopwatch.Stop();
             if (!errors.IsEmpty)
@@ -750,6 +763,7 @@ public sealed class StorageCatalogService : IStorageCatalogService
             await ExtractJsonlMetadataAsync(filePath, entry, options, ct);
         }
 
+        EnsureReadSnapshotUnchanged(filePath, entry.SizeBytes, entry.LastModified);
         return entry;
     }
 
@@ -878,10 +892,11 @@ public sealed class StorageCatalogService : IStorageCatalogService
             long? lastSequence = null;
             long uncompressedSize = 0;
 
-            await using var fileStream = File.OpenRead(filePath);
+            await using var fileStream = OpenCatalogRead(filePath);
+            using var snapshot = new CatalogReadWindow(fileStream, entry.SizeBytes);
             Stream readStream = entry.IsCompressed
-                ? new GZipStream(fileStream, CompressionMode.Decompress)
-                : fileStream;
+                ? new GZipStream(snapshot, CompressionMode.Decompress)
+                : snapshot;
 
             using var reader = new StreamReader(readStream);
             string? line;
@@ -944,14 +959,20 @@ public sealed class StorageCatalogService : IStorageCatalogService
         catch (Exception ex)
         {
             _log.Warning(ex, "Failed to extract JSONL metadata from {Path}", filePath);
+            throw;
         }
     }
 
     private static async Task<string> ComputeFileChecksumAsync(string filePath, CancellationToken ct)
     {
         using var sha256 = SHA256.Create();
-        await using var stream = File.OpenRead(filePath);
-        var hash = await sha256.ComputeHashAsync(stream, ct);
+        var info = new FileInfo(filePath);
+        var length = info.Length;
+        var modified = info.LastWriteTimeUtc;
+        await using var stream = OpenCatalogRead(filePath);
+        using var snapshot = new CatalogReadWindow(stream, length);
+        var hash = await sha256.ComputeHashAsync(snapshot, ct);
+        EnsureReadSnapshotUnchanged(filePath, length, modified);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 

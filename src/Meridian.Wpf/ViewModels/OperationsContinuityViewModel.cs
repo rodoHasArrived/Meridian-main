@@ -20,6 +20,14 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
     private readonly CancellationTokenSource _cts = new();
     private bool _isDisposed;
     private bool _hasLoaded;
+    private CloseReadinessScopeDto? _closeScope;
+    private string _fundProfileInput = string.Empty;
+    private string _ledgerBookInput = string.Empty;
+    private string _accountInput = string.Empty;
+    private string _entityInput = string.Empty;
+    private string _periodInput = string.Empty;
+    private FinancialOperationsCommandCenterDto? _closeCommandCenter;
+    private OperationsContinuityClosePresentation _closeReadiness = OperationsContinuityClosePresentation.Build(null, null, null);
     private int _loadRevision;
     private bool _isRefreshing;
     private Guid? _selectedWorkflowId;
@@ -46,6 +54,12 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
         OpenPageCommand = new RelayCommand<string>(
             OpenPage,
             static tag => !string.IsNullOrWhiteSpace(tag));
+        EvaluateCloseScopeCommand = new AsyncRelayCommand(async () =>
+        {
+            Parameter = new CloseReadinessScopeDto(FundProfileInput, Guid.TryParse(LedgerBookInput, out var book) ? book : null,
+                Guid.TryParse(AccountInput, out var account) ? account : null, EntityInput, PeriodInput);
+            await RefreshAsync(_cts.Token);
+        }, () => !IsRefreshing && !_isDisposed);
     }
 
     public IAsyncRelayCommand RefreshCommand { get; }
@@ -53,6 +67,21 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand<OperationsContinuityWorkflowRowModel> SelectWorkflowCommand { get; }
 
     public IRelayCommand<string> OpenPageCommand { get; }
+    public IAsyncRelayCommand EvaluateCloseScopeCommand { get; }
+    public string FundProfileInput { get => _fundProfileInput; set { if (SetProperty(ref _fundProfileInput, value)) InvalidateCloseEvidence(); } }
+    public string LedgerBookInput { get => _ledgerBookInput; set { if (SetProperty(ref _ledgerBookInput, value)) InvalidateCloseEvidence(); } }
+    public string AccountInput { get => _accountInput; set { if (SetProperty(ref _accountInput, value)) InvalidateCloseEvidence(); } }
+    public string EntityInput { get => _entityInput; set { if (SetProperty(ref _entityInput, value)) InvalidateCloseEvidence(); } }
+    public string PeriodInput { get => _periodInput; set { if (SetProperty(ref _periodInput, value)) InvalidateCloseEvidence(); } }
+
+    private void InvalidateCloseEvidence()
+    {
+        ++_loadRevision;
+        _closeScope = null;
+        _closeCommandCenter = null;
+        IsRefreshing = false;
+        ApplyDetail(null);
+    }
 
     public ObservableCollection<OperationsContinuityWorkflowRowModel> WorkflowRows { get; } = [];
 
@@ -70,6 +99,41 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
 
     public string Title => "Operations continuity";
 
+    public object? Parameter
+    {
+        get => _closeScope;
+        set
+        {
+            CloseReadinessScopeDto? selectedScope = value switch
+            {
+                CloseReadinessScopeDto scope => scope,
+                FundOperationsNavigationContext context => new(context.FundProfileId, context.LedgerBookId, context.AccountId, context.EntityId, context.PeriodId),
+                _ => null
+            };
+            ++_loadRevision;
+            FundProfileInput = selectedScope?.FundProfileId ?? string.Empty;
+            LedgerBookInput = selectedScope?.LedgerBookId?.ToString("D") ?? string.Empty;
+            AccountInput = selectedScope?.FundAccountId?.ToString("D") ?? string.Empty;
+            EntityInput = selectedScope?.EntityId ?? string.Empty;
+            PeriodInput = selectedScope?.PeriodId ?? string.Empty;
+            _closeScope = selectedScope;
+            OnPropertyChanged(nameof(FundProfileInput));
+            OnPropertyChanged(nameof(LedgerBookInput));
+            OnPropertyChanged(nameof(AccountInput));
+            OnPropertyChanged(nameof(EntityInput));
+            OnPropertyChanged(nameof(PeriodInput));
+            _closeCommandCenter = null;
+            _hasLoaded = false;
+            ApplyDetail(null);
+        }
+    }
+
+    public OperationsContinuityClosePresentation CloseReadiness
+    {
+        get => _closeReadiness;
+        private set => SetProperty(ref _closeReadiness, value);
+    }
+
     public string Subtitle => "Review continuity workflows, gates, close calendar, and governed approval policy.";
 
     public string StatusText
@@ -86,6 +150,7 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isRefreshing, value))
             {
                 RefreshCommand.NotifyCanExecuteChanged();
+                EvaluateCloseScopeCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -216,6 +281,8 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
         var revision = ++_loadRevision;
         IsRefreshing = true;
         StatusText = "Loading continuity sources.";
+        _closeCommandCenter = null;
+        ApplyDetail(null);
         try
         {
             var workflowsTask = LoadWorkflowsAsync(ct);
@@ -256,6 +323,10 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
 
             SelectedWorkflowId = selectedId;
             DetailErrorText = detailError;
+            var commandCenter = await LoadCloseReadinessAsync(ct).ConfigureAwait(true);
+            if (IsStale(revision))
+                return;
+            _closeCommandCenter = commandCenter;
             ApplyDetail(detail);
 
             StatusText = $"Continuity sources refreshed {OperationsContinuityMapper.FormatTimestamp(DateTimeOffset.UtcNow)}.";
@@ -292,6 +363,8 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
 
         var revision = ++_loadRevision;
         SelectedWorkflowId = workflowId;
+        _closeCommandCenter = null;
+        ApplyDetail(null);
         var (detail, detailError) = await LoadDetailAsync(workflowId, ct).ConfigureAwait(true);
         if (IsStale(revision))
         {
@@ -299,6 +372,10 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
         }
 
         DetailErrorText = detailError;
+        var commandCenter = await LoadCloseReadinessAsync(ct).ConfigureAwait(true);
+        if (IsStale(revision))
+            return;
+        _closeCommandCenter = commandCenter;
         ApplyDetail(detail);
     }
 
@@ -423,15 +500,54 @@ public sealed class OperationsContinuityViewModel : BindableBase, IDisposable
 
     private void ApplyDetail(OperationsContinuityWorkflowDto? detail)
     {
+        CloseReadiness = OperationsContinuityClosePresentation.Build(detail, _closeCommandCenter, _closeScope);
+        if (detail is not null)
+        {
+            for (var index = 0; index < WorkflowRows.Count; index++)
+            {
+                if (WorkflowRows[index].WorkflowId == detail.WorkflowId && detail.Status == OperationsWorkflowStatusDto.ReadyForClose)
+                    WorkflowRows[index] = WorkflowRows[index] with
+                    {
+                        StatusText = CloseReadiness.Label,
+                        ReadinessTone = CloseReadiness.IsReady ? WorkstationReadinessTone.EvidenceLinked : WorkstationReadinessTone.Blocked,
+                        Tone = CloseReadiness.IsReady ? WorkspaceTone.Success : WorkspaceTone.Danger
+                    };
+            }
+            for (var index = 0; index < CloseCalendarRows.Count; index++)
+            {
+                if (CloseCalendarRows[index].Id == detail.WorkflowId.ToString("D"))
+                    CloseCalendarRows[index] = CloseCalendarRows[index] with
+                    {
+                        Value = CloseReadiness.Label,
+                        Detail = CloseReadiness.Detail,
+                        ReadinessTone = CloseReadiness.IsReady ? WorkstationReadinessTone.EvidenceLinked : WorkstationReadinessTone.Blocked,
+                        Tone = CloseReadiness.IsReady ? WorkspaceTone.Success : WorkspaceTone.Danger
+                    };
+            }
+        }
         ApplyRows(GateRows, detail is null ? [] : OperationsContinuityMapper.BuildGateRows(detail));
         ApplyRows(BlockerRows, detail is null ? [] : OperationsContinuityMapper.BuildBlockerRows(detail));
         ApplyRows(ChecklistRows, detail is null ? [] : OperationsContinuityMapper.BuildChecklistRows(detail));
         ApplyRows(QueueRows, OperationsContinuityMapper.BuildQueueRows(detail, [.. CloseCalendarRows]));
+        if (!CloseReadiness.IsReady)
+            QueueRows.Insert(0, new("shared-close-readiness", "Shared close readiness", CloseReadiness.Label, CloseReadiness.Detail, "Required before close", WorkstationReadinessTone.Blocked, WorkspaceTone.Danger));
         QueueRollup = OperationsContinuityMapper.BuildQueueRollup(isLoading: false, [.. QueueRows]);
         NextAction = OperationsContinuityMapper.ResolveNextAction(
             detail,
             isLoading: false,
-            detailError: HasDetailError ? DetailErrorText : null);
+            detailError: HasDetailError ? DetailErrorText : null,
+            closeReadiness: CloseReadiness);
+    }
+
+    private async Task<FinancialOperationsCommandCenterDto?> LoadCloseReadinessAsync(CancellationToken ct)
+    {
+        if (_client is null || _closeScope is null)
+            return null;
+        try
+        { return await _client.GetCloseReadinessAsync(_closeScope, ct).ConfigureAwait(true); }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception ex) { LoggingService.Instance.LogError("Shared close readiness failed to load.", ex); }
+        return null;
     }
 
     private static void ApplyRows<T>(ObservableCollection<T> target, IReadOnlyList<T> rows)

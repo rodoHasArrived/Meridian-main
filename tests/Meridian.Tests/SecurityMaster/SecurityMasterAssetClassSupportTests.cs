@@ -96,6 +96,71 @@ public sealed class SecurityMasterAssetClassSupportTests
             Arg.Any<CancellationToken>());
     }
 
+    [Theory]
+    [InlineData("ExchangeTradedFund")] // planned in the pack registry, not a catalog class
+    [InlineData("Equitiy")]            // a typo
+    [InlineData("equity")]             // the switch is case-sensitive; lowercase is not a catalog class
+    public async Task CreateAsync_UnrecognizedAssetClass_IsRefusedInsteadOfPersistingAsOtherSecurity(string assetClass)
+    {
+        // Read tolerance must not become write tolerance. Amend and deactivate refuse an
+        // unrecognized class through EnsureAssetClassRoundTripsSafely; create had no guard, so the
+        // request degraded through the OtherSecurity read fallback and persisted silently — and
+        // because OtherSecurity IS a catalog class, every later amend passed the guard and the
+        // misclassification was permanent.
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            new SecurityMasterOptions { SnapshotIntervalVersions = 50, ResolveInactiveByDefault = true },
+            NullLogger<SecurityMasterService>.Instance);
+
+        var act = () => service.CreateAsync(
+            new CreateSecurityRequest(
+                securityId,
+                assetClass,
+                JsonSerializer.SerializeToElement(new
+                {
+                    displayName = $"{assetClass} Test Security",
+                    currency = "USD"
+                }),
+                JsonSerializer.SerializeToElement(new { shareClass = "Common" }),
+                new[]
+                {
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.InternalCode,
+                        $"{assetClass.ToUpperInvariant()}-{securityId:N}",
+                        true,
+                        DateTimeOffset.UtcNow.AddDays(-1),
+                        null,
+                        null)
+                },
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "unrecognized asset class"),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*'{assetClass}'*")
+            .WithMessage("*OtherSecurity*");
+
+        await eventStore.DidNotReceive().AppendAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(),
+            Arg.Any<CancellationToken>());
+        await store.DidNotReceive().UpsertProjectionAsync(
+            Arg.Any<SecurityProjectionRecord>(),
+            Arg.Any<CancellationToken>());
+    }
+
     [Fact]
     public async Task CreateAsync_ProfileBackedCustomAsset_MapsKnownProfileToFirstClassAssetAndPreservesPinnedTerms()
     {

@@ -17,7 +17,8 @@ public sealed record FinancialOperationsCommandCenterDto(
     OperationsContinuityWorkflowDto? ActiveWorkflow = null,
     OperationsCloseCalendarDto? CloseCalendar = null,
     PrivateCapitalCloseCockpitDto? PrivateCapitalCloseCockpit = null,
-    FinancialOperationsCloseSupportDecisionDto? CloseSupportDecision = null);
+    FinancialOperationsCloseSupportDecisionDto? CloseSupportDecision = null,
+    CloseReadinessProjectionDto? CloseReadiness = null);
 
 public sealed record FinancialOperationsCloseSupportDecisionDto(
     string DecisionId,
@@ -88,5 +89,7 @@ public interface IFinancialOperationsCommandCenterReadService
         Guid? fundAccountId = null,
         string? periodId = null,
         string? entityId = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null);
 }

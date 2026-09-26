@@ -82,7 +82,7 @@ public static class PlaidEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var trusted = request with { UserId = ResolveActor(context, request.UserId) };
+            var trusted = request with { UserId = ResolveActor(context) };
             try
             {
                 var result = await service.CreateLinkTokenAsync(trusted, context.RequestAborted).ConfigureAwait(false);
@@ -107,7 +107,7 @@ public static class PlaidEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var trusted = request with { RequestedBy = ResolveActor(context, request.RequestedBy) };
+            var trusted = request with { RequestedBy = ResolveActor(context) };
             try
             {
                 var result = await service.ExchangePublicTokenAsync(trusted, context.RequestAborted).ConfigureAwait(false);
@@ -136,7 +136,7 @@ public static class PlaidEndpoints
             var trusted = request with
             {
                 ItemId = itemId,
-                RequestedBy = ResolveActor(context, request.RequestedBy)
+                RequestedBy = ResolveActor(context)
             };
             try
             {
@@ -213,12 +213,12 @@ public static class PlaidEndpoints
             HttpContext context,
             IPlaidTransferService service) =>
         {
-            if (!EndpointAuthorization.HasPermission(context, UserPermission.ManageDirectLending))
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.ManageDirectLending) || !EndpointAuthorization.TryResolveActor(context, out _))
             {
                 return EndpointHelpers.Forbidden();
             }
 
-            var trusted = request with { RequestedBy = ResolveActor(context, request.RequestedBy) };
+            var trusted = request with { RequestedBy = ResolveActor(context) };
             var result = await service.CreateSandboxTransferAsync(trusted, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: result.Status == PlaidTransferStatusDto.Created
                 ? StatusCodes.Status201Created
@@ -238,18 +238,16 @@ public static class PlaidEndpoints
             UserPermission.ViewDirectLending);
 
     private static bool HasPlaidMutationAccess(HttpContext context)
-        => EndpointAuthorization.HasAnyPermission(
+        => EndpointAuthorization.TryResolveActor(context, out _) && EndpointAuthorization.HasAnyPermission(
             context,
             UserPermission.ManageCredentials,
             UserPermission.ManageDirectLending,
             UserPermission.AdminMaintenance);
 
-    private static string ResolveActor(HttpContext context, string? fallback)
-        => context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var user) &&
-           user is string value &&
-           !string.IsNullOrWhiteSpace(value)
-            ? value
-            : string.IsNullOrWhiteSpace(fallback) ? "plaid-endpoint" : fallback;
+    private static string ResolveActor(HttpContext context)
+        => EndpointAuthorization.TryResolveActor(context, out var actor)
+            ? actor
+            : throw new InvalidOperationException("An authenticated Plaid operator is required.");
 
     private static string? GetString(JsonElement body, string propertyName)
         => body.ValueKind == JsonValueKind.Object &&

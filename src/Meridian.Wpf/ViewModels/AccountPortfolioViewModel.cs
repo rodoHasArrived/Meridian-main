@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -252,6 +253,9 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
             Positions,
             [
                 new("Symbol", nameof(AccountPositionRow.Symbol), 90),
+                new("Mark readiness", "Mark.Label", 125),
+                new("Observed on", "Mark.ObservedOn", 110),
+                new("Mark age", "Mark.Age", 90),
                 new("Side", nameof(AccountPositionRow.Side), 65),
                 new("Quantity", nameof(AccountPositionRow.Quantity), 90, "{0:N0}"),
                 new("Avg Cost", nameof(AccountPositionRow.AvgCost), 95, "{0:C4}"),
@@ -367,7 +371,8 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
                         Side: pos.Quantity >= 0 ? "Long" : "Short",
                         AvgCost: pos.CostBasis,
                         UnrealisedPnl: pos.UnrealisedPnl,
-                        RealisedPnl: pos.RealisedPnl));
+                        RealisedPnl: pos.RealisedPnl,
+                        MarkFreshness: pos.MarkFreshness));
                 }
             }
 
@@ -459,17 +464,21 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
         {
             Title = selected.Symbol,
             Subtitle = $"{selected.Side} account position",
-            Detail = "Review retained account quantity, cost basis, and P&L before opening Security Master lookup for this symbol.",
+            Detail = selected.Mark.Reason,
             Badge = new WorkstationBadgeModel(
-                "Side",
-                selected.Side,
+                "Mark readiness",
+                selected.Mark.Label,
                 "\uE8A5",
-                string.Equals(selected.Side, "Short", StringComparison.OrdinalIgnoreCase) ? WorkspaceTone.Warning : WorkspaceTone.Success),
+                selected.Mark.Tone),
             Facts =
             [
                 new("Quantity", selected.Quantity.ToString("N0")),
                 new("Average cost", selected.AvgCost.ToString("C4")),
-                new("Unrealized P&L", selected.UnrealisedPnl.ToString("C2")),
+                new("Recorded unrealized P&L", selected.Mark.RecordedValue(selected.UnrealisedPnl)),
+                new("Mark observed on", selected.Mark.ObservedOn),
+                new("Mark age", selected.Mark.Age),
+                new("Valuation date", selected.Mark.ValuationDate),
+                new("Mark policy", selected.Mark.PolicyVersion),
                 new("Realized P&L", selected.RealisedPnl.ToString("C2")),
                 new("Source", "Account snapshot")
             ]
@@ -511,6 +520,7 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
 
     private sealed class PositionDto
     {
+        public MarkFreshnessAssessmentDto? MarkFreshness { get; set; }
         public string? Symbol { get; set; }
         public long Quantity { get; set; }
         public decimal CostBasis { get; set; }
@@ -526,6 +536,10 @@ public sealed record AccountPositionRow(
     string Side,
     decimal AvgCost,
     decimal UnrealisedPnl,
-    decimal RealisedPnl);
+    decimal RealisedPnl,
+    MarkFreshnessAssessmentDto? MarkFreshness = null)
+{
+    public MarkFreshnessPresentation Mark => new(MarkFreshness);
+}
 
 public sealed record AccountPositionsEmptyState(bool IsVisible, string Title, string Detail);

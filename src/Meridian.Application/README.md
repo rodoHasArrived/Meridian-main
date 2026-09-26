@@ -6,17 +6,85 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-08-30
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Application
 
+Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
+transaction as the run and its details. HTTP requests return the committed run without calling
+the publisher. The outbox worker publishes retained state and retries failures; missing publisher
+configuration for a Security Master-backed loan remains a failed delivery. Identified replays
+retain one message per run. Integration tests cover concurrent retries and enqueue-failure rollback.
+
+
+Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
+remain failed and retryable; they are never silently acknowledged as processed.
+
+
+Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
+shared service into committed run identity handling. Repeating a command on the same loan
+returns the retained run; reusing a projection command with a different explicit date returns
+409. In-memory workflows follow the same retry rule. The two HTTP write routes require a non-empty UUID in `X-Command-Id` and return 400
+before mutation when it is missing or invalid. Internal calls without an identity retain
+legacy new-run behavior and must not be treated as safe automatic retries.
+
+
+`DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
+
+## Provider setup attribution
+
+The shared provider capability matrix uses per-instrument streaming coverage independently of
+historical and options coverage. Runtime Polygon factories retain the configured feed and resolved
+API key; NYSE factories consume the registered options used by its compatibility data source, so
+both supported configuration sections reach the same authentication path.
+Normal host composition registers the NYSE compatibility source and its realtime/historical aliases
+from that same configuration. Symbol-search coverage is projected independently, so synthetic
+option-chain cells remain visible without advertising unavailable option-symbol searches.
+
+Provider setup accepts the initiating actor from its HTTP boundary and retains it in credential
+vault audit records. Operator endpoints reject missing identity; internal callers retain an explicit
+service attribution when no operator initiated the call.
+
+### Reviewed tenant maintenance and strict hosts
+
+The explicit `--fund-tenant-backfill --action preview|apply` command previews retained ownership
+and applies only the reviewed fingerprint; it performs no automatic migration or cutover.
+[The operator runbook](../../docs/operators/fund-structure-tenant-backfill.md) describes attribution,
+quarantine, immutable receipts, and recovery. Core hosts now register the configured tenant read
+posture and retained worker authority; HTTP hosts replace only that fallback with their request
+accessor. Direct-lending accrual/outbox workers are constructed and started only when the final
+DI-resolved posture permits unattributed process work. Strict hosts log that these workers are
+withheld, including when a host supplies a later instance/factory override. Strict operation still
+requires per-loan tenant authority before those workers can be enabled.
+
 ## Purpose
+
+Provider-integration REST composition uses `ProviderIntegrationHttpClientTransport.CreateHttpClient`
+to validate DNS at connection time and connect only to the checked numeric addresses. It disables
+automatic redirects and system proxy routing; the transport checks every redirect against the
+approved HTTPS origin. See [the threat model](../../docs/security/threat-model-current-state.md)
+for the boundary and remaining certification requirements.
+
+`DirectLendingOutboxDispatcher` treats rejected projection and reconciliation command results as
+failed deliveries. The durable message is marked failed for retry and is acknowledged only after
+the command succeeds. `DirectLendingOutboxFailureTests` exercises failure followed by success for
+both topics. Projection and reconciliation retries with a command ID reuse a deterministic run
+identity; outbox replay can use its source-event causation ID when the command ID is absent.
+After publication failure, the service reloads committed detail rows rather than rebuilding them.
+Calls without either identity still create a new run and require separate API retry-policy work.
 
 Meridian application layer contains use cases, orchestration services, commands, and workflow
 coordination.
 
 ## Layer responsibility
+
+Security Master swap mapping preserves per-leg economics accepted by the shared cash-flow reader,
+including case-insensitive aliases and numeric/boolean strings. It rejects malformed supplied
+terms instead of silently discarding them, while retaining compatibility with the original
+four-field legs. Day-count aliases prefer `dayCountConvention`, then `dayCount`, then
+`dayCountBasis`. This persistence change does not add opening principal exchanges or alter
+cash-flow posting gates.
 
 This module owns application workflows that coordinate providers, storage, execution, ledger,
 reporting, and UI-facing services through contracts. Keep transport, persistence implementation,
@@ -47,7 +115,22 @@ Core workstation host. Do not introduce a second listener or independent monitor
   owning stored market-event schema checks in Application.
 - Provider credential setup, testing, and token-refresh orchestration consumes
   `Meridian.DataIntegration.Credentials`; Application no longer owns generic provider credential
-  store contracts. Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
+  store contracts. OAuth refresh failures expose only numeric HTTP status or a fixed failure message;
+  refresh-loop and token-persistence logs record the exception type without exception details.
+  Malformed token JSON can include secrets in exception paths. Provider response bodies, reason phrases,
+  and exception messages can contain secrets and must not enter failure events or returned errors.
+  Transport failure retains the prior token; completed rotations commit replacements independently
+  of lifecycle cancellation. The optional logger permits
+  isolated verification of this boundary. OAuth tokens now persist through the Data Integration-owned
+  encrypted vault. Await `InitializeAsync` before synchronous token inspection; asynchronous mutations
+  initialize automatically and construction never blocks a desktop synchronization context. Initialization
+  imports legacy JSON through Data Integration's cross-process migration lease without replacing retained tokens.
+  Both encrypted generations retain the import before the source is renamed and erased; interrupted cleanup
+  resumes without parsing erased bytes. Failed initialization can be retried on the same service instance,
+  and a failed refresh-loop start can be stopped and restarted. Unreadable evidence fails closed. After an audit failure the cache
+  reloads the committed token or evicts it if recovery is unavailable. Disposal never rewrites a cached
+  token snapshot. Non-Windows key protection and credential scoping remain open PRD-002 requirements.
+  Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one
   idempotent composition helper so layered workstation composition retains every catalog entry and
@@ -237,7 +320,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   invoke `Meridian.FinancialOperations.Reconciliation` services for statement intake, validation,
   matching, decision journals, and statement-run persistence. Reconciliation workflow state, match
   rules, break classification, repository implementations, and durable case materialization are
-  owned by the Financial Operations design module rather than the application layer. The
+  owned by the Financial Operations design module rather than the application layer. Statement
+  validation and import commands report missing, inaccessible, or unreadable local source files as
+  structured CLI failures before connector parsing. The
   Security Master-enriched portfolio-vs-ledger reconciliation engine also lives in Financial
   Operations and consumes the contracts-owned Security Master query interface. Retained internal
   transaction population reads posted journals by accounting effective date and projects only the
@@ -302,7 +387,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
-  valuation evidence. The compatibility factor bridge delegates economics to Instruments, requires
+  valuation evidence. `SecurityMasterConflictService` replaces line and control delimiters in
+  human-readable resolver logs with spaces while preserving the stored audit identity.
+  The compatibility factor bridge delegates economics to Instruments, requires
   held face, and posts scaled monetary principal rather than a dimensionless factor delta. It remains
   an in-memory reconciliation bridge; governed production posting still uses the Financial
   Operations candidate, independent approval, and durable journal path. Asset-class mapping,
@@ -475,7 +562,7 @@ Core workstation host. Do not introduce a second listener or independent monitor
   application down -- so a governance refusal raised as a bare `InvalidOperationException` is
   indistinguishable from it and gets swallowed by the same tolerance. `ProductionRegistrationGuardService`
   and `ProductionServiceRegistrationPolicy` raise this type for every ADR-019 refusal, including the
-  unconstructible-singleton case found during final-graph validation. It derives from
+  unconstructible-factory case found during final-graph validation. It derives from
   `InvalidOperationException`, so existing catches and assertions naming that type keep matching; the
   added type only lets a host that wants to escalate do so. Hosts decide through
   `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`.
@@ -486,8 +573,13 @@ Core workstation host. Do not introduce a second listener or independent monitor
   safe to run twice, because such a host still starts them again as ordinary hosted services, and
   must answer without unbounded work, because they run with nothing on screen.
   `ProductionRegistrationGuardService` is deliberately **not** marked: in a production composition it
-  resolves every factory-registered singleton to prove the graph is constructible, and eager
-  validation of that size belongs behind a visible shell, so it stays an ordinary hosted service
+  resolves closed factory registrations across singleton, scoped and transient lifetimes and explicit
+  service keys. The unlabeled local-workstation posture performs the same runtime check for durable
+  store contracts; an explicitly pinned simulated/seeded provenance retains its labeled development
+  behavior. Validation uses an asynchronous scope so scoped/transient resources are released on
+  success, refusal and cancellation without disposing host-owned singletons. Wildcard keyed factories
+  are refused because their possible runtime keys cannot be exhaustively checked; null factory results
+  also refuse startup. Eager validation of that size belongs behind a visible shell, so it stays an ordinary hosted service
   running first in the chain. Its descriptor-only half is marked, as
   `StaticProductionRegistrationGuardService`, which `AddProductionRegistrationGuard` registers
   alongside it: `ProductionServiceRegistrationPolicy` performs no resolution at all, so that half
@@ -573,6 +665,46 @@ gate implementation and snapshot persistence.
 Keep W6-BTSTUDIO-001 acceptance criteria in roadmap exit criteria and verify this lane with
 `BacktestStudioRunOrchestratorTests` when changing backtesting evidence behavior.
 
+Security Master amend and deactivate are refused when re-serializing the record would silently
+rewrite it: an asset class, equity classification, CustomAsset envelope, or declared discriminant
+value this node cannot round-trip — including a discriminant the codec cannot see at all, whether
+because it is stored as the wrong JSON kind or under a case-variant key (every read is ordinal, so
+`ExerciseStyle` is not `exerciseStyle`; the variant is refused whether or not the canonical key sits
+beside it, because a readable canonical value only means the record loads while the variant is
+dropped without trace) — and, for bonds, coupon structure the canonical codec does
+not read. `ToBondTerms` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
+`stepSchedule`, the inflation triple, `dayCount`) ONE COUPON ARM AT A TIME, so a populated companion
+is lost whenever the arm the record resolves to does not read it — a `floatingIndex` beside
+`couponType: "Fixed"` as surely as one with no `couponType` at all — and so are legacy nested
+`coupon` members whose flat counterpart is missing or undecodable. The same check runs against the
+SUBMITTED document on an amendment, so a repair cannot drop the economics it was sent to preserve.
+Reads stay tolerant throughout; only the write is refused, so such a record stays readable and
+reportable. **The refusal has one exit, and operators need it:** an amendment whose
+`AssetSpecificTermsPatch` settles the offending field itself — naming a declared value, or, for an
+optional discriminant the codec CLEARS rather than substitutes (`exerciseStyle`, `classification`,
+but never `couponType`, whose absent read is `Fixed`), an explicit `null`. The value it names must
+also OWN any dependent blocks the document still carries: `preferredTerms` under a `classification`
+of `Common` is read by nothing and re-emitted as null, so that repair would delete the block it was
+sent to preserve. The patch replaces the
+kind wholesale, so it must be a COMPLETE asset-terms document — every field it omits is dropped with
+the misread. A deactivation cannot carry a patch, so a frozen record is repaired first and
+deactivated second. Unlike an unrecognized asset class, an undeclared `couponType` names no other
+node that could apply the change, so without that exit the row would be permanently unamendable.
+Verify this lane with `SecurityMasterServiceSnapshotTests` and
+`SecurityAssetTermsSchemaRoundTripTests`.
+
+The file-based Security Master bulk ingest (`--security-master-ingest <file.csv|file.json>`) is
+fail-closed on caller identity: the import runs only when a registered
+`ISecurityMasterCliImportAuthority` resolves a validated operator or workload actor for the
+`importedBy` stamp, and otherwise refuses with `AuthenticationFailed` before the file is read.
+Command-line text and the ambient OS username are not authentication evidence — the former
+`--imported-by`/OS-username/`"meridian-cli"` fallback chain no longer exists — and no default
+authority implementation is registered, so in stock compositions the CLI file path is disabled and
+bulk imports go through the authenticated workstation/API import instead. Provider-workload
+ingests (`--provider polygon`, `--provider edgar`, `--provider corporate-actions`) dispatch before
+this guard and keep their existing provider attribution. Verify this lane with
+`SecurityMasterCommandsEdgarTests`.
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase
@@ -623,3 +755,22 @@ infrastructure details when an abstraction already exists.
 - `docs/architecture/module-map.md`
 - `docs/developer/build-test-run.md`
 - `docs/source/generated/source-module-index.md`
+
+### Cash-flow and price readiness
+
+Security Master calculated cash flows resolve class-specific canonical rates and repo dates,
+distinguish contractual zero from missing terms, and propagate economic blockers to both ledger
+bridges. Without actual principal/notional, per-100 analytical schedules remain explicitly
+nonpostable. Unresolved leg fixings, step coupons and inflation terms require supported economics
+or an authoritative provider schedule. Provider-only asset classes do not advertise default
+calculated capability.
+
+Golden-copy pricing consults retained source hierarchy and observation history at the supplied
+economic and knowledge cutoffs. It never invents par, straight-line accretion, or stable NAV from
+an asset-class name. Explicit quote units accompany every selected price and comparison.
+
+Each successful golden-copy evaluation persists an immutable selection receipt before returning it.
+Receipt replay returns its exact selected quote, comparisons, hierarchy and cutoff metadata under
+the original security/account scope, without consulting live prices. Timestamp-only re-evaluation
+can legitimately change after an earlier-started transaction commits; timestamps are eligibility
+filters, while `SelectionReceiptId` is the durable replay identity.

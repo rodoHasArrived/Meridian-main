@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T06:37:41Z",
+  "generatedAt": "2026-09-21T06:29:51Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2225,324 +2225,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T04:02:38Z",
-      "lastCommit": "7a40e6970",
-      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
-      "touches": 16
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-approval.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T04:02:38Z",
-      "lastCommit": "7a40e6970",
-      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
-      "touches": 13
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-approval.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T04:02:38Z",
-      "lastCommit": "7a40e6970",
-      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
-      "touches": 7
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-certification.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:37:39Z",
-      "lastCommit": "b47f9df7a",
-      "lastSummary": "Saturate the CSV discovery allowance, and depth-check OFX leaves",
-      "touches": 10
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-certification.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:37:39Z",
-      "lastCommit": "b47f9df7a",
-      "lastSummary": "Saturate the CSV discovery allowance, and depth-check OFX leaves",
-      "touches": 8
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-distribution.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:17:20Z",
-      "lastCommit": "4eac56733",
-      "lastSummary": "Charge BAI2 newline padding to the line budget",
-      "touches": 11
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-distribution.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-30T03:05:30Z",
-      "lastCommit": "03a29b7f1",
-      "lastSummary": "Bound the objects Alpaca materializes before deserializing",
-      "touches": 11
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-publication.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T23:33:52Z",
-      "lastCommit": "73dd54ea9",
-      "lastSummary": "Carry ingress codes through validate as well as commit",
-      "touches": 6
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-publication.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T14:47:04Z",
+      "lastCommit": "9c01f3f42",
+      "lastSummary": "feat(reporting): add approval currency, publication records, retention and certification",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T23:24:41Z",
-      "lastCommit": "b37e3cea5",
-      "lastSummary": "Charge the record cap on the append in camt, BAI2 and OFX",
-      "touches": 18
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T23:24:41Z",
-      "lastCommit": "b37e3cea5",
-      "lastSummary": "Charge the record cap on the append in camt, BAI2 and OFX",
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-health.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-health.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-datum.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-datum.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-impact.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-impact.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-materiality.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-materiality.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-provenance-adapter.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-provenance-adapter.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-trace.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-trace.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-16T06:33:31Z",
+      "lastCommit": "a693b3da2",
+      "lastSummary": "feat(reporting): add materiality, datum provenance, lineage and impact models",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-15T16:30:17Z",
+      "lastCommit": "e3300a8a9",
+      "lastSummary": "Fix the formatting and generated-docs drift CI caught",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-15T16:20:05Z",
+      "lastCommit": "2af229a27",
+      "lastSummary": "Seed demo market history where the Data desk can read it",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-lifecycle.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-lifecycle.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-production.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-production.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.production-surface.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.production-surface.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-14T09:05:53Z",
+      "lastCommit": "3e18510a4",
+      "lastSummary": "fix(reporting): address the Codex review findings",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/Services/PendingOperationsQueueService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T12:35:19Z",
+      "lastCommit": "3820d604d",
+      "lastSummary": "Bound the replay drain by both queues, and assert against a collection",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-production-surface.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-production-surface.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-change-since-review.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-change-since-review.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-period-object.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-period-object.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:42:37Z",
+      "lastCommit": "78c21baf3",
+      "lastSummary": "feat(reporting): model the reporting workstation as a production pipeline",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Wpf/Controls/DataConfidenceIndicator.xaml",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-09-12T11:24:39Z",
+      "lastCommit": "e4cf27a99",
+      "lastSummary": "Drop the click affordance when the explanation command cannot execute",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.IBApi.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-09-12T10:47:02Z",
+      "lastCommit": "404211a4a",
+      "lastSummary": "End depth-exchange liveness when the vendor rejects the submission",
       "touches": 5
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T17:23:14Z",
-      "lastCommit": "2f72a8f3a",
-      "lastSummary": "Address the fourteenth Codex round: bound retained evidence rows at the seam",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T15:33:55Z",
-      "lastCommit": "291695dcf",
-      "lastSummary": "fix(wpf): register the tenancy guard in the composition root, not the feature module",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Wpf/App.xaml.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T15:33:55Z",
-      "lastCommit": "291695dcf",
-      "lastSummary": "fix(wpf): register the tenancy guard in the composition root, not the feature module",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T15:32:03Z",
-      "lastCommit": "8d2484482",
-      "lastSummary": "Address the seventh Codex round: measure and report the bounds honestly",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T15:25:46Z",
-      "lastCommit": "22e39ea6d",
-      "lastSummary": "fix(ledger): reuse the shared text primitive instead of a fourth copy of it",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T15:16:36Z",
-      "lastCommit": "3753c6235",
-      "lastSummary": "fix(governance): close three more review findings, one a regression from the last round",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T15:16:36Z",
-      "lastCommit": "3753c6235",
-      "lastSummary": "fix(governance): close three more review findings, one a regression from the last round",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/PostgresFundStructureService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T14:46:04Z",
-      "lastCommit": "af474b581",
-      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/Migrations/004_fund_structure_tenant_columns.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T09:17:06Z",
-      "lastCommit": "b5959430f",
-      "lastSummary": "chore(schema-control): refresh the schema snapshot for the new migrations",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_032__accounting_audit_chain.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T09:17:06Z",
-      "lastCommit": "b5959430f",
-      "lastSummary": "chore(schema-control): refresh the schema snapshot for the new migrations",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T09:07:11Z",
-      "lastCommit": "87a19b955",
-      "lastSummary": "fix(tenancy): report a refused tenant scope as 403 rather than a server error",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T09:00:33Z",
-      "lastCommit": "08d2fc28f",
-      "lastSummary": "docs(roadmap): map SRC-APP to W9-GOV-008 and regenerate the traced docs",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:59:30Z",
-      "lastCommit": "5ffeef44d",
-      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:59:30Z",
-      "lastCommit": "5ffeef44d",
-      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:59:30Z",
-      "lastCommit": "5ffeef44d",
-      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:38:05Z",
-      "lastCommit": "c70a68e47",
-      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/FundStructureTenantScope.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/IFundStructureStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-29T08:14:33Z",
-      "lastCommit": "e3a7378ac",
-      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
-      "touches": 1
     }
   ],
   "recentChangesWindowDays": 14,

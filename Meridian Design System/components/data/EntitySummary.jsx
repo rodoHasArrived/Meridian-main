@@ -13,13 +13,13 @@ export function EntitySummary({ items, columns = 3 }) {
           <div style={{
             fontFamily: "var(--font-body)", fontSize: 10, fontWeight: 600,
             fontVariant: "all-small-caps", letterSpacing: "0.03em",
-            color: "var(--text-muted, #59636F)", marginBottom: 3
+            color: "var(--text-muted, #5E666F)", marginBottom: 3
           }}>{it.label}</div>
           <div style={{
             fontSize: 13,
             fontFamily: it.mono === false ? "var(--font-body)" : "var(--font-data)",
             fontVariantNumeric: "tabular-nums",
-            color: it.color || "var(--text-primary, #22272E)",
+            color: it.color || "var(--text-primary, #22252A)",
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
           }}>{it.value}</div>
         </div>

@@ -6,10 +6,49 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-30
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Ui.Shared
+
+Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
+deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
+session resolution recheck the account scope after runtime account changes. Unpartitioned
+fund-structure stores continue to refuse multiple companies under either posture.
+
+The provider setup compatibility store passes a complete legacy sidecar snapshot to the
+Data Integration vault's atomic importer. It validates all entries before publication,
+preserves existing credentials and deletion markers on retries, and removes the plaintext
+sidecar only after both encrypted generations and the import audit are retained. Data Integration's
+shared migration helper owns the cross-process source lease and restartable rename/erasure sequence,
+so simultaneous setup adapters cannot race during cleanup.
+
+Statement intake publishes durable run-over-run break observations from retained canonical rows
+and immutable match artifacts after exact accounting/access scope validation and case publication.
+Missing business identifiers or ambiguous source rows remain explicitly untracked; incomplete
+identity coverage never clears prior observations. Replays preserve original match populations even
+after casework disposition. Browser queue details surface source lineage separately from case status.
+
+Period creation requires a resolved authenticated actor and overwrites any client-supplied
+`CreatedBy` before calling the shared ledger service. The actor is retained in the same-transaction
+PostgreSQL ledger audit. `WorkstationEndpointsTests.LedgerAuditActor` exercises spoofed client
+attribution against the real period service and PostgreSQL store.
+Generated-candidate posting and manual journal lifecycle routes also require a resolved authenticated
+actor; permission alone cannot authorize use of a client-supplied posting identity.
+
+Rejected mutation leases return HTTP 429 with a positive `Retry-After` delay. The lending
+runtime test exhausts the shared projection/reconciliation budget and verifies rejection
+before mutation; `forceEnable` allows this test to exercise the real limiter without changing
+process-wide environment settings.
+
+
+Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
+shared service into committed run identity handling. Repeating a command on the same loan
+returns the retained run; reusing a projection command with a different explicit date returns
+409. In-memory workflows follow the same retry rule. The two HTTP write routes require a non-empty UUID in `X-Command-Id` and return 400
+before mutation when it is missing or invalid. Internal calls without an identity retain
+legacy new-run behavior and must not be treated as safe automatic retries.
+
 
 The shared workstation graph owns first-run state, the curated starter catalog,
 versioned sample provisioning, and outcome-based activation evidence. Browser and WPF
@@ -23,6 +62,52 @@ import, and `sample`/`skip` lead with the starter kit's desk. Activation outcome
 `workspace-opened` (and `data-imported` for sample workspaces) are only recorded when a client
 reports the completed work to `POST /api/workstation/first-run/outcomes/complete`, so the
 checklist reflects finished work rather than page visits.
+
+## Shared close and lot convergence
+
+The Operations Continuity compatibility close command delegates to the Accounting Close period-lock
+executor. Both HTTP entry points enforce Controller authority, exact tenant/company/book ownership,
+closing-entry review, reconciliation sealing, and retained reporting handoff. Operations mutation
+permission alone cannot publish a closed workflow while its ledger period remains open.
+Operations posture, approval, and compatibility close requests resolve report support from the
+retained accounting package authority. A caller's readiness flag or invented package ID cannot
+establish readiness; foreign scope, missing evidence, blocking validation, or support older than
+the last ledger/reconciliation prerequisite change is refused. Pre-close support is reviewable;
+final report certification remains an output of the completed hard close. The browser and desktop
+shared publication guard re-resolves that authority at the mutation boundary and compares a retained
+package and canonical scoped-journal content hash, so replacing a package under the same ID or
+posting outside Operations invalidates prior review. Journal creation times newer than the package
+require rebuilding support; the journal fingerprint also detects changes that retain an older
+timestamp. Missing report or scoped-journal authority blocks publication. Refreshing report posture
+retains the new revision and requires renewed affected approvals.
+
+The tenant-guarded Financial Operations command-center endpoint now exposes the server-owned close projection to the browser. Its dependency graph includes ledger-book and close-plan authorities. Fund-wide workspace queries cannot attest period close readiness because they lack the complete declared close scope. Focused proof: `WorkstationEndpointsTests.CloseReadiness`.
+
+The ledger open-lot maintenance routes expose survey, exception queue, retained source inspection, independent review, and versioned application under explicit administrative permission and exact registered tenant/company book ownership. Actors and governed action origins come from the authenticated session. Unknown ownership is blocking. Review and application use retained source identities, never replacement request-side acquisition facts.
+
+Journal automation exposes a read-only valuation freshness preview and retains dated mark evidence through journal review. The same policy decisions feed browser and desktop position read models; absent observation history stays review required. Close subject ownership is resolved from authoritative book, account, and entity records through `CloseReadinessSubjectSource`.
+
+## Credential audit identity
+
+Canonical and compatibility credential routes require an authenticated actor in addition to tenant
+scope and credential-management permission. Saves replace caller-supplied `RequestedBy` with that
+actor; delete and verification pass the same identity into the vault audit. Accounting-provider
+verification retains the initiating actor after any provider-internal verification event.
+Alpaca verification requires a provider-returned account identity and reports fixed failure text;
+response reason phrases, JSON paths and exception details never enter its returned errors or logs.
+The Alpaca brokerage connect/revoke routes apply the same identity and verification rules.
+Provider setup passes the server-resolved actor into credential persistence. Plaid operator mutations
+require an authenticated actor and never fall back to a request identity; signed webhook authentication
+remains independent of operator sessions.
+
+### Tenant composition
+
+The workstation replaces the core retained-worker tenant accessor with its request-aware adapter
+while preserving explicitly configured host adapters and options. The in-memory fund-structure
+startup refusal checks the effective authentication account source, including configured
+environment accounts and development demo fallback, so a multi-company login source cannot
+silently run against an unpartitioned graph. This startup check does not certify account changes
+after startup or activate strict reads automatically.
 
 ## Purpose
 
@@ -107,6 +192,18 @@ watch surface, so another company cannot trigger or populate an operator refresh
 scope is rejected by the shared tenant/company filter as typed `403` Problem Details before either
 endpoint resolves provider data. The shared service's legacy unscoped snapshot and watch surfaces
 exclude tenant/company-aware providers entirely rather than invoking their compatibility methods.
+
+The shared mutation and global API throttles accept `MDC_DISABLE_RATE_LIMIT=true` only in an
+explicit Development/Test host outside production, packaged and customer postures. Both resolve
+one shared bypass policy from the final host registrations; absent policy or host environment does
+not authorize a bypass. Direct-lending writes retain a separate 20-command/minute operator budget,
+leave loan reads available when that budget is exhausted, and return a positive `Retry-After` delay
+before invoking a rejected command. Actor and IP partition keys are namespaced separately from
+the unlimited development partition, so disabling the override cannot retain an unlimited budget
+for an operator whose name matches that internal partition. The budget follows the server-resolved
+actor, including API-key and optional local-principal requests that have no authenticated claims
+principal; changing addresses does not create another budget. An IP partition is used only when
+the request has no resolved actor.
 
 Shared operational endpoints use stable RFC 7807 Problem Details types for validation,
 authorization, conflict, unavailable-runtime, timeout, and internal failures. API-key, login-session,

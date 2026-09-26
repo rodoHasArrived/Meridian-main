@@ -11,6 +11,13 @@ last_reviewed: 2026-07-13
 
 # src/Meridian.Instruments
 
+Direct-lending Asset Operations publication derives terms, status, and ledger row identities
+from retained loan/security facts so retries preserve those visible IDs. Ledger projection dates
+come from the retained projection as-of date, or the contract effective date when no run exists.
+Replay identity coverage is in `AssetOperationsReadServiceTests`; publication observation timestamps
+and cross-writer ordering require separate evidence before claiming exactly-once effects.
+
+
 ## Purpose
 
 Physical bounded-context module project for instrument terms, contracts, obligations,

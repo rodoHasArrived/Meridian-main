@@ -585,6 +585,137 @@ let ``SecurityMasterSnapshotWrapper serializes current equity payload and identi
     wrapper.PrimaryIdentifierValue |> should equal "ACPRA"
     wrapper.Currency |> should equal "USD"
 
+let private legacySwapLeg : SwapLeg = {
+    LegId = None
+    LegType = "Fixed"
+    Currency = "USD"
+    Direction = None
+    Index = None
+    FixedRate = Some 0.0425m
+    SpreadBps = None
+    CurrentIndexRate = None
+    Notional = None
+    PaymentFrequency = None
+    DayCount = None
+    ExchangesPrincipal = false
+}
+
+let private createSwapCommand legs =
+    let equityCommand = createEquityCreateCommand None
+    { equityCommand with
+        Kind = SecurityKind.Swap {
+            EffectiveDate = DateOnly(2026, 1, 15)
+            MaturityDate = DateOnly(2031, 1, 15)
+            Legs = legs
+        } }
+
+let private createSwapSnapshot legs =
+    match SecurityMaster.create (createSwapCommand legs) with
+    | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> SecurityMasterSnapshotWrapper(snapshot)
+    | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+    | Error errors -> failwithf "Expected swap create to succeed, got: %A" errors
+
+[<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes full swap leg economics`` () =
+    let fixedLeg = {
+        legacySwapLeg with
+            LegId = Some "fixed-leg"
+            Direction = Some "Pay"
+            Notional = Some 25_000_000m
+            PaymentFrequency = Some "SemiAnnual"
+            DayCount = Some "30/360"
+    }
+    let floatingLeg = {
+        legacySwapLeg with
+            LegId = Some "floating-leg"
+            LegType = "Floating"
+            Currency = "EUR"
+            Direction = Some "Receive"
+            Index = Some "EURIBOR"
+            FixedRate = None
+            // A spread below the reference index is valid economics and must survive unchanged.
+            SpreadBps = Some -10m
+            CurrentIndexRate = Some 0.0312m
+            Notional = Some 23_000_000m
+            PaymentFrequency = Some "Quarterly"
+            DayCount = Some "ACT/360"
+            ExchangesPrincipal = true
+    }
+    let wrapper = createSwapSnapshot [ fixedLeg; floatingLeg ]
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = assetDocument.RootElement
+    payload.GetProperty("effectiveDate").GetString() |> should equal "2026-01-15"
+    payload.GetProperty("maturityDate").GetString() |> should equal "2031-01-15"
+    let legs = payload.GetProperty("legs")
+    legs.GetArrayLength() |> should equal 2
+
+    let fixedPayload = legs.[0]
+    fixedPayload.GetProperty("legId").GetString() |> should equal "fixed-leg"
+    fixedPayload.GetProperty("legType").GetString() |> should equal "Fixed"
+    fixedPayload.GetProperty("currency").GetString() |> should equal "USD"
+    fixedPayload.GetProperty("direction").GetString() |> should equal "Pay"
+    fixedPayload.GetProperty("fixedRate").GetDecimal() |> should equal 0.0425m
+    fixedPayload.GetProperty("notional").GetDecimal() |> should equal 25_000_000m
+    fixedPayload.GetProperty("paymentFrequency").GetString() |> should equal "SemiAnnual"
+    fixedPayload.GetProperty("dayCount").GetString() |> should equal "30/360"
+    fixedPayload.GetProperty("exchangesPrincipal").GetBoolean() |> should equal false
+
+    let floatingPayload = legs.[1]
+    floatingPayload.GetProperty("legId").GetString() |> should equal "floating-leg"
+    floatingPayload.GetProperty("legType").GetString() |> should equal "Floating"
+    floatingPayload.GetProperty("currency").GetString() |> should equal "EUR"
+    floatingPayload.GetProperty("direction").GetString() |> should equal "Receive"
+    floatingPayload.GetProperty("index").GetString() |> should equal "EURIBOR"
+    floatingPayload.GetProperty("fixedRate").ValueKind |> should equal JsonValueKind.Null
+    floatingPayload.GetProperty("spreadBps").GetDecimal() |> should equal -10m
+    floatingPayload.GetProperty("currentIndexRate").GetDecimal() |> should equal 0.0312m
+    floatingPayload.GetProperty("notional").GetDecimal() |> should equal 23_000_000m
+    floatingPayload.GetProperty("paymentFrequency").GetString() |> should equal "Quarterly"
+    floatingPayload.GetProperty("dayCount").GetString() |> should equal "ACT/360"
+    floatingPayload.GetProperty("exchangesPrincipal").GetBoolean() |> should equal true
+
+[<Fact>]
+let ``SecurityMaster accepts swap legs without optional economics`` () =
+    let wrapper = createSwapSnapshot [ legacySwapLeg ]
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let leg = assetDocument.RootElement.GetProperty("legs").[0]
+    for field in [ "legId"; "direction"; "spreadBps"; "currentIndexRate"; "notional"; "paymentFrequency"; "dayCount" ] do
+        leg.GetProperty(field).ValueKind |> should equal JsonValueKind.Null
+    leg.GetProperty("fixedRate").GetDecimal() |> should equal 0.0425m
+    leg.GetProperty("exchangesPrincipal").GetBoolean() |> should equal false
+
+[<Theory>]
+[<InlineData(0)>]
+[<InlineData(-1)>]
+let ``SecurityMaster rejects non-positive supplied swap leg notional`` (notional: int) =
+    let command = createSwapCommand [ { legacySwapLeg with Notional = Some (decimal notional) } ]
+    match SecurityMaster.create command with
+    | Error errors -> errors |> List.map (fun error -> error.Code) |> should contain "swap_leg_notional_invalid"
+    | Ok _ -> failwith "Expected a non-positive swap leg notional to be rejected."
+
+[<Theory>]
+[<InlineData(" ")>]
+[<InlineData("Unknown")>]
+let ``SecurityMaster rejects unrecognized supplied swap leg direction`` (direction: string) =
+    let command = createSwapCommand [ { legacySwapLeg with Direction = Some direction } ]
+    match SecurityMaster.create command with
+    | Error errors -> errors |> List.map (fun error -> error.Code) |> should contain "swap_leg_direction_invalid"
+    | Ok _ -> failwith "Expected an unrecognized swap leg direction to be rejected."
+
+[<Theory>]
+[<InlineData("pay")>]
+[<InlineData("RECEIVE")>]
+let ``SecurityMaster accepts either swap leg direction case-insensitively`` (direction: string) =
+    let wrapper = createSwapSnapshot [ { legacySwapLeg with Direction = Some direction } ]
+    wrapper.AssetClass |> should equal "Swap"
+
+[<Fact>]
+let ``SecurityMaster rejects blank supplied swap leg payment frequency`` () =
+    let command = createSwapCommand [ { legacySwapLeg with PaymentFrequency = Some " " } ]
+    match SecurityMaster.create command with
+    | Error errors -> errors |> List.map (fun error -> error.Code) |> should contain "swap_leg_payment_frequency_invalid"
+    | Ok _ -> failwith "Expected a blank swap leg payment frequency to be rejected."
+
 [<Fact>]
 let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` () =
     let maturity = DateOnly(2034, 9, 15)

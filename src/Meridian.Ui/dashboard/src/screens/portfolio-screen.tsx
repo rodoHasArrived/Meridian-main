@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -100,6 +101,7 @@ const cashFlowBorderClass = {
 } as const;
 
 const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
+  { id: "mark-readiness", label: "Mark readiness", render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
   {
     id: "symbol",
     label: "Symbol",
@@ -124,7 +126,7 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
   },
   {
     id: "mark",
-    label: "Mark",
+    label: "Recorded mark",
     align: "right",
     render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
   },
@@ -229,6 +231,7 @@ const brokerageAccountColumns: DenseDataTableColumn<PortfolioBrokerageAccountRow
 ];
 
 const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionRow>[] = [
+  { id: "mark-readiness", label: "Mark readiness", render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
   {
     id: "account",
     label: "Account",
@@ -1193,7 +1196,7 @@ export function PortfolioScreen({
                     Open positions
                   </CardTitle>
                   <CardDescription className="mt-2">
-                    Current open positions from the active paper session with exposure and unrealized P&amp;L.
+                    Open positions with recorded exposure and unrealized P&amp;L. Review mark readiness before approving valuation numbers.
                   </CardDescription>
                 </div>
                 <Badge variant="outline" aria-label={vm.positionCountLabel}>
@@ -1588,7 +1591,7 @@ function PortfolioDrillInChartInner({
           {
             label: "Max drawdown",
             value: `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`,
-            color: "var(--chart-drawdown, #BA3F55)"
+            color: "var(--chart-drawdown, #A8443C)"
           },
           { label: "Sharpe", value: profile.sharpeRatio.toFixed(2) }
         ]}
@@ -1596,7 +1599,7 @@ function PortfolioDrillInChartInner({
         style={{ flexShrink: 0 }}
       >
         <EquityCurve
-          series={[{ label: "Equity", color: "var(--chart-equity, #2F6F8F)", points: equity }]}
+          series={[{ label: "Equity", color: "var(--chart-equity, #3A7A56)", points: equity }]}
           drawdown={drawdown}
           labels={labels}
           valueFmt={drillInCurrency}
@@ -1651,10 +1654,10 @@ function PortfolioDrillInReturnDistribution({
         {
           label: "Mean / day",
           value: drillInSignedPercent(mean),
-          color: mean >= 0 ? "var(--chart-equity, #16885F)" : "var(--chart-drawdown, #BA3F55)"
+          color: mean >= 0 ? "var(--chart-equity, #3A7A56)" : "var(--chart-drawdown, #A8443C)"
         },
-        { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #16885F)" },
-        { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #BA3F55)" },
+        { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #3A7A56)" },
+        { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #A8443C)" },
         { label: "Positive days", value: `${positiveShare.toFixed(0)}%` }
       ]}
       height={220}

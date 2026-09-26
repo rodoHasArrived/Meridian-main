@@ -589,6 +589,63 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     }
 
     [Fact]
+    public void Bond_NonStringCouponType_IsRejectedOnWrite()
+    {
+        // A present token of the wrong KIND reaches the decode sites as if it were absent —
+        // GetOptionalString erases a number to null — so without an explicit kind check the write
+        // persists the missing-value default (Fixed) and discards the floating index and spread the
+        // payload named. Exactly the silent rewrite an undeclared spelling causes, by another route.
+        FluentActions.Invoking(() => CreateSnapshot("Bond", new
+        {
+            maturity = "2035-06-15",
+            couponType = 123,
+            floatingIndex = "SOFR",
+            spreadBps = 185m,
+            isCallable = false,
+            subclass = "Corporate"
+        }))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*'123' is not a declared 'couponType' value*");
+    }
+
+    [Fact]
+    public void Option_NonStringExerciseStyle_IsRejectedOnWrite()
+    {
+        // Same hole on the dropped-value field with no bespoke decode arm: the style would be
+        // erased to null and re-emitted as null, losing it without a word.
+        FluentActions.Invoking(() => CreateSnapshot("Option", new
+        {
+            underlyingId = UnderlyingId,
+            putCall = "Call",
+            strike = 105.5m,
+            expiry = "2027-12-17",
+            multiplier = 100m,
+            exerciseStyle = true,
+            isAdjusted = false
+        }))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*is not a declared 'exerciseStyle' value*");
+    }
+
+    [Fact]
+    public void Bond_ExplicitlyNullCouponType_KeepsTheDocumentedFixedDefault()
+    {
+        // An explicit JSON null is absence, not a wrong-kind token: it carries no discriminant to
+        // lose, so it keeps the documented default rather than being refused.
+        var canonical = SerializeThroughDomain("Bond", new
+        {
+            maturity = "2035-06-15",
+            couponType = (string?)null,
+            couponRate = 4.25m,
+            isCallable = false,
+            subclass = "Corporate"
+        });
+
+        canonical.GetProperty("couponType").GetString().Should().Be("Fixed");
+        canonical.GetProperty("couponRate").GetDecimal().Should().Be(4.25m);
+    }
+
+    [Fact]
     public void Option_UndeclaredExerciseStyle_IsRejectedOnWrite()
     {
         // exerciseStyle has no bespoke decode arm — an unrecognized style just reads as None and the

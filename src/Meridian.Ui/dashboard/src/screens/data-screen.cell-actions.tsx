@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { acknowledgeAnomaly, archiveSymbol, remediateQualityGap, triggerBackfill } from "@/lib/api";
+import { marketDataDeskPath } from "@/lib/workspace";
 import { useActivityLog } from "@/lib/activity-log/store";
 import type { ActivityEntryInput } from "@/lib/activity-log/types";
 import { describeApiError } from "@/lib/api-errors";
@@ -323,7 +324,7 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
                 {
                   kind: "symbol.exclude",
                   tone: "warning",
-                  route: "/data/watchlist",
+                  route: marketDataDeskPath("watchlist"),
                   routeLabel: "Re-add in watchlist",
                   detail: "Symbol archived and dropped from coverage tracking."
                 }

@@ -26,7 +26,61 @@ release-certification gate in [`implementation-todo-list.md`](implementation-tod
 of these rows moves to `done` here — `done` additionally requires the release or status
 documentation each row's lane owns.
 
-## Currently accepted (six)
+> **Later status change.** `W9-DEMO-002` has since moved to `done`, on 2026-09-16, under
+> `DEC-W9-DONE-001` and the closure record in
+> [`w9-demo-002-closure-2026-09-16.md`](w9-demo-002-closure-2026-09-16.md). That record also
+> documents a correction to the evidence this acceptance was taken on. The other rows below are
+> unaffected, and this file remains the acceptance record for all of them.
+
+> **W9-TRUTH-001 reassessment — 2026-09-25.** Issue #2626 is reopened after source review at
+> `a03238c69f86c7455e03c0f6be2196d55719a044` found that reconciliation `SaveAsync` omitted the
+> entry-provenance guard, the actual legacy rekey path could discard an incoming mark, and
+> duplicate-create identity excluded provenance. The original acceptance remains historical
+> evidence; the row moved to `in_progress` pending correction, validation, and review. This status
+> was superseded by the W9-TRUTH-001 correction closure below; other rows' decisions are unchanged.
+
+## W9-TRUTH-001 correction closure — 2026-09-25
+
+The reconciliation correction merged in [PR #3000](https://github.com/rodoHasArrived/Meridian-main/pull/3000)
+as `f96917619ea357aad3759449d9ea69bb6596a9b5`. Saves and actual legacy rekeys now enforce
+entry provenance, retained non-real marks cannot be removed by renaming source fields, and
+normalized provenance participates in duplicate-create identity. New migration audit entries
+retain the original request hash so exact retries survive restart and stronger inherited marks.
+
+All nine hosted workflows passed on head `432d8882bd6bcafe730408d6a64ba32600921c56`, including
+[Meridian CI run 36209318392](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36209318392),
+Windows Desktop Build, Golden Path Validation, CodeQL, and both WPF validation workflows.
+The focused repository suite passed 106 cases, including 35 new regression cases. Automated
+source review found no further correction blockers. Local full CI passed restore using
+`DOTNET_PROCESSOR_COUNT=1`, then could not evaluate formatting because Roslyn's named-pipe
+client received `SocketException (13): Permission denied`; hosted validation supplied the
+integration evidence. No local full-CI pass is claimed.
+
+After receiving the correction checkpoint, the user instructed: "Go ahead and merge the completed
+work and then move on to implement the remaining open items." The bounded `accepted` posture is
+restored on that instruction, the merged correction, and the original acceptance evidence above.
+There are no independent GitHub review submissions; merge authorization is not recorded as one.
+This closes the correction for issue #2626 without making a new `done` or release-certification
+claim. Invalid legacy cases still require an explicit non-real mark before repair or rekey.
+
+## W9-PAPER-003 final-price correction — 2026-09-25
+
+Source verification for issue #2628 found that both paper gateways rounded prices to tick size
+after matching admission. A buy at an observed print and limit of 100.006 could therefore become
+a 100.01 fill on a 0.01 tick, violating both the observed envelope and the limit. The equivalent
+sell-side rounding could cross the lower bound. The earlier property suite tested the matcher,
+while its gateway cases omitted Security Master tick sizes, so it did not catch this final step.
+
+The shared final-price helper now keeps a rounded tick only if it remains positive, within the
+captured envelope, and within a limit or stop-limit order's price constraint. Otherwise it retains
+the admitted observed price; best-effort tick rounding cannot fabricate a price outside those
+bounds. Costs use the final price. `PaperGatewayTickSizeBoundaryTests` exercises both gateways,
+all four supported order types, limit breaches inside a wider envelope, valid rounding, and
+resting-order execution. Against the original code, 28 regressions failed and four valid-rounding
+controls passed. Validation of the correction and hosted merge evidence belong to its PR.
+The historical bounded acceptance remains recorded; this is not a release-certification claim.
+
+## Recorded acceptances (six)
 
 | Row | Priority | Accepted on the evidence of |
 | --- | --- | --- |

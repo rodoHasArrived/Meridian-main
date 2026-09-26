@@ -11,6 +11,15 @@ public static class DailyPortfolioPricingProjector
     {
         ArgumentNullException.ThrowIfNull(input);
 
+        var valuationDate = DateOnly.FromDateTime(input.AsOf.UtcDateTime);
+        foreach (var mark in input.Marks)
+        {
+            var assessment = input.Policy.FreshnessPolicy.Assess(mark.Symbol, mark.SecurityId,
+                mark.FinancialAccountId, valuationDate, mark.PriceObservedOn, mark.Confidence, mark.MarkPrice);
+            if (assessment.BlockReason is not null || mark.IsStalePriced)
+                throw new InvalidOperationException($"{mark.Symbol}: {assessment.BlockReason ?? "Stale marks require renewed source evidence."}");
+        }
+
         var lines = input.Marks
             .Select(mark => BuildLine(input, mark))
             .OrderBy(static line => line.SecurityId)

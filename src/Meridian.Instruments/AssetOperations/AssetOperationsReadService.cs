@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Instruments.FixedIncome;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
@@ -193,8 +194,11 @@ public static class AssetOperationsProjectionBuilder
             securityReference.Symbol,
             SecurityAssetClassCatalog.GetAssetOperationsCapabilities("DirectLoan"));
 
+        var accountingDate = projectionRuns.MaxBy(static run => run.GeneratedAt)?.ProjectionAsOf
+            ?? contract.EffectiveDate;
         var terms = contract.TermsVersions.Select(version => new AssetTermsVersionDto(
-            Guid.NewGuid(),
+            DirectLendingProjectionIdentity(contract.LoanId, securityId,
+                $"terms/{version.VersionNumber}/{version.TermsHash}"),
             securityId,
             version.VersionNumber,
             version.TermsHash,
@@ -207,7 +211,8 @@ public static class AssetOperationsProjectionBuilder
         var lifecycle = new[]
         {
             new AssetLifecycleEventDto(
-                Guid.NewGuid(),
+                DirectLendingProjectionIdentity(contract.LoanId, securityId,
+                    $"status/{contract.Status}/{contract.EffectiveDate:yyyy-MM-dd}/{contract.ActivationDate:yyyy-MM-dd}/{contract.CloseDate:yyyy-MM-dd}"),
                 securityId,
                 "LoanStatus",
                 contract.Status.ToString(),
@@ -283,10 +288,10 @@ public static class AssetOperationsProjectionBuilder
         var ledger = new[]
         {
             new AssetLedgerProjectionDto(
-                Guid.NewGuid(),
+                DirectLendingProjectionIdentity(contract.LoanId, securityId, $"ledger/{accountingDate:yyyy-MM-dd}"),
                 securityId,
                 "DirectLendingLedgerProjection",
-                DateOnly.FromDateTime(DateTime.UtcNow),
+                accountingDate,
                 "Primary",
                 "Ready",
                 null,
@@ -314,6 +319,10 @@ public static class AssetOperationsProjectionBuilder
             lifecycle);
         return WithTermsObligationsTimeline(projection);
     }
+
+    private static Guid DirectLendingProjectionIdentity(Guid loanId, Guid securityId, FormattableString item)
+        => new(Sha256Digest.ComputeBytesUtf8(
+            FormattableString.Invariant($"meridian/direct-lending/assets/{loanId:N}/{securityId:N}/{FormattableString.Invariant(item)}")).AsSpan(0, 16));
 
     public static AssetOperationsDetailDto FromBondReference(BondReferenceDto bond, AssetOperationSubjectDto subject)
     {

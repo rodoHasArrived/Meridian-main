@@ -357,6 +357,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
             item.Reason,
             item.SourceType,
             item.SourceSystem,
+            DataProvenanceToken = ExplicitProvenance(item.DataProvenanceToken).Token(),
             item.SourceReference,
             item.SourceImportId,
             item.SourceBreakId,
@@ -396,6 +397,20 @@ public sealed partial class FileReconciliationBreakQueueRepository
             // Legacy snapshots can predate durable creation evidence. Preserve compatibility for
             // those cases while all newly created/migrated cases use their immutable audit payload.
             return ComputeCreateInputHash(currentProjection);
+        }
+
+        // A rekey can inherit stronger provenance and retained casework fields. Bind retries
+        // to the admitted request, not that merged projection. Older events have no binding
+        // and continue to compare their immutable creation payload.
+        if (retainedCreation.EventType == "BreakIdMigrated"
+            && retainedCreation.CommandId?.StartsWith(MigrationCreateInputPrefix, StringComparison.Ordinal) == true)
+        {
+            var inputHash = retainedCreation.CommandId[MigrationCreateInputPrefix.Length..];
+            if (!Sha256Digest.IsWellFormed(inputHash))
+            {
+                throw new InvalidDataException("Reconciliation migration retained an invalid create-input hash.");
+            }
+            return inputHash;
         }
 
         var retainedInput = JsonSerializer.Deserialize<ReconciliationBreakQueueItem>(

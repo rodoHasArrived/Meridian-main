@@ -12,6 +12,12 @@ namespace Meridian.Infrastructure.Adapters.NYSE;
 public static class NYSEServiceExtensions
 {
     /// <summary>
+    /// Adds NYSE Direct using the configuration registered by the final host composition.
+    /// </summary>
+    public static IServiceCollection AddNYSEDataSource(this IServiceCollection services)
+        => AddNYSEDataSource(services, static provider => provider.GetRequiredService<IConfiguration>());
+
+    /// <summary>
     /// Adds NYSE Direct data source to the service collection.
     /// </summary>
     /// <param name="services">The service collection.</param>
@@ -20,26 +26,31 @@ public static class NYSEServiceExtensions
     public static IServiceCollection AddNYSEDataSource(
         this IServiceCollection services,
         IConfiguration configuration)
+        => AddNYSEDataSource(services, _ => configuration);
+
+    private static IServiceCollection AddNYSEDataSource(
+        IServiceCollection services,
+        Func<IServiceProvider, IConfiguration> resolveConfiguration)
     {
-        // Bind NYSE options from configuration
-        var nyseOptions = new NYSEOptions();
-        configuration.GetSection("DataSources:Sources:nyse:NYSE").Bind(nyseOptions);
-
-        // Fall back to root NYSE section if not in DataSources
-        if (string.IsNullOrEmpty(nyseOptions.ResolveApiKey()))
+        services.AddSingleton(provider =>
         {
-            configuration.GetSection("NYSE").Bind(nyseOptions);
-        }
+            var configuration = resolveConfiguration(provider);
+            var nyseOptions = new NYSEOptions();
+            configuration.GetSection("DataSources:Sources:nyse:NYSE").Bind(nyseOptions);
 
-        services.AddSingleton(nyseOptions);
-
-        // Get data source options
-        var dataSourcesConfig = new UnifiedDataSourcesConfig();
-        configuration.GetSection("DataSources").Bind(dataSourcesConfig);
-        var sourceOptions = dataSourcesConfig.GetOptionsForSource("nyse");
+            // Fall back to root NYSE section if not in DataSources.
+            if (string.IsNullOrEmpty(nyseOptions.ResolveApiKey()))
+            {
+                configuration.GetSection("NYSE").Bind(nyseOptions);
+            }
+            return nyseOptions;
+        });
 
         services.AddSingleton<IDataSource>(sp =>
         {
+            var dataSourcesConfig = new UnifiedDataSourcesConfig();
+            resolveConfiguration(sp).GetSection("DataSources").Bind(dataSourcesConfig);
+            var sourceOptions = dataSourcesConfig.GetOptionsForSource("nyse");
             var opts = sp.GetRequiredService<NYSEOptions>();
             var factory = sp.GetRequiredService<IHttpClientFactory>();
             var log = sp.GetService<ILogger>()?.ForContext<NYSEDataSource>();

@@ -575,7 +575,8 @@ public sealed record PortfolioPositionSummary(
     [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
     [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
     [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
-    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null,
+    MarkFreshnessAssessmentDto? MarkFreshness = null);
 
 /// <summary>
 /// Shared ledger rollup for workstation Accounting and audit surfaces.

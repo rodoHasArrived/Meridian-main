@@ -45,6 +45,9 @@ public sealed class PluginBacktestStrategyLiveSource : IBacktestStrategyLiveSour
     }
 
     /// <inheritdoc/>
+    /// <inheritdoc/>
+    public string? SelectorParameterKey => PluginAssemblyParameterKey;
+
     public bool TryCreate(
         LiveStrategyCreationContext context,
         out IBacktestStrategy? strategy,

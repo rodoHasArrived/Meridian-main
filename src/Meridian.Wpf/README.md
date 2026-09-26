@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-30
+last_reviewed: 2026-09-05
 ---
 
 # src/Meridian.Wpf
@@ -14,6 +14,26 @@ last_reviewed: 2026-08-30
 The desktop workstation is installed as part of the single Meridian product and opened
 on demand from the browser workstation. It is not a separate end-user package or Start
 Menu product.
+
+## Shared close and lot convergence
+
+Fund Ledger carries its explicitly selected book/account/entity/period context to the shared command-center service. Both the queue and private-capital close headline consume the shared decision; clear local lane inputs cannot establish close readiness. The browser and WPF use the same contributor manifest and blocking rules.
+
+Account, aggregate, strategy-run, and trading position presentations use `MarkFreshnessPresentation` over the shared assessment. Observation date, age, and review reason remain visible in rows and inspectors. An absent mark date is unknown evidence, even when the enclosing position snapshot is recent. Close acceptance exercises recovery using the shared decision and authoritative subject scope.
+
+Operations Continuity and Accounting Close require explicit fund, book, account, entity, and period selections for close evaluation. Preparation remains available without close scope. The desktop shared publication guard reads the current authenticated session; missing tenancy, sign-out, or unavailable authoritative evidence blocks publication. Changing the selected subject or workflow invalidates prior readiness and pending results.
+
+Accounting Close resolves `IWorkstationAccountingCloseApiClient` to
+`WorkstationAccountingCloseApiClient` in the Accounting feature module. Its plan reads and
+governed commands use the server HTTP endpoints; the server resolves authenticated authority
+and applies the shared close guard before locking or publication. The registered-screen
+recovery scenarios in `AccountingCloseHttpRecoveryTests` retain the selected workflow across
+evidence refusal and refresh after repair. Close-readiness acceptance remains in progress
+pending the required hosted integration checks.
+
+The Accounting feature registers the same retained report-package authority as the browser.
+Close publication revalidates scoped report support through the shared guard; a client readiness
+flag cannot stand in for the retained package. Windows execution remains a separate acceptance gate.
 
 ## Purpose
 
@@ -105,6 +125,8 @@ Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden
 an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
 together when a flow resets the input.
 
+Reusable value-adjacent confidence badges use `DataConfidenceIndicator` and `DataConfidenceIndicatorModel` so Portfolio, Accounting, Reporting, and Data screens can display the same Current, Stale, Partial, Reconciled, Unreconciled, Estimated, and Provider Degraded labels with source/provider metadata, freshness, reconciliation status, fallback notes, and click-through explanations sourced from shared evidence or provider read models where available.
+
 Desktop configuration is preflighted before the generic host parses `appsettings.json`. Invalid
 configuration is moved to a timestamped retained backup, a valid last-known-good copy is restored
 when available (otherwise safe defaults are written), and a recovery receipt is retained beside the
@@ -180,7 +202,8 @@ close/evidence/reconciliation posture from shared operations continuity when ava
 fund-scoped accounting-basis policy records and multi-basis ledger-book projection candidates
 through Financial Operations services.
 `FundAccountingClose` routes to `AccountingClosePage`, a dedicated WPF close workbench over the
-shared `IAccountingCloseManagementService`. Operators can load a close-period plan by workflow id,
+HTTP-backed `IWorkstationAccountingCloseApiClient`, which implements the shared
+`IAccountingCloseManagementService` contract. Operators can load a close-period plan by workflow id,
 edit desktop draft fields for materiality thresholds, currency, review role, late-adjustment
 approval posture, select the retained checklist task being edited, and update task owner, due date,
 required approval role/count, required evidence, role-scoped sign-off matrix rows, dependencies, and dependency reasons, then retain task/dependency, sign-off, required-evidence, and
@@ -291,6 +314,11 @@ Runtime desktop capability toggles are declared by feature modules and surfaced 
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
+Security Master create, edit, deactivate, and file-import commands require an active desktop actor
+with `ModifySecurityMaster`; trading-parameter backfill requires `TriggerBackfill`. WPF resolves
+actor and permission together again at the in-process application-service boundary, and configured
+anonymous roles use the shared `RolePermissions` mapping rather than inheriting unrestricted
+local-development access.
 
 The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
 The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer
@@ -314,6 +342,11 @@ posture used by shared workstation continuity endpoints.
 The drill-in uses compact action-strip chrome, shared dense cash-ladder and cash-flow event tables,
 and right-side inspectors for the selected event, ladder bucket, continuity posture, and run actions;
 Security Master remains disabled until a symbol-linked cash-flow event is selected.
+Shared dense workstation grids centralize keyboard behavior in `DenseGridKeyboardCommands` and
+`DenseDataGridControl` rather than per-page key handlers. Grids and table-inspector compositions
+now expose reusable command hooks for Ctrl+F filter focus, Enter selected-row details, Escape detail
+closure, Ctrl+C selected-row copy, Ctrl+Shift+F filter clearing, and Ctrl+J related-record
+navigation; row traversal remains the virtualized list's native Up/Down/Page/Home/End behavior.
 Desktop backtest services register the Backtesting-owned `IBacktestPreflightService` implementation
 and attach it to the singleton `BacktestService`, so WPF strategy runs use the same date-range,
 replay-coverage, execution-model, and optional Security Master preflight checks as shared

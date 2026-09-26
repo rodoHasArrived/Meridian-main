@@ -120,6 +120,51 @@ public sealed class AlpacaBrokerageConnectionServiceTests
         DeleteStore(store);
     }
 
+    [Theory]
+    [InlineData("http")]
+    [InlineData("transport")]
+    [InlineData("json")]
+    [InlineData("missing-account")]
+    public async Task ConnectAsync_RejectsUntrustedVerificationWithoutExposingProviderSecrets(string failureKind)
+    {
+        using var env = AlpacaEnvScope.Clear();
+        const string secret = "provider-echoed-secret";
+        using var handler = new RecoveryHandler(failureKind, secret);
+        var service = CreateService(handler, out var store);
+        try
+        {
+            var request = new AlpacaBrokerageConnectionRequestDto("key", "secret", "paper");
+            var failed = await service.ConnectAsync(request, actor: "authenticated-operator");
+            failed.State.Should().Be(BrokerageConnectionStateDto.Degraded);
+            failed.LastError.Should().NotContain(secret);
+            failed.LastError.Should().StartWith("Alpaca account verification failed");
+            var retained = await store.ReadForProviderAsync("alpaca");
+            retained!.ExternalAccountId.Should().BeNull();
+            retained.LastError.Should().NotContain(secret);
+            var recovered = await service.ConnectAsync(request, actor: "authenticated-operator");
+            recovered.State.Should().Be(BrokerageConnectionStateDto.Connected);
+            (await store.GetStatusAsync("alpaca")).AuditMetadata["lastVerifiedBy"].Should().Be("authenticated-operator");
+        }
+        finally { DeleteStore(store); }
+    }
+
+    private sealed class RecoveryHandler(string failureKind, string secret) : HttpMessageHandler
+    {
+        private int _calls;
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            if (Interlocked.Increment(ref _calls) > 1)
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse("PA-RECOVERED") });
+            if (failureKind == "transport")
+                throw new HttpRequestException(secret, new IOException(secret));
+            return Task.FromResult(new HttpResponseMessage(failureKind == "http" ? HttpStatusCode.Unauthorized : HttpStatusCode.OK)
+            {
+                ReasonPhrase = secret,
+                Content = new StringContent(failureKind == "json" ? "{\"id\":{\"" + secret + "\":1}}" : "{}", Encoding.UTF8, "application/json")
+            });
+        }
+    }
+
     private static AlpacaBrokerageConnectionService CreateService(
         HttpMessageHandler handler,
         out FileProviderCredentialStore store)

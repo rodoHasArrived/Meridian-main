@@ -127,26 +127,19 @@ public static class WorkstationServiceCollectionExtensions
             .BindConfiguration(Meridian.Storage.Services.DataReplacementCostOptions.SectionName);
         services.AddOptions<Meridian.Storage.Query.DataQueryOptions>()
             .BindConfiguration(Meridian.Storage.Query.DataQueryOptions.SectionName);
-        services.TryAddScoped<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
-        // SEC-005 slice 4c-ii: ambient caller-tenant accessor consumed by the singleton Postgres ledger
-        // store for tenant read predicates. Singleton + IHttpContextAccessor-backed (no captive scope).
-        services.TryAddSingleton<IFundScopeTenantAccessor, WorkstationFundScopeTenantAccessor>();
-        // SEC-005 slice 4c-iii: fund-scoped write tenant gate switch. Off by default (detection-first) so
-        // the tenantless legacy admin still writes; a shared multi-tenant deployment opts into fail-closed
-        // enforcement via MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true.
-        services.TryAddSingleton(new FundScopedWriteTenantOptions(
-            Enforce: string.Equals(
+        // This accessor retains only singleton IHttpContextAccessor and rereads its AsyncLocal
+        // request each time, so singleton accounting guards can consume it without capturing a scope.
+        services.TryAddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
+        // Replace only the core worker fallback. Preserve an explicitly supplied host accessor;
+        // otherwise HTTP scope must take precedence over any ambient background authority.
+        services.AddFundScopeTenantServices<WorkstationFundScopeTenantAccessor>();
+        // Strict tenant reads must be paired with strict writes. The explicit write switch can
+        // tighten the single-company migration posture, but cannot weaken the strict posture.
+        services.TryAddSingleton(sp => new FundScopedWriteTenantOptions(
+            Enforce: sp.GetRequiredService<Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions>().IsFailClosed || string.Equals(
                 Environment.GetEnvironmentVariable("MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"),
                 "true",
                 StringComparison.OrdinalIgnoreCase)));
-        // W9-GOV-008 criterion 2: read-side posture, the counterpart of the write gate above. Kept on
-        // the deployment-boundary default because fail-closed over a graph whose tenant attribution
-        // has not run hides the retained structure from every caller rather than closing a leak -- a
-        // deployment attributes first (FundStructureTenantAttribution, migration 004), reviews what
-        // the attribution quarantined, and then sets MERIDIAN_TENANT_SCOPE_ENFORCEMENT=fail-closed.
-        services.TryAddSingleton(TenantScopeEnforcementOptions.FromEnvironmentValue(
-            Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable),
-            TenantScopeEnforcementOptions.DeploymentBoundary));
         // W9-GOV-008 criterion 2: the fund-structure implementation with no tenant partition must not
         // serve a deployment configured for more than one company. Checked once at startup rather
         // than per call; see InMemoryFundStructureTenancyGuard for why that is the safer shape.
@@ -844,7 +837,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IOperationsStatusDerivationService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>(),
-                sp.GetService<ContractSecurityMasterQueryService>()));
+                sp.GetService<ContractSecurityMasterQueryService>(),
+                closeReadinessGuard: sp.GetService<IClosePublicationReadinessGuard>()));
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
@@ -1023,11 +1017,20 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
                 sp.GetService<IAutomatedJournalScheduleStatusSource>()));
+        services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
+        services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();
+        services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
+            () => sp.GetService<IFinancialOperationsCommandCenterReadService>(),
+            sp.GetService<IWorkstationTenantContextAccessor>(),
+            () => sp.GetService<IOperationsReportPackAuthority>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IOperationsCloseCalendarService>(),
-                sp.GetService<IPrivateCapitalCloseCockpitService>()));
+                sp.GetService<IPrivateCapitalCloseCockpitService>(),
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<IAccountingCloseManagementService>(),
+                sp.GetService<ICloseReadinessSubjectSource>()));
         services.TryAddSingleton<SecurityMasterExceptionSlaConfig>();
         services.TryAddSingleton<IReconciliationSlaPolicyProvider>(sp =>
             new SecurityMasterReconciliationSlaPolicyProvider(
@@ -1068,7 +1071,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IStatementRunWorkflowService>(),
                 sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(),
-                sp.GetService<IReconciliationBreakQueueRepository>()));
+                sp.GetService<IReconciliationBreakQueueRepository>(),
+                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore>(),
+                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore>()));
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),

@@ -215,6 +215,7 @@ public sealed class StrategyRunWorkspaceService
                 positions.Add(new TradingActivePositionItem
                 {
                     Symbol = pos.Symbol,
+                    MarkFreshness = pos.MarkFreshness,
                     StrategyName = run.StrategyName,
                     QuantityLabel = pos.IsShort
                         ? $"Short {Math.Abs(pos.Quantity):N0}"

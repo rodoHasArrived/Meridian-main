@@ -206,6 +206,7 @@ public sealed class AutomatedJournalDraftIntakeService
 
         foreach (var draft in request.Drafts)
         {
+            ValuationMarkEvidenceGuard.EnsureValid(draft);
             ct.ThrowIfCancellationRequested();
 
             var idempotencyKey = draft.Event.IdempotencyKey ?? BuildFallbackIdempotencyKey(draft.Event);
@@ -249,8 +250,7 @@ public sealed class AutomatedJournalDraftIntakeService
                 evidenceLinks,
                 chartLookup,
                 evidenceAssessment);
-            var saved = await _workbench.SaveDraftAsync(
-                new SaveManualJournalEntryDraftRequest(
+            var saveRequest = new SaveManualJournalEntryDraftRequest(
                     dto,
                     Actor: request.Actor,
                     CorrelationId: string.IsNullOrWhiteSpace(request.BatchCorrelationId)
@@ -259,8 +259,10 @@ public sealed class AutomatedJournalDraftIntakeService
                     EvidenceLinks: evidenceLinks,
                     LedgerBookId: request.LedgerBookId,
                     TenantId: request.TenantId,
-                    CompanyId: request.CompanyId),
-                ct).ConfigureAwait(false);
+                    CompanyId: request.CompanyId);
+            var saved = _workbench is ManualJournalEntryWorkbenchService trustedWorkbench
+                ? await trustedWorkbench.SaveAutomatedDraftAsync(saveRequest, ct).ConfigureAwait(false)
+                : await _workbench.SaveDraftAsync(saveRequest, ct).ConfigureAwait(false);
             created.Add(saved);
         }
 
@@ -461,7 +463,10 @@ public sealed class AutomatedJournalDraftIntakeService
                 PaymentIntentId: NormalizeOptional(draft.Metadata.PaymentIntentId),
                 SettlementReference: NormalizeOptional(draft.Metadata.SettlementReference),
                 BatchCorrelationId: NormalizeOptional(request.BatchCorrelationId)),
-            AutomationEvidenceAssessment: evidenceAssessment);
+            AutomationEvidenceAssessment: evidenceAssessment,
+            ValuationMarkEvidenceJson: draft.Metadata.Tags?.GetValueOrDefault(ValuationMarkEvidenceGuard.EvidenceTag),
+            ValuationMarkEvidenceDigest: draft.Metadata.Tags?.GetValueOrDefault(ValuationMarkEvidenceGuard.DigestTag),
+            RequiresValuationMarkEvidence: ValuationMarkEvidenceGuard.IsValuation(draft.Metadata.IdempotencyKey));
     }
 
     private static ManualJournalEntryTypeDto MapEntryType(AutomatedJournalEventKind kind)

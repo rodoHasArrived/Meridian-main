@@ -13,7 +13,8 @@ public sealed record DailyPortfolioPricingPolicy
         string approvedBy,
         DateTimeOffset approvedAtUtc,
         FairValueLevel defaultFairValueLevel = FairValueLevel.Unclassified,
-        StalePricePolicy? stalePricePolicy = null)
+        StalePricePolicy? stalePricePolicy = null,
+        ValuationFreshnessPolicy? freshnessPolicy = null)
     {
         if (string.IsNullOrWhiteSpace(fundId))
             throw new ArgumentException("Fund identifier must not be null or whitespace.", nameof(fundId));
@@ -33,7 +34,14 @@ public sealed record DailyPortfolioPricingPolicy
         ApprovedBy = approvedBy.Trim();
         ApprovedAtUtc = approvedAtUtc.ToUniversalTime();
         DefaultFairValueLevel = defaultFairValueLevel;
-        StalePricePolicy = (stalePricePolicy ?? StalePricePolicy.Disabled).EnsureValid();
+        StalePricePolicy = (stalePricePolicy ?? StalePricePolicy.Of(3, StalePriceHandling.Block)).EnsureValid();
+        var maximumAge = StalePricePolicy.Enabled ? StalePricePolicy.MaxAgeDays : 3;
+        FreshnessPolicy = freshnessPolicy ?? new ValuationFreshnessPolicy(maximumAge,
+            version: FormattableString.Invariant($"{PolicyId}@{ApprovedAtUtc:O}/mark-freshness-v1/{maximumAge}/Medium"));
+        if (freshnessPolicy is not null && stalePricePolicy is { Enabled: true } legacy &&
+            legacy.MaxAgeDays < freshnessPolicy.MaximumAgeDays)
+            FreshnessPolicy = new ValuationFreshnessPolicy(legacy.MaxAgeDays, freshnessPolicy.MinimumConfidence,
+                $"{freshnessPolicy.Version}/resolved/{legacy.MaxAgeDays}/{freshnessPolicy.MinimumConfidence}");
     }
 
     public string FundId { get; }
@@ -55,7 +63,9 @@ public sealed record DailyPortfolioPricingPolicy
     public FairValueLevel DefaultFairValueLevel { get; }
 
     /// <summary>
-    /// Freshness policy applied to daily marks. Defaults to <see cref="StalePricePolicy.Disabled"/>.
+    /// Legacy configuration adapter. Freshness admission is owned by <see cref="FreshnessPolicy"/>.
     /// </summary>
     public StalePricePolicy StalePricePolicy { get; }
+
+    public ValuationFreshnessPolicy FreshnessPolicy { get; }
 }

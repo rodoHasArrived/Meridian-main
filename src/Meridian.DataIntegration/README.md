@@ -6,12 +6,45 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-08-05
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.DataIntegration
 
+## OAuth token ownership
+
+`IOAuthTokenVault` stores refreshable tokens in the same encrypted vault as provider credentials.
+Mutations hold the shared writer lock and update only the named provider token; readers open a stable
+published generation without requiring a writable lock. Legacy imports preserve existing tokens and
+audit every attempted provider, retaining the imported generation in both primary and backup before
+acknowledging the import. OAuth saves also mirror the replacement token to the backup before success,
+because remote rotation can invalidate the previous refresh token immediately. Backup-write failures
+are reported; the retained replacement can be saved again without another remote rotation.
+Durable markers and sanitized recovery generations prevent deletion reversal;
+empty or missing primaries recover from the retained backup. Both audit surfaces append under the vault
+lock without copying accumulated history. Before appending, an incomplete final record is durably retained
+in a uniquely named `.partial-*` file, preserving every newline-terminated record in the original log.
+The service never writes plaintext OAuth JSON.
+The existing non-Windows local key file remains a production-hardening gap; this does not certify PRD-002.
+
+## Credential migration recovery
+
+Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Mutations share a bounded, cancellable file lock across store instances. Readers open one immutable published generation without a writable lock, including on read-only secret volumes; primary and backup generations are both replaced atomically. Audit failure retains the sidecar for retry.
+
+`LegacyCredentialFileMigration` serializes source discovery, import and cleanup across processes for
+both provider setup and OAuth callers. Successful imports retain both encrypted generations before
+the helper moves the plaintext source to `.migrated`, synchronizes the directory, then erases it.
+A restart completes cleanup without deserializing partly erased bytes. Empty migration lock files
+remain in place so every process continues to acquire the same lock identity.
+
 ## Purpose
+
+ETL runs acquire a unique execution lease before admission. Staging, audit/reject writes, and
+event publication use guarded actions; flush, catalog/export commit, checkpoint, source cleanup,
+and successful terminalization share one guarded commit stage. Parsing may wait outside that
+stage, allowing a live runner to lose its lease without publishing when it resumes. Failure
+terminalization also requires ownership; a stale caller returns an explicitly unretained failure
+receipt without replacing shared job state. See [ETL execution ownership](../../docs/engineering/etl-execution-ownership.md).
 
 Physical bounded-context module project for provider, ingestion, canonicalization, validation,
 source evidence, and publish-data ownership conformance.
@@ -47,7 +80,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   event-type, and processing-tier matching.
 - `Historical/HistoricalDataQueryService.cs` - JSONL-backed historical market-data query and
   OHLCV bar aggregation service used by CLI, diagnostics, simulation, and shared-data access
-  adapters.
+  adapters. File-date filtering and date-range discovery inspect paths relative to the configured
+  data root, so dated workspace or backup directories cannot replace the data's own session date.
 - `Monitoring/BadTickFilter.cs`, `Monitoring/TickSizeValidator.cs`,
   `Monitoring/TimestampMonotonicityChecker.cs`, `Monitoring/ValidationMetrics.cs`,
   `Monitoring/ClockSkewEstimator.cs`, `Monitoring/SpreadMonitor.cs`,
@@ -73,6 +107,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Important workflows
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+
+Connection-health ping cancellation and linked-token disposal execute outside the operation-state
+lock, so provider callbacks and completion cleanup can re-enter the monitor without deadlocking.
+Cleanup requested during cancellation is deferred until the active cancellation calls return;
+shutdown still cancels scans and observes late faults from non-cooperative pings.
 
 Accounting-system integration lives in this module. The adapter family imports chart-of-accounts,
 journal-entry, and trial-balance evidence as read-only reconciliation input through

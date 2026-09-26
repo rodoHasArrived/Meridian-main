@@ -6,17 +6,28 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-27
+last_reviewed: 2026-09-05
 ---
 
 # src/Meridian.Ui.Services
 
 ## Purpose
 
+Batch exports reject duplicate queue entries, skip cancelled attempts, and serialize atomic job-store writes with observable failures. Initial creation and manual or scheduled requeues persist before publishing to workers. Cancellation and removal persist before signalling an execution token or releasing job ownership; failed writes restore the previous status and keep queued work retryable. Successful cancellations and removals remain effective after restart; completion and failure notifications follow durable history and execution cleanup so subscribers can queue a repeat or retry. Raw, JSONL, and CSV are supported; Parquet is rejected until a physical writer exists. JSONL accounting uses the actual decompressed artifact path. CSV discovers all columns, quotes every cell, and fails with rejected row numbers before replacing an artifact. Backfill checkpoint mutations serialize per job and reclaim locks after the last holder or waiter leaves, including cancellation and persistence failures. Activity-feed persistence coalesces pending snapshots while preserving waiter completion and shutdown draining.
+
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
 
 
 `Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, dimension-scoped roll-forward, source-linked audit rows, and close-state evidence gates.
+
+`Services/Accounting/WorkstationAccountingCloseApiClient.cs` implements the
+`IWorkstationAccountingCloseApiClient` marker over `IAccountingCloseManagementService`.
+The WPF Accounting Close feature resolves this HTTP client for retained plans, configuration,
+sign-offs, evidence review, late adjustments, locks, and reopens. Requests reach the governed
+server close endpoints, where authenticated middleware resolves tenant, company, actor, and
+controller authority. Hard-lock requests carry the selected close scope and workflow version;
+the backend re-evaluates shared readiness before mutation. An unavailable or refused response
+does not produce local success, and a plan for another workflow is rejected.
 
 ## Layer responsibility
 
@@ -42,6 +53,11 @@ operational data.
 Scheduled archive-maintenance state is exposed through stable snapshots so operator edits can run
 concurrently with scheduler ticks. Timer callbacks are cancellation-aware and contain background
 exceptions at the service boundary instead of allowing a maintenance tick to terminate the host.
+Data completeness denominators, calendar holiday cells, backfill recommendations, and analysis
+exports use the Platform-owned operational trading calendar through `IOperationalTradingCalendar`.
+The calendar visualization reuses its completeness service's calendar instance, including injected
+policy, so holiday shading and missing-day counts cannot select different calendars. The legacy
+`TradingCalendarService` is a forwarding adapter and contains no independent holiday rules.
 
 Use this module when changing workstation endpoint behavior, operator workflow read models,
 readiness projections, or UI-service orchestration consumed by browser and WPF clients.
@@ -93,7 +109,14 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~WorkstationAccountingCloseApiClientTests" --logger "console;verbosity=normal"
 ```
+
+`WorkstationAccountingCloseApiClientTests` covers transport and server refusal handling;
+`tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.cs` exercises
+actual feature registration and selected-workflow recovery after missing, foreign, stale,
+unavailable, or blocked close evidence. These are focused acceptance scenarios; W10-SEAM-001
+remains in progress until the required hosted integration evidence is complete.
 
 ## Change rules
 

@@ -14,6 +14,20 @@ public static class AssetSpecificTermsSchema
     /// <summary>Flat per-asset-class term payloads (the original, pre-versioning shape).</summary>
     public const int Legacy = 1;
 
+    /// <summary>
+    /// Reserved — never a flat asset-specific-terms version. The asset-specific-terms slot holds one
+    /// <c>schemaVersion</c> key but two payload families, and
+    /// <see cref="SecurityAssetSpecificTermsUpcasterChain"/> dispatches on the bare integer: a
+    /// payload stamped with this number is routed into the cross-family economic-terms → v1 bridge
+    /// (<see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"/>). Declaring a genuine flat
+    /// v2 would send every such payload through that bridge, which reads nested module objects a
+    /// flat document does not have and would emit an empty terms object stamped as valid legacy —
+    /// total loss of the record's economics with no diagnostic. The next flat evolution must skip
+    /// this number; the guard test in <c>SecurityAssetSpecificTermsUpcasterChainTests</c> enforces
+    /// that no accepted flat version ever equals <see cref="EconomicTermsSchema.Current"/>.
+    /// </summary>
+    public const int ReservedForEconomicTerms = 2;
+
     /// <summary>Custom-asset profile-backed term payloads (profileFields + customProfileId).</summary>
     public const int CustomAssetProfile = 3;
 

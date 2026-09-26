@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -73,6 +74,35 @@ public sealed class OperationsContinuityPostgresRoundTripTests
     }
 
     [LedgerDatabaseFact]
+    public async Task PostgresOperationsContinuityStore_ShouldRejectUnmarkedFixtureWithoutCommittingJournal()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var service = CreateService(database);
+        var context = await CreateLedgerContextAsync(database, "unmarked-fixture", "Open");
+        var fundAccountId = Guid.NewGuid();
+        var workflow = await CreateLedgerValidatedWorkflowAsync(
+            service, fundAccountId, context.Period.PeriodId.ToString("D"), context.Book.LedgerBookId);
+        var candidate = CreateJournalCandidate(
+            context.Period.PeriodId, fundAccountId, context.Book.LedgerBookId,
+            context.Period.Version, "unmarked-posting") with
+        { Provenance = DataProvenance.Real };
+
+        var result = await service.PostLedgerEntriesAsync(
+            workflow.WorkflowId,
+            new OperationsLedgerPostRequestDto(
+                workflow.Version, "ops-user",
+                LedgerBatchId: "unmarked-batch", PostingKind: "period-close", PeriodOpen: true,
+                Rationale: "Verify that fixture evidence cannot enter the journal as real data.",
+                EvidenceLinks: EvidenceLinks(), JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_JOURNAL_APPEND_REJECTED");
+        (await database.JournalStore.GetByPeriodAsync(context.Period.PeriodId)).Should().BeEmpty();
+        (await database.OperationsStore.GetTimelineAsync(workflow.WorkflowId))
+            .Should().NotContain(entry => entry.EventType == "ledger-posted");
+    }
+
+    [LedgerDatabaseFact]
     public async Task PostgresOperationsContinuityStore_ShouldRoundTripTransactionalLedgerPosting()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -140,6 +170,7 @@ public sealed class OperationsContinuityPostgresRoundTripTests
         journalEntry.Entry.IsBalanced.Should().BeTrue();
         journalEntry.Entry.Metadata.LedgerBook.Should().Be(openContext.Book.LedgerBookId.ToString("D"));
         journalEntry.Entry.Metadata.Tags.Should().ContainKey("securityMasterLineage");
+        journalEntry.Entry.Metadata.Tags["dataProvenance"].Should().Be("SEEDED");
         journalEntry.Entry.Metadata.ActivityType.Should().Be("interest");
         journalEntry.Entry.Metadata.IdempotencyKey.Should().Be(journalCandidate.IdempotencyKey);
         journalEntry.Entry.Metadata.FundEventId.Should().BeNull();
@@ -362,7 +393,10 @@ public sealed class OperationsContinuityPostgresRoundTripTests
                 }),
             IdempotencyKey: idempotencyKey,
             SecurityMasterProvenance: provenance,
-            ExpectedLedgerVersion: expectedLedgerVersion);
+            ExpectedLedgerVersion: expectedLedgerVersion)
+        {
+            Provenance = DataProvenance.Seeded
+        };
     }
 
     private static async Task<(LedgerBookRecord Book, LedgerAccountingPeriod Period)> CreateLedgerContextAsync(

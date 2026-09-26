@@ -382,7 +382,7 @@ def find_violations(root: Path, scan_dirs: tuple[str, ...] = DEFAULT_SCAN_DIRS) 
                 if not reachable:
                     continue  # no cancellation can land here, so the catch cannot swallow one
                 line = raw.count("\n", 0, match.start()) + 1
-                violations.append((str(path.relative_to(root)), line))
+                violations.append((path.relative_to(root).as_posix(), line))
     return violations
 
 

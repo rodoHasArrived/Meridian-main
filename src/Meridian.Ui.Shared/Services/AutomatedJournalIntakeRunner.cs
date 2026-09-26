@@ -91,7 +91,8 @@ public sealed record RunDailyMarkToMarketDraftIntakeRequest(
     string? EntityId = null,
     string? TenantId = null,
     string? CompanyId = null,
-    string? BatchCorrelationId = null);
+    string? BatchCorrelationId = null,
+    string? ScheduleId = null);
 
 /// <summary>
 /// Outcome of one automated intake run: producer-side skips plus the intake result
@@ -230,6 +231,40 @@ public sealed class AutomatedJournalIntakeRunner
         RunDailyMarkToMarketDraftIntakeRequest request,
         CancellationToken ct = default)
     {
+        var valuationRequest = await BuildDailyMarkRequestAsync(request, ct).ConfigureAwait(false);
+        var valuation = await _dailyMarkToMarketService!.PrepareAsync(valuationRequest, ct).ConfigureAwait(false);
+
+        var batchCorrelationId = BuildDailyValuationBatchCorrelationId(
+            request,
+            valuationRequest.Positions,
+            valuation.Approvals,
+            request.BatchCorrelationId);
+
+        if (valuation.Approvals.Count == 0)
+        {
+            return new DailyMarkToMarketIntakeRunResult(valuation, EmptyIntake, batchCorrelationId);
+        }
+
+        var intake = await _intake.IntakeDraftsAsync(
+            new AutomatedJournalPreparedDraftIntakeRequest(
+                request.FundProfileId,
+                request.Currency,
+                valuation.Approvals.Select(static approval => approval.Draft).ToArray(),
+                request.Actor,
+                request.LedgerBookId,
+                request.PeriodId.ToString("D"),
+                request.EntityId,
+                request.TenantId,
+                request.CompanyId,
+                BatchCorrelationId: batchCorrelationId),
+            ct).ConfigureAwait(false);
+
+        return new DailyMarkToMarketIntakeRunResult(valuation, intake, batchCorrelationId);
+    }
+
+    private async Task<DailyMarkToMarketRequest> BuildDailyMarkRequestAsync(
+        RunDailyMarkToMarketDraftIntakeRequest request, CancellationToken ct)
+    {
         ArgumentNullException.ThrowIfNull(request);
         if (_dailyMarkToMarketService is null)
         {
@@ -257,60 +292,21 @@ public sealed class AutomatedJournalIntakeRunner
                 $"Daily mark-to-market intake is blocked: {string.Join(" ", positionResolution.Blockers)}");
         }
 
-        // The scheduled valuation's maximum mark age maps onto the ledger stale-price policy, while
-        // MarkPriceQualityPolicy enforces observed-date, minimum-confidence, and complete-coverage
-        // controls before any fair-value draft can be retained.
-        var policy = new DailyPortfolioPricingPolicy(
-            request.FundProfileId,
-            request.PolicyId,
-            request.PolicyName,
-            request.ValuationMethod,
-            request.PolicyApprovedBy,
-            request.PolicyApprovedAtUtc,
-            stalePricePolicy: StalePricePolicy.Of(request.MaximumMarkAgeDays, StalePriceHandling.Block));
-        var valuation = await _dailyMarkToMarketService.PrepareAsync(
-            new DailyMarkToMarketRequest(
-                policy,
-                request.PeriodId.ToString("D"),
-                request.AsOf,
-                request.Currency,
-                positionResolution.Positions,
-                request.Actor,
-                request.Reason,
-                new MarkPriceQualityPolicy(
-                    TimeSpan.FromDays(request.MaximumMarkAgeDays),
-                    request.MinimumConfidence,
-                    request.RequireCompleteCoverage,
-                    RequireObservedDate: true),
-                request.LedgerBookId),
-            ct).ConfigureAwait(false);
+        var freshness = new ValuationFreshnessPolicy(request.MaximumMarkAgeDays, request.MinimumConfidence,
+            FormattableString.Invariant($"{request.PolicyId}@{request.PolicyApprovedAtUtc:O}/mark-freshness-v1/{request.MaximumMarkAgeDays}/{request.MinimumConfidence}"));
+        var policy = new DailyPortfolioPricingPolicy(request.FundProfileId, request.PolicyId,
+            request.PolicyName, request.ValuationMethod, request.PolicyApprovedBy, request.PolicyApprovedAtUtc,
+            freshnessPolicy: freshness);
+        return new DailyMarkToMarketRequest(policy, request.PeriodId.ToString("D"), request.AsOf,
+            request.Currency, positionResolution.Positions, request.Actor, request.Reason,
+            LedgerBookId: request.LedgerBookId);
+    }
 
-        var batchCorrelationId = BuildDailyValuationBatchCorrelationId(
-            request,
-            positionResolution.Positions,
-            valuation.Approvals,
-            request.BatchCorrelationId);
-
-        if (valuation.Approvals.Count == 0)
-        {
-            return new DailyMarkToMarketIntakeRunResult(valuation, EmptyIntake, batchCorrelationId);
-        }
-
-        var intake = await _intake.IntakeDraftsAsync(
-            new AutomatedJournalPreparedDraftIntakeRequest(
-                request.FundProfileId,
-                request.Currency,
-                valuation.Approvals.Select(static approval => approval.Draft).ToArray(),
-                request.Actor,
-                request.LedgerBookId,
-                request.PeriodId.ToString("D"),
-                request.EntityId,
-                request.TenantId,
-                request.CompanyId,
-                BatchCorrelationId: batchCorrelationId),
-            ct).ConfigureAwait(false);
-
-        return new DailyMarkToMarketIntakeRunResult(valuation, intake, batchCorrelationId);
+    public async Task<ValuationFreshnessPreviewDto> PreviewDailyMarkToMarketAsync(
+        RunDailyMarkToMarketDraftIntakeRequest request, CancellationToken ct = default)
+    {
+        var valuationRequest = await BuildDailyMarkRequestAsync(request, ct).ConfigureAwait(false);
+        return await _dailyMarkToMarketService!.PreviewAsync(valuationRequest, ct).ConfigureAwait(false);
     }
 
     private static string BuildDailyValuationBatchCorrelationId(

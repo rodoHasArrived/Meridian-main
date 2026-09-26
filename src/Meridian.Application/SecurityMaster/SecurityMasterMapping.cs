@@ -326,7 +326,7 @@ internal static class SecurityMasterMapping
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
-                ToFSharpList(GetRequiredArray(json, "legs").EnumerateArray().Select(ToSwapLeg)))),
+                ToFSharpList(GetSwapLegItems(json).Select(ToSwapLeg)))),
             "DirectLoan" => SecurityKind.NewDirectLoan(new DirectLoanTerms(
                 GetRequiredString(json, "borrower"),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
@@ -407,6 +407,15 @@ internal static class SecurityMasterMapping
                 ToDistributionPolicyOption(GetOptionalString(json, "distributionPolicy")),
                 ToOption(GetOptionalBoolean(json, "isStableNav")),
                 ToOption(GetOptionalString(json, "pricingSource")))),
+            // Read tolerance must not become write tolerance. On a create, an unrecognized class
+            // ("ExchangeTradedFund", which the pack registry only PLANS; a typo like "Equitiy")
+            // would otherwise persist silently as OtherSecurity — and because OtherSecurity is a
+            // catalog class, every later amend passes the round-trip guard, so the
+            // misclassification is permanent and never surfaces. Amend and deactivate are guarded
+            // in SecurityMasterService.EnsureAssetClassRoundTripsSafely before they reach here;
+            // this arm is the one guard the create path has.
+            _ when mode == SecurityKindMappingMode.Write =>
+                throw new InvalidOperationException(UnrecognizedAssetClassOnWrite(assetClass)),
             // Unknown classes degrade to OtherSecurity with the raw class preserved as the category
             // instead of failing every read of the row. A newer node can register a class this node
             // has no deserializer for; throwing here made that a total read outage per security
@@ -443,8 +452,25 @@ internal static class SecurityMasterMapping
 
         foreach (var field in SecurityAssetTermsSchema.DiscriminantFields(assetClass))
         {
-            var raw = GetOptionalString(json, field.Key);
-            if (raw is null || field.Allows(raw))
+            // Absent (or explicitly null) leaves the decode site's documented default alone — an
+            // omitted couponType is legitimately Fixed. A present token of the WRONG KIND is not
+            // absent, though it reaches the decode sites as if it were: GetOptionalString erases a
+            // number, bool, object, or array to null, so the write persists the missing-value
+            // default and discards the structure the payload named, which is the same silent
+            // rewrite an undeclared spelling would cause. Refuse it the same way.
+            if (!json.TryGetProperty(field.Key, out var token) || token.ValueKind == JsonValueKind.Null)
+            {
+                continue;
+            }
+
+            if (token.ValueKind != JsonValueKind.String)
+            {
+                throw new InvalidOperationException(
+                    UndeclaredDiscriminantValue(assetClass, field.Key, token.GetRawText()));
+            }
+
+            var raw = token.GetString();
+            if (field.Allows(raw))
             {
                 continue;
             }
@@ -594,12 +620,138 @@ internal static class SecurityMasterMapping
             ToFSharpList(GetOptionalArrayItemsStrict(json, "principalSchedule").Select(ToPrincipalPaymentEntry)));
     }
 
+    // Match the cash-flow resolver's alias priority, while refusing malformed supplied economics
+    // instead of persisting them as absent. The pre-widening four-field leg remains readable.
     private static SwapLeg ToSwapLeg(JsonElement json)
-        => new(
-            GetRequiredString(json, "legType"),
-            GetRequiredString(json, "currency"),
-            ToOption(GetOptionalString(json, "index")),
-            ToOption(GetOptionalDecimal(json, "fixedRate")));
+    {
+        if (json.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException("Each swap leg must be a JSON object.");
+        }
+
+        return new SwapLeg(
+            ToOption(ReadSwapLegString(json, "legId", "id", "name")),
+            ReadSwapLegString(json, "legType", "rateType", "type")
+                ?? throw new InvalidOperationException("Missing required string 'legType' in a swap leg."),
+            ReadSwapLegString(json, "currency")
+                ?? throw new InvalidOperationException("Missing required string 'currency' in a swap leg."),
+            ToOption(NormalizeSwapLegDirection(ReadSwapLegString(json, "direction", "payReceive", "payOrReceive", "side"))),
+            ToOption(ReadSwapLegString(json, "index", "indexName", "referenceIndex")),
+            ToOption(ReadSwapLegDecimal(json, "fixedRate", "rate", "couponRate")),
+            ToOption(ReadSwapLegDecimal(json, "spreadBps")),
+            ToOption(ReadSwapLegDecimal(json, "currentIndexRate", "lastFixing", "currentRate", "indexRate")),
+            ToOption(ReadSwapLegDecimal(json, "notional", "notionalAmount", "faceAmount", "principal")),
+            ToOption(ReadSwapLegString(json, "paymentFrequency", "frequency")),
+            ToOption(ReadSwapLegString(json, "dayCountConvention", "dayCount", "dayCountBasis")),
+            ReadSwapLegPrincipalExchange(json));
+    }
+
+    private static IEnumerable<JsonElement> GetSwapLegItems(JsonElement json)
+    {
+        JsonElement? emptyArray = null;
+        foreach (var alias in new[] { "legs", "swapLegs", "cashFlowLegs" })
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value))
+            {
+                continue;
+            }
+
+            if (value.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidOperationException($"Swap leg container '{alias}' must be a JSON array.");
+            }
+
+            if (value.GetArrayLength() > 0)
+            {
+                return value.EnumerateArray();
+            }
+
+            // The resolver tries the next alias when an array is empty. An entirely empty set
+            // still reaches the domain's existing nonempty-legs validation.
+            emptyArray = value;
+        }
+
+        return emptyArray?.EnumerateArray()
+            ?? throw new InvalidOperationException("Missing required array 'legs'.");
+    }
+
+    private static string? ReadSwapLegString(JsonElement json, params string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            if (value.ValueKind != JsonValueKind.String)
+            {
+                throw new InvalidOperationException($"Swap leg property '{alias}' must be a JSON string.");
+            }
+
+            if (SecurityTermReader.ReadString(json, alias) is { } text)
+            {
+                return text;
+            }
+        }
+
+        return null;
+    }
+
+    private static decimal? ReadSwapLegDecimal(JsonElement json, params string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            return SecurityTermReader.ReadDecimal(json, alias)
+                ?? throw new InvalidOperationException($"Swap leg property '{alias}' must be a number or numeric string.");
+        }
+
+        return null;
+    }
+
+    private static bool ReadSwapLegPrincipalExchange(JsonElement json)
+    {
+        foreach (var alias in new[] { "exchangesPrincipal", "principalExchange", "notionalExchange" })
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            if (value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                return value.GetBoolean();
+            }
+
+            if (value.ValueKind == JsonValueKind.String && bool.TryParse(value.GetString(), out var parsed))
+            {
+                return parsed;
+            }
+
+            throw new InvalidOperationException($"Swap leg property '{alias}' must be a boolean or boolean string.");
+        }
+
+        return false;
+    }
+
+    private static string? NormalizeSwapLegDirection(string? direction)
+    {
+        var normalized = direction?.Trim().ToUpperInvariant();
+        if (normalized?.Contains("PAY", StringComparison.Ordinal) == true)
+        {
+            return "Pay";
+        }
+
+        return normalized?.Contains("REC", StringComparison.Ordinal) == true ? "Receive" : direction;
+    }
 
     private static Covenant ToCovenant(JsonElement json)
         => new(
@@ -687,6 +839,12 @@ internal static class SecurityMasterMapping
                 "Annual" => PaymentFrequency.Annual,
                 var other => PaymentFrequency.NewOtherFrequency(other)
             });
+
+    private static string UnrecognizedAssetClassOnWrite(string assetClass)
+        => $"Asset class '{assetClass}' is not a Security Master asset class this node recognizes, so the write is refused: " +
+           "persisting it would silently reclassify the security as OtherSecurity and the misclassification could never be " +
+           "corrected through the amend path. Use one of the catalog asset classes " +
+           $"({string.Join(", ", SecurityAssetClassCatalog.AssetClasses)}), or apply the change from a node that supports this class.";
 
     private static JsonElement ParseJson(string json)
         => JsonDocument.Parse(json).RootElement.Clone();

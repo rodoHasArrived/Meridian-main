@@ -133,11 +133,62 @@ public sealed class SecurityMasterMappingInteropTests
     }
 
     [Fact]
-    public void ToCreateCommand_UnknownAssetClass_DegradesToOtherSecurityPreservingRawClass()
+    public void ToRecord_UnknownAssetClass_DegradesToOtherSecurityPreservingRawClass()
     {
-        // A class this node has no deserializer for must not fail the read: it degrades to
-        // OtherSecurity with the raw class retained as the category. Before this fallback, an
-        // unknown class threw on every load of the row (the InvestmentFund incident above).
+        // A stored row whose class this node has no deserializer for must not fail the READ: it
+        // degrades to OtherSecurity with the raw class retained as the category. Before this
+        // fallback, an unknown class threw on every load of the row (the InvestmentFund incident
+        // above). This is read tolerance, and the next test is what keeps it from becoming write
+        // tolerance.
+        var now = DateTimeOffset.UtcNow;
+        var projection = new SecurityProjectionRecord(
+            Guid.NewGuid(),
+            "EsotericBasketCertificate",
+            SecurityStatusDto.Active,
+            "Unknown-class security",
+            "USD",
+            "InternalCode",
+            "UNKNOWN-1",
+            JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Unknown-class security",
+                currency = "USD"
+            }),
+            JsonSerializer.SerializeToElement(new
+            {
+                subType = "Basket",
+                issuerName = "Structured Issuer AG",
+                maturity = "2032-06-30"
+            }),
+            JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "interop-tests",
+                updatedBy = "interop-tests",
+                asOf = now
+            }),
+            1,
+            now,
+            null,
+            [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "UNKNOWN-1", true, now)],
+            []);
+
+        var record = SecurityMasterMapping.ToRecord(projection);
+
+        var otherSecurity = record.Kind.Should().BeOfType<SecurityKind.OtherSecurity>().Subject;
+        otherSecurity.Item.Category.Should().Be("EsotericBasketCertificate");
+        otherSecurity.Item.SubType.Value.Should().Be("Basket");
+        otherSecurity.Item.IssuerName.Value.Should().Be("Structured Issuer AG");
+        otherSecurity.Item.Maturity.Value.Should().Be(new DateOnly(2032, 6, 30));
+    }
+
+    [Fact]
+    public void ToCreateCommand_UnknownAssetClass_RejectsTheWrite()
+    {
+        // Read tolerance must not become write tolerance. A create naming a class this node does
+        // not recognize used to degrade through the same OtherSecurity fallback and persist
+        // silently — and because OtherSecurity is a catalog class, every later amend passed the
+        // round-trip guard, so the misclassification was permanent. The write is refused instead;
+        // the refusal names the class and the catalog the caller can choose from.
         var now = DateTimeOffset.UtcNow;
         var request = new CreateSecurityRequest(
             SecurityId: Guid.NewGuid(),
@@ -160,16 +211,14 @@ public sealed class SecurityMasterMappingInteropTests
             EffectiveFrom: now,
             SourceSystem: "interop-tests",
             UpdatedBy: "interop-tests",
-            SourceRecordId: "unknown-class-fallback",
-            Reason: "Unknown asset classes must degrade instead of throwing");
+            SourceRecordId: "unknown-class-refusal",
+            Reason: "Unknown asset classes must be refused on write instead of degrading");
 
-        var command = SecurityMasterMapping.ToCreateCommand(request);
-
-        var otherSecurity = command.Kind.Should().BeOfType<SecurityKind.OtherSecurity>().Subject;
-        otherSecurity.Item.Category.Should().Be("EsotericBasketCertificate");
-        otherSecurity.Item.SubType.Value.Should().Be("Basket");
-        otherSecurity.Item.IssuerName.Value.Should().Be("Structured Issuer AG");
-        otherSecurity.Item.Maturity.Value.Should().Be(new DateOnly(2032, 6, 30));
+        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(request))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*'EsotericBasketCertificate'*")
+            .WithMessage("*OtherSecurity*")
+            .WithMessage("*Equity*");
     }
 
     [Fact]

@@ -32,11 +32,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Iterable, Optional, Sequence
+
+from common import EXCLUDE_DIRS
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SRC_ROOT = REPO_ROOT / "src"
@@ -87,6 +90,35 @@ NON_UI_ROUTE_PATTERNS: tuple[tuple[str, str], ...] = (
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
+
+
+SOURCE_EXCLUDED_DIRECTORIES = {name.casefold() for name in EXCLUDE_DIRS} | {"coverage"}
+
+
+def source_files(root: Path, suffixes: set[str]) -> list[Path]:
+    """Collect source files without descending into dependency or build trees.
+
+    Dashboard dependencies can contain a Windows junction back to the repository.
+    Prune those directories before walking them; filtering recursive glob results
+    would still traverse the junction and can recurse indefinitely.
+    """
+    files: list[Path] = []
+
+    def raise_walk_error(error: OSError) -> None:
+        raise error
+
+    for directory, directory_names, file_names in os.walk(
+        root, topdown=True, onerror=raise_walk_error, followlinks=False,
+    ):
+        directory_names[:] = sorted(
+            name for name in directory_names
+            if name.casefold() not in SOURCE_EXCLUDED_DIRECTORIES
+        )
+        files.extend(
+            Path(directory) / name for name in file_names
+            if Path(name).suffix in suffixes
+        )
+    return sorted(files)
 
 
 UNKNOWN_SEGMENT = "\x01"
@@ -192,7 +224,7 @@ ABSOLUTE_MARKER = "\0ABS"
 def load_route_constants() -> dict[str, str]:
     """Map ``Member`` and ``Class.Member`` names to their literal route values."""
     constants: dict[str, str] = {}
-    for file in sorted(SRC_ROOT.rglob("*.cs")):
+    for file in source_files(SRC_ROOT, {".cs"}):
         source = read_text(file)
         if "const string" not in source:
             continue
@@ -334,7 +366,7 @@ def collect_backend_routes(constants: dict[str, str]) -> tuple[list[dict], list[
     helper's caller can supply its prefix.
     """
     files: list[dict] = []
-    for file in sorted(SRC_ROOT.rglob("*.cs")):
+    for file in source_files(SRC_ROOT, {".cs"}):
         source = read_text(file)
         if ".Map" not in source:
             continue
@@ -703,9 +735,7 @@ def unresolved_registry_helpers(symbols: dict[str, set[str]]) -> list[str]:
 
 def dashboard_files() -> list[tuple[Path, str]]:
     files = []
-    for file in sorted(DASHBOARD_ROOT.rglob("*")):
-        if not file.is_file() or file.suffix not in {".ts", ".tsx"}:
-            continue
+    for file in source_files(DASHBOARD_ROOT, {".ts", ".tsx"}):
         if file.name in GENERATED_MODULES:
             continue
         files.append((file, strip_comments(read_text(file))))
@@ -760,9 +790,7 @@ def collect_wpf_paths(generated: dict[str, str]) -> set[str]:
     called: set[str] = set()
     if not WPF_ROOT.exists():
         return called
-    for file in WPF_ROOT.rglob("*"):
-        if not file.is_file() or file.suffix not in {".cs", ".xaml"}:
-            continue
+    for file in source_files(WPF_ROOT, {".cs", ".xaml"}):
         source = read_text(file)
         for match in re.finditer(r"UiApiRoutes\.(\w+)", source):
             route = generated.get(match.group(1))

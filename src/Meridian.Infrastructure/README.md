@@ -11,6 +11,10 @@ last_reviewed: 2026-07-25
 
 # src/Meridian.Infrastructure
 
+Immutable statement match artifacts retain source-comparison completeness, represented population kinds,
+and the executed matcher/tolerance-policy fingerprint. Legacy artifacts omit these fields and cannot
+establish clearing. The optional fields preserve legacy artifact hashes when absent.
+
 ## Purpose
 
 Infrastructure contains provider adapters, HTTP integration, ETL adapters, resilience helpers, and concrete data-source implementations.
@@ -29,6 +33,34 @@ This layer owns external integration details while depending on lower contracts 
 ## Important workflows
 
 Use this module for provider implementation, external service integration, and adapter behavior.
+
+`ProviderCapabilityDescriptorCatalog` records runtime adapter families and their implemented
+capabilities, including Synthetic, Polygon and NYSE compatibility data sources. OpenFIGI remains
+explicitly excluded from the matrix-backed inventory until that UI contract exposes symbol
+resolution; the resolver itself remains available. Streaming instrument coverage is independently
+declared, so Polygon's Forex/Crypto/Index historical coverage does not advertise unsupported
+streams and synthetic option-chain coverage does not imply option streaming. Explicit exclusions
+also distinguish hosted ingestion, mapper-only, template-only and orchestration families.
+Catalog tests enumerate the actual adapter folders, check interfaces and resolve the compatibility
+data-source slot; catalog presence alone does not establish live-provider readiness.
+Search instrument coverage is also independent of options coverage. The NYSE registration helper
+can bind configuration from the final host service provider; its compatibility interfaces resolve
+the same source instance, and streaming uses those bound authentication options.
+
+The legacy IB Flex broker importer streams XML and materializes only supported trade, position,
+and cash rows. Its existing 32 MiB source-byte and 100,000-row ceilings are joined by independent
+64-level nesting, 500,000 parse-node (including attributes), 50,000 per-row node, and 64 KiB scalar
+limits, enforced while reading rather than after building a full document. Unrelated Flex sections
+are scanned under those quotas but not retained in a parse tree. DTDs remain prohibited; nested
+statements and element/text-based row payloads are rejected.
+
+Validation and import share the same field rules. Account identity must come from the row or
+statement; currency must be explicitly supplied as a three-letter code; required numeric fields
+must contain invariant decimals without grouping separators. Missing values no longer become USD
+or zero. Explicit zero values and source-provided statement account/date fallbacks remain valid.
+Row checksums keep their existing uppercase SHA-256 identities, including retained row comments;
+source/canonical artifact hashes and atomic import uniqueness remain owned by the existing snapshot
+and canonical-store path. Cancellation propagates during XML reading and canonical row mapping.
 
 Backfill worker shutdown closes intake, cancels and observes every admitted provider attempt,
 atomically releases queue ownership, and retains a restart-safe job transition before owned
@@ -178,8 +210,9 @@ explicitly ownerless requests; owner-bound requests remain visible solely throug
 tenant/company snapshot/watch overloads and durable materialization paths.
 Its richer request callbacks publish bounded, request-correlated ProviderSdk read-model updates for
 option discovery, scanners, real-time bars, historical ticks, account/model-account P&L, and market
-rules. Each returned request and observation carries required provenance: provider and configured
-connection identity, source and receipt times, reported entitlement/feed/availability, request descriptor,
+rules. Callbacks that do not correlate to an active `IBDataServices` request are ignored. Each returned
+request and observation carries required provenance: provider and configured connection identity, source
+and receipt times, reported entitlement/feed/availability, request descriptor,
 provider-native identity, correlation, and a deterministic de-duplication key. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable

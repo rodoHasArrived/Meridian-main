@@ -184,7 +184,8 @@ public sealed record BrokerageHouseholdPositionDto(
     WorkstationSecurityReference? Security,
     string? Description = null,
     string? PositionId = null,
-    string? Currency = null);
+    string? Currency = null,
+    MarkFreshnessAssessmentDto? MarkFreshness = null);
 
 public sealed record BrokerageHouseholdPortfolioDto(
     string ProviderId,
@@ -215,7 +216,8 @@ public sealed record FundAccountBrokeragePositionDto(
     WorkstationSecurityReference? Security,
     string? Description = null,
     string? PositionId = null,
-    string? Currency = null);
+    string? Currency = null,
+    MarkFreshnessAssessmentDto? MarkFreshness = null);
 
 public sealed record FundAccountBrokerageOrderDto(
     string OrderId,

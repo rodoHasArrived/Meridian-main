@@ -13,6 +13,7 @@ using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Wpf.Features.Accounting;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -77,6 +78,7 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingConfigureViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingConfigurePage>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingCloseViewModel>(services, ServiceLifetime.Transient);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingClosePage>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingPostingService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<TrialBalanceProjectionService>(services, ServiceLifetime.Singleton);
@@ -105,6 +107,7 @@ public sealed class AccountingFeatureModuleTests
             descriptor.ImplementationType == typeof(AutomatedJournalSchedulerHostedService));
         DesktopFeatureModuleTestAssertions.AssertRegistered<ICapitalAccountWorkbenchService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingCloseManagementService, AccountingCloseManagementService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IWorkstationTenantContextAccessor, DesktopWorkstationTenantContextAccessor>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IPrivateCapitalCloseCockpitService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPolicyService, AccountingPolicyService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingBasisProjectionService, AccountingBasisProjectionService>(services, ServiceLifetime.Singleton);
@@ -260,6 +263,12 @@ public sealed class AccountingFeatureModuleTests
         source.Should().Contain("Command=\"{Binding SignOffCloseTaskCommand}\"");
         source.Should().Contain("Command=\"{Binding ReviewLateAdjustmentCommand}\"");
         source.Should().Contain("Command=\"{Binding LockClosePeriodCommand}\"");
+        source.Should().Contain("Text=\"{Binding CloseScopeFundProfileId, UpdateSourceTrigger=PropertyChanged}\"");
+        source.Should().Contain("Text=\"{Binding CloseScopeLedgerBookIdText, UpdateSourceTrigger=PropertyChanged}\"");
+        source.Should().Contain("Text=\"{Binding CloseScopeFundAccountIdText, UpdateSourceTrigger=PropertyChanged}\"");
+        source.Should().Contain("Text=\"{Binding CloseScopeEntityId, UpdateSourceTrigger=PropertyChanged}\"");
+        source.Should().Contain("Text=\"{Binding CloseScopePeriodId, UpdateSourceTrigger=PropertyChanged}\"");
+        source.Should().Contain("Text=\"{Binding CloseScopeStatusText}\"");
         source.Should().Contain("ItemsSource=\"{Binding CloseMaterialityRows}\"");
         source.Should().Contain("ItemsSource=\"{Binding CloseTaskRows}\"");
         source.Should().Contain("ItemsSource=\"{Binding CloseDependencyRows}\"");

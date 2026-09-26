@@ -1,5 +1,6 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -13,8 +14,12 @@ namespace Meridian.Application.SecurityMaster;
 /// </summary>
 public static class FaceValueLotExtensions
 {
-    /// <summary>The par basis the ledger engines' lot math assumes (price per 100, quantity = face / 100).</summary>
-    public const decimal LedgerLotParBasis = 100m;
+    /// <summary>
+    /// The par basis the ledger engines' lot math assumes (price per 100, quantity = face / 100).
+    /// Sourced from the lot-of-record seam so the in-memory and persisted sides of the convention
+    /// cannot drift apart.
+    /// </summary>
+    public const decimal LedgerLotParBasis = LedgerTaxLotFaceValueTerms.LedgerLotParBasis;
 
     public static LedgerTaxLot ToLedgerTaxLot(this FaceValueLot lot)
     {

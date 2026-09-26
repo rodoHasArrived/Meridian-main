@@ -361,6 +361,7 @@ public sealed record ReconciliationRunDetail(
 /// <summary>
 /// Operator queue state for a reconciliation break.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakQueueStatus>))]
 public enum ReconciliationBreakQueueStatus : byte
 {
     Open = 0,
@@ -577,6 +578,10 @@ public sealed record ReconciliationBreakQueueItem(
     /// and init-only to preserve the established positional constructor and deconstruction ABI.
     /// </summary>
     public string? FundProfileId { get; init; }
+
+    /// <summary>Durable source comparison, distinct from case resolution and approval.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public ReconciliationBreakLineageDto? Lineage { get; init; }
 }
 
 /// <summary>

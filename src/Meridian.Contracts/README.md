@@ -11,20 +11,53 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Contracts
 
+Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
+first/last observation and successful-run clearing evidence. This metadata is omitted when absent
+so legacy integrity-checked snapshots keep their serialized shape. Source clearing is distinct from
+governed disposition, sign-off and close readiness.
+
+Ledger commands add optional `AccountingPostingCommandDto.Actor` and
+`CreateLedgerPeriodRequest.CreatedBy`. Public command boundaries stamp authenticated identities;
+callers cannot use these fields to replace that identity. Absent values stay explicitly unattributed
+and are omitted from JSON, preserving the serialized shape of legacy posting fingerprints.
+
 Lifecycle route contracts distinguish sanitized unauthenticated readiness/liveness probes from
 authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
 single monitoring transport owner.
 
+Operations Continuity journal candidates carry a typed `Provenance` origin mark into the posting
+command. Omitted marks remain `Real`; seeded or simulated evidence must be explicitly marked,
+and the governed ledger boundary rejects mismatches.
+
+## Shared close and lot convergence
+
+`Workstation/CloseReadinessDtos.cs` defines the declared five-dimension close scope, required contributor posture, and owner/record-linked blockers. `Accounting/Lots/` defines security-identified decimal lot views with retained acquisition currency, FX, basis, and evidence; this is an additive migration contract, not a legacy-writer cutover.
+
+`OpenLotBackfillDtos` adds retained acquisition-source packets, independent review, a durable exception queue, and versioned application receipts. Apply accepts a retained source identity rather than replacement acquisition facts. `MarkFreshnessDtos` carries one server decision per position, including observation date, age, policy version, and blocking reason; absent assessments remain review required. Close plan transports retain workflow, account, and evidence-version stamps for declared-scope validation.
+
 ## Purpose
+
+`Coordination/IExecutionLease.cs` defines execution-scoped ownership. A unique run owner can
+execute a side effect only while the coordination store excludes lease transfer. Managers or
+stores that do not implement this capability throw rather than falling back to a check followed
+by an unprotected action. This service contract does not change workstation transport payloads.
 
 Meridian contracts contains shared DTOs and cross-layer contracts used by host, services,
 dashboard, and WPF.
 
 ## Layer responsibility
 
+`SecurityAssetTermsSchema.ElementFields("Swap", "legs")` declares the serialized swap-leg
+field names and types. Codec tests compare this nested contract with persisted terms and the
+cash-flow reader so a top-level `legs` array alone cannot conceal missing leg economics.
+
 This module owns stable transport payloads, compatibility-safe DTOs, and shared schema objects.
 Consumers depend on contracts; contracts should not depend on host, UI, application orchestration,
 or provider implementations.
+
+Reconciliation break-queue statuses serialize as text (`Open`, `InReview`, `Resolved`,
+`Dismissed`, and `SignedOff`) for browser and desktop consumers. The shared enum converter also
+accepts older numeric status payloads; persisted queue records already use text statuses.
 
 ## Key folders and files
 
@@ -1483,3 +1516,21 @@ contract shape, blocker vocabulary, or route-visible payloads change.
 - `docs/status/contract-compatibility-matrix.md`
 - `docs/architecture/module-map.md`
 - `docs/source/generated/source-module-index.md`
+
+### Security Master economics and pricing evidence
+
+Calculated cash-flow projections retain `BlockedReason` and `IsNormalizedPer100`: missing coupon
+terms and unresolved floating fixings never mean zero, and normalized analytical schedules cannot
+drive ledger postings without retained principal/notional. Discount rates on Treasury bills and
+commercial paper are not coupon payments. Classes with no implemented calculated schedule require
+provider evidence. Asset-pack template bindings use exact mappings with declared Fee, Amortization,
+and MarginSettlement lifecycle coverage.
+
+Security Master prices declare CurrencyPerUnit or PercentOfPar. Legacy Unspecified observations
+remain readable but cannot support a golden copy. Selections retain economic, hierarchy and
+knowledge timestamps and an immutable `SelectionReceiptId` with the exact hierarchy and quote
+snapshot. `asOf` and `knownAt` filter eligible evidence but are not a PostgreSQL commit snapshot:
+a pending transaction can become visible later with an earlier recorded timestamp. Reproduce an
+exact evaluation using `receiptId` on the golden-copy endpoint, retaining the security/account
+scope. Unknown or differently scoped receipts return no result and never silently recompute.
+Mixed quote units have no percentage comparison.

@@ -1,9 +1,11 @@
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
@@ -146,6 +148,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     actor,
                     ledgerBookId,
                     sourceEventId,
+                    RetainedPostingActor(existing),
                     existing.CreatedAt);
             }
             else
@@ -163,6 +166,12 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     .ConfigureAwait(false);
                 candidateForReplay = replayWrite.Candidate;
                 EnsureRetainedJournalIsThisPosting(existing, replayWrite, ledgerBookId, sourceEventId, approvalId, request);
+                candidateForReplay = candidateForReplay with
+                {
+                    PostingCommand = candidateForReplay.PostingCommand is { } replayCommand
+                        ? replayCommand with { Actor = RetainedPostingActor(existing) }
+                        : null
+                };
             }
             var journalImpact = BuildJournalImpact(existing, ledgerBook.BaseCurrency);
             if (assetAuthority is not null)
@@ -240,6 +249,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         }
         var approvedCommand = command with
         {
+            Actor = actor,
             AggregateId = ledgerBookId,
             LedgerBookId = ledgerBookId,
             SourceEventId = sourceEventId,
@@ -452,7 +462,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             drafted.Projection.Scope.PeriodId,
             candidate.ExpectedPeriodVersion!.Value,
             rulePack.RulePackId,
-            rulePack.RulePackVersion);
+            rulePack.RulePackVersion,
+            drafted.Projection.Scope.ExpectedSecurityVersion);
         return new AssetPostingAuthoritySnapshot(projected, drafted, latest, context);
     }
 
@@ -848,6 +859,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         string actor,
         Guid ledgerBookId,
         Guid sourceEventId,
+        string? retainedActor,
         DateTimeOffset recordedAtUtc)
     {
         var retained = authority.Drafted.Projection.DraftedCandidateResult
@@ -856,6 +868,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             ?? throw new InvalidOperationException("The retained Drafted candidate is missing its pending posting command.");
         var approved = pending with
         {
+            Actor = retainedActor,
             AggregateId = ledgerBookId,
             LedgerBookId = ledgerBookId,
             SourceEventId = sourceEventId,
@@ -1139,6 +1152,44 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     ?? throw new InvalidOperationException("Acquisition lot posting requires retained Security Master identity."),
                 BookPositionId: request.Candidate.BookPositionId
                     ?? throw new InvalidOperationException("Acquisition lot posting requires retained book-position identity."));
+            if (acquisition.HasFaceValueTerms)
+            {
+                // Face-denominated lots record their par conventions on the lot of record through
+                // the canonical aggregate, so the face, the factor it was booked at, and the basis
+                // its price was struck in are retained facts rather than conventions each consumer
+                // re-derives against a hardcoded 100. Constructing the aggregate also revalidates
+                // those economics, and WithFaceValueTerms proves the par and unit statements of the
+                // same acquisition tie before either is retained.
+                acquisitionLot = acquisitionLot.WithFaceValueTerms(new FaceValueLot(
+                    acquisitionLot.LotId,
+                    acquisitionLot.SecurityId,
+                    acquisition.AcquiredDate,
+                    acquisition.OriginalFace!.Value,
+                    pricePercentOfPar: acquisition.UnitCost * acquisition.ParBasis!.Value
+                        / LedgerTaxLotFaceValueTerms.LedgerLotParBasis,
+                    acquisition.BookedFactor!.Value,
+                    acquisition.ParBasis!.Value));
+            }
+
+            // A face lot gains canonical facts only when its instruction states the amortization
+            // inputs; they are never inferred, so an unstated face lot keeps its par terms alone.
+            var faceTerms = acquisition.HasFaceValueTerms && acquisition.AmortizationMethod is { } method
+                ? new FaceValueAcquisitionTermsDto(
+                    acquisition.ParBasis!.Value, acquisition.BookedFactor!.Value, method, acquisition.EffectiveYield)
+                : null;
+            if ((!acquisition.HasFaceValueTerms || faceTerms is not null) &&
+                !await SpineAcquisitionLotFacts.IsRetainedLegacyBatchAsync(_journalStore, mutationBatchId, ct).ConfigureAwait(false))
+            {
+                acquisitionLot = acquisitionLot with
+                {
+                    Acquisition = SpineAcquisitionLotFacts.Build(
+                        acquisitionLot,
+                        faceTerms,
+                        request.Candidate.RetainedEvidence,
+                        request.ApprovalEvidence)
+                };
+            }
+
             mutationKind = AtomicTaxLotMutationKind.Acquisition;
         }
         else if (instruction.Intent == AssetLotMutationIntentDto.Dispose)
@@ -1619,6 +1670,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                 ? null
                 : rebuiltCommand with
                 {
+                    Actor = RetainedPostingActor(existing),
                     AggregateId = ledgerBookId,
                     LedgerBookId = ledgerBookId,
                     SourceEventId = sourceEventId,
@@ -1661,6 +1713,9 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             "and this posting was not appended; post a correction against the retained journal, or submit this posting " +
             "under its own source event.");
     }
+
+    private static string? RetainedPostingActor(LedgerJournalEntryRecord retained)
+        => AccountingPostingCommandValidator.ReadRetainedPostingActor(retained.Entry.Metadata);
 
     private static async Task<LedgerJournalEntryRecord?> FindExistingPostingAsync(
         ILedgerJournalStore journalStore,

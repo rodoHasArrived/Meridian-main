@@ -2700,16 +2700,9 @@ public sealed partial class FundOperationsWorkspaceReadService
             _ => "Sign-off is pending shared approval evidence."
         };
 
-        var reportPackReady =
-            activeWorkflow?.ReportPackReadiness.IsReady == true ||
-            latestReportPack?.Status is GovernanceReportPackStatusDto.Approved
-                or GovernanceReportPackStatusDto.Exported
-                or GovernanceReportPackStatusDto.Retained;
-        var closeReadyByLifecycle = activeWorkflow?.Status is OperationsWorkflowStatusDto.ReadyForClose or OperationsWorkflowStatusDto.Closed;
-        var closeReadyByBreaks = reconciliation.OpenBreakCount == 0 && !reconciliation.HasCriticalBreakOpen;
-        var closeReadiness = closeReadyByLifecycle && reportPackReady && closeReadyByBreaks
-            ? "Close readiness is satisfied by shared lifecycle, reconciliation, and report-pack evidence."
-            : "Close readiness remains blocked until shared lifecycle gates, reconciliation decisions, and report-pack evidence align.";
+        // This fund-wide query has no explicit account/book/entity/period close scope.
+        // Only the shared command-center projection may attest readiness for a declared subject.
+        const string closeReadiness = "Close readiness requires a scoped shared evaluation. Select the fund, book, account, entity, and period in the close command center.";
 
         var auditTraceability = timeline.Count > 0 || evidenceReferences.Count > 0
             ? $"Traceability is backed by {timeline.Count} lifecycle event(s) and {evidenceReferences.Count} evidence reference(s)."

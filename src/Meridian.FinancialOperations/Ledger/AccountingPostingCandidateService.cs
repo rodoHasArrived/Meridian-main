@@ -1,6 +1,7 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.Ledger;
@@ -48,7 +49,8 @@ public sealed record AssetAccountingCandidateAuthorityContext(
     Guid PeriodId,
     long ExpectedPeriodVersion,
     string RulePackId,
-    string RulePackVersion);
+    string RulePackVersion,
+    long SecurityVersion = 0);
 
 public sealed record AccountingPostingCandidateWriteResult(
     PostingRuleJournalCandidateResultDto Candidate,
@@ -65,6 +67,7 @@ public sealed class AccountingPostingCandidateService :
     private readonly IAccountingPolicyService? _accountingPolicyService;
     private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
     private readonly IFactorPaydownProjectionService? _factorPaydownProjector;
+    private readonly ILedgerJournalStore? _taxLotStore;
 
     public AccountingPostingCandidateService(
         IAccountingConfigurationService configurationService,
@@ -72,7 +75,8 @@ public sealed class AccountingPostingCandidateService :
         ILedgerBookService? ledgerBookService = null,
         IAccountingPolicyService? accountingPolicyService = null,
         IAssetOperationsQueryService? assetOperationsQueryService = null,
-        IFactorPaydownProjectionService? factorPaydownProjector = null)
+        IFactorPaydownProjectionService? factorPaydownProjector = null,
+        ILedgerJournalStore? taxLotStore = null)
     {
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _journalDraftService = journalDraftService ?? throw new ArgumentNullException(nameof(journalDraftService));
@@ -80,6 +84,7 @@ public sealed class AccountingPostingCandidateService :
         _accountingPolicyService = accountingPolicyService;
         _assetOperationsQueryService = assetOperationsQueryService;
         _factorPaydownProjector = factorPaydownProjector;
+        _taxLotStore = taxLotStore;
     }
 
     public async Task<PostingRuleJournalCandidateResultDto> BuildCandidateAsync(
@@ -318,7 +323,11 @@ public sealed class AccountingPostingCandidateService :
             : null;
         var write = draft.Write is null
             ? null
-            : draft.Write with { PostingCommand = postingCommand };
+            : draft.Write with
+            {
+                Entry = WithSecurityMasterLineage(draft.Write.Entry, authority, request.Currency),
+                PostingCommand = postingCommand
+            };
 
         return new AccountingPostingCandidateWriteResult(
             new PostingRuleJournalCandidateResultDto(
@@ -395,14 +404,14 @@ public sealed class AccountingPostingCandidateService :
             return null;
         }
 
-        if (_assetOperationsQueryService is null || _factorPaydownProjector is null)
+        if (_assetOperationsQueryService is null || _factorPaydownProjector is null || _taxLotStore is null)
         {
             issues.Add(Issue(
                 "posting-candidate.instrument-projection-resolver-required",
                 AccountingConfigurationValidationSeverityDto.Critical,
-                "Typed factor-paydown candidates require authoritative Asset Operations and projection resolvers.",
+                "Typed factor-paydown candidates require authoritative Asset Operations, projection, and lot-of-record resolvers.",
                 "projectionLineage.modelKey",
-                "Register IAssetOperationsQueryService and IFactorPaydownProjectionService before accepting typed instrument events."));
+                "Register IAssetOperationsQueryService, IFactorPaydownProjectionService, and ILedgerJournalStore before accepting typed instrument events."));
             return null;
         }
 
@@ -526,15 +535,33 @@ public sealed class AccountingPostingCandidateService :
             return null;
         }
 
-        var heldFace = state.OriginalFaceAmount ?? state.ParAmount ?? state.NotionalAmount ?? state.Quantity;
-        if (heldFace is null || state.PriorFactor is null || state.CurrentFactor is null)
+        if (state.PriorFactor is null || state.CurrentFactor is null)
         {
             issues.Add(Issue(
                 "posting-candidate.instrument-factor-state-incomplete",
                 AccountingConfigurationValidationSeverityDto.Critical,
-                "Persisted factor-paydown economic state is missing held face or factor values.",
+                "Persisted factor-paydown economic state is missing factor values.",
                 "bookPosition.currentEconomicState",
                 "Rebuild the position economic state from retained factor evidence."));
+            return null;
+        }
+
+        // Held face comes from the lots of record, not from the economic-state projection. The old
+        // OriginalFaceAmount ?? ParAmount ?? NotionalAmount ?? Quantity chain would fall all the way
+        // through to a unit quantity, which is not a face at all, and it presumed every recorded face
+        // had been booked at factor 1. Both are the assumptions the persisted par conventions exist
+        // to remove: principal paydown scales the held face directly, so a face taken from the wrong
+        // source or the wrong factor posts the wrong amount of cash.
+        var heldFace = await ResolveLotOfRecordHeldFaceAsync(
+                request.LedgerBookId!.Value,
+                securityId,
+                positionId,
+                requestedEvent.EffectiveDate,
+                issues,
+                ct)
+            .ConfigureAwait(false);
+        if (heldFace is null)
+        {
             return null;
         }
 
@@ -745,7 +772,18 @@ public sealed class AccountingPostingCandidateService :
             return existing;
         }
 
+        // The draft turns every candidate evidence link into a bare reference keyed by its URI,
+        // and the spine links each retained record's URI. A bare reference for a URI that typed
+        // retained evidence carries is the same evidence without its identity: left in place it
+        // survives the id-keyed merge (retained ids are not URIs) and the posting validator
+        // refuses the whole command as incomplete evidence.
+        var retainedUris = retainedEvidence
+            .Select(static evidence => evidence.EvidenceUri)
+            .Where(static uri => !string.IsNullOrWhiteSpace(uri))
+            .Select(static uri => uri.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         return existing
+            .Where(evidence => !IsBareReferenceFor(evidence, retainedUris))
             .Concat(retainedEvidence.Select(static evidence =>
                 new AccountingPostingEvidenceReferenceDto(
                     EvidenceId: evidence.EvidenceId,
@@ -767,6 +805,55 @@ public sealed class AccountingPostingCandidateService :
             .Select(static group => group.Last())
             .ToArray();
     }
+
+    // An asset event's journal carries the event's SecurityId, so the ledger period guard treats it
+    // as instrument-bearing and requires approved, active Security Master provenance and a ledger
+    // mapping for that security. The lineage is stamped only under spine authority, after the spine
+    // has server-resolved the event-recorded Security Master record at the exact expected version and
+    // asserted it Active, effective, and in the event currency - the same rule the manual journal
+    // path applies - so a generic caller can never assert it. Post-time re-derivation reproduces the
+    // same tags from the retained spine scope.
+    private static JournalEntry WithSecurityMasterLineage(
+        JournalEntry entry,
+        AssetAccountingCandidateAuthorityContext? authority,
+        string currency)
+    {
+        if (authority is null || authority.SecurityId == Guid.Empty || authority.SecurityVersion <= 0)
+        {
+            return entry;
+        }
+
+        var securityIdToken = authority.SecurityId.ToString("N");
+        var provenance =
+            $"security-master:{securityIdToken};server-resolved:true;approved:true;status:{SecurityStatusDto.Active};version:{authority.SecurityVersion};currency:{currency.Trim().ToUpperInvariant()}";
+        var lineage =
+            $"asset-spine:{securityIdToken}:ledger-map:asset-spine:{authority.RulePackId}:{authority.RulePackVersion}:{securityIdToken}:sm-approval:security-master-active:{securityIdToken}:security-status:{SecurityStatusDto.Active}:{provenance}";
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (entry.Metadata.Tags is { } existing)
+        {
+            foreach (var (key, value) in existing)
+            {
+                tags[key] = value;
+            }
+        }
+
+        tags["securityMasterProvenance"] = provenance;
+        tags["securityMasterLineage"] = lineage;
+        return new JournalEntry(
+            entry.JournalEntryId,
+            entry.Timestamp,
+            entry.Description,
+            entry.Lines,
+            entry.Metadata with { Tags = tags });
+    }
+
+    private static bool IsBareReferenceFor(
+        AccountingPostingEvidenceReferenceDto evidence,
+        IReadOnlySet<string> retainedUris) =>
+        string.IsNullOrWhiteSpace(evidence.ContentHash) &&
+        evidence.EvidenceVersion is null &&
+        !string.IsNullOrWhiteSpace(evidence.Uri) &&
+        retainedUris.Contains(evidence.Uri.Trim());
 
     // Posting-candidate fingerprints arrive from external authority projections, so surrounding
     // whitespace is tolerated here before the shared digest contract is applied.
@@ -1296,6 +1383,100 @@ public sealed class AccountingPostingCandidateService :
         AddMismatch(issues, TextEquals(request.SourceEventType, eventReference.EventType), "posting-candidate.economic-event-type-mismatch", "Typed economic-event type must match legacy source-event type.", $"{target}.eventType");
         AddMismatch(issues, request.EffectiveDate == eventReference.EffectiveDate, "posting-candidate.economic-event-date-mismatch", "Typed economic-event effective date must match the candidate effective date.", $"{target}.effectiveDate");
         AddMismatch(issues, request.CorrelationId == eventReference.CorrelationId, "posting-candidate.economic-event-correlation-mismatch", "Typed economic-event correlation id must match the candidate correlation id.", $"{target}.correlationId");
+    }
+
+    /// <summary>
+    /// Resolves held face from the lots of record open under one (security, book position) scope and
+    /// acquired on or before <paramref name="effectiveDate"/>, restated to a factor of 1 — the basis
+    /// <see cref="FactorPaydownProjectionService"/> multiplies by the factor delta. Each lot is
+    /// restated through the canonical <c>FaceValueLot</c> aggregate so the face it was booked at, the
+    /// pool factor it was booked under, and the basis its price was struck in are all honoured rather
+    /// than presumed. The acquisition bound is load-bearing: pool factors publish after the fact, so a
+    /// paydown is always posted with a lag, and a lot bought between the effective date and the
+    /// posting would otherwise be paid down for a period it did not hold. Fails closed: a scope with
+    /// no qualifying lots, or any such lot that never recorded its par conventions, yields a typed
+    /// issue instead of a substituted quantity.
+    /// </summary>
+    private async Task<decimal?> ResolveLotOfRecordHeldFaceAsync(
+        Guid ledgerBookId,
+        Guid securityId,
+        Guid positionId,
+        DateOnly effectiveDate,
+        ICollection<PostingRuleJournalCandidateIssueDto> issues,
+        CancellationToken ct)
+    {
+        IReadOnlyList<LedgerTaxLotRecord> lots;
+        try
+        {
+            lots = await _taxLotStore!
+                .ListOpenTaxLotsByAssetScopeAsync(ledgerBookId, securityId, positionId, effectiveDate, ct)
+                .ConfigureAwait(false);
+        }
+        catch (LedgerValidationException)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-lot-history-unavailable",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Held face cannot be established from retained lot quantity history for the event effective date.",
+                "bookPositionId",
+                "Reconcile the acquisition and disposal history before drafting the principal paydown."));
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-lot-of-record-unavailable",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "The configured ledger journal store does not expose the lots of record required to derive held face.",
+                "bookPositionId",
+                "Configure a ledger journal store that persists tax lots before accepting typed factor-paydown events."));
+            return null;
+        }
+
+        // The store refuses historical reconstruction when quantity history is incomplete.
+        if (lots.Count == 0)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-lot-of-record-missing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Book position '{positionId:D}' holds no lot of record for security '{securityId:D}' acquired on or before {effectiveDate:yyyy-MM-dd}, so held face cannot be derived.",
+                "bookPositionId",
+                "Post the acquisition lots for the position before projecting a principal paydown against it."));
+            return null;
+        }
+
+        var heldFace = 0m;
+        foreach (var lot in lots)
+        {
+            if (lot.ToFaceValueLot() is not { } faceLot)
+            {
+                issues.Add(Issue(
+                    "posting-candidate.instrument-lot-face-terms-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Open lot '{lot.LotId}' did not record its original face, booked factor, and par basis, so its held face cannot be derived.",
+                    "bookPositionId",
+                    "Backfill the lot's acquisition-time par conventions from retained evidence before projecting a principal paydown against it."));
+                return null;
+            }
+
+            // CurrentFace(1) restates the lot's face from the factor it was booked at to a factor of
+            // 1; the store reconstructs the open share at the event effective date.
+            var openShare = lot.OpenQuantity / lot.OriginalQuantity;
+            heldFace += faceLot.CurrentFace(1m) * openShare;
+        }
+
+        if (heldFace <= 0m)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-lot-face-non-positive",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Open lots of record for book position '{positionId:D}' resolve to a non-positive held face.",
+                "bookPositionId",
+                "Correct the open lot quantities and par conventions before projecting a principal paydown."));
+            return null;
+        }
+
+        return heldFace;
     }
 
     private static bool IsFactorPaydownRequest(PostingRuleJournalCandidateRequestDto request)

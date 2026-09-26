@@ -31,7 +31,9 @@ internal sealed class CredentialFeatureRegistration : IServiceFeatureRegistratio
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
             var config = configStore.Load();
-            return new OAuthTokenRefreshService(config.DataRoot);
+            return new OAuthTokenRefreshService(config.DataRoot, vault:
+                sp.GetRequiredService<IProviderCredentialStore>() as IOAuthTokenVault
+                ?? throw new InvalidOperationException("Configured credential vault does not support OAuth token persistence."));
         });
 
         return services;

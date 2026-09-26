@@ -109,6 +109,126 @@ public sealed class ProviderFactoryCredentialContextTests
         }
     }
 
+    [Fact]
+    public async Task StoredResolver_PartialOrRemovedSecretNeverMixesAnotherAccountsFallback()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "credential-source-isolation", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new FileProviderCredentialStore(root);
+            var fallback = new TrackingCredentialResolver(new Dictionary<string, string?>
+            {
+                ["ALPACA_KEY_ID"] = "other-account-key",
+                ["ALPACA_SECRET_KEY"] = "other-account-secret"
+            });
+            var resolver = new StoredProviderCredentialResolver(store, fallback);
+            await store.SaveAsync(new ProviderCredentialSaveRequest("alpaca", new Dictionary<string, string?> { ["KeyId"] = "retained-account-key" }));
+            var partial = resolver.CreateContext(typeof(AlpacaHistoricalDataProvider));
+            partial.Get("ALPACA_KEY_ID").Should().Be("retained-account-key");
+            partial.Get("ALPACA_SECRET_KEY").Should().BeNull();
+            partial.IsConfigured("ALPACA_SECRET_KEY").Should().BeFalse();
+
+            await store.SaveAsync(new ProviderCredentialSaveRequest("alpaca", new Dictionary<string, string?> { ["SecretKey"] = "retained-account-secret" }));
+            resolver.CreateContext(typeof(AlpacaHistoricalDataProvider)).Get("ALPACA_SECRET_KEY").Should().Be("retained-account-secret");
+            await store.SaveAsync(new ProviderCredentialSaveRequest("alpaca", new Dictionary<string, string?> { ["SecretKey"] = "" }));
+            resolver.CreateContext(typeof(AlpacaHistoricalDataProvider), new Dictionary<string, string?>
+            { ["ALPACA_SECRET_KEY"] = "configured-other-account-secret" }).Get("ALPACA_SECRET_KEY").Should().BeNull();
+            fallback.ContextRequests.Should().BeEmpty();
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public void StoredResolver_MissingManagedRecordDoesNotBypassStoreThroughConfiguration()
+    {
+        using var environment = new AlpacaEnvironmentScope();
+        foreach (var name in new[] { "ALPACA_KEY_ID", "ALPACA_SECRET_KEY", "APCA_API_KEY_ID", "APCA_API_SECRET_KEY", "ALPACA__KEYID", "ALPACA__SECRETKEY" })
+            environment.SetProcessAndUser(name, null);
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "credential-source-isolation", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var fallback = new TrackingCredentialResolver();
+            var resolver = new StoredProviderCredentialResolver(new FileProviderCredentialStore(root), fallback);
+            var context = resolver.CreateContext(typeof(AlpacaHistoricalDataProvider), new Dictionary<string, string?>
+            {
+                ["ALPACA_KEY_ID"] = "unretained-key",
+                ["ALPACA_SECRET_KEY"] = "unretained-secret"
+            });
+            context.IsConfigured("ALPACA_KEY_ID").Should().BeFalse();
+            context.IsConfigured("ALPACA_SECRET_KEY").Should().BeFalse();
+            fallback.ContextRequests.Should().BeEmpty();
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public async Task StoredResolver_CorruptVaultDoesNotSilentlySwitchToAnotherCredentialSource()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "credential-source-isolation", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new FileProviderCredentialStore(root);
+            await store.SaveAsync(new ProviderCredentialSaveRequest("alpaca", new Dictionary<string, string?> { ["KeyId"] = "retained-key" }));
+            await File.WriteAllTextAsync(store.VaultPath, "{invalid-json");
+            var fallback = new TrackingCredentialResolver();
+            var resolver = new StoredProviderCredentialResolver(store, fallback);
+            var resolve = () => resolver.CreateContext(typeof(AlpacaHistoricalDataProvider));
+            resolve.Should().Throw<System.Text.Json.JsonException>();
+            fallback.ContextRequests.Should().BeEmpty();
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
+
+    [Theory]
+    [InlineData("production")]
+    [InlineData("packaged")]
+    [InlineData("customer")]
+    public void StoredResolver_ProductionPolicyCannotBeBypassedThroughLegacyFallback(string mode)
+    {
+        using var environment = new AlpacaEnvironmentScope();
+        var names = new[] { "DOTNET_ENVIRONMENT", "ASPNETCORE_ENVIRONMENT", "MDC_PACKAGED_BUILD", "MERIDIAN_CUSTOMER_BUILD", "MDC_PROVIDER_ALLOW_ENV_FALLBACK" };
+        var prior = names.ToDictionary(name => name, Environment.GetEnvironmentVariable);
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "credential-source-policy", Guid.NewGuid().ToString("N"));
+        try
+        {
+            environment.SetProcessAndUser("ALPACA_KEY_ID", "ambient-other-account-key");
+            environment.SetProcessAndUser("ALPACA_SECRET_KEY", "ambient-other-account-secret");
+            Environment.SetEnvironmentVariable("MDC_PROVIDER_ALLOW_ENV_FALLBACK", null);
+            Environment.SetEnvironmentVariable("MDC_PACKAGED_BUILD", mode == "packaged" ? "true" : null);
+            Environment.SetEnvironmentVariable("MERIDIAN_CUSTOMER_BUILD", mode == "customer" ? "true" : null);
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", mode == "production" ? "Production" : "Development");
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", mode == "production" ? "Production" : "Development");
+            var fallback = new TrackingCredentialResolver(new Dictionary<string, string?>
+            { ["ALPACA_KEY_ID"] = "fallback-key", ["ALPACA_SECRET_KEY"] = "fallback-secret" });
+            var resolver = new StoredProviderCredentialResolver(new FileProviderCredentialStore(root), fallback);
+            var context = resolver.CreateContext(typeof(AlpacaHistoricalDataProvider), new Dictionary<string, string?>
+            { ["ALPACA_KEY_ID"] = "config-key", ["ALPACA_SECRET_KEY"] = "config-secret" });
+            context.IsConfigured("ALPACA_KEY_ID").Should().BeFalse();
+            context.IsConfigured("ALPACA_SECRET_KEY").Should().BeFalse();
+            fallback.ContextRequests.Should().BeEmpty();
+        }
+        finally
+        {
+            foreach (var pair in prior)
+                Environment.SetEnvironmentVariable(pair.Key, pair.Value);
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void StoredResolver_UnmanagedTypeRetainsItsExplicitLegacyResolver()
+    {
+        var fallback = new TrackingCredentialResolver();
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "credential-source-isolation", Guid.NewGuid().ToString("N"));
+        var resolver = new StoredProviderCredentialResolver(new FileProviderCredentialStore(root), fallback);
+        var context = resolver.CreateContext(typeof(ProviderFactoryCredentialContextTests),
+            new Dictionary<string, string?> { ["custom-credential"] = "unmanaged-value" });
+        context.Get("custom-credential").Should().Be("unmanaged-value");
+        fallback.ContextRequests.Should().ContainSingle();
+        Directory.Exists(root).Should().BeFalse();
+    }
+
     [Theory]
     [InlineData(typeof(TwelveDataHistoricalDataProvider))]
     [InlineData(typeof(TwelveDataSymbolSearchProvider))]

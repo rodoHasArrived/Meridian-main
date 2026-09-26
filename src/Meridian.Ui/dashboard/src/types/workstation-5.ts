@@ -3,6 +3,7 @@ import type {
   AccountingRulePackReference,
   EconomicEventReference,
   JournalEntryLifecycleTransition,
+  KillSwitchSweepFailure,
   LedgerDimensionSet,
   OperationsActionOrigin,
   ProjectionLineage,
@@ -17,7 +18,22 @@ import type {
   ReconciliationCaseworkAction,
 } from "../types";
 
+export interface ReconciliationBreakLineage {
+  lineageId: string;
+  comparisonScopeId: string;
+  occurrenceId: string;
+  occurrenceNumber: number;
+  observationState: "New" | "Aging" | "Recurring" | "Cleared";
+  firstObservedAt: string;
+  occurrenceFirstObservedAt: string;
+  lastObservedAt: string;
+  lastObservedRunId: string;
+  clearedAt?: string | null;
+  clearedByRunId?: string | null;
+}
+
 export interface ReconciliationBreakQueueItem {
+  lineage?: ReconciliationBreakLineage | null;
   breakId: string;
   runId: string;
   strategyName: string;
@@ -270,10 +286,14 @@ export interface ResolveReconciliationBreakRequest {
 
 export interface TradingActionResult {
   actionId: string;
-  status: "Accepted" | "Completed" | "Rejected" | "Failed";
+  status: "Accepted" | "Completed" | "Partial" | "Rejected" | "Failed";
   message: string;
   occurredAt: string;
   auditId?: string | null;
+  /** Orders a kill-switch sweep could not withdraw; present on cancel-all and breaker activation. */
+  stillWorking?: KillSwitchSweepFailure[] | null;
+  /** True when the sweep could not read the broker book, so an empty local book proves nothing. */
+  brokerViewUnavailable?: boolean | null;
 }
 
 // --- Multi-run comparison types ---
@@ -394,6 +414,7 @@ export interface NetSymbolPosition {
 }
 
 export interface PortfolioPositionSummary {
+  markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   symbol: string;
   quantity: number;
   averageCostBasis: number;

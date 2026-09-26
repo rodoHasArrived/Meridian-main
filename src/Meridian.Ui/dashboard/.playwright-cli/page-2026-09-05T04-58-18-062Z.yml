@@ -1,0 +1,8 @@
+- generic [ref=f1e2]:
+  - main [ref=f1e3]:
+    - status "Activation status check" [ref=f1e5]:
+      - generic [ref=f1e8]:
+        - paragraph [ref=f1e9]: Meridian workstation
+        - heading "Checking activation status" [level=1] [ref=f1e10]
+        - paragraph [ref=f1e11]: Meridian is confirming whether this workstation is ready or still needs first-run setup.
+  - region "Notifications"

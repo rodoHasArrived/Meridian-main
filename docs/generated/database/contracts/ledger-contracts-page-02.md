@@ -162,6 +162,7 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_AccountingPostingCommandDto["AccountingPostingCommandDto"] {
         +OperationsActionOriginDto ActionOrigin
+        +string? Actor
         +Guid AggregateId
         +string? ApprovalId
         +AccountingPostingApprovalStateDto ApprovalState
@@ -172,7 +173,6 @@ classDiagram
         +Guid? CorrelationId
         +EconomicEventReferenceDto? EconomicEvent
         +DateOnly EffectiveDate
-        +IReadOnlyList~AccountingPostingEvidenceReferenceDto~ Evidence
     }
     class Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto["AccountingPostingEvidenceKindDto"] {
     }
@@ -597,13 +597,13 @@ classDiagram
         +string ClosePlanId
         +ClosePostingGateDto? ClosingEntriesGate
         +ClosePeriodPlanConfigurationDto? Configuration
+        +DateTimeOffset? EvaluatedAtUtc
         +IReadOnlyList~CloseEvidenceReviewDto~ EvidenceReviews
+        +string? EvidenceVersion
+        +Guid? FundAccountId
         +string FundProfileId
         +bool IsPeriodLocked
         +IReadOnlyList~LateAdjustmentRequestDto~ LateAdjustments
-        +Guid? LedgerBookId
-        +MaterialityPolicyDto MaterialityPolicy
-        +IReadOnlyList~CloseOperatingCoverageItemDto~ OperatingCoverage
     }
     class Meridian_Contracts_Ledger_ClosePeriodReopenResultDto["ClosePeriodReopenResultDto"] {
         +ClosePostingGateDto? ClosingEntriesGate

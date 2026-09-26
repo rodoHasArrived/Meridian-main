@@ -504,6 +504,24 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var lines = new List<ManualJournalEntryLineDto>(draft.Lines.Count);
+        if (draft.RequiresValuationMarkEvidence || ValuationMarkEvidenceGuard.IsValuation(draft.TreasuryContext?.IdempotencyKey) ||
+            draft.ValuationMarkEvidenceJson is not null)
+        {
+            var positions = draft.Lines.Where(static line => line.SecurityId.HasValue ||
+                !string.IsNullOrWhiteSpace(line.LedgerAccountSymbol)).ToArray();
+            var reason = positions.Length == 0 ? "Valuation has no identified position lines." : null;
+            foreach (var position in positions)
+            {
+                reason ??= ValuationMarkEvidenceGuard.Validate(draft.ValuationMarkEvidenceJson,
+                    fundProfileId, draft.AccountingDate, position.SecurityId,
+                    position.LedgerAccountFinancialAccountId, position.LedgerAccountSymbol, draft.ValuationMarkEvidenceDigest);
+            }
+            if (reason is not null)
+                issues.Add(Issue("manual-je.valuation-mark-review-required",
+                    AccountingConfigurationValidationSeverityDto.Critical, reason, "valuationMarkEvidence",
+                    "Resolve the mark evidence and rerun valuation; review notes cannot override freshness."));
+        }
+
         var attachments = NormalizeAttachments(draft.EvidenceAttachments, draft.PreparedBy);
         var evidenceLinks = MergeEvidenceLinks(draft.EvidenceLinks, attachments.Select(item => item.Uri).ToArray());
         var entryType = Enum.IsDefined(draft.EntryType)

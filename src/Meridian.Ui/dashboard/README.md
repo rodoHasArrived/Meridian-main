@@ -11,6 +11,18 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Ui/dashboard
 
+`EvidenceAmount` opens an exact retained evidence subject in the shared sheet primitive. Manual
+journal detail debit/credit cells carry the entry and ledger-book identity; values without a supported
+retained subject are never assigned inferred provenance. Reads disable development fallback and
+show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
+use the shared sheet behavior. Full evidence links retain the selected ledger book.
+
+Reconciliation break details expose source observation state (New, Aging, Cleared, Recurring),
+lineage, occurrence and successful-run clearing independently of governed casework status.
+
+The build lockfile resolves Browserslist 4.28.9, removing the high-severity cache-growth and
+custom-stats parsing advisories reported by the September 6 production-certification scan.
+
 First launch is browser-primary. `/setup` renders the first-run concierge while the
 shared first-run API remains the source of truth for starter kits, sample safety labels,
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
@@ -23,7 +35,20 @@ reported by the surface that did the work -- statement import commit, reconcilia
 resolution, report run, and analysis export each call `recordActivationOutcome` in
 `src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone.
 
+## Shared close and lot convergence
+
+Accounting forwards the entity along with fund/book/account/period when requesting the shared close decision. The close headline requires a complete ready server projection. Legacy metrics remain diagnostic and cannot produce Ready when the shared service is absent. Focused proof: `accounting-screen.close-cockpit.view-model.test.ts`.
+
+Portfolio and Trading positions display the shared mark observation date, age, and assessment. Missing assessments remain review required; recorded amounts do not imply current approved support. The valuation preview shows affected positions before a draft is requested. Both workstations retain the server close decision through blocked-to-ready recovery instead of calculating a separate readiness score.
+
+Accounting and Operations Continuity require the shared decision to match all five selected close dimensions and the current workflow revision. Scope changes invalidate prior decisions and in-flight responses. Hard-lock requests forward that explicit scope to server-side close validation; a previously ready response cannot authorize a newly selected subject.
+
+Operations Continuity submits checklist controls from the shared workflow's explicit acknowledgment actor and time, including the first submission before any close package exists. Missing controls block submission. Rejected or reopened workflows can submit a newly reviewed cycle without reusing old package approvals. Approval decisions carry retained submission evidence; an assigned reviewer is not counted as having approved until the server records the actual decision. Close publication uses the current submission and decision history together with current prerequisite acknowledgments.
+Focused proof: `operations-continuity-screen.view-model.test.ts` and `operations-continuity-screen.test.tsx`.
+
 ## Purpose
+
+Accounting balances and materiality labels format amounts using the supplied currency code, including signed values. Currency codes appear once even when the formatter emits the code as its symbol, and negative zero renders as zero.
 
 Browser workstation dashboard is the active browser operator workstation.
 
@@ -48,6 +73,7 @@ instead of introducing one-off screen styling.
 - `src/app-shell.status-panel.ts` - app-shell bootstrap, degraded workspace, and recovery status view models.
 - `src/app-shell.trust-strip.ts` - app-shell build, mode, source, and provider posture view models.
 - `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
+- `src/screens/operations-continuity-screen.date-format.ts` - retained UTC timestamp and due-date formatting used by the Operations Continuity view model.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
 - `src/design-system/assets.ts` - dashboard bridge for the checked-in `Meridian Design System/` package, centralizing brand and workspace icon imports before app-shell or navigation components consume them.
 - `src/assets/` - browser-bundled brand and icon copies from the `Meridian Design System/assets/` source package, including the app icon and PNG tile.

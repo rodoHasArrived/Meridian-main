@@ -334,6 +334,7 @@ export interface UpsertClosePeriodPlanConfigurationRequest {
 }
 
 export interface LockClosePeriodRequest {
+  closeScope?: { fundProfileId: string | null; ledgerBookId: string | null; fundAccountId: string | null; entityId: string | null; periodId: string | null } | null;
   workflowId: string;
   expectedWorkflowVersion: number;
   actor: string;
@@ -408,6 +409,10 @@ export interface ClosePostingGate {
 export interface ClosePeriodPlan {
   closePlanId: string;
   workflowVersion?: number | null;
+  workflowId?: string | null;
+  fundAccountId?: string | null;
+  evidenceVersion?: string | null;
+  evaluatedAtUtc?: string | null;
   fundProfileId: string;
   ledgerBookId: string | null;
   periodId: string;
@@ -790,6 +795,7 @@ export interface BrokerageHouseholdAccount {
 }
 
 export interface BrokerageHouseholdPosition {
+  markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   fundAccountId: string;
   providerId: string;
   externalAccountId: string;
@@ -1233,6 +1239,7 @@ export type DataOperationsExportRecord = DataExportRecord;
 export type DataOperationsWorkspaceResponse = DataWorkspaceResponse;
 
 export interface TradingPosition {
+  markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   positionKey?: string;
   symbol: string;
   side: "Long" | "Short";

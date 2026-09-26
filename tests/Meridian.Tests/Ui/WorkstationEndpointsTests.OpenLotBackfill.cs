@@ -1,0 +1,197 @@
+using System.Net;
+using System.Net.Http.Json;
+using FluentAssertions;
+using Meridian.Contracts.Accounting.Lots;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Tenancy;
+using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
+using Xunit;
+
+namespace Meridian.Tests.Ui;
+
+public sealed partial class WorkstationEndpointsTests
+{
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("another-tenant", "tenant-test")]
+    [InlineData("tenant-test", "another-company")]
+    public async Task OpenLotBackfill_UnknownOrForeignOwnerCannotReadSurveyOrRepair(string? tenant, string? company)
+    {
+        var bookId = Guid.NewGuid();
+        var store = Substitute.For<IOpenLotBackfillStore>();
+        var books = OpenLotBackfillBookService(bookId);
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.ResolveAsync("fund-backfill", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(tenant is null ? null : new FundProfileOwnership("fund-backfill", tenant, company)));
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(store);
+            services.AddSingleton(books);
+            services.AddSingleton(registry);
+        }, mapLedgerApi: true, currentUserPermissions: UserPermission.AdminMaintenance);
+
+        var client = app.GetTestClient();
+        (await client.GetAsync($"/api/ledger/books/{bookId}/open-lots/backfill/exceptions"))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsync($"/api/ledger/books/{bookId}/open-lots/backfill/survey", null))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var evidenceId = Guid.NewGuid();
+        var review = new ReviewOpenLotBackfillEvidenceRequest(bookId, evidenceId, 1, true, "spoofed", "Checked source.",
+            OperationsActionOriginDto.HumanOperator);
+        var apply = new ApplyOpenLotBackfillRequest(bookId, Guid.NewGuid(), 1, 1, evidenceId, 2, "repair", "spoofed",
+            OperationsActionOriginDto.HumanOperator);
+        (await client.PostAsJsonAsync($"/api/ledger/books/{bookId}/open-lots/backfill/evidence/{evidenceId}/review", review))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsJsonAsync($"/api/ledger/books/{bookId}/open-lots/backfill/apply", apply))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await store.DidNotReceiveWithAnyArgs().ListExceptionsAsync(default);
+        await store.DidNotReceiveWithAnyArgs().SurveyAsync(default);
+        await store.DidNotReceiveWithAnyArgs().ReviewEvidenceAsync(default!);
+        await store.DidNotReceiveWithAnyArgs().ApplyAsync(default!);
+    }
+
+    [Fact]
+    public async Task OpenLotBackfill_NormalizedRegistryOwnerCanReachMixedCaseLegacyFundBook()
+    {
+        var bookId = Guid.NewGuid();
+        var store = Substitute.For<IOpenLotBackfillStore>();
+        store.ListExceptionsAsync(bookId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<OpenLotBackfillExceptionDto>>([]));
+        store.SurveyAsync(bookId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<OpenLotBackfillExceptionDto>>([]));
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.ResolveAsync(" FUND-BackFill ", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-backfill", "tenant-test", "tenant-test"));
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(store);
+            services.AddSingleton(OpenLotBackfillBookService(bookId, " FUND-BackFill "));
+            services.AddSingleton(registry);
+        }, mapLedgerApi: true, currentUserPermissions: UserPermission.AdminMaintenance);
+
+        var client = app.GetTestClient();
+        (await client.GetAsync($"/api/ledger/books/{bookId}/open-lots/backfill/exceptions"))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.PostAsync($"/api/ledger/books/{bookId}/open-lots/backfill/survey", null))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+        await store.Received(1).ListExceptionsAsync(bookId, Arg.Any<CancellationToken>());
+        await store.Received(1).SurveyAsync(bookId, Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("tenant-test", null)]
+    public async Task OpenLotBackfill_MissingCallerScopeCannotReadOrRepair(string? tenantId, string? companyId)
+    {
+        var bookId = Guid.NewGuid();
+        var evidenceId = Guid.NewGuid();
+        var store = Substitute.For<IOpenLotBackfillStore>();
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.ResolveAsync("fund-backfill", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-backfill", "tenant-test", "tenant-test"));
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(store);
+            services.AddSingleton(OpenLotBackfillBookService(bookId));
+            services.AddSingleton(registry);
+        }, mapLedgerApi: true, currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserTenantId: tenantId, currentUserCompanyId: companyId);
+
+        var client = app.GetTestClient();
+        var review = new ReviewOpenLotBackfillEvidenceRequest(bookId, evidenceId, 1, true, "spoofed", "Checked source.",
+            OperationsActionOriginDto.HumanOperator);
+        var apply = new ApplyOpenLotBackfillRequest(bookId, Guid.NewGuid(), 1, 1, evidenceId, 2, "repair", "spoofed",
+            OperationsActionOriginDto.HumanOperator);
+        (await client.GetAsync($"/api/ledger/books/{bookId}/open-lots/backfill/exceptions"))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsync($"/api/ledger/books/{bookId}/open-lots/backfill/survey", null))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsJsonAsync($"/api/ledger/books/{bookId}/open-lots/backfill/evidence/{evidenceId}/review", review))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsJsonAsync($"/api/ledger/books/{bookId}/open-lots/backfill/apply", apply))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await store.DidNotReceiveWithAnyArgs().ListExceptionsAsync(default);
+        await store.DidNotReceiveWithAnyArgs().SurveyAsync(default);
+        await store.DidNotReceiveWithAnyArgs().ReviewEvidenceAsync(default!);
+        await store.DidNotReceiveWithAnyArgs().ApplyAsync(default!);
+    }
+
+    [Fact]
+    public async Task OpenLotBackfill_ReadPermissionCannotRepairAcquisitionFacts()
+    {
+        var bookId = Guid.NewGuid();
+        var store = Substitute.For<IOpenLotBackfillStore>();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(store);
+            services.AddSingleton(OpenLotBackfillBookService(bookId));
+        }, mapLedgerApi: true, currentUserPermissions: UserPermission.ViewLedgerReports);
+
+        var request = new ApplyOpenLotBackfillRequest(bookId, Guid.NewGuid(), 1, 1, Guid.NewGuid(), 2, "backfill", "spoofed",
+            OperationsActionOriginDto.HumanOperator);
+        var response = await app.GetTestClient().PostAsJsonAsync($"/api/ledger/books/{bookId}/open-lots/backfill/apply", request);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await store.DidNotReceiveWithAnyArgs().ApplyAsync(default!);
+    }
+
+    [Fact]
+    public async Task OpenLotBackfill_ReviewUsesAuthenticatedActorAndPreservesAutomationRefusal()
+    {
+        var bookId = Guid.NewGuid();
+        var evidenceId = Guid.NewGuid();
+        var store = Substitute.For<IOpenLotBackfillStore>();
+        ReviewOpenLotBackfillEvidenceRequest? received = null;
+        store.ReviewEvidenceAsync(Arg.Any<ReviewOpenLotBackfillEvidenceRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                received = call.ArgAt<ReviewOpenLotBackfillEvidenceRequest>(0);
+                return Task.FromException<OpenLotBackfillEvidenceDto>(new InvalidOperationException("Human review required."));
+            });
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(store);
+            services.AddSingleton(OpenLotBackfillBookService(bookId));
+        }, mapLedgerApi: true, currentUserPermissions: UserPermission.AdminMaintenance, currentUserName: "reviewer");
+
+        var request = new ReviewOpenLotBackfillEvidenceRequest(bookId, evidenceId, 1, true, "spoofed", "Retained source checked.");
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            $"/api/ledger/books/{bookId}/open-lots/backfill/evidence/{evidenceId}/review", request);
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        received.Should().NotBeNull();
+        received!.Actor.Should().Be("reviewer");
+        received.ActionOrigin.Should().Be(OperationsActionOriginDto.AutomationAssistant);
+    }
+
+    [Fact]
+    public async Task OpenLotBackfill_CrossBookRequestCannotReachStore()
+    {
+        var bookId = Guid.NewGuid();
+        var store = Substitute.For<IOpenLotBackfillStore>();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(store);
+            services.AddSingleton(OpenLotBackfillBookService(bookId));
+        }, mapLedgerApi: true, currentUserPermissions: UserPermission.AdminMaintenance);
+
+        var request = new ApplyOpenLotBackfillRequest(Guid.NewGuid(), Guid.NewGuid(), 1, 1, Guid.NewGuid(), 2, "backfill", "actor",
+            OperationsActionOriginDto.HumanOperator);
+        var response = await app.GetTestClient().PostAsJsonAsync($"/api/ledger/books/{bookId}/open-lots/backfill/apply", request);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await store.DidNotReceiveWithAnyArgs().ApplyAsync(default!);
+    }
+
+    private static ILedgerBookService OpenLotBackfillBookService(Guid bookId, string fundProfileId = "fund-backfill")
+    {
+        var books = Substitute.For<ILedgerBookService>();
+        books.GetBookAsync(bookId, Arg.Any<CancellationToken>()).Returns(new LedgerBookDto(
+            bookId, fundProfileId, Guid.NewGuid(), FundStructureNodeKindDto.Account, "Backfill book", "USD",
+            DateTimeOffset.UtcNow, DateTimeOffset.UtcNow));
+        return books;
+    }
+}

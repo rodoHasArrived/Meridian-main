@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
 import {
   getOperationsCloseCalendar,
+  getFinancialOperationsCommandCenter,
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
@@ -17,6 +19,7 @@ import {
   evidenceStatusTone
 } from "@/screens/operations-continuity-reviewed-automation.view-model";
 import type {
+  FinancialOperationsCommandCenter,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsAccountingRecordEvidenceCategory,
@@ -652,6 +655,7 @@ export interface OperationsContinuityScreenViewModel {
 }
 
 export interface OperationsContinuityScreenServices {
+  getCommandCenter?: (query?: PrivateCapitalCloseCockpitQuery, options?: ApiRequestOptions) => Promise<FinancialOperationsCommandCenter>;
   listWorkflows: (
     filters?: { fundAccountId?: string; periodId?: string; status?: string },
     options?: ApiRequestOptions
@@ -668,6 +672,8 @@ export interface OperationsContinuityScreenServices {
 }
 
 export interface BuildOperationsContinuityScreenViewModelOptions {
+  commandCenter?: FinancialOperationsCommandCenter | null;
+  expectedCloseScope?: PrivateCapitalCloseCockpitQuery;
   workflows: OperationsContinuityWorkflowSummary[];
   selectedWorkflowId: string | null;
   detail: OperationsContinuityWorkflow | null;
@@ -686,14 +692,18 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
 }
 
 const defaultServices: OperationsContinuityScreenServices = {
+  getCommandCenter: (query = {}, options = {}) => getFinancialOperationsCommandCenter(query, options),
   listWorkflows: (filters = {}, options = {}) => getOperationsContinuityWorkflows(filters, options),
   getWorkflow: (workflowId: string, options = {}) => getOperationsContinuityWorkflow(workflowId, options),
   getCloseCalendar: (filters = {}, options = {}) => getOperationsCloseCalendar(filters, options),
   getCloseCockpit: (query = {}, options = {}) => getPrivateCapitalCloseCockpit(query, options)
 };
 
+const emptyCloseScope: PrivateCapitalCloseCockpitQuery = {};
+
 export function useOperationsContinuityScreenViewModel(
-  services: OperationsContinuityScreenServices = defaultServices
+  services: OperationsContinuityScreenServices = defaultServices,
+  closeScope: PrivateCapitalCloseCockpitQuery = emptyCloseScope
 ): OperationsContinuityScreenViewModel {
   const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
@@ -704,6 +714,7 @@ export function useOperationsContinuityScreenViewModel(
   const [closeCalendarLoading, setCloseCalendarLoading] = useState(false);
   const [closeCalendarError, setCloseCalendarError] = useState<string | null>(null);
   const [closeCockpit, setCloseCockpit] = useState<PrivateCapitalCloseCockpit | null>(null);
+  const [commandCenter, setCommandCenter] = useState<FinancialOperationsCommandCenter | null>(null);
   const [closeCockpitLoading, setCloseCockpitLoading] = useState(false);
   const [closeCockpitError, setCloseCockpitError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -751,6 +762,7 @@ export function useOperationsContinuityScreenViewModel(
     const controller = new AbortController();
     listAbortRef.current = controller;
     setLoading(true);
+    setCommandCenter(null);
     setError(null);
     setDetailError(null);
 
@@ -890,18 +902,23 @@ export function useOperationsContinuityScreenViewModel(
     const controller = new AbortController();
     closeCockpitAbortRef.current = controller;
     setCloseCockpitLoading(true);
+    setCommandCenter(null);
     setCloseCockpitError(null);
 
     const query = closeCockpitScope ? buildCloseCockpitQuery(closeCockpitScope) : {};
     const getCloseCockpit = services.getCloseCockpit ?? defaultServices.getCloseCockpit!;
 
-    getCloseCockpit(query, { signal: controller.signal })
-      .then((cockpit) => {
+    Promise.all([
+      getCloseCockpit(query, { signal: controller.signal }),
+      services.getCommandCenter?.(closeScope, { signal: controller.signal }) ?? Promise.resolve(null)
+    ])
+      .then(([cockpit, sharedDecision]) => {
         if (!mountedRef.current || closeCockpitRevisionRef.current !== revision) {
           return;
         }
 
         setCloseCockpit(cockpit);
+        setCommandCenter(sharedDecision);
       })
       .catch((err) => {
         if (!isAbortError(err) && mountedRef.current && closeCockpitRevisionRef.current === revision) {
@@ -918,13 +935,15 @@ export function useOperationsContinuityScreenViewModel(
           closeCockpitAbortRef.current = null;
         }
       });
-  }, [closeCockpitScope, loading, services]);
+  }, [closeCockpitScope, closeScope, loading, services]);
 
   const selectWorkflow = useCallback((workflowId: string) => {
     setSelectedWorkflowId(workflowId);
   }, []);
 
   return useMemo(() => buildOperationsContinuityScreenViewModel({
+    commandCenter,
+    expectedCloseScope: closeScope,
     workflows,
     selectedWorkflowId,
     detail,
@@ -940,10 +959,12 @@ export function useOperationsContinuityScreenViewModel(
     detailError,
     refresh,
     selectWorkflow
-  }), [closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
+  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
 }
 
 export function buildOperationsContinuityScreenViewModel({
+  commandCenter = null,
+  expectedCloseScope = emptyCloseScope,
   workflows,
   selectedWorkflowId,
   detail,
@@ -980,6 +1001,22 @@ export function buildOperationsContinuityScreenViewModel({
   const workflowApprovalHistory = buildWorkflowApprovalHistoryRows(effectiveDetail);
   const dashboard = buildOperationsDashboardViewModel(effectiveDetail?.dashboardSummary ?? null, detailLoading);
   const commandSpine = buildFinancialOperationsCommandSpineViewModel(dashboard, effectiveDetail, detailLoading);
+  const decisionScope = commandCenter?.closeReadiness?.scope;
+  const scopeMatches = (["fundProfileId", "ledgerBookId", "fundAccountId", "entityId", "periodId"] as const)
+    .every((key) => typeof expectedCloseScope[key] === "string" && expectedCloseScope[key]!.trim().length > 0
+      && decisionScope?.[key] === expectedCloseScope[key]);
+  const sharedCloseReady = commandCenter?.closeReadiness?.isComplete === true
+    && scopeMatches
+    && commandCenter.closeReadiness.isReadyToClose
+    && commandCenter.activeWorkflow?.workflowId === effectiveDetail?.workflowId
+    && commandCenter.activeWorkflow?.version === effectiveDetail?.version
+    && !loading && !detailLoading && !closeCockpitLoading && !detailError && !closeCockpitError;
+  const sharedCloseBlocker = commandCenter?.closeReadiness?.blockers[0]?.message
+    ?? "Select the complete close scope and refresh shared close readiness before publishing a close package.";
+  commandSpine.rows = commandSpine.rows.map((row) => row.id !== "produce-evidence" || sharedCloseReady ? row : ({
+    ...row, canCloseWorkflow: false, closeWorkflowDisabledReason: sharedCloseBlocker,
+    guardLabel: sharedCloseBlocker
+  }));
   const reviewedAutomation = buildReviewedAutomationViewModel(effectiveDetail?.reviewedAutomation ?? null, detailLoading);
   const accountingRecordSummary = buildAccountingRecordSummaryViewModel(
     effectiveDetail?.accountingRecordSummary ?? null,
@@ -1004,6 +1041,9 @@ export function buildOperationsContinuityScreenViewModel({
     closeCockpitError,
     selectedSummary
   );
+  closeCockpitPanel.statusLabel = sharedCloseReady ? "Ready" : "Blocked";
+  closeCockpitPanel.statusTone = sharedCloseReady ? "ready" : "blocked";
+  closeCockpitPanel.readinessLabel = sharedCloseReady ? "Shared close readiness confirmed" : sharedCloseBlocker;
   const financialOperationsQueue = buildFinancialOperationsOperatorQueueViewModel({
     breakCases,
     reconciliationLanes,
@@ -1284,8 +1324,20 @@ function buildApproveWorkflowDecisionDisabledReason(
     return `Approval row is already ${splitEnumLabel(approval.status)}.`;
   }
 
+  if (workflow.approvals.at(-1)?.approvalId !== approval.approvalId) {
+    return "This approval belongs to an earlier workflow submission.";
+  }
+
   if (!approval.reviewer?.trim() && !resolveApprovalReviewer(workflow)) {
     return "Reviewer is required before approval decision.";
+  }
+
+  if (!approval.operator?.trim() || !approval.submittedAtUtc?.trim()) {
+    return "Retained submission actor and timestamp are required before approval decision.";
+  }
+
+  if (approval.operator.trim().toLowerCase() === (approval.reviewer?.trim() || resolveApprovalReviewer(workflow))?.toLowerCase()) {
+    return "Approval reviewer must differ from the workflow submitter.";
   }
 
   if (!workflow.reportPackReadiness.isReady || !resolveApprovalReportPackId(workflow)) {
@@ -1315,6 +1367,10 @@ function buildRejectWorkflowDecisionDisabledReason(
 
   if (!isPendingWorkflowApprovalState(approval.status)) {
     return `Approval row is already ${splitEnumLabel(approval.status)}.`;
+  }
+
+  if (workflow.approvals.at(-1)?.approvalId !== approval.approvalId) {
+    return "This approval belongs to an earlier workflow submission.";
   }
 
   if (!approval.reviewer?.trim() && !resolveApprovalReviewer(workflow)) {
@@ -1644,7 +1700,7 @@ function mapFinancialOperationsCommandSpineRow(
     : "Only the Produce Evidence stage can publish the close package.";
   const reportPackId = resolveApprovalReportPackId(workflow);
   const reviewer = resolveApprovalReviewer(workflow);
-  const checklistControlApprovals = workflow?.closePackage?.checklistControlApprovals ?? [];
+  const checklistControlApprovals = collectSubmitApprovalChecklistControlApprovals(workflow);
   const evidenceLinks = collectSubmitApprovalEvidenceLinks(workflow);
   const closeChecklistControlApprovals = collectCloseWorkflowChecklistControlApprovals(workflow);
   const closeEvidenceLinks = collectCloseWorkflowEvidenceLinks(workflow);
@@ -1697,19 +1753,19 @@ function buildSubmitApprovalDisabledReason(workflow: OperationsContinuityWorkflo
     return "Workflow version is unavailable for approval submission.";
   }
 
-  if (workflow.approvalState !== "Pending") {
-    return `Approval state is already ${splitEnumLabel(workflow.approvalState)}.`;
+  if (workflow.status === "Closed") {
+    return "Reopen the closed workflow before submitting approval.";
   }
 
-  if (workflow.approvals.some((approval) => approval.status === "Submitted" || approval.status === "ReviewerAssigned" || approval.status === "Approved")) {
-    return "Workflow approval has already been submitted.";
+  if (workflow.approvalState !== "Pending" && workflow.approvalState !== "Rejected") {
+    return `Approval state is already ${splitEnumLabel(workflow.approvalState)}.`;
   }
 
   if (workflow.breakCases.some((breakCase) => breakStatusTone(breakCase.status) !== "ready")) {
     return "Resolve open reconciliation breaks before submitting approval.";
   }
 
-  if (!resolveApprovalReportPackId(workflow)) {
+  if (!workflow.reportPackReadiness.isReady || !resolveApprovalReportPackId(workflow)) {
     return workflow.reportPackReadiness.blockingReason?.trim() || "Report-pack readiness is required before approval submission.";
   }
 
@@ -1717,7 +1773,11 @@ function buildSubmitApprovalDisabledReason(workflow: OperationsContinuityWorkflo
     return "Reviewer is required before approval submission.";
   }
 
-  return null;
+  return findIncompletePrerequisiteChecklistControlApproval(
+    workflow,
+    collectSubmitApprovalChecklistControlApprovals(workflow),
+    "approval submission"
+  );
 }
 
 function buildCloseWorkflowDisabledReason(workflow: OperationsContinuityWorkflow | null): string | null {
@@ -1729,7 +1789,7 @@ function buildCloseWorkflowDisabledReason(workflow: OperationsContinuityWorkflow
     return "Workflow version is unavailable for close package publication.";
   }
 
-  if (workflow.status === "Closed" || workflow.closePackage) {
+  if (workflow.status === "Closed") {
     return "Close package has already been published.";
   }
 
@@ -1761,22 +1821,20 @@ function buildCloseWorkflowDisabledReason(workflow: OperationsContinuityWorkflow
 
 function resolveApprovalReportPackId(workflow: OperationsContinuityWorkflow | null): string | null {
   return workflow?.reportPackReadiness.reportPackId?.trim()
-    || workflow?.closePackage?.reportPackId?.trim()
     || null;
 }
 
 function resolveApprovalReviewer(workflow: OperationsContinuityWorkflow | null): string | null {
-  const pendingApprovalReviewer = workflow?.approvals
-    .find((approval) => approval.status !== "Approved" && approval.reviewer?.trim())
-    ?.reviewer?.trim();
+  const pendingApprovalReviewer = workflow?.approvals.at(-1)?.reviewer?.trim();
   if (pendingApprovalReviewer) {
     return pendingApprovalReviewer;
   }
 
-  return workflow?.closeChecklist
+  return workflow?.closeChecklist.find((task) => task.gate === "Approval")?.owner?.trim()
+    || workflow?.closeChecklist
     .map((task) => task.owner?.trim())
     .find((owner): owner is string => Boolean(owner))
-    ?? null;
+    || null;
 }
 
 function collectSubmitApprovalEvidenceLinks(workflow: OperationsContinuityWorkflow | null): OperationsEvidenceLink[] {
@@ -1834,61 +1892,57 @@ function distinctOperationsEvidenceLinks(links: OperationsEvidenceLink[]): Opera
   );
 }
 
-function collectCloseWorkflowChecklistControlApprovals(
+function collectSubmitApprovalChecklistControlApprovals(
   workflow: OperationsContinuityWorkflow | null
 ): OperationsChecklistControlApproval[] {
   if (!workflow) {
     return [];
   }
 
-  if (workflow.closePackage?.checklistControlApprovals.length) {
-    return workflow.closePackage.checklistControlApprovals;
+  const approvals: OperationsChecklistControlApproval[] = [];
+  workflow.closeChecklist
+    .filter((task) => task.gate !== "Approval"
+      && isChecklistTaskReady(task)
+      && !isChecklistTaskBlocked(task)
+      && Boolean(task.evidencePointer?.trim()))
+    .forEach((task) => {
+      appendChecklistControlApproval(approvals, task.taskId, task.acknowledgedBy, task.acknowledgedAtUtc);
+    });
+
+  return distinctChecklistControlApprovals(approvals);
+}
+
+function collectCloseWorkflowChecklistControlApprovals(
+  workflow: OperationsContinuityWorkflow | null
+): OperationsChecklistControlApproval[] {
+  const approvals = collectSubmitApprovalChecklistControlApprovals(workflow);
+  if (!workflow || workflow.approvalState !== "Approved") {
+    return approvals;
   }
 
-  const approvals: OperationsChecklistControlApproval[] = [];
-  const appendApproval = (taskId: string | null | undefined, approvedBy: string | null | undefined, approvedAtUtc: string | null | undefined) => {
-    const cleanTaskId = taskId?.trim();
-    const cleanApprover = approvedBy?.trim();
-    const cleanTimestamp = approvedAtUtc?.trim();
-    if (!cleanTaskId || !cleanApprover || !cleanTimestamp) {
-      return;
-    }
-
-    approvals.push({
-      taskId: cleanTaskId,
-      approvedBy: cleanApprover,
-      approvedAtUtc: cleanTimestamp
-    });
-  };
-
-  workflow.closeChecklist.forEach((task) => {
-    appendApproval(task.taskId, task.acknowledgedBy, task.acknowledgedAtUtc);
-  });
-
   const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
-  workflow.approvals
-    .filter((approval) => approval.status === "Approved")
-    .forEach((approval) => {
-      appendApproval(approvalTaskId, approval.operator, approval.submittedAtUtc);
-      appendApproval(approvalTaskId, approval.reviewer, approval.decidedAtUtc);
-    });
+  const decision = workflow.approvals.at(-1);
+  if (decision?.status === "Approved") {
+    // Legacy records retain submission and decision as separate history entries.
+    const submission = decision.submittedAtUtc
+      ? decision
+      : workflow.approvals.at(-2);
+    if (submission && (submission === decision || isPendingWorkflowApprovalState(submission.status))) {
+      appendChecklistControlApproval(approvals, approvalTaskId, submission.operator, submission.submittedAtUtc);
+    }
+    appendChecklistControlApproval(approvals, approvalTaskId, decision.reviewer, decision.decidedAtUtc);
+  }
 
-  return approvals.filter((approval, index, source) =>
-    source.findIndex((candidate) =>
-      candidate.taskId.toLowerCase() === approval.taskId.toLowerCase()
-        && candidate.approvedBy.toLowerCase() === approval.approvedBy.toLowerCase()
-    ) === index
-  );
+  return distinctChecklistControlApprovals(approvals);
 }
 
 function collectApprovalDecisionChecklistControlApprovals(
   workflow: OperationsContinuityWorkflow,
   approval: OperationsContinuityWorkflow["approvals"][number]
 ): OperationsChecklistControlApproval[] {
-  const approvals = [...collectCloseWorkflowChecklistControlApprovals(workflow)];
+  const approvals = collectSubmitApprovalChecklistControlApprovals(workflow);
   const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
   appendChecklistControlApproval(approvals, approvalTaskId, approval.operator, approval.submittedAtUtc);
-  appendChecklistControlApproval(approvals, approvalTaskId, approval.reviewer, approval.decidedAtUtc ?? approval.submittedAtUtc);
 
   return distinctChecklistControlApprovals(approvals);
 }
@@ -1939,10 +1993,10 @@ function findIncompleteCloseWorkflowChecklistControlApproval(
     });
 
   const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
-  if (workflow.approvalState === "Approved" && !requiredApprovals.has(approvalTaskId.toLowerCase())) {
+  if (workflow.approvalState === "Approved") {
     requiredApprovals.set(approvalTaskId.toLowerCase(), {
       label: "Approval close gate",
-      requiredCount: 2
+      requiredCount: Math.max(requiredApprovals.get(approvalTaskId.toLowerCase())?.requiredCount ?? 0, 2)
     });
   }
 
@@ -1965,17 +2019,29 @@ function findIncompleteApprovalDecisionChecklistControlApproval(
   workflow: OperationsContinuityWorkflow,
   approvals: OperationsChecklistControlApproval[]
 ): string | null {
+  return findIncompletePrerequisiteChecklistControlApproval(workflow, approvals, "approval decision");
+}
+
+function findIncompletePrerequisiteChecklistControlApproval(
+  workflow: OperationsContinuityWorkflow,
+  approvals: OperationsChecklistControlApproval[],
+  command: string
+): string | null {
   const requiredApprovals = new Map<string, { label: string; requiredCount: number }>();
   workflow.gates
-    .filter((gate) => gate.status === "Passed" || gate.gateKey === "Approval")
+    .filter((gate) => gate.gateKey !== "Approval" && gate.status === "Passed")
     .forEach((gate) => {
       const checklistTask = workflow.closeChecklist.find((task) => task.gate === gate.gateKey);
       const taskId = checklistTask?.taskId ?? `close-gate-${gate.gateKey.toLowerCase()}`;
       requiredApprovals.set(taskId.toLowerCase(), {
         label: checklistTask?.label ?? `${gateLabel(gate.gateKey)} close gate`,
-        requiredCount: gate.gateKey === "Approval" ? 2 : Math.max(checklistTask?.requiredApprovalCount ?? 1, 1)
+        requiredCount: Math.max(checklistTask?.requiredApprovalCount ?? 1, 1)
       });
     });
+
+  if (requiredApprovals.size === 0) {
+    return `Retained prerequisite checklist-control approvals are required before ${command}.`;
+  }
 
   for (const [taskId, requirement] of requiredApprovals) {
     const retainedApprovalCount = approvals
@@ -1985,7 +2051,7 @@ function findIncompleteApprovalDecisionChecklistControlApproval(
       .filter((approver, index, source) => source.indexOf(approver) === index)
       .length;
     if (retainedApprovalCount < requirement.requiredCount) {
-      return `${requirement.label} requires ${requirement.requiredCount} retained checklist-control approval${requirement.requiredCount === 1 ? "" : "s"} before approval decision.`;
+      return `${requirement.label} requires ${requirement.requiredCount} retained checklist-control approval${requirement.requiredCount === 1 ? "" : "s"} before ${command}.`;
     }
   }
 
@@ -2878,7 +2944,7 @@ function buildChecklistRows(
       : task.canAcknowledge
         ? "Ready for acknowledgement"
         : task.blockingReason?.trim() || "Acknowledgement blocked until required evidence is complete";
-    const commandPosture = task.acknowledgedAtUtc || (isChecklistTaskReady(task) && !task.canAcknowledge)
+    const commandPosture = task.acknowledgedAtUtc
       ? "Acknowledgement retained"
       : workflowId && task.canAcknowledge
         ? "Acknowledgement command ready"
@@ -3962,39 +4028,6 @@ function formatOperatorDisplayName(value: string | null): string {
     .map((part) => part.toLowerCase() === "ops" ? "Operations" : part.toLowerCase())
     .join(" ");
   return label.replace(/^\w/, (character) => character.toUpperCase());
-}
-
-function formatDate(value: string | null | undefined): string {
-  if (!value) {
-    return "Not recorded";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  const month = date.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
-  const day = date.getUTCDate().toString().padStart(2, "0");
-  const hour = date.getUTCHours().toString().padStart(2, "0");
-  const minute = date.getUTCMinutes().toString().padStart(2, "0");
-  return `${month} ${day}, ${hour}:${minute} UTC`;
-}
-
-function formatDateOnly(value: string | null | undefined): string {
-  if (!value) {
-    return "No due date";
-  }
-
-  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00Z` : value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  const month = date.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
-  const day = date.getUTCDate().toString().padStart(2, "0");
-  const year = date.getUTCFullYear();
-  return `${month} ${day}, ${year}`;
 }
 
 function formatDecimal(value: number | null | undefined): string {

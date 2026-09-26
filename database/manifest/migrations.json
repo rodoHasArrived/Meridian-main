@@ -289,6 +289,33 @@
       "sha256": "d3f22e7121f8ae5b9dffef68ea4d298d76af6dbcda1a97f03186897c5746521c"
     },
     {
+      "filename": "033_security_master_asset_operations_projections.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 33,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/033_security_master_asset_operations_projections.sql",
+      "schema": "security_master",
+      "sha256": "a3b22732d98e013e8c57188adc7d90a05397714ffee14f59ec64f496dec87c03"
+    },
+    {
+      "filename": "034_security_master_dated_price_history.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 34,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/034_security_master_dated_price_history.sql",
+      "schema": "security_master",
+      "sha256": "492698ffb99da3c3eff1709522b7cf018fc16692f7430ea88e61e382b47c6623"
+    },
+    {
+      "filename": "035_security_master_price_selection_receipts.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 35,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/035_security_master_price_selection_receipts.sql",
+      "schema": "security_master",
+      "sha256": "668e3f5bb4b21549c36b6f608a639aa6df572a301d9e9c2f6d4a5fa44fe3c0eb"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -386,6 +413,15 @@
       "path": "src/Meridian.Storage/DirectLending/Migrations/008_direct_lending_pik_accrual.sql",
       "schema": "security_master",
       "sha256": "379a1f18e73605d31c910a6de81b9a6be4d6f929ba8ddfba2ec3916d0d57bc3c"
+    },
+    {
+      "filename": "009_direct_lending_cash_flow_identity.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/009_direct_lending_cash_flow_identity.sql",
+      "schema": "security_master",
+      "sha256": "ecf4860c90bdc362b06f70b1c7a7f33779174d35e04ba83d337e5963d30ff506"
     },
     {
       "filename": "001_asset_operations.sql",
@@ -721,6 +757,51 @@
       "sha256": "7a0163183148291a1e056d35c0c47eb755e9e78f09e1527c4a3ee463dd36e881"
     },
     {
+      "filename": "V_ledger_033__tax_lot_face_terms.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_033__tax_lot_face_terms.sql",
+      "schema": "ledger",
+      "sha256": "17fb537af0419bf8794fd3b2aa5aafbfd2329ba3836d1a71ab132b04ed1bf36a"
+    },
+    {
+      "filename": "V_ledger_034__open_lot_acquisition.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_034__open_lot_acquisition.sql",
+      "schema": "ledger",
+      "sha256": "09f2e52887460060bbb42f05c9aef54bd98653b14d1b85de21a30a7863da9af9"
+    },
+    {
+      "filename": "V_ledger_035__open_lot_backfill.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_035__open_lot_backfill.sql",
+      "schema": "ledger",
+      "sha256": "c93bed68afbf0f861cbe570568348b6f9df3ec2c7fbdca8ddd6a95d43c0bb5a6"
+    },
+    {
+      "filename": "V_ledger_036__ledger_event_audit_chain.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_036__ledger_event_audit_chain.sql",
+      "schema": "ledger",
+      "sha256": "c085d7e99a17c3d2c12d1e5e6dd937aca7b1fa7d5bd9cd1d471fd1af539178f9"
+    },
+    {
+      "filename": "V_ledger_037__open_lot_basis_adjustment.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
+      "schema": "ledger",
+      "sha256": "c2d4ad2242a51114218180a852d1e5e88f03d0b2a0c6132037669648fa1d1140"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -755,6 +836,15 @@
       "path": "src/Meridian.Storage/FundStructure/Migrations/004_fund_structure_tenant_columns.sql",
       "schema": "fund_structure",
       "sha256": "71b59aca8301298b74d42a0eb0cbd12e7def512f444d5752e6156e4400ec042f"
+    },
+    {
+      "filename": "005_tenant_backfill_receipts.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
+      "schema": "fund_structure",
+      "sha256": "3855a01189025fdd047b6cd4270de1cb6dd67a24502ac4e2475b9d58a479ae30"
     },
     {
       "filename": "001_fund_accounts.sql",
@@ -956,7 +1046,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "67395a8af3e35eb378e6cc6b835aa0d9e966197e1d7fee2cc664e18b6281f4af",
+  "fingerprint": "77fced67f4485ce3ca135bd40f02533762b4b8e007e8b7de517fa268dcd8895e",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1194,12 +1284,19 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 106,
+    "files": 116,
     "migration_sets": 10,
-    "waivers": 7,
+    "waivers": 11,
     "warnings": 0
   },
   "waivers": [
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
+      "reason": "The lexical TRUNCATE match is a BEFORE TRUNCATE guard trigger that rejects deletion of immutable tenant-backfill receipts. This migration truncates no data; PostgreSQL regression coverage attempts truncation and verifies refusal with the receipt retained.",
+      "review_after": "2027-03-22",
+      "rule_id": "migration-truncate"
+    },
     {
       "category": "destructive_changes",
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_030__journal_immutability.sql",
@@ -1237,10 +1334,31 @@
     },
     {
       "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
+      "reason": "Constraint widening, not data loss: ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, and ck_tax_lot_mutations_cost are dropped and immediately re-created in the same transaction as strict supersets that admit the governed AverageCost BasisRedistribution mutation kind and pooled relief basis. Every existing row still satisfies the re-created checks, and no column or data is removed.",
+      "review_after": "2027-03-01",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/032_security_master_normalized_primary_identifier_uniqueness.sql",
       "reason": "The migration drops only the superseded raw-value unique index and normalized non-unique index after its deterministic collision preflight succeeds, then immediately creates the normalized unique index. No table data or identifier history is removed.",
       "review_after": "2027-02-28",
       "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/034_security_master_dated_price_history.sql",
+      "reason": "Requires human schema/storage and release-operations review. Replaces only security_raw_prices_pkey (security_id, source_id) with (security_id, source_id, price_as_of) so earlier observations remain retained; no row or column is removed. PostgresMigrationRunner executes the constraint replacement and migration-ledger append under one transaction and advisory migration lock, so failed DDL restores the original primary key. Drain legacy price writers before rollout because their old ON CONFLICT target is no longer valid. After multiple dated observations exist, prefer a forward fix; do not restore the old key by deleting history. Any reverse migration requires separately reviewed preservation of every retained observation and proof that the old uniqueness can be restored safely.",
+      "review_after": "2027-03-22",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/035_security_master_price_selection_receipts.sql",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of immutable pricing-selection receipts; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the original receipt remains replayable.",
+      "review_after": "2027-03-22",
+      "rule_id": "migration-truncate"
     },
     {
       "category": "removed_migrations",

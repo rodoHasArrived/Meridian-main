@@ -6,7 +6,10 @@ namespace Meridian.Storage.SecurityMaster;
 public interface ISecurityMasterPricingStore
 {
     Task<SecurityPricingHierarchyDto?> GetHierarchyAsync(Guid securityId, string? accountId, CancellationToken ct = default);
+    Task<SecurityPricingHierarchyDto?> GetHierarchyAsOfAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null);
     Task UpsertHierarchyAsync(SecurityPricingHierarchyDto hierarchy, CancellationToken ct = default);
-    Task RecordRawPriceAsync(Guid securityId, string sourceId, decimal price, DateTimeOffset priceAsOf, string recordedBy, CancellationToken ct = default);
-    Task<IReadOnlyList<(string SourceId, decimal Price, DateTimeOffset PriceAsOf)>> GetRawPricesAsync(Guid securityId, CancellationToken ct = default);
+    Task RecordRawPriceAsync(RecordRawPriceRequest request, CancellationToken ct = default);
+    Task RetainPriceSelectionAsync(SecurityPriceGoldenCopyDto selection, string? accountId, CancellationToken ct = default);
+    Task<SecurityPriceGoldenCopyDto?> GetPriceSelectionAsync(Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default);
+    Task<IReadOnlyList<SecurityRawPriceDto>> GetRawPricesAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null);
 }

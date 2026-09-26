@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
@@ -32,7 +33,9 @@ public sealed class ReportGenerationService
 
         _log.LogInformation(
             "Generating {ReportKind} report for {FundId} asOf {AsOf}",
-            request.ReportKind, request.FundId, request.AsOf);
+            request.ReportKind,
+            Regex.Replace(request.FundId ?? string.Empty, @"[\r\n\p{Cc}\u2028\u2029]+", " "),
+            request.AsOf);
 
         // Freeze the exact journal boundary first. Every balance, dimension, and receipt count is
         // derived from this one materialized set so a report cannot mix pre- and post-as-of state.

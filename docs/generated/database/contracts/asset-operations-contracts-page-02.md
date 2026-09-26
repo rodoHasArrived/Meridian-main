@@ -2,11 +2,17 @@
 
 # `asset-operations-contracts` data objects - page 2 of 2
 
-Objects 81-107 of 107. References crossing pages remain available in the dependency manifest.
+Objects 81-112 of 112. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% asset-operations-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_AssetOperations_IAssetOperationsQueryService["IAssetOperationsQueryService"] {
+    }
+    class Meridian_Contracts_AssetOperations_IPortfolioCapitalScheduleProvider["IPortfolioCapitalScheduleProvider"] {
+    }
+    class Meridian_Contracts_AssetOperations_IPortfolioCashBalanceProvider["IPortfolioCashBalanceProvider"] {
+    }
     class Meridian_Contracts_AssetOperations_IPortfolioCashLadderQueryService["IPortfolioCashLadderQueryService"] {
     }
     class Meridian_Contracts_AssetOperations_IPortfolioHoldingsSource["IPortfolioHoldingsSource"] {
@@ -215,6 +221,26 @@ classDiagram
         +string SourceSystem
     }
     class Meridian_Contracts_AssetOperations_RetainedEvidenceIdentityValidator["RetainedEvidenceIdentityValidator"] {
+    }
+    class Meridian_Contracts_AssetOperations_StructuredCreditFactorPointDto["StructuredCreditFactorPointDto"] {
+        +DateOnly AsOfDate
+        +decimal Factor
+        +int Ordinal
+        +Guid SecurityId
+    }
+    class Meridian_Contracts_AssetOperations_StructuredCreditReferenceDto["StructuredCreditReferenceDto"] {
+        +string CollateralType
+        +string CouponOrIndex
+        +string Currency
+        +decimal? CurrentFactor
+        +string DisplayName
+        +string? FactorScheduleReference
+        +DateOnly? Maturity
+        +decimal OriginalFace
+        +string? PoolId
+        +string PrimaryIdentifier
+        +Guid SecurityId
+        +string Tranche
     }
     Meridian_Contracts_AssetOperations_InstrumentRoleDto --> Meridian_Contracts_AssetOperations_RetainedEvidenceIdentityDto
     Meridian_Contracts_AssetOperations_PortfolioCashLadderBucketDto --> Meridian_Contracts_AssetOperations_PortfolioCashLadderSourceSliceDto

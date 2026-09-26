@@ -157,6 +157,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
     private readonly IOperationsContinuityWorkflowStartCommitStore? _workflowStartCommitStore;
     private readonly IOperationsContinuityTransitionCommitStore? _transitionCommitStore;
     private readonly OperationsLedgerPostingService _ledgerPosting;
+    private readonly IClosePublicationReadinessGuard? _closeReadinessGuard;
 
     public OperationsContinuityWorkflowService(
         IOperationsContinuityRepository repository,
@@ -164,7 +165,8 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
         IOperationsStatusDerivationService statusDerivation,
         ILedgerJournalStore? ledgerJournalStore = null,
         IOperationsContinuityTransactionalCommitStore? transactionalCommitStore = null,
-        ISecurityMasterQueryService? securityMasterQueryService = null)
+        ISecurityMasterQueryService? securityMasterQueryService = null,
+        IClosePublicationReadinessGuard? closeReadinessGuard = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
@@ -178,6 +180,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 ? new InMemoryOperationsContinuityTransitionCommitStore(inMemoryRepository, auditStore)
                 : null);
         _ledgerPosting = new OperationsLedgerPostingService(ledgerJournalStore, transactionalCommitStore, securityMasterQueryService);
+        _closeReadinessGuard = closeReadinessGuard;
     }
 
     public async Task<OperationsTransitionResultDto> StartWorkflowAsync(
@@ -842,6 +845,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 workflow.SubmitForApproval(request, evidence, now);
                 return null;
             },
+            auditPrecondition: (workflow, timeline) => ValidateRetainedChecklistControls(workflow, timeline, request.ChecklistControlApprovals),
             ct: ct).ConfigureAwait(false);
     }
 
@@ -871,6 +875,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 workflow.Approve(request, evidence, now);
                 return null;
             },
+            auditPrecondition: (workflow, timeline) => ValidateRetainedChecklistControls(workflow, timeline, request.ChecklistControlApprovals),
             ct: ct).ConfigureAwait(false);
     }
 
@@ -932,10 +937,14 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 return null;
             },
             requireIntactAuditChain: true,
+            boundaryPrecondition: (workflow, cancellationToken) =>
+                ValidatePublicationReadinessAsync(workflow.WorkflowId, request, cancellationToken),
+            auditPrecondition: (workflow, timeline) => ValidateRetainedChecklistControls(workflow, timeline, request.ChecklistControlApprovals),
             ct: ct).ConfigureAwait(false);
 
         return result with { CloseReadiness = result.Workflow?.CloseReadiness };
     }
+
 
     public async Task<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>> ListAsync(
         Guid? fundAccountId = null,
@@ -974,6 +983,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
 
     public async Task<OperationsTransitionResultDto> AcknowledgeChecklistTaskAsync(Guid workflowId, string taskId, OperationsChecklistAcknowledgeRequestDto request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
         var checklist = await GetChecklistAsync(workflowId, ct).ConfigureAwait(false);
         var task = checklist.FirstOrDefault(item => string.Equals(item.TaskId, taskId, StringComparison.OrdinalIgnoreCase));
         if (task is null)
@@ -988,31 +998,32 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
             ]);
         }
 
+        var timeline = await GetTimelineAsync(workflowId, ct).ConfigureAwait(false);
+        var evidence = OrderChecklistTimeline(timeline)
+            .LastOrDefault(entry => CompletesChecklistGate(entry, task.Gate)) is { } completion
+                ? ChecklistCompletionEvidence(completion, task.Gate)
+                : null;
+
         return await ApplyCommandAsync(
             workflowId,
             request.ExpectedVersion,
             request.Actor,
             request.Rationale,
             request.CorrelationId,
-            evidenceLinks: null,
+            evidenceLinks: evidence is null ? [] : [evidence],
             "checklist-task-acknowledged",
             task.Gate,
-            command: (workflow, _, now) =>
+            command: (workflow, _, _) =>
             {
                 var gate = GetGate(workflow, task.Gate);
-                if (gate.Status != OperationsGateStatusDto.Passed)
+                if (gate.Status != OperationsGateStatusDto.Passed || evidence is null)
                 {
                     return new OperationsWorkflowBlockerDto("CHECKLIST_GATE_NOT_COMPLETE", "Checklist tasks can only be acknowledged when the gate is complete.", task.Gate, "Error", []);
                 }
 
-                workflow.ReplaceGate(gate.WithStatus(
-                    gate.Status,
-                    gate.Blockers,
-                    gate.NextActions,
-                    gate.CompletedAtUtc ?? now,
-                    request.Actor.Trim()));
                 return null;
             },
+            requireIntactAuditChain: true,
             ct: ct).ConfigureAwait(false);
     }
 
@@ -1076,7 +1087,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
         OperationsContinuityWorkflow workflow,
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
     {
-        if (workflow.IsClosed || workflow.ClosePackage is not null)
+        if (workflow.IsClosed)
         {
             var retainedEvidence = (workflow.ClosePackage?.EvidenceLinks ?? evidenceLinks)
                 .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
@@ -1165,6 +1176,23 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                     "Complete reviewer approval before close evidence can be released.",
                     "Retain approval rationale and evidence links before publishing reports or closing the period."
                 ]);
+        }
+
+        var review = workflow.Approvals.LastOrDefault();
+        if (workflow.ApprovalState == OperationsApprovalStateDto.Approved &&
+            workflow.Gates.All(static gate => gate.Status == OperationsGateStatusDto.Passed) &&
+            workflow.ReportPackReadiness.IsReady && !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId) &&
+            review is { Status: OperationsApprovalStateDto.Approved, DecidedAtUtc: not null } &&
+            !string.IsNullOrWhiteSpace(review.Reviewer) && !string.IsNullOrWhiteSpace(review.Rationale) &&
+            review.EvidenceLinks.Any(link => string.Equals(link.EvidenceId, workflow.ReportPackReadiness.ReportPackId, StringComparison.Ordinal)))
+        {
+            return ReviewedAutomationSummary(
+                stage: "Approved evidence ready for publication",
+                status: EvidenceStatusDto.Ready,
+                requiresHumanReview: false,
+                summary: "The current reviewer decision and report-pack evidence are retained; publication remains a governed operator action.",
+                evidenceLinks: review.EvidenceLinks.Concat(evidenceLinks).DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase).ToArray(),
+                requiredActions: []);
         }
 
         return ReviewedAutomationSummary(
@@ -1356,6 +1384,18 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
             ];
         }
 
+        if (stage.Equals("Approved evidence ready for publication", StringComparison.OrdinalIgnoreCase))
+        {
+            return
+            [
+                ReviewedAutomationArtifact(
+                    "approved-review-record", "Retained review", "Human review retained", status, requiresHumanReview, null,
+                    "The current reviewer decision binds the report-pack support for this workflow.",
+                    "Use the governed close command after all shared evidence checks pass.",
+                    "Automation cannot approve, publish, or release evidence packages.", linkedEvidence, reviewChecklist)
+            ];
+        }
+
         if (stage.Equals("Reviewed evidence retained", StringComparison.OrdinalIgnoreCase))
         {
             return
@@ -1454,6 +1494,10 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var auditPack = accountingRecordSummary.AuditPackReadiness;
+        // Full audit readiness includes the artifacts created by close itself. Their absence
+        // cannot waive a missing source, reconciliation, ledger, approval, or report prerequisite.
+        var accountingInputsMissing = accountingRecordSummary.EvidenceCategories.Any(static category =>
+            category.Key is not ("exports" or "restatement-lineage") && !category.IsComplete);
         var periodLocked = workflow.IsClosed && workflow.ClosePackage is not null;
         var reopenPostureComplete = reopenTimeline.Length == 0 || reopenEvidence.Length > 0;
         var periodLockCategoryCount = (periodLocked ? 1 : 0) + (reopenPostureComplete ? 1 : 0);
@@ -1477,7 +1521,8 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 accountingEvidence,
                 accountingRecordSummary.IsAuditReady
                     ? []
-                    : ["Complete all accounting-record evidence categories before publishing the evidence package."]),
+                    : ["Complete all accounting-record evidence categories before publishing the evidence package."],
+                RequiredForClose: workflow.IsClosed || accountingInputsMissing),
             BuildReconciliationCoverageEvidencePackage(workflow, timeline),
             exceptionManagementPackage,
             new OperationsEvidencePackageSummaryDto(
@@ -1524,7 +1569,8 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 closeEvidence,
                 workflow.ClosePackage is not null
                     ? []
-                    : ["Publish the close package manifest and retain the evidence hash."]),
+                    : ["Publish the close package manifest and retain the evidence hash."],
+                RequiredForClose: workflow.IsClosed),
             new OperationsEvidencePackageSummaryDto(
                 $"audit-support:{workflow.FundAccountId:D}:{workflow.PeriodId}",
                 "Audit support package",
@@ -1546,7 +1592,8 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 auditEvidence,
                 auditPack?.IsComplete == true
                     ? []
-                    : ["Complete missing audit evidence categories before releasing the package."]),
+                    : ["Complete missing audit evidence categories before releasing the package."],
+                RequiredForClose: workflow.IsClosed || accountingInputsMissing),
             new OperationsEvidencePackageSummaryDto(
                 $"period-lock-reopen:{workflow.FundAccountId:D}:{workflow.PeriodId}",
                 "Period lock and reopen evidence",
@@ -1558,7 +1605,8 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 2,
                 periodLockEvidence.Length,
                 periodLockEvidence,
-                BuildPeriodLockReopenRequiredActions(workflow, periodLocked, reopenPostureComplete)),
+                BuildPeriodLockReopenRequiredActions(workflow, periodLocked, reopenPostureComplete),
+                RequiredForClose: workflow.IsClosed),
             approvalHistoryPackage
         ];
     }
@@ -1770,7 +1818,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
         var completeCategoryCount = (hasSubmission ? 1 : 0) +
             (hasApprovedDecision ? 1 : 0) +
             (hasChecklistApprovals ? 1 : 0);
-        const int requiredCategoryCount = 3;
+        var requiredCategoryCount = workflow.ClosePackage is null ? 2 : 3;
         var status = completeCategoryCount == requiredCategoryCount
             ? EvidenceStatusDto.Ready
             : completeCategoryCount == 0
@@ -1789,7 +1837,7 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 : "Record reviewer approval decision with retained rationale and report-pack evidence.");
         }
 
-        if (!hasChecklistApprovals)
+        if (workflow.ClosePackage is not null && !hasChecklistApprovals)
         {
             actions.Add("Publish close package with retained checklist-control approvals before audit release.");
         }
@@ -1800,7 +1848,9 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
             status,
             status == EvidenceStatusDto.Ready,
             status == EvidenceStatusDto.Ready
-                ? $"Approval history includes submission, reviewer decision, and {retainedChecklistApprovalCount} retained checklist-control approval(s)."
+                ? workflow.ClosePackage is null
+                    ? "Approval submission and reviewer decision are retained; publication will preserve checklist-control approvals."
+                    : $"Approval history includes submission, reviewer decision, and {retainedChecklistApprovalCount} retained checklist-control approval(s)."
                 : $"Approval history has {completeCategoryCount} of {requiredCategoryCount} required evidence categories complete.",
             "/workstation/accounting/approvals",
             completeCategoryCount,

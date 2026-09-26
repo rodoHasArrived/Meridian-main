@@ -13,6 +13,13 @@ last_reviewed: 2026-06-07
 
 ## Purpose
 
+`Coordination/LeaseManager.Execution.cs` owns per-execution lease acquisition, renewal,
+guarded actions, and disposal. Run owner IDs include the configured instance and a unique
+execution suffix, so repeated starts in one instance cannot release each other's ownership.
+Execution leases coordinate through the store in both single-instance and shared-storage modes.
+Renewal waits for the execution's current action, and manager shutdown cancels active actions
+before releasing their leases. See [ETL execution ownership](../../docs/engineering/etl-execution-ownership.md).
+
 Physical bounded-context module project for Platform ownership, composition, configuration, runtime
 policy, deployment context, runtime mode resolution, startup summary display, operational
 performance controls, hosted graceful-shutdown flush behavior, shutdown sequence handling,

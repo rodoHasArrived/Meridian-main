@@ -138,7 +138,7 @@ export function DrawerHeader({ title, titleId, onClose, className, children, ...
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-2 border-b border-border bg-[#F3F6F9] px-4 py-3",
+        "flex items-center justify-between gap-2 border-b border-border bg-[var(--ws-surface-raised)] px-4 py-3",
         className
       )}
       {...props}
@@ -150,7 +150,7 @@ export function DrawerHeader({ title, titleId, onClose, className, children, ...
           type="button"
           aria-label="Close drawer"
           onClick={onClose}
-          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-[2px] text-muted-foreground transition-colors [outline-offset:-2px] hover:bg-[#EAEEF3] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-[2px] text-muted-foreground transition-colors [outline-offset:-2px] hover:bg-[var(--ws-row-hover)] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>

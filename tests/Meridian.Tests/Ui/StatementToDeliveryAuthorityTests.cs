@@ -225,7 +225,8 @@ public sealed class StatementToDeliveryAuthorityTests
             new ImmediateReportingReleaseConsistencyGate());
         var closeManagement = new AccountingCloseManagementService(
             statementIntake.Operations,
-            postingBridge);
+            postingBridge,
+            closeReadinessGuard: statementIntake.CloseAuthority);
         await SignOffRequiredCloseTasksAsync(closeManagement, approvedWorkflow, ct);
         var closeCorrelationId = $"statement-delivery:{statementRunId}:hard-close";
         var closeEvidenceLinks = (resolvedQueueItem.EvidenceLinks ?? [])
@@ -241,13 +242,15 @@ public sealed class StatementToDeliveryAuthorityTests
                 "Commit the independently approved June statement close.",
                 "statement-close-support-june-2026",
                 closeEvidenceLinks,
-                RequiredChecklistControlApprovals(),
+                RequiredChecklistControlApprovals(approvedWorkflow),
                 closeCorrelationId,
                 ClosePackageId: "statement-close-package-june-2026",
                 ClosePackageManifestId: "statement-close-manifest-june-2026",
                 ClosePackageRetainedManifestRoute:
                     "/api/workstation/reporting/packages/statement-close-package-june-2026",
-                ControllerRole: "Controller"),
+                ControllerRole: "Controller",
+                CloseScope: new(FundProfileId.ToString("D"), LedgerBookId, approvedWorkflow.FundAccountId,
+                    "entity-statement-fund", approvedWorkflow.PeriodId)),
             "fund-controller",
             "tenant-alpha",
             "company-alpha",
@@ -744,11 +747,15 @@ public sealed class StatementToDeliveryAuthorityTests
             LedgerBookId,
             AccountingPeriodId);
         journalStore.SeedBeginningCapital(1_000_000m);
-        var operations = new OperationsContinuityWorkflowService(
+        OperationsContinuityWorkflowService? operations = null;
+        var closeAuthority = new FundOpsCloseLaneScenarioTests.WorkflowEvidenceCloseAuthority(
+            () => operations, FundProfileId.ToString("D"), LedgerBookId, "entity-statement-fund");
+        operations = new OperationsContinuityWorkflowService(
             new InMemoryOperationsContinuityRepository(derivation),
             auditStore,
             derivation,
-            journalStore);
+            journalStore,
+            closeReadinessGuard: closeAuthority);
         var queue = new FileReconciliationBreakQueueRepository(
             Path.Combine(dataRoot, "reconciliation-casework"),
             NullLogger<FileReconciliationBreakQueueRepository>.Instance);
@@ -801,6 +808,7 @@ public sealed class StatementToDeliveryAuthorityTests
             workflow,
             casework,
             operations,
+            closeAuthority,
             auditStore,
             queue,
             statementEvidenceStore,
@@ -1030,17 +1038,18 @@ public sealed class StatementToDeliveryAuthorityTests
                 Rationale: "Close support package is ready for controller review.",
                 EvidenceLinks: caseEvidence),
             ct);
+        var acknowledged = await AcknowledgeChecklistAsync(service, posture.Workflow!, ct);
         var submitted = await service.SubmitForApprovalAsync(
             workflowId,
             new OperationsSubmitApprovalRequestDto(
-                posture.Workflow!.Version,
+                acknowledged.Version,
                 "statement-operations",
                 Reviewer: "fund-controller",
                 Rationale: "Submit the clean statement close for independent approval.",
                 ReportPackId: "statement-close-support-june-2026",
                 CorrelationId: correlationId,
                 EvidenceLinks: caseEvidence,
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()),
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(acknowledged)),
             ct);
         var approved = await service.ApproveWorkflowAsync(
             workflowId,
@@ -1052,7 +1061,7 @@ public sealed class StatementToDeliveryAuthorityTests
                 ReportPackId: "statement-close-support-june-2026",
                 CorrelationId: correlationId,
                 EvidenceLinks: caseEvidence,
-                ChecklistControlApprovals: RequiredChecklistControlApprovals()),
+                ChecklistControlApprovals: RequiredChecklistControlApprovals(submitted.Workflow!)),
             ct);
         approved.Success.Should().BeTrue();
         approved.Workflow!.ApprovalState.Should().Be(OperationsApprovalStateDto.Approved);
@@ -1135,16 +1144,42 @@ public sealed class StatementToDeliveryAuthorityTests
         ReportingCommandOrigin.HumanOperator,
         $"statement-delivery:{actor}",
         [actor, "client-report-recipients"]);
-    private static IReadOnlyList<OperationsChecklistControlApprovalDto>
-        RequiredChecklistControlApprovals() =>
-    [
-        new("close-gate-brokeringest", "operations-lead", ReportingNow.AddMinutes(-30)),
-        new("close-gate-securitymaster", "security-master-lead", ReportingNow.AddMinutes(-29)),
-        new("close-gate-ledgerposting", "ledger-lead", ReportingNow.AddMinutes(-28)),
-        new("close-gate-reconciliation", "reconciliation-lead", ReportingNow.AddMinutes(-27)),
-        new("close-gate-approval", "controller", ReportingNow.AddMinutes(-26)),
-        new("close-gate-approval", "fund-admin", ReportingNow.AddMinutes(-25))
-    ];
+    private static async Task<OperationsContinuityWorkflowDto> AcknowledgeChecklistAsync(
+        OperationsContinuityWorkflowService service, OperationsContinuityWorkflowDto workflow,
+        CancellationToken ct)
+    {
+        foreach (var taskId in workflow.CloseChecklist
+                     .Where(task => task.Gate != OperationsGateKeyDto.Approval)
+                     .Select(task => task.TaskId))
+        {
+            var acknowledged = await service.AcknowledgeChecklistTaskAsync(
+                workflow.WorkflowId, taskId,
+                new OperationsChecklistAcknowledgeRequestDto(
+                    workflow.Version, "statement-operations", "Reviewed retained statement close evidence."), ct);
+            acknowledged.Success.Should().BeTrue(acknowledged.ErrorMessage);
+            workflow = acknowledged.Workflow!;
+        }
+
+        return workflow;
+    }
+
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals(
+        OperationsContinuityWorkflowDto workflow)
+    {
+        var controls = workflow.CloseChecklist
+            .Where(task => task.Gate != OperationsGateKeyDto.Approval && task.AcknowledgedAtUtc.HasValue)
+            .Select(task => new OperationsChecklistControlApprovalDto(
+                task.TaskId, task.AcknowledgedBy!, task.AcknowledgedAtUtc!.Value))
+            .ToList();
+        if (workflow.ApprovalState == OperationsApprovalStateDto.Approved)
+        {
+            var approval = workflow.Approvals.Last(row => row.Status == OperationsApprovalStateDto.Approved);
+            controls.Add(new("close-gate-approval", approval.Operator!, approval.SubmittedAtUtc!.Value));
+            controls.Add(new("close-gate-approval", approval.Reviewer!, approval.DecidedAtUtc!.Value));
+        }
+
+        return controls;
+    }
     private static async Task SignOffRequiredCloseTasksAsync(
         AccountingCloseManagementService service, OperationsContinuityWorkflowDto workflow,
         CancellationToken ct)
@@ -1688,6 +1723,7 @@ public sealed class StatementToDeliveryAuthorityTests
         StatementReconciliationReportWorkflowService workflow,
         StatementReconciliationCaseworkHandoffService casework,
         OperationsContinuityWorkflowService operations,
+        IClosePublicationReadinessGuard closeAuthority,
         InMemoryOperationsWorkflowAuditStore auditStore,
         FileReconciliationBreakQueueRepository queue,
         FileEvidenceArtifactStore statementEvidenceStore,
@@ -1700,6 +1736,7 @@ public sealed class StatementToDeliveryAuthorityTests
         public StatementReconciliationReportWorkflowService Workflow { get; } = workflow;
         public StatementReconciliationCaseworkHandoffService Casework { get; } = casework;
         public OperationsContinuityWorkflowService Operations { get; } = operations;
+        public IClosePublicationReadinessGuard CloseAuthority { get; } = closeAuthority;
         public InMemoryOperationsWorkflowAuditStore AuditStore { get; } = auditStore;
         public FileReconciliationBreakQueueRepository Queue { get; } = queue;
         public FileEvidenceArtifactStore StatementEvidenceStore { get; } = statementEvidenceStore;

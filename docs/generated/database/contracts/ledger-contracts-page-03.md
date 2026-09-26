@@ -30,6 +30,7 @@ classDiagram
         +FundStructureNodeKindDto FundStructureNodeKind
     }
     class Meridian_Contracts_Ledger_CreateLedgerPeriodRequest["CreateLedgerPeriodRequest"] {
+        +string? CreatedBy
         +DateOnly EndDate
         +int FiscalYear
         +string Label
@@ -544,12 +545,12 @@ classDiagram
         +string? ClosePackageId
         +string? ClosePackageManifestId
         +string? ClosePackageRetainedManifestRoute
+        +CloseReadinessScopeDto? CloseScope
         +string? ControllerRole
         +string? CorrelationId
         +IReadOnlyList~string~ EvidenceLinks
         +long ExpectedWorkflowVersion
         +bool PrepareClosingEntriesOnly
-        +string Rationale
     }
     class Meridian_Contracts_Ledger_ManualJournalEntryDraftDto["ManualJournalEntryDraftDto"] {
         +AccountingBasisKindDto AccountingBasis
