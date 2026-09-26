@@ -16,6 +16,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
 {
     private const int MaximumBulkCaseCount = 100;
     private const int CurrentSnapshotSchemaVersion = 6;
+    private const string MigrationCreateInputPrefix = "migrate-create:";
     private readonly string _snapshotPath;
     private readonly string _auditPath;
     private readonly string _mutationLockPath;
@@ -367,10 +368,23 @@ public sealed partial class FileReconciliationBreakQueueRepository :
         return item;
     }
 
+    private static DataProvenance ExplicitProvenance(string? token)
+        => string.IsNullOrWhiteSpace(token)
+            ? DataProvenance.Real
+            : DataProvenanceExtensions.ParseTokenOrSimulated(token);
+
+    private static string? RetainStrongestProvenance(string? retainedToken, string? incomingToken)
+    {
+        var strongest = DataProvenanceExtensions.Strongest(
+            [ExplicitProvenance(retainedToken), ExplicitProvenance(incomingToken)]);
+        return strongest.IsNonReal() ? strongest.Token() : incomingToken;
+    }
+
     public async Task<bool> CreateOrMigrateAsync(ReconciliationBreakQueueItem item, string? previousBreakId, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(item);
         EnsureTenantCompanyScopeShape(item);
+        item = EnsureEntryProvenance(item);
 
         if (!string.IsNullOrWhiteSpace(previousBreakId)
             && !string.Equals(previousBreakId, item.BreakId, StringComparison.OrdinalIgnoreCase))
@@ -399,6 +413,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     {
                         BreakId = item.BreakId,
                         SourceFingerprint = item.SourceFingerprint,
+                        DataProvenanceToken = RetainStrongestProvenance(existing.DataProvenanceToken, item.DataProvenanceToken),
                         LedgerBookId = item.LedgerBookId ?? existing.LedgerBookId,
                         AccountingPeriodId = string.IsNullOrWhiteSpace(item.AccountingPeriodId)
                             ? existing.AccountingPeriodId
@@ -410,6 +425,9 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                             ? existing.FundProfileId
                             : item.FundProfileId.Trim()
                     };
+                    // Rekeying retains the original source metadata, so validate the completed
+                    // candidate as well as the incoming record before changing either identity.
+                    migrated = EnsureEntryProvenance(migrated);
                     _items.Remove(previousBreakId!);
                     _items[item.BreakId] = migrated;
                     await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
@@ -435,6 +453,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                         Actor: migrated.AssignedTo ?? migrated.ReviewedBy ?? migrated.ResolvedBy,
                         BeforePayload: JsonSerializer.Serialize(existing, _jsonOptions),
                         AfterPayload: JsonSerializer.Serialize(migrated, _jsonOptions),
+                        CommandId: MigrationCreateInputPrefix + ComputeCreateInputHash(item),
                         Source: migrated.SourceType,
                         Reason: migrated.SourceReference), ct).ConfigureAwait(false);
                     try
@@ -520,6 +539,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
     {
         ArgumentNullException.ThrowIfNull(item);
         EnsureTenantCompanyScopeShape(item);
+        item = EnsureEntryProvenance(item);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -534,6 +554,19 @@ public sealed partial class FileReconciliationBreakQueueRepository :
             {
                 EnsureCloseScopeMutationAllowed(existing, "be saved");
                 EnsureCompatibleRetainedScope(existing, item);
+                var retainedNonReal = ExplicitProvenance(existing.DataProvenanceToken).IsNonReal()
+                    || DataProvenanceExtensions.IsSimulatedOriginToken(existing.SourceSystem)
+                    || DataProvenanceExtensions.IsSimulatedOriginToken(existing.SourceType);
+                if (retainedNonReal && !ExplicitProvenance(item.DataProvenanceToken).IsNonReal())
+                {
+                    throw new InvalidOperationException(
+                        $"Reconciliation case '{item.BreakId}' cannot remove its retained non-real data-provenance mark.");
+                }
+
+                item = item with
+                {
+                    DataProvenanceToken = RetainStrongestProvenance(existing.DataProvenanceToken, item.DataProvenanceToken)
+                };
             }
             var normalized = NormalizeLegacyCaseState(item);
             _items[item.BreakId] = normalized;

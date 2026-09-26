@@ -563,16 +563,16 @@ Reactivated 2026-07-06. The WPF desktop workstation returns to the active produc
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | accepted |
-| Health | green |
+| Status | in_progress |
+| Health | red |
 | Priority | critical |
 | Owner lane | Data Confidence and Validation |
-| Evidence posture | complete |
-| Last reviewed | 2026-08-29 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-09-25 |
 
 ### Current Summary
 
-Implementation completed 2026-08-09; the three items that remained after the 2026-08-08 core slice are closed. Per-screen WPF labeling - the shared workspace context strip's Environment badge now resolves the server-reported provenance token fail-closed (a connected seeded backend can never read "Live"; unknown tokens degrade to SIMULATED), and the Portfolio and Reporting shells, which previously rendered an empty strip, now compose the shared context service so all seven workspaces carry the badge. Hard entry-time blocks - reconciliation-break intake refuses an unmarked item whose source declares a simulated/seeded/sample origin at the single durable chokepoint (FileReconciliationBreakQueueRepository, mirroring the ledger append boundary; carried marks are normalized to the canonical vocabulary), and report packs that cite simulated/seeded runs inherit the strongest non-real mark, always fail validation with a Critical provenance issue (ResolveStatus can never return Validated), and the durable report-pack boundary refuses to persist a marked pack in any approvable/exported/retained state. Startup wiring - the ADR-019 startup guard now runs the supported-local durability assertion (an unlabeled local composition with in-memory durable-role bindings refuses startup naming the bindings; a pinned non-real provenance declaration is the sanctioned labeled alternative), UiServer pins the composed provenance into the graph (seeded for demo hosts, forced-simulated for in-memory local durables), and /api/demo/mode plus the status-poll parser surface the pinned label to both workstation shells even when demo heuristics say disabled. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate.
+Reopened 2026-09-25 under issue
 
 ### Exit Criteria
 

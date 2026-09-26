@@ -24,6 +24,12 @@ Comparisons require immutable evidence of available internal populations and ide
 Run receipts and observation metadata commit in the queue's integrity-checked atomic snapshot and
 survive restart. Failed, partial, older, ambiguous or differently scoped comparisons cannot clear
 prior observations. Source clearing leaves casework disposition, approval and close blockers intact.
+Create, save, and legacy rekey intake enforce the same simulation-provenance gate. Saves cannot
+remove a retained non-real mark by changing source labels, and rekeys preserve the strongest
+explicit provenance from both records. Create retries compare normalized provenance with the
+retained creation payload, so a changed origin conflicts instead of replaying an unmarked case.
+New rekeys bind the original admitted request hash in their audit event, preserving exact retries
+after restart even when the retained record contributes a stronger provenance mark.
 
 ## Purpose
 

@@ -2628,6 +2628,295 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         retained!.DataProvenanceToken.Should().BeNull();
     }
 
+    [Theory]
+    [InlineData("seeded", "statement", null)]
+    [InlineData("seeded", "statement", "real")]
+    [InlineData("custodian", "fixture", null)]
+    [InlineData("custodian", "fixture", "live")]
+    public async Task SaveAsync_WhenSimulatedSourceHasNoNonRealMark_RefusesEntryWithoutAudit(
+        string sourceSystem, string sourceType, string? token)
+    {
+        var repo = CreateRepository(out var root);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = sourceSystem,
+            SourceType = sourceType,
+            DataProvenanceToken = token
+        };
+
+        var save = () => repo.SaveAsync(item);
+        await save.Should().ThrowAsync<InvalidOperationException>();
+
+        var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        (await restarted.GetByIdAsync(item.BreakId)).Should().BeNull();
+        (await restarted.GetAuditHistoryAsync(item.BreakId)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(" ")]
+    [InlineData("real")]
+    [InlineData("live")]
+    public async Task SaveAsync_WhenSourceLabelsChange_CannotEraseRetainedNonRealProvenance(string? token)
+    {
+        var repo = CreateRepository(out var root);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = "seeded",
+            SourceType = "fixture",
+            DataProvenanceToken = "seeded"
+        };
+        await repo.CreateIfMissingAsync(item);
+        var before = (await repo.GetByIdAsync(item.BreakId))!;
+        var auditBefore = await repo.GetAuditHistoryAsync(item.BreakId);
+
+        var save = () => repo.SaveAsync(before with
+        {
+            SourceSystem = "real",
+            SourceType = "real",
+            DataProvenanceToken = token,
+            ResolutionNote = "Must not be retained"
+        });
+        await save.Should().ThrowAsync<InvalidOperationException>();
+
+        var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        (await restarted.GetByIdAsync(item.BreakId)).Should().BeEquivalentTo(before);
+        (await restarted.GetAuditHistoryAsync(item.BreakId)).Should().BeEquivalentTo(auditBefore);
+    }
+
+    [Theory]
+    [InlineData(null, "demo", "seeded")]
+    [InlineData(null, "mystery-token", "simulated")]
+    [InlineData("seeded", "mystery-token", "simulated")]
+    [InlineData("simulated", "sample", "simulated")]
+    public async Task SaveAsync_NormalizesAndDurablyRetainsStrongestNonRealProvenance(
+        string? retainedToken, string incomingToken, string expectedToken)
+    {
+        var repo = CreateRepository(out var root);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = "custodian",
+            DataProvenanceToken = retainedToken
+        };
+        if (retainedToken is not null)
+        {
+            await repo.CreateIfMissingAsync(item);
+        }
+
+        await repo.SaveAsync(item with { DataProvenanceToken = incomingToken });
+
+        var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        (await restarted.GetByIdAsync(item.BreakId))!.DataProvenanceToken.Should().Be(expectedToken);
+        var audit = await restarted.GetAuditHistoryAsync(item.BreakId);
+        JsonNode.Parse(audit.Last().AfterPayload!)!["dataProvenanceToken"]!
+            .GetValue<string>().Should().Be(expectedToken);
+    }
+
+    [Theory]
+    [InlineData(null, "demo", "seeded")]
+    [InlineData("seeded", null, "seeded")]
+    [InlineData("seeded", "real", "seeded")]
+    [InlineData("simulated", "sample", "simulated")]
+    [InlineData("sample", "mystery-token", "simulated")]
+    public async Task CreateOrMigrateAsync_ActualRekeyRetainsStrongestIncomingAndExistingProvenance(
+        string? retainedToken, string? incomingToken, string expectedToken)
+    {
+        var repo = CreateRepository(out var root);
+        var legacy = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = "custodian",
+            SourceBreakId = "upstream-provenance-break",
+            SourceFingerprint = "old-fingerprint",
+            AssignedTo = "controller-a",
+            DataProvenanceToken = retainedToken
+        };
+        await repo.CreateIfMissingAsync(legacy);
+        var incoming = legacy with
+        {
+            BreakId = "new-provenance-break",
+            SourceFingerprint = "new-fingerprint",
+            DataProvenanceToken = incomingToken
+        };
+
+        (await repo.CreateOrMigrateAsync(incoming, legacy.BreakId)).Should().BeFalse();
+
+        var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        (await restarted.GetByIdAsync(legacy.BreakId)).Should().BeNull();
+        var migrated = (await restarted.GetByIdAsync(incoming.BreakId))!;
+        migrated.DataProvenanceToken.Should().Be(expectedToken);
+        migrated.AssignedTo.Should().Be("controller-a");
+        var migration = (await restarted.GetAuditHistoryAsync(incoming.BreakId))
+            .Single(entry => entry.EventType == "BreakIdMigrated");
+        JsonNode.Parse(migration.AfterPayload!)!["dataProvenanceToken"]!
+            .GetValue<string>().Should().Be(expectedToken);
+
+        (await restarted.CreateOrMigrateAsync(incoming, legacy.BreakId)).Should().BeFalse(
+            "the original migration input must replay even when it inherited a stronger retained mark");
+        (await restarted.GetByIdAsync(incoming.BreakId)).Should().BeEquivalentTo(migrated);
+
+        var conflictingToken = incomingToken switch
+        {
+            "demo" => "simulated",
+            "sample" or "mystery-token" => "seeded",
+            _ => "sample"
+        };
+        var changedReplay = () => restarted.CreateOrMigrateAsync(
+            incoming with { DataProvenanceToken = conflictingToken }, legacy.BreakId);
+        await changedReplay.Should().ThrowAsync<InvalidOperationException>();
+        (await restarted.GetByIdAsync(incoming.BreakId)).Should().BeEquivalentTo(migrated);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("real")]
+    public async Task CreateOrMigrateAsync_ActualRekeyRejectsUnmarkedSimulatedSourceWithoutMutation(string? token)
+    {
+        var repo = CreateRepository(out var root);
+        var legacy = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = "custodian",
+            SourceBreakId = "upstream-provenance-break"
+        };
+        await repo.CreateIfMissingAsync(legacy);
+        var before = await repo.GetByIdAsync(legacy.BreakId);
+        var auditBefore = await repo.GetAuditHistoryAsync(legacy.BreakId);
+        var incoming = legacy with
+        {
+            BreakId = "new-provenance-break",
+            SourceSystem = "seeded",
+            DataProvenanceToken = token
+        };
+
+        var migrate = () => repo.CreateOrMigrateAsync(incoming, legacy.BreakId);
+        await migrate.Should().ThrowAsync<InvalidOperationException>();
+
+        var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        (await restarted.GetByIdAsync(legacy.BreakId)).Should().BeEquivalentTo(before);
+        (await restarted.GetByIdAsync(incoming.BreakId)).Should().BeNull();
+        (await restarted.GetAuditHistoryAsync(legacy.BreakId)).Should().BeEquivalentTo(auditBefore);
+        (await restarted.GetAuditHistoryAsync(incoming.BreakId)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false, "sourceSystem", "seeded", null)]
+    [InlineData(false, "sourceType", "fixture", "real")]
+    [InlineData(true, "sourceSystem", "seeded", null)]
+    [InlineData(true, "sourceType", "fixture", "real")]
+    public async Task SaveOrMigrate_WhenLegacySourceAloneDeclaresSimulation_CannotLaunderTheOrigin(
+        bool migrate, string sourceField, string sourceValue, string? incomingToken)
+    {
+        var repo = CreateRepository(out var root);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = "custodian",
+            SourceType = "statement",
+            SourceBreakId = "legacy-source-only-break"
+        };
+        await repo.CreateIfMissingAsync(item);
+        // Model a record persisted before every write path enforced provenance, keeping the
+        // retained creation payload and its integrity hashes consistent with that legacy record.
+        await RewriteSnapshotWithValidEnvelopeHashAsync(
+            Path.Combine(root, "reconciliation-break-queue.json"), document =>
+            {
+                document["items"]!.AsArray()[0]![sourceField] = sourceValue;
+                var audit = document["auditEvents"]!.AsArray()[0]!;
+                var payload = JsonNode.Parse(audit["afterPayload"]!.GetValue<string>())!;
+                payload[sourceField] = sourceValue;
+                var serializedPayload = payload.ToJsonString();
+                audit["afterPayload"] = serializedPayload;
+                audit["afterPayloadHash"] = Convert.ToHexString(
+                    SHA256.HashData(Encoding.UTF8.GetBytes(serializedPayload))).ToLowerInvariant();
+            });
+        var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var before = (await restarted.GetByIdAsync(item.BreakId))!;
+        before.DataProvenanceToken.Should().BeNull();
+        var auditBefore = await restarted.GetAuditHistoryAsync(item.BreakId);
+        var incoming = before with
+        {
+            BreakId = migrate ? "migrated-source-only-break" : before.BreakId,
+            SourceSystem = "real",
+            SourceType = "real",
+            DataProvenanceToken = incomingToken
+        };
+
+        Func<Task> mutation = async () =>
+        {
+            if (migrate)
+            {
+                await restarted.CreateOrMigrateAsync(incoming, before.BreakId);
+            }
+            else
+            {
+                await restarted.SaveAsync(incoming);
+            }
+        };
+        await mutation.Should().ThrowAsync<InvalidOperationException>();
+
+        var reloaded = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        (await reloaded.GetByIdAsync(item.BreakId)).Should().BeEquivalentTo(before);
+        (await reloaded.GetAuditHistoryAsync(item.BreakId)).Should().BeEquivalentTo(auditBefore);
+        if (migrate)
+        {
+            (await reloaded.GetByIdAsync(incoming.BreakId)).Should().BeNull();
+            (await reloaded.GetAuditHistoryAsync(incoming.BreakId)).Should().BeEmpty();
+        }
+    }
+
+    [Theory]
+    [InlineData(null, "seeded", false)]
+    [InlineData("seeded", null, false)]
+    [InlineData("seeded", "simulated", false)]
+    [InlineData(null, "seeded", true)]
+    [InlineData("seeded", "real", true)]
+    public async Task CreateReplay_WhenProvenanceChanges_RejectsRatherThanReturningUnmarkedCase(
+        string? retainedToken, string? incomingToken, bool useMigrationFallback)
+    {
+        var repo = CreateRepository(out var root);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = "custodian",
+            DataProvenanceToken = retainedToken
+        };
+        await repo.CreateIfMissingAsync(item);
+        var before = await repo.GetByIdAsync(item.BreakId);
+        var incoming = item with { DataProvenanceToken = incomingToken };
+
+        var replay = () => useMigrationFallback
+            ? repo.CreateOrMigrateAsync(incoming, "absent-predecessor")
+            : repo.CreateIfMissingAsync(incoming);
+        await replay.Should().ThrowAsync<InvalidOperationException>();
+
+        var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        (await restarted.GetByIdAsync(item.BreakId)).Should().BeEquivalentTo(before);
+        (await restarted.GetAuditHistoryAsync(item.BreakId)).Count(entry => entry.EventType == "CaseCreated")
+            .Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData(null, "real")]
+    [InlineData(null, "live")]
+    [InlineData("real", null)]
+    [InlineData("live", "real")]
+    [InlineData("demo", "seeded")]
+    [InlineData("seeded", "SEEDED")]
+    [InlineData("mystery-token", "simulated")]
+    public async Task CreateReplay_WhenProvenanceIsEquivalent_PreservesCompatibility(
+        string? retainedToken, string? incomingToken)
+    {
+        var repo = CreateRepository(out var root);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            SourceSystem = "custodian",
+            DataProvenanceToken = retainedToken
+        };
+        await repo.CreateIfMissingAsync(item);
+        var before = await repo.GetByIdAsync(item.BreakId);
+        var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+
+        (await restarted.CreateIfMissingAsync(item with { DataProvenanceToken = incomingToken })).Should().BeFalse();
+        (await restarted.GetByIdAsync(item.BreakId)).Should().BeEquivalentTo(before);
+    }
+
     private static FileReconciliationBreakQueueRepository CreateRepository(out string root)
     {
         root = Path.Combine(Path.GetTempPath(), $"recon-break-repo-{Guid.NewGuid():N}");
