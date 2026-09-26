@@ -1110,10 +1110,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ReconciliationBreakDispositionDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:459` |
 | `ReconciliationBreakDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:141` |
 | `ReconciliationBreakExplanationDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:613` |
-| `ReconciliationBreakLineageDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:4` |
+| `ReconciliationBreakLineageDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:6` |
 | `ReconciliationBreakMeasureDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:449` |
 | `ReconciliationBreakMeasureKindDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:438` |
-| `ReconciliationBreakObservation` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:27` |
+| `ReconciliationBreakObservation` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:37` |
 | `ReconciliationBreakQueueItem` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:480` |
 | `ReconciliationBreakQueueProjectionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:248` |
 | `ReconciliationBreakQueueProjectionItemDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:263` |
@@ -1141,7 +1141,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ReconciliationCaseworkCloseScopeDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:725` |
 | `ReconciliationCaseworkCommand` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:684` |
 | `ReconciliationCaseworkOperationResult` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:905` |
-| `ReconciliationCompletedRunObservation` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:29` |
+| `ReconciliationCompletedRunObservation` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:39` |
 | `ReconciliationCorrelationContext` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1046` |
 | `ReconciliationJobControl` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1069` |
 | `ReconciliationMatchDto` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:117` |
@@ -1149,7 +1149,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ReconciliationProcessingTelemetry` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1084` |
 | `ReconciliationRolloutFlags` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1095` |
 | `ReconciliationRunDetail` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:345` |
-| `ReconciliationRunObservationScope` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:18` |
+| `ReconciliationRunObservationScope` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:24` |
 | `ReconciliationRunRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:72` |
 | `ReconciliationRunSummary` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:86` |
 | `ReconciliationSchemaVersion` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1036` |

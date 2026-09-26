@@ -6535,22 +6535,22 @@
     },
     {
       "name": "ReconciliationBreakLineageDto",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:4",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:6",
       "documented": false
     },
     {
       "name": "ReconciliationRunObservationScope",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:18",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:24",
       "documented": false
     },
     {
       "name": "ReconciliationBreakObservation",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:27",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:37",
       "documented": false
     },
     {
       "name": "ReconciliationCompletedRunObservation",
-      "source": "src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:29",
+      "source": "src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:39",
       "documented": false
     },
     {
