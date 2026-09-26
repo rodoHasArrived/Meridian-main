@@ -96,6 +96,18 @@ public sealed class NetSuiteAccountingProvider(IProviderCredentialStore store, H
             "INNER JOIN transactionline tl ON tl.transaction = al.transaction AND tl.id = al.transactionline ";
         var filters = $"WHERE t.posting = 'T' AND al.posting = 'T' AND al.account IS NOT NULL AND tl.subsidiary = {NumericField(connection, "SubsidiaryId")} " +
             $"AND al.accountingbook = {NumericField(connection, "AccountingBookId")} AND t.trandate <= TO_DATE('{request.PeriodEnd:yyyy-MM-dd}', 'YYYY-MM-DD') ";
+        // NetSuite's date-based trial balance rolls prior-calendar-year income into retained
+        // earnings without posting a closing entry. A cumulative accounting-line sum cannot
+        // represent that report when any P&L account has a nonzero prior-year balance.
+        var calendarYearStart = new DateOnly(request.PeriodEnd!.Value.Year, 1, 1);
+        var priorYearBalances = await QueryAsync(connection, token,
+            "SELECT al.account AS accountid, SUM(NVL(al.debit, 0) - NVL(al.credit, 0)) AS prioryearbalance " +
+            joins + "INNER JOIN account a ON a.id = al.account " + filters +
+            $"AND t.trandate < TO_DATE('{calendarYearStart:yyyy-MM-dd}', 'YYYY-MM-DD') " +
+            "AND UPPER(a.accttype) IN ('INCOME', 'EXPENSE', 'OTHINCOME', 'OTHEXPENSE', 'COGS') " +
+            "GROUP BY al.account ORDER BY al.account", ct).ConfigureAwait(false);
+        if (priorYearBalances.Any(row => Amount(RequiredText(row, "prioryearbalance")) != 0m))
+            throw new InvalidOperationException("NetSuite prior-year income statement balances require retained-earnings normalization before trial-balance import.");
         var journalRows = await QueryAsync(connection, token,
             "SELECT t.id AS journalid, TO_CHAR(t.trandate, 'YYYY-MM-DD') AS accountingdate, t.memo, al.transactionline AS lineid, al.account AS accountid, NVL(al.debit, 0) AS debit, NVL(al.credit, 0) AS credit " +
             joins + filters + $"AND t.trandate >= TO_DATE('{request.PeriodStart:yyyy-MM-dd}', 'YYYY-MM-DD') ORDER BY t.id, al.transactionline, al.account", ct).ConfigureAwait(false);

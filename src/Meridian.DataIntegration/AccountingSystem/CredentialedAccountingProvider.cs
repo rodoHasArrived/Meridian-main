@@ -151,8 +151,10 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
         if (accounts.Select(a => a.ExternalAccountId).Distinct(StringComparer.Ordinal).Count() != accounts.Count ||
             journals.Select(j => j.ExternalJournalEntryId).Distinct(StringComparer.Ordinal).Count() != journals.Count ||
             balances.Select(b => b.ExternalAccountId).Distinct(StringComparer.Ordinal).Count() != balances.Count ||
-            journals.Any(j => j.TotalDebits != j.TotalCredits))
-            throw new InvalidOperationException("Provider evidence has duplicate identities or unbalanced journals.");
+            journals.Any(j => j.TotalDebits != j.TotalCredits) ||
+            balances.Any(b => b.Debit < 0 || b.Credit < 0 || (b.Debit != 0 && b.Credit != 0)) ||
+            balances.Sum(b => b.Debit) != balances.Sum(b => b.Credit))
+            throw new InvalidOperationException("Provider evidence has duplicate identities, invalid trial-balance amounts, or unbalanced journals or trial balance.");
         return new(new($"{ProviderId}-{Guid.NewGuid():N}", ProviderId, DisplayName,
             string.IsNullOrWhiteSpace(request.FundProfileId) ? "default-fund" : request.FundProfileId.Trim(), request.LedgerBookId,
             request.PersistPreview ? AccountingSystemImportStateDto.Imported : AccountingSystemImportStateDto.Previewed,
@@ -187,9 +189,10 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
         }
         var accounts = import.ChartAccounts.ToDictionary(a => a.ExternalAccountId, StringComparer.Ordinal);
         var currencies = import.TrialBalance.Select(b => b.Currency).Distinct(StringComparer.Ordinal).ToArray();
+        // Review lines retain gross account activity, so one account can have both debits and credits.
         if (context.Lines.Count == 0 || context.Lines.Any(line => !accounts.TryGetValue(line.ExternalAccountId, out var account) ||
                 !account.IsActive || !currencies.Contains(line.Currency, StringComparer.Ordinal) ||
-                line.Debit < 0 || line.Credit < 0 || (line.Debit != 0 && line.Credit != 0)) ||
+                line.Debit < 0 || line.Credit < 0) ||
             context.Lines.Sum(line => line.Debit) != context.Lines.Sum(line => line.Credit))
             Block("ExternalGlProviderExportLinesInvalid", "Provider export lines must balance in imported currencies and target active, imported accounts.");
         return issues;

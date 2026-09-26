@@ -2,7 +2,7 @@
 title: External GL import and controlled export review
 status: active
 owner: core-team
-reviewed: 2026-09-25
+reviewed: 2026-09-26
 ---
 
 # External GL import and controlled export review
@@ -49,15 +49,22 @@ replace retained evidence. The integration service supplies scoped content hashe
   The import does not substitute manual journals for full GL journal access.
 - NetSuite reads posted accounting lines for one subsidiary and its primary
   accounting book, in subsidiary base currency. Period journals include all
-  posting transaction types. Trial balance aggregates accounting-line net amounts
-  through period end. It is an unconsolidated accounting-line balance view; it
-  does not reproduce report customisations, consolidated eliminations, or a
-  secondary book's currency/reporting rules. Reconcile the extracted balances to
-  the provider-owned report before certifying any review package.
+  posting transaction types. Balances aggregate accounting-line net amounts through
+  period end. Imports fail closed if any income, expense, other income/expense, or
+  cost-of-goods-sold account has a nonzero balance from before the calendar year of
+  the requested end date. NetSuite's native date-based Trial Balance moves that
+  prior-year income into retained earnings; this adapter does not yet implement
+  that reporting adjustment. Narrowing the requested journal period cannot bypass
+  this guard. This remains an ACCT-CHECKLIST-06 acceptance gap, not a completed
+  NetSuite Trial Balance implementation. Report customisations, consolidated
+  eliminations, secondary books and period-based reporting remain unsupported.
+  Reconcile supported imports to the provider-owned date-based report before
+  certifying any review package.
 - NetSuite SuiteQL uses POST only for read queries; no record-write URL exists in
   this adapter. Pages use a fixed 1,000-row limit and locally computed offsets.
 - Rate limits, expired consent, permission errors, malformed amounts, duplicate
-  identities, incomplete pagination and unbalanced journals fail the entire
+  identities, incomplete pagination, unbalanced journals or trial balances, and
+  negative or two-sided trial-balance amounts fail the entire
   import. No partial result replaces the last retained import. Requests are
   cancellable. A failed or cancelled read may already have rotated a refresh token.
 - Xero imports stop with an error after 1,000 nonempty journal pages; NetSuite
@@ -71,7 +78,9 @@ Normal mapping certification, human-origin checks, exact package/period/book
 approval evidence, generated-line provenance, and reconciliation safeguards still
 apply. The provider additionally requires a retained live import for the current
 external connection, same ledger book and exact period, and balanced export lines
-targeting active imported accounts in the imported currency.
+targeting active imported accounts in the imported currency. Export review lines
+retain gross account activity, so a line can contain both debit and credit totals;
+this does not make it an external posting instruction.
 
 Each required control must have its own exact retained approval reference:
 
@@ -106,11 +115,14 @@ not a live customer-tenant attestation. Deployment owners must retain the actual
 credentialed import and provider-report reconciliation evidence before approving
 their own export package.
 
-Issue #2752 referred to `docs/status/accounting-productization-checklist.md`, which
-is absent from the current source tree. This procedure and the source/test changes
-record the implemented scope without recreating a competing status checklist.
+Issue #2752 originally referred to `docs/status/accounting-productization-checklist.md`.
+That historical snapshot is retained in the [archived checklist](../../archive/docs/summaries/accounting-productization-checklist.md).
+Current acceptance is tracked in the [active implementation list](../product/implementation-todo-list.md#acct-checklist-06-external-gl-provider-depth).
+Keep #2752 open until the remaining NetSuite reporting gap and validation evidence
+are resolved; contract tests are not customer-tenant smoke tests or vendor approval.
 
 Protocol references: [Xero Accounting OpenAPI](https://github.com/XeroAPI/Xero-OpenAPI/blob/master/xero_accounting.yaml),
 [Xero journal pagination](https://developer.xero.com/documentation/best-practices/api-call-efficiencies/rate-limits),
 [NetSuite SuiteQL REST](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_157909186990.html),
+[NetSuite Trial Balance semantics](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N1520986.html),
 and [NetSuite OAuth](https://blogs.oracle.com/developers/netsuite-as-oidc-provider).

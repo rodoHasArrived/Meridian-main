@@ -62,8 +62,10 @@ not a renewed assessment of every implementation row on the current baseline.
 | P1 (`PRD-100` through `PRD-114`) | 1 closed; 3 substantially advanced; 11 open | `PRD-103` is closed in source with focused proof. `PRD-104`, `PRD-109`, and `PRD-112` have their code-side defects fixed and executable gates in place; each row names exactly what remains (packaged SFTP, serialization parity, a benchmark lane on stable hosts). `PRD-111` stays open and gained a named prerequisite. The other rows are untouched. A row may move out only through an explicit support-matrix scope decision. |
 | P2 (`PRD-200` through `PRD-205`) | 6 open | Compatibility cleanup remains sequenced after the P0/P1 policy migrations it depends on. |
 | Active roadmap acceptance | 4 in progress | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W9-GOV-008`, and `W9-INGEST-009` are active; `W9-SAFETY-007` left this group for `ready_for_acceptance` on 2026-09-01 once criterion one was discharged, criterion three swept, and the Windows WPF build-and-test result recorded and are not production-certified by this tracker. `W9-GOV-008` and `W9-INGEST-009` were corrected from `planned` because substantial implementation had already shipped; `W9-CORPACT-011`, reopened by `DEC-W9-ACCEPTANCE-002` on 2026-08-30, left this group for `ready_for_acceptance` on 2026-09-22 once its accounting lane was proven end to end on PostgreSQL. |
-| Awaiting operator acceptance | 2 implementation-complete; 6 accepted | `W9-SAFETY-007` is `ready_for_acceptance` as of 2026-09-01 with all four exit criteria evidenced, and `W9-CORPACT-011` as of 2026-09-22 with all five; the recorded OCO reservation follow-up and the browser's absent breaker control are carried for the acceptance review. `W9-ALPACA-004` was held over three recorded fill-path caveats and moved to `accepted` on 2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source. `W9-TRUTH-001`, `W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` remain `accepted` with `evidence_posture: complete` under `DEC-W9-ACCEPTANCE-001`, recorded in [`w9-operator-acceptance-2026-08-29.md`](w9-operator-acceptance-2026-08-29.md). `DEC-W9-ACCEPTANCE-002` supersedes that decision only for `W9-CORPACT-011`, which now carries `evidence_posture: implementation_complete` and `health: green` and awaits a fresh operator acceptance decision. Acceptance closes the governance gate on a bounded row only - it does not move a row to `done` or make a production-certification claim. |
+| Awaiting operator acceptance | 1 implementation-complete; 6 accepted | `W9-TRUTH-001` returns to bounded `accepted` with `evidence_posture: complete` and `health: green` on 2026-09-26 under `DEC-W9-ACCEPTANCE-005`: both review lanes are satisfied by the explicit owner exception recorded in [issue #2626 comment 5845555204](https://github.com/rodoHasArrived/Meridian-main/issues/2626#issuecomment-5845555204); independent non-author verdicts were not obtained. `W9-CORPACT-011` remains `ready_for_acceptance` after its accounting lane was proven end to end on PostgreSQL. The other accepted W9 rows are `W9-PAPER-003`, `W9-REPORT-005`, `W9-NAV-006`, `W9-ALPACA-004`, and `W9-SAFETY-007`; their decisions and reservations are unchanged. `W9-DEMO-002` reached `done` separately under `DEC-W9-DONE-001`. The registry remains authoritative, and bounded acceptance does not certify a release. |
 | Planned roadmap work | 13 planned | `W5X-OEG-001`, the eleven rows of the W10 depth slate, and `W10-DEBT-001` are planned and outside the v1 production envelope unless the signed support matrix includes them. Every one carries `planned_evidence` posture, so none is a completion claim. The two W9 rows previously counted here, `W9-GOV-008` and `W9-INGEST-009`, moved to in progress. Closed bounded roadmap rows do not change the P0 release-certification gate. |
+
+> Owner-exception reconciliation (2026-09-26): PR #3003 restored the independent-review gate after PR #3001's premature closure. The subsequent explicit owner exception satisfies both security/storage and reconciliation-lineage lanes through completed owner self-review; independent non-author verdicts were not obtained. Issue #2626 remains closed and `W9-TRUTH-001` returns to bounded `accepted` / `complete` / `green`. The [W9 acceptance record](w9-operator-acceptance-2026-08-29.md#w9-truth-001-owner-exception--2026-09-26) preserves the chronology, 106 focused-test cases, Production Certification run [36214217538](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36214217538) with 1,030 passing integration cases on `13f2a11df9fb95c548a50c9e60449fee2353dfb4`, and retained artifact evidence unchanged. This is no new test run, `done` transition, or release-certification claim.
 
 ### 2026-08-19 P1 Band Survey
 
@@ -178,7 +180,7 @@ row is proven on the same commit and the required Actions runs are green.
 | ID | Candidate state | Closure evidence in this change | Evidence still required before production certification |
 | --- | --- | --- | --- |
 | `PRD-000` | Evidence-gated | Strict deployment-posture parsing, final-graph guard, supported local-workstation startup policy, and prohibited-registration tests are retained. | Core-team approval of ADR-019/ADR-020 and support matrix; clean installed startup/upgrade/rollback receipts from the release commit. |
-| `PRD-001` | Implementation-complete | Strict auth-mode rejection; durable hashed/revocable sessions; username+client throttling and timed lockout; deterministic `429` headers; restart, revocation, lockout, invalid-mode, and raw-secret-absence tests. | Same-commit production-certification run. |
+| `PRD-001` | Implementation-complete | One strict auth-mode resolver for host startup and session composition; durable hashed sessions and bounded username+client lockouts serialized across instances sharing one store; immediate cross-instance revocation without stale-cache resurrection; deterministic `429` headers; missing role profiles refuse authority; multiple companies require strict tenant reads, which also enforce scoped writes. Focused proof: `DurableLoginSessionTests`, `LoginSessionServiceTests`, `AuthEndpointTests`, `ProductionStartupPolicySmokeTests`, `UserProfileRegistryTests`, `InMemoryFundStructureTenancyGuardTests`, `HostTenantScopeCompositionTests`, and existing tenant read/write isolation suites. [Issue #2648](https://github.com/rodoHasArrived/Meridian-main/issues/2648) records the closure evidence. | Same-commit production-certification run. Shared-store tests do not expand ADR-019's supported single-node envelope. |
 | `PRD-002` | Implementation-complete | Every workstation credential call is adapted to the encrypted DataIntegration vault; the plaintext sidecar migrates once, is fsync-overwritten and deleted only after successful encrypted persistence, and unknown providers fail closed. | Same-commit production-certification run and operator rotation exercise. |
 | `PRD-003` | Implementation-complete | Production ledger stores require typed governed posting commands and non-null expected versions; manual journal, Operations Continuity, direct-lending, trade-fill, and automated posters now supply authoritative versions, evidence, and idempotency. | PostgreSQL integration evidence from `Production Certification`. |
 | `PRD-004` | Implementation-complete | Existing atomic hard-close and late-write rejection proof remains green; no bypass was reintroduced. | Same-commit production-certification run. |
@@ -460,6 +462,38 @@ Acceptance evidence produced for this FINOPS slice:
 - `tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs`
 - `docs/roadmap/data/roadmap-items.yml`
 - `docs/roadmap/generated/roadmap-register.md`
+
+## ACCT-CHECKLIST-06: External GL provider depth
+
+- [ ] Complete [#2752](https://github.com/rodoHasArrived/Meridian-main/issues/2752): credentialed Xero and NetSuite import adapters plus provider-owned controlled export certification.
+
+[PR #2998](https://github.com/rodoHasArrived/Meridian-main/pull/2998) implements
+read-only credentialed adapters, scoped retained import/control evidence and
+provider checks at export creation, certification and manifest read. The
+[operator procedure](../operators/external-gl-providers.md) defines the supported
+scope and deployment evidence. The former checklist is an
+[archived snapshot](../../archive/docs/summaries/accounting-productization-checklist.md);
+its historical checkbox is not current acceptance authority.
+
+The September 25 [Meridian CI run](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36195716508)
+passed on `9273bb6eda86ef7615b589d84fd943402959d41b`. That is prior-head evidence,
+not validation of the September 26 refresh. Focused regression coverage now includes
+mixed debit/credit account activity in certified review packages and rejection of
+unbalanced or malformed provider trial balances.
+
+**Remaining:** NetSuite's native date-based Trial Balance reports income-statement
+accounts year to date and rolls prior-year income into retained earnings. The
+adapter's accounting-line aggregate does not implement that reporting adjustment;
+it now refuses imports with nonzero prior-year income-statement account balances.
+Complete and validate that reporting basis with authoritative retained-earnings
+identity before claiming general NetSuite Trial Balance coverage. Keep #2752 open
+and require passing validation on the refreshed PR head before acceptance.
+
+Evidence: `ExternalGlLiveProviderTests`, `ExternalGlFailureBoundaryTests`, and
+`AccountingSystemIntegrationServiceTests.LiveProviders` exercise HTTP contract
+doubles and retained export controls. No customer-tenant smoke test, deployment
+reconciliation or vendor approval is claimed. Live posting remains disabled and
+requires separate approval and implementation.
 
 ## W9-ASSET-010 Complete: Asset Accounting Event Spine
 

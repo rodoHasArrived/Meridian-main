@@ -126,6 +126,8 @@ internal static class ExternalGlTestData
                 new { id = "cash", acctnumber = "100", acctname = "Cash", accttype = "Bank", isinactive = "F" },
                 new { id = "capital", acctnumber = "300", acctname = "Capital", accttype = "Equity", isinactive = "F" }
             ]);
+        if (query.Contains("AS prioryearbalance", StringComparison.Ordinal))
+            return ExternalGlTestHandler.Page([]);
         if (query.Contains("SUM(", StringComparison.Ordinal))
             return ExternalGlTestHandler.Page([new { accountid = "cash", balance = "100.25" }, new { accountid = "capital", balance = "-100.25" }]);
         return ExternalGlTestHandler.Page([
@@ -134,7 +136,7 @@ internal static class ExternalGlTestData
         ]);
     }
 
-    private static object XeroBalance(string id, string debit, string credit) => new
+    public static object XeroBalance(string id, string debit, string credit) => new
     {
         RowType = "Row",
         Cells = new object[]

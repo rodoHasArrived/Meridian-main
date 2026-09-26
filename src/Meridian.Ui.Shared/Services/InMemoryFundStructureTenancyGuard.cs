@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
-/// Refuses to start a multi-company deployment on the fund-structure implementation that has no
-/// tenant partition (W9-GOV-008 criterion 2).
+/// Refuses multi-company deployments without both a partitioned fund-structure store and strict
+/// tenant reads (PRD-001 / W9-GOV-008 criterion 2).
 /// </summary>
 /// <remarks>
 /// <para><b>The decision this records.</b> When no fund-structure database is configured,
@@ -51,10 +51,18 @@ public sealed class InMemoryFundStructureTenancyGuard : IStartupRefusalGuard
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        // Only the unpartitioned posture is in question. A Postgres-backed service carries the
-        // tenant column and the scoping this guard exists to substitute for.
+        // A partitioned store is necessary but not sufficient: the deployment-boundary read
+        // setting still admits unattributed data and tenantless callers.
         if (_fundStructureService is not INonProductionOnlyService)
         {
+            try
+            {
+                _userProfiles.ValidateDeploymentScope();
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new StartupRefusedException(exception.Message);
+            }
             return Task.CompletedTask;
         }
 

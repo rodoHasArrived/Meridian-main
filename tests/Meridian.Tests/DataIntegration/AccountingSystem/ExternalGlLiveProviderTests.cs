@@ -66,6 +66,40 @@ public sealed class ExternalGlLiveProviderTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NetSuite_NoPriorYearProfitAndLossBalance_PreservesScopedCurrentYearImports(bool hasZeroPriorYearBalance)
+    {
+        var store = new ExternalGlTestStore("netsuite");
+        using var handler = new ExternalGlTestHandler((request, body) =>
+        {
+            if (body.Contains("AS prioryearbalance", StringComparison.Ordinal))
+            {
+                using var document = System.Text.Json.JsonDocument.Parse(body);
+                var query = document.RootElement.GetProperty("q").GetString()!;
+                // The guard uses the selected account/book and the report's calendar boundary,
+                // not the requested period start or balance-sheet account history.
+                query.Should().Contain("tl.subsidiary = 2").And.Contain("al.accountingbook = 1");
+                query.Should().Contain("t.posting = 'T'").And.Contain("al.posting = 'T'");
+                query.Should().Contain("tl.transaction = al.transaction AND tl.id = al.transactionline");
+                query.Should().Contain("t.trandate < TO_DATE('2026-01-01', 'YYYY-MM-DD')");
+                query.Should().Contain("UPPER(a.accttype) IN ('INCOME', 'EXPENSE', 'OTHINCOME', 'OTHEXPENSE', 'COGS')");
+                return ExternalGlTestHandler.Page(hasZeroPriorYearBalance
+                    ? [new { accountid = "income", prioryearbalance = "0.00" }]
+                    : []);
+            }
+            return ExternalGlTestData.Respond(request, body);
+        });
+        using var client = new HttpClient(handler);
+        var detail = await ExternalGlTestData.Provider("netsuite", store, client)
+            .ImportAsync(ExternalGlTestData.Request("netsuite") with { PeriodStart = new(2026, 1, 5) });
+        detail.Summary.State.Should().Be(AccountingSystemImportStateDto.Imported);
+        detail.JournalEntries.Should().ContainSingle();
+        detail.TrialBalance.Should().HaveCount(2);
+        store.Verifications.Should().ContainSingle().Which.Success.Should().BeTrue();
+    }
+
+    [Theory]
     [InlineData("xero", 401)]
     [InlineData("xero", 429)]
     [InlineData("netsuite", 403)]

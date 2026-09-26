@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-09-25
+last_reviewed: 2026-09-26
 ---
 
 # src/Meridian.DataIntegration
@@ -18,7 +18,10 @@ import credentialed read-only evidence through `CredentialedAccountingProvider`.
 The shared base serializes token rotation, persists rotated refresh tokens in the
 provider vault, and sanitizes transport failures. Provider adapters own scope,
 pagination, strict mapping, and controlled export validation. They never post
-journals. See [External GL Providers](../../docs/operators/external-gl-providers.md)
+journals. Imports reject unbalanced or malformed trial balances. Export review lines
+retain gross debit/credit account totals. NetSuite imports with nonzero prior-year
+income-statement balances fail closed pending native retained-earnings reporting
+support; ACCT-CHECKLIST-06 remains open. See [External GL Providers](../../docs/operators/external-gl-providers.md)
 for supported scope, permissions, failure recovery and human review evidence.
 
 ## OAuth token ownership
