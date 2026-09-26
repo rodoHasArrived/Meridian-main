@@ -222,8 +222,11 @@ public sealed class FileReconciliationBreakQueueLineageTests : IDisposable
 
     private static string LegacySource(string policy) => System.Text.Json.JsonSerializer.Serialize(new
     {
-        institution = "custodian", MappingProfileId = policy, ToleranceProfileId = policy,
-        SourceComparisonPolicyFingerprint = new string(policy[0], 64), SourceComparisonPopulationKinds = new[] { "cash" }
+        institution = "custodian",
+        MappingProfileId = policy,
+        ToleranceProfileId = policy,
+        SourceComparisonPolicyFingerprint = new string(policy[0], 64),
+        SourceComparisonPopulationKinds = new[] { "cash" }
     });
 
     private ReconciliationCompletedRunObservation PolicyRun(string id, int day, string policy, params ReconciliationBreakObservation[] breaks)

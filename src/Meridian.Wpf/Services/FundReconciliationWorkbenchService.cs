@@ -394,7 +394,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             CommentCount: item.CommentCount,
              EvidenceCount: item.EvidenceCount,
              LastActivityText: item.LastActivityAt.HasValue ? FormatTimestamp(item.LastActivityAt.Value) : FormatTimestamp(item.LastUpdatedAt),
-             SignOffChecklist: BuildSignOffChecklist(item)) { Lineage = item.Lineage };
+             SignOffChecklist: BuildSignOffChecklist(item))
+        { Lineage = item.Lineage };
     }
 
     private static string JoinOrDefault(IReadOnlyList<string>? values, string fallback)

@@ -14,7 +14,8 @@ internal static class StatementExecutedMappingEvidence
             return null;
         return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
-            ParserRevision = parserRevision, request.MappingProfileId,
+            ParserRevision = parserRevision,
+            request.MappingProfileId,
             Upstream = request.ExecutedMappingFingerprint?.ToLowerInvariant()
         }));
     }

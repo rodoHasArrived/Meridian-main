@@ -23,7 +23,8 @@ public sealed class FileReconciliationSlaCalendarResolver : IReconciliationSlaCa
             throw new InvalidDataException("SLA calendar configuration exceeds 4 MiB.");
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
-            Converters = { new JsonStringEnumConverter() }, UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+            Converters = { new JsonStringEnumConverter() },
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
         };
         var file = JsonSerializer.Deserialize<CalendarFile>(stream, options)
             ?? throw new InvalidDataException("SLA calendars must be a JSON object.");

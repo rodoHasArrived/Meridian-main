@@ -439,7 +439,8 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         canonical.Setup(store => store.GetImportAsync(StatementRunId, It.IsAny<CancellationToken>())).ReturnsAsync(canonicalResult);
         var matchResult = new StatementRunMatchArtifact(StatementRunId, StatementRunId, statementRun.Breaks, statementRun.Cases, 0)
         {
-            SourceComparisonComplete = true, SourceComparisonPolicyFingerprint = new string('a', 64),
+            SourceComparisonComplete = true,
+            SourceComparisonPolicyFingerprint = new string('a', 64),
             SourceComparisonMappingFingerprint = canonicalResult.Import.ExecutedMappingFingerprint,
             SourceComparisonPopulationKinds = ["cash"]
         };

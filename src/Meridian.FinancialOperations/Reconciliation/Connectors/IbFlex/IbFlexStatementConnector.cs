@@ -622,7 +622,8 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             ActivityEvents: activities,
             ActivityCursors: activityCursors,
             TaxLots: taxLots,
-            BorrowPositions: borrowPositions) { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForProfile(ConnectorId, profile) };
+            BorrowPositions: borrowPositions)
+        { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForProfile(ConnectorId, profile) };
     }
 
     private static BrokerageActivityEventDto BuildTradeActivity(

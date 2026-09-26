@@ -242,7 +242,8 @@ public sealed class StatementRunWorkflowService(
                     && retainedArtifact.SourceComparisonPopulationKinds is null)
                     comparableArtifact = comparableArtifact with
                     {
-                        SourceComparisonComplete = null, SourceComparisonPolicyFingerprint = null,
+                        SourceComparisonComplete = null,
+                        SourceComparisonPolicyFingerprint = null,
                         SourceComparisonPopulationKinds = null
                     };
                 // A legacy conflict can also mean the matcher's assignment rules changed between

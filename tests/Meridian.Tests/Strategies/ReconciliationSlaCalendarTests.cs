@@ -11,7 +11,8 @@ public sealed class ReconciliationSlaCalendarTests : IDisposable
     private static ReconciliationBreakQueueItem Item(DateTimeOffset detected) => new("break", "run", "statement",
         ReconciliationBreakCategory.CashMismatch, ReconciliationBreakQueueStatus.Open, 10m, "variance", null, detected, detected);
     private static ReconciliationSlaPolicy Policy(ReconciliationBreakQueueItem item) => ReconciliationSlaCalculator.DefaultPolicyFor(item)
-        with { DueBusinessHours = 4, WarningBusinessHours = 2 };
+        with
+    { DueBusinessHours = 4, WarningBusinessHours = 2 };
 
     private FileReconciliationSlaCalendarResolver Resolver(string json)
     {

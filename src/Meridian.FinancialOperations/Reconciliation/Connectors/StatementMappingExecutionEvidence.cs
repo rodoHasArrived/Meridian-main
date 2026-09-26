@@ -9,9 +9,16 @@ internal static class StatementMappingExecutionEvidence
     public static string ForProfile(string connectorId, StatementMappingProfileDocument profile)
         => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
-            ConnectorId = connectorId, Revision = "statement-connector-v1", profile.ProfileId,
-            profile.SchemaVersion, profile.Format, profile.Csv, profile.Culture,
-            profile.DateFormats, profile.Fields, profile.ActivityCodes
+            ConnectorId = connectorId,
+            Revision = "statement-connector-v1",
+            profile.ProfileId,
+            profile.SchemaVersion,
+            profile.Format,
+            profile.Csv,
+            profile.Culture,
+            profile.DateFormats,
+            profile.Fields,
+            profile.ActivityCodes
         }));
 
     public static string ForBuiltIn(string connectorId)

@@ -125,14 +125,21 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                         previous is null ? "New" : recurrence ? "Recurring" : "Aging",
                         previous?.FirstObservedAt ?? run.ObservedAt,
                         previous is null || recurrence ? run.ObservedAt : previous.OccurrenceFirstObservedAt,
-                        run.ObservedAt, run.RunId) { IdentityScopeId = scope.LineageSourceIdentity is null ? null : identityScopeId };
+                        run.ObservedAt, run.RunId)
+                    { IdentityScopeId = scope.LineageSourceIdentity is null ? null : identityScopeId };
                     await RetainObservationAsync(item, StampComputedFields(item with { Lineage = lineage }, run.ObservedAt), run, ct).ConfigureAwait(false);
                     foreach (var prior in history.Where(prior => prior.BreakId != item.BreakId && prior.Lineage!.ClearedAt is null))
                     {
                         var refreshed = prior with
                         {
-                            Lineage = prior.Lineage! with { IdentityScopeId = lineage.IdentityScopeId, ComparisonScopeId = scopeId,
-                                ObservationState = "Aging", LastObservedAt = run.ObservedAt, LastObservedRunId = run.RunId },
+                            Lineage = prior.Lineage! with
+                            {
+                                IdentityScopeId = lineage.IdentityScopeId,
+                                ComparisonScopeId = scopeId,
+                                ObservationState = "Aging",
+                                LastObservedAt = run.ObservedAt,
+                                LastObservedRunId = run.RunId
+                            },
                             Version = prior.Version + 1
                         };
                         await RetainObservationAsync(prior, StampComputedFields(refreshed with { Version = prior.Version }, run.ObservedAt), run, ct).ConfigureAwait(false);

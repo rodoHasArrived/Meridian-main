@@ -65,7 +65,8 @@ public sealed partial class StatementReconciliationIntakeAuthority
                 accounting.FundProfileId, import.FundAccountId, accounting.LedgerBookId,
                 accounting.AccountingPeriodId.ToString("D"),
                 ComparisonSourceIdentity(import, artifact, institution),
-                import.ExternalAccountId) { LineageSourceIdentity = institution },
+                import.ExternalAccountId)
+            { LineageSourceIdentity = institution },
             import.ImportedAtUtc, true, true, inputs), ct).ConfigureAwait(false);
     }
 
