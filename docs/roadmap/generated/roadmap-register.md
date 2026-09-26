@@ -563,11 +563,11 @@ Reactivated 2026-07-06. The WPF desktop workstation returns to the active produc
 | Field | Value |
 | --- | --- |
 | Wave | W9 |
-| Status | in_progress |
-| Health | red |
+| Status | accepted |
+| Health | green |
 | Priority | critical |
 | Owner lane | Data Confidence and Validation |
-| Evidence posture | in_progress |
+| Evidence posture | complete |
 | Last reviewed | 2026-09-25 |
 
 ### Current Summary

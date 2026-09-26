@@ -36,8 +36,32 @@ documentation each row's lane owns.
 > `a03238c69f86c7455e03c0f6be2196d55719a044` found that reconciliation `SaveAsync` omitted the
 > entry-provenance guard, the actual legacy rekey path could discard an incoming mark, and
 > duplicate-create identity excluded provenance. The original acceptance remains historical
-> evidence; the row is now `in_progress` pending the correction, required validation, and focused
-> review. This does not withdraw the other rows' decisions or certify a release.
+> evidence; the row moved to `in_progress` pending correction, validation, and review. This status
+> was superseded by the W9-TRUTH-001 correction closure below; other rows' decisions are unchanged.
+
+## W9-TRUTH-001 correction closure — 2026-09-25
+
+The reconciliation correction merged in [PR #3000](https://github.com/rodoHasArrived/Meridian-main/pull/3000)
+as `f96917619ea357aad3759449d9ea69bb6596a9b5`. Saves and actual legacy rekeys now enforce
+entry provenance, retained non-real marks cannot be removed by renaming source fields, and
+normalized provenance participates in duplicate-create identity. New migration audit entries
+retain the original request hash so exact retries survive restart and stronger inherited marks.
+
+All nine hosted workflows passed on head `432d8882bd6bcafe730408d6a64ba32600921c56`, including
+[Meridian CI run 36209318392](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36209318392),
+Windows Desktop Build, Golden Path Validation, CodeQL, and both WPF validation workflows.
+The focused repository suite passed 106 cases, including 35 new regression cases. Automated
+source review found no further correction blockers. Local full CI passed restore using
+`DOTNET_PROCESSOR_COUNT=1`, then could not evaluate formatting because Roslyn's named-pipe
+client received `SocketException (13): Permission denied`; hosted validation supplied the
+integration evidence. No local full-CI pass is claimed.
+
+After receiving the correction checkpoint, the user instructed: "Go ahead and merge the completed
+work and then move on to implement the remaining open items." The bounded `accepted` posture is
+restored on that instruction, the merged correction, and the original acceptance evidence above.
+There are no independent GitHub review submissions; merge authorization is not recorded as one.
+This closes the correction for issue #2626 without making a new `done` or release-certification
+claim. Invalid legacy cases still require an explicit non-real mark before repair or rekey.
 
 ## Recorded acceptances (six)
 
