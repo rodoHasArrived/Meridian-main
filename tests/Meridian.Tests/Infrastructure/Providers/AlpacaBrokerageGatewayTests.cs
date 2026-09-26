@@ -1410,6 +1410,35 @@ public sealed class AlpacaBrokerageGatewayTests
             $"until={Uri.EscapeDataString(untilExclusive.UtcDateTime.ToString("O"))}");
     }
 
+    [Theory]
+    [InlineData("USD", "us_equity", "USD")]
+    [InlineData("USD", "us_option", "USD")]
+    [InlineData("EUR", "us_equity", null)]
+    [InlineData(null, "us_equity", null)]
+    [InlineData("", "us_equity", null)]
+    [InlineData("USD", "crypto", null)]
+    [InlineData("USD", "unknown", null)]
+    [InlineData("USD", null, null)]
+    public async Task GetPortfolioSnapshotAsync_DenominatesOnlyProvenTradingApiDollarPositions(
+        string? accountCurrency, string? assetClass, string? expectedCurrency)
+    {
+        var handler = new CapturingStubHandler(
+            _ => { },
+            request => request.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildJson(new { account_number = "TEST123", currency = accountCurrency })
+                : BuildPositionsResponse([new { symbol = "AAPL", qty = "10", avg_entry_price = "180",
+                    current_price = "185", market_value = "1850", unrealized_pl = "50", asset_class = assetClass }]));
+        var sut = CreateSut(handler);
+
+        var portfolio = await ((IBrokeragePortfolioSync)sut).GetPortfolioSnapshotAsync("TEST123");
+
+        portfolio.Account.Currency.Should().Be(accountCurrency ?? string.Empty);
+        var position = portfolio.Positions.Should().ContainSingle().Subject;
+        position.Currency.Should().Be(expectedCurrency);
+        position.MarketValue.Should().Be(1850m);
+        position.AverageEntryPrice.Should().Be(180m);
+    }
+
     [Fact]
     public async Task GetPortfolioSnapshotAsync_CredentialAccountMismatch_FailsBeforePositionsFetch()
     {

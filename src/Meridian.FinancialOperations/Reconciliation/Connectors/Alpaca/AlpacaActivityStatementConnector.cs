@@ -237,6 +237,10 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         var account = string.IsNullOrWhiteSpace(snapshot.AccountId)
             ? document.ExternalAccountId ?? string.Empty
             : snapshot.AccountId;
+        var accountCurrency = snapshot.Portfolio?.Account is { } portfolioAccount
+            && AccountsMatch(account, portfolioAccount.AccountId?.Trim())
+                ? portfolioAccount.Currency?.Trim().ToUpperInvariant()
+                : null;
         var activityCodeMap = StatementRecordMapper.BuildActivityCodeMap(profile);
         var reportedUnknownCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var records = new List<StatementCanonicalRecord>();
@@ -324,7 +328,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     -signedQuantity * fill.Price,
                     "trade",
                     DateOnly.FromDateTime(fill.FilledAt.UtcDateTime),
-                    Currency: null,
+                    Currency: accountCurrency,
                     FeesCommission: fill.Commission,
                     ExternalTransactionId: fill.FillId,
                     ActivityCategory: BrokerageActivityCategory.Trade.ToString(),
@@ -416,7 +420,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 position.MarketValue,
                 "position",
                 snapshotDate,
-                Currency: string.IsNullOrWhiteSpace(position.Currency) ? null : position.Currency!.ToUpperInvariant(),
+                Currency: position.Currency?.Trim().ToUpperInvariant(),
                 ExternalTransactionId: position.PositionId)))
             {
                 return EmptyResult(profileId, issues);

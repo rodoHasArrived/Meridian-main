@@ -333,7 +333,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             Equity = ParseDecimal(account?.Equity),
             Cash = ParseDecimal(account?.Cash),
             BuyingPower = ParseDecimal(account?.BuyingPower),
-            Currency = account?.Currency ?? "USD",
+            Currency = account?.Currency ?? string.Empty,
             Status = account?.Status ?? "unknown",
             MarginMultiplier = ParseNullableDecimal(account?.Multiplier),
             RegTBuyingPower = ParseNullableDecimal(account?.RegTBuyingPower),
@@ -553,7 +553,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 Currency: account.Currency,
                 MarginBalance: Math.Max(0m, -account.Cash)),
             Positions: positions
-                .Select(static position => new BrokeragePositionSnapshotDto(
+                .Select(position => new BrokeragePositionSnapshotDto(
                     Symbol: position.Symbol,
                     Quantity: position.Quantity,
                     AverageEntryPrice: position.AverageEntryPrice,
@@ -563,6 +563,10 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                     AssetClass: position.AssetClass,
                     Description: position.Description,
                     PositionId: position.PositionId,
+                    // Trading API stock/option dollar values are bound at this adapter;
+                    // account base currency is not a general position denomination fallback.
+                    Currency: string.Equals(account.Currency, "USD", StringComparison.Ordinal)
+                        && position.AssetClass is "us_equity" or "us_option" ? "USD" : null,
                     Metadata: position.Metadata))
                 .ToArray(),
             RetrievedAt: retrievedAt,

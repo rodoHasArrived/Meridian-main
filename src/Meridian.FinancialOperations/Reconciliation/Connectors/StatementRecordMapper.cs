@@ -1,3 +1,5 @@
+using Meridian.Ledger;
+
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
 /// <summary>
@@ -117,6 +119,14 @@ internal static class StatementRecordMapper
             }
             else
             {
+                if (string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase))
+                {
+                    issues.Add(StatementParseIssue.Error(
+                        "ROW_INVALID_FEES", "Canonical fees/commission requires an invariant decimal without grouping separators.",
+                        rowNumber, "FeesCommission"));
+                    return null;
+                }
+
                 issues.Add(StatementParseIssue.Warning(
                     "ROW_INVALID_FEES",
                     $"Row has an unparseable fees/commission value '{feesValue}'; it was ignored.",
@@ -126,6 +136,14 @@ internal static class StatementRecordMapper
         }
 
         var currency = GetValue(values, StatementCanonicalField.Currency)?.Trim().ToUpperInvariant();
+        if (string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase)
+            && !CurrencyCodeCatalog.IsRecognized(currency))
+        {
+            issues.Add(StatementParseIssue.Error(
+                "ROW_INVALID_CURRENCY", "Canonical rows require explicit recognized currency evidence.", rowNumber, "Currency"));
+            return null;
+        }
+
         var externalTransactionId = GetValue(values, StatementCanonicalField.ExternalTransactionId)?.Trim();
 
         return new StatementCanonicalRecord(
@@ -168,6 +186,14 @@ internal static class StatementRecordMapper
         var value = GetValue(values, field);
         if (string.IsNullOrWhiteSpace(value))
         {
+            if (string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(StatementParseIssue.Error(
+                    "ROW_INVALID_NUMBER", $"Canonical rows require an explicit {field} value; a missing amount cannot become zero.",
+                    rowNumber, field.ToString()));
+                return false;
+            }
+
             return true;
         }
 
