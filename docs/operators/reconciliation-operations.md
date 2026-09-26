@@ -131,3 +131,39 @@ curl http://localhost:8080/api/workstation/reconciliation/margin-control
 
 - Legacy source: [archive/docs/operations/reconciliation-operations.md](../../archive/docs/operations/reconciliation-operations.md)  
 - Archive copy: [archive/docs/operations/reconciliation-operations.md](../../archive/docs/operations/reconciliation-operations.md)
+
+## Reconciliation SLA calendar configuration
+
+Named SLA calendars are operator-maintained at `<DataRoot>/reconciliation/sla-calendars.json`.
+The configured SLA policy selects business/holiday IDs and timezone; the file supplies their
+contents. Restart the host after a reviewed calendar change. Browser and WPF share this calculation.
+
+```json
+{
+  "businessCalendars": [{
+    "id": "operations", "validFrom": "2026-01-01", "validThrough": "2026-12-31",
+    "weekendDays": ["Saturday", "Sunday"], "holidays": []
+  }],
+  "holidayCalendars": [{
+    "id": "bank", "validFrom": "2026-01-01", "validThrough": "2026-12-31",
+    "holidays": ["2026-12-25"]
+  }]
+}
+```
+
+Dates above illustrate the file shape; verify actual holidays for the calendars your policy names.
+Validity bounds are required and inclusive. Every selected calendar must cover every traversed
+local date, including closed days. IDs are unique within their list and case-insensitive. Missing
+files support only unnamed calendars. An unnamed base uses Saturday/Sunday weekends; named
+calendars never silently fall back. Holiday overlays exclude their dates without adding weekends.
+The configuration rejects unknown properties, duplicate IDs, out-of-range holidays, invalid weekend
+values and files above 4 MiB. A business calendar may explicitly use an empty weekend list.
+
+SLA age starts at the retained occurrence's first observation (DetectedAt for untracked cases).
+A recurrence starts another occurrence; previous clear intervals remain retained. Fractional hours
+are preserved across daily close, and each date resolves its timezone offset. Invalid timezones,
+overnight/non-positive shifts, negative or inverted thresholds, ambiguous/nonexistent local shift
+boundaries and traversal beyond 36,600 dates are refused. Correct the named policy/calendar evidence,
+restart the host, and retry; do not remove calendar IDs to make a refusal look on track. Existing
+pause and stop rules remain casework decisions. Source clearing does not resolve, approve or sign
+off a case, and does not remove close blockers.

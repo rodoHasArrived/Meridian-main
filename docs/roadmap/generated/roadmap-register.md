@@ -954,16 +954,16 @@ Implemented one shared valuation freshness policy with default blocking, require
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
-| Health | green |
+| Status | in_progress |
+| Health | yellow |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-31 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-09-26 |
 
 ### Current Summary
 
-Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity that survives a run, so the same underlying break is unrecognizable between runs once its amount or as-of date moves. Without that identity an operator cannot see what is new, what is aging, or what cleared, and break age cannot drive escalation. This row establishes a stable break lineage and uses it to make queue state legible. It is sequenced ahead of clustering because grouping and aging are unsound without it. Known source constraints on the current identity derivation are recorded in docs/product/w10-depth-slate-2026-07.md.
+Implementation in PR 3004 separates stable business lineage from comparison policy, retains executed mapping fingerprints and completed recovery evidence, resolves named SLA calendars, and shows source state and occurrence age in browser and WPF. Source clearing never disposes governed casework. Reconstructed after workspace maintenance removed an earlier unpublished implementation; that earlier local test result is not acceptance evidence for this head. Current focused, hosted, Windows and rendered operator verification remain required. Legacy imports without mapping proof remain non-comparable, and historical policy forks require explicit review.
 
 ### Exit Criteria
 

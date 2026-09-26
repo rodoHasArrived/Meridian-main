@@ -386,6 +386,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
             SourceFileHash = sourceFileHash,
             CanonicalArtifactHash = canonicalArtifactHash,
             DuplicateKey = duplicateKey,
+            ExecutedMappingFingerprint = StatementExecutedMappingEvidence.Capture(normalizedRequest, "canonical-csv-parser-v1"),
             AccountingScope = normalizedRequest.AccountingScope
         };
         if (!await store.TrySaveImportAsync(import, rows, ct).ConfigureAwait(false))

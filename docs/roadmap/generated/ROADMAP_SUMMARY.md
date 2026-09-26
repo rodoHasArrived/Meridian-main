@@ -53,7 +53,7 @@ Snapshot date: 2026-09-23
 | W9-CORPACT-011 | Durable corporate action case processing and accounting projection | ready_for_acceptance | green | high | Accounting and Ledger |
 | W10-DEBT-001 | God-file burn-down against the file-size ratchet | planned | green | medium | Workstation Shell and UX |
 | W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | in_progress | green | high | Accounting and Ledger |
-| W10-RECON-001 | Durable break lineage identity and run-over-run break diff | planned | green | high | Accounting and Ledger |
+| W10-RECON-001 | Durable break lineage identity and run-over-run break diff | in_progress | yellow | high | Accounting and Ledger |
 | W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | planned | green | high | Workstation Shell and UX |
 | W10-RECON-002 | Break clustering and bulk-resolution activation | planned | green | high | Accounting and Ledger |
 | W10-JRNL-001 | Durable recurring journal schedules and draft runner | planned | green | high | Accounting and Ledger |

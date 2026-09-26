@@ -440,7 +440,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
             ColumnMappings: [],
             records,
             issues,
-            fingerprint));
+            fingerprint) { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForBuiltIn(ConnectorId) });
     }
 
     // Pass one: counts Stmt elements and resolves each one's account identifier, materializing only the

@@ -1446,11 +1446,11 @@ items:
     workspace:
       - Accounting
     owner_lane: Accounting and Ledger
-    status: planned
-    health: green
+    status: in_progress
+    health: yellow
     priority: high
-    evidence_posture: planned_evidence
-    current_summary: Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity that survives a run, so the same underlying break is unrecognizable between runs once its amount or as-of date moves. Without that identity an operator cannot see what is new, what is aging, or what cleared, and break age cannot drive escalation. This row establishes a stable break lineage and uses it to make queue state legible. It is sequenced ahead of clustering because grouping and aging are unsound without it. Known source constraints on the current identity derivation are recorded in docs/product/w10-depth-slate-2026-07.md.
+    evidence_posture: in_progress
+    current_summary: Implementation in PR 3004 separates stable business lineage from comparison policy, retains executed mapping fingerprints and completed recovery evidence, resolves named SLA calendars, and shows source state and occurrence age in browser and WPF. Source clearing never disposes governed casework. Reconstructed after workspace maintenance removed an earlier unpublished implementation; that earlier local test result is not acceptance evidence for this head. Current focused, hosted, Windows and rendered operator verification remain required. Legacy imports without mapping proof remain non-comparable, and historical policy forks require explicit review.
     exit_criteria:
       - A break keeps one identity across runs even when its amount, tolerance, or as-of date changes.
       - A break that clears and later recurs is recognizable as the same lineage while remaining a distinct occurrence, so a recurrence neither inherits the age of the original nor overwrites the interval during which it was clear.
@@ -1466,7 +1466,30 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-07-31
+    evidence:
+      - type: source
+        path: src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Lineage.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingExecutionEvidence.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.Lineage.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/reconciliation-source-observation.ts
+      - type: source
+        path: src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs
+      - type: test
+        path: tests/Meridian.Tests/Strategies/FileReconciliationBreakQueueLineageTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Strategies/ReconciliationSlaCalendarTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/StatementReconciliationIntakeAuthorityTests.cs
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/reconciliation-source-observation.test.ts
+      - type: test
+        path: tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs
+    last_reviewed: 2026-09-26
 
   - id: W10-PROV-001
     title: Ledger-amount evidence subject and shared proof drawer

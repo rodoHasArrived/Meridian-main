@@ -36,6 +36,9 @@ public sealed record StatementRunMatchArtifact(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? SourceComparisonComplete { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceComparisonMappingFingerprint { get; init; }
+
     /// <summary>Hash of the matcher revision and the exact executed tolerance profile, including rules/version.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? SourceComparisonPolicyFingerprint { get; init; }
@@ -773,6 +776,12 @@ public static class StatementDurabilityHashing
         var json = JsonSerializer.Serialize(value, typeInfo);
         return Sha256Digest.ComputeUtf8(json);
     }
+
+    public static string Hash(BrokerStatementImportResult value)
+        => Hash(value, StatementDurabilityJsonContext.Default.BrokerStatementImportResult);
+
+    public static string Hash(StatementRunMatchArtifact value)
+        => Hash(value, StatementDurabilityJsonContext.Default.StatementRunMatchArtifact);
 
     public static string Hash(ReconciliationBreakRecord value)
         => Hash(value, StatementDurabilityJsonContext.Default.ReconciliationBreakRecord);

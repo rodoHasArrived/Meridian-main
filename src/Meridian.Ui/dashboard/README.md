@@ -11,6 +11,9 @@ last_reviewed: 2026-08-04
 
 # src/Meridian.Ui/dashboard
 
+The reconciliation queue shows source observation and retained occurrence age directly. Clearing is labeled Source cleared and never implies case resolution. Legacy rows explicitly show identity/age unavailable. Queue refresh compares lineage metadata; inspector details include business and comparison scopes.
+
+
 `EvidenceAmount` opens an exact retained evidence subject in the shared sheet primitive. Manual
 journal detail debit/credit cells carry the entry and ledger-book identity; values without a supported
 retained subject are never assigned inferred provenance. Reads disable development fallback and

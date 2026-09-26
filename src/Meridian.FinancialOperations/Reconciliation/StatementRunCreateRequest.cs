@@ -19,6 +19,9 @@ public sealed record StatementRunCreateRequest(
 {
     public string? CanonicalSourcePath { get; init; }
 
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExecutedMappingFingerprint { get; init; }
+
     public string CanonicalArtifactHash { get; init; } = string.Empty;
 
     public StatementAccountingScope? AccountingScope { get; init; }
@@ -102,6 +105,7 @@ public sealed record StatementRunCreateRequest(
         {
             CanonicalSourcePath = CanonicalSourcePath,
             CanonicalArtifactHash = CanonicalArtifactHash,
+            ExecutedMappingFingerprint = ExecutedMappingFingerprint,
             AccountingScope = AccountingScope
         };
 
@@ -122,6 +126,7 @@ public sealed record StatementRunCreateRequest(
         {
             CanonicalSourcePath = CanonicalSourcePath,
             CanonicalArtifactHash = CanonicalArtifactHash,
+            ExecutedMappingFingerprint = ExecutedMappingFingerprint,
             AccountingScope = AccountingScope
         };
 

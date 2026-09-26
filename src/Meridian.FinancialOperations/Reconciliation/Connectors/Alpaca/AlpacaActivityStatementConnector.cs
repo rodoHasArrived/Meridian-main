@@ -472,7 +472,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             ActivityEvents: activityEvents,
             ActivityCursors: activityCursors,
             TaxLots: taxLots,
-            BorrowPositions: borrowPositions);
+            BorrowPositions: borrowPositions) { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForProfile(ConnectorId, profile) };
     }
 
     private static StatementCanonicalRecord MapRichActivity(

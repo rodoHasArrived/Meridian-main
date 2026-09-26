@@ -11,6 +11,9 @@ last_reviewed: 2026-09-05
 
 # src/Meridian.FinancialOperations
 
+All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
+
+
 Statement matching retains exact tolerance rules/version and matcher revision with population
 availability. Missing/failed internal populations and empty statements cannot certify source clearing;
 a narrower source feed is a distinct comparison scope. This evidence is retained with the immutable

@@ -11,6 +11,9 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Strategies
 
+SLA calculation anchors to OccurrenceFirstObservedAt, resolves named business and holiday calendars, retains fractional hours and resolves timezone boundaries separately for each date. Unknown names, missing coverage and ambiguous/nonexistent shift boundaries are refused. Source clearing leaves casework SLA and approval obligations intact.
+
+
 The source-lineage contract separates optional `IdentityScopeId` (business identity) from
 `ComparisonScopeId` (executed comparison policy). Presence preserves an occurrence across policy
 changes; absence clears only its current comparison policy. Verified legacy receipts preserve

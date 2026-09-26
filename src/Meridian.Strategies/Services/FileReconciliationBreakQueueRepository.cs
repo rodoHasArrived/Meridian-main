@@ -22,6 +22,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
     private readonly string _mutationLockPath;
     private readonly ILogger<FileReconciliationBreakQueueRepository> _logger;
     private readonly IReconciliationSlaPolicyProvider? _slaPolicyProvider;
+    private readonly IReconciliationSlaCalendarResolver? _slaCalendarResolver;
     private readonly Func<string, string, CancellationToken, Task> _stateWriter;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private static readonly JsonSerializerOptions AuditValidationJsonOptions = CreateJsonOptions();
@@ -41,11 +42,13 @@ public sealed partial class FileReconciliationBreakQueueRepository :
         string dataDirectory,
         ILogger<FileReconciliationBreakQueueRepository> logger,
         IReconciliationSlaPolicyProvider? slaPolicyProvider = null,
-        Func<string, string, CancellationToken, Task>? stateWriter = null)
+        Func<string, string, CancellationToken, Task>? stateWriter = null,
+        IReconciliationSlaCalendarResolver? slaCalendarResolver = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _slaPolicyProvider = slaPolicyProvider;
+        _slaCalendarResolver = slaCalendarResolver;
         _stateWriter = stateWriter ?? ((path, content, ct) => AtomicFileWriter.WriteAsync(path, content, ct));
 
         Directory.CreateDirectory(dataDirectory);

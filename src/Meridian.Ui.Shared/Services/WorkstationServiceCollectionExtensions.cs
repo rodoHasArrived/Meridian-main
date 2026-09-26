@@ -1035,13 +1035,16 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IReconciliationSlaPolicyProvider>(sp =>
             new SecurityMasterReconciliationSlaPolicyProvider(
                 sp.GetService<SecurityMasterExceptionSlaConfig>()));
+        services.TryAddSingleton<IReconciliationSlaCalendarResolver>(sp =>
+            new FileReconciliationSlaCalendarResolver(ResolveConfigDataRoot(sp)));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();
             return new FileReconciliationBreakQueueRepository(
                 ResolveWorkstationDataDirectory(sp),
                 logger,
-                sp.GetService<IReconciliationSlaPolicyProvider>());
+                sp.GetService<IReconciliationSlaPolicyProvider>(),
+                slaCalendarResolver: sp.GetRequiredService<IReconciliationSlaCalendarResolver>());
         });
         services.TryAddSingleton<IStatementReconciliationCaseworkHandoffService>(sp =>
             new StatementReconciliationCaseworkHandoffService(
@@ -1073,7 +1076,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
                 sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore>(),
-                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore>()));
+                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore>(),
+                sp.GetRequiredService<IStatementRunRecoveryRepository>()));
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
