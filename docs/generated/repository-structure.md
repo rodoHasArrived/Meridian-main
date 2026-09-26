@@ -4803,6 +4803,7 @@ Meridian-main
 │   │   ├── FundStructure
 │   │   │   └── FundAccountTraversalQueryService.cs
 │   │   ├── Infrastructure
+│   │   │   ├── LoginSessionStoreLock.cs
 │   │   │   ├── RolePermissionProfileStore.cs
 │   │   │   ├── ScopedAccessAssignmentStore.cs
 │   │   │   └── UserAccountStore.cs
@@ -8527,7 +8528,8 @@ Meridian-main
 │   │   ├── Meridian.ProcessTestHelper.csproj
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json
 │   │   ├── Program.cs
-│   │   └── Program.Etl.cs
+│   │   ├── Program.Etl.cs
+│   │   └── Program.Identity.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── Helpers
 │   │   │   ├── FakeQuantDataContext.cs
@@ -9594,6 +9596,7 @@ Meridian-main
 │   │   ├── Identity
 │   │   │   ├── FundStructure
 │   │   │   │   └── FundAccountTraversalQueryServiceTests.cs
+│   │   │   ├── DurableLoginSessionTests.cs
 │   │   │   ├── FileUserAccountStoreTests.cs
 │   │   │   ├── FundStructureAccessScopeLineageProviderTests.cs
 │   │   │   ├── GovernanceStoreDataIntegrityTests.cs

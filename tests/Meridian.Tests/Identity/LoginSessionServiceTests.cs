@@ -7,7 +7,7 @@ using Xunit;
 namespace Meridian.Tests.Identity;
 
 /// <summary>
-/// Operator scenario: the desktop and web shells trade credentials for an in-memory session token
+/// Operator scenario: the desktop and web shells trade credentials for an opaque session token
 /// and then re-validate that token on every request. These tests exercise the token lifecycle —
 /// creation, validation, profile resolution, logout, and revocation — plus the environment-driven
 /// authentication mode that governs anonymous access.
@@ -129,9 +129,7 @@ public sealed class LoginSessionServiceTests
     {
         using var env = new EnvironmentVariableScope()
             .Set("MDC_AUTH_MODE", "sometimes");
-        var service = CreateService("Production");
-
-        var act = () => service.AllowAnonymousWhenUnconfigured;
+        var act = () => CreateService("Production");
 
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*MDC_AUTH_MODE*sometimes*");

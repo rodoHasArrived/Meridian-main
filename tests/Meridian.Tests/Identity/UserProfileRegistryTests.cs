@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
+using Meridian.Contracts.Tenancy;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Identity;
@@ -14,6 +16,73 @@ namespace Meridian.Tests.Identity;
 [Collection("IdentityEnvironment")]
 public sealed class UserProfileRegistryTests
 {
+    [Fact]
+    public void MissingSelectedRoleProfile_DoesNotRestoreTheBaseAdminRole()
+    {
+        using var env = ClearAuthEnvironment();
+        var store = new StubAccountStore(new UserAccountConfig(
+            "scoped-admin", PasswordHashing.HashPassword("pw"), UserRole.Admin, RoleProfileName: "missing-profile"));
+        var registry = new UserProfileRegistry(null, store);
+
+        registry.Authenticate("scoped-admin", "pw").Should().BeNull();
+        registry.GetProfile("scoped-admin").Should().BeNull();
+    }
+
+    [Fact]
+    public void InvalidSelectedRoleProfile_DoesNotRestoreTheBaseAdminRole()
+    {
+        using var env = ClearAuthEnvironment();
+        var store = new StubAccountStore(new UserAccountConfig(
+            "scoped-admin", PasswordHashing.HashPassword("pw"), UserRole.Admin, RoleProfileName: "broken-profile"));
+        var profiles = Substitute.For<IRolePermissionProfileStore>();
+        profiles.TryGetProfile("broken-profile", out Arg.Any<RolePermissionProfileDto>()).Returns(call =>
+        {
+            call[1] = new RolePermissionProfileDto("broken-profile", "Broken", "Invalid permission", false, ["not-a-permission"], 0);
+            return true;
+        });
+        var registry = new UserProfileRegistry(profiles, store);
+
+        registry.Authenticate("scoped-admin", "pw").Should().BeNull();
+        registry.GetProfile("scoped-admin").Should().BeNull();
+    }
+
+    [Fact]
+    public void AddingASecondCompanyAfterStartup_RefusesExistingSessionResolution()
+    {
+        using var env = ClearAuthEnvironment();
+        var hash = PasswordHashing.HashPassword("pw");
+        UserAccountConfig[] accounts =
+        [
+            new("alpha", hash, UserRole.Admin, CompanyId: "alpha"),
+            new("second", hash, UserRole.Admin, CompanyId: "alpha")
+        ];
+        var registry = new UserProfileRegistry(null, new StubAccountStore(accounts));
+        registry.GetProfile("alpha").Should().NotBeNull();
+        accounts[1] = accounts[1] with { CompanyId = "beta" };
+
+        Action read = () => registry.GetProfile("alpha");
+        read.Should().Throw<InvalidOperationException>().WithMessage("*fail-closed*");
+    }
+
+    [Fact]
+    public void MultipleCompanies_RequireStrictTenantEnforcementForLoginAndExistingSessions()
+    {
+        using var env = ClearAuthEnvironment();
+        var hash = PasswordHashing.HashPassword("pw");
+        var store = new StubAccountStore(
+            new UserAccountConfig("alpha", hash, UserRole.Admin, CompanyId: "alpha"),
+            new UserAccountConfig("beta", hash, UserRole.Admin, CompanyId: "beta"));
+        var boundary = new UserProfileRegistry(null, store, TenantScopeEnforcementOptions.DeploymentBoundary);
+        Action login = () => boundary.Authenticate("alpha", "pw");
+        Action existingSession = () => boundary.GetProfile("alpha");
+        login.Should().Throw<InvalidOperationException>().WithMessage("*fail-closed*");
+        existingSession.Should().Throw<InvalidOperationException>().WithMessage("*fail-closed*");
+
+        var strict = new UserProfileRegistry(null, store, TenantScopeEnforcementOptions.FailClosed);
+        strict.Authenticate("alpha", "pw")!.CompanyId.Should().Be("alpha");
+        strict.GetProfile("beta")!.CompanyId.Should().Be("beta");
+    }
+
     [Fact]
     public void Authenticate_WithCorrectCredentials_ReturnsProfile()
     {

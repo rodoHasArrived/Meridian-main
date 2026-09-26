@@ -29,6 +29,7 @@ internal static partial class Program
                 "etl-crash-stage" => await RunEtlUntilKilledAsync(args).ConfigureAwait(false),
                 "audit-append-batch" => await AppendAuditBatchAsync(args).ConfigureAwait(false),
                 "wal-append-and-wait" => await AppendWalAndWaitAsync(args).ConfigureAwait(false),
+                "session-create-and-observe-revocation" => await CreateSessionAndObserveRevocationAsync(args).ConfigureAwait(false),
                 _ => throw new ArgumentOutOfRangeException(nameof(args), args[0], "Unknown helper mode.")
             };
         }

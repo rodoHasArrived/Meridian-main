@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.Services;
+using Meridian.Contracts.Tenancy;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.PortfolioRecords.FundAccounts;
@@ -149,13 +150,22 @@ public sealed class InMemoryFundStructureTenancyGuardTests : IDisposable
     }
 
     [Fact]
-    public async Task Guard_DoesNotConstrainAPartitionedStore()
+    public async Task Guard_RefusesMultiCompanyPartitionedStoreWithPermissiveReads()
     {
-        // The Postgres service carries the tenant column and the scoping this guard substitutes for,
-        // so several companies on it is the supported arrangement, not a refusal.
         var partitioned = Substitute.For<IFundStructureService>();
         var guard = CreateGuard(partitioned, "company-alpha", "company-beta");
 
+        var start = () => guard.StartAsync(CancellationToken.None);
+        await start.Should().ThrowAsync<StartupRefusedException>().WithMessage("*fail-closed*");
+    }
+
+    [Fact]
+    public async Task Guard_AllowsMultiCompanyPartitionedStoreWithStrictReads()
+    {
+        var guard = new InMemoryFundStructureTenancyGuard(
+            Substitute.For<IFundStructureService>(),
+            new UserProfileRegistry(null, AccountStoreFor("company-alpha", "company-beta"), TenantScopeEnforcementOptions.FailClosed),
+            NullLogger<InMemoryFundStructureTenancyGuard>.Instance);
         await guard.StartAsync(CancellationToken.None);
     }
 
@@ -169,7 +179,7 @@ public sealed class InMemoryFundStructureTenancyGuardTests : IDisposable
         _environment.Set("DOTNET_ENVIRONMENT", environment)
             .Set("ASPNETCORE_ENVIRONMENT", environment)
             .Set(variable, EnvironmentAccounts(hash));
-        var profiles = new UserProfileRegistry(null, AccountStoreFor());
+        var profiles = new UserProfileRegistry(null, AccountStoreFor(), TenantScopeEnforcementOptions.FailClosed);
         profiles.Authenticate("operator-alpha", password)!.CompanyId.Should().Be("company-alpha");
         profiles.Authenticate("operator-beta", password)!.CompanyId.Should().Be("company-beta");
 
