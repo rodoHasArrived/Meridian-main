@@ -417,8 +417,8 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
         PaperMarketObservation observation,
         CancellationToken ct)
     {
-        // Best-effort tick-size rounding: snap fill price to the instrument's tick grid.
-        fillPrice = await _tradingParameters.SnapToTickSizeAsync(request.Symbol, fillPrice, ct)
+        // Best-effort tick rounding must preserve the matched envelope and order limit.
+        fillPrice = await _tradingParameters.ResolveFillPriceAsync(request, fillPrice, observation, ct)
             .ConfigureAwait(false);
 
         lock (_lock)

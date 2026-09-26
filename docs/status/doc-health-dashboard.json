@@ -1,11 +1,11 @@
 {
   "total_files": 674,
-  "total_lines": 146076,
+  "total_lines": 146101,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 270,
-  "average_lines": 216.7,
+  "average_lines": 216.8,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2697,7 +2697,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11026,
+      "line_count": 11027,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3209,7 +3209,7 @@
     },
     {
       "path": "docs/product/w9-operator-acceptance-2026-08-29.md",
-      "line_count": 218,
+      "line_count": 235,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5361,7 +5361,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 267,
+      "line_count": 274,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

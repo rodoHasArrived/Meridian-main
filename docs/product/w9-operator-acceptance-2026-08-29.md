@@ -63,6 +63,23 @@ There are no independent GitHub review submissions; merge authorization is not r
 This closes the correction for issue #2626 without making a new `done` or release-certification
 claim. Invalid legacy cases still require an explicit non-real mark before repair or rekey.
 
+## W9-PAPER-003 final-price correction — 2026-09-25
+
+Source verification for issue #2628 found that both paper gateways rounded prices to tick size
+after matching admission. A buy at an observed print and limit of 100.006 could therefore become
+a 100.01 fill on a 0.01 tick, violating both the observed envelope and the limit. The equivalent
+sell-side rounding could cross the lower bound. The earlier property suite tested the matcher,
+while its gateway cases omitted Security Master tick sizes, so it did not catch this final step.
+
+The shared final-price helper now keeps a rounded tick only if it remains positive, within the
+captured envelope, and within a limit or stop-limit order's price constraint. Otherwise it retains
+the admitted observed price; best-effort tick rounding cannot fabricate a price outside those
+bounds. Costs use the final price. `PaperGatewayTickSizeBoundaryTests` exercises both gateways,
+all four supported order types, limit breaches inside a wider envelope, valid rounding, and
+resting-order execution. Against the original code, 28 regressions failed and four valid-rounding
+controls passed. Validation of the correction and hosted merge evidence belong to its PR.
+The historical bounded acceptance remains recorded; this is not a release-certification claim.
+
 ## Recorded acceptances (six)
 
 | Row | Priority | Accepted on the evidence of |
