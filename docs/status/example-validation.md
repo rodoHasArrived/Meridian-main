@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1037 |
-| Valid | 590 |
+| Total code blocks | 1038 |
+| Valid | 591 |
 | Invalid | 0 |
 | Skipped | 447 |
 
@@ -24,7 +24,7 @@
 | `csharp` | 328 | 328 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
-| `json` | 64 | 64 | 0 | 0 |
+| `json` | 65 | 65 | 0 | 0 |
 | `jsonc` | 2 | 2 | 0 | 0 |
 | `jsonl` | 1 | 0 | 0 | 1 |
 | `makefile` | 1 | 0 | 0 | 1 |
@@ -127,6 +127,7 @@ No invalid code examples found.
 | `docs/integrations/language-strategy.md` | 4 |
 | `docs/integrations/lean-integration.md` | 17 |
 | `docs/operators/provider-backfill-operations.md` | 1 |
+| `docs/operators/reconciliation-operations.md` | 1 |
 | `docs/plans/security-master-passport-workbench.md` | 4 |
 | `docs/product/adversarial-program-review-2026-08-25.md` | 3 |
 | `docs/product/functionality-deepening-brainstorm-2026-07.md` | 1 |

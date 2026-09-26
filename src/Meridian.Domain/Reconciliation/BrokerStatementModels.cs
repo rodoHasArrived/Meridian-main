@@ -27,6 +27,9 @@ public sealed record StatementRunRequest(
     /// Optional SHA-256 assertion for <see cref="CanonicalSourcePath"/>. The importer always
     /// recomputes this value from the captured parse bytes before accepting it.
     /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExecutedMappingFingerprint { get; init; }
+
     public string CanonicalArtifactHash { get; init; } = string.Empty;
 
     public StatementAccountingScope? AccountingScope { get; init; }
@@ -108,6 +111,9 @@ public sealed record BrokerStatementImportRequest(
     /// Optional SHA-256 assertion for the canonical parse artifact. It is never trusted without
     /// recomputing the hash from the same immutable bytes that are parsed.
     /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExecutedMappingFingerprint { get; init; }
+
     public string CanonicalArtifactHash { get; init; } = string.Empty;
 
     public StatementAccountingScope? AccountingScope { get; init; }

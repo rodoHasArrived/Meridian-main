@@ -349,10 +349,35 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         (await harness.Operations.ListAsync(ct: timeout.Token)).Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(StatementRunRecoveryStatus.Running)]
+    [InlineData(StatementRunRecoveryStatus.Failed)]
+    public async Task Unfinished_recovery_does_not_establish_source_lineage(StatementRunRecoveryStatus status)
+    {
+        var harness = CreateHarness([Book(LedgerBookId)],
+            [Period(AccountingPeriodId, LedgerBookId, LedgerPeriodStatusDto.Open)], recoveryStatus: status);
+        await harness.Workflow.StartAsync(Command());
+        (await harness.Queue.GetAllAsync()).Should().OnlyContain(item => item.Lineage == null);
+    }
+
+    [Fact]
+    public async Task Corrupt_completed_artifact_cannot_establish_source_lineage()
+    {
+        var harness = CreateHarness([Book(LedgerBookId)],
+            [Period(AccountingPeriodId, LedgerBookId, LedgerPeriodStatusDto.Open)], corruptCompletion: true);
+        var execution = await harness.Workflow.StartAsync(Command());
+        execution.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Failed);
+        execution.Workflow.FailureReason.Should().Be(
+            "Source comparison requires the exact import and match artifacts bound to the completed run checkpoint.");
+        (await harness.Queue.GetAllAsync()).Should().OnlyContain(item => item.Lineage == null);
+    }
+
     private IntakeHarness CreateHarness(
         IReadOnlyList<LedgerBookDto> books,
         IReadOnlyList<LedgerPeriodDto> periods,
-        StatementBreakDto? statementBreak = null)
+        StatementBreakDto? statementBreak = null,
+        StatementRunRecoveryStatus recoveryStatus = StatementRunRecoveryStatus.Completed,
+        bool corruptCompletion = false)
     {
         var dataRoot = Path.Combine(_root, Guid.NewGuid().ToString("N"));
         var accounts = new Mock<IAccountQueryService>(MockBehavior.Strict);
@@ -407,20 +432,28 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         var queue = new FileReconciliationBreakQueueRepository(
             Path.Combine(dataRoot, "reconciliation-casework"),
             NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var canonicalResult = new BrokerStatementImportResult(statementRun.Import with { ExecutedMappingFingerprint = new string('b', 64) },
+            [new CanonicalStatementRow(StatementRunId, 1, ExternalAccountId, "", 0m, 0m, 125000m,
+                "cash", PeriodEnd, "retained-source-row")]);
         var canonical = new Mock<ICanonicalStatementStore>(MockBehavior.Strict);
-        canonical.Setup(store => store.GetImportAsync(StatementRunId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BrokerStatementImportResult(statementRun.Import,
-                [new CanonicalStatementRow(StatementRunId, 1, ExternalAccountId, "", 0m, 0m, 125000m,
-                    "cash", PeriodEnd, "retained-source-row")]));
+        canonical.Setup(store => store.GetImportAsync(StatementRunId, It.IsAny<CancellationToken>())).ReturnsAsync(canonicalResult);
+        var matchResult = new StatementRunMatchArtifact(StatementRunId, StatementRunId, statementRun.Breaks, statementRun.Cases, 0)
+        {
+            SourceComparisonComplete = true,
+            SourceComparisonPolicyFingerprint = new string('a', 64),
+            SourceComparisonMappingFingerprint = canonicalResult.Import.ExecutedMappingFingerprint,
+            SourceComparisonPopulationKinds = ["cash"]
+        };
         var matches = new Mock<IStatementRunMatchArtifactStore>(MockBehavior.Strict);
-        matches.Setup(store => store.GetAsync(StatementRunId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new StatementRunMatchArtifact(StatementRunId, StatementRunId,
-                statementRun.Breaks, statementRun.Cases, 0)
-            {
-                SourceComparisonComplete = true,
-                SourceComparisonPolicyFingerprint = new string('a', 64),
-                SourceComparisonPopulationKinds = ["cash"]
-            });
+        matches.Setup(store => store.GetAsync(StatementRunId, It.IsAny<CancellationToken>())).ReturnsAsync(matchResult);
+        var recovery = new Mock<IStatementRunRecoveryRepository>(MockBehavior.Strict);
+        recovery.Setup(store => store.GetAsync(StatementRunId, It.IsAny<CancellationToken>())).ReturnsAsync(
+            new StatementRunRecoveryCheckpoint(1, StatementRunId, StatementRunId, "request", "input",
+                StatementRunRecoveryStage.Completed, recoveryStatus,
+                new StatementRunStageArtifact(StatementDurabilityHashing.Hash(canonicalResult), canonicalResult.Rows.Count),
+                new StatementRunStageArtifact(corruptCompletion ? new string('f', 64) : StatementDurabilityHashing.Hash(matchResult),
+                    matchResult.MatchCount + matchResult.Breaks.Count), null, null, matchResult.MatchCount,
+                null, null, null, ObservedAt, ObservedAt));
         var authority = new StatementReconciliationIntakeAuthority(
             accounts.Object,
             tenancy.Object,
@@ -430,7 +463,8 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
             reconciliation.Object,
             queue,
             canonical.Object,
-            matches.Object);
+            matches.Object,
+            recovery.Object);
         var imports = new RecordingStatementImportService(importResult);
         var workflow = new StatementReconciliationReportWorkflowService(
             imports,

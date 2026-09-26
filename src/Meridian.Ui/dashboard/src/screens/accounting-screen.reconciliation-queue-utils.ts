@@ -17,6 +17,7 @@ export function areReconciliationBreakQueuesEquivalent(
     const right = next[index];
 
     if (
+      JSON.stringify(left.lineage ?? null) !== JSON.stringify(right.lineage ?? null) ||
       left.breakId !== right.breakId ||
       left.runId !== right.runId ||
       left.strategyName !== right.strategyName ||

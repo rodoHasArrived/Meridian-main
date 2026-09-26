@@ -2,6 +2,8 @@ using System.Text.Json;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Strategies.Services;
+using Meridian.FinancialOperations.Reconciliation;
+using Meridian.Infrastructure.Reconciliation;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -14,7 +16,7 @@ public sealed partial class StatementReconciliationIntakeAuthority
     {
         // Legacy/custom queue implementations retain their existing behavior. Production's durable
         // queue and canonical statement store implement this source-backed comparison seam.
-        if (_canonicalStatements is null || _matchArtifacts is null || _breakQueue is not IReconciliationBreakObservationRepository observations)
+        if (_canonicalStatements is null || _matchArtifacts is null || _runRecovery is null || _breakQueue is not IReconciliationBreakObservationRepository observations)
             return;
         if (commit.Status is not ("Imported" or "Duplicate"))
             return;
@@ -27,7 +29,14 @@ public sealed partial class StatementReconciliationIntakeAuthority
         if (artifact is null || artifact.ImportId != import.ImportId)
             throw Failure("STATEMENT_LINEAGE_MATCH_UNAVAILABLE", "The immutable completed match population is required for source comparison.");
 
-        if (!CanCompareSourceRun(artifact))
+        var checkpoint = await _runRecovery.GetAsync(import.ImportId, ct).ConfigureAwait(false);
+        if (checkpoint is not { Stage: StatementRunRecoveryStage.Completed, Status: StatementRunRecoveryStatus.Completed })
+            return;
+        if (!HasVerifiedCompletion(checkpoint, canonical, artifact))
+            throw Failure("STATEMENT_LINEAGE_CHECKPOINT_MISMATCH", "Source comparison requires the exact import and match artifacts bound to the completed run checkpoint.");
+        if (!CanCompareSourceRun(artifact)
+            || !StatementDurabilityHashing.FixedTimeEquals(artifact.SourceComparisonMappingFingerprint!,
+                canonical.Import.ExecutedMappingFingerprint ?? string.Empty))
             return;
 
         var rowSubjects = canonical.Rows.ToDictionary(row => $"{import.ImportId}:{row.SourceRowNumber}", SourceSubject);
@@ -56,9 +65,26 @@ public sealed partial class StatementReconciliationIntakeAuthority
                 accounting.FundProfileId, import.FundAccountId, accounting.LedgerBookId,
                 accounting.AccountingPeriodId.ToString("D"),
                 ComparisonSourceIdentity(import, artifact, institution),
-                import.ExternalAccountId),
+                import.ExternalAccountId)
+            { LineageSourceIdentity = institution },
             import.ImportedAtUtc, true, true, inputs), ct).ConfigureAwait(false);
     }
+
+    internal static bool HasVerifiedCompletion(StatementRunRecoveryCheckpoint checkpoint,
+        BrokerStatementImportResult canonical, StatementRunMatchArtifact artifact)
+        => checkpoint.SchemaVersion == StatementRunRecoveryCheckpoint.CurrentSchemaVersion
+           && checkpoint.Stage == StatementRunRecoveryStage.Completed
+           && checkpoint.Status == StatementRunRecoveryStatus.Completed
+           && checkpoint.RunId == canonical.Import.ImportId
+           && checkpoint.ImportId == canonical.Import.ImportId
+           && artifact.RunId == checkpoint.RunId
+           && artifact.ImportId == checkpoint.ImportId
+           && checkpoint.ImportArtifact.Count == canonical.Rows.Count
+           && checkpoint.MatchArtifact is { } matchArtifact
+           && matchArtifact.Count == artifact.MatchCount + artifact.Breaks.Count
+           && checkpoint.MatchCount == artifact.MatchCount
+           && StatementDurabilityHashing.FixedTimeEquals(checkpoint.ImportArtifact.Sha256, StatementDurabilityHashing.Hash(canonical))
+           && StatementDurabilityHashing.FixedTimeEquals(matchArtifact.Sha256, StatementDurabilityHashing.Hash(artifact));
 
     internal static string ComparisonSourceIdentity(CanonicalStatementImport import,
         Meridian.Infrastructure.Reconciliation.StatementRunMatchArtifact artifact, string institution)
@@ -74,6 +100,7 @@ public sealed partial class StatementReconciliationIntakeAuthority
     internal static bool CanCompareSourceRun(Meridian.Infrastructure.Reconciliation.StatementRunMatchArtifact artifact)
         => artifact.SourceComparisonComplete == true
            && Meridian.Contracts.Integrity.Sha256Digest.IsWellFormed(artifact.SourceComparisonPolicyFingerprint)
+           && Meridian.Contracts.Integrity.Sha256Digest.IsWellFormed(artifact.SourceComparisonMappingFingerprint)
            && artifact.SourceComparisonPopulationKinds is { Count: > 0 }
            && !artifact.Breaks.Any(item => string.Equals(item.Classification,
                ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable, StringComparison.OrdinalIgnoreCase));

@@ -185,7 +185,7 @@ public sealed class FundLedgerViewModelTests
                     item.HasSecurityCoverageIssues &&
                     item.SecurityIssueCount == 1);
                 viewModel.SelectedReconciliationQueueIndex.Should().Be(0);
-                viewModel.IsOpenBreakQueueFilterSelected.Should().BeTrue();
+                viewModel.IsAllBreakQueueFilterSelected.Should().BeTrue();
                 viewModel.ReconciliationBreakQueueItems.Should().ContainSingle(item =>
                     item.RunId == "run-fund-ops" &&
                     item.Status == ReconciliationBreakQueueStatus.Open);
@@ -741,7 +741,7 @@ public sealed class FundLedgerViewModelTests
 
                 viewModel.ReconciliationSearchText.Should().BeEmpty();
                 viewModel.SelectedReconciliationScopeFilterIndex.Should().Be(0);
-                viewModel.IsOpenBreakQueueFilterSelected.Should().BeTrue();
+                viewModel.IsAllBreakQueueFilterSelected.Should().BeTrue();
                 viewModel.HasActiveReconciliationFilters.Should().BeFalse();
                 viewModel.ResetReconciliationFiltersCommand.CanExecute(null).Should().BeFalse();
                 viewModel.ReconciliationBreakQueueItems.Should().ContainSingle(item =>

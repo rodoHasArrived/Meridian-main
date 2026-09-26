@@ -11,6 +11,9 @@ last_reviewed: 2026-09-25
 
 # src/Meridian.Ui.Shared
 
+Source comparison requires a completed recovery checkpoint with matching run/import IDs, artifact hashes and counts, plus executed mapping proof shared by the import and match artifact. Failed or running recovery cannot clear observations. Named SLA calendars load once per host from DataRoot/reconciliation/sla-calendars.json; see the reconciliation operating procedure.
+
+
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
 session resolution recheck the account scope after runtime account changes. Unpartitioned

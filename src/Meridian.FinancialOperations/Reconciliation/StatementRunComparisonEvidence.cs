@@ -12,9 +12,12 @@ internal static class StatementRunComparisonEvidence
     // be used to establish clearing across runs produced by the new implementation.
     private const string MatcherRevision = "statement-run-matcher-v1";
 
+    internal static string LegacyPolicyFingerprint(StatementToleranceProfile tolerance)
+        => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new { MatcherRevision, Tolerance = tolerance }));
+
     public static StatementRunMatchArtifact Retain(StatementRunMatchArtifact artifact,
         IReadOnlyList<CanonicalStatementRow> rows, InternalReconciliationPopulations populations,
-        StatementToleranceProfile tolerance)
+        StatementToleranceProfile tolerance, string? executedMappingFingerprint = null)
     {
         var kinds = rows.Select(row => row.ActivityType.Trim().ToLowerInvariant() switch
         {
@@ -34,9 +37,12 @@ internal static class StatementRunComparisonEvidence
         return artifact with
         {
             SourceComparisonComplete = complete,
+            SourceComparisonMappingFingerprint = executedMappingFingerprint,
             SourceComparisonPopulationKinds = kinds,
-            SourceComparisonPolicyFingerprint = Sha256Digest.ComputeUtf8(
-                JsonSerializer.Serialize(new { MatcherRevision, Tolerance = tolerance }))
+            SourceComparisonPolicyFingerprint = executedMappingFingerprint is null
+                ? LegacyPolicyFingerprint(tolerance)
+                : Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
+                { MatcherRevision, Tolerance = tolerance, ExecutedMappingFingerprint = executedMappingFingerprint }))
         };
     }
 }

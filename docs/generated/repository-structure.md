@@ -4642,6 +4642,7 @@ Meridian-main
 │   │   │   │   ├── StatementFetchScheduleStore.cs
 │   │   │   │   ├── StatementImportService.cs
 │   │   │   │   ├── StatementIngressLimits.cs
+│   │   │   │   ├── StatementMappingExecutionEvidence.cs
 │   │   │   │   ├── StatementMappingProfileCatalog.cs
 │   │   │   │   ├── StatementMappingProfileDocument.cs
 │   │   │   │   ├── StatementMappingProfileJsonContext.cs
@@ -4996,7 +4997,8 @@ Meridian-main
 │   │   │   ├── IbFlexStatementService.cs
 │   │   │   ├── ReconciliationCaseInfrastructure.cs
 │   │   │   ├── StatementDurabilityInfrastructure.cs
-│   │   │   └── StatementDurabilityJsonContext.cs
+│   │   │   ├── StatementDurabilityJsonContext.cs
+│   │   │   └── StatementExecutedMappingEvidence.cs
 │   │   ├── Resilience
 │   │   │   ├── HttpResiliencePolicy.cs
 │   │   │   ├── ProviderConnectionSupervisor.cs
@@ -5978,6 +5980,7 @@ Meridian-main
 │   │   │   ├── IReconciliationBreakQueueRepository.cs
 │   │   │   ├── IReconciliationRunRepository.cs
 │   │   │   ├── IReconciliationRunService.cs
+│   │   │   ├── IReconciliationSlaCalendarResolver.cs
 │   │   │   ├── IReconciliationSlaPolicyProvider.cs
 │   │   │   ├── ISecurityReferenceLookup.cs
 │   │   │   ├── LedgerReadService.cs
@@ -6806,6 +6809,8 @@ Meridian-main
 │   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
 │   │   │   │   │   ├── quant-lab-screen.view-model.ts
 │   │   │   │   │   ├── reconciliation-casework-outcome.ts
+│   │   │   │   │   ├── reconciliation-source-observation.test.ts
+│   │   │   │   │   ├── reconciliation-source-observation.ts
 │   │   │   │   │   ├── report-library-screen.test.tsx
 │   │   │   │   │   ├── report-library-screen.tsx
 │   │   │   │   │   ├── report-run-governance-client-package.ts
@@ -7427,6 +7432,7 @@ Meridian-main
 │   │   │   ├── FeatureCapabilitySettingsService.cs
 │   │   │   ├── FileAccountingAuditPendingMarkerStore.cs
 │   │   │   ├── FileFundProfileTenancyRegistry.cs
+│   │   │   ├── FileReconciliationSlaCalendarResolver.cs
 │   │   │   ├── FinancialRecordExplorerReadScope.cs
 │   │   │   ├── FinancialRecordExplorerReadService.cs
 │   │   │   ├── FinancialRecordExplorerReadService.InstrumentJournalProof.cs
@@ -10206,6 +10212,7 @@ Meridian-main
 │   │   │   ├── ReconciliationCaseWorkflowServiceTests.cs
 │   │   │   ├── ReconciliationCaseWorkflowVocabularyTests.cs
 │   │   │   ├── ReconciliationProjectionServiceTests.cs
+│   │   │   ├── ReconciliationSlaCalendarTests.cs
 │   │   │   ├── SecurityMasterAccountingEventServiceTests.cs
 │   │   │   ├── ShadowBookValuationServiceTests.cs
 │   │   │   ├── StrategyDesignRepositoryTests.cs

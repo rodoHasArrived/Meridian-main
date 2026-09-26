@@ -179,7 +179,8 @@ public sealed class OfxStatementConnector(
             columnMappings,
             records,
             issues,
-            fingerprint);
+            fingerprint)
+        { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForProfile(ConnectorId, profile) };
     }
 
     private static ReadOnlySpan<byte> SniffSpan(StatementSourceDocument document)

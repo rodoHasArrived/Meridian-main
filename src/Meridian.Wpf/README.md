@@ -11,6 +11,9 @@ last_reviewed: 2026-09-05
 
 # src/Meridian.Wpf
 
+Fund Ledger defaults and resets to all reconciliation cases, includes explicitly fund-scoped statement cases without strategy runs, and shows retained source observation and occurrence age separately from case status. Exact lineage evidence is available in the source-observation disclosure. Missing strategy comparison detail preserves the selected case and reports unknown counts.
+
+
 The desktop workstation is installed as part of the single Meridian product and opened
 on demand from the browser workstation. It is not a separate end-user package or Start
 Menu product.

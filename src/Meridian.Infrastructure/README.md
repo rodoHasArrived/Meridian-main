@@ -11,6 +11,9 @@ last_reviewed: 2026-07-25
 
 # src/Meridian.Infrastructure
 
+Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
+
+
 Immutable statement match artifacts retain source-comparison completeness, represented population kinds,
 and the executed matcher/tolerance-policy fingerprint. Legacy artifacts omit these fields and cannot
 establish clearing. The optional fields preserve legacy artifact hashes when absent.
