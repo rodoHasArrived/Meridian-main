@@ -170,8 +170,10 @@ As of 2026-09-27 the W9 slate stands as follows in the registry:
 
 - **`done`:** `W9-ASSET-010`, and `W9-DEMO-002`, closed on 2026-09-16 under `DEC-W9-DONE-001`
   on the [W9-DEMO-002 Closure Record](w9-demo-002-closure-2026-09-16.md).
-- **`accepted`:** `W9-TRUTH-001`, `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` under
-  `DEC-W9-ACCEPTANCE-001`; `W9-ALPACA-004`, held over three fill-path caveats and accepted on
+- **`accepted`:** `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` under
+  `DEC-W9-ACCEPTANCE-001`; `W9-TRUTH-001`, whose bounded acceptance was restored on 2026-09-26
+  under `DEC-W9-ACCEPTANCE-005` after the provenance correction, on an explicit owner-review
+  exception in place of independent non-author review; `W9-ALPACA-004`, held over three fill-path caveats and accepted on
   2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source; and
   `W9-SAFETY-007`, accepted on 2026-09-11 under `DEC-W9-ACCEPTANCE-004` with an OCO reservation
   and deferred risk-journal work.
