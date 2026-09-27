@@ -87,6 +87,8 @@ public sealed class HostTenantScopeCompositionTests : IDisposable
         using var provider = services.BuildServiceProvider();
         var accessor = provider.GetRequiredService<IFundScopeTenantAccessor>();
         provider.GetRequiredService<TenantScopeEnforcementOptions>().IsFailClosed.Should().BeTrue();
+        provider.GetRequiredService<FundScopedWriteTenantOptions>().Enforce.Should().BeTrue(
+            "strict tenant reads must also refuse tenantless writes without a separate opt-in");
         accessor.Should().BeOfType<WorkstationFundScopeTenantAccessor>();
 
         using (FundScopeTenantAuthority.Enter("worker-tenant", "retained background work"))

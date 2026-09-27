@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-08-30
+last_reviewed: 2026-09-25
 ---
 
 # src/Meridian.Application
@@ -119,9 +119,17 @@ Core workstation host. Do not introduce a second listener or independent monitor
   refresh-loop and token-persistence logs record the exception type without exception details.
   Malformed token JSON can include secrets in exception paths. Provider response bodies, reason phrases,
   and exception messages can contain secrets and must not enter failure events or returned errors.
-  Refresh failure retains the prior token so a later retry can recover. The optional logger permits
-  isolated verification of this boundary. Plaintext OAuth token persistence remains an unresolved
-  credential-vault migration requirement; these error controls do not certify PRD-002.
+  Transport failure retains the prior token; completed rotations commit replacements independently
+  of lifecycle cancellation. The optional logger permits
+  isolated verification of this boundary. OAuth tokens now persist through the Data Integration-owned
+  encrypted vault. Await `InitializeAsync` before synchronous token inspection; asynchronous mutations
+  initialize automatically and construction never blocks a desktop synchronization context. Initialization
+  imports legacy JSON through Data Integration's cross-process migration lease without replacing retained tokens.
+  Both encrypted generations retain the import before the source is renamed and erased; interrupted cleanup
+  resumes without parsing erased bytes. Failed initialization can be retried on the same service instance,
+  and a failed refresh-loop start can be stopped and restarted. Unreadable evidence fails closed. After an audit failure the cache
+  reloads the committed token or evicts it if recovery is unavailable. Disposal never rewrites a cached
+  token snapshot. Non-Windows key protection and credential scoping remain open PRD-002 requirements.
   Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one
