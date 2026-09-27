@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-08-03
+**Reviewed:** 2026-09-27
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -36,7 +36,18 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
     ahead of the W9 close-out because they serve the release gate
+  - [W9-DEMO-002 Closure Record (2026-09-16)](w9-demo-002-closure-2026-09-16.md) — the lane-owned
+    closure documentation that moved `W9-DEMO-002` from `accepted` to `done` (decision
+    `DEC-W9-DONE-001`)
+  - [Deferred Expansion Boundaries](deferred-expansion-boundaries.md) — the minimum evidence a
+    future roadmap row must produce before a deferred product area can move into active delivery;
+    boundaries, not implementation claims
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [What To Work On Next (2026-09-23)](next-work-determination-2026-09-23.md) — latest
+    prioritization input, anchored at `main` `13aa7576`; ranks work against the registry, the
+    readiness tracker, live CI, and the pull-request queue, and supersedes the
+    [2026-09-20 determination](next-work-determination-2026-09-20.md). It moves no roadmap row
+    and certifies no release
   - [Reporting Operating Model (2026-09)](reporting-operating-model-2026-09.md) — refined
     reporting semantics: the `Report`/`Edition`/`Publication` object split, the four-destination
     consolidation inside the existing Reporting root, the scope contract with separated effective
@@ -155,20 +166,28 @@ bounded W6 Covered Call evidence loop as complete; WPF parity (`W8-WPF-PARITY-00
 screen consolidation (`W8-UX-CONSOL-001`) remain active. The accepted W1-W7 bounded milestones are
 capability claims, not blanket production certification.
 
-As of 2026-08-30 the W9 slate is mostly closed: `W9-ASSET-010` is `done`; `W9-TRUTH-001`,
-`W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` remain `accepted` on operator
-decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011`, reopened under `DEC-W9-ACCEPTANCE-002`,
-reached `ready_for_acceptance` on 2026-09-22 with all five exit criteria evidenced and awaits a
-fresh operator acceptance decision. Both decisions and their chronology are recorded in the
-[2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md).
-`W9-ALPACA-004` was deliberately held over three recorded fill-path caveats and moved to
-`accepted` on 2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source;
-`W9-SAFETY-007` reached `ready_for_acceptance` the same day, and `W9-GOV-008` and `W9-INGEST-009`
-remain `in_progress`.
-Those latter three open rows are sequenced by the
-[2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md). Acceptance of a bounded
-row is not a release certification and does not move a row to `done`. Every W10 row still carries
-planned-evidence posture. The registry remains live truth for all of this.
+As of 2026-09-27 the W9 slate stands as follows in the registry:
+
+- **`done`:** `W9-ASSET-010`, and `W9-DEMO-002`, closed on 2026-09-16 under `DEC-W9-DONE-001`
+  on the [W9-DEMO-002 Closure Record](w9-demo-002-closure-2026-09-16.md).
+- **`accepted`:** `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` under
+  `DEC-W9-ACCEPTANCE-001`; `W9-TRUTH-001`, whose bounded acceptance was restored on 2026-09-26
+  under `DEC-W9-ACCEPTANCE-005` after the provenance correction, on an explicit owner-review
+  exception in place of independent non-author review; `W9-ALPACA-004`, held over three fill-path caveats and accepted on
+  2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source; and
+  `W9-SAFETY-007`, accepted on 2026-09-11 under `DEC-W9-ACCEPTANCE-004` with an OCO reservation
+  and deferred risk-journal work.
+- **`ready_for_acceptance`:** `W9-CORPACT-011`, reopened under `DEC-W9-ACCEPTANCE-002`, reached
+  this state on 2026-09-22 with all five exit criteria evidenced and awaits a fresh operator
+  acceptance decision.
+- **`in_progress`:** `W9-GOV-008` and `W9-INGEST-009`, sequenced by the
+  [2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md).
+
+The acceptance chronology is recorded in the
+[2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md). Acceptance of a
+bounded row is not a release certification and does not move a row to `done`. In W10,
+`W10-MARK-001`, `W10-SEAM-001`, and `W10-LOT-002` are `in_progress`; every other W10 row still
+carries planned-evidence posture. The registry remains live truth for all of this.
 
 Production readiness is currently **blocked**. The release posture changes only when the
 [Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,
@@ -289,6 +308,7 @@ and required GitHub Actions evidence.
 - W7-LIVE-001 is complete as a bounded governance milestone. Broader live execution productization and live portfolio operations are not part of that completion claim.
 - W8-WPF-PARITY-001 is in progress, closing browser-first screen gaps while preserving one shared contract/read-model seam.
 - `W9-ASSET-010` is complete. It established the evidence-backed Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal spine, preserves Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states, and joins acquisition or selected-lot disposal consequences to the immutable journal transaction, with focused contract, spine, storage, endpoint, shared-read-model, and readiness suites as evidence.
+- `W9-DEMO-002` is complete. The one-command seeded demo provisions market history, a fund account and position snapshot, draft journals, reconciliation casework, and a review-required report pack over durable stores, each record carrying the seeded provenance token; the closure record is the lane-owned documentation behind `DEC-W9-DONE-001`.
 - The remaining proof-layer targets, including the broader Operational Evidence Graph, fund-event command-center specializations, Capital Account Workbench, and Private-Capital Close Cockpit, remain design priorities until roadmap rows and acceptance evidence move them into delivery status.
 - `Paper-first`, `read-only where uncertain`, and `governance-first` defaults remain active by policy.
 
