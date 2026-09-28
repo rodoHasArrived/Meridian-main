@@ -47,7 +47,7 @@ class WindowsCiRunnerTests(unittest.TestCase):
             return [module.runner.TestResult(p.name, p.path, int(i == 1), ["dotnet", "test"])
                     for i, p in enumerate(projects)]
         with tempfile.TemporaryDirectory() as tmp, patch.object(sys, "argv", ["runner", "--results-dir", tmp]):
-            with patch.object(module.os, "name", "nt"), patch.object(module.subprocess, "run", side_effect=command), patch.object(module.runner, "run_tests", side_effect=test_slices):
+            with patch.object(module.platform, "system", return_value="Windows"), patch.object(module.subprocess, "run", side_effect=command), patch.object(module.runner, "run_tests", side_effect=test_slices):
                 self.assertEqual(module.main(), 1)
 
     def test_automatic_paths_include_every_manual_slice_dependency(self):

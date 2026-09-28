@@ -6,6 +6,7 @@ import argparse
 import importlib.util
 import json
 import os
+import platform
 from pathlib import Path
 import subprocess
 import sys
@@ -38,7 +39,7 @@ def main() -> int:
     parser.add_argument("--results-dir", type=Path, default=Path("artifacts/wpf-validation/windows-desktop-build"))
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
-    if os.name != "nt" and not args.dry_run:
+    if platform.system() != "Windows" and not args.dry_run:
         parser.error("Windows validation requires a native Windows runner.")
     os.chdir(ROOT)
     os.environ["MERIDIAN_REPO_ROOT"] = str(ROOT)
