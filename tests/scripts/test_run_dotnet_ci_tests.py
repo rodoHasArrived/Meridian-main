@@ -2,6 +2,7 @@ import importlib.util
 import io
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -756,6 +757,24 @@ print(json.dumps({'temporary': temporary}), flush=True)
                             self.assertEqual(MODULE.main(), 2)
                     write_filter.assert_not_called()
                     run.assert_not_called()
+
+    def test_summary_reproduction_command_preserves_shell_sensitive_arguments(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            probe = root / "argv probe.py"
+            probe.write_text("import json, sys\nprint(json.dumps(sys.argv[1:]))\n", encoding="utf-8")
+            arguments = ["--filter", "(Category!=Integration)&(Name~One|Name~Two)",
+                         "--logger", "trx;LogFilePrefix=core", "a path/O'Brien/$HOME"]
+            result = MODULE.TestResult("probe", str(probe), 0, [sys.executable, str(probe), *arguments])
+            summary_path = root / "summary.md"
+            MODULE.write_summaries([result], summary_output=summary_path, json_output=root / "summary.json")
+            summary = summary_path.read_text(encoding="utf-8")
+            shell = "powershell" if os.name == "nt" else "sh"
+            command = summary.split(f"```{shell}\n", 1)[1].split("\n```", 1)[0]
+            launcher = ([shutil.which("pwsh") or "powershell", "-NoProfile", "-NonInteractive", "-Command"]
+                        if os.name == "nt" else ["sh", "-c"])
+            completed = subprocess.run([*launcher, command], capture_output=True, text=True, check=True)
+            self.assertEqual(json.loads(completed.stdout), arguments)
 
     def test_write_summaries_records_all_project_statuses(self):
         with self.subTest("summary output"):
