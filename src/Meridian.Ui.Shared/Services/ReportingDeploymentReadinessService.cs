@@ -103,78 +103,6 @@ public sealed class ReportingScheduleWorkerReadinessState
     }
 }
 
-/// <summary>
-/// Process-local liveness receipt for the server-owned secure reporting distribution worker.
-/// Readiness is earned only by a successful cycle and is cleared by a cycle-level failure or stop.
-/// </summary>
-public sealed class ReportingDeliveryWorkerReadinessState
-{
-    private const int LifecycleNotStarted = 0;
-    private const int LifecycleInitialStart = 1;
-    private const int LifecycleOperational = 2;
-
-    private int _ready;
-    private int _consecutiveFailures;
-    private int _lifecycleState;
-    private long _lastSuccessfulCycleUtcTicks;
-
-    public bool IsReady => Volatile.Read(ref _ready) == 1;
-
-    public int ConsecutiveFailures => Volatile.Read(ref _consecutiveFailures);
-
-    internal bool IsInitialStartInProgress =>
-        Volatile.Read(ref _lifecycleState) == LifecycleInitialStart;
-
-    public DateTimeOffset? LastSuccessfulCycleUtc =>
-        ReadTimestamp(ref _lastSuccessfulCycleUtcTicks);
-
-    public bool IsHealthy(DateTimeOffset nowUtc, TimeSpan maximumHeartbeatAge) =>
-        WorkerReadinessState.IsHealthy(
-            IsReady,
-            ConsecutiveFailures,
-            LastSuccessfulCycleUtc,
-            nowUtc,
-            maximumHeartbeatAge);
-
-    internal void MarkStarting()
-    {
-        Volatile.Write(ref _ready, 0);
-        _ = Interlocked.CompareExchange(
-            ref _lifecycleState,
-            LifecycleInitialStart,
-            LifecycleNotStarted);
-    }
-
-    internal void MarkReady(DateTimeOffset? completedAtUtc = null)
-    {
-        Volatile.Write(ref _lifecycleState, LifecycleOperational);
-        WorkerReadinessState.MarkReady(
-            ref _ready,
-            ref _consecutiveFailures,
-            ref _lastSuccessfulCycleUtcTicks,
-            completedAtUtc);
-    }
-
-    internal void MarkCycleFailed()
-    {
-        Volatile.Write(ref _lifecycleState, LifecycleOperational);
-        Interlocked.Increment(ref _consecutiveFailures);
-        Volatile.Write(ref _ready, 0);
-    }
-
-    internal void MarkNotReady()
-    {
-        Volatile.Write(ref _lifecycleState, LifecycleOperational);
-        Volatile.Write(ref _ready, 0);
-    }
-
-    private static DateTimeOffset? ReadTimestamp(ref long ticks)
-    {
-        var value = Interlocked.Read(ref ticks);
-        return value == 0 ? null : new DateTimeOffset(value, TimeSpan.Zero);
-    }
-}
-
 internal static class WorkerReadinessState
 {
     internal static void MarkReady(
@@ -422,7 +350,9 @@ public sealed class ReportingDeploymentReadinessService(
     private readonly IServiceProvider _services =
         services ?? throw new ArgumentNullException(nameof(services));
 
-    public ReportingDeploymentCapabilityDto Evaluate()
+    public ReportingDeploymentCapabilityDto Evaluate() => Evaluate(out _);
+
+    private ReportingDeploymentCapabilityDto Evaluate(out bool allowDeliveryWorkerInitialBootstrap)
     {
         // A DI resolution exception is a composition defect, not an unconfigured capability.
         // Capture each failure so the blocking reasons name the service and cause instead of
@@ -516,7 +446,8 @@ public sealed class ReportingDeploymentReadinessService(
         var durableScheduling =
             HasRequiredSchema(persistenceProbe, "scheduling")
             && IsImplementation<Meridian.Reporting.IReportingScheduleStore, PostgresReportingScheduleStore>();
-        var nowUtc = (Resolve<TimeProvider>() ?? TimeProvider.System).GetUtcNow();
+        var timeProvider = Resolve<TimeProvider>() ?? TimeProvider.System;
+        var nowUtc = timeProvider.GetUtcNow();
         var scheduleWorkerOptions = Resolve<ReportingScheduleWorkerOptions>();
         var schedulingWorkerConfigured =
             scheduleWorkerOptions is not null
@@ -535,14 +466,6 @@ public sealed class ReportingDeploymentReadinessService(
                 is IReportingDeliveryGrantDownloadCommitter
             && distributionApplication is not null;
         var distributionOptions = Resolve<SecureReportingDistributionOptions>();
-        var deliveryWorkerConfigured =
-            distributionOptions is not null
-            && !string.IsNullOrWhiteSpace(distributionOptions.WorkerId)
-            && distributionOptions.WorkerPollInterval >= TimeSpan.FromMilliseconds(250)
-            && distributionOptions.WorkerPollInterval <= TimeSpan.FromMinutes(5)
-            && Resolve<ReportingDeliveryWorkerReadinessState>()?.IsHealthy(
-                nowUtc,
-                WorkerHeartbeatMaximumAge(distributionOptions.WorkerPollInterval)) == true;
         var destinationResolver = Resolve<IReportingRecipientDestinationResolver>();
         var recipientDestinationsConfigured = destinationResolver?.IsConfigured == true;
         var configuredRecipientTransports = destinationResolver?.ConfiguredTransportIds?
@@ -576,6 +499,21 @@ public sealed class ReportingDeploymentReadinessService(
             persistenceReady
             && Resolve<ReportingMigrationRunner>() is not null
             && Resolve<ReportingMigrationReadinessState>()?.IsReady == true;
+
+        // Resolve the dependency graph before observing worker liveness. Health and the
+        // one-time bootstrap exemption must describe the same completed state transition.
+        var deliveryWorkerOptionsValid =
+            distributionOptions is not null
+            && !string.IsNullOrWhiteSpace(distributionOptions.WorkerId)
+            && distributionOptions.WorkerPollInterval >= TimeSpan.FromMilliseconds(250)
+            && distributionOptions.WorkerPollInterval <= TimeSpan.FromMinutes(5);
+        var deliverySnapshot = Resolve<ReportingDeliveryWorkerReadinessState>()?.Capture();
+        allowDeliveryWorkerInitialBootstrap = deliveryWorkerOptionsValid
+            && deliverySnapshot?.IsInitialStartInProgress == true;
+        var deliveryWorkerConfigured = deliveryWorkerOptionsValid
+            && deliverySnapshot?.IsHealthy(
+                timeProvider.GetUtcNow(),
+                WorkerHeartbeatMaximumAge(distributionOptions!.WorkerPollInterval)) == true;
 
         var components = new[]
         {
@@ -709,13 +647,10 @@ public sealed class ReportingDeploymentReadinessService(
 
     public IReadOnlyList<string> GetScheduleWorkerCycleBlockingReasons()
     {
-        var capability = Evaluate();
-        var deliveryWorkerReadiness =
-            _services.GetService<ReportingDeliveryWorkerReadinessState>();
+        var capability = Evaluate(out var allowDeliveryWorkerInitialBootstrap);
         return ResolveScheduleWorkerCycleBlockingReasons(
             capability,
-            allowDeliveryWorkerInitialBootstrap:
-                deliveryWorkerReadiness?.IsInitialStartInProgress == true);
+            allowDeliveryWorkerInitialBootstrap);
     }
 
     internal static IReadOnlyList<string> ResolveScheduleWorkerCycleBlockingReasons(

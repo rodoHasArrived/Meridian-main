@@ -6,10 +6,15 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-25
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Ui.Shared
+
+Reporting delivery readiness captures heartbeat, failure count, and the initial-start window
+together after resolving deployment dependencies. The scheduling gate uses that same observation,
+so a successful first delivery cycle cannot leave a stale peer blocker. Bootstrap requires valid
+worker options; failed, stopped, or stale workers and unrelated deployment blockers remain refused.
 
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
