@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Infrastructure.Adapters.Core;
 
 namespace Meridian.Core.Config;
 
@@ -15,10 +16,13 @@ public sealed class DataSourceKindConverter : JsonConverter<DataSourceKind>
         if (reader.TokenType == JsonTokenType.String)
         {
             var value = reader.GetString();
+            var canonical = string.IsNullOrWhiteSpace(value) ? value : ProviderIdentity.NormalizeId(value);
+            // Preserve the public enum while accepting the canonical family ID and retained aliases.
+            var enumName = canonical == "ibkr" ? nameof(DataSourceKind.IB) : canonical;
             // Enum.TryParse accepts numeric strings for undefined values ("99"), so IsDefined
             // is required to keep the fail-closed contract.
             if (!string.IsNullOrWhiteSpace(value) &&
-                Enum.TryParse<DataSourceKind>(value, ignoreCase: true, out var parsed) &&
+                Enum.TryParse<DataSourceKind>(enumName, ignoreCase: true, out var parsed) &&
                 Enum.IsDefined(parsed))
             {
                 return parsed;

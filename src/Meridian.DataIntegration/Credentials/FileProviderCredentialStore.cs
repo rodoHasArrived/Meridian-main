@@ -883,8 +883,31 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         var protectedBytes = Convert.FromBase64String(envelope.CipherText);
         var plainBytes = await UnprotectAsync(envelope.Protection, protectedBytes, ct).ConfigureAwait(false);
         var vaultJson = Encoding.UTF8.GetString(plainBytes);
-        var vault = JsonSerializer.Deserialize<ProviderCredentialVault>(vaultJson, JsonOptions);
-        return vault ?? throw new InvalidOperationException("Provider credential vault payload is invalid.");
+        var vault = JsonSerializer.Deserialize<ProviderCredentialVault>(vaultJson, JsonOptions)
+            ?? throw new InvalidOperationException("Provider credential vault payload is invalid.");
+
+        // Existing vaults retain accepted configuration aliases such as nasdaqdatalink and ib.
+        // Normalize the immutable read snapshot; the next ordinary mutation persists canonical
+        // keys under the existing writer lock. Retain the newest whole record if aliases coexist,
+        // rather than combining credential fields from different saved generations.
+        vault.Providers = vault.Providers
+            .GroupBy(pair => ProviderCredentialCatalog.NormalizeProviderId(pair.Key), StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group =>
+                {
+                    var record = group.OrderByDescending(pair => pair.Value.UpdatedAt)
+                        .ThenByDescending(pair => string.Equals(pair.Key, group.Key, StringComparison.Ordinal))
+                        .ThenBy(pair => pair.Key, StringComparer.Ordinal)
+                        .First().Value;
+                    record.ProviderId = group.Key;
+                    return record;
+                },
+                StringComparer.OrdinalIgnoreCase);
+        vault.LegacyImportedProviderIds = vault.LegacyImportedProviderIds
+            .Select(ProviderCredentialCatalog.NormalizeProviderId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return vault;
     }
 
     private async Task WriteVaultAsync(ProviderCredentialVault vault, CancellationToken ct,

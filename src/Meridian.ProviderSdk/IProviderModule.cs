@@ -37,6 +37,12 @@ public interface IProviderModule
     string ModuleDisplayName => GetType().Name.Replace("ProviderModule", "");
 
     /// <summary>
+    /// Whether this module may publish runtime factories. Copy-only module scaffolds must
+    /// return false; an enabled configuration cannot promote them into production providers.
+    /// </summary>
+    bool IsProductionProvider => true;
+
+    /// <summary>
     /// Capabilities advertised by this module before registration.
     /// Used by <see cref="ProviderModuleLoader"/> for capability-based filtering and
     /// load diagnostics. An empty array means the module does not self-declare capabilities.

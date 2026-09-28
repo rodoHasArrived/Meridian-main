@@ -41,7 +41,7 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
     //  IProviderMetadata                                                      //
     // --------------------------------------------------------------------- //
 
-    public string ProviderId => "synthetic-options";
+    public string ProviderId => "synthetic";
     public string ProviderDisplayName => "Synthetic Options Chain";
     public string ProviderDescription => "Deterministic Black-Scholes option chains for offline development and testing.";
     public int ProviderPriority => 200;

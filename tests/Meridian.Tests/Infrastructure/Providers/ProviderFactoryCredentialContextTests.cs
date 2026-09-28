@@ -6,6 +6,7 @@ using Meridian.Application.Services;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
@@ -36,9 +37,9 @@ public sealed class ProviderFactoryCredentialContextTests
             ["finnhub-corp-actions"] = "finnhub",
             ["fred"] = "fred",
             ["fred-symbols"] = "fred",
-            ["nasdaq"] = "nasdaqdatalink",
-            ["nasdaq-corp-actions"] = "nasdaqdatalink",
-            ["nasdaq-symbols"] = "nasdaqdatalink",
+            ["nasdaq"] = "nasdaq",
+            ["nasdaq-corp-actions"] = "nasdaq",
+            ["nasdaq-symbols"] = "nasdaq",
             ["polygon"] = "polygon",
             ["polygon-options"] = "polygon",
             ["robinhood"] = "robinhood",
@@ -493,7 +494,8 @@ public sealed class ProviderFactoryCredentialContextTests
 
         var providers = factory.CreateSymbolSearchProviders();
 
-        providers.Should().BeEmpty();
+        providers.Should().ContainSingle().Which.Should().BeOfType<EdgarSymbolSearchProvider>(
+            "EDGAR is the declared credential-free search adapter; all credential-gated adapters must be absent");
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(AlpacaHistoricalDataProvider), ["ALPACA_KEY_ID", "ALPACA_SECRET_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(

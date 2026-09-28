@@ -1,6 +1,7 @@
 using System.Reflection;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -342,7 +343,7 @@ public sealed class DataSourceRegistry
 
         foreach (var source in Sources)
         {
-            services.Add(new ServiceDescriptor(source.ImplementationType, source.ImplementationType, lifetime));
+            services.TryAdd(new ServiceDescriptor(source.ImplementationType, source.ImplementationType, lifetime));
             // Only register as IDataSource if the type actually implements it
             if (typeof(IDataSource).IsAssignableFrom(source.ImplementationType))
             {
@@ -389,7 +390,7 @@ public sealed class DataSourceRegistry
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
         ArgumentNullException.ThrowIfNull(context);
         lock (_sync)
-            _moduleContexts[moduleId] = context;
+            _moduleContexts[ProviderIdentity.NormalizeId(moduleId)] = context;
         return this;
     }
 
@@ -402,7 +403,7 @@ public sealed class DataSourceRegistry
         lock (_sync)
         {
             foreach (var (id, ctx) in contexts)
-                _moduleContexts[id] = ctx;
+                _moduleContexts[ProviderIdentity.NormalizeId(id)] = ctx;
         }
         return this;
     }
@@ -415,8 +416,23 @@ public sealed class DataSourceRegistry
     /// skipped when no context was registered for their ID.
     /// </summary>
     public void RegisterModules(IServiceCollection services, params Assembly[] assemblies)
+        => RegisterModules(services, new HashSet<string>(StringComparer.Ordinal), assemblies);
+
+    /// <summary>
+    /// Registers discovered modules except families whose factories are owned by the calling
+    /// composition catalog. Exclusion keys accept the same aliases as module configuration.
+    /// Call before building the service provider; modules add descriptors to this collection.
+    /// </summary>
+    public void RegisterModules(
+        IServiceCollection services,
+        IReadOnlySet<string> externallyOwnedModuleIds,
+        params Assembly[] assemblies)
     {
         ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(externallyOwnedModuleIds);
+        var externallyOwnedIds = externallyOwnedModuleIds
+            .Select(ProviderIdentity.NormalizeId)
+            .ToHashSet(StringComparer.Ordinal);
 
         foreach (var assembly in assemblies)
         {
@@ -457,7 +473,13 @@ public sealed class DataSourceRegistry
                     continue;
                 }
 
-                var moduleId = module.ModuleId;
+                var moduleId = ProviderIdentity.NormalizeId(module.ModuleId);
+
+                if (!module.IsProductionProvider || externallyOwnedIds.Contains(moduleId))
+                {
+                    Increment(ref _skippedModuleCount);
+                    continue;
+                }
 
                 ProviderModuleContext? context;
                 lock (_sync)

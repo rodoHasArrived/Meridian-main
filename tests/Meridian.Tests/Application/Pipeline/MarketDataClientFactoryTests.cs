@@ -26,20 +26,21 @@ public sealed class MarketDataClientFactoryTests
         // Arrange
         var registry = CreateRegistryWithFactories();
 
-        // Assert — SupportedStreamingSources is now IReadOnlyList<string>
-        registry.SupportedStreamingSources.Should().Contain("ib");
-        registry.SupportedStreamingSources.Should().Contain("alpaca");
-        registry.SupportedStreamingSources.Should().Contain("polygon");
+        // Configuration aliases are accepted at registration; inventory exposes canonical IDs.
+        registry.SupportedStreamingSources.Should().BeEquivalentTo("ibkr", "alpaca", "polygon");
     }
 
-    [Fact]
-    public void CreateStreamingClient_WithStringProviderId_ReturnsIBClient()
+    [Theory]
+    [InlineData("ib")]
+    [InlineData("ibkr")]
+    [InlineData("interactive-brokers")]
+    public void CreateStreamingClient_WithStringProviderId_ReturnsIBClient(string providerId)
     {
         // Arrange
         var registry = CreateRegistryWithFactories();
 
         // Act
-        var client = registry.CreateStreamingClient("ib");
+        var client = registry.CreateStreamingClient(providerId);
 
         // Assert
         client.Should().BeOfType<IBMarketDataClient>();

@@ -47,7 +47,7 @@ public sealed class PolygonOptionsChainProvider : IOptionsChainProvider
     //  IProviderMetadata                                                      //
     // --------------------------------------------------------------------- //
 
-    public string ProviderId => "polygon-options";
+    public string ProviderId => "polygon";
     public string ProviderDisplayName => "Polygon.io Options";
     public string ProviderDescription => "US equity option chains with greeks and IV via Polygon.io REST API.";
     public int ProviderPriority => 15;

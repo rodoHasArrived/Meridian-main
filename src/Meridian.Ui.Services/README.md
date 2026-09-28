@@ -17,6 +17,9 @@ Batch exports reject duplicate queue entries, skip cancelled attempts, and seria
 
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
 
+Provider health caches and history use ProviderSdk canonical family identities so accepted
+configuration and telemetry aliases address the same health row.
+
 
 `Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, dimension-scoped roll-forward, source-linked audit rows, and close-state evidence gates.
 
