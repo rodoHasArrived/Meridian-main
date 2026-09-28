@@ -209,13 +209,23 @@ public sealed class SettingsConfigurationService
                 !string.IsNullOrWhiteSpace(connection.ExternalAccountId) && !string.IsNullOrWhiteSpace(connection.CredentialEnvironment)).ToArray();
     }
 
-    /// <summary>Reads server-owned credential status without treating local environment values as authority.</summary>
-    public async Task<IReadOnlyList<ProviderCredentialStatus>> GetProviderCredentialStatusesAsync(CancellationToken ct = default, string? connectionId = null)
+    /// <summary>
+    /// Reads server-owned credential status without treating local environment values as authority.
+    /// By default provider rows include the authenticated tenant's own connection credentials;
+    /// <paramref name="providerWideOnly"/> reads only the provider-wide records, for flows that write them.
+    /// </summary>
+    public async Task<IReadOnlyList<ProviderCredentialStatus>> GetProviderCredentialStatusesAsync(CancellationToken ct = default,
+        string? connectionId = null, bool providerWideOnly = false)
     {
         if (connectionId is not null)
             ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
-        var route = connectionId is null ? UiApiRoutes.ProviderConnections :
-            UiApiRoutes.WithQuery(UiApiRoutes.ProviderConnections, "connectionId=" + Uri.EscapeDataString(connectionId));
+        if (connectionId is not null && providerWideOnly)
+            throw new ArgumentException("A connection-scoped read cannot also be provider-wide.", nameof(providerWideOnly));
+        var route = connectionId is not null
+            ? UiApiRoutes.WithQuery(UiApiRoutes.ProviderConnections, "connectionId=" + Uri.EscapeDataString(connectionId))
+            : providerWideOnly
+                ? UiApiRoutes.WithQuery(UiApiRoutes.ProviderConnections, "scope=provider")
+                : UiApiRoutes.ProviderConnections;
         IReadOnlyList<ProviderConnectionRowDto> rows = [];
         try
         {

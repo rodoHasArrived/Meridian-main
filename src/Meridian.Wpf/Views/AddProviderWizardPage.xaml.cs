@@ -58,7 +58,9 @@ public partial class AddProviderWizardPage : Page
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         var providers = _settingsConfigService.GetProviderCatalog();
-        var credentialStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync();
+        // The wizard writes provider-wide records, so it reads provider-wide status rather than the
+        // tenant readiness view that also counts credentials on the tenant's own connections.
+        var credentialStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync(providerWideOnly: true);
         _credentialStatuses = credentialStatuses;
 
         _viewModel.LoadProviderCatalog(providers, credentialStatuses);
@@ -243,7 +245,7 @@ public partial class AddProviderWizardPage : Page
             {
                 // Nothing was entered, so success depends on credentials the vault already holds.
                 // Re-read the service rather than trusting the status captured when the page opened.
-                var current = FindStatus(await _settingsConfigService.GetProviderCredentialStatusesAsync(), provider);
+                var current = FindStatus(await _settingsConfigService.GetProviderCredentialStatusesAsync(providerWideOnly: true), provider);
                 if (current?.State != CredentialState.Configured)
                 {
                     _viewModel.SetSaveError("Enter the required credentials. The credential service reports none saved for this provider.");

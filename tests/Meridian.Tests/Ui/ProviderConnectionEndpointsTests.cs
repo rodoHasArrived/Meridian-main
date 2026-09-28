@@ -550,6 +550,32 @@ public sealed class ProviderConnectionEndpointsTests
     }
 
     [Fact]
+    public async Task ProviderReadiness_PicksTheBestOwnedConnectionAndProviderScopeReadsOnlyProviderWideRecords()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "a-configured", "provider-tenant", "polygon", "account-a", "default");
+        await RetainConnectionAsync(app, "b-verified", "provider-tenant", "polygon", "account-b", "default");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        var configured = new ProviderCredentialScope("provider-tenant", "a-configured", "account-a", "default");
+        var verified = new ProviderCredentialScope("provider-tenant", "b-verified", "account-b", "default");
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon", new Dictionary<string, string?> { ["ApiKey"] = "key-a" }, "default"), configured);
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon", new Dictionary<string, string?> { ["ApiKey"] = "key-b" }, "default"), verified);
+        await vault.RecordScopedVerificationAsync(new ProviderCredentialVerificationUpdate("polygon", Success: true, ExternalAccountId: "account-b",
+            VerifiedAt: DateTimeOffset.UtcNow, Actor: "provider-ops"), verified);
+        var client = app.GetTestClient();
+
+        var tenantRows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections"));
+        var providerWideRows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections?scope=provider"));
+
+        var polygon = tenantRows.Single(row => row.ProviderId == "polygon");
+        polygon.CredentialState.Should().Be(ProviderCredentialStateDto.Verified,
+            "every owned connection is evaluated, so a later Verified connection wins over an earlier Configured one");
+        polygon.ExternalAccountId.Should().Be("account-b");
+        providerWideRows.Single(row => row.ProviderId == "polygon").CredentialState.Should().NotBe(ProviderCredentialStateDto.Configured)
+            .And.NotBe(ProviderCredentialStateDto.Verified, "scope=provider must not count the tenant's connection credentials");
+    }
+
+    [Fact]
     public async Task ScopedCredentialRoute_AcceptsARetainedProviderAlias()
     {
         await using var app = await CreateAppAsync(_ => { });

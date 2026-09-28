@@ -2729,19 +2729,19 @@
     {
       "method": "PUT",
       "path": "/api/providers/{providerId}/credentials",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:55",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:59",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/providers/{providerId}/verify",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:93",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:97",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/providers/{providerId}/credentials",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:122",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:126",
       "documented": false
     },
     {

@@ -31,7 +31,8 @@ fields the operator filled in, because the vault treats a blank value as a delet
 keeps the other retained fields.
 
 The add-provider wizard saves and tests credentials through the same authenticated service, writing the
-provider-wide vault record. It no longer reads or writes Windows user environment variables, its editors
+provider-wide vault record, and reads provider-wide status for its badges and blank-save check, so
+credentials held only on the tenant's own connections never make a provider-wide save look complete. It no longer reads or writes Windows user environment variables, its editors
 start blank, and a test reports success only when the service verifies the credentials. Saved but
 unverified credentials are shown as a warning. Every provider and credential endpoint requires tenant
 scope, so a company-less desktop account sees an explicit refusal naming that requirement. While a test

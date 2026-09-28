@@ -33,8 +33,10 @@ the read.
 
 `GET /api/providers/connections` without a connection ID returns provider-level readiness for the
 authenticated tenant: a provider whose provider-wide row is not ready takes the better credential state
-of one of that tenant's own retained connections, so a scoped save is reflected in Settings. Other
-tenants' and unassigned connections never contribute. Ownership checks compare canonical provider IDs,
+among that tenant's own retained connections (every owned connection is evaluated, and a ready
+provider-wide row is never replaced), so a scoped save is reflected in Settings. Other tenants' and
+unassigned connections never contribute. `?scope=provider` returns provider-wide rows only, for flows
+such as the add-provider wizard that read and write the provider-wide record. Ownership checks compare canonical provider IDs,
 so a connection retained under an alias such as `alpha-vantage` or `qbo` still resolves.
 
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company

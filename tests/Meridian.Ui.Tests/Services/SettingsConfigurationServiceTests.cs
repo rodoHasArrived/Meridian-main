@@ -152,6 +152,21 @@ public sealed class SettingsConfigurationServiceTests
     }
 
     [Fact]
+    public async Task ProviderWideStatus_UsesTheProviderScopeQueryAndCannotCombineWithAConnection()
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, "[]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+
+        await service.GetProviderCredentialStatusesAsync(providerWideOnly: true);
+
+        handler.Path.Should().Be(UiApiRoutes.ProviderConnections);
+        handler.Query.Should().Be("?scope=provider");
+        var combined = () => service.GetProviderCredentialStatusesAsync(connectionId: "owned", providerWideOnly: true);
+        await combined.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Fact]
     public async Task ServerCredentialStatus_IncludesManagedProvidersAbsentFromTheLocalCatalog()
     {
         using var handler = new StatusHandler(HttpStatusCode.OK,

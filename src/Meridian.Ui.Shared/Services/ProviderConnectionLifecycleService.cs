@@ -90,8 +90,8 @@ public sealed class ProviderConnectionLifecycleService
 
     /// <summary>
     /// Provider-level readiness for one tenant. Each provider starts from its provider-wide row; when that
-    /// row is not ready, a better credential state on one of the tenant's own retained connections for
-    /// the same provider replaces it. Other tenants' connections and unassigned connections never contribute.
+    /// row is not ready, the best credential state among the tenant's own retained connections for the
+    /// same provider replaces it. Other tenants' connections and unassigned connections never contribute.
     /// </summary>
     public async Task<IReadOnlyList<ProviderConnectionRowDto>> GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default)
     {
@@ -104,11 +104,17 @@ public sealed class ProviderConnectionLifecycleService
                 !string.IsNullOrWhiteSpace(c.ExternalAccountId) && !string.IsNullOrWhiteSpace(c.CredentialEnvironment))
             .ToArray();
 
-        foreach (var connection in owned)
+        // Evaluate every owned connection (in a stable order) and keep the best per provider, so a
+        // Verified connection is never hidden behind an earlier Configured one. A ready provider-wide
+        // row stays authoritative and is never replaced.
+        var best = new Dictionary<int, ProviderConnectionRowDto>();
+        foreach (var connection in owned.OrderBy(c => c.ConnectionId, StringComparer.OrdinalIgnoreCase))
         {
             var descriptor = ProviderCredentialCatalog.Find(connection.ProviderFamilyId);
             var index = descriptor is null ? -1 : rows.FindIndex(row => string.Equals(row.ProviderId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase));
             if (index < 0 || ReadinessRank(rows[index].CredentialState) >= ReadinessRank(ProviderCredentialStateDto.Configured))
+                continue;
+            if (best.TryGetValue(index, out var current) && ReadinessRank(current.CredentialState) >= ReadinessRank(ProviderCredentialStateDto.Verified))
                 continue;
 
             ProviderConnectionRowDto scoped;
@@ -121,9 +127,13 @@ public sealed class ProviderConnectionLifecycleService
                 continue;
             }
 
-            if (ReadinessRank(scoped.CredentialState) > ReadinessRank(rows[index].CredentialState))
-                rows[index] = scoped with { DisplayName = rows[index].DisplayName };
+            var incumbentRank = ReadinessRank((best.TryGetValue(index, out current) ? current : rows[index]).CredentialState);
+            if (ReadinessRank(scoped.CredentialState) > incumbentRank)
+                best[index] = scoped;
         }
+
+        foreach (var (index, scoped) in best)
+            rows[index] = scoped with { DisplayName = rows[index].DisplayName };
 
         return rows;
     }

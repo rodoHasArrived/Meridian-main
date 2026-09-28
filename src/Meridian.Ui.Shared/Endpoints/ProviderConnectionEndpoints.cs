@@ -38,8 +38,12 @@ public static class ProviderConnectionEndpoints
                 }
                 // Readiness includes the authenticated tenant's own connection credentials, so a scoped
                 // save is reflected here; other tenants' connections never contribute.
+                // scope=provider asks for provider-wide rows only, for flows such as the add-provider
+                // wizard that read and write the provider-wide record.
+                var providerWideOnly = context.Request.Query.TryGetValue("scope", out var scopeValues) &&
+                    scopeValues.Count == 1 && string.Equals(scopeValues[0], "provider", StringComparison.OrdinalIgnoreCase);
                 var requestTenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                var rows = requestTenant.HasTenantScope
+                var rows = requestTenant.HasTenantScope && !providerWideOnly
                     ? await service.GetConnectionsForTenantAsync(requestTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
                     : await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(rows, jsonOptions);
