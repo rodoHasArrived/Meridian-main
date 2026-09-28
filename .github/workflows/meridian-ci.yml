@@ -65,7 +65,7 @@ jobs:
 
       - name: Run .NET lane
         env:
-          MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit }}
+          MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit || 'false' }}
         run: bash scripts/ci.sh --lane verify-dotnet
 
       - name: Upload .NET lane artifacts
@@ -112,7 +112,7 @@ jobs:
 
       - name: Run browser workstation lane
         env:
-          MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.node.outputs.cache-hit || 'not reported' }}
+          MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.node.outputs.cache-hit || 'false' }}
         run: bash scripts/ci.sh --lane verify-browser
 
       - name: Upload browser lane artifacts

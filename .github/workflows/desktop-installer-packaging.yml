@@ -128,6 +128,7 @@ jobs:
           python-version: "3.12"
 
       - name: Cache NuGet packages
+        id: nuget
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
@@ -136,6 +137,8 @@ jobs:
             ${{ runner.os }}-nuget-v1-
 
       - name: Run WPF and installer setup preflight
+        env:
+          MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit || 'false' }}
         run: python build/scripts/ci/run-windows-ci-tests.py --slice full --slice setup --results-dir artifacts/test-results/desktop-release-preflight
 
       - name: Upload release preflight test results
@@ -184,6 +187,7 @@ jobs:
           python-version: "3.12"
 
       - name: Cache NuGet packages
+        id: nuget
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
