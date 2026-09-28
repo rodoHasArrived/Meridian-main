@@ -3851,7 +3851,7 @@
       ]
     }
   ],
-  "fingerprint": "5665e28f581ef9461c638a58766c43a6660f358a3fc6719a64399fd50da80daf",
+  "fingerprint": "29f18070e0616d6f845c06ea400fb021cb24bd6257f5c62d9970ebf676347f79",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -3970,7 +3970,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "fcdee56f511d5cb84e68f2e9501edeba89e12985066fb71a8572665c297b98c4",
+      "fingerprint": "4567de2b95ecc1781639edb27b684cc4d55de1af4184982d26c33ad7de579e53",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Api",
       "object_ids": [
@@ -24574,7 +24574,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "e69c606a74a623197328b2f69042429486b20a27a3fb90cebb77897725f7995c",
+      "fingerprint": "f87facd717ed706ae9e6cae6f52319c43d99ceb7eb745f104dfe5363472e5784",
       "full_name": "Meridian.Contracts.Api.CapabilityInfo",
       "id": "Meridian.Contracts.Api.CapabilityInfo",
       "kind": "class",
@@ -24605,7 +24605,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "int?",
-          "source_line": 788,
+          "source_line": 800,
           "type": "int?"
         },
         {
@@ -24619,7 +24619,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 794,
+          "source_line": 806,
           "type": "bool"
         },
         {
@@ -24633,7 +24633,21 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 842,
+          "source_line": 854,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": "supportsBackfill",
+          "key_type": null,
+          "name": "SupportsBackfill",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "bool",
+          "source_line": 780,
           "type": "bool"
         },
         {
@@ -24647,7 +24661,21 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 836,
+          "source_line": 848,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": "supportsCorporateActions",
+          "key_type": null,
+          "name": "SupportsCorporateActions",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "bool",
+          "source_line": 788,
           "type": "bool"
         },
         {
@@ -24661,7 +24689,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 800,
+          "source_line": 812,
           "type": "bool"
         },
         {
@@ -24675,7 +24703,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 812,
+          "source_line": 824,
           "type": "bool"
         },
         {
@@ -24689,7 +24717,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 782,
+          "source_line": 794,
           "type": "bool"
         },
         {
@@ -24703,7 +24731,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 830,
+          "source_line": 842,
           "type": "bool"
         },
         {
@@ -24717,7 +24745,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 824,
+          "source_line": 836,
           "type": "bool"
         },
         {
@@ -24731,7 +24759,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 806,
+          "source_line": 818,
           "type": "bool"
         },
         {
@@ -24753,13 +24781,27 @@
           "collection_kind": null,
           "element_type": null,
           "json_ignored": false,
+          "json_name": "supportsSymbolSearch",
+          "key_type": null,
+          "name": "SupportsSymbolSearch",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "bool",
+          "source_line": 784,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
           "json_name": "supportsTrades",
           "key_type": null,
           "name": "SupportsTrades",
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 818,
+          "source_line": 830,
           "type": "bool"
         }
       ],
@@ -30437,7 +30479,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "767a70fe517069c7ee8550dc17a60ed4c433c54d0b80095bc433d80630918928",
+      "fingerprint": "4b9182bb3f2a618c82b50787933b06cbb6ee944df32d8c82141dbac910dd7ad7",
       "full_name": "Meridian.Contracts.Api.MarketDataCapabilityInfo",
       "id": "Meridian.Contracts.Api.MarketDataCapabilityInfo",
       "kind": "record",
@@ -30454,7 +30496,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 883,
+          "source_line": 901,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -30468,7 +30510,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 882,
+          "source_line": 900,
           "type": "string"
         },
         {
@@ -30482,7 +30524,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 887,
+          "source_line": 905,
           "type": "string"
         },
         {
@@ -30496,7 +30538,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 888,
+          "source_line": 906,
           "type": "string"
         },
         {
@@ -30510,7 +30552,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 886,
+          "source_line": 904,
           "type": "string"
         },
         {
@@ -30524,7 +30566,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 884,
+          "source_line": 902,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -30538,7 +30580,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "int?",
-          "source_line": 889,
+          "source_line": 907,
           "type": "int?"
         },
         {
@@ -30552,7 +30594,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "double?",
-          "source_line": 891,
+          "source_line": 909,
           "type": "double?"
         },
         {
@@ -30566,7 +30608,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "double?",
-          "source_line": 890,
+          "source_line": 908,
           "type": "double?"
         },
         {
@@ -30580,7 +30622,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 893,
+          "source_line": 911,
           "type": "string"
         },
         {
@@ -30594,7 +30636,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 892,
+          "source_line": 910,
           "type": "string"
         },
         {
@@ -30608,7 +30650,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 885,
+          "source_line": 903,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -30618,12 +30660,12 @@
       "qualified_name": "Meridian.Contracts.Api.MarketDataCapabilityInfo",
       "references": [],
       "source": {
-        "line": 881,
+        "line": 899,
         "path": "src/Meridian.Contracts/Api/ProviderCatalog.cs"
       },
       "sources": [
         {
-          "line": 881,
+          "line": 899,
           "path": "src/Meridian.Contracts/Api/ProviderCatalog.cs"
         }
       ],
@@ -34382,7 +34424,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "f7038c2aa2ed946ff61633d3ed8114f04f52f37659966a73e0a2bfda93c35c60",
+      "fingerprint": "9fb5d014e32e16449841bff98c391abef11cde63820fa3804c21b2574464a7c1",
       "full_name": "Meridian.Contracts.Api.ProviderCatalogResponse",
       "id": "Meridian.Contracts.Api.ProviderCatalogResponse",
       "kind": "record",
@@ -34399,7 +34441,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<ProviderCatalogEntry>",
-          "source_line": 899,
+          "source_line": 917,
           "type": "IReadOnlyList<ProviderCatalogEntry>"
         },
         {
@@ -34414,7 +34456,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "ProviderRegistrationReportDto?",
-          "source_line": 903,
+          "source_line": 921,
           "type": "ProviderRegistrationReportDto?"
         },
         {
@@ -34428,7 +34470,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 902,
+          "source_line": 920,
           "type": "string"
         },
         {
@@ -34442,7 +34484,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 901,
+          "source_line": 919,
           "type": "DateTimeOffset"
         },
         {
@@ -34456,7 +34498,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 900,
+          "source_line": 918,
           "type": "int"
         }
       ],
@@ -34469,12 +34511,12 @@
         "Meridian.Contracts.Api.ProviderRegistrationReportDto"
       ],
       "source": {
-        "line": 898,
+        "line": 916,
         "path": "src/Meridian.Contracts/Api/ProviderCatalog.cs"
       },
       "sources": [
         {
-          "line": 898,
+          "line": 916,
           "path": "src/Meridian.Contracts/Api/ProviderCatalog.cs"
         }
       ],
@@ -38651,7 +38693,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "bb010a4c3b2e321527c1c738a433802ae26f3e4c64fa733c8c9e28c6b31b3059",
+      "fingerprint": "2815336696f56057cf52e0ed4650679a50eea8cc6bd03a2385421c229aabb13c",
       "full_name": "Meridian.Contracts.Api.ProviderRegistrationFailureDto",
       "id": "Meridian.Contracts.Api.ProviderRegistrationFailureDto",
       "kind": "record",
@@ -38668,7 +38710,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 928,
+          "source_line": 946,
           "type": "string"
         },
         {
@@ -38682,7 +38724,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 927,
+          "source_line": 945,
           "type": "string"
         },
         {
@@ -38696,7 +38738,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 926,
+          "source_line": 944,
           "type": "string?"
         },
         {
@@ -38710,7 +38752,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 924,
+          "source_line": 942,
           "type": "string"
         },
         {
@@ -38724,7 +38766,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 925,
+          "source_line": 943,
           "type": "string"
         }
       ],
@@ -38734,12 +38776,12 @@
       "qualified_name": "Meridian.Contracts.Api.ProviderRegistrationFailureDto",
       "references": [],
       "source": {
-        "line": 923,
+        "line": 941,
         "path": "src/Meridian.Contracts/Api/ProviderCatalog.cs"
       },
       "sources": [
         {
-          "line": 923,
+          "line": 941,
           "path": "src/Meridian.Contracts/Api/ProviderCatalog.cs"
         }
       ],
@@ -38755,7 +38797,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "739184c4ee2f4ced964258df099e0b5d39ebac649ac731825bcbadc4ba011639",
+      "fingerprint": "313386d8e34181453e0e263c5aca1b2ea90e0615a5e84b831f23b1a63317a13e",
       "full_name": "Meridian.Contracts.Api.ProviderRegistrationReportDto",
       "id": "Meridian.Contracts.Api.ProviderRegistrationReportDto",
       "kind": "record",
@@ -38772,7 +38814,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 910,
+          "source_line": 928,
           "type": "int"
         },
         {
@@ -38786,7 +38828,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 916,
+          "source_line": 934,
           "type": "int"
         },
         {
@@ -38800,7 +38842,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<ProviderRegistrationFailureDto>",
-          "source_line": 918,
+          "source_line": 936,
           "type": "IReadOnlyList<ProviderRegistrationFailureDto>"
         },
         {
@@ -38814,7 +38856,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 909,
+          "source_line": 927,
           "type": "DateTimeOffset"
         },
         {
@@ -38828,7 +38870,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 917,
+          "source_line": 935,
           "type": "bool"
         },
         {
@@ -38842,7 +38884,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 912,
+          "source_line": 930,
           "type": "int"
         },
         {
@@ -38856,7 +38898,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 911,
+          "source_line": 929,
           "type": "int"
         },
         {
@@ -38870,7 +38912,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 913,
+          "source_line": 931,
           "type": "int"
         },
         {
@@ -38884,7 +38926,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 914,
+          "source_line": 932,
           "type": "int"
         },
         {
@@ -38898,7 +38940,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 915,
+          "source_line": 933,
           "type": "int"
         }
       ],
@@ -38910,12 +38952,12 @@
         "Meridian.Contracts.Api.ProviderRegistrationFailureDto"
       ],
       "source": {
-        "line": 908,
+        "line": 926,
         "path": "src/Meridian.Contracts/Api/ProviderCatalog.cs"
       },
       "sources": [
         {
-          "line": 908,
+          "line": 926,
           "path": "src/Meridian.Contracts/Api/ProviderCatalog.cs"
         }
       ],

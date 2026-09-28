@@ -21,6 +21,9 @@ Fixture network delays retain their 50–149 ms simulation range and use a confi
 The shared singleton uses system time. Tests control timer completion directly and verify both
 pre-cancelled and pending requests; caller cancellation is honored without waiting for simulated time.
 
+Provider health caches and history use ProviderSdk canonical family identities so accepted
+configuration and telemetry aliases address the same health row.
+
 
 `Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, dimension-scoped roll-forward, source-linked audit rows, and close-state evidence gates.
 

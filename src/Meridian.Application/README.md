@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-09-25
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Application
@@ -33,6 +33,22 @@ legacy new-run behavior and must not be treated as safe automatic retries.
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
 
 ## Provider setup attribution
+
+`ProviderFeatureRegistration` uses the shared `AddProviderServices` composition path. The
+Infrastructure descriptor catalog supplies built-in factories for streaming, historical backfill,
+symbol search, corporate actions, options, and brokerage. Registration and explicitly supplied
+plugin module discovery complete before the container is built; the final configuration and
+credential resolver are consumed when factories run. Stored credentials therefore participate
+in optional provider selection without mutating the service collection after build. Bootstrap
+configuration defers registry-backed self-healing until the provider graph exists.
+The ProviderSdk `ProviderIdentity` map resolves configured aliases, including
+`interactive-brokers` to `ibkr`, before family enablement and factory lookup. Discovered modules
+cannot override descriptor-owned built-in families; plugin modules own their additional factories.
+`ProviderCompositionTests` loads configured aliases through Configuration, Collector, and Provider
+features, resolves every descriptor capability, and rejects template-only and mapper-only families.
+`ProviderModuleCompositionTests` proves that explicit discovery invokes configured plugin factories
+before build; `ProviderCatalogCompositionTests` checks the resulting canonical inventory and
+preservation of entitlement metadata.
 
 The shared provider capability matrix uses per-instrument streaming coverage independently of
 historical and options coverage. Runtime Polygon factories retain the configured feed and resolved
@@ -749,6 +765,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"
 ```
 
 ## Change rules
