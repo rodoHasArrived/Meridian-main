@@ -82,8 +82,12 @@ public sealed class ProviderTrustScoringService
     {
         var cfg = _store.Load();
         var section = ProviderRoutingConfigExtensions.GetSection(cfg);
+        // A connection with more than one certification row has no single certification to trust,
+        // so it is scored as uncertified rather than failing every tenant's snapshot read.
         var certifications = (section.Certifications ?? Array.Empty<ProviderCertificationConfig>())
-            .ToDictionary(c => c.ConnectionId, StringComparer.OrdinalIgnoreCase);
+            .GroupBy(c => c.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1)
+            .ToDictionary(group => group.Key, group => group.Single(), StringComparer.OrdinalIgnoreCase);
 
         var snapshots = new List<ProviderTrustSnapshotDto>();
         var visibleConnections = (section.Connections ?? []).GroupBy(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)

@@ -146,6 +146,7 @@ public sealed class SettingsConfigurationService
         var route = CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId);
         var response = await _apiClient.PutWithResponseAsync<ProviderCredentialMutationResultDto>(route,
             new ProviderCredentialUpsertRequestDto(fields), ct).ConfigureAwait(false);
+        ThrowIfRefused(response.StatusCode, "persistence");
         if (!response.Success || response.Data is null ||
             !string.Equals(response.Data.ProviderId, providerId, StringComparison.OrdinalIgnoreCase) ||
             response.Data.CredentialState is not (ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified))
@@ -157,6 +158,7 @@ public sealed class SettingsConfigurationService
     {
         var route = CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId);
         var response = await _apiClient.DeleteWithResponseAsync<ProviderCredentialMutationResultDto>(route, ct).ConfigureAwait(false);
+        ThrowIfRefused(response.StatusCode, "removal");
         if (!response.Success || response.Data is null ||
             !string.Equals(response.Data.ProviderId, providerId, StringComparison.OrdinalIgnoreCase) ||
             response.Data.CredentialState != ProviderCredentialStateDto.Missing)
@@ -170,6 +172,14 @@ public sealed class SettingsConfigurationService
         var response = await _apiClient.PostWithResponseAsync<ProviderCredentialVerificationResultDto>(route, null, ct).ConfigureAwait(false);
         return response.Success && response.Data is { Success: true, VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null } result &&
             string.Equals(result.ProviderId, providerId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void ThrowIfRefused(int statusCode, string operation)
+    {
+        if (statusCode is 401 or 403)
+            throw new CredentialServiceRefusedException(
+                $"Credential {operation} was not confirmed by the authenticated service: the session was refused. " +
+                "Credential changes require a signed-in account with a tenant (company) assignment and the ManageCredentials permission.");
     }
 
     private static string CredentialRoute(string template, string providerId, string? connectionId)
@@ -235,7 +245,7 @@ public sealed class SettingsConfigurationService
                 CredentialState.Missing => "Credentials are missing or require correction",
                 _ => "Credential status is unavailable from the service."
             };
-            return new ProviderCredentialStatus(provider.Id, provider.DisplayName, state, message, []);
+            return new ProviderCredentialStatus(provider.Id, provider.DisplayName, state, message, [], row.CredentialFields);
         }).ToArray();
     }
 
@@ -592,6 +602,13 @@ public enum ProviderTier : byte
 }
 
 /// <summary>Credential configuration state for a provider.</summary>
+/// <summary>
+/// The authenticated service refused a credential mutation (401/403), for example because the session
+/// has no tenant scope or lacks ManageCredentials. Nothing was written; callers should explain the refusal
+/// rather than fall back to an unauthenticated local store.
+/// </summary>
+public sealed class CredentialServiceRefusedException(string message) : InvalidOperationException(message);
+
 public enum CredentialState : byte
 {
     NotRequired,
@@ -607,4 +624,13 @@ public sealed record ProviderCredentialStatus(
     string DisplayName,
     CredentialState State,
     string StatusMessage,
-    string[] MissingEnvVars);
+    string[] MissingEnvVars,
+    IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null)
+{
+    /// <summary>
+    /// True when the authenticated credential service reported this provider together with the
+    /// field names its vault accepts. Editors must use these names; the local provider catalog's
+    /// field names are not the vault schema.
+    /// </summary>
+    public bool HasServiceFieldSchema => CredentialFields is not null;
+}

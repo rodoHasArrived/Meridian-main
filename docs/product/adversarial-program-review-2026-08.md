@@ -13,7 +13,7 @@ highest-impact claims were independently spot-verified a second time. Every find
 
 > This review is deliberately critical; a strengths section gives fair credit at the end. It builds
 > on the 2026-07 review (`adversarial-program-review-2026-07.md`) and its 2026-07-26 follow-up
-> (`archive/docs/assessments/adversarial-program-review-2026-07-26.md`), re-tests their headline,
+> ([`archive/docs/assessments/adversarial-program-review-2026-07-26.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/adversarial-program-review-2026-07-26.md)), re-tests their headline,
 > and extends coverage to areas those passes did not reach (concurrency, statement-connector
 > robustness, CI truthfulness, the installer/operations lane, and the browser client's error
 > handling). Live status stays in the roadmap registry; nothing here competes with it.

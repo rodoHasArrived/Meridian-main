@@ -50,9 +50,9 @@ public sealed class CredentialManagementViewModelTests
             var paperLoad = viewModel.SelectionStatusLoad;
             viewModel.SelectedCredential = live;
             var liveLoad = viewModel.SelectionStatusLoad;
-            second.SetResult(Json("[{\"providerId\":\"alpaca\",\"credentialState\":3}]"));
+            second.SetResult(Json("[{\"providerId\":\"alpaca\",\"credentialState\":3,\"credentialFields\":[{\"name\":\"KeyId\",\"label\":\"Key ID\",\"required\":true,\"inputKind\":1},{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]"));
             await liveLoad;
-            first.SetResult(Json("[{\"providerId\":\"alpaca\",\"credentialState\":1}]"));
+            first.SetResult(Json("[{\"providerId\":\"alpaca\",\"credentialState\":1,\"credentialFields\":[{\"name\":\"KeyId\",\"label\":\"Key ID\",\"required\":true,\"inputKind\":1},{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]"));
             await paperLoad;
             viewModel.SelectedCredential.Should().BeSameAs(live);
             live.HasCredentials.Should().BeTrue();
@@ -78,7 +78,7 @@ public sealed class CredentialManagementViewModelTests
             using var handler = new Handler(request => Task.FromResult(
                 request.RequestUri!.AbsolutePath == "/api/provider-routing/connections"
                     ? Json(Connections, refused ? HttpStatusCode.Forbidden : HttpStatusCode.OK)
-                    : Json("[{\"providerId\":\"alpaca\",\"credentialState\":3}]")));
+                    : Json("[{\"providerId\":\"alpaca\",\"credentialState\":3,\"credentialFields\":[{\"name\":\"KeyId\",\"label\":\"Key ID\",\"required\":true,\"inputKind\":1},{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]")));
             using var api = new ApiClientService(new Factory(handler));
             using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
             await viewModel.LoadCredentialsAsync();
@@ -108,7 +108,7 @@ public sealed class CredentialManagementViewModelTests
                     return saved.Task;
                 }
                 return Task.FromResult(Json(request.RequestUri!.AbsolutePath == "/api/provider-routing/connections"
-                    ? Connections : "[{\"providerId\":\"alpaca\",\"credentialState\":1}]"));
+                    ? Connections : "[{\"providerId\":\"alpaca\",\"credentialState\":1,\"credentialFields\":[{\"name\":\"KeyId\",\"label\":\"Key ID\",\"required\":true,\"inputKind\":1},{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]"));
             });
             using var api = new ApiClientService(new Factory(handler));
             using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
@@ -135,6 +135,88 @@ public sealed class CredentialManagementViewModelTests
             viewModel.EditFields.Should().NotBeEmpty().And.OnlyContain(field => field.Value == "retry-value");
             viewModel.SaveCredentialCommand.CanExecute(null).Should().BeTrue();
             viewModel.RemoveCredentialCommand.CanExecute(null).Should().BeTrue();
+        });
+    }
+
+    [Fact]
+    public void Save_SubmitsOnlyFieldsTheOperatorFilledSoRetainedValuesSurvive()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var puts = new List<string>();
+            using var handler = new Handler(async request =>
+            {
+                if (request.Method == HttpMethod.Put)
+                {
+                    puts.Add(await request.Content!.ReadAsStringAsync());
+                    return Json("{\"providerId\":\"alpaca\",\"credentialState\":3}");
+                }
+                return Json(request.RequestUri!.AbsolutePath == "/api/provider-routing/connections"
+                    ? Connections : "[{\"providerId\":\"alpaca\",\"credentialState\":3,\"credentialFields\":[{\"name\":\"KeyId\",\"label\":\"Key ID\",\"required\":true,\"inputKind\":1},{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]");
+            });
+            using var api = new ApiClientService(new Factory(handler));
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            await viewModel.LoadCredentialsAsync();
+            viewModel.SelectedCredential = viewModel.Credentials.Single(row => row.ConnectionId == "paper-a");
+            await viewModel.SelectionStatusLoad;
+
+            viewModel.EditCredentialCommand.Execute(null);
+            await ((IAsyncRelayCommand)viewModel.SaveCredentialCommand).ExecuteAsync(null);
+            puts.Should().BeEmpty("an untouched editor must not submit blanks that the vault treats as deletions");
+            viewModel.IsEditPanelVisible.Should().BeTrue();
+
+            viewModel.EditFields.Single(field => field.FieldName.Contains("Secret", StringComparison.OrdinalIgnoreCase)).Value = "rotated-secret";
+            await ((IAsyncRelayCommand)viewModel.SaveCredentialCommand).ExecuteAsync(null);
+            puts.Should().ContainSingle();
+            puts[0].Should().Contain("SecretKey").And.Contain("rotated-secret");
+            puts[0].Should().NotContain("KeyId", "the untouched key ID must be retained, not cleared");
+        });
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Edit_UsesTheServiceFieldSchemaInsteadOfTheLocalCatalog(bool schemaReported)
+    {
+        WpfTestThread.Run(async () =>
+        {
+            // The server's vault schema deliberately differs from the local catalog's KeyId/SecretKey,
+            // the way Tiingo's vault field is ApiKey while the local catalog calls it Token.
+            var status = schemaReported
+                ? "[{\"providerId\":\"alpaca\",\"credentialState\":1,\"credentialFields\":[{\"name\":\"ApiKey\",\"label\":\"API key\",\"required\":true,\"inputKind\":1}]}]"
+                : "[{\"providerId\":\"alpaca\",\"credentialState\":1}]";
+            var puts = new List<string>();
+            using var handler = new Handler(async request =>
+            {
+                if (request.Method == HttpMethod.Put)
+                {
+                    puts.Add(await request.Content!.ReadAsStringAsync());
+                    return Json("{\"providerId\":\"alpaca\",\"credentialState\":3}");
+                }
+                return Json(request.RequestUri!.AbsolutePath == "/api/provider-routing/connections" ? Connections : status);
+            });
+            using var api = new ApiClientService(new Factory(handler));
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            await viewModel.LoadCredentialsAsync();
+            viewModel.SelectedCredential = viewModel.Credentials.First();
+            await viewModel.SelectionStatusLoad;
+
+            viewModel.EditCredentialCommand.Execute(null);
+            foreach (var field in viewModel.EditFields)
+                field.Value = "entered-value";
+            await ((IAsyncRelayCommand)viewModel.SaveCredentialCommand).ExecuteAsync(null);
+
+            if (schemaReported)
+            {
+                viewModel.EditFields.Should().BeEmpty("a confirmed save closes the editor");
+                puts.Should().ContainSingle().Which.Should().Contain("ApiKey").And.NotContain("KeyId");
+            }
+            else
+            {
+                viewModel.EditFields.Should().OnlyContain(field => field.FieldName == string.Empty,
+                    "without a service schema there are no field names the vault would accept");
+                puts.Should().BeEmpty();
+            }
         });
     }
 

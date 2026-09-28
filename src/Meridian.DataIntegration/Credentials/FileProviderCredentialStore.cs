@@ -15,6 +15,15 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
 
     private const int VaultVersion = 1;
+
+    // Vaults holding tenant/connection-scoped state use a protection tag that binaries predating
+    // scoped ownership reject as unreadable. Those binaries ignore the envelope version and would
+    // otherwise load the vault, drop every Scope and scoped OAuth record they do not model, and
+    // rewrite it. An unreadable primary and backup make them fail closed instead, so a rollback
+    // cannot silently take scoped credentials offline. Vaults without scoped state keep the
+    // version 1 format and stay readable by older binaries.
+    private const int ScopedVaultVersion = 2;
+    private const string ScopedProtectionSuffix = "+scoped-v2";
     private const string VaultFileName = "provider-credentials.vault";
     private const string VaultBackupFileName = "provider-credentials.vault.bak";
     private const string KeyFileName = "provider-credentials.key";
@@ -951,6 +960,11 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
 
         var envelope = JsonSerializer.Deserialize<ProtectedVaultEnvelope>(envelopeJson, JsonOptions)
             ?? throw new InvalidOperationException("Provider credential vault envelope is invalid.");
+        // Not a corruption type: recovering from the backup would let this release overwrite a
+        // newer primary it cannot model, which is the rollback loss this format guards against.
+        if (envelope.Version > ScopedVaultVersion)
+            throw new NotSupportedException(
+                $"Provider credential vault format version {envelope.Version} was written by a newer Meridian release and cannot be opened by this one.");
         var protectedBytes = Convert.FromBase64String(envelope.CipherText);
         var plainBytes = await UnprotectAsync(envelope.Protection, protectedBytes, ct).ConfigureAwait(false);
         var vaultJson = Encoding.UTF8.GetString(plainBytes);
@@ -962,14 +976,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         bool discardPreviousGeneration = false, bool retainCurrentGenerationAsBackup = false)
     {
         EnsureVaultDirectory();
-        vault.Version = VaultVersion;
+        var scopedFormat = ContainsScopedState(vault);
         vault.UpdatedAt = DateTimeOffset.UtcNow;
-
-        var vaultJson = JsonSerializer.Serialize(vault, JsonOptions);
-        var plainBytes = Encoding.UTF8.GetBytes(vaultJson);
-        var (protection, protectedBytes) = await ProtectAsync(plainBytes, ct).ConfigureAwait(false);
-        var envelope = new ProtectedVaultEnvelope(VaultVersion, protection, Convert.ToBase64String(protectedBytes));
-        var envelopeJson = JsonSerializer.Serialize(envelope, JsonOptions);
+        var envelopeJson = await SerializeEnvelopeAsync(vault, scopedFormat, ct).ConfigureAwait(false);
 
         // Roll the current (readable) vault to the last-known-good backup before replacing
         // it, so a corrupting write can always fall back one generation in LoadVaultAsync.
@@ -985,8 +994,16 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             try
             {
                 // Keep a usable recovery copy when this mutation follows primary corruption.
-                await LoadVaultFromFileAsync(VaultPath, ct).ConfigureAwait(false);
+                var previousVault = await LoadVaultFromFileAsync(VaultPath, ct).ConfigureAwait(false);
                 var previousGeneration = await File.ReadAllBytesAsync(VaultPath, ct).ConfigureAwait(false);
+                if (scopedFormat && !IsScopedEnvelope(previousGeneration))
+                {
+                    // Re-protect the unchanged previous generation so an older binary cannot fall
+                    // back to it and overwrite the scoped primary written below.
+                    previousGeneration = Encoding.UTF8.GetBytes(
+                        await SerializeEnvelopeAsync(previousVault, scopedFormat: true, ct).ConfigureAwait(false));
+                }
+
                 await AtomicFileWriter.WriteAsync(_vaultBackupPath, previousGeneration, ct).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsVaultCorruption(ex))
@@ -999,9 +1016,68 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             }
         }
 
+        if (scopedFormat && !discardPreviousGeneration)
+            await EnsureBackupUsesScopedFormatAsync(ct).ConfigureAwait(false);
+
         await AtomicFileWriter.WriteAsync(VaultPath, envelopeJson, ct).ConfigureAwait(false);
         if (discardPreviousGeneration || retainCurrentGenerationAsBackup)
             await AtomicFileWriter.WriteAsync(_vaultBackupPath, envelopeJson, CancellationToken.None).ConfigureAwait(false);
+    }
+
+    private static bool ContainsScopedState(ProviderCredentialVault vault)
+        => vault.ScopedOAuthTokens.Count > 0 || vault.Providers.Values.Any(static record => record.Scope is not null);
+
+    private async Task<string> SerializeEnvelopeAsync(ProviderCredentialVault vault, bool scopedFormat, CancellationToken ct)
+    {
+        var version = scopedFormat ? ScopedVaultVersion : VaultVersion;
+        vault.Version = version;
+        var plainBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(vault, JsonOptions));
+        var (protection, protectedBytes) = await ProtectAsync(plainBytes, ct).ConfigureAwait(false);
+        var envelope = new ProtectedVaultEnvelope(version, scopedFormat ? protection + ScopedProtectionSuffix : protection,
+            Convert.ToBase64String(protectedBytes));
+        return JsonSerializer.Serialize(envelope, JsonOptions);
+    }
+
+    private static bool IsScopedEnvelope(byte[] envelopeBytes)
+    {
+        try
+        {
+            var envelope = JsonSerializer.Deserialize<ProtectedVaultEnvelope>(envelopeBytes, JsonOptions);
+            return envelope?.Protection?.EndsWith(ScopedProtectionSuffix, StringComparison.Ordinal) == true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Guarantees that a backup surviving a scoped write is not readable by older binaries. This
+    /// covers a backup left behind when the primary was missing, corrupt, or could not be copied.
+    /// An unreadable backup is left in place because older binaries cannot open it either. I/O
+    /// failures propagate so the scoped primary is never published beside a legacy backup.
+    /// </summary>
+    private async Task EnsureBackupUsesScopedFormatAsync(CancellationToken ct)
+    {
+        if (!File.Exists(_vaultBackupPath))
+            return;
+
+        var backupGeneration = await File.ReadAllBytesAsync(_vaultBackupPath, ct).ConfigureAwait(false);
+        if (IsScopedEnvelope(backupGeneration))
+            return;
+
+        ProviderCredentialVault backupVault;
+        try
+        {
+            backupVault = await LoadVaultFromFileAsync(_vaultBackupPath, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (IsVaultCorruption(ex))
+        {
+            return;
+        }
+
+        var upgraded = await SerializeEnvelopeAsync(backupVault, scopedFormat: true, ct).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(_vaultBackupPath, upgraded, ct).ConfigureAwait(false);
     }
 
     private async Task<(string Protection, byte[] ProtectedBytes)> ProtectAsync(byte[] plainBytes, CancellationToken ct)
@@ -1018,6 +1094,8 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     private async Task<byte[]> UnprotectAsync(string protection, byte[] protectedBytes, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        if (protection.EndsWith(ScopedProtectionSuffix, StringComparison.Ordinal))
+            protection = protection[..^ScopedProtectionSuffix.Length];
         return protection switch
         {
             "dpapi-current-user" when OperatingSystem.IsWindows() => UnprotectWithDpapi(protectedBytes),

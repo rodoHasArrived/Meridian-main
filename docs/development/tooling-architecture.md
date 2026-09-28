@@ -62,7 +62,7 @@ Generated outputs are disposable unless explicitly designated as governance evid
 | CI workflow | Required local equivalent |
 | --- | --- |
 | `CI` (`.github/workflows/ci.yml`) | `dotnet restore Meridian.sln /p:EnableWindowsTargeting=true`, `dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore`, `dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false`, non-integration `dotnet test` lanes, dashboard `npm ... test/build` |
-| `Windows Desktop Build` | WPF restore/build/test commands in `archive/docs/developer/build-test-run.md` |
+| `Windows Desktop Build` | WPF restore/build/test commands in [Engineering → Desktop slices](../engineering/README.md#desktop-slices) |
 | `Golden Path Validation` | pilot-acceptance test + dashboard generation commands in `.github/workflows/README.md` |
 | `Maintenance` | `python3 build/scripts/ci/check-workflow-hygiene.py` and related docs/tooling validation |
 | `Publish Smoke` | `pwsh ./build/scripts/publish/publish.ps1 ...` smoke invocation |
@@ -112,7 +112,7 @@ The root `make help` output mirrors this split so contributors can distinguish b
 
 ## Related docs
 
-- [Developer Quick Guides](../../archive/docs/developer/README.md)
-- [Build, Test, Run](../../archive/docs/developer/build-test-run.md)
+- [Developer Quick Guides](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/README.md)
+- [Build, Test, Run](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/build-test-run.md)
 - [GitHub Actions Workflows - Summary](github-actions-summary.md)
 - [Tooling & Workflow Backlog](tooling-workflow-backlog.md)

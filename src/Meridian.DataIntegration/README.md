@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-09-25
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.DataIntegration
@@ -55,6 +55,15 @@ persisted scope, and never fall back to provider-wide or process-environment cre
 verification and deletion operate on one scope; audit entries retain the corresponding scope.
 The provider-only API remains a legacy compatibility surface. Runtime consumer and OAuth routing
 must be migrated to trusted scoped context before PRD-002 can claim end-to-end isolation.
+
+A vault that holds any scoped provider record or scoped OAuth token is written as format version 2
+with a `+scoped-v2` protection tag. Releases that predate scoped ownership ignore the envelope
+version and would otherwise rewrite the vault without `Scope` or scoped OAuth records. They reject
+the new tag as unreadable instead, so after a rollback they fail closed rather than taking scoped
+credentials offline. Every surviving generation carries the tag: the previous generation is
+re-protected when it becomes the backup, and a legacy backup left by a missing or corrupt primary
+is upgraded before the scoped primary is published. Removing the last scoped record restores the
+version 1 format. Readers refuse envelope versions newer than they understand.
 
 ETL runs acquire a unique execution lease before admission. Staging, audit/reject writes, and
 event publication use guarded actions; flush, catalog/export commit, checkpoint, source cleanup,

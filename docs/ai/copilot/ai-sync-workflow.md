@@ -57,7 +57,7 @@ provider-agnostic rules in [`../assistant-workflow-contract.md`](../assistant-wo
 
 | File | Purpose |
 |------|---------|
-| [`../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md`](../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md) | Archive inventory for retired GitHub Actions workflows |
+| [`../../../archive/docs/workflows/legacy-github-actions-2026-05-18.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/workflows/legacy-github-actions-2026-05-18.md) | Archive inventory for retired GitHub Actions workflows |
 | [`../README.md`](../README.md) | Master AI resource index |
 | [`../../../CLAUDE.md`](../../../CLAUDE.md) | Root AI context document |
 | [`instructions.md`](instructions.md) | Compact Copilot guide and routing links |

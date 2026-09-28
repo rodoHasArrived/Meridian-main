@@ -311,5 +311,5 @@ Recovery handoffs should include:
 
 ## Migration source
 
-- Legacy source: [archive/docs/operations/failover-and-recovery-runbook.md](../../archive/docs/operations/failover-and-recovery-runbook.md)
-- Archive copy: [archive/docs/operations/failover-and-recovery-runbook.md](../../archive/docs/operations/failover-and-recovery-runbook.md)
+- Legacy source: [archive/docs/operations/failover-and-recovery-runbook.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/failover-and-recovery-runbook.md)
+- Archive copy: [archive/docs/operations/failover-and-recovery-runbook.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/failover-and-recovery-runbook.md)

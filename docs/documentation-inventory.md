@@ -7,7 +7,7 @@
 This inventory describes the current `docs/` tree. It is deliberately compact: use it to decide
 which folder owns a document, whether the folder is canonical or supporting, and which remaining
 lanes are transitional. Detailed rebuild history is preserved in the
-[2026-07-19 inventory snapshot](../archive/docs/summaries/documentation-inventory-2026-07-19.md).
+[2026-07-19 inventory snapshot](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/summaries/documentation-inventory-2026-07-19.md).
 
 ## Classification Key
 
@@ -85,6 +85,6 @@ until the canonical tracker and release evidence close on the same release commi
 
 ## Historical Rebuild Evidence
 
-- [Detailed inventory snapshot — 2026-07-19](../archive/docs/summaries/documentation-inventory-2026-07-19.md)
-- [Documentation consolidation inventory — 2026-05-17](../archive/docs/summaries/documentation-consolidation-inventory-2026-05-17.md)
-- [Documentation archive](../archive/docs/README.md)
+- [Detailed inventory snapshot — 2026-07-19](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/summaries/documentation-inventory-2026-07-19.md)
+- [Documentation consolidation inventory — 2026-05-17](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/summaries/documentation-consolidation-inventory-2026-05-17.md)
+- [Documentation archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/README.md)

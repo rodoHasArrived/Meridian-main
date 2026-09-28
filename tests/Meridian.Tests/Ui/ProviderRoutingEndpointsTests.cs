@@ -351,6 +351,39 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
+    public async Task AmbiguousConnectionAndCertificationIds_AreExcludedInsteadOfFailingPreviewAndTrust()
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var config = store.Load() with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(
+            Connections: [new("owned", "yahoo", "Owned", TenantId: "tenant-test"),
+                new("ambiguous", "yahoo", "Ambiguous", TenantId: "tenant-test"),
+                new("AMBIGUOUS", "yahoo", "Ambiguous other", TenantId: "tenant-other")],
+            Bindings: [new("ambiguous-binding", ProviderCapabilityKind.HistoricalBars, "ambiguous", Priority: 1),
+                new("owned-binding", ProviderCapabilityKind.HistoricalBars, "owned", Priority: 100)],
+            Certifications: [new("owned", "Passed"), new("OWNED", "Failed")])
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
+        var client = app.GetTestClient();
+
+        var preview = await client.PostAsync(UiApiRoutes.ProviderRoutingPreview,
+            JsonContent(new RoutePreviewRequest(Capability: "HistoricalBars", Symbol: "SPY")));
+        var trust = await client.GetAsync(UiApiRoutes.ProviderRoutingTrustSnapshots);
+
+        preview.StatusCode.Should().Be(HttpStatusCode.OK, "one misconfigured ID must not fail every tenant's preview");
+        var previewBody = await preview.Content.ReadAsStringAsync();
+        Deserialize<RoutePreviewResponse>(previewBody).SelectedConnectionId.Should().Be("owned");
+        previewBody.Should().NotContainEquivalentOf("ambiguous");
+        trust.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshots = await ReadAsync<ProviderTrustSnapshotDto[]>(trust);
+        snapshots.Should().ContainSingle().Which.ConnectionId.Should().Be("owned");
+        snapshots[0].IsCertificationFresh.Should().BeFalse("duplicate certification rows leave no single certification to trust");
+        snapshots[0].Signals.Should().Contain("No certification run has been recorded.");
+    }
+
+    [Fact]
     public async Task ProviderRoutingEndpoints_ReturnConnectionsBindingsAndTrustSnapshotsForOwnedSetupConnections()
     {
         await using var app = await CreateAppAsync();

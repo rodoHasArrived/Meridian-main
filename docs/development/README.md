@@ -25,9 +25,9 @@ If you are new to the repository, read these in order:
 
 High-traffic engineering command and setup guides now route to active docs, with historical versions preserved in archive:
 
-- [Developer Setup archive](../../archive/docs/developer/setup.md)
-- [Build, Test, Run archive](../../archive/docs/developer/build-test-run.md)
-- [Publish Standalone EXE archive](../../archive/docs/developer/publish-standalone-exe.md)
+- [Developer Setup archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/setup.md)
+- [Build, Test, Run archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/build-test-run.md)
+- [Publish Standalone EXE archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/publish-standalone-exe.md)
 - [docs/development/desktop-testing-guide.md](desktop-testing-guide.md)
 
 For a broader docs map, return to the main [docs index](../README.md).
@@ -45,7 +45,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 - Architecture narratives and rationale belong in [architecture/](../architecture/README.md)
 - Operational runbooks and deployment steps belong in [Operators](../operators/README.md)
-- Historical evaluations, proposals, and option analysis belong in the [assessment archive](../../archive/docs/assessments/README.md); active findings belong in the owning canonical lane.
+- Historical evaluations, proposals, and option analysis belong in the [assessment archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/README.md); active findings belong in the owning canonical lane.
 - Active roadmap and delivery tracking belong in the [Roadmap Registry](../roadmap/README.md);
   automation-owned reports remain under [Status](../status/README.md)
 
@@ -58,7 +58,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Start](../start/README.md) | bootstrap a fresh checkout from the repository root |
 | [Engineering](../engineering/README.md) | choose a narrow build, test, or local run command |
 | [Tooling Architecture](tooling-architecture.md) | understand tooling layers, ownership, and local-to-CI command mapping |
-| [Publish Standalone EXE archive](../../archive/docs/developer/publish-standalone-exe.md) | review historical standalone publish guidance |
+| [Publish Standalone EXE archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/publish-standalone-exe.md) | review historical standalone publish guidance |
 | [Repository Organization Guide](repository-organization-guide.md) | place code, docs, assets, or new project files in the right location |
 | [Repository Rule Set](repository-rule-set.md) | understand non-negotiable contribution, quality, and repo hygiene rules |
 | [Documentation Contribution Guide](documentation-contribution-guide.md) | add, review, archive, or reorganize documentation correctly |
@@ -138,5 +138,5 @@ When you add, remove, or supersede a guide in this folder:
 
 - [Architecture Documentation](../architecture/README.md)
 - [Operations Documentation](../operations/README.md)
-- [Assessment archive](../../archive/docs/assessments/README.md)
+- [Assessment archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/README.md)
 - [Status Docs](../status/README.md)

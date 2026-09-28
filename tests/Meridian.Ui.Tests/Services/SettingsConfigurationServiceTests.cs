@@ -116,6 +116,39 @@ public sealed class SettingsConfigurationServiceTests
     }
 
     [Theory]
+    [InlineData(false, 401)]
+    [InlineData(false, 403)]
+    [InlineData(true, 403)]
+    public async Task CredentialMutation_RefusedSessionExplainsTenantRequirement(bool remove, int status)
+    {
+        using var handler = new StatusHandler((HttpStatusCode)status, "{}");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+        Func<Task> action = () => remove ? service.RemoveProviderCredentialsAsync("alpaca") :
+            service.SaveProviderCredentialsAsync("alpaca", new Dictionary<string, string?> { ["SecretKey"] = "private-test-value" });
+
+        var error = await action.Should().ThrowAsync<CredentialServiceRefusedException>();
+        error.Which.Message.Should().Contain("not confirmed").And.Contain("tenant").And.NotContain("private-test-value");
+    }
+
+    [Fact]
+    public async Task ServerCredentialStatus_CarriesTheVaultFieldSchemaOnlyWhenReported()
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK,
+            "[{\"providerId\":\"tiingo\",\"credentialState\":1,\"credentialFields\":[{\"name\":\"ApiKey\",\"label\":\"API key\",\"required\":true,\"inputKind\":1}]}," +
+            "{\"providerId\":\"alpaca\",\"credentialState\":1}]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync();
+
+        var tiingo = statuses.Single(s => s.ProviderId == "tiingo");
+        tiingo.HasServiceFieldSchema.Should().BeTrue();
+        tiingo.CredentialFields!.Should().ContainSingle().Which.Name.Should().Be("ApiKey");
+        statuses.Single(s => s.ProviderId == "alpaca").HasServiceFieldSchema.Should().BeFalse();
+        statuses.Where(s => s.ProviderId is not ("tiingo" or "alpaca")).Should().OnlyContain(s => !s.HasServiceFieldSchema,
+            "providers the service did not report have no vault schema");
+    }
+
+    [Theory]
     [InlineData(3, CredentialState.Configured)]
     [InlineData(4, CredentialState.Configured)]
     [InlineData(2, CredentialState.Partial)]

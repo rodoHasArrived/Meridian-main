@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-08-03
+**Reviewed:** 2026-09-27
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -16,7 +16,7 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     slate, and all retained normative invariants (customer-neutral core model, ledger truth and
     treasury-ledger principles, fail-closed authority, governed-autonomy AI boundary, seven-root
     navigation, no mobile lane). The superseded 0.15–0.25 lineage is summarized in its Section 25
-    and archived in full at `archive/docs/design/meridian-design-document-v0.25.md`
+    and archived in full at [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md)
   - [Implementation and Readiness Tracker](implementation-todo-list.md) — current execution, evidence, and readiness follow-up
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
@@ -36,7 +36,20 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
     ahead of the W9 close-out because they serve the release gate
+  - [W9-DEMO-002 Closure Record (2026-09-16)](w9-demo-002-closure-2026-09-16.md) — the lane-owned
+    closure documentation that moved `W9-DEMO-002` from `accepted` to `done` (decision
+    `DEC-W9-DONE-001`)
+  - [Deferred Expansion Boundaries](deferred-expansion-boundaries.md) — the minimum evidence a
+    future roadmap row must produce before a deferred product area can move into active delivery;
+    boundaries, not implementation claims
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) — latest
+    prioritization input, anchored at `main` `5980fa00`; ranks work against the registry, the
+    readiness tracker, live CI, and the pull-request queue, verifies each named roadmap remainder
+    against current source, and supersedes the
+    [2026-09-23 determination](next-work-determination-2026-09-23.md) and the
+    [2026-09-20 determination](next-work-determination-2026-09-20.md). It moves no roadmap row
+    and certifies no release
   - [Reporting Operating Model (2026-09)](reporting-operating-model-2026-09.md) — refined
     reporting semantics: the `Report`/`Edition`/`Publication` object split, the four-destination
     consolidation inside the existing Reporting root, the scope contract with separated effective
@@ -110,7 +123,7 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     booking); records the three built-but-dead fixes landed on the same branch
   - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — prior
     independent review pass that motivated the activation-over-expansion and truth-discipline
-    doctrines; see its 2026-07-26 follow-up in `archive/docs/assessments/`
+    doctrines; see its [2026-07-26 follow-up](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/adversarial-program-review-2026-07-26.md) (removed from the tree by the 2026-09-11 archive cleanup; the link is its last version)
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status
   - [Data Provider & Accounting Code Brainstorm (2026-07)](data-provider-accounting-brainstorm-2026-07.md) —
@@ -155,20 +168,28 @@ bounded W6 Covered Call evidence loop as complete; WPF parity (`W8-WPF-PARITY-00
 screen consolidation (`W8-UX-CONSOL-001`) remain active. The accepted W1-W7 bounded milestones are
 capability claims, not blanket production certification.
 
-As of 2026-08-30 the W9 slate is mostly closed: `W9-ASSET-010` is `done`; `W9-TRUTH-001`,
-`W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` remain `accepted` on operator
-decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011`, reopened under `DEC-W9-ACCEPTANCE-002`,
-reached `ready_for_acceptance` on 2026-09-22 with all five exit criteria evidenced and awaits a
-fresh operator acceptance decision. Both decisions and their chronology are recorded in the
-[2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md).
-`W9-ALPACA-004` was deliberately held over three recorded fill-path caveats and moved to
-`accepted` on 2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source;
-`W9-SAFETY-007` reached `ready_for_acceptance` the same day, and `W9-GOV-008` and `W9-INGEST-009`
-remain `in_progress`.
-Those latter three open rows are sequenced by the
-[2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md). Acceptance of a bounded
-row is not a release certification and does not move a row to `done`. Every W10 row still carries
-planned-evidence posture. The registry remains live truth for all of this.
+As of 2026-09-27 the W9 slate stands as follows in the registry:
+
+- **`done`:** `W9-ASSET-010`, and `W9-DEMO-002`, closed on 2026-09-16 under `DEC-W9-DONE-001`
+  on the [W9-DEMO-002 Closure Record](w9-demo-002-closure-2026-09-16.md).
+- **`accepted`:** `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` under
+  `DEC-W9-ACCEPTANCE-001`; `W9-TRUTH-001`, whose bounded acceptance was restored on 2026-09-26
+  under `DEC-W9-ACCEPTANCE-005` after the provenance correction, on an explicit owner-review
+  exception in place of independent non-author review; `W9-ALPACA-004`, held over three fill-path caveats and accepted on
+  2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source; and
+  `W9-SAFETY-007`, accepted on 2026-09-11 under `DEC-W9-ACCEPTANCE-004` with an OCO reservation
+  and deferred risk-journal work.
+- **`ready_for_acceptance`:** `W9-CORPACT-011`, reopened under `DEC-W9-ACCEPTANCE-002`, reached
+  this state on 2026-09-22 with all five exit criteria evidenced and awaits a fresh operator
+  acceptance decision.
+- **`in_progress`:** `W9-GOV-008` and `W9-INGEST-009`, sequenced by the
+  [2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md).
+
+The acceptance chronology is recorded in the
+[2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md). Acceptance of a
+bounded row is not a release certification and does not move a row to `done`. In W10,
+`W10-MARK-001`, `W10-SEAM-001`, and `W10-LOT-002` are `in_progress`; every other W10 row still
+carries planned-evidence posture. The registry remains live truth for all of this.
 
 Production readiness is currently **blocked**. The release posture changes only when the
 [Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,
@@ -289,6 +310,7 @@ and required GitHub Actions evidence.
 - W7-LIVE-001 is complete as a bounded governance milestone. Broader live execution productization and live portfolio operations are not part of that completion claim.
 - W8-WPF-PARITY-001 is in progress, closing browser-first screen gaps while preserving one shared contract/read-model seam.
 - `W9-ASSET-010` is complete. It established the evidence-backed Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal spine, preserves Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states, and joins acquisition or selected-lot disposal consequences to the immutable journal transaction, with focused contract, spine, storage, endpoint, shared-read-model, and readiness suites as evidence.
+- `W9-DEMO-002` is complete. The one-command seeded demo provisions market history, a fund account and position snapshot, draft journals, reconciliation casework, and a review-required report pack over durable stores, each record carrying the seeded provenance token; the closure record is the lane-owned documentation behind `DEC-W9-DONE-001`.
 - The remaining proof-layer targets, including the broader Operational Evidence Graph, fund-event command-center specializations, Capital Account Workbench, and Private-Capital Close Cockpit, remain design priorities until roadmap rows and acceptance evidence move them into delivery status.
 - `Paper-first`, `read-only where uncertain`, and `governance-first` defaults remain active by policy.
 
@@ -325,8 +347,8 @@ Use this matrix to avoid source-of-truth drift:
 
 Stakeholder-facing high-traffic legacy pages map here:
 
-- `docs/plans/current-direction-and-status.md` → [archive copy](../../archive/docs/plans/current-direction-and-status.md)
-- `docs/plans/evidence-backed-investment-operations-plan.md` → [archive copy](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
+- `docs/plans/current-direction-and-status.md` → [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md)
+- `docs/plans/evidence-backed-investment-operations-plan.md` → [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/evidence-backed-investment-operations-plan.md)
 - `docs/status/ROADMAP.md`, `docs/status/FEATURE_INVENTORY.md`, `docs/status/TARGET_END_PRODUCT.md` → `roadmap/data/*.yml` + generated roadmap outputs
 
 If a legacy page is still actively needed for non-stakeholder operations, keep a short replacement pointer in the same page and move it to `archive/docs/plans/` or `archive/docs/status/` once the replacement is stable.
@@ -348,18 +370,18 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 Legacy links that remain for context but not primary truth:
 
-- [Current Direction and Status (Archived)](../../archive/docs/plans/current-direction-and-status.md)
-- [Evidence-Backed Investment Operations Plan (Archived)](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
-- [Feature Inventory (Archived)](../../archive/docs/status/FEATURE_INVENTORY.md)
+- [Current Direction and Status (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md)
+- [Evidence-Backed Investment Operations Plan (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/evidence-backed-investment-operations-plan.md)
+- [Feature Inventory (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/FEATURE_INVENTORY.md)
 - [Project Roadmap (Registry Snapshot)](../roadmap/generated/ROADMAP_SUMMARY.md)
-- [Target End Product (Archived)](../../archive/docs/status/TARGET_END_PRODUCT.md)
+- [Target End Product (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/TARGET_END_PRODUCT.md)
 
 ## Legacy Source-Material Index
 
 - If you need historical decision rationale, see:
-  - [plans (archive index)](../../archive/docs/plans/README.md)
+  - [plans (archive index)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/README.md)
   - [status migration index](../status/README.md)
-  - [archive `archive/docs/`](../../archive/docs/README.md)
+  - [archive `archive/docs/`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/README.md)
 
 ## Product-Owner Validation
 
