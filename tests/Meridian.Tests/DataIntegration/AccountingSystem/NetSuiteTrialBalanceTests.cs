@@ -22,7 +22,7 @@ public sealed class NetSuiteTrialBalanceTests
         var scope = postings.Where(p => p.Subsidiary == 2 && p.Book == 1 && p.IsPosted && !p.PeriodEndJournal).ToArray();
         using var handler = new ExternalGlTestHandler((request, body) =>
         {
-            if (body.Contains("FROM account ORDER", StringComparison.Ordinal))
+            if (body.Contains("FROM account WHERE", StringComparison.Ordinal))
             {
                 body.Should().Contain("sspecacct");
                 return ExternalGlTestHandler.Page(Chart());
@@ -89,7 +89,7 @@ public sealed class NetSuiteTrialBalanceTests
         var store = new ExternalGlTestStore("netsuite");
         using var handler = new ExternalGlTestHandler((request, body) =>
         {
-            if (body.Contains("FROM account ORDER", StringComparison.Ordinal))
+            if (body.Contains("FROM account WHERE", StringComparison.Ordinal))
                 return ExternalGlTestHandler.Page(Chart());
             if (body.Contains("AS balance", StringComparison.Ordinal))
                 return ExternalGlTestHandler.Page([
@@ -120,7 +120,7 @@ public sealed class NetSuiteTrialBalanceTests
         var store = new ExternalGlTestStore("netsuite");
         using var handler = new ExternalGlTestHandler((request, body) =>
         {
-            if (!body.Contains("FROM account ORDER", StringComparison.Ordinal))
+            if (!body.Contains("FROM account WHERE", StringComparison.Ordinal))
                 return Respond(request, body);
             // A plausible name must never substitute for the provider's system identity.
             var accounts = new List<object> { NetSuiteAccount("lookalike", "Equity", name: "Retained Earnings") };
@@ -150,7 +150,7 @@ public sealed class NetSuiteTrialBalanceTests
         var store = new ExternalGlTestStore("netsuite");
         using var handler = new ExternalGlTestHandler((request, body) =>
         {
-            if (body.Contains("FROM account ORDER", StringComparison.Ordinal))
+            if (body.Contains("FROM account WHERE", StringComparison.Ordinal))
                 return ExternalGlTestHandler.Page(Chart());
             if (body.Contains("AS journalid", StringComparison.Ordinal))
                 return ExternalGlTestHandler.Page([]);

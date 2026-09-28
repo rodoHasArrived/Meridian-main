@@ -40,7 +40,7 @@ public sealed class ExternalGlFailureBoundaryTests
                 if (fault == "repeated-page")
                     return ExternalGlTestData.Respond(new HttpRequestMessage(HttpMethod.Get, "https://api.xero.com/api.xro/2.0/Journals?offset=0"), body);
             }
-            if (id == "netsuite" && body.Contains("FROM account ORDER", StringComparison.Ordinal))
+            if (id == "netsuite" && body.Contains("FROM account WHERE", StringComparison.Ordinal))
                 return fault switch
                 {
                     "wrong-offset" => ExternalGlTestHandler.Page([], offset: 1000),
@@ -107,7 +107,7 @@ public sealed class ExternalGlFailureBoundaryTests
         var store = new ExternalGlTestStore("netsuite");
         using var handler = new ExternalGlTestHandler((request, body) =>
         {
-            if (body.Contains("FROM account ORDER", StringComparison.Ordinal))
+            if (body.Contains("FROM account WHERE", StringComparison.Ordinal))
                 return ExternalGlTestHandler.Page([
                     ExternalGlTestData.NetSuiteAccount("cash", "Bank"),
                     ExternalGlTestData.NetSuiteAccount("capital", "Equity"),
@@ -140,7 +140,7 @@ public sealed class ExternalGlFailureBoundaryTests
         var store = new ExternalGlTestStore("netsuite");
         using var handler = new ExternalGlTestHandler((request, body) =>
         {
-            if (body.Contains("FROM account ORDER", StringComparison.Ordinal))
+            if (body.Contains("FROM account WHERE", StringComparison.Ordinal))
                 return ExternalGlTestHandler.Page([
                     ExternalGlTestData.NetSuiteAccount("cash", "Bank"),
                     ExternalGlTestData.NetSuiteAccount("capital", "Equity"),
@@ -167,7 +167,7 @@ public sealed class ExternalGlFailureBoundaryTests
         var store = new ExternalGlTestStore("netsuite");
         using var handler = new ExternalGlTestHandler((request, body) =>
         {
-            if (body.Contains("FROM account ORDER", StringComparison.Ordinal))
+            if (body.Contains("FROM account WHERE", StringComparison.Ordinal))
             {
                 if (request.RequestUri!.Query.Contains("offset=0", StringComparison.Ordinal))
                     return ExternalGlTestHandler.Page(Enumerable.Range(0, 1000).Select(i => (object)new

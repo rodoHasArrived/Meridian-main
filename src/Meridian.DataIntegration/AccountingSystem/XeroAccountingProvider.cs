@@ -34,33 +34,55 @@ public sealed class XeroAccountingProvider(IProviderCredentialStore store, HttpC
         return await SendAsync(request, ct).ConfigureAwait(false);
     }
 
-    private async Task<string> BaseCurrencyAsync(ProviderCredentialReadResult connection, string token, CancellationToken ct)
+    private async Task<(string Currency, int YearEndMonth, int YearEndDay)> OrganisationAsync(ProviderCredentialReadResult connection, string token, CancellationToken ct)
     {
         using var document = await GetAsync(connection, token, "Organisation", ct).ConfigureAwait(false);
         var organisations = Rows(document.RootElement, "Organisations");
         if (organisations.Length != 1 || !string.Equals(RequiredText(organisations[0], "OrganisationID"), Tenant(connection), StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Xero returned a different organisation.");
-        return RequiredText(organisations[0], "BaseCurrency");
+        var month = int.Parse(RequiredText(organisations[0], "FinancialYearEndMonth"), CultureInfo.InvariantCulture);
+        var day = int.Parse(RequiredText(organisations[0], "FinancialYearEndDay"), CultureInfo.InvariantCulture);
+        _ = new DateOnly(2000, month, day);
+        return (RequiredText(organisations[0], "BaseCurrency"), month, day);
     }
 
     protected override async Task VerifyScopeAsync(ProviderCredentialReadResult connection, string token, CancellationToken ct)
-        => _ = await BaseCurrencyAsync(connection, token, ct).ConfigureAwait(false);
+        => _ = await OrganisationAsync(connection, token, ct).ConfigureAwait(false);
 
     protected override async Task<AccountingSystemImportDetailDto> ReadAsync(ProviderCredentialReadResult connection,
         string token, AccountingSystemImportRequestDto request, CancellationToken ct)
     {
-        var currency = await BaseCurrencyAsync(connection, token, ct).ConfigureAwait(false);
+        var (currency, yearEndMonth, yearEndDay) = await OrganisationAsync(connection, token, ct).ConfigureAwait(false);
+        var asOf = request.PeriodEnd!.Value;
+        DateOnly YearEnd(int year) => new(year, yearEndMonth, Math.Min(yearEndDay, DateTime.DaysInMonth(year, yearEndMonth)));
+        var incomeStart = (asOf <= YearEnd(asOf.Year) ? YearEnd(asOf.Year - 1) : YearEnd(asOf.Year)).AddDays(1);
         var scope = ConnectionScope(connection);
         using var accountDocument = await GetAsync(connection, token, "Accounts", ct).ConfigureAwait(false);
-        var accounts = Rows(accountDocument.RootElement, "Accounts").Select(row => new AccountingSystemChartAccountDto(
-            RequiredText(row, "AccountID"), Text(row, "Code"), RequiredText(row, "Name"), RequiredText(row, "Type"),
+        var accountRows = Rows(accountDocument.RootElement, "Accounts");
+        var accounts = accountRows.Select(row => new AccountingSystemChartAccountDto(
+            RequiredText(row, "AccountID"), string.IsNullOrWhiteSpace(Text(row, "Code")) ? $"xero-account:{RequiredText(row, "AccountID")}" : Text(row, "Code").Trim(), RequiredText(row, "Name"), RequiredText(row, "Type"),
             currency, RequiredText(row, "Status") == "ACTIVE", EvidenceRef: $"{scope}:account:{RequiredText(row, "AccountID")}")).ToArray();
         var accountLookup = accounts.ToDictionary(a => a.ExternalAccountId, StringComparer.OrdinalIgnoreCase);
+        var incomeCodes = accounts.Where(a => a.AccountType.ToUpperInvariant() is "REVENUE" or "SALES" or "OTHERINCOME" or "EXPENSE" or "OVERHEADS" or "DIRECTCOSTS" or "DEPRECIATN")
+            .Select(a => a.AccountCode).ToArray();
+        var retainedIds = accountRows.Where(row => Text(row, "SystemAccount") == "RETAINEDEARNINGS")
+            .Select(row => RequiredText(row, "AccountID")).ToArray();
+        if (retainedIds.Length > 1 || (incomeCodes.Length > 0 && retainedIds.Length != 1) ||
+            retainedIds.Any(id => !accountLookup[id].IsActive || accountLookup[id].AccountType != "EQUITY"))
+            throw new InvalidOperationException("Xero income-statement reconciliation requires an unambiguous system retained-earnings account.");
         var journals = await JournalsAsync(connection, token, request, currency, accountLookup, ct).ConfigureAwait(false);
         using var report = await GetAsync(connection, token, $"Reports/TrialBalance?date={request.PeriodEnd:yyyy-MM-dd}&paymentsOnly=false", ct).ConfigureAwait(false);
         var balances = TrialBalance(report.RootElement, request.PeriodEnd!.Value, currency, scope, accountLookup);
-        return Detail(connection, request, accounts, journals, balances,
+        var detail = Detail(connection, request, accounts, journals, balances,
             "Xero Journals access requires accounting.journals.read and provider entitlement. Trial balance uses accrual YTD balances in organisation base currency.");
+        return detail with
+        {
+            Summary = detail.Summary with
+            {
+                TrialBalanceBasis = new(incomeStart, incomeCodes,
+            retainedIds.Length == 1 ? accountLookup[retainedIds[0]].AccountCode : null)
+            }
+        };
     }
 
     private async Task<IReadOnlyList<AccountingSystemJournalEntryDto>> JournalsAsync(ProviderCredentialReadResult connection,

@@ -86,7 +86,13 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             : ToReadResult(descriptor, fallbackRecord, ProviderCredentialSourceDto.Environment);
     }
 
-    public async Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
+    public Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
+        => SaveCredentialsAsync(request, false, ct);
+
+    public Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
+        => SaveCredentialsAsync(request, true, ct);
+
+    private async Task SaveCredentialsAsync(ProviderCredentialSaveRequest request, bool retainCurrentGenerationAsBackup, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         var descriptor = RequireDescriptor(request.ProviderId);
@@ -103,7 +109,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             var updated = CreateUpdatedRecord(descriptor, request, normalizedCredentials, existing, now);
 
             vault.Providers[descriptor.ProviderId] = updated;
-            await WriteVaultAsync(vault, ct).ConfigureAwait(false);
+            await WriteVaultAsync(vault, ct, retainCurrentGenerationAsBackup: retainCurrentGenerationAsBackup).ConfigureAwait(false);
             await AppendAuditAsync(
                 descriptor,
                 "save",

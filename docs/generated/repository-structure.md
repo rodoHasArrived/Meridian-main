@@ -9412,8 +9412,10 @@ Meridian-main
 │   │   │   ├── AccountingSystem
 │   │   │   │   ├── QuickBooks
 │   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── ExternalGlCredentialRecoveryTests.cs
 │   │   │   │   ├── ExternalGlFailureBoundaryTests.cs
 │   │   │   │   ├── ExternalGlLiveProviderTests.cs
+│   │   │   │   ├── ExternalGlScopeTests.cs
 │   │   │   │   ├── ExternalGlTestSupport.cs
 │   │   │   │   └── NetSuiteTrialBalanceTests.cs
 │   │   │   ├── Canonicalization
@@ -10300,6 +10302,7 @@ Meridian-main
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
 │   │   │   ├── AccountingProjectionQueryServiceTests.cs
 │   │   │   ├── AccountingReportPackageServiceTests.cs
+│   │   │   ├── AccountingSystemIntegrationServiceTests.BalancePeriods.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.LiveProviders.cs
 │   │   │   ├── AggregatePortfolioExposureProviderTests.cs

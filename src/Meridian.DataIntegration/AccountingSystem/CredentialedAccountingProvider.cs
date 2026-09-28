@@ -129,8 +129,14 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
         var token = RequiredText(document.RootElement, "access_token");
         var refresh = Text(document.RootElement, "refresh_token");
         if (!string.IsNullOrWhiteSpace(refresh))
-            await _store.SaveAsync(new(ProviderId, new Dictionary<string, string?> { ["RefreshToken"] = refresh },
-                Actor: $"{ProviderId}-token-exchange"), ct).ConfigureAwait(false);
+        {
+            // Environment credentials must migrate as a complete snapshot. Once the provider
+            // rotates, caller cancellation must not discard the only usable replacement.
+            var credentials = connection.Credentials.ToDictionary(p => p.Key, p => (string?)p.Value, StringComparer.OrdinalIgnoreCase);
+            credentials["RefreshToken"] = refresh;
+            await _store.SaveRotatedCredentialsAsync(new(ProviderId, credentials, connection.Environment,
+                Actor: $"{ProviderId}-token-exchange"), CancellationToken.None).ConfigureAwait(false);
+        }
         return token;
     }
 
@@ -148,7 +154,9 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
         IReadOnlyList<AccountingSystemChartAccountDto> accounts, IReadOnlyList<AccountingSystemJournalEntryDto> journals,
         IReadOnlyList<AccountingSystemTrialBalanceLineDto> balances, params string[] warnings)
     {
-        if (accounts.Select(a => a.ExternalAccountId).Distinct(StringComparer.Ordinal).Count() != accounts.Count ||
+        if (accounts.Any(a => string.IsNullOrWhiteSpace(a.AccountCode)) ||
+            accounts.Select(a => a.AccountCode).Distinct(StringComparer.OrdinalIgnoreCase).Count() != accounts.Count ||
+            accounts.Select(a => a.ExternalAccountId).Distinct(StringComparer.Ordinal).Count() != accounts.Count ||
             journals.Select(j => j.ExternalJournalEntryId).Distinct(StringComparer.Ordinal).Count() != journals.Count ||
             balances.Select(b => b.ExternalAccountId).Distinct(StringComparer.Ordinal).Count() != balances.Count ||
             journals.Any(j => j.TotalDebits != j.TotalCredits) ||

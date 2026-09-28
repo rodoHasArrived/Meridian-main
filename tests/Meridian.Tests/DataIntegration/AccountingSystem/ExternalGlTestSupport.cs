@@ -39,6 +39,8 @@ internal sealed class ExternalGlTestStore(string providerId) : IProviderCredenti
             Values[field.Key] = field.Value!;
         return Task.CompletedTask;
     }
+    public Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
+        => SaveAsync(request, ct);
     public Task DeleteAsync(string id, string? actor = null, CancellationToken ct = default) => Task.CompletedTask;
     public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default)
     {
@@ -81,7 +83,7 @@ internal static class ExternalGlTestData
         if (path.EndsWith("token", StringComparison.Ordinal))
             return ExternalGlTestHandler.Json(new { access_token = "access-never-return", refresh_token = "rotated-never-return" });
         if (path.EndsWith("Organisation", StringComparison.Ordinal))
-            return ExternalGlTestHandler.Json(new { Organisations = new[] { new { OrganisationID = ExternalGlTestStore.Tenant, BaseCurrency = "USD" } } });
+            return ExternalGlTestHandler.Json(new { Organisations = new[] { new { OrganisationID = ExternalGlTestStore.Tenant, BaseCurrency = "USD", FinancialYearEndMonth = 12, FinancialYearEndDay = 31 } } });
         if (path.EndsWith("Accounts", StringComparison.Ordinal))
             return ExternalGlTestHandler.Json(new
             {
@@ -121,7 +123,7 @@ internal static class ExternalGlTestData
             return ExternalGlTestHandler.Page([new { id = "2", currency = "USD" }]);
         if (query.Contains("FROM accountingbook", StringComparison.Ordinal))
             return ExternalGlTestHandler.Page([new { id = "1" }]);
-        if (query.Contains("FROM account ORDER", StringComparison.Ordinal))
+        if (query.Contains("FROM account WHERE", StringComparison.Ordinal))
             return ExternalGlTestHandler.Page([
                 new { id = "cash", acctnumber = "100", acctname = "Cash", accttype = "Bank", isinactive = "F", specialaccounttype = "NONE" },
                 new { id = "capital", acctnumber = "300", acctname = "Capital", accttype = "Equity", isinactive = "F", specialaccounttype = "NONE" },

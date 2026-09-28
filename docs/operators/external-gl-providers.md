@@ -20,6 +20,13 @@ catalog supplies the required fields; the encrypted provider vault owns secrets.
 Refresh tokens rotate in that vault before further reads. Do not put secrets in
 configuration JSON, evidence links, source control, or support packets.
 
+Rotation retains a complete credential snapshot, including credentials initially
+read from environment variables, in both the encrypted primary and recovery vault.
+Once a replacement token arrives, caller cancellation does not cancel its save.
+The vault must be writable; a failed rotation save stops the import before further
+provider reads. Repair storage access and verify the retained credentials before
+retrying; obtain fresh consent if the provider has invalidated an unretained token.
+
 | Provider | Required fields | Provider prerequisites |
 | --- | --- | --- |
 | Xero | `ClientId`, `ClientSecret`, `RefreshToken`, `TenantId` | OAuth consent for the selected organisation, `offline_access`, `accounting.settings.read`, `accounting.journals.read`, `accounting.reports.read`; authorising user and app must have Journals/report access. |
@@ -46,6 +53,9 @@ replace retained evidence. The integration service supplies scoped content hashe
   scanned by journal-number offset, including backdated entries, then filtered to
   the requested accounting dates. Report account attributes identify accounts;
   the YTD debit/credit columns provide balances in organisation base currency.
+  The organisation's financial year-end determines the income-statement start.
+  Account `SystemAccount=RETAINEDEARNINGS` identifies prior-year carry-forward;
+  income-statement imports require that identity to be unambiguous.
   The import does not substitute manual journals for full GL journal access.
 - NetSuite reads posted accounting lines for one subsidiary and its primary
   accounting book, in subsidiary base currency. Its standard date-based accrual
@@ -70,6 +80,12 @@ replace retained evidence. The integration service supplies scoped content hashe
   As of date, with Report by Period disabled, before certifying a review package.
 - NetSuite SuiteQL uses POST only for read queries; no record-write URL exists in
   this adapter. Pages use a fixed 1,000-row limit and locally computed offsets.
+  The chart includes only accounts assigned to the selected subsidiary, or to an
+  ancestor with Include Children enabled. The role must expose the ancestor chain;
+  unavailable or cyclic hierarchy evidence fails the import. Accounts without a
+  number use the stable `netsuite-account:{internalId}` code. Xero accounts without
+  a code similarly use `xero-account:{accountId}`. Map these codes explicitly in
+  Meridian; ambiguous duplicate codes are rejected.
 - Rate limits, expired consent, permission errors, malformed amounts, duplicate
   identities, incomplete pagination, unbalanced journals or trial balances, and
   negative or two-sided trial-balance amounts fail the entire
@@ -79,6 +95,16 @@ replace retained evidence. The integration service supplies scoped content hashe
   stops with an error if additional rows remain beyond the REST SuiteQL
   100,000-row ceiling. Narrow or repair the provider source before retrying;
   these limits never return a silently truncated success.
+
+Retained imports carry a typed trial-balance basis separately from the requested
+journal/export dates. Reconciliation reads Meridian history through the as-of
+date, keeps cumulative balance-sheet activity, and moves income/expense activity
+before the provider's report year into retained earnings for comparison. This is
+a report projection, not a ledger mutation. Date filtering applies to each journal,
+including when a selected period cuts through a month. Export review uses only
+gross activity within the requested inclusive dates; opening balances and report
+carry-forward amounts never become generated export activity. The import and
+reconciliation hashes retain this distinction and invalidate stale certifications.
 
 ## Provider-owned export checks
 
@@ -115,8 +141,9 @@ Live posting stays disabled even after successful certification.
 
 ## Validation evidence
 
-`ExternalGlLiveProviderTests`, `ExternalGlFailureBoundaryTests`, `NetSuiteTrialBalanceTests`, and
-`AccountingSystemIntegrationServiceTests.LiveProviders` exercise credentialed HTTP
+`ExternalGlLiveProviderTests`, `ExternalGlFailureBoundaryTests`, `NetSuiteTrialBalanceTests`,
+`ExternalGlCredentialRecoveryTests`, `ExternalGlScopeTests`, and the shared
+`AccountingSystemIntegrationServiceTests` live-provider/period cases exercise credentialed HTTP
 request/response contracts, pagination, safe failure, scoped evidence, and the
 controlled export path without tenant secrets. They are transport contract tests,
 not a live customer-tenant attestation. Deployment owners must retain the actual
@@ -126,6 +153,10 @@ types, calendar-year boundaries, profit and loss carry-forward, direct retained
 postings, offsetting prior-year accounts, account renaming, scope filters,
 period-end journal exclusion, invalid identity and malformed aggregates. The
 normalization creates report evidence only; no synthetic closing journal is posted.
+Additional regressions cover cancellation immediately after token rotation followed
+by primary-vault corruption, environment credential migration, unnumbered charts,
+inherited subsidiary accounts, multi-period reconciliation, Xero fiscal boundaries,
+partial-month exports, and certification invalidation after gross activity changes.
 
 Issue #2752 originally referred to `docs/status/accounting-productization-checklist.md`.
 That historical snapshot is retained in the [archived checklist](../../archive/docs/summaries/accounting-productization-checklist.md).
@@ -139,5 +170,7 @@ Protocol references: [Xero Accounting OpenAPI](https://github.com/XeroAPI/Xero-O
 [NetSuite Trial Balance semantics](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N1520986.html),
 [NetSuite system retained earnings](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N1457773.html),
 [NetSuite Account analytics metadata](https://www.netsuite.com/help/helpcenter/en_US/srbrowser/Browser2020_2/analytics/record/account.html),
+[NetSuite subsidiary account assignments](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N1440518.html),
+[NetSuite multiselect filtering](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_1029114633.html),
 [NetSuite reports and period-end journals](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_1513210940.html),
 and [NetSuite OAuth](https://blogs.oracle.com/developers/netsuite-as-oidc-provider).

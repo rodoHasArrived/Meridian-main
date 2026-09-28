@@ -10,6 +10,10 @@ public interface IProviderCredentialStore
 
     Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default);
 
+    /// <summary>Save a complete rotated credential snapshot in both current and recovery generations.</summary>
+    Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
+        => throw new NotSupportedException("This credential store cannot durably retain rotated credentials.");
+
     Task<ProviderCredentialReadResult?> ReadForProviderAsync(string providerId, CancellationToken ct = default);
 
     Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default);

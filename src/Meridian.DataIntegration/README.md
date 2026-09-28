@@ -16,7 +16,9 @@ last_reviewed: 2026-09-28
 `AccountingSystem/XeroAccountingProvider.cs` and `NetSuiteAccountingProvider.cs`
 import credentialed read-only evidence through `CredentialedAccountingProvider`.
 The shared base serializes token rotation, persists rotated refresh tokens in the
-provider vault, and sanitizes transport failures. Provider adapters own scope,
+provider vault with a complete snapshot in both recovery generations, and sanitizes transport failures.
+Environment credentials migrate together on rotation; cancellation after receiving a replacement
+cannot discard it. Provider adapters own scope,
 pagination, strict mapping, and controlled export validation. They never post
 journals. Imports reject unbalanced or malformed trial balances. Export review lines
 retain gross debit/credit account totals. NetSuite standard date-based trial balances
@@ -25,6 +27,11 @@ into the provider-identified system retained-earnings account, preserving direct
 postings. Both journal and balance reads exclude period-end journals; ambiguous
 system account identity fails closed. See [External GL Providers](../../docs/operators/external-gl-providers.md)
 for supported scope, permissions, failure recovery and human review evidence.
+The NetSuite chart filters direct subsidiary assignments and inherited assignments with
+Include Children, using a validated ancestor chain. Unnumbered accounts have stable
+provider-prefixed internal-ID codes. Both providers retain an explicit balance basis:
+NetSuite uses the calendar year; Xero uses the organisation's financial year and system
+retained-earnings identity. The requested journal period remains independent.
 
 ## OAuth token ownership
 

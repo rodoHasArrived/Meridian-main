@@ -16,6 +16,12 @@ Accounting-system export package creation, certification, and manifest reads cal
 Xero and NetSuite use this seam to require current live import scope and their
 own retained control evidence in addition to the existing mapping, reconciliation,
 and human-origin checks. Successful certification never enables posting.
+Live GL reconciliation projects all retained Meridian history through the report date
+using the imported trial-balance basis, including the provider's income year and
+retained-earnings carry-forward. Gross activity within the requested inclusive dates
+is retained separately and is the only amount used for generated export review lines.
+Hashes cover both the basis and activity, so later journal changes invalidate stale
+certifications even when closing account balances remain equal.
 
 Statement matching retains exact tolerance rules/version and matcher revision with population
 availability. Missing/failed internal populations and empty statements cannot certify source clearing;

@@ -481,6 +481,11 @@ calendar-year income and expense balances, moves prior-year net income or loss i
 the system retained-earnings account identified by provider metadata, and preserves
 direct retained-earnings postings. Period-end journals are excluded. Ambiguous
 identity, duplicate or malformed aggregates and unbalanced evidence fail closed.
+Subsequent review fixes retain complete rotated credentials in both vault generations,
+scope NetSuite chart accounts through direct/inherited subsidiary assignments, and
+give unnumbered accounts stable identities. The report balance basis is retained
+separately from the journal/export period, enabling cumulative and year-to-date
+reconciliation while generating only requested-period activity for export review.
 
 `NetSuiteTrialBalanceTests` and the external GL regression suites cover multi-year
 balances, every income-statement type, the year boundary, offsetting accounts,

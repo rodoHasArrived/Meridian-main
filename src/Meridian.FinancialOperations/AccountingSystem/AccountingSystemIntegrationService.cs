@@ -479,7 +479,9 @@ public sealed class AccountingSystemIntegrationService
             var meridianDebit = meridian?.Debit ?? 0m;
             var meridianCredit = meridian?.Credit ?? 0m;
             var variance = (externalDebit - externalCredit) - (meridianDebit - meridianCredit);
-            var status = ResolveStatus(external, meridian is not null, variance);
+            var status = latest.Summary.TrialBalanceBasis is not null && variance == 0m &&
+                latest.ChartAccounts.Any(a => string.Equals(a.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase))
+                ? AccountingSystemReconciliationStatusDto.Matched : ResolveStatus(external, meridian is not null, variance);
             var rowExternalEvidenceReferences = NormalizeEvidenceReferences([external?.EvidenceRef]);
             var meridianEvidenceReferences = meridian is null ? [] : NormalizeEvidenceReferences(meridian.EvidenceReferences);
             var rowEvidenceReferences = NormalizeEvidenceReferences(rowExternalEvidenceReferences.Concat(meridianEvidenceReferences));
@@ -498,6 +500,8 @@ public sealed class AccountingSystemIntegrationService
                 BuildDetail(status, variance),
                 external?.EvidenceRef)
             {
+                PeriodDebit = latest.Summary.TrialBalanceBasis is null ? null : meridian?.PeriodDebit ?? 0m,
+                PeriodCredit = latest.Summary.TrialBalanceBasis is null ? null : meridian?.PeriodCredit ?? 0m,
                 ExternalEvidenceReferences = rowExternalEvidenceReferences,
                 MeridianEvidenceReferences = meridianEvidenceReferences,
                 EvidenceReferences = rowEvidenceReferences
@@ -980,7 +984,7 @@ public sealed class AccountingSystemIntegrationService
         }
 
         return reconciliation.Rows
-            .Where(static row => row.MeridianDebit != 0m || row.MeridianCredit != 0m)
+            .Where(static row => (row.PeriodDebit ?? row.MeridianDebit) != 0m || (row.PeriodCredit ?? row.MeridianCredit) != 0m)
             .Where(row => mappingProfile.Profile.AccountMappings.ContainsKey(row.AccountCode))
             .OrderBy(static row => row.AccountCode, StringComparer.OrdinalIgnoreCase)
             .Select(row => new ExternalGlExportLineDto(
@@ -991,9 +995,9 @@ public sealed class AccountingSystemIntegrationService
                 mappingProfile.Profile.AccountMappings[row.AccountCode],
                 row.AccountName,
                 row.Currency,
-                row.MeridianDebit,
-                row.MeridianCredit,
-                row.MeridianDebit - row.MeridianCredit,
+                row.PeriodDebit ?? row.MeridianDebit,
+                row.PeriodCredit ?? row.MeridianCredit,
+                (row.PeriodDebit ?? row.MeridianDebit) - (row.PeriodCredit ?? row.MeridianCredit),
                 dimensionMapping?.MeridianDimensions,
                 dimensionMapping?.ExternalDimensions,
                 row.EvidenceReferences))
@@ -1260,7 +1264,9 @@ public sealed class AccountingSystemIntegrationService
             row.EvidenceRef ?? string.Empty,
             string.Join(",", row.ExternalEvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
             string.Join(",", row.MeridianEvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
-            string.Join(",", row.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)));
+            string.Join(",", row.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase))) +
+            (row.PeriodDebit.HasValue || row.PeriodCredit.HasValue
+                ? $"|period:{row.PeriodDebit?.ToString("G29", CultureInfo.InvariantCulture)}:{row.PeriodCredit?.ToString("G29", CultureInfo.InvariantCulture)}" : string.Empty);
 
     private static string FormatGeneratedExportLineForHash(ExternalGlExportLineDto line)
         => string.Join(
@@ -1373,6 +1379,13 @@ public sealed class AccountingSystemIntegrationService
         var chartAccounts = detail.ChartAccounts ?? [];
         var journalEntries = detail.JournalEntries ?? [];
         var trialBalance = detail.TrialBalance ?? [];
+        if (detail.Summary.TrialBalanceBasis is { } basis &&
+            (basis.IncomeStatementPeriodStart > detail.Summary.PeriodEnd ||
+             basis.IncomeStatementAccountCodes.Distinct(StringComparer.OrdinalIgnoreCase).Count() != basis.IncomeStatementAccountCodes.Count ||
+             basis.IncomeStatementAccountCodes.Any(code => !chartAccounts.Any(a => a.AccountCode == code)) ||
+             (basis.IncomeStatementAccountCodes.Count > 0 && !chartAccounts.Any(a => a.AccountCode == basis.RetainedEarningsAccountCode)) ||
+             basis.IncomeStatementAccountCodes.Contains(basis.RetainedEarningsAccountCode ?? string.Empty, StringComparer.OrdinalIgnoreCase)))
+            throw new InvalidOperationException("The imported trial-balance comparison basis is incomplete or invalid.");
         EnsureImportCountMatches(providerId, "chart account", detail.Summary.ChartAccountCount, chartAccounts.Count);
         EnsureImportCountMatches(providerId, "journal entry", detail.Summary.JournalEntryCount, journalEntries.Count);
         EnsureImportCountMatches(providerId, "trial-balance line", detail.Summary.TrialBalanceLineCount, trialBalance.Count);
@@ -1474,6 +1487,9 @@ public sealed class AccountingSystemIntegrationService
                 .OrderBy(static line => line.ExternalAccountId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static line => line.AccountCode, StringComparer.OrdinalIgnoreCase)
                 .Select(FormatTrialBalanceLineForHash)));
+        if (summary.TrialBalanceBasis is { } basis)
+            payload += $"|balance-basis:{basis.IncomeStatementPeriodStart:yyyy-MM-dd}:{basis.RetainedEarningsAccountCode}:" +
+                string.Join(",", basis.IncomeStatementAccountCodes.Order(StringComparer.OrdinalIgnoreCase));
         return Sha256Digest.ComputeUtf8(payload);
     }
 
@@ -1534,40 +1550,50 @@ public sealed class AccountingSystemIntegrationService
     {
         var totals = new Dictionary<string, MeridianAccountTotal>(StringComparer.OrdinalIgnoreCase);
         if (_ledgerJournalStore is null)
-        {
             return totals;
-        }
-
         var periods = await _ledgerJournalStore.ListPeriodsAsync(
-            ledgerBookId: summary.LedgerBookId,
-            fundProfileId: summary.FundProfileId,
-            ct: ct).ConfigureAwait(false);
-
-        foreach (var period in periods.Where(period => period.StartDate <= summary.PeriodEnd && period.EndDate >= summary.PeriodStart))
+            ledgerBookId: summary.LedgerBookId, fundProfileId: summary.FundProfileId, ct: ct).ConfigureAwait(false);
+        var basis = summary.TrialBalanceBasis;
+        var incomeCodes = basis?.IncomeStatementAccountCodes.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var currency = summary.LedgerBookId is { } bookId
+            ? (await _ledgerJournalStore.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false))?.BaseCurrency ?? "USD" : "USD";
+        MeridianAccountTotal Total(string code)
+        {
+            if (!totals.TryGetValue(code, out var total))
+                totals[code] = total = new MeridianAccountTotal(code, currency);
+            return total;
+        }
+        foreach (var period in periods.Where(period => period.StartDate <= summary.PeriodEnd &&
+                     (basis is not null || period.EndDate >= summary.PeriodStart)))
         {
             ct.ThrowIfCancellationRequested();
             var entries = await _ledgerJournalStore.GetByPeriodAsync(period.PeriodId, ct).ConfigureAwait(false);
             foreach (var record in entries)
             {
+                var date = DateOnly.FromDateTime(record.Entry.Timestamp.Date);
+                if (date > summary.PeriodEnd || (basis is null && date < summary.PeriodStart))
+                    continue;
                 foreach (var line in record.Entry.Lines)
                 {
                     var accountCode = line.Account.Name;
-                    if (!totals.TryGetValue(accountCode, out var total))
+                    var evidence = BuildMeridianEvidenceReferences(record, line).ToArray();
+                    if (date >= summary.PeriodStart)
                     {
-                        total = new MeridianAccountTotal(accountCode, "USD");
-                        totals[accountCode] = total;
+                        var activity = Total(accountCode);
+                        activity.PeriodDebit += line.Debit;
+                        activity.PeriodCredit += line.Credit;
+                        activity.EvidenceReferences.UnionWith(evidence);
                     }
-
+                    // Report roll-forward is a comparison projection, never an export journal.
+                    var balanceCode = basis is not null && date < basis.IncomeStatementPeriodStart && incomeCodes!.Contains(accountCode)
+                        ? basis.RetainedEarningsAccountCode! : accountCode;
+                    var total = Total(balanceCode);
                     total.Debit += line.Debit;
                     total.Credit += line.Credit;
-                    foreach (var evidenceReference in BuildMeridianEvidenceReferences(record, line))
-                    {
-                        total.EvidenceReferences.Add(evidenceReference);
-                    }
+                    total.EvidenceReferences.UnionWith(evidence);
                 }
             }
         }
-
         return totals;
     }
 
@@ -2304,6 +2330,10 @@ public sealed class AccountingSystemIntegrationService
         public decimal Debit { get; set; }
 
         public decimal Credit { get; set; }
+
+        public decimal PeriodDebit { get; set; }
+
+        public decimal PeriodCredit { get; set; }
 
         public HashSet<string> EvidenceReferences { get; } = new(StringComparer.OrdinalIgnoreCase);
     }

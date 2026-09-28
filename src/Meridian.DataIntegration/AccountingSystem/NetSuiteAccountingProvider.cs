@@ -65,31 +65,49 @@ public sealed class NetSuiteAccountingProvider(IProviderCredentialStore store, H
         throw new InvalidOperationException("NetSuite SuiteQL row limit reached; incomplete evidence cannot be retained.");
     }
 
-    private async Task<string> BaseCurrencyAsync(ProviderCredentialReadResult connection, string token, CancellationToken ct)
+    private async Task<(string Currency, IReadOnlyList<string> Ancestors)> ScopeAsync(ProviderCredentialReadResult connection, string token, CancellationToken ct)
     {
         var subsidiaries = await QueryAsync(connection, token,
-            $"SELECT s.id, c.symbol AS currency FROM subsidiary s INNER JOIN currency c ON c.id = s.currency WHERE s.id = {NumericField(connection, "SubsidiaryId")} ORDER BY s.id", ct).ConfigureAwait(false);
+            $"SELECT s.id, s.parent, c.symbol AS currency FROM subsidiary s INNER JOIN currency c ON c.id = s.currency WHERE s.id = {NumericField(connection, "SubsidiaryId")} ORDER BY s.id", ct).ConfigureAwait(false);
         if (subsidiaries.Count != 1 || RequiredText(subsidiaries[0], "id") != NumericField(connection, "SubsidiaryId"))
             throw new InvalidOperationException("NetSuite subsidiary scope is unavailable.");
         var books = await QueryAsync(connection, token,
             $"SELECT id FROM accountingbook WHERE id = {NumericField(connection, "AccountingBookId")} AND isprimary = 'T' ORDER BY id", ct).ConfigureAwait(false);
         if (books.Count != 1 || RequiredText(books[0], "id") != NumericField(connection, "AccountingBookId"))
             throw new InvalidOperationException("Only the subsidiary primary accounting book is supported.");
-        return RequiredText(subsidiaries[0], "currency");
+        var ancestors = new List<string>();
+        var parent = Text(subsidiaries[0], "parent");
+        while (!string.IsNullOrWhiteSpace(parent))
+        {
+            if (!long.TryParse(parent, NumberStyles.None, CultureInfo.InvariantCulture, out var parentId) || parentId <= 0 ||
+                parent == NumericField(connection, "SubsidiaryId") || ancestors.Contains(parent) || ancestors.Count >= 100)
+                throw new InvalidOperationException("NetSuite subsidiary hierarchy is invalid.");
+            ancestors.Add(parent);
+            var parents = await QueryAsync(connection, token,
+                $"SELECT id, parent FROM subsidiary WHERE id = {parentId} ORDER BY id", ct).ConfigureAwait(false);
+            if (parents.Count != 1 || RequiredText(parents[0], "id") != parent)
+                throw new InvalidOperationException("NetSuite subsidiary hierarchy is unavailable.");
+            parent = Text(parents[0], "parent");
+        }
+        return (RequiredText(subsidiaries[0], "currency"), ancestors);
     }
 
     protected override async Task VerifyScopeAsync(ProviderCredentialReadResult connection, string token, CancellationToken ct)
-        => _ = await BaseCurrencyAsync(connection, token, ct).ConfigureAwait(false);
+        => _ = await ScopeAsync(connection, token, ct).ConfigureAwait(false);
 
     protected override async Task<AccountingSystemImportDetailDto> ReadAsync(ProviderCredentialReadResult connection,
         string token, AccountingSystemImportRequestDto request, CancellationToken ct)
     {
-        var currency = await BaseCurrencyAsync(connection, token, ct).ConfigureAwait(false);
+        var (currency, ancestors) = await ScopeAsync(connection, token, ct).ConfigureAwait(false);
         var scope = ConnectionScope(connection);
+        static string AssignedTo(string id) => $"BUILTIN.MNFILTER(subsidiary, 'MN_INCLUDE', '', 'TRUE', '{id}') = 'T'";
+        var accountScope = AssignedTo(NumericField(connection, "SubsidiaryId"));
+        if (ancestors.Count > 0)
+            accountScope += $" OR (includechildren = 'T' AND ({string.Join(" OR ", ancestors.Select(AssignedTo))}))";
         var accountRows = await QueryAsync(connection, token,
-            "SELECT id, acctnumber, acctname, accttype, isinactive, parent, NVL(sspecacct, 'NONE') AS specialaccounttype FROM account ORDER BY id", ct).ConfigureAwait(false);
+            $"SELECT id, acctnumber, acctname, accttype, isinactive, parent, NVL(sspecacct, 'NONE') AS specialaccounttype FROM account WHERE ({accountScope}) ORDER BY id", ct).ConfigureAwait(false);
         var accounts = accountRows.Select(row => new AccountingSystemChartAccountDto(RequiredText(row, "id"),
-            Text(row, "acctnumber"), RequiredText(row, "acctname"), RequiredText(row, "accttype"), currency,
+            string.IsNullOrWhiteSpace(Text(row, "acctnumber")) ? $"netsuite-account:{RequiredText(row, "id")}" : Text(row, "acctnumber").Trim(), RequiredText(row, "acctname"), RequiredText(row, "accttype"), currency,
             RequiredText(row, "isinactive") == "F", Text(row, "parent"), $"{scope}:account:{RequiredText(row, "id")}")).ToArray();
         var lookup = accounts.ToDictionary(a => a.ExternalAccountId, StringComparer.Ordinal);
         // The system account can be renamed or renumbered. Never infer its identity from a label.
@@ -143,7 +161,7 @@ public sealed class NetSuiteAccountingProvider(IProviderCredentialStore store, H
             var account = lookup[RequiredText(row, "accountid")];
             var amount = Amount(RequiredText(row, "balance"));
             var priorYear = Amount(RequiredText(row, "prioryearbalance"));
-            if (account.AccountType.ToUpperInvariant() is "INCOME" or "EXPENSE" or "OTHINCOME" or "OTHEXPENSE" or "COGS")
+            if (IsIncomeStatement(account))
             {
                 amount -= priorYear;
                 priorIncome += priorYear;
@@ -162,8 +180,19 @@ public sealed class NetSuiteAccountingProvider(IProviderCredentialStore store, H
                 account.AccountType, Math.Max(amount, 0), Math.Max(-amount, 0), currency, request.PeriodEnd!.Value,
                 $"{scope}:trial-balance:date-accrual-calendar-year:{request.PeriodEnd:yyyy-MM-dd}:{account.ExternalAccountId}:retained-earnings:{retainedId}");
         }).ToArray();
-        return Detail(connection, request, accounts, journals, balances,
+        var detail = Detail(connection, request, accounts, journals, balances,
             "NetSuite standard date-based accrual trial balance uses calendar-year income and expense balances with prior-year net income in system retained earnings; period-end journals are excluded.",
             "NetSuite evidence is limited to the selected subsidiary and primary accounting book in subsidiary base currency; consolidated, secondary-book, period-based and post-closing reporting are not supported.");
+        return detail with
+        {
+            Summary = detail.Summary with
+            {
+                TrialBalanceBasis = new(new(request.PeriodEnd!.Value.Year, 1, 1),
+            accounts.Where(IsIncomeStatement).Select(a => a.AccountCode).ToArray(), lookup[retainedId].AccountCode)
+            }
+        };
     }
+
+    private static bool IsIncomeStatement(AccountingSystemChartAccountDto account)
+        => account.AccountType.ToUpperInvariant() is "INCOME" or "EXPENSE" or "OTHINCOME" or "OTHEXPENSE" or "COGS";
 }
