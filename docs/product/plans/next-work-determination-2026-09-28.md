@@ -35,8 +35,11 @@ whatever dependency set is in the tree when it is tagged.**
   knowing before anyone treats the range as inert.
 - **`Production Certification` is green on the current tip** — [run #98](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36386907387),
   `event: push`, `head_sha: 0b956b06`, all four jobs. The per-push trigger keeps paying out.
-- **The pull-request queue went 25 → 26.** Two opened (#3010, #3011); **nothing closed**, including
-  #2983, which the last document asked to close.
+- **The pull-request queue holds 26 open PRs at the baseline** — counted directly, and the number to
+  trust. The 2026-09-27 document reported 25, and two opened since (#3010, #3011), which would give
+  27; the delta does not reconcile, so one of the two counts is wrong and I did not verify the
+  earlier one before repeating it. Stated as measured rather than as a trend. **#2983 is still
+  open**, which the last document asked to close.
 - **#2998 now merges with zero conflicts** — down from two yesterday. It is the cheapest merge in
   the entire queue and it is accounting work.
 
@@ -168,9 +171,18 @@ merging both independently is how the same change lands twice.
 
 The 2026-09-27 ranking stands as written for:
 
-- **Tier 0** — the RC sequence: signing secret → installer-size decision → freeze and tag →
-  **dispatch `Publish Smoke` at the tagged SHA** → activate the required check → ADR-019/ADR-020 and
-  support-matrix sign-off. **Correcting the 2026-09-27 claim that one tag run discharges four of the
+- **Tier 0** — the RC sequence, **reordered**: both signing secrets → installer-size decision →
+  **fix the prerelease → MSIX version mapping** → dependency drain → **tenancy fail-closed and the
+  reconciliation round-trip test** → only then freeze and tag → **dispatch `Publish Smoke` at the
+  tagged SHA** → activate the required check → ADR-019/ADR-020 and support-matrix sign-off.
+  **Two corrections to the order the 2026-09-27 document implied.** First, the tracker requires
+  every P0 row complete on *one* release commit (`implementation-todo-list.md:125-127`), so the
+  tenancy fix and the new round-trip test — both candidate-changing P0 work — must land *before* the
+  freeze; tagging first would certify the pre-fix tenancy posture, omit the test, and force a second
+  tag and a second full evidence run. This document made that mistake itself: it argued that
+  post-tag dependency bumps invalidate same-commit evidence and then sequenced two P0 code changes
+  after the tag. Second, `v0.1.0-rc.1` cannot be the tag as written — see the version-identity row
+  in the summary. **Correcting the 2026-09-27 claim that one tag run discharges four of the
   six evidence-gated P0 rows:** `Desktop Installer Release` and `Production Certification` do trigger
   on `push: tags: v*`, but `Publish Smoke` does not — `publish-smoke.yml:3-5` is `workflow_dispatch`
   only. The tracker's `PRD-013` row asks for the `web-workstation`/`win-x64` Publish Smoke run *on
@@ -238,10 +250,11 @@ re-verification; a carried-forward claim is a claim, and re-verification has to 
 | --- | --- | --- |
 | P0 | Provide **both** `MDC_SIGNING_CERT_PFX_BASE64` **and `MDC_SIGNING_CERT_PASSWORD`** in the protected `desktop-release-signing` environment | Hard prerequisite for **freezing and running the signed RC**, not for the rest of Tier 0; not engineering work. The 2026-09-27 document named only the PFX: the password is passed to Authenticode signing (`desktop-installer-packaging.yml:383,389`) and into installed lifecycle certification (`:483,492`), where `certify-desktop-install-lifecycle.ps1:177` imports the PFX with it, and the tracker names both (`implementation-todo-list.md:120-122`). Provisioning only the PFX leaves the tag workflow unable to sign or import a password-protected certificate. Everything else below can proceed while they are outstanding |
 | P0 | Decide the ~1 GB consumer installer question | It ships inside the RC; decide before the tag |
+| P0 | **Fix the prerelease → MSIX version mapping, or choose a tag scheme with distinct increasing identities** | **Blocks the tag.** `desktop-installer-packaging.yml:196-199` matches `^v(\d+)\.(\d+)\.(\d+)` and stamps `$1.$2.$3.0`, so `v0.1.0-rc.1` and a later `v0.1.0` both produce MSIX `0.1.0.0`. An operator who installs the signed RC then cannot be updated to the final package, and `certify-desktop-install-lifecycle.ps1:206-209` throws "Update did not advance package version" on exactly that transition. Tagging `v0.1.0-rc.1` as written burns the `0.1.0.0` identity on a throwaway candidate |
 | P0 | **Drain the six eligible zero-conflict dependency PRs before the freeze** (seven are clean; #2878 is held back) | The RC freezes the dependency set; bumping after the tag invalidates the same-commit evidence the tag exists to mint. Oldest has been open 73 days |
-| P0 | Freeze a commit, cut `v0.1.0-rc.1`, **and separately dispatch `Publish Smoke` at the tagged SHA** | Still no `v*` tag in the repository. The tag run does not mint everything: `publish-smoke.yml:3` is `workflow_dispatch`-only, so `PRD-013`'s `web-workstation`/`win-x64` evidence needs its own dispatch at the frozen commit. `0b956b06` is green on run #98 |
-| P0 | Backfill tenancy; make `FailClosed` the supported default with a real config key; add the rejection regressions | Re-verified today: still env-var-only, still defaults open. The one `W9-GOV-008` remainder |
-| P0 | Add `StatementReconciliationPostgresRoundTripTests` | Corrected scope: statement rows **do** have PostgreSQL coverage (`StatementReconciliationReportAuthorityStoreTests.cs`, `PostgresFundAccountStoreTests.cs`). The gap is the **end-to-end round trip** — import → journal-sourced ledger → deterministic match → casework — over the real stores |
+| P0 | Backfill tenancy; make `FailClosed` the supported default with a real config key; add the rejection regressions — **before the freeze** | Re-verified today: still env-var-only, still defaults open. The one `W9-GOV-008` remainder, and it changes the candidate, so it cannot follow the tag |
+| P0 | Add `StatementReconciliationPostgresRoundTripTests` — **before the freeze** | Corrected scope: statement rows **do** have PostgreSQL coverage (`StatementReconciliationReportAuthorityStoreTests.cs`, `PostgresFundAccountStoreTests.cs`). The gap is the **end-to-end round trip** — import → journal-sourced ledger → deterministic match → casework — over the real stores. Candidate-changing, so it precedes the tag |
+| P0 | **Then** freeze a commit, cut the RC tag, **and separately dispatch `Publish Smoke` at the tagged SHA** | Still no `v*` tag in the repository. **This row is last among the P0s by necessity:** the tracker requires every P0 row complete on **one** release commit (`implementation-todo-list.md:125-127`), so a tag cut before the two rows above would certify the pre-fix tenancy posture, omit the new test, and force a second tag and a full second evidence run. The tag run also does not mint everything: `publish-smoke.yml:3` is `workflow_dispatch`-only, so `PRD-013`'s `web-workstation`/`win-x64` evidence needs its own dispatch at the frozen commit |
 | P1 | **Merge #2998 — it conflicts with nothing today** | Cheapest merge in the queue, in-scope accounting work, and clean merges do not stay clean |
 | P1 | Take or decline `W9-CORPACT-011` (6 days) | Zero engineering; clears the last W9 acceptance lane |
 | P1 | Resolve the two shared operations-continuity fixtures once on `main`; drain the **four** remaining generated-only branches (#2928, #2920, #2953, #2896) | One resolution converts #2929 and #2930; the four need no product decision. The baseline table listed five — **#2999 merged in `80219e32`** and has left the queue |
