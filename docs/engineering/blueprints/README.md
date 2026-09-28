@@ -51,7 +51,7 @@ grounded in Meridian's actual stack.
 | [W9 Close-Out Delivery Plan (2026-08)](../../product/plans/w9-close-out-delivery-plan-2026-08.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-W9-CLOSEOUT-001`); sequences `W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009` |
 | [2026-07 First-Order Improvement Slate](../../product/plans/product-roadmap-priorities-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-PRIORITY-SLATE-001`); ranked W9 rationale |
 | [2026-07 Depth Slate](../../product/plans/w10-depth-slate-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-DEPTH-SLATE-001`); W10 rationale |
-| [What To Work On Next (2026-09-27)](../../product/plans/next-work-determination-2026-09-27.md) | `docs/product/plans/` | Program | Latest prioritization input; supersedes the archived 2026-09-20 and 2026-09-23 determinations |
+| [What To Work On Next (2026-09-28)](../../product/plans/next-work-determination-2026-09-28.md) | `docs/product/plans/` | Program | Latest prioritization input; supersedes the archived 2026-09-20, 2026-09-23 and 2026-09-27 determinations |
 | [Adversarial Review 2026-08 Remediation Plan](../../product/plans/adversarial-review-2026-08-remediation-plan.md) | `docs/product/plans/` | Program | Active working plan |
 | [Production-Readiness Backlog (2026-08)](../../product/plans/production-readiness-backlog-2026-08.md) | `docs/product/plans/` | Release readiness | Active working plan; the [Implementation and Readiness Tracker](../../product/implementation-todo-list.md) remains the P0 release gate |
 | [WPF / Web-UI Alignment Plan](../plans/wpf-web-ui-alignment-plan.md) | `docs/engineering/plans/` | Desktop workstation | Active; drives `W8-WPF-PARITY-001` |
@@ -68,6 +68,7 @@ grounded in Meridian's actual stack.
 | [Tooling Workflow Backlog](../../../archive/docs/plans/tooling-workflow-backlog.md) | Completed — all nine items (MW-001–MW-009) verified delivered in source on 2026-09-28; see its closure record |
 | [What To Work On Next (2026-09-20)](../../../archive/docs/plans/next-work-determination-2026-09-20.md) | Superseded by the 2026-09-23 determination |
 | [What To Work On Next (2026-09-23)](../../../archive/docs/plans/next-work-determination-2026-09-23.md) | Superseded by the 2026-09-27 determination |
+| [What To Work On Next (2026-09-27)](../../../archive/docs/plans/next-work-determination-2026-09-27.md) | Superseded by the 2026-09-28 determination |
 
 The design-system Workstation Template Blueprint
 (`Meridian Design System/guidelines/WORKSTATION_BLUEPRINT.md`) is deliberately **not** in this
