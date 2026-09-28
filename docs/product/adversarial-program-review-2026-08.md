@@ -462,7 +462,7 @@ The 14,000-test headline materially overstates delivered assurance:
   meta-layer is institutionally impressive while the first mile remains unshipped, and every
   status number that layer emits (§3) is currently either stale or self-contradictory.
 - **Two co-equal UI lanes is a cost the program is not paying evenly.** 15 of 29 browser screens
-  are "Partial" on WPF and 2 are hard gaps (`docs/development/wpf-web-ui-alignment-plan.md`). The
+  are "Partial" on WPF and 2 are hard gaps (`docs/engineering/plans/wpf-web-ui-alignment-plan.md`). The
   desktop lane does carry real governed actions — manual-journal approve/post/reverse and
   rules-studio promotion approval (`src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:360-375`),
   close-evidence review and period locking
@@ -480,7 +480,7 @@ The 14,000-test headline materially overstates delivered assurance:
 ## Prioritized improvement list (by end-user value uplift)
 
 > Every finding below is broken into tracked todos with code-ready implementation plans in
-> [Adversarial Review 2026-08 — Remediation Todos and Implementation Plans](adversarial-review-2026-08-remediation-plan.md).
+> [Adversarial Review 2026-08 — Remediation Todos and Implementation Plans](plans/adversarial-review-2026-08-remediation-plan.md).
 
 1. **Ship the first mile.** Close PRD-013/014/016 (publish → sign → install evidence, required-check
    activation), add `--create-user`/`--hash-password`, fix or archive `deploy/`, one-line

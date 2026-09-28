@@ -6,7 +6,7 @@
 
 Meridian's WPF desktop application (`src/Meridian.Wpf/`) is an active, co-equal operator UI lane alongside the browser workstation. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
 
-The desktop lane's immediate priority is closing web-UI parity gaps for screens that shipped browser-first while WPF was deferred (v0.24→v0.25). The prioritized gap list and closure sequence live in [`wpf-web-ui-alignment-plan.md`](./wpf-web-ui-alignment-plan.md). For historical Wave two-to-four acceptance lanes, use [`archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md). Any desktop change must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation, so neither client forks product state.
+The desktop lane's immediate priority is closing web-UI parity gaps for screens that shipped browser-first while WPF was deferred (v0.24→v0.25). The prioritized gap list and closure sequence live in [`wpf-web-ui-alignment-plan.md`](../engineering/plans/wpf-web-ui-alignment-plan.md). For historical Wave two-to-four acceptance lanes, use [`archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md). Any desktop change must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation, so neither client forks product state.
 
 ## Architecture
 
@@ -569,7 +569,7 @@ make desktop-test
 
 ## Related Documentation
 
-- [`wpf-web-ui-alignment-plan.md`](./wpf-web-ui-alignment-plan.md) — WPF ↔ web-UI parity matrix and closure sequence (`W8-WPF-PARITY-001`)
+- [`wpf-web-ui-alignment-plan.md`](../engineering/plans/wpf-web-ui-alignment-plan.md) — WPF ↔ web-UI parity matrix and closure sequence (`W8-WPF-PARITY-001`)
 - [`docs/architecture/desktop-layers.md`](../architecture/desktop-layers.md) — Layer boundaries
 - [`docs/development/desktop-testing-guide.md`](./desktop-testing-guide.md) — Testing procedures
 - [`archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md) — Wave 2-to-4 desktop acceptance lanes, shared-contract checks, and evidence rules

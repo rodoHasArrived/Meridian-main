@@ -21,7 +21,7 @@ capability logic belongs in composed, single-responsibility units, not god files
 Containment is only half the job: the baseline records where the debt is, but nothing drives it
 down. Every run therefore also reports the trend — tracked files, capped lines, and how much of the
 baseline is reclaimable — so progress is a visible number rather than a per-file pass/fail. See
-docs/development/god-file-burn-down-plan.md for the burn-down targets those numbers feed.
+docs/engineering/plans/god-file-burn-down-plan.md for the burn-down targets those numbers feed.
 
 Exit codes:
     0  No new or grown god files

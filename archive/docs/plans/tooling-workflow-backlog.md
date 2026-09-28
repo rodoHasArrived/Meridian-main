@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Scope:** Engineering — Tooling, automation, and contributor workflow
-**Status:** Proposed
-**Last Updated:** 2026-03-20
+**Status:** Completed — archived 2026-09-28
+**Reviewed:** 2026-09-28 (every item re-checked against source; see the closure record)
 
 ---
 
@@ -112,7 +112,7 @@ These problems are individually small but collectively expensive because they un
 ### MW-007 — Add a tooling architecture document
 - **Priority:** P2
 - **Effort:** M
-- **Status:** Done — [`tooling-architecture.md`](tooling-architecture.md) documents command
+- **Status:** Done — [`tooling-architecture.md`](../../../docs/development/tooling-architecture.md) documents command
   layering, authoritative vs convenience commands, generated artifacts, and local-to-CI
   mapping, and is linked from the developer docs index.
 - **Outcome:** Contributors can understand the toolchain as a system instead of a list of commands.
@@ -173,11 +173,33 @@ Track whether the cleanup is working by measuring:
 
 ---
 
+---
+
+## Closure Record (2026-09-28)
+
+A review against current source found every item delivered. The backlog's own status line had not
+been updated since 2026-03-20, which made it look stale rather than finished. Evidence per item:
+
+| Item | Result | Evidence in source |
+|---|---|---|
+| MW-001 | Done | `make generate-icons` / `make generate-diagrams` delegate to `npm run ...`; guarded by `make verify-tooling-metadata` |
+| MW-002 | Done | `build/scripts/validate-tooling-metadata.py` checks `package.json` scripts, `Makefile` and `make/*.mk` helper paths, and `.github/dependabot.yml` directories; runs locally via `make verify-tooling-metadata` and in CI via `.github/workflows/maintenance.yml` |
+| MW-003 | Done | `docs/generated/workflows-overview.md` is generated from `.github/workflows/` |
+| MW-004 | Done | Root `Makefile` (62 lines) includes `make/install.mk`, `build.mk`, `test.mk`, `docs.mk`, `desktop.mk`, `ai.mk`, and `diagnostics.mk` |
+| MW-005 | Done | `bootstrap`, `verify-fast`, `verify-full`, `verify-docs`, `verify-desktop`, and `verify-release` are canonical Make lanes; CI runs matching `verify-*` jobs |
+| MW-006 | Done | Every Dependabot directory exists and no ecosystem/directory pair repeats; directories are validated by the MW-002 script in CI |
+| MW-007 | Done | [`tooling-architecture.md`](../../../docs/development/tooling-architecture.md), linked from the development index |
+| MW-008 | Done (definition of done met) | Each `MeridianGlobalNoWarn` entry in `Directory.Build.props` carries `Owner`, `Justification`, and `RatchetPlan`; `build/scripts/ci/check-warning-suppressions.py` enforces this in `ci.yml`. Moving individual suppressions to project level continues under each entry's ratchet plan |
+| MW-009 | Done | `tooling-architecture.md` §6 splits AI automation into required gates, advisory tooling, and maintenance; `render-make-help.py` groups `make help` the same way |
+
+Remaining warning-suppression work is tracked by the per-entry ratchet plans in
+`Directory.Build.props`, not by this backlog.
+
 ## Related Files
 
-- [`Makefile`](https://github.com/rodoHasArrived/Meridian/blob/main/Makefile)
-- [`package.json`](https://github.com/rodoHasArrived/Meridian/blob/main/package.json)
-- [`.github/dependabot.yml`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/dependabot.yml)
-- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/workflows/README.md)
-- [`README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/README.md)
-- [`Directory.Build.props`](https://github.com/rodoHasArrived/Meridian/blob/main/Directory.Build.props)
+- [`Makefile`](https://github.com/rodoHasArrived/Meridian-main/blob/main/Makefile)
+- [`package.json`](https://github.com/rodoHasArrived/Meridian-main/blob/main/package.json)
+- [`.github/dependabot.yml`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/dependabot.yml)
+- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/workflows/README.md)
+- [`README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/README.md)
+- [`Directory.Build.props`](https://github.com/rodoHasArrived/Meridian-main/blob/main/Directory.Build.props)

@@ -3,8 +3,8 @@
 **Status:** accepted planning input; live status lives in the roadmap registry
 **Owner:** core-team
 **Reviewed:** 2026-08-11
-**Registry decision:** `DEC-W9-CLOSEOUT-001` in [`docs/roadmap/data/decision-log.yml`](../roadmap/data/decision-log.yml)
-**Registry rows:** `W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009` in [`docs/roadmap/data/roadmap-items.yml`](../roadmap/data/roadmap-items.yml)
+**Registry decision:** `DEC-W9-CLOSEOUT-001` in [`docs/roadmap/data/decision-log.yml`](../../roadmap/data/decision-log.yml)
+**Registry rows:** `W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009` in [`docs/roadmap/data/roadmap-items.yml`](../../roadmap/data/roadmap-items.yml)
 
 This document records the delivery sequence adopted on 2026-08-11 for the three open rows of the
 2026-07 first-order improvement slate (`DEC-PRIORITY-SLATE-001`). It carries the sequencing
@@ -31,7 +31,7 @@ feature:
 | `W9-INGEST-009` | `planned` | Institutional formats lack golden-file coverage, enforce no parse bounds, and cannot match transactions on the live path |
 
 Closing all three also supplies evidence toward `PRD-006`, `PRD-007`/`PRD-009`, and
-`PRD-010`/`PRD-101` in the [production-readiness tracker](implementation-todo-list.md). It does not
+`PRD-010`/`PRD-101` in the [production-readiness tracker](../implementation-todo-list.md). It does not
 substitute for that tracker's P0 release gate.
 
 **One tracker row needs correcting before this wave, not after it.** `PRD-010` is currently marked
@@ -99,8 +99,8 @@ population-projection decision needs a domain owner before it starts.
 ## Posture relative to production readiness
 
 Production readiness stays `blocked` in
-[`program-state.yml`](../roadmap/data/program-state.yml), gated on every P0 row in the
-[production-readiness tracker](implementation-todo-list.md) completing on one release commit. This
+[`program-state.yml`](../../roadmap/data/program-state.yml), gated on every P0 row in the
+[production-readiness tracker](../implementation-todo-list.md) completing on one release commit. This
 wave advances evidence for several P0 controls but does not close the gate and does not certify a
 release. Change 9's cross-process audit-chain proof is shared with `PRD-009`; change 10's bounded
 parsing is shared with `PRD-010`; changes 1–3 are shared with `PRD-006`.
@@ -858,7 +858,7 @@ above** — several of these are why a change is scoped the way it is.
   `commitment-and-capital-call-engine.md` reserves **031–032** and hard-codes that range in both its
   shared-convention note and its migration section, `equalization-and-series-accounting.md` names
   033–035, and the mark blueprint depends on 036–038 applying in phase order. Updating
-  [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md) alone would leave
+  [`docs/engineering/blueprints/README.md`](../../engineering/blueprints/README.md) alone would leave
   those documents hard-coded to displaced numbers, which is how a collision or a lower-after-higher
   application gets created.
 
@@ -875,7 +875,7 @@ above** — several of these are why a change is scoped the way it is.
   at 004, if the fund-account work in this row reaches it.)
 - **Lane collisions.** Change 3 touches WPF Trading surfaces owned by `W8-WPF-PARITY-001`, and
   change 4 touches reporting groups that `W8-UX-CONSOL-001` is consolidating. Refresh
-  [`docs/development/wpf-web-ui-alignment-plan.md`](../development/wpf-web-ui-alignment-plan.md)
+  [`docs/engineering/plans/wpf-web-ui-alignment-plan.md`](../../engineering/plans/wpf-web-ui-alignment-plan.md)
   from whichever change lands first rather than editing it from both lanes.
 - **Generated artifacts** must be regenerated in the same commit or the drift gate fails.
 - **Scope gate.** Every change here authors roadmap data, so a phase marker is mandatory, and once

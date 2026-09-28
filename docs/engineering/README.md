@@ -44,14 +44,16 @@ Canonical ownership rule:
 - Keep shared UI read-model/service contracts in `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
 - Never create duplicate business behavior per surface unless a surface-specific constraint exists.
 
-## Blueprints
+## Plans and Blueprints
 
-Code-ready technical designs for prioritized features live under
-[`blueprints/`](blueprints/README.md). That README is the **canonical register for every active
-blueprint in the repository**, wherever it is filed — engineering, `docs/development/accounting-blueprints/`,
-`docs/product/`, and `docs/plans/` — and it records the shared conventions (ledger migration
-ordinals, DDL precision, API route prefixes, enum extension, terminology) plus the cross-blueprint
-contracts that stop two independently-written designs from colliding.
+Every planning document has one home and one register entry. The
+[Plans and Blueprints Register](blueprints/README.md) is the **single index of every plan and
+blueprint in the repository**. It names the home folder for each kind:
+code-ready designs in [`blueprints/`](blueprints/README.md), engineering working plans in
+[`plans/`](plans/README.md), and product delivery plans in
+[`../product/plans/`](../product/plans/README.md). It also records the shared conventions (ledger
+migration ordinals, DDL precision, API route prefixes, enum extension, terminology) and the
+cross-blueprint contracts that stop two independently written designs from colliding.
 
 ## Build/Test/Run
 
@@ -218,22 +220,15 @@ launched processes, then restores the caller's environment.
 
 ### Persistence
 
-**Without database configuration, every money-path store (ledger, fund accounts, banking,
-money market, reporting, and more) runs in-memory: journal entries, reconciliations, and
-approvals are lost on restart.** Hosts surface this loudly — a `PERSISTENCE: NONE`/`PARTIAL`
-warning at startup, in the `postgresql` readiness check, and as a red banner in the browser
-workstation.
+Every launch except `--seed-demo` needs a persistence decision and **fails closed at startup**
+without one: `StorageFeatureRegistration` throws, naming the missing variable, rather than silently
+running in-memory. Set `MERIDIAN_DATABASE_URL` to persist every store domain to one PostgreSQL
+database; per-domain `MERIDIAN_*_CONNECTION_STRING` variables take precedence over it, so
+split-database deployments keep working. `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` is an explicit
+local/dev fixture opt-in and is refused when the environment is `Production`.
 
-Set the single unified variable to persist every store domain to one PostgreSQL database:
-
-```bash
-export MERIDIAN_DATABASE_URL="postgres://user:password@localhost:5432/meridian"
-# or Npgsql keyword form:
-export MERIDIAN_DATABASE_URL="Host=localhost;Port=5432;Database=meridian;Username=user;Password=password"
-```
-
-Per-domain `MERIDIAN_*_CONNECTION_STRING` variables remain supported and always take
-precedence over `MERIDIAN_DATABASE_URL`, so split-database deployments keep working.
+The canonical description of these defaults, including simulated market data and authentication,
+is [Start → Persistence and simulation defaults](../start/README.md#persistence-and-simulation-defaults).
 
 ## Workstation Architecture Rules
 
