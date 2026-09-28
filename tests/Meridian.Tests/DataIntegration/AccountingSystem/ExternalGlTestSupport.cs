@@ -22,6 +22,7 @@ internal sealed class ExternalGlTestStore(string providerId) : IProviderCredenti
         ["AccountingBookId"] = "1"
     };
     public List<ProviderCredentialVerificationUpdate> Verifications { get; } = [];
+    private ProviderVerificationStateDto _verificationState = ProviderVerificationStateDto.NotVerified;
     public string VaultPath => "unused-test-vault";
     public Task<ProviderCredentialReadResult?> ReadForProviderAsync(string id, CancellationToken ct = default)
     {
@@ -31,10 +32,11 @@ internal sealed class ExternalGlTestStore(string providerId) : IProviderCredenti
     }
     public Task<ProviderCredentialStoreStatus> GetStatusAsync(string id, CancellationToken ct = default)
         => Task.FromResult(new ProviderCredentialStoreStatus(providerId, providerId, ProviderCredentialStateDto.Configured,
-            ProviderCredentialSourceDto.LocalEncryptedStore, ProviderVerificationStateDto.NotVerified, null, null, null, null, null,
+            ProviderCredentialSourceDto.LocalEncryptedStore, _verificationState, null, null, null, null, null,
             null, null, "sandbox", null, [], Values.Keys.ToArray(), new Dictionary<string, string>()));
     public Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
     {
+        _verificationState = ProviderVerificationStateDto.NotVerified;
         foreach (var field in request.Credentials)
             Values[field.Key] = field.Value!;
         return Task.CompletedTask;
@@ -45,6 +47,7 @@ internal sealed class ExternalGlTestStore(string providerId) : IProviderCredenti
     public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default)
     {
         Verifications.Add(update);
+        _verificationState = update.Success ? ProviderVerificationStateDto.Verified : ProviderVerificationStateDto.Failed;
         return Task.CompletedTask;
     }
 }

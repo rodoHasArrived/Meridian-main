@@ -493,6 +493,10 @@ Accounting effective dates control report/export windows, and live accrual
 reconciliation requires a resolved Primary or Gaap book at every review boundary.
 Xero payroll expense types join the income-year roll-forward. Transport timeouts
 record sanitized failures while caller cancellation keeps its cancellation semantics.
+Credential replacement requires fresh verification at all three export boundaries.
+Connection verification persists one audit event with the requesting operator's
+identity. Xero GET reads honor bounded, cancellable `Retry-After` delays while
+retaining their journal offset; exhausted or unsupported limits fail closed.
 
 `NetSuiteTrialBalanceTests` and the external GL regression suites cover multi-year
 balances, every income-statement type, the year boundary, offsetting accounts,

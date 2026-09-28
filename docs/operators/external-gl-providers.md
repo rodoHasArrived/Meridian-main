@@ -41,6 +41,11 @@ connections for a single provider are outside this adapter's current scope.
 Connection verification exchanges the token and reads the selected organisation
 or subsidiary/book. It does not certify all import permissions. Run a complete
 import for the intended period to verify journal/report access.
+The connection lifecycle records one verification result with the requesting
+operator's identity. Imports record their own verification result. Replacing any
+credentials clears verification, including replacements that keep the same external
+company. Successful verification or a complete successful import is required before
+export review can resume.
 
 ## Import semantics and boundaries
 
@@ -86,7 +91,12 @@ replace retained evidence. The integration service supplies scoped content hashe
   number use the stable `netsuite-account:{internalId}` code. Xero accounts without
   a code similarly use `xero-account:{accountId}`. Map these codes explicitly in
   Meridian; ambiguous duplicate codes are rejected.
-- Rate limits, expired consent, permission errors, malformed amounts, duplicate
+- Xero GET reads retry HTTP 429 responses at the same cursor when `Retry-After`
+  supplies a valid delay or HTTP date. Each read allows up to three retries and a
+  maximum two-minute delay per retry. Waiting is cancellable. Missing or invalid
+  hints, longer daily-limit delays and exhausted retries fail the import. Token
+  exchanges and NetSuite requests are not automatically retried.
+- Unrecovered rate limits, expired consent, permission errors, malformed amounts, duplicate
   identities, incomplete pagination, unbalanced journals or trial balances, and
   negative or two-sided trial-balance amounts fail the entire
   import. No partial result replaces the last retained import. Requests are
@@ -148,6 +158,9 @@ still requires the human approver's package-specific certification evidence.
 Do not invent approval references to make a blocked package appear ready.
 
 The provider checks run at package creation, certification, and manifest read.
+All three boundaries require the current credential record to be verified; replacing
+the client ID, client secret or refresh token blocks even a previously certified
+package until verification succeeds. A failed verification also blocks review.
 Changing the external connection or retaining a new import invalidates old
 provider-control references; create a new review package with fresh evidence.
 Live posting stays disabled even after successful certification.
@@ -155,7 +168,8 @@ Live posting stays disabled even after successful certification.
 ## Validation evidence
 
 `ExternalGlLiveProviderTests`, `ExternalGlFailureBoundaryTests`, `NetSuiteTrialBalanceTests`,
-`ExternalGlCredentialRecoveryTests`, `ExternalGlScopeTests`, and the shared
+`ExternalGlCredentialRecoveryTests`, `ExternalGlConnectionLifecycleTests`,
+`ExternalGlRateLimitTests`, `ExternalGlScopeTests`, and the shared
 `AccountingSystemIntegrationServiceTests` live-provider/period cases exercise credentialed HTTP
 request/response contracts, pagination, safe failure, scoped evidence, and the
 controlled export path without tenant secrets. They are transport contract tests,
@@ -170,6 +184,10 @@ Additional regressions cover cancellation immediately after token rotation follo
 by primary-vault corruption, environment credential migration, unnumbered charts,
 inherited subsidiary accounts, multi-period reconciliation, Xero fiscal boundaries,
 partial-month exports, and certification invalidation after gross activity changes.
+Credential replacement regressions cover creation, certification and manifest reads;
+real-vault tests require one verification audit event with the requesting actor.
+Rate-limit regressions cover delta and HTTP-date delays, unchanged pagination cursors,
+retry exhaustion, daily limits, malformed hints and cancellation during the wait.
 
 Issue #2752 originally referred to `docs/status/accounting-productization-checklist.md`.
 That historical snapshot is retained in the [archived checklist](../../archive/docs/summaries/accounting-productization-checklist.md).

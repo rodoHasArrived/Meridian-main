@@ -40,7 +40,7 @@ public sealed class ExternalGlLiveProviderTests
             var verification = await provider.VerifyConnectionAsync();
             verification.Success.Should().BeFalse();
             verification.LastError.Should().Be("Provider verification failed. Check credentials, account scope, permissions and availability.");
-            store.Verifications.Should().HaveCount(2).And.OnlyContain(v => !v.Success);
+            store.Verifications.Should().ContainSingle().Which.Success.Should().BeFalse();
         }
     }
 

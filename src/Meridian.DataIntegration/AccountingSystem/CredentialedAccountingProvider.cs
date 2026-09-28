@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Ledger;
 using Meridian.DataIntegration.Credentials;
 using Meridian.ProviderSdk.AccountingSystem;
@@ -71,12 +72,11 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
             var connection = await ConnectionAsync(ct).ConfigureAwait(false);
             var token = await RefreshAsync(connection, ct).ConfigureAwait(false);
             await VerifyScopeAsync(connection, token, ct).ConfigureAwait(false);
-            await RecordAsync(true, connection.Get(CompanyField), ct).ConfigureAwait(false);
+            // The connection lifecycle persists this result once, with the requesting actor.
             return new(true, connection.Get(CompanyField), null, DateTimeOffset.UtcNow, ["Read-only connection verified; live posting remains disabled."]);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            await RecordAsync(false, null, ct).ConfigureAwait(false);
             return new(false, null, "Provider verification failed. Check credentials, account scope, permissions and availability.",
                 DateTimeOffset.UtcNow, []);
         }
@@ -177,6 +177,9 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         void Block(string code, string message) => issues.Add(new(code, AccountingConfigurationValidationSeverityDto.Critical, message));
         var import = context.Import;
+        var status = await _store.GetStatusAsync(ProviderId, ct).ConfigureAwait(false);
+        if (status.VerificationState != ProviderVerificationStateDto.Verified)
+            Block("ExternalGlProviderConnectionUnverified", "Verify the current provider credentials successfully before export review. Credential changes and failed verification require renewed verification.");
         string? scope = null;
         try
         { scope = ConnectionScope(await ConnectionAsync(ct).ConfigureAwait(false)); }

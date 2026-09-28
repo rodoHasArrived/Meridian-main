@@ -9413,9 +9413,11 @@ Meridian-main
 │   │   │   ├── AccountingSystem
 │   │   │   │   ├── QuickBooks
 │   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── ExternalGlConnectionLifecycleTests.cs
 │   │   │   │   ├── ExternalGlCredentialRecoveryTests.cs
 │   │   │   │   ├── ExternalGlFailureBoundaryTests.cs
 │   │   │   │   ├── ExternalGlLiveProviderTests.cs
+│   │   │   │   ├── ExternalGlRateLimitTests.cs
 │   │   │   │   ├── ExternalGlScopeTests.cs
 │   │   │   │   ├── ExternalGlTestSupport.cs
 │   │   │   │   └── NetSuiteTrialBalanceTests.cs

@@ -577,13 +577,15 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
 
         var credentialSource = readResult?.Source ?? ProviderCredentialSourceDto.None;
         var hasError = !string.IsNullOrWhiteSpace(readResult?.LastError);
+        var verificationRequired = readResult?.AuditMetadata.TryGetValue("verificationRequired", out var required) == true &&
+            string.Equals(required, "true", StringComparison.OrdinalIgnoreCase);
         var credentialState = missingFields.Length == descriptor.RequiredFields.Count
             ? ProviderCredentialStateDto.Missing
             : missingFields.Length > 0
                 ? ProviderCredentialStateDto.Partial
                 : hasError
                     ? ProviderCredentialStateDto.Invalid
-                    : readResult?.LastSuccessfulAt is not null
+                    : !verificationRequired && readResult?.LastSuccessfulAt is not null
                         ? ProviderCredentialStateDto.Verified
                         : ProviderCredentialStateDto.Configured;
 

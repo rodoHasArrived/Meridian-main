@@ -2,6 +2,8 @@ using FluentAssertions;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 using Meridian.Tests.DataIntegration.AccountingSystem;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -212,9 +214,15 @@ public sealed partial class AccountingSystemIntegrationServiceTests
     }
 
     [Theory]
-    [InlineData("xero")]
-    [InlineData("netsuite")]
-    public async Task LiveProviders_RequireOwnedControls_AndInvalidateCertificationAfterConnectionChange(string id)
+    [InlineData("xero", null)]
+    [InlineData("netsuite", null)]
+    [InlineData("xero", "ClientId")]
+    [InlineData("netsuite", "ClientId")]
+    [InlineData("xero", "ClientSecret")]
+    [InlineData("netsuite", "ClientSecret")]
+    [InlineData("xero", "RefreshToken")]
+    [InlineData("netsuite", "RefreshToken")]
+    public async Task LiveProviders_RequireOwnedControls_AndInvalidateCertificationAfterConnectionChange(string id, string? credentialField)
     {
         var credentials = new ExternalGlTestStore(id);
         using var handler = new ExternalGlTestHandler(ExternalGlTestData.Respond);
@@ -256,6 +264,27 @@ public sealed partial class AccountingSystemIntegrationServiceTests
         certified!.Certification!.State.Should().Be(AccountingCertificationStateDto.Certified);
         certified.PostingEnabled.Should().BeFalse();
         (await service.GetExportPackageManifestAsync(package.ExportPackageId))!.ExternalPostingAllowed.Should().BeFalse();
+        if (credentialField is not null)
+        {
+            await credentials.SaveAsync(new(id, new Dictionary<string, string?> { [credentialField] = "replacement-test-credential" }));
+            var invalidated = await service.GetExportPackageManifestAsync(package.ExportPackageId);
+            invalidated!.ValidationIssues.Should().Contain(issue => issue.Code == "ExternalGlProviderConnectionUnverified");
+            invalidated.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Blocked);
+            invalidated.ExternalPostingAllowed.Should().BeFalse();
+            await service.Invoking(s => s.CertifyExportPackageAsync(certificationRequest))
+                .Should().ThrowAsync<InvalidOperationException>();
+            var unverified = await service.CreateExportPackageAsync(request with { EvidenceLinks = [.. request.EvidenceLinks, .. evidence] });
+            unverified.ValidationIssues.Should().Contain(issue => issue.Code == "ExternalGlProviderConnectionUnverified");
+            unverified.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+            var lifecycle = new ProviderConnectionLifecycleService(credentials,
+                new ConfigStore(Path.Combine(Path.GetTempPath(), $"unused-gl-config-{Guid.NewGuid():N}.json")),
+                NullLogger<ProviderConnectionLifecycleService>.Instance, accountingSystemProviders: [provider]);
+            (await lifecycle.VerifyAsync(id, actor: "controller")).Success.Should().BeTrue();
+            var verified = await service.CreateExportPackageAsync(request with { EvidenceLinks = [.. request.EvidenceLinks, .. evidence] });
+            verified.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+            verified.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+            return;
+        }
         credentials.Values[id == "xero" ? "TenantId" : "SubsidiaryId"] = id == "xero" ? Guid.NewGuid().ToString() : "99";
         var stale = await service.GetExportPackageManifestAsync(package.ExportPackageId);
         stale!.ValidationIssues.Should().Contain(i => i.Code == "ExternalGlProviderImportScopeMismatch");

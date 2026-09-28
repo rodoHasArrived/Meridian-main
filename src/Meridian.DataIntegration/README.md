@@ -35,6 +35,13 @@ retained-earnings identity. The requested journal period remains independent.
 Xero payroll wage and superannuation expense types participate in that income-year
 roll-forward. HTTP timeouts are sanitized provider failures and update verification
 status; cancellation requested by the caller remains cancellation.
+Xero GET reads honor valid `Retry-After` delays up to two minutes, with at most three
+retries of the same cursor. Token exchanges are never retried automatically. The
+connection lifecycle owns verification-result persistence and the operator audit
+identity; imports persist their own result. Export validation requires currently
+verified credentials, so credential replacement blocks review until verification succeeds.
+Vault status honors the pending verification marker even when an earlier success
+timestamp is retained for audit history.
 
 ## OAuth token ownership
 

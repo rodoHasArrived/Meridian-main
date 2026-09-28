@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
@@ -28,10 +29,30 @@ public sealed class XeroAccountingProvider(IProviderCredentialStore store, HttpC
 
     private async Task<JsonDocument> GetAsync(ProviderCredentialReadResult connection, string token, string path, CancellationToken ct)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.xero.com/api.xro/2.0/{path}");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        request.Headers.Add("xero-tenant-id", Tenant(connection));
-        return await SendAsync(request, ct).ConfigureAwait(false);
+        for (var retry = 0; ; retry++)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.xero.com/api.xro/2.0/{path}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Headers.Add("xero-tenant-id", Tenant(connection));
+            using var response = await Client.SendAsync(request, ct).ConfigureAwait(false);
+            if (response.StatusCode == HttpStatusCode.TooManyRequests && retry < 3)
+            {
+                var hint = response.Headers.RetryAfter;
+                var delay = hint?.Delta ?? hint?.Date - DateTimeOffset.UtcNow;
+                // Retry the same read/cursor after minute limits, but bound exhausted/daily limits.
+                if (delay.HasValue && delay.Value <= TimeSpan.FromMinutes(2))
+                {
+                    response.Dispose();
+                    await Task.Delay(delay.Value > TimeSpan.Zero ? delay.Value : TimeSpan.Zero, ct).ConfigureAwait(false);
+                    continue;
+                }
+            }
+            if (!response.IsSuccessStatusCode)
+                throw new InvalidOperationException($"Provider request returned HTTP {(int)response.StatusCode}.");
+            await using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+            return await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
+        }
     }
 
     private async Task<(string Currency, int YearEndMonth, int YearEndDay)> OrganisationAsync(ProviderCredentialReadResult connection, string token, CancellationToken ct)
