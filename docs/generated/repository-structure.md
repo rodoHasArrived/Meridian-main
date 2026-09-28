@@ -1737,7 +1737,6 @@ Meridian-main
 │   │   ├── plans
 │   │   │   ├── god-file-burn-down-plan.md
 │   │   │   ├── README.md
-│   │   │   ├── tooling-workflow-backlog.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   └── wpf-web-ui-alignment-plan.md
 │   │   ├── dead-code-inventory.md

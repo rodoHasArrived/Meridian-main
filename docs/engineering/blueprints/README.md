@@ -57,7 +57,6 @@ grounded in Meridian's actual stack.
 | [WPF / Web-UI Alignment Plan](../plans/wpf-web-ui-alignment-plan.md) | `docs/engineering/plans/` | Desktop workstation | Active; drives `W8-WPF-PARITY-001` |
 | [God-File Burn-Down Plan](../plans/god-file-burn-down-plan.md) | `docs/engineering/plans/` | Engineering hygiene | Active; the size ceilings it burns down are checked by `build/scripts/ci/check-file-size.py` |
 | [Web-UI Improvements Implementation Plan (2026-07)](../plans/web-ui-improvements-implementation-plan-2026-07.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
-| [Tooling Workflow Backlog](../plans/tooling-workflow-backlog.md) | `docs/engineering/plans/` | Developer tooling | Proposed; **stale** (last updated 2026-03-20), needs an owner review |
 | [Security Remediation Backlog](../../security/security-remediation-backlog.md) | `docs/security/` | Security | Domain-owned backlog; cited from source |
 | [SOC 2 Roadmap](../../security/compliance/soc2-roadmap.md) | `docs/security/compliance/` | Compliance | Domain-owned roadmap |
 
@@ -66,6 +65,7 @@ grounded in Meridian's actual stack.
 | Plan | Reason |
 |---|---|
 | [Quote-stream fan-out](../../../archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) | Implemented — PRs A–C shipped; PR D was rescoped into the report-run stream blueprint |
+| [Tooling Workflow Backlog](../../../archive/docs/plans/tooling-workflow-backlog.md) | Completed — all nine items (MW-001–MW-009) verified delivered in source on 2026-09-28; see its closure record |
 | [What To Work On Next (2026-09-20)](../../../archive/docs/plans/next-work-determination-2026-09-20.md) | Superseded by the 2026-09-23 determination |
 | [What To Work On Next (2026-09-23)](../../../archive/docs/plans/next-work-determination-2026-09-23.md) | Superseded by the 2026-09-27 determination |
 

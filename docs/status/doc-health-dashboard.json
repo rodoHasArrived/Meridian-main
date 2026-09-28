@@ -1,6 +1,6 @@
 {
-  "total_files": 675,
-  "total_lines": 145723,
+  "total_files": 674,
+  "total_lines": 145538,
   "orphaned_count": 249,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2300,15 +2300,7 @@
     },
     {
       "path": "docs/engineering/plans/README.md",
-      "line_count": 22,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/engineering/plans/tooling-workflow-backlog.md",
-      "line_count": 183,
+      "line_count": 21,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2740,7 +2732,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11030,
+      "line_count": 11029,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
