@@ -7,7 +7,8 @@ registry:
   id: roadmap-items
   title: Meridian Roadmap Items
   owner: Core Team
-  snapshot_date: 2026-07-31
+  # Inventory snapshot only; individual rows retain their own evidence review dates.
+  snapshot_date: 2026-09-28
 
 items:
   - id: W1-DATA-001

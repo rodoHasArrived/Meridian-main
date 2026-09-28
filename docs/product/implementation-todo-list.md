@@ -2,14 +2,14 @@
 
 **Status:** active; production certification blocked  
 **Owner:** core-team  
-**Reviewed:** 2026-09-23 (current release-gate snapshot; historical row evidence retains its recorded dates)
-**Baseline:** source and registry reviewed at `main` commit `13aa7576575e7816c14ec3b9b5b002a3f4494c97`; production readiness remains blocked pending passing certification on the final release commit, operator review, signed release evidence, and required GitHub Actions activation
+**Reviewed:** 2026-09-28 (current certification and registry inventory; historical implementation evidence retains its recorded dates)
+**Baseline:** certification and registry inventory reconciled at `main` commit `8123e84798ffc3df2689245bc9dedf5bced28ef8`; production readiness remains blocked pending passing certification on the final release commit, operator review, signed release evidence, and required GitHub Actions activation
 **Previous production audit:** `f0ac384a2` on 2026-07-11
 **Sources:** [Meridian Design Document (Version 1.0)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
 
 This is Meridian's single active implementation list for turning the existing program into a supported production release. Roadmap rows marked `done` prove bounded product capabilities; they do not by themselves certify security, correctness, durability, operability, packaging, or recovery. Detailed product rationale remains in the design document, and roadmap status remains in the roadmap registry.
 
-The review covered the modular-monolith host, contracts and shared services, accounting and financial operations, portfolio and reference data, execution and strategy, providers and ingestion, storage and audit, browser and WPF workstations, tests, release workflows, deployment manifests, security material, operator guidance, generated status output, and tracked duplicate/deprecation candidates.
+The original implementation audit covered the modular-monolith host, contracts and shared services, accounting and financial operations, portfolio and reference data, execution and strategy, providers and ingestion, storage and audit, browser and WPF workstations, tests, release workflows, deployment manifests, security material, operator guidance, generated status output, and tracked duplicate/deprecation candidates. The current refresh is limited to the certification baseline and registry reconciliation described below.
 
 ## Production Definition
 
@@ -31,25 +31,41 @@ Priority meanings:
 
 ### Current Release-Gate Snapshot
 
-The current review uses `13aa7576575e7816c14ec3b9b5b002a3f4494c97` on 2026-09-23.
+The current certification and registry review uses `8123e84798ffc3df2689245bc9dedf5bced28ef8`
+on 2026-09-28. This refresh does not re-review every historical implementation row.
 The `65dc0107` evidence set below is historical; it does not certify this commit or a later
 release. Ordinary CI excludes the PostgreSQL integration lane and cannot replace it.
 
 | Current concern | Source-backed disposition | Evidence and remaining boundary |
 | --- | --- | --- |
-| Security Master conflict persistence | The integration fixture now locates the unordered claimant pair instead of assuming which random security ID anchors the conflict. It still checks the persisted winner, resolver, reason, and timestamp through a fresh service instance. | Passed in the baseline certification run below; the added deterministic claimant-order regression requires the same-commit hosted check. |
-| Atomic tax-lot guard ordering | The acquisition fixture now supplies the Security Master lineage required by the production posting guard before testing malformed asset-account economics. Provenance remains an earlier fail-closed guard. | Acquisition, replay, disposal, rollback, and AverageCost database cases passed without skips on the baseline below; the added explicit guard-order regression requires the same-commit hosted check. |
+| Security Master conflict persistence | The integration fixture locates the unordered claimant pair instead of assuming which random security ID anchors the conflict. It checks the persisted winner, resolver, reason, and timestamp through a fresh service instance and includes deterministic claimant-order coverage. | Passed in the same-commit, zero-skip PostgreSQL certification run below. |
+| Atomic tax-lot guard ordering | The acquisition fixture supplies the Security Master lineage required by the production posting guard before testing malformed asset-account economics. Provenance remains an earlier fail-closed guard, with explicit guard-order coverage. | Acquisition, replay, disposal, rollback, and AverageCost database cases passed in the same-commit, zero-skip PostgreSQL certification run below. |
 | Trading-calendar convergence | Merged PR #2987 routes completeness and calendar cells through the shared operational calendar. Regression cases cover Juneteenth, observed holidays, an injected closure, and the 2026/2027 boundary. The 2026-only seed is retired. | Retain passing calendar/completeness results with the tested source; preserve population and operator acceptance boundaries. |
 | Corporate-action posting | `W9-CORPACT-011` is now `ready_for_acceptance`. Current source contains #2947's retained 500-share/USD 120 dividend round trip with independent approval, one balanced journal, reload, replay, and unchanged holdings. It passed in the baseline certification and the focused local check. | Operator acceptance under `DEC-W9-ACCEPTANCE-002`; source and CI do not supply that decision. The old branch's incidental generated assets are not a reason to replace current-main assets. |
 | W10 completion order | Continue `W10-LOT-002`, then `W10-MARK-001`, then `W10-SEAM-001`. Acquisition convergence and AverageCost relief are implemented; amortization, successor mutations, advance refunding, and shadow-operation acceptance still prevent lot closure. | Complete and validate the remaining lot economics before progressing the next W10 lane. MARK and SEAM still require their recorded live acceptance evidence. |
 
-Production Certification [run 35885778558](https://github.com/rodoHasArrived/Meridian-main/actions/runs/35885778558)
-passed all four jobs on this exact baseline on 2026-09-23. The database job executed **1,016 core
-integration tests and 12 Direct Lending integration tests, with zero failures and zero skips**;
+Production Certification [run 36468791566](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36468791566)
+passed all four jobs on its unchanged second attempt on this exact baseline on 2026-09-28.
+The first attempt passed 1,017 core integrations but timed out waiting for reporting-worker readiness
+in one test, with zero skips; Direct Lending was not reached. The successful retry does not erase
+that intermittent failure, whose startup interleaving remains under investigation. The second
+attempt executed **1,018 core integration tests and 12 Direct Lending integration tests, with zero
+failures and zero skips**;
 documentation, encrypted backup/clean restore, and dependency evidence also passed. The two
-historical certification failures are therefore closed on `13aa7576`. This does not certify a
-later commit, complete the remaining W10 lot economics, provide operator acceptance, or replace
+historical certification failures remain closed on `8123e847`. All five Meridian CI jobs also
+passed in [run 36468791556](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36468791556).
+These runs do not certify a later commit, complete the remaining W10 lot economics, provide operator acceptance, or replace
 signed installer and supported-release evidence.
+
+### Current Roadmap Inventory
+
+The registry contains **42 rows** as of this review: **17 `done`, 7 `in_progress`, 6 `accepted`,
+1 `ready_for_acceptance`, and 11 `planned`**. The reconciliation and verification sections below
+enumerate those postures. `W9-SAFETY-007` is accepted under `DEC-W9-ACCEPTANCE-004`, with its OCO
+and deferred risk-journal/read-surface/WPF-parity reservations retained. `W9-CORPACT-011` is the
+only row awaiting operator acceptance. `W9-DEMO-002` reached `done` separately under
+`DEC-W9-DONE-001`. The active W10 rows remain in progress; complete LOT, then MARK, then SEAM
+before opening `W10-RECON-001`. These are existing registry states, not new acceptance decisions.
 
 ### Historical Implementation and Release Evidence
 
@@ -61,9 +77,6 @@ not a renewed assessment of every implementation row on the current baseline.
 | P0 (`PRD-000` through `PRD-020`) | 15 implementation-complete; 6 evidence-gated; 0 open; 0 production-certified | `PRD-001` through `PRD-012`, `PRD-018`, `PRD-019`, and `PRD-020` have closure implementations and focused proof in this candidate — that enumeration is the fifteen. `PRD-010` rejoined that set on 2026-08-30 against `quality-gate` on `f9f920a6` (run 33291893043), a head that was green across every lane and that a review round had left unchanged. It was withdrawn three times before this, twice because a later round changed a parser the standing citation covered. The standard was reapplied each time rather than relaxed once the row had cleared it, which is what makes the fourth grading worth more than the first. `PRD-000` and `PRD-013` through `PRD-017` now have executable gates but remain production-blocking until the external same-commit evidence listed below exists. `PRD-018` through `PRD-020` were added 2026-08-09 from the [2026-07-26 adversarial program review](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/adversarial-program-review-2026-07-26.md) follow-up and rescoped the same day against `e7e9528b8` after post-merge review corrected two premises (the fresh-clone demo passes its readiness check from the repo root; `/health` is mapped and alert-rule gating exists). `PRD-018` gained a closure candidate on 2026-08-09 (one tracked canonical bundle, launch-directory-independent resolution, CI freshness gate); `PRD-019` gained its closure candidate in an earlier change — the canonical monitoring exemption set consumed by both authentication gates, with the deployment chain repointed at the unauthenticated probe surface — and remains evidence- and ADR-019-gated; `PRD-020` gained its closure candidate on 2026-09-04: a designer-document live strategy source over a closed expression grammar, with every unsupported construct failing closed into the operator-visible `ActivationDeferred` state. Its other two clauses were already closed under #2726. |
 | P1 (`PRD-100` through `PRD-114`) | 1 closed; 3 substantially advanced; 11 open | `PRD-103` is closed in source with focused proof. `PRD-104`, `PRD-109`, and `PRD-112` have their code-side defects fixed and executable gates in place; each row names exactly what remains (packaged SFTP, serialization parity, a benchmark lane on stable hosts). `PRD-111` stays open and gained a named prerequisite. The other rows are untouched. A row may move out only through an explicit support-matrix scope decision. |
 | P2 (`PRD-200` through `PRD-205`) | 6 open | Compatibility cleanup remains sequenced after the P0/P1 policy migrations it depends on. |
-| Active roadmap acceptance | 4 in progress | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W9-GOV-008`, and `W9-INGEST-009` are active; `W9-SAFETY-007` left this group for `ready_for_acceptance` on 2026-09-01 once criterion one was discharged, criterion three swept, and the Windows WPF build-and-test result recorded and are not production-certified by this tracker. `W9-GOV-008` and `W9-INGEST-009` were corrected from `planned` because substantial implementation had already shipped; `W9-CORPACT-011`, reopened by `DEC-W9-ACCEPTANCE-002` on 2026-08-30, left this group for `ready_for_acceptance` on 2026-09-22 once its accounting lane was proven end to end on PostgreSQL. |
-| Awaiting operator acceptance | 1 implementation-complete; 6 accepted | `W9-TRUTH-001` returns to bounded `accepted` with `evidence_posture: complete` and `health: green` on 2026-09-26 under `DEC-W9-ACCEPTANCE-005`: both review lanes are satisfied by the explicit owner exception recorded in [issue #2626 comment 5845555204](https://github.com/rodoHasArrived/Meridian-main/issues/2626#issuecomment-5845555204); independent non-author verdicts were not obtained. `W9-CORPACT-011` remains `ready_for_acceptance` after its accounting lane was proven end to end on PostgreSQL. The other accepted W9 rows are `W9-PAPER-003`, `W9-REPORT-005`, `W9-NAV-006`, `W9-ALPACA-004`, and `W9-SAFETY-007`; their decisions and reservations are unchanged. `W9-DEMO-002` reached `done` separately under `DEC-W9-DONE-001`. The registry remains authoritative, and bounded acceptance does not certify a release. |
-| Planned roadmap work | 13 planned | `W5X-OEG-001`, the eleven rows of the W10 depth slate, and `W10-DEBT-001` are planned and outside the v1 production envelope unless the signed support matrix includes them. Every one carries `planned_evidence` posture, so none is a completion claim. The two W9 rows previously counted here, `W9-GOV-008` and `W9-INGEST-009`, moved to in progress. Closed bounded roadmap rows do not change the P0 release-certification gate. |
 
 > Owner-exception reconciliation (2026-09-26): PR #3003 restored the independent-review gate after PR #3001's premature closure. The subsequent explicit owner exception satisfies both security/storage and reconciliation-lineage lanes through completed owner self-review; independent non-author verdicts were not obtained. Issue #2626 remains closed and `W9-TRUTH-001` returns to bounded `accepted` / `complete` / `green`. The [W9 acceptance record](w9-operator-acceptance-2026-08-29.md#w9-truth-001-owner-exception--2026-09-26) preserves the chronology, 106 focused-test cases, Production Certification run [36214217538](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36214217538) with 1,030 passing integration cases on `13f2a11df9fb95c548a50c9e60449fee2353dfb4`, and retained artifact evidence unchanged. This is no new test run, `done` transition, or release-certification claim.
 
@@ -303,10 +316,11 @@ The word intended here is **deprecated**. Repeated filenames or concepts are not
 
 | Roadmap posture | Rows | Production interpretation |
 | --- | --- | --- |
-| Bounded capability evidence complete | `W1-DATA-001`, `W2-TRD-001`, `W2-PROMO-001`, `W3-CONT-001`, `W4-RECON-001`, `W4-RPT-001`, `W5-ACCT-001`, `W5-MASSET-001`, `W5X-FREX-001`, `W5X-FINOPS-001`, `W5X-CONNECT-001`, `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W6-BTSTUDIO-001`, `W7-LIVE-001`, `W9-ASSET-010` | Preserve the evidence; do not reinterpret these rows as production certification. W5X Evidence/Statement are bounded browser claims; W6 covers the scoped Evidence Vault, canonical strategy-run, and governed Backtest-to-Paper checklist loop on the browser Covered Call path, not broad Studio parity or production certification; `W7-LIVE-001` closes governance only; `W9-ASSET-010` closes the asset-accounting spine only. |
-| Active productization | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W9-GOV-008`, `W9-INGEST-009` | Finish their registered exit criteria if they are inside the supported release envelope; otherwise explicitly scope them out without claiming full parity/productization. |
-| Implementation complete, awaiting acceptance | `W9-SAFETY-007` (as of 2026-09-01), `W9-CORPACT-011` (as of 2026-09-22) | Not production claims. `ready_for_acceptance` records that the exit criteria are built and evidenced, not that an operator has accepted them; a row leaves this posture only through acceptance, and the P0 gate is unaffected either way. `W9-ALPACA-004` left this posture on 2026-09-01 under `DEC-W9-ACCEPTANCE-003`. The other five rows that sat here - `W9-TRUTH-001`, `W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, `W9-NAV-006` - were accepted on 2026-08-29 by `DEC-W9-ACCEPTANCE-001`; only `W9-ALPACA-004` was held. `W9-CORPACT-011` entered this posture on 2026-09-22 after `DEC-W9-ACCEPTANCE-002` had reopened it; its acceptance is a fresh operator decision. |
-| Planned | 13 registry rows: `W5X-OEG-001`, `W10-DEBT-001`, and the eleven W10 depth-slate rows | Not production claims. The shared orchestration/durability defects in `PRD-007` and `PRD-106` still apply to broader or alternate backtest entrypoints despite the bounded W6 Covered Call evidence-loop closure. |
+| Bounded capability evidence complete (17) | `W1-DATA-001`, `W2-TRD-001`, `W2-PROMO-001`, `W3-CONT-001`, `W4-RECON-001`, `W4-RPT-001`, `W5-ACCT-001`, `W5-MASSET-001`, `W5X-FREX-001`, `W5X-FINOPS-001`, `W5X-CONNECT-001`, `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W6-BTSTUDIO-001`, `W7-LIVE-001`, `W9-DEMO-002`, `W9-ASSET-010` | Preserve the bounded evidence and each row's scope. W5X Evidence/Statement are browser claims; W6 covers the Covered Call evidence and governed Paper-promotion loop; W7 closes live-readiness governance; W9-ASSET closes the asset-accounting spine. W9-DEMO reached done under `DEC-W9-DONE-001` with its [closure record](w9-demo-002-closure-2026-09-16.md). None certifies a release. |
+| Active productization (7) | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W9-GOV-008`, `W9-INGEST-009`, `W10-MARK-001`, `W10-SEAM-001`, `W10-LOT-002` | Finish registered exit criteria within the supported release envelope. Complete `W10-LOT-002`, then `W10-MARK-001`, then `W10-SEAM-001` before opening `W10-RECON-001`; source implementation alone does not close their live acceptance gates. |
+| Implementation complete, awaiting acceptance (1) | `W9-CORPACT-011` | Reached `ready_for_acceptance` on 2026-09-22 after the accounting lane posted end to end on PostgreSQL. Operator acceptance remains a fresh decision under `DEC-W9-ACCEPTANCE-002`; no production claim follows from this posture. |
+| Accepted bounded capabilities (6) | `W9-TRUTH-001`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`, `W9-NAV-006`, `W9-SAFETY-007` | Preserve the decisions and reservations in the registry. Safety was accepted on 2026-09-11 under `DEC-W9-ACCEPTANCE-004`, restored on 2026-09-23, with OCO and deferred risk-journal/read-surface/WPF-parity work retained. TRUTH is accepted under the 2026-09-26 owner exception `DEC-W9-ACCEPTANCE-005`; independent non-author verdicts were not obtained. Acceptance alone is neither done nor release certification. |
+| Planned (11) | `W5X-OEG-001`, `W10-RECON-001`, `W10-PROV-001`, `W10-RECON-002`, `W10-JRNL-001`, `W10-TAX-001`, `W10-RECON-003`, `W10-RECON-004`, `W10-PERF-001`, `W10-CONSOL-001`, `W10-DEBT-001` | All retain `planned_evidence` posture. The shared orchestration/durability defects in `PRD-007` and `PRD-106` still apply to broader or alternate backtest entrypoints despite the bounded W6 Covered Call evidence-loop closure. |
 
 The following remain deferred and are not production blockers unless the signed support envelope reopens them: broad live execution and live portfolio operations beyond bounded W7 governance, treasury payment execution, broad alternative-asset expansion beyond current evidence, forecasting/scenario engines, enterprise risk platform, capital-structure modeling, client portal, no-code workflow designer, broad collaboration productization, and all native mobile lanes.
 
@@ -328,22 +342,23 @@ The following remain deferred and are not production blockers unless the signed 
 
 ## Verification Snapshot
 
-Reviewed on 2026-08-03 against current `main` at `6d9a663c4` plus this TODO-closure candidate:
+Reviewed on 2026-09-28 against the registry inventory and recorded decisions at `main`
+`8123e84798ffc3df2689245bc9dedf5bced28ef8`:
 
+- `docs/roadmap/data/program-state.yml`
 - `docs/roadmap/data/roadmap-items.yml`
+- `docs/roadmap/data/decision-log.yml`
 - `docs/roadmap/generated/ROADMAP_SUMMARY.md`
 - `docs/roadmap/generated/roadmap-register.md`
-- `docs/product/meridian-design-document.md`
-- evidence paths listed in the roadmap rows
+- the current same-commit hosted certification and CI runs linked above
 
-Result:
-
-- W1 through W5 plus `W5X-FREX-001`, `W5X-FINOPS-001`, `W5X-CONNECT-001`, `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, bounded `W6-BTSTUDIO-001` and `W7-LIVE-001` governance, and `W9-ASSET-010` are verified as `done` with `evidence_posture: complete`.
-- `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W9-GOV-008`, and `W9-INGEST-009` are `in_progress` with `evidence_posture: in_progress`. `W9-SAFETY-007` moved to `ready_for_acceptance` with `evidence_posture: implementation_complete` on 2026-09-01, and `W9-CORPACT-011` on 2026-09-22.
-- Of the six W9 rows that were `ready_for_acceptance` with `evidence_posture: implementation_complete`, five - `W9-TRUTH-001`, `W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, `W9-NAV-006` - were accepted on 2026-08-29 by `DEC-W9-ACCEPTANCE-001`. `W9-ALPACA-004` was deliberately held and was accepted on 2026-09-01 by `DEC-W9-ACCEPTANCE-003` once its three caveats were closed in source.
-- The remaining 13 roadmap rows remain `planned` with `evidence_posture: planned_evidence`. The two W9 rows previously counted here, `W9-GOV-008` and `W9-INGEST-009`, moved to `in_progress`.
-- The five postures above account for all 41 registry rows: 16 `done`, 5 `in_progress`, 6 `accepted`, 1 `ready_for_acceptance`, 13 `planned`. Recount from `docs/roadmap/data/roadmap-items.yml` rather than adjusting one line when a row moves - this inventory drifted precisely because earlier edits did the latter.
-- Broader domain rows in the design document are evidence-backed foundations, not independent completion claims.
+The 42 registry rows reconcile to the five disjoint postures enumerated above: 17 `done`,
+7 `in_progress`, 6 `accepted`, 1 `ready_for_acceptance`, and 11 `planned`. The done and accepted
+rows retain `evidence_posture: complete`; active rows retain `in_progress`; CORPACT retains
+`implementation_complete`; planned rows retain `planned_evidence`. This refresh changes no row
+status or per-row review date and creates no new operator decision. Historical implementation
+surveys and release evidence elsewhere in this tracker retain their original dates and limits.
+Broader design-document foundations remain separate from bounded completion claims.
 
 ## Verified Complete Items
 
@@ -375,6 +390,8 @@ Result:
   Evidence: the browser `covered-call-screen.view-model.ts` supplies operator requirements and a budget-bounded strict `evidence://evidence-vault/{vaultId}` reference; `CoveredCallBacktestService` resolves its retained manifest inside the authenticated tenant/company scope before queueing and records the pre-execution entry through the shared `IStrategyRepository`; and `StrategyRunStore`, `StrategyRunReadService`, the review packet, and Trading readiness retain, replay, scope, and project the exact lineage. `PromotionService` and `/api/promotion/approve` require all four canonical Paper checklist ids, an operator/time/audit decision, keyed evidence exactly matching the source run, and a same-scope Paper child whose parent and strategy identities match before any item becomes ready. Focused proof spans Covered Call projection/service/endpoint tests, strategy store/read/promotion tests, execution and evidence endpoint tests, scoped workstation tests, and Covered Call/Strategy/Trading browser tests. `BacktestStudioRunOrchestrator` is not host-composed and the Strategy Designer's production compiler captures no result, so neither is closure evidence. Roadmap status `done`; evidence posture `complete`; broader Studio UX remains deferred.
 - [x] `W7-LIVE-001`: Live-readiness governance.
   Evidence: `src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs`, `src/Meridian.Strategies/Services/PromotionService.cs`, `src/Meridian.Execution/Services/ExecutionOperatorControlService.cs`, `tests/Meridian.Tests/Strategies/PromotionServiceTests.cs`, `tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs`, and `docs/roadmap/generated/ROADMAP_SUMMARY.md`; roadmap status `done`; evidence posture `complete`. This is a bounded governance gate, not broader live execution productization or live portfolio operations.
+- [x] `W9-DEMO-002`: Bounded seeded demo evaluation.
+  Evidence: [closure record](w9-demo-002-closure-2026-09-16.md) and `DEC-W9-DONE-001`; roadmap status `done`; evidence posture `complete`. The operator's 2026-09-16 closure concerns this bounded row and certifies no release.
 - [x] `W9-ASSET-010`: Asset Accounting Event Spine and atomic lot posting.
   Evidence: `src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs`, `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs`, `src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs`, `src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs`; proven by `tests/Meridian.Tests/AssetOperations/AssetAccountingEventSpineContractTests.cs`, `tests/Meridian.Tests/AssetOperations/InMemoryAssetAccountingEventProjectionStoreTests.cs`, `tests/Meridian.Tests/FinancialOperations/Ledger/AssetAccountingEventSpineServiceTests.cs`, `tests/Meridian.Tests/FinancialOperations/Ledger/AssetAccountingLifecycleSeparationTests.cs`, `tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.cs`, `tests/Meridian.Tests/Storage/AssetAccountingPostingEvidenceValidatorTests.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccountingConfiguration.cs`, and `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs`; roadmap status `done`; evidence posture `complete`. This closes the asset-accounting spine capability, not production certification.
 
