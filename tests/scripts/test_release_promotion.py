@@ -122,6 +122,8 @@ class ReleasePromotionTests(unittest.TestCase):
     def test_release_dependency_graph_and_signing_preconditions_cannot_be_bypassed_by_rehearsal(self):
         workflow = yaml.load((ROOT / '.github/workflows/desktop-installer-packaging.yml').read_text(encoding='utf-8'), Loader=yaml.BaseLoader)
         jobs = workflow['jobs']
+        self.assertEqual(workflow['concurrency']['group'], 'desktop-installer-release')
+        self.assertEqual(workflow['concurrency']['cancel-in-progress'], 'false')
         self.assertEqual(set(jobs['release']['needs']), self.gate.GATES)
         self.assertNotIn('if', jobs['release'])
         publish = jobs['release']['steps'][-1]

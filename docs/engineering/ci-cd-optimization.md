@@ -113,6 +113,8 @@ password, private key, publisher and validity period, and compares MSIX identity
 published production packages. Production prereleases count in this comparison. `v1.2.3-rc.1`
 and `v1.2.3` both map to `1.2.3.0`, so the second is rejected before compilation; use a higher
 package version. `eval-v*` artifacts remain in their separate evaluation channel.
+One release concurrency group serializes eligibility through publication across tags so two
+concurrent candidates cannot both pass the version check against the same older release.
 
 For a rehearsal, manually dispatch the coordinator on the reviewed branch with a valid
 `rehearsal_version` greater than existing package versions. It requires the existing protected

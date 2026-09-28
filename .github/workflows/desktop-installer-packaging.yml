@@ -20,7 +20,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: desktop-installer-release-${{ github.ref }}
+  # Serialize eligibility through publication so concurrent RC/stable tags cannot both
+  # validate the same increasing MSIX version before either release is published.
+  group: desktop-installer-release
   cancel-in-progress: false
 
 env:
