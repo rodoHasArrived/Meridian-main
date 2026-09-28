@@ -36,6 +36,39 @@ test durations and hang/OOM evidence. Evaluate with `--paired-benchmark`; adopti
 at least 15% median paired improvement and no coverage or reliability regression. Promotion
 is a separate reviewed change, never an automatic reaction to timing noise.
 
+Dispatch **CI Concurrency Benchmark** at a fixed commit with `subject=dotnet`, `browser`, or
+`both`. Five pairs alternate execution order on the same hosted runner within each pair.
+Decision artifacts include discovered-test digests, counts and test-only wall time. Failed or
+incomplete samples reject promotion. Vitest retains two workers and process recycling.
+
+The workflow lane requires actionlint 1.7.12 on PATH and Python dependencies from
+`build/scripts/ci/requirements.txt`. Hosted installation verifies the actionlint archive digest.
+External actions use verified full commit SHAs with version comments; Dependabot maintains
+the pins. CodeQL keeps manual C# extraction and its measured cold-restore policy.
+
+Required .NET/Windows slices need fresh TRX evidence and nonzero passing discovery. Browser
+batches need fresh JSON evidence for every selected file. Existing summary fields are retained,
+with added counts, identities, durations, attempts and cache status. Missing cache and queue
+information is explicitly unavailable, never reported as a hit or zero.
+
+## Script-test quarantine
+
+`build/scripts/ci/script-test-quarantine.json` is the tracked defect register. Each remaining
+module names `@rodoHasArrived` as owner and a review deadline of 2026-10-28. Expired, missing,
+or untracked entries fail the lane; each run publishes the register in its summary.
+
+- `test_validate_source_readmes`: path and valid-fixture expectations differ from the validator.
+- `test_desktop_screen_blueprint_checklist`: screen coverage and summary expectations drifted.
+- `test_live_execution_controls_route_consistency`: manual-override routes differ from contracts.
+- `test_archive_code_tombstones`: the archive tree and tombstone expectations differ.
+- `test_python_package_conda_dependencies`: the workflow no longer uses the expected conda file.
+- `test_check_contract_compatibility_gate`: security-master reference contract fixtures differ.
+- `test_export_project_artifact_workflow`: the expected workflow is absent.
+
+Pillow is now explicit. Screenshot diff and screenshot capture validation suites run in the
+ordinary script lane. New exclusions require an owner, reason, deadline, tracked defect and
+human governance review; a test failure cannot add an exclusion automatically.
+
 After rollout, compare at least twenty completed runs by event and attempt. Targets are 25%
 lower median quality-gate execution and 30% fewer total runner minutes, not certified savings.
 Retain cancelled runs for waste accounting but exclude them from successful performance cohorts.

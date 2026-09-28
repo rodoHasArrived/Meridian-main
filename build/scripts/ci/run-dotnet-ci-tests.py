@@ -14,15 +14,21 @@ import argparse
 import json
 import os
 import re
+import hashlib
+import shlex
 import subprocess
 import sys
 import tempfile
 import time
+import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from threading import Lock
 from typing import Sequence
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from test_evidence import collect_trx
 
 CORE_TEST_PROJECT_PATH = "tests/Meridian.Tests/Meridian.Tests.csproj"
 
@@ -211,6 +217,8 @@ class TestResult:
     command: list[str]
     duration_seconds: float = 0.0
     log_path: str | None = None
+    evidence: dict | None = None
+    evidence_error: str | None = None
 
     @property
     def status(self) -> str:
@@ -523,6 +531,10 @@ def run_tests(
         error: str | None = None
         try:
             shard_dir.mkdir(parents=True, exist_ok=True)
+            if not dry_run:
+                # Never accept evidence left by an earlier invocation of this shard.
+                for stale in shard_dir.glob("*.trx"):
+                    stale.unlink()
             # Fixture data is isolated outside uploaded results and removed after exit.
             temp_root = str(Path(tempfile.gettempdir()).resolve())
             if os.name == "nt" and not temp_root.startswith("\\\\?\\"):
@@ -560,8 +572,19 @@ def run_tests(
         except OSError as exc:
             error = f"Unable to prepare or clean shard output: {exc}"
             exit_code = 127
+        evidence = None
+        evidence_error = None
+        if not dry_run:
+            try:
+                evidence = collect_trx(shard_dir, project.name)
+                if evidence["counts"]["failed"] or evidence["counts"]["other"]:
+                    exit_code = exit_code or 1
+            except (ValueError, OSError, ET.ParseError) as exc:
+                evidence_error = f"Invalid test evidence: {exc}"
+                exit_code = exit_code or 1
+                print(evidence_error, file=sys.stderr, flush=True)
         duration = round(time.perf_counter() - started, 3)
-        result = TestResult(project.name, project.path, exit_code, command, duration, str(log_path))
+        result = TestResult(project.name, project.path, exit_code, command, duration, str(log_path), evidence, evidence_error)
         with output_lock:
             print(f"Finished {project.name}: {result.status} (exit {exit_code}, {duration:.3f}s)", flush=True)
             if error:
@@ -588,6 +611,7 @@ def run_tests(
 def write_summaries(
     results: Sequence[TestResult], *, summary_output: Path, json_output: Path,
     build_results: Sequence[TestResult] = (),
+    test_duration_seconds: float | None = None,
 ) -> None:
     summary_output.parent.mkdir(parents=True, exist_ok=True)
     json_output.parent.mkdir(parents=True, exist_ok=True)
@@ -599,6 +623,18 @@ def write_summaries(
         "failed": len(failed),
         "results": [asdict(result) | {"status": result.status} for result in results],
     }
+    identities = sorted(f"{r.path}|{identity}" for r in results if r.evidence
+                        for identity in r.evidence["testIdentities"])
+    payload.update({
+        "counts": {key: sum(r.evidence["counts"][key] for r in results if r.evidence)
+                   for key in ("passed", "failed", "skipped", "other")},
+        "testIdentityDigest": hashlib.sha256(json.dumps(identities, ensure_ascii=True).encode()).hexdigest() if identities else None,
+        "testSeconds": test_duration_seconds,
+        "commitSha": os.environ.get("GITHUB_SHA"), "runId": os.environ.get("GITHUB_RUN_ID"),
+        "runAttempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+        "cacheHit": os.environ.get("MERIDIAN_DEPENDENCY_CACHE_HIT", "not reported"),
+        "queueSeconds": None,
+    })
     if build_results:
         # Keep successful test totals and results compatible with artifact consumers.
         payload["build_results"] = [asdict(result) | {"status": result.status} for result in build_results]
@@ -611,16 +647,26 @@ def write_summaries(
         f"- Passed: {payload['passed']}",
         f"- Failed: {payload['failed']}",
         "",
-        "| Shard | Project | Status | Exit code | Duration (s) | Log |",
-        "| --- | --- | --- | ---: | ---: | --- |",
+        f"- Tests: {json.dumps(payload['counts'])}",
+        f"- Run attempt: {payload['runAttempt'] or 'local'}; cache hit: {payload['cacheHit']}",
+        "- Queue time is reported separately by ci-metrics.py from completed Actions jobs.",
+        "",
+        "| Shard | Project | Status | Exit code | Duration (s) | Passed / failed / skipped | Log |",
+        "| --- | --- | --- | ---: | ---: | --- | --- |",
     ]
     for result in results:
         icon = "✅" if result.exit_code == 0 else "❌"
         log = f"`{result.log_path}`" if result.log_path else "—"
+        counts = result.evidence["counts"] if result.evidence else {}
         lines.append(
             f"| `{result.name}` | `{result.path}` | {icon} {result.status} | "
-            f"{result.exit_code} | {result.duration_seconds:.3f} | {log} |"
+            f"{result.exit_code} | {result.duration_seconds:.3f} | "
+            f"{counts.get('passed', '?')} / {counts.get('failed', '?')} / {counts.get('skipped', '?')} | {log} |"
         )
+    lines.extend(["", "#### Reproduce (after restore/build)", ""])
+    for result in results:
+        command = subprocess.list2cmdline(result.command) if os.name == "nt" else shlex.join(result.command)
+        lines.extend([f"{result.name}: {result.evidence_error or result.status}", "", "```sh", command, "```", ""])
     if build_results:
         lines.extend(["", "#### Build evidence", "", "| Build | Status | Duration (s) | Log |",
                       "| --- | --- | ---: | --- |"])
@@ -679,6 +725,7 @@ def main() -> int:
             print(f"- {result.name}: {result.path} exited {result.exit_code}", file=sys.stderr)
         return 1
 
+    test_started = time.perf_counter()
     results = run_tests(
         projects,
         configuration=args.configuration,
@@ -690,6 +737,7 @@ def main() -> int:
     write_summaries(
         results, summary_output=Path(args.summary_output), json_output=Path(args.json_output),
         build_results=build_results if use_group_build else (),
+        test_duration_seconds=time.perf_counter() - test_started,
     )
 
     failed = [result for result in results if result.exit_code != 0]
