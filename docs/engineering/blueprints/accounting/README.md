@@ -13,7 +13,7 @@ test plan, and an ordered implementation checklist.
 
 These three blueprints share the ledger migration sequence, the `AutomatedJournalEventKind` enum,
 and the fund high-water mark. Read the shared conventions and the recorded cross-blueprint contracts
-in [`docs/engineering/blueprints/README.md`](../../engineering/blueprints/README.md) — the canonical
+in [`docs/engineering/blueprints/README.md`](../README.md) — the canonical
 blueprint register — **before** claiming a migration ordinal, route prefix, or enum ordinal here.
 
 | Blueprint | Scope | Delivery state |

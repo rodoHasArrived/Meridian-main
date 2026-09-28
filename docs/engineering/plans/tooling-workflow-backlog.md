@@ -112,7 +112,7 @@ These problems are individually small but collectively expensive because they un
 ### MW-007 — Add a tooling architecture document
 - **Priority:** P2
 - **Effort:** M
-- **Status:** Done — [`tooling-architecture.md`](tooling-architecture.md) documents command
+- **Status:** Done — [`tooling-architecture.md`](../../development/tooling-architecture.md) documents command
   layering, authoritative vs convenience commands, generated artifacts, and local-to-CI
   mapping, and is linked from the developer docs index.
 - **Outcome:** Contributors can understand the toolchain as a system instead of a list of commands.

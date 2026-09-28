@@ -454,7 +454,7 @@ Three consequences:
   independent-reviewer requirements, restatement resolution, and affected-ledger-book scoping — all
   applied to a side table that by design never changes the record it annotates.
 
-The overlay decision is documented and intentional (`docs/plans/security-master-passport-workbench.md`,
+The overlay decision is documented and intentional (`docs/engineering/blueprints/security-master-passport-workbench.md`,
 decision D2 as amended: a partial field-edit payload appended to the economic stream would clobber
 the definition on replay). The rationale is right. The gap is that no *typed amendment* path was
 built alongside it, so the workbench remains an annotation surface rather than a correction surface.
@@ -1623,7 +1623,7 @@ against, two paragraphs after the correction that withdrew that target.
    and the denormalized `securities` columns carry no provider to express the rule with. Widening it
    means projecting a normalized primary provider column first.
 4. **P6** — **a plan now exists**, and this item is the input to it rather than a standing ask:
-   `docs/architecture/security-lot-convergence-blueprint.md` (`W10-LOT-002`, status *proposed*),
+   `docs/engineering/blueprints/security-lot-convergence-blueprint.md` (`W10-LOT-002`, status *proposed*),
    which landed on `main` after this pass was written. It reaches the same durable anchor this item
    does — `LedgerTaxLotRecord` extended rather than replaced, `SecurityId` mandatory, `TaxLot`
    retired as authoritative — and it carries acquisition currency/FX, which this item flagged as
@@ -5320,7 +5320,7 @@ Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/I
 plus `Validation/`, `Rebuild/`, `CorporateActions/`, `CashFlow/`), `src/Meridian.Storage/SecurityMaster/`
 (43 files plus 26 migrations), `src/Meridian.ReferenceData/SecurityMaster/`, `src/Meridian.Instruments/`
 projection services, `src/Meridian.Ui/dashboard/src/` Security Master screens and the passport editor,
-`tests/Meridian.Tests/SecurityMaster/` (65 files), and `docs/plans/security-master-passport-workbench.md`.
+`tests/Meridian.Tests/SecurityMaster/` (65 files), and `docs/engineering/blueprints/security-master-passport-workbench.md`.
 
 The 2026-08-14 verification pass re-read the F# domain and interop, the 47 `Meridian.Contracts`
 Security Master contracts, the 58 `Meridian.Application` Security Master services, the 46

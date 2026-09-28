@@ -28,7 +28,7 @@ repeating the same facts in every `SKILL.md`.
   alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, and
   no-code workflow design can proceed when current source, roadmap, or user direction supports them.
 - Operator UI work runs across two active co-equal lanes: the browser workstation in `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
-- `src/Meridian.Wpf/` is an active product/UI lane; its immediate focus is web-UI parity (`W8-WPF-PARITY-001`, see `docs/development/wpf-web-ui-alignment-plan.md`) over the existing Windows desktop shell, compatibility, tests, launch automation, and desktop validation.
+- `src/Meridian.Wpf/` is an active product/UI lane; its immediate focus is web-UI parity (`W8-WPF-PARITY-001`, see `docs/engineering/plans/wpf-web-ui-alignment-plan.md`) over the existing Windows desktop shell, compatibility, tests, launch automation, and desktop validation.
 - `src/Meridian.Ui/dashboard/` remains an active browser-based workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers

@@ -1729,10 +1729,26 @@ Meridian-main
 │   │   └── security.md
 │   ├── engineering
 │   │   ├── blueprints
+│   │   │   ├── accounting
+│   │   │   │   ├── commitment-and-capital-call-engine.md
+│   │   │   │   ├── equalization-and-series-accounting.md
+│   │   │   │   ├── incentive-fee-mechanics.md
+│   │   │   │   └── README.md
 │   │   │   ├── financing-liabilities-depreciation-blueprint.md
+│   │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   │   ├── README.md
+│   │   │   ├── report-writer-auto-preview-blueprint.md
 │   │   │   ├── risk-engine-severity-and-decision-journal-blueprint.md
-│   │   │   └── w10-mark-001-fail-closed-marks.md
+│   │   │   ├── security-lot-convergence-blueprint.md
+│   │   │   ├── security-master-passport-workbench.md
+│   │   │   ├── w10-mark-001-fail-closed-marks.md
+│   │   │   └── web-ui-report-run-stream-blueprint-2026-07.md
+│   │   ├── plans
+│   │   │   ├── god-file-burn-down-plan.md
+│   │   │   ├── README.md
+│   │   │   ├── tooling-workflow-backlog.md
+│   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
+│   │   │   └── wpf-web-ui-alignment-plan.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
 │   │   ├── etl-execution-ownership.md
@@ -1888,6 +1904,14 @@ Meridian-main
 │   │   ├── research-backtest-trust-and-velocity-blueprint.md
 │   │   └── security-master-passport-workbench.md
 │   ├── product
+│   │   ├── plans
+│   │   │   ├── adversarial-review-2026-08-remediation-plan.md
+│   │   │   ├── next-work-determination-2026-09-27.md
+│   │   │   ├── product-roadmap-priorities-2026-07.md
+│   │   │   ├── production-readiness-backlog-2026-08.md
+│   │   │   ├── README.md
+│   │   │   ├── w10-depth-slate-2026-07.md
+│   │   │   └── w9-close-out-delivery-plan-2026-08.md
 │   │   ├── adversarial-program-review-2026-07.md
 │   │   ├── adversarial-program-review-2026-08-18.md
 │   │   ├── adversarial-program-review-2026-08-24.md

@@ -72,7 +72,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Provider Implementation Guide](provider-implementation.md) | add or extend streaming, historical, or symbol-search providers |
 | [Rule Evaluation Contract Layer](rule-evaluation-contracts.md) | align kernel outputs to the shared `Score + Reasons + Trace` envelope |
 | [Refactor Map](refactor-map.md) | understand the current dependency-safe refactor opportunities |
-| [Tooling & Workflow Backlog](tooling-workflow-backlog.md) | review proposed contributor-workflow and automation cleanup themes |
+| [Tooling & Workflow Backlog](../engineering/plans/tooling-workflow-backlog.md) | review proposed contributor-workflow and automation cleanup themes |
 
 ### Desktop And WPF Development
 
@@ -88,7 +88,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Shared Workstation Components](shared-workstation-components.md) | inventory and extract reusable desktop workstation controls and view-model patterns |
 | [Process Lifecycle Diagnostics](process-lifecycle-diagnostics.md) | check startup/shutdown ownership and safely report leftover Meridian/dotnet processes |
 | [Desktop Support Policy](policies/desktop-support-policy.md) | confirm expected validation and support obligations for desktop-facing changes |
-| [WPF ↔ Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md) | close desktop parity gaps against the browser workstation over shared contracts |
+| [WPF ↔ Web-UI Alignment Plan](../engineering/plans/wpf-web-ui-alignment-plan.md) | close desktop parity gaps against the browser workstation over shared contracts |
 
 ### Browser Workstation UI
 
@@ -107,7 +107,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Runtime Observability And Diagnostics](runtime-observability.md) | apply runtime logging, redaction, correlation, provider-health, and diagnostic-bundle standards |
 | [OTLP Trace Visualization](otlp-trace-visualization.md) | inspect Meridian traces and metrics in a local telemetry UI |
 | [Git Hooks](git-hooks.md) | install the repo-managed local quality gate before committing |
-| [God-File Burn-Down Plan](god-file-burn-down-plan.md) | understand the file-size ratchet baseline, its burn-down targets, and decomposition sequencing |
+| [God-File Burn-Down Plan](../engineering/plans/god-file-burn-down-plan.md) | understand the file-size ratchet baseline, its burn-down targets, and decomposition sequencing |
 
 ### Documentation Tooling And Automation
 

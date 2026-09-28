@@ -44,14 +44,16 @@ Canonical ownership rule:
 - Keep shared UI read-model/service contracts in `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
 - Never create duplicate business behavior per surface unless a surface-specific constraint exists.
 
-## Blueprints
+## Plans and Blueprints
 
-Code-ready technical designs for prioritized features live under
-[`blueprints/`](blueprints/README.md). That README is the **canonical register for every active
-blueprint in the repository**, wherever it is filed — engineering, `docs/development/accounting-blueprints/`,
-`docs/product/`, and `docs/plans/` — and it records the shared conventions (ledger migration
-ordinals, DDL precision, API route prefixes, enum extension, terminology) plus the cross-blueprint
-contracts that stop two independently-written designs from colliding.
+Every planning document has one home and one register entry. The
+[Plans and Blueprints Register](blueprints/README.md) is the **single index of every plan and
+blueprint in the repository**. It names the home folder for each kind:
+code-ready designs in [`blueprints/`](blueprints/README.md), engineering working plans in
+[`plans/`](plans/README.md), and product delivery plans in
+[`../product/plans/`](../product/plans/README.md). It also records the shared conventions (ledger
+migration ordinals, DDL precision, API route prefixes, enum extension, terminology) and the
+cross-blueprint contracts that stop two independently written designs from colliding.
 
 ## Build/Test/Run
 
