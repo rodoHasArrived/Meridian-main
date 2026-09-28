@@ -133,3 +133,9 @@ only the desktop MSIX packages.
 The administrator should dispatch a signed rehearsal after human review and before enabling
 publication for a new production tag. A successful rehearsal is required operational evidence;
 static workflow tests cannot establish certificate availability or native installation success.
+
+The pinned Gitleaks action does not support merge-group events and may skip tag pushes with
+empty commit arrays. Those events use the same Gitleaks 8.25.1 scanner and repository config
+through `scan-commit-secrets.py`, with a verified download checksum. It verifies the checkout
+SHA and scans complete reachable history, including merge-resolution changes. Fresh SARIF
+evidence is mandatory; unsupported events and empty webhook arrays cannot produce a false pass.

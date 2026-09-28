@@ -5,6 +5,11 @@ CI quality controls and administrator rollout are maintained in
 workflow lane runs actionlint and enforces full-SHA external action references. The manual
 `ci-concurrency-benchmark.yml` collects five comparable pairs; it never promotes concurrency.
 
+`Secret Scan` supports merge groups and release tags through the same pinned Gitleaks scanner
+used by ordinary CI. These events scan the exact checkout and reachable history directly because
+the upstream action rejects merge groups and can skip empty tag-push payloads. SARIF evidence
+is retained under `commit-secret-scan-<run>-<attempt>`.
+
 Meridian keeps the Actions surface scoped to the current .NET 10 solution, browser workstation,
 retained Windows desktop shell, provider smoke checks, safe publish output, release packaging, and
 documentation/diagram refreshes. Older automation for AI review, Docker publishing, stale issue
