@@ -137,7 +137,12 @@ internal static class ExternalGlTestData
 
     public static object NetSuiteAccount(string id, string type, string special = "NONE", string inactive = "F", string? name = null) => new
     {
-        id, acctnumber = id, acctname = name ?? id, accttype = type, isinactive = inactive, specialaccounttype = special
+        id,
+        acctnumber = id,
+        acctname = name ?? id,
+        accttype = type,
+        isinactive = inactive,
+        specialaccounttype = special
     };
 
     public static object NetSuiteBalance(string id, decimal balance, decimal prior = 0m)

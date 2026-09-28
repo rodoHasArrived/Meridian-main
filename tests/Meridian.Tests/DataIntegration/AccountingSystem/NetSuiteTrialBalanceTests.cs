@@ -47,8 +47,12 @@ public sealed class NetSuiteTrialBalanceTests
             query.Should().Contain($"t.trandate >= TO_DATE('{start}', 'YYYY-MM-DD')");
             return ExternalGlTestHandler.Page(scope.Where(p => p.Date >= periodStart && p.Date <= periodEnd).Select(p => (object)new
             {
-                journalid = p.Journal, accountingdate = p.Date.ToString("yyyy-MM-dd"), lineid = p.Account,
-                accountid = p.Account, debit = Math.Max(p.Amount, 0), credit = Math.Max(-p.Amount, 0)
+                journalid = p.Journal,
+                accountingdate = p.Date.ToString("yyyy-MM-dd"),
+                lineid = p.Account,
+                accountid = p.Account,
+                debit = Math.Max(p.Amount, 0),
+                credit = Math.Max(-p.Amount, 0)
             }).ToArray());
         });
         using var client = new HttpClient(handler);
@@ -58,8 +62,13 @@ public sealed class NetSuiteTrialBalanceTests
         var amounts = detail.TrialBalance.ToDictionary(b => b.ExternalAccountId, b => b.Debit - b.Credit);
         amounts.Should().BeEquivalentTo(new Dictionary<string, decimal>
         {
-            ["cash"] = cash, ["income"] = income, ["other-income"] = 0,
-            ["expense"] = expense, ["cogs"] = cogs, ["other-expense"] = otherExpense, ["system-73"] = retained
+            ["cash"] = cash,
+            ["income"] = income,
+            ["other-income"] = 0,
+            ["expense"] = expense,
+            ["cogs"] = cogs,
+            ["other-expense"] = otherExpense,
+            ["system-73"] = retained
         });
         amounts.Values.Sum().Should().Be(0m);
         detail.TrialBalance.Should().OnlyContain(b => b.AsOfDate == periodEnd && b.Currency == "USD" &&
