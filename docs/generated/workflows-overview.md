@@ -10,8 +10,8 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 |---|---|---|
 | `.github/workflows/ai-navigation-refresh.yml` | AI Navigation Refresh | schedule, workflow_dispatch |
 | `.github/workflows/branch-cleanup.yml` | Branch Cleanup | workflow_dispatch |
-| `.github/workflows/ci.yml` | CI | pull_request, push, schedule, workflow_dispatch |
-| `.github/workflows/codeql.yml` | CodeQL | pull_request, push, schedule, workflow_dispatch |
+| `.github/workflows/ci.yml` | CI | pull_request, merge_group, push, schedule, workflow_dispatch |
+| `.github/workflows/codeql.yml` | CodeQL | pull_request, merge_group, push, schedule, workflow_dispatch |
 | `.github/workflows/copilot-setup-steps.yml` | Copilot Setup Steps | workflow_dispatch, push, pull_request |
 | `.github/workflows/demo-smoke.yml` | Demo Smoke | pull_request, push, workflow_dispatch |
 | `.github/workflows/desktop-evaluation-prerelease.yml` | Desktop Evaluation Prerelease | workflow_dispatch |
