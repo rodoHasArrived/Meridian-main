@@ -89,6 +89,10 @@ settings and adds required GitHub Actions contexts `quality-gate`, `Secret Scan`
 and `Analyze javascript-typescript`. Preserve other protections. Do not require a path-filtered
 specialist check that may never report. Keep human governance review without introducing a
 blanket non-author approval rule. These instructions do not change repository settings.
+Bind each context to the GitHub Actions application's ID from its successful check-run record,
+then verify PR and merge-group events report all four contexts. Inspect classic branch protection
+as an administrator as well as rulesets; the planning account received HTTP 403 for classic
+protection, so readable rulesets are not a complete inventory of existing requirements.
 
 ## Release evidence
 
@@ -97,3 +101,35 @@ web-workstation/win-x64 installed-startup proof to the tag's exact commit. Publi
 on those checks plus packaging and native x64/ARM64 lifecycle evidence. Packages are promoted
 without rebuilding; family/runtime-qualified evidence names prevent release asset collisions.
 Evaluation prereleases remain separate and do not establish production certification.
+
+The coordinator is `desktop-installer-packaging.yml`. Same-repository reusable workflow
+references and explicit SHA checkouts bind the called implementation and validation to the
+coordinator commit. Production certification retains main, weekly and manual entry points;
+the coordinator replaces its independent tag invocation. Signing and release publication
+permissions stay in the release jobs; validation workflows receive no signing secrets.
+
+The early eligibility job requires the tag commit to be an ancestor of main, validates the PFX,
+password, private key, publisher and validity period, and compares MSIX identity versions from
+published production packages. Production prereleases count in this comparison. `v1.2.3-rc.1`
+and `v1.2.3` both map to `1.2.3.0`, so the second is rejected before compilation; use a higher
+package version. `eval-v*` artifacts remain in their separate evaluation channel.
+
+For a rehearsal, manually dispatch the coordinator on the reviewed branch with a valid
+`rehearsal_version` greater than existing package versions. It requires the existing protected
+`desktop-release-signing` environment and signing secrets, runs every release dependency,
+and retains `validated-release-<run>-<attempt>` without publishing. The old unsigned manual
+lifecycle shortcut is replaced by this full signed rehearsal; the standalone evaluation channel
+still provides self-signed evaluation packages.
+
+Publication verifies every gate, both native architecture receipts, installed-startup evidence,
+source commits, run IDs, run attempts and SHA-256 digests, then copies the certified MSIX files
+and verified consumer package into a fresh flat directory. It performs no builds or signing.
+Each package family/runtime has its own SBOM, checksum file and release manifest. The gate
+manifest links validation results and native lifecycle receipts to the exact promoted bytes.
+Consumer setup retains its embedded-payload verification and the separate required
+web-workstation installed-startup proof; native MSIX lifecycle receipts explicitly describe
+only the desktop MSIX packages.
+
+The administrator should dispatch a signed rehearsal after human review and before enabling
+publication for a new production tag. A successful rehearsal is required operational evidence;
+static workflow tests cannot establish certificate availability or native installation success.

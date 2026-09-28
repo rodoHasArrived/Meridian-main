@@ -1124,6 +1124,7 @@ Meridian-main
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
 │       │   ├── inline-sha256-baseline.json
+│       │   ├── release-preflight.py
 │       │   ├── requirements.txt
 │       │   ├── run-dotnet-ci-tests.py
 │       │   ├── run-script-tests.py
@@ -1134,7 +1135,8 @@ Meridian-main
 │       │   ├── validate-monitoring-deployment.py
 │       │   ├── validate-npm-audit.py
 │       │   ├── validate-observability-contract.py
-│       │   └── validate-test-results.py
+│       │   ├── validate-test-results.py
+│       │   └── verify-release-promotion.py
 │       ├── docs
 │       │   ├── tests
 │       │   │   ├── test_check_ai_handoff.py
@@ -10917,6 +10919,7 @@ Meridian-main
 │   │   ├── test_refresh_screenshots_workflow.py
 │   │   ├── test_release_evidence_manifest.py
 │   │   ├── test_release_evidence_workflows.py
+│   │   ├── test_release_promotion.py
 │   │   ├── test_render_roadmap_diagrams.py
 │   │   ├── test_resolve_generated_merge_conflicts.py
 │   │   ├── test_roadmap_source_docs.py
