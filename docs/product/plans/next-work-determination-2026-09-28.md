@@ -129,6 +129,11 @@ Current hand-written conflict counts, generated trees excluded:
 | #2826 | `first-trusted-close` | 4 | 4 | genuine; includes `LedgerJournalInternalTransactionSource.cs` |
 | #2789 | `backtesting-quantscript-milestone-1` | 113 | 9 | still correctly `[DRAFT — RE-CUT REQUIRED]` |
 
+> **Post-baseline note (added when this branch merged `main`):** **#2999 merged** in `80219e32`,
+> after the `0b956b06` baseline this document was measured at. It is the first branch to leave the
+> table above, and it left as the mechanical case the table predicted. The rest of the measurement
+> stands as recorded at the baseline.
+
 Resolving `OperationsContinuityWorkflowServiceTests.cs` and
 `FinancialOperationsCommandCenterReadService.PublicationTests.cs` once on `main` still converts
 #2929 and #2930 into the mechanical case — one resolution, two branches.

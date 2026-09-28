@@ -1,6 +1,6 @@
 {
   "total_files": 674,
-  "total_lines": 145433,
+  "total_lines": 145448,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -3155,7 +3155,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-09-28.md",
-      "line_count": 186,
+      "line_count": 191,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5267,7 +5267,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 776,
+      "line_count": 782,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5419,7 +5419,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 303,
+      "line_count": 307,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
