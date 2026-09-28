@@ -38,6 +38,7 @@ provider-wide row is never replaced), so a scoped save is reflected in Settings.
 unassigned connections never contribute. `?scope=provider` returns provider-wide rows only, for flows
 such as the add-provider wizard that read and write the provider-wide record. Ownership checks compare canonical provider IDs,
 so a connection retained under an alias such as `alpha-vantage` or `qbo` still resolves.
+The workstation Data and data-operations payloads use the same tenant readiness for their provider rows.
 
 Provider readiness resolves configuration, credential and telemetry aliases through the shared
 ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and

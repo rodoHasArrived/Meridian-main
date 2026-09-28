@@ -92,6 +92,36 @@ public sealed class ProviderTrustScoringServiceTests : IDisposable
         decision.Score.Should().Be(100);
     }
 
+    [Fact]
+    public async Task GetTrustSnapshotsForTenantAsync_IgnoresProviderFamilyHealthSharedWithOtherOwners()
+    {
+        var dataRoot = Path.Combine(_tempDirectory, "data");
+        Directory.CreateDirectory(Path.Combine(dataRoot, "_status"));
+        await SaveConfigAsync(new AppConfig() with
+        {
+            DataRoot = dataRoot,
+            ProviderConnections = new ProviderConnectionsConfig(
+                Connections: [new ProviderConnectionConfig("tenant-alpaca", "alpaca", "Tenant Alpaca", TenantId: "tenant-a")],
+                Certifications: [])
+        });
+        // Runtime metrics are recorded per provider family; this degraded "alpaca" metric belongs to no single owner.
+        await File.WriteAllTextAsync(Path.Combine(dataRoot, "_status", "providers.json"),
+            "{\"timestamp\":\"2026-09-28T12:00:00Z\",\"providers\":[{\"providerId\":\"alpaca\",\"providerType\":\"Streaming\"," +
+            "\"isConnected\":false,\"dataQualityScore\":10,\"timestamp\":\"2026-09-28T12:00:00Z\"}],\"totalProviders\":1,\"healthyProviders\":0}");
+        var store = new ConfigStore(_configPath);
+        var healthSource = new DefaultProviderConnectionHealthSource(store);
+        var service = new ProviderTrustScoringService(store, healthSource);
+
+        var unscoped = await service.GetTrustSnapshotsAsync();
+        var tenant = await service.GetTrustSnapshotsForTenantAsync("tenant-a");
+
+        unscoped.Single().Decision!.Reasons.Should().Contain(r => r.ReasonCode == "HEALTH_NOT_HEALTHY");
+        tenant.Single().Decision!.Reasons.Should().NotContain(r => r.ReasonCode == "HEALTH_NOT_HEALTHY",
+            "another owner's family-wide telemetry must not score this tenant's connection");
+        var scopedHealth = await ((IProviderConnectionHealthSource)healthSource).GetConnectionHealthAsync("tenant-alpaca", "alpaca");
+        scopedHealth.Status.Should().Be("unknown");
+    }
+
     private async Task SaveConfigAsync(AppConfig config)
     {
         var store = new ConfigStore(_configPath);

@@ -17,6 +17,8 @@ Owned credential connection discovery excludes incomplete ownership and duplicat
 Status reads accept an explicit connection ID so credential-management selection does not borrow
 provider-wide state. Account and environment metadata remain attached to each connection.
 
+`SetupWizardService.SaveCredentialsAsync` accepts a save only when the service acknowledges the requested
+provider's canonical ID with a Configured or Verified state.
 Credential-management save, remove and verification operations use the shared authenticated API
 client. Saves send canonical field names; mutations require a matching provider and an acknowledged
 result state. Verification requires a successful, dated server result. Optional connection IDs route

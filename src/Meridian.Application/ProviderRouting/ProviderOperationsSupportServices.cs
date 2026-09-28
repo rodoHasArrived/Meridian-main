@@ -96,7 +96,10 @@ public sealed class ProviderTrustScoringService
         {
             if (tenantId is not null && connection.TenantId != tenantId)
                 continue;
-            var health = await _healthSource.GetHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct).ConfigureAwait(false);
+            // Tenant trust never scores by another owner's family-wide health telemetry.
+            var health = tenantId is null
+                ? await _healthSource.GetHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct).ConfigureAwait(false)
+                : await _healthSource.GetConnectionHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct).ConfigureAwait(false);
             certifications.TryGetValue(connection.ConnectionId, out var certification);
             var reasons = new List<DecisionReason>();
             var score = 100.0;

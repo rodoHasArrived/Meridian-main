@@ -61,9 +61,10 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
         var scored = new List<ProviderRouteDecision>(routeResult.Candidates.Count);
         foreach (var candidate in routeResult.Candidates)
         {
-            var health = await _healthSource
-                .GetHealthAsync(candidate.ConnectionId, candidate.ProviderFamilyId, ct)
-                .ConfigureAwait(false);
+            // Tenant selection, like its latency and quality inputs, ignores family-wide health telemetry.
+            var health = tenantId is null
+                ? await _healthSource.GetHealthAsync(candidate.ConnectionId, candidate.ProviderFamilyId, ct).ConfigureAwait(false)
+                : await _healthSource.GetConnectionHealthAsync(candidate.ConnectionId, candidate.ProviderFamilyId, ct).ConfigureAwait(false);
 
             var healthScore = Clamp01(health.Score / 100d);
             var latencyScore = ComputeLatencyScore(candidate, metricsByProvider);

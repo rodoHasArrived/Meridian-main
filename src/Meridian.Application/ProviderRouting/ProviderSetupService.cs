@@ -58,6 +58,12 @@ public sealed class ProviderSetupService
             await scopedStore.SaveScopedAsync(new ProviderCredentialSaveRequest(descriptor.ProviderId, validation.Credentials,
                 scope.Environment, actor), scope, ct).ConfigureAwait(false);
         var status = await scopedStore.GetScopedStatusAsync(descriptor.ProviderId, scope, ct).ConfigureAwait(false);
+        // Report success only for a usable connection. Fields may merge with a retained record, so the
+        // resulting scoped status, not the request, decides whether the connection is complete.
+        var usable = status.CredentialState is ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified ||
+            (!descriptor.RequiresCredentials && status.CredentialState == ProviderCredentialStateDto.NotRequired);
+        if (!usable)
+            return Failure(connection.DisplayName, "Connection credentials are incomplete; provide every required field before use.");
         return new ProviderSetupResult(true, descriptor.ProviderId, connection.DisplayName,
             "Connection credentials were configured; verify the retained account before use.", null,
             connection.ConnectionId, [], status.CredentialState, status.CredentialSource, connection.CredentialReference,

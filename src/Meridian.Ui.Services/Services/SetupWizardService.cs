@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Text.Json;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Api;
+using ProviderIdentity = Meridian.Infrastructure.Adapters.Core.ProviderIdentity;
 
 namespace Meridian.Ui.Services;
 
@@ -670,9 +671,12 @@ public sealed class SetupWizardService
             route = UiApiRoutes.WithQuery(route, "connectionId=" + Uri.EscapeDataString(connectionId));
         var response = await _apiClient.PutWithResponseAsync<ProviderCredentialMutationResultDto>(route,
             new ProviderCredentialUpsertRequestDto(fields, environment), ct).ConfigureAwait(false);
-        if (!response.Success || response.Data is null)
+        if (!response.Success || response.Data is null ||
+            !ProviderIdentity.EqualsId(response.Data.ProviderId, providerId))
             throw new InvalidOperationException("Credential persistence was not acknowledged by the authenticated service.");
-        if (response.Data.CredentialState is ProviderCredentialStateDto.Missing or ProviderCredentialStateDto.Partial)
+        // Every provider this wizard saves requires credentials, so only an explicit configured or
+        // verified record confirms the save; Invalid, Partial or a defaulted NotRequired state does not.
+        if (response.Data.CredentialState is not (ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified))
             throw new InvalidOperationException("Provider credential setup is incomplete.");
     }
 

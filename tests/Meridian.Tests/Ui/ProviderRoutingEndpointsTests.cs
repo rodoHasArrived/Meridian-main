@@ -755,6 +755,31 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Theory]
+    [InlineData(null, null)]
+    [InlineData("partial-key", null)]
+    public async Task ConfigureOwnedConnection_IncompleteCredentialsAreNotReportedAsConfigured(string? apiKey, string? apiSecret)
+    {
+        await using var app = await CreateAppAsync();
+        await app.Services.GetRequiredService<ProviderConnectionService>().UpsertForTenantAsync(
+            new CreateProviderConnectionRequest("existing", "alpaca", "Existing account", ExternalAccountId: "account-a"), "tenant-test", "paper");
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderConfigure + "?connectionId=existing", JsonContent(new
+        {
+            kind = "alpaca",
+            displayName = "Existing account",
+            apiKey,
+            apiSecret,
+            environment = "paper",
+            capabilities = new[] { "streaming" }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest, "an unusable connection must not be reported as configured");
+        var result = Deserialize<ProviderSetupResult>(await response.Content.ReadAsStringAsync());
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("incomplete");
+    }
+
+    [Theory]
     [InlineData(null)]
     [InlineData("{")]
     [InlineData("null")]

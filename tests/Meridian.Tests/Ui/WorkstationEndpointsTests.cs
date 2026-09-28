@@ -13,6 +13,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
@@ -1159,6 +1160,42 @@ public sealed partial class WorkstationEndpointsTests
 
         using var data = await ReadJsonAsync(client, "/api/workstation/data");
         data.RootElement.GetProperty("providers").GetArrayLength().Should().Be(2);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_DataOperationsPayload_ReportsTheTenantsScopedCredentialReadiness()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-tenant-readiness", Guid.NewGuid().ToString("N"));
+        var dataRoot = Path.Combine(root, "data");
+        Directory.CreateDirectory(dataRoot);
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, JsonSerializer.Serialize(new { dataRoot }));
+        var vault = new FileProviderCredentialStore(dataRoot);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterConfigStores(services, configPath);
+            services.AddSingleton<IProviderCredentialStore>(vault);
+            services.AddSingleton(NullLogger<ProviderConnectionLifecycleService>.Instance);
+            services.AddSingleton<ProviderConnectionLifecycleService>();
+            services.AddSingleton<ProviderConnectionService>();
+        },
+            currentUserPermissions: UserPermission.ManageCredentials | UserPermission.ViewHistoricalData);
+        var connections = app.Services.GetRequiredService<ProviderConnectionService>();
+        await connections.UpsertForTenantAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "polygon-owned", ProviderFamilyId: "polygon", DisplayName: "Owned Polygon",
+            ExternalAccountId: "account-owned"), "tenant-test", "default");
+        var scope = await connections.GetCredentialScopeForTenantAsync("polygon-owned", "tenant-test");
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon",
+            new Dictionary<string, string?> { ["ApiKey"] = "owned-key" }, scope!.Environment), scope);
+
+        using var dataOperations = await ReadJsonAsync(app.GetTestClient(), "/api/workstation/data-operations");
+
+        var polygon = dataOperations.RootElement.GetProperty("providers").EnumerateArray()
+            .Single(provider => provider.GetProperty("providerId").GetString() == "polygon");
+        var summary = polygon.GetProperty("connectionSummary").Deserialize<ProviderConnectionRowDto>(ServerJsonOptions);
+        summary!.CredentialState.Should().Be(ProviderCredentialStateDto.Configured,
+            "the workstation reports the same tenant readiness as the providers endpoint and Settings");
     }
 
     [Fact]

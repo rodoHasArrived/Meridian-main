@@ -39,6 +39,19 @@ public interface IProviderConnectionHealthSource
         string connectionId,
         string providerFamilyId,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Health reported for exactly this connection, never inferred from telemetry shared by other
+    /// owners of the same provider family. Tenant-scoped routing and trust reads use this so another
+    /// tenant's family-wide metric cannot rank this tenant's connection. The default delegates to
+    /// <see cref="GetHealthAsync"/>, which is correct for sources keyed by connection; a source that
+    /// falls back to provider-family telemetry must override it.
+    /// </summary>
+    ValueTask<ProviderConnectionHealthSnapshot> GetConnectionHealthAsync(
+        string connectionId,
+        string providerFamilyId,
+        CancellationToken ct = default)
+        => GetHealthAsync(connectionId, providerFamilyId, ct);
 }
 
 /// <summary>

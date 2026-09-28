@@ -58,7 +58,26 @@ public sealed class SetupWizardServiceTests
         public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
     }
 
-    private sealed class CredentialHandler(HttpStatusCode status) : HttpMessageHandler
+    [Theory]
+    [InlineData("{\"providerId\":\"finnhub\",\"credentialState\":3}")]
+    [InlineData("{\"providerId\":\"polygon\",\"credentialState\":5}")]
+    [InlineData("{\"providerId\":\"polygon\",\"credentialState\":2}")]
+    [InlineData("{\"providerId\":\"polygon\",\"credentialState\":0}")]
+    [InlineData("{\"providerId\":\"polygon\"}")]
+    [InlineData("{\"credentialState\":3}")]
+    public async Task SaveCredentials_RequiresAMatchingConfiguredAcknowledgement(string acknowledgement)
+    {
+        using var handler = new CredentialHandler(HttpStatusCode.OK, acknowledgement);
+        using var api = new ApiClientService(new CredentialClientFactory(handler));
+        var service = new SetupWizardService(apiClient: api);
+
+        var save = () => service.SaveCredentialsAsync("Polygon", new Dictionary<string, string> { ["apiKey"] = "request-secret" });
+
+        var error = (await save.Should().ThrowAsync<InvalidOperationException>()).Which;
+        error.ToString().Should().NotContain("request-secret");
+    }
+
+    private sealed class CredentialHandler(HttpStatusCode status, string? okBody = null) : HttpMessageHandler
     {
         public HttpMethod? Method { get; private set; }
         public string? Url { get; private set; }
@@ -68,10 +87,12 @@ public sealed class SetupWizardServiceTests
             Method = request.Method;
             Url = request.RequestUri!.AbsoluteUri;
             Body = request.Content is null ? null : await request.Content.ReadAsStringAsync(ct);
+            // By default the service acknowledges the requested provider's canonical ID.
+            var requested = request.RequestUri.AbsolutePath.Split('/')[3];
             return new HttpResponseMessage(status)
             {
                 Content = new StringContent(
-                status == HttpStatusCode.OK ? "{\"providerId\":\"provider\",\"credentialState\":3}" : "response-secret", Encoding.UTF8, "application/json")
+                status == HttpStatusCode.OK ? okBody ?? $"{{\"providerId\":\"{requested}\",\"credentialState\":3}}" : "response-secret", Encoding.UTF8, "application/json")
             };
         }
     }

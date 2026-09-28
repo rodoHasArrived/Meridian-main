@@ -66,9 +66,10 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             if (healthCache.TryGetValue(connection.ConnectionId, out var cachedHealth))
                 return cachedHealth;
 
-            var health = await _healthSource
-                .GetHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct)
-                .ConfigureAwait(false);
+            // Tenant routes never rank by another owner's family-wide health telemetry.
+            var health = tenantId is null
+                ? await _healthSource.GetHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct).ConfigureAwait(false)
+                : await _healthSource.GetConnectionHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct).ConfigureAwait(false);
 
             healthCache[connection.ConnectionId] = health;
             return health;
@@ -737,11 +738,24 @@ internal sealed class DefaultProviderConnectionHealthSource : IProviderConnectio
         string connectionId,
         string providerFamilyId,
         CancellationToken ct = default)
+        => GetCoreAsync(connectionId, providerFamilyId, includeProviderFamily: true);
+
+    /// <summary>
+    /// Runtime metrics are recorded per provider family and shared by every owner, so only a metric
+    /// recorded for this exact connection counts; otherwise health is reported as neutral unknown.
+    /// </summary>
+    public ValueTask<ProviderConnectionHealthSnapshot> GetConnectionHealthAsync(
+        string connectionId,
+        string providerFamilyId,
+        CancellationToken ct = default)
+        => GetCoreAsync(connectionId, providerFamilyId, includeProviderFamily: false);
+
+    private ValueTask<ProviderConnectionHealthSnapshot> GetCoreAsync(string connectionId, string providerFamilyId, bool includeProviderFamily)
     {
         var metrics = _store.TryLoadProviderMetrics();
         var match = metrics?.Providers.FirstOrDefault(p =>
             string.Equals(p.ProviderId, connectionId, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(p.ProviderId, providerFamilyId, StringComparison.OrdinalIgnoreCase));
+            (includeProviderFamily && string.Equals(p.ProviderId, providerFamilyId, StringComparison.OrdinalIgnoreCase)));
 
         if (match is null)
         {

@@ -3185,12 +3185,16 @@ public static partial class WorkstationEndpoints
         // Routing connections, bindings and trust snapshots follow connectionRows: their direct
         // /api/provider-routing reads require ManageCredentials, which the Data workspace does not admit.
         var canManageCredentials = HasPermission(context, UserPermission.ManageCredentials);
-        var connectionRows = canManageCredentials && providerConnectionLifecycle is not null
-            ? await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
-            : [];
+        var routingTenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        // Provider readiness mirrors GET /api/providers/connections: a tenant-scoped request includes the
+        // tenant's own connection credentials, so a scoped save is reflected here as it is in Settings.
+        var connectionRows = !canManageCredentials || providerConnectionLifecycle is null
+            ? []
+            : routingTenant.HasTenantScope
+                ? await providerConnectionLifecycle.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
+                : await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
         // Routing reads mirror the direct /api/provider-routing endpoints: they are filtered to the
         // authenticated tenant's retained connections, and a request without tenant scope sees none.
-        var routingTenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         var canReadRouting = canManageCredentials && routingTenant.HasTenantScope;
         var routingConnections = canReadRouting && routingConnectionService is not null
             ? await routingConnectionService.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
