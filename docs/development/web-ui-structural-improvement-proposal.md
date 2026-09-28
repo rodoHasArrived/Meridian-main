@@ -64,7 +64,7 @@ Related material:
 - Visual design system: `Meridian Design System/` ("Concrete / Institutional Ops", the active
   reference; enforced against the dashboard by
   `src/Meridian.Ui/dashboard/src/design-system-contract.test.ts`)
-- WPF parity lane: [`wpf-web-ui-alignment-plan.md`](wpf-web-ui-alignment-plan.md)
+- WPF parity lane: [`wpf-web-ui-alignment-plan.md`](../engineering/plans/wpf-web-ui-alignment-plan.md)
 
 ## 1. Evidence base
 
@@ -394,7 +394,7 @@ operator-visible behavior shipped in Phase D.
 
 ## 7. WPF parity impact
 
-Per the shared-first rule in [`wpf-web-ui-alignment-plan.md`](wpf-web-ui-alignment-plan.md),
+Per the shared-first rule in [`wpf-web-ui-alignment-plan.md`](../engineering/plans/wpf-web-ui-alignment-plan.md),
 presentation may differ between lanes but business state may not. Everything proposed here is
 presentation-lane restructuring: no read-model, contract, or endpoint changes are required, so no
 WPF work is *forced*. Two touchpoints to manage:

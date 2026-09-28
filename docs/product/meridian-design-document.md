@@ -4,12 +4,12 @@
 **Owner:** core-team
 **Reviewed:** 2026-08-03
 **Supersedes:** Version 0.25 (full text preserved at
-[`archive/docs/design/meridian-design-document-v0.25.md`](../../archive/docs/design/meridian-design-document-v0.25.md))
+[`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md))
 **Source:** Ground-up rewrite of the 0.15–0.25 charter lineage. Grounded in the roadmap registry
 (`docs/roadmap/data/*.yml`, snapshot 2026-08-03), the program state and P0 readiness tracker, the
 source-module registry, repository measurements taken 2026-07-28, the 2026-07 adversarial program
 review (`docs/product/adversarial-program-review-2026-07.md`), and the accepted W9 priority slate
-(`docs/product/product-roadmap-priorities-2026-07.md`, decision `DEC-PRIORITY-SLATE-001`). The
+(`docs/product/plans/product-roadmap-priorities-2026-07.md`, decision `DEC-PRIORITY-SLATE-001`). The
 version-by-version history of the superseded lineage is summarized in Section 25.
 
 ---
@@ -441,7 +441,7 @@ operational record baseline:
 
 | ID | Capability |
 | --- | --- |
-| `W8-WPF-PARITY-001` | WPF desktop workstation web-UI parity over shared contracts (`docs/development/wpf-web-ui-alignment-plan.md`) |
+| `W8-WPF-PARITY-001` | WPF desktop workstation web-UI parity over shared contracts (`docs/engineering/plans/wpf-web-ui-alignment-plan.md`) |
 | `W8-UX-CONSOL-001` | Browser workstation screen consolidation behind the seven charter roots (retired routes remain redirects) |
 | `W9-SAFETY-007` | Execution-safety controls and visible WPF safety posture |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting and ledger audit |
@@ -1500,7 +1500,7 @@ stays in [`docs/product/implementation-todo-list.md`](implementation-todo-list.m
 
 The superseded Version 0.25 text — including the Executive Marketecture Deck and the v0.15–v0.20
 addenda in their original form — is preserved at
-[`archive/docs/design/meridian-design-document-v0.25.md`](../../archive/docs/design/meridian-design-document-v0.25.md).
+[`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md).
 
 ### 25.2 Version History
 

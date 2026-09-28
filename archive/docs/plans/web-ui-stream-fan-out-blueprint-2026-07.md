@@ -9,9 +9,9 @@
 `StreamConnectionRegistry`, `StreamTopic`, `QuoteStreamOptions`, `QuoteStreamSubscription`) and
 `src/Meridian.Ui/dashboard/src/lib/quotes-stream.ts` are in source. Read this as the design record
 for shipped behavior, not as pending work.
-**Extends:** `docs/product/web-ui-improvements-implementation-plan-2026-07.md` (Phase 4 "Step 2" and Phase 6d follow-up).
-**Continued by:** [`web-ui-report-run-stream-blueprint-2026-07.md`](web-ui-report-run-stream-blueprint-2026-07.md) — which rescoped PR D and generalized the broadcaster (see §9).
-**Registered in:** [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).
+**Extends:** `docs/engineering/plans/web-ui-improvements-implementation-plan-2026-07.md` (Phase 4 "Step 2" and Phase 6d follow-up).
+**Continued by:** [`web-ui-report-run-stream-blueprint-2026-07.md`](../../../docs/engineering/blueprints/web-ui-report-run-stream-blueprint-2026-07.md) — which rescoped PR D and generalized the broadcaster (see §9).
+**Registered in:** [`docs/engineering/blueprints/README.md`](../../../docs/engineering/blueprints/README.md).
 **Scope owner surfaces:** `src/Meridian.Ui.Shared` (server SSE), `src/Meridian.Domain/Collectors` (notifier seam), `src/Meridian.Ui/dashboard` (client stream + companion bridge).
 
 This blueprint is a code-ready design. It names the exact seams, interfaces, and files to add/modify, and a phased checklist. It deliberately does **not** change the storage hot path.
@@ -352,7 +352,7 @@ npm --prefix src/Meridian.Ui/dashboard run build
    model: workspace and inbox payloads are `HttpContext`-coupled, per-session authorized, and carry
    no change signal, so the shared-build economics disappear. **`workspace` and `inbox` streams and
    the workspace poller suspension are cancelled**, not deferred — they stay on client polling.
-   See [`web-ui-report-run-stream-blueprint-2026-07.md`](web-ui-report-run-stream-blueprint-2026-07.md)
+   See [`web-ui-report-run-stream-blueprint-2026-07.md`](../../../docs/engineering/blueprints/web-ui-report-run-stream-blueprint-2026-07.md)
    §1 for the rescope rationale and §9 for the delivered D1–D3 phasing, which also extracted
    `StreamBroadcaster<TPayload>` out of `QuoteStreamBroadcaster`.
 

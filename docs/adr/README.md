@@ -14,7 +14,7 @@ Historical ADRs 001–016 were migrated to the archive during the documentation 
 archive-migration stubs that previously mirrored them here have been removed. Full historical ADR
 content is preserved in:
 
-- [ADR archive index](../../archive/docs/adr/README.md)
+- [ADR archive index](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/README.md)
 
 This folder keeps only current material:
 

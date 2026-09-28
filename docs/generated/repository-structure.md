@@ -1421,7 +1421,6 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── reporting-workstation-model.md
 │   │   ├── runtime-component-state-boundaries.md
-│   │   ├── security-lot-convergence-blueprint.md
 │   │   ├── security-master-extensibility-review.md
 │   │   ├── security-master-identifier-conflict-detection.md
 │   │   ├── storage-design.md
@@ -1434,11 +1433,6 @@ Meridian-main
 │   │   ├── wpf-workstation-shell-ux.md
 │   │   └── write-path-invariants.md
 │   ├── development
-│   │   ├── accounting-blueprints
-│   │   │   ├── commitment-and-capital-call-engine.md
-│   │   │   ├── equalization-and-series-accounting.md
-│   │   │   ├── incentive-fee-mechanics.md
-│   │   │   └── README.md
 │   │   ├── mockups
 │   │   │   └── web-ui
 │   │   │       ├── 01-trading-cockpit.html
@@ -1465,7 +1459,6 @@ Meridian-main
 │   │   ├── git-hooks.md
 │   │   ├── github-actions-summary.md
 │   │   ├── github-actions-testing.md
-│   │   ├── god-file-burn-down-plan.md
 │   │   ├── modular-desktop-architecture.md
 │   │   ├── otlp-trace-visualization.md
 │   │   ├── process-lifecycle-diagnostics.md
@@ -1480,11 +1473,9 @@ Meridian-main
 │   │   ├── shared-workstation-components.md
 │   │   ├── synthetic-provider-test-harness.md
 │   │   ├── tooling-architecture.md
-│   │   ├── tooling-workflow-backlog.md
 │   │   ├── ui-fixture-mode-guide.md
 │   │   ├── web-ui-structural-improvement-proposal.md
-│   │   ├── wpf-implementation-notes.md
-│   │   └── wpf-web-ui-alignment-plan.md
+│   │   └── wpf-implementation-notes.md
 │   ├── diagrams
 │   │   ├── analytics
 │   │   │   ├── backtesting-engine.dot
@@ -1729,10 +1720,25 @@ Meridian-main
 │   │   └── security.md
 │   ├── engineering
 │   │   ├── blueprints
+│   │   │   ├── accounting
+│   │   │   │   ├── commitment-and-capital-call-engine.md
+│   │   │   │   ├── equalization-and-series-accounting.md
+│   │   │   │   ├── incentive-fee-mechanics.md
+│   │   │   │   └── README.md
 │   │   │   ├── financing-liabilities-depreciation-blueprint.md
+│   │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   │   ├── README.md
+│   │   │   ├── report-writer-auto-preview-blueprint.md
 │   │   │   ├── risk-engine-severity-and-decision-journal-blueprint.md
-│   │   │   └── w10-mark-001-fail-closed-marks.md
+│   │   │   ├── security-lot-convergence-blueprint.md
+│   │   │   ├── security-master-passport-workbench.md
+│   │   │   ├── w10-mark-001-fail-closed-marks.md
+│   │   │   └── web-ui-report-run-stream-blueprint-2026-07.md
+│   │   ├── plans
+│   │   │   ├── god-file-burn-down-plan.md
+│   │   │   ├── README.md
+│   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
+│   │   │   └── wpf-web-ui-alignment-plan.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
 │   │   ├── etl-execution-ownership.md
@@ -1885,15 +1891,21 @@ Meridian-main
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
 │   │   ├── README.md
 │   │   ├── report-writer-auto-preview-blueprint.md
-│   │   ├── research-backtest-trust-and-velocity-blueprint.md
-│   │   └── security-master-passport-workbench.md
+│   │   └── research-backtest-trust-and-velocity-blueprint.md
 │   ├── product
+│   │   ├── plans
+│   │   │   ├── adversarial-review-2026-08-remediation-plan.md
+│   │   │   ├── next-work-determination-2026-09-27.md
+│   │   │   ├── product-roadmap-priorities-2026-07.md
+│   │   │   ├── production-readiness-backlog-2026-08.md
+│   │   │   ├── README.md
+│   │   │   ├── w10-depth-slate-2026-07.md
+│   │   │   └── w9-close-out-delivery-plan-2026-08.md
 │   │   ├── adversarial-program-review-2026-07.md
 │   │   ├── adversarial-program-review-2026-08-18.md
 │   │   ├── adversarial-program-review-2026-08-24.md
 │   │   ├── adversarial-program-review-2026-08-25.md
 │   │   ├── adversarial-program-review-2026-08.md
-│   │   ├── adversarial-review-2026-08-remediation-plan.md
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
 │   │   ├── deferred-expansion-boundaries.md
 │   │   ├── excel-onboarding-workbook-brainstorm-2026-07.md
@@ -1901,21 +1913,11 @@ Meridian-main
 │   │   ├── high-value-code-brainstorm-2026-07.md
 │   │   ├── implementation-todo-list.md
 │   │   ├── meridian-design-document.md
-│   │   ├── next-work-determination-2026-09-20.md
-│   │   ├── next-work-determination-2026-09-23.md
-│   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
-│   │   ├── product-roadmap-priorities-2026-07.md
-│   │   ├── production-readiness-backlog-2026-08.md
 │   │   ├── README.md
 │   │   ├── reporting-operating-model-2026-09.md
-│   │   ├── w10-depth-slate-2026-07.md
-│   │   ├── w9-close-out-delivery-plan-2026-08.md
 │   │   ├── w9-demo-002-closure-2026-09-16.md
 │   │   ├── w9-operator-acceptance-2026-08-29.md
-│   │   ├── web-ui-improvements-brainstorm-2026-07.md
-│   │   ├── web-ui-improvements-implementation-plan-2026-07.md
-│   │   ├── web-ui-report-run-stream-blueprint-2026-07.md
-│   │   └── web-ui-stream-fan-out-blueprint-2026-07.md
+│   │   └── web-ui-improvements-brainstorm-2026-07.md
 │   ├── prompts
 │   │   ├── automation-prompts.md
 │   │   ├── README.md

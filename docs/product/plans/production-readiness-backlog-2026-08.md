@@ -4,8 +4,8 @@
 **Owner:** core-team
 **Reviewed:** 2026-08-18
 **Source:** the ranked improvement list of the
-[Adversarial Program Review (2026-08-18)](adversarial-program-review-2026-08-18.md), which re-tests
-the [2026-08-10 pass](adversarial-program-review-2026-08.md) and its
+[Adversarial Program Review (2026-08-18)](../adversarial-program-review-2026-08-18.md), which re-tests
+the [2026-08-10 pass](../adversarial-program-review-2026-08.md) and its
 [remediation plan](adversarial-review-2026-08-remediation-plan.md) against the ~321 commits landed
 since. Independently re-verified against current source on 2026-08-18.
 

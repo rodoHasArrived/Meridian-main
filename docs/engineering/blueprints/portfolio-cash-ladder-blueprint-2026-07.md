@@ -9,12 +9,12 @@ below); the persisted-run / per-currency / structured-sourcing phases remain ope
 > selected as the recommended next large-scale update.
 > **Depth mode:** full
 > **Prepared for:** implementation following completion of the `codex/instrument-type-depth` branch.
-> **Registered in:** [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).
+> **Registered in:** [`docs/engineering/blueprints/README.md`](README.md).
 
 The `/api/portfolio/cash-ladder` routes below sit under the existing, shipped `/api/portfolio/...`
 prefix (`UiApiRoutes.PortfolioCashLadder`), so the remaining `runs` surface is additive — no new
 top-level prefix is introduced. See the
-[register's route-prefix convention](../engineering/blueprints/README.md#api-route-prefixes).
+[register's route-prefix convention](README.md#api-route-prefixes).
 
 ---
 
