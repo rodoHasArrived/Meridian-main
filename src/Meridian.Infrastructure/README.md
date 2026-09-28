@@ -44,14 +44,15 @@ their module-registered concrete factories and lifetimes. Attribute metadata alo
 module configuration. External discovery metadata projects module-only corporate-action and
 brokerage families into inventory without constructing them, including when disabled or awaiting
 configuration. Synthetic, Polygon and NYSE compatibility data sources are also recorded.
-OpenFIGI remains
-explicitly excluded from the matrix-backed inventory until that UI contract exposes symbol
-resolution; the resolver itself remains available. Streaming instrument coverage is independently
+OpenFIGI's `ISymbolResolver` remains in the adapter inventory, while the operator matrix
+projects only its six supported surfaces and omits resolver-only rows. Streaming instrument coverage is independently
 declared, so Polygon's Forex/Crypto/Index historical coverage does not advertise unsupported
 streams and synthetic option-chain coverage does not imply option streaming. Explicit exclusions
 also distinguish hosted ingestion, mapper-only, template-only and orchestration families.
-Catalog tests enumerate the actual adapter folders, check interfaces and resolve the compatibility
-data-source slot. `ProviderCompositionTests`, `ProviderCatalogCompositionTests`, and
+Catalog tests compare an explicit provider/capability inventory, enumerate adapter folders,
+audit implemented shared contracts by reflection, and require reasons for excluded families.
+Polygon's corporate-action fetcher, EDGAR reference-data ingestion, and NYSE compatibility
+history retain their explicit exclusions from unsupported shared contracts. `ProviderCompositionTests`, `ProviderCatalogCompositionTests`, and
 `ProviderModuleCompositionTests` exercise application features or the public registration method,
 configured aliases, every declared capability, module factory precedence, and template/mapper
 exclusions. Catalog presence alone does not establish live-provider readiness, and merged granular

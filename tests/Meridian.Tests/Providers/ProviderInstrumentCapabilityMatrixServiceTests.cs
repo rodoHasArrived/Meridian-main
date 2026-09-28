@@ -10,20 +10,23 @@ namespace Meridian.Tests.Providers;
 
 /// <summary>
 /// Guards the provider × instrument-type capability matrix read-model: every declared
-/// provider appears with a cell per instrument type, capability flags stay grounded in the
+/// market-data provider appears with a cell per instrument type, capability flags stay grounded in the
 /// descriptor catalogs, and discovery failures surface alongside the grid.
 /// </summary>
 public sealed class ProviderInstrumentCapabilityMatrixServiceTests
 {
     [Fact]
-    public void GetMatrix_IncludesEveryCatalogProviderWithFullInstrumentCoverage()
+    public void GetMatrix_IncludesEveryMarketDataCatalogProviderWithFullInstrumentCoverage()
     {
         var matrix = new ProviderInstrumentCapabilityMatrixService().GetMatrix();
 
         matrix.InstrumentTypes.Should().BeEquivalentTo(
             InstrumentTypeDescriptorCatalog.All.Select(static descriptor => descriptor.InstrumentType.ToString()));
         matrix.Providers.Select(static row => row.ProviderId).Should().BeEquivalentTo(
-            ProviderCapabilityDescriptorCatalog.Descriptors.Select(static descriptor => descriptor.ProviderId));
+            ProviderCapabilityDescriptorCatalog.Descriptors
+                .Where(static descriptor => descriptor.ProviderId != "openfigi")
+                .Select(static descriptor => descriptor.ProviderId),
+            "OpenFIGI is inventoried as a symbol resolver, which the matrix does not display");
 
         foreach (var row in matrix.Providers)
         {
@@ -98,7 +101,14 @@ public sealed class ProviderInstrumentCapabilityMatrixServiceTests
             cell.SymbolSearch.Should().BeFalse("the synthetic reference catalog has no option instruments");
         }
         synthetic.Cells.Single(cell => cell.InstrumentType == "Equity").SymbolSearch.Should().BeTrue();
-        matrix.Providers.Should().NotContain(row => row.ProviderId == "openfigi",
+    }
+
+    [Fact]
+    public void GetMatrix_SymbolResolverOnlyFamilyRemainsInCatalogWithoutAnEmptyMatrixRow()
+    {
+        var openFigi = ProviderCapabilityDescriptorCatalog.Descriptors.Single(descriptor => descriptor.ProviderId == "openfigi");
+        openFigi.HasSymbolResolver.Should().BeTrue();
+        new ProviderInstrumentCapabilityMatrixService().GetMatrix().Providers.Should().NotContain(row => row.ProviderId == "openfigi",
             "the matrix has no symbol-resolution surface and must not render a misleading empty row");
     }
 
