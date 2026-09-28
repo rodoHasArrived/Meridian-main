@@ -20,6 +20,13 @@ public static partial class AtomicFileWriter
     // sidecar) with U+FEFF, which token-splitting readers must not see as part of the content.
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
+    // Bound lock storage while coordinating equivalent destination paths within this process.
+    // Only the synchronous Windows publication step is serialized; writing/flushing each
+    // independent temporary file remains concurrent.
+    private static readonly object[] WindowsPublicationLocks = Enumerable.Range(0, 64)
+        .Select(static _ => new object())
+        .ToArray();
+
     /// <summary>
     /// Atomically writes content to a file.
     /// Uses a temporary file with rename to ensure atomicity.
@@ -53,7 +60,7 @@ public static partial class AtomicFileWriter
             }
 
             ct.ThrowIfCancellationRequested();
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
             SyncDirectory(directory!);
 
             Log.Debug("Atomically wrote {Bytes} bytes to {Path}",
@@ -122,7 +129,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
 
             // Sync the directory to ensure rename is persisted (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -196,7 +203,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
 
             // Sync the directory (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -252,7 +259,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
 
             // Sync directory (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -312,7 +319,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
 
             // Sync the directory to ensure the rename is persisted (post-commit: non-cancellable).
             await SyncCommittedDirectoryAsync(directory!);
@@ -375,7 +382,7 @@ public static partial class AtomicFileWriter
             }
 
             await SyncFileAsync(tempPath, ct);
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
             // post-commit: non-cancellable
             await SyncCommittedDirectoryAsync(directory!);
         }
@@ -454,7 +461,7 @@ public static partial class AtomicFileWriter
             await SyncFileAsync(tempPath, ct);
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
 
             // Write the checksum sidecar atomically (temp + fsync + rename). A bare
             // File.WriteAllTextAsync could leave a torn sidecar on a crash mid-write, which a later
@@ -583,6 +590,74 @@ public static partial class AtomicFileWriter
 
             // Re-throw the original failure with its stack trace intact.
             ExceptionDispatchInfo.Throw(writeException);
+        }
+    }
+
+    private static void PublishTempFile(string tempPath, string destinationPath)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            File.Move(tempPath, destinationPath, overwrite: true);
+            return;
+        }
+
+        var fullDestinationPath = Path.GetFullPath(destinationPath);
+        var lockIndex = (StringComparer.OrdinalIgnoreCase.GetHashCode(fullDestinationPath) & int.MaxValue)
+            % WindowsPublicationLocks.Length;
+        lock (WindowsPublicationLocks[lockIndex])
+        {
+            // ReplaceFile and its failure recovery must not overlap another publication to
+            // this destination. In particular, competing replacements can move the old
+            // destination to a backup and then fail to install either replacement.
+            PublishWindowsTempFile(tempPath, fullDestinationPath);
+        }
+    }
+
+    private static void PublishWindowsTempFile(string tempPath, string destinationPath)
+    {
+        try
+        {
+            File.Move(tempPath, destinationPath, overwrite: true);
+        }
+        catch (UnauthorizedAccessException) when (File.Exists(destinationPath))
+        {
+            // Windows MoveFileEx can refuse an open destination even when its readers allow
+            // FileShare.Delete. ReplaceFile supports those readers: they retain their opened
+            // generation while subsequent opens see the complete replacement.
+            var backupName = $".atomic-recovery.{Guid.NewGuid():N}.tmp";
+            var backupPath = Path.Combine(Path.GetDirectoryName(destinationPath)!, backupName);
+            try
+            {
+                // A backup protects the old generation if ReplaceFile fails partway through
+                // publication. Do not ignore metadata/ACL errors or delete the destination first.
+                File.Replace(tempPath, destinationPath, backupPath);
+            }
+            catch
+            {
+                if (File.Exists(backupPath) && !File.Exists(destinationPath))
+                {
+                    try
+                    {
+                        // Never overwrite a generation another writer may have published.
+                        File.Move(backupPath, destinationPath);
+                    }
+                    catch (Exception restoreException)
+                    {
+                        // Do not log caller-controlled paths or exception text that embeds
+                        // them. The generated name identifies the retained recovery file.
+                        Log.Error(
+                            "Failed to restore interrupted atomic publication (error {ErrorCode}); " +
+                            "its previous generation is retained in {BackupName}",
+                            restoreException.HResult, backupName);
+                    }
+                }
+
+                // Retain any un-restored backup for recovery and preserve the publication error.
+                throw;
+            }
+
+            // Publication has committed; backup cleanup must not turn success into a failed write.
+            TryDeleteFile(backupPath);
         }
     }
 
