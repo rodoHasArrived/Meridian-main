@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services.Services;
 using ProviderCatalogEntry = Meridian.Ui.Services.Services.ProviderCatalogEntry;
 using WpfServices = Meridian.Wpf.Services;
@@ -25,6 +26,13 @@ public sealed class CredentialEntryViewModel : BindableBase
     public string CredentialType { get; init; } = string.Empty;
     public bool HasCredentials { get; set; }
     public bool RequiresCredentials { get; init; }
+
+    /// <summary>
+    /// Vault field schema the credential service reported for this connection, or null until a
+    /// status read supplies it. Editors use these names; the local catalog's names are not the
+    /// vault schema (Tiingo's local field is "Token", the vault accepts "ApiKey").
+    /// </summary>
+    public System.Collections.Generic.IReadOnlyList<ProviderCredentialFieldMetadataDto>? ServiceFields { get; set; }
 
     public string StatusText
     {
@@ -245,6 +253,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         if (version != _credentialLoadVersion || statusVersion != _selectedStatusVersion || !ReferenceEquals(SelectedCredential, selected) || selected.IsTesting)
             return;
         var status = statuses.FirstOrDefault(item => item.ProviderId == selected.ProviderId);
+        selected.ServiceFields = status?.CredentialFields;
         selected.HasCredentials = status?.State is CredentialState.Configured or CredentialState.Partial;
         selected.StatusText = status?.StatusMessage ?? "Credential status is unavailable from the service.";
         selected.StatusColor = status?.State == CredentialState.Configured ? "#3FB950" : "#AABCCD";
@@ -257,16 +266,23 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         EditFields.Clear();
         IsTestResultVisible = false;
 
-        var catalog = _settingsService.GetProviderCatalog();
-        var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
-        if (provider is null)
-            return;
-
         EditPanelTitle = SelectedCredential.HasCredentials
             ? $"Edit credentials — {SelectedCredential.DisplayName}"
             : $"Add credentials — {SelectedCredential.DisplayName}";
 
-        if (provider.CredentialFields.Length == 0)
+        var serviceFields = SelectedCredential.ServiceFields;
+        if (serviceFields is null)
+        {
+            // Informational rows have no FieldName, so Save never submits them.
+            EditFields.Add(new CredentialFieldViewModel
+            {
+                Label = "Credential fields unavailable",
+                EnvVarName = string.Empty,
+                IsSecret = false,
+                Value = "The credential service has not reported the fields for this connection. Refresh and try again."
+            });
+        }
+        else if (serviceFields.Count == 0)
         {
             EditFields.Add(new CredentialFieldViewModel
             {
@@ -278,20 +294,14 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         }
         else
         {
-            foreach (var field in provider.CredentialFields)
+            foreach (var field in serviceFields)
             {
-                var envVar = field.EnvironmentVariable ?? string.Empty;
-                var isSecret = field.DisplayName.Contains("secret", StringComparison.OrdinalIgnoreCase)
-                    || field.Name.Contains("secret", StringComparison.OrdinalIgnoreCase)
-                    || field.Name.Contains("token", StringComparison.OrdinalIgnoreCase)
-                    || field.Name.Contains("key", StringComparison.OrdinalIgnoreCase);
-
                 EditFields.Add(new CredentialFieldViewModel
                 {
-                    Label = field.DisplayName,
-                    EnvVarName = envVar,
+                    Label = field.Label,
+                    EnvVarName = field.Name,
                     FieldName = field.Name,
-                    IsSecret = isSecret,
+                    IsSecret = field.InputKind == ProviderCredentialInputKindDto.Password,
                     Value = string.Empty
                 });
             }

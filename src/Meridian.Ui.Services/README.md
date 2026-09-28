@@ -24,6 +24,8 @@ to retained scoped ownership. Fixed failure messages do not echo secrets or serv
 A 401 or 403 refusal throws `CredentialServiceRefusedException`, a subclass of the existing
 `InvalidOperationException`, whose message states that credential changes need a signed-in account
 with a tenant assignment and ManageCredentials. Nothing falls back to a local or environment store.
+Each `ProviderCredentialStatus` carries the vault field schema the service reported for that provider,
+or null when the service reported none; editors must use those names rather than the local catalog's.
 
 `SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
 credential states. Missing, ambiguous or refused responses remain unavailable, even when environment

@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.ViewModels;
-using CredentialFieldInfo = Meridian.Contracts.Api.CredentialFieldInfo;
+using Meridian.Contracts.Configuration;
 using ProviderCatalogEntry = Meridian.Ui.Services.Services.ProviderCatalogEntry;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -28,6 +28,12 @@ public partial class AddProviderWizardPage : Page
     private readonly AddProviderWizardViewModel _viewModel;
 
     private ProviderCatalogEntry? _selectedProvider;
+    private IReadOnlyList<ProviderCredentialStatus> _credentialStatuses = [];
+
+    // The vault field schema the credential service reported for the selected provider, or null
+    // when it reported none (the provider is not vault-managed, or the status read failed).
+    // Editors are built from this schema, never from the local catalog, whose field names differ.
+    private IReadOnlyList<ProviderCredentialFieldMetadataDto>? _serviceFields;
 
     // True while a Test or Save awaits the credential service. Provider selection and the other
     // wizard command are ignored until it completes, so results and shared inputs cannot be
@@ -53,6 +59,7 @@ public partial class AddProviderWizardPage : Page
     {
         var providers = _settingsConfigService.GetProviderCatalog();
         var credentialStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync();
+        _credentialStatuses = credentialStatuses;
 
         _viewModel.LoadProviderCatalog(providers, credentialStatuses);
         _viewModel.CurrentStep = 1;
@@ -87,37 +94,39 @@ public partial class AddProviderWizardPage : Page
     private void BuildCredentialFields()
     {
         CredentialFieldsPanel.Children.Clear();
+        _serviceFields = null;
 
         if (_selectedProvider == null)
             return;
 
-        _viewModel.ApplyCredentialsInfo(_selectedProvider.DisplayName, _selectedProvider.CredentialFields.Length > 0);
-
-        if (_selectedProvider.CredentialFields.Length == 0)
+        _serviceFields = FindStatus(_credentialStatuses, _selectedProvider)?.CredentialFields;
+        if (_serviceFields is null)
+        {
+            _viewModel.ApplyUnmanagedCredentialsInfo(_selectedProvider.DisplayName, LocalCatalogRequiresCredentials(_selectedProvider));
             return;
+        }
 
-        foreach (var field in _selectedProvider.CredentialFields)
+        _viewModel.ApplyCredentialsInfo(_selectedProvider.DisplayName, _serviceFields.Count > 0);
+
+        foreach (var field in _serviceFields)
         {
             // Editors start blank: secrets are never read back from the vault or the process
             // environment, and a blank field keeps whatever value the vault already retains.
-            var automationKey = field.EnvironmentVariable ?? field.Name;
-            var isSecret = IsSecretCredentialField(field);
-
             var label = new TextBlock
             {
-                Text = field.DisplayName,
+                Text = field.Label,
                 Style = (Style)FindResource("FormLabelStyle"),
                 Margin = new Thickness(0, 0, 0, 4),
             };
 
-            FrameworkElement input = isSecret
+            FrameworkElement input = field.InputKind == ProviderCredentialInputKindDto.Password
                 ? new SecretInputControl
                 {
                     Secret = string.Empty,
                     Tag = field.Name,
-                    InputAutomationId = $"AddProviderCredentialInput_{automationKey}",
-                    RevealAutomationId = $"AddProviderCredentialReveal_{automationKey}",
-                    InputAutomationName = field.DisplayName,
+                    InputAutomationId = $"AddProviderCredentialInput_{field.Name}",
+                    RevealAutomationId = $"AddProviderCredentialReveal_{field.Name}",
+                    InputAutomationName = field.Label,
                     RevealAutomationName = "Show or hide provider credential",
                     RevealToolTip = "Show or hide provider credential",
                 }
@@ -150,14 +159,30 @@ public partial class AddProviderWizardPage : Page
         if (provider == null || _operationInProgress)
             return;
 
-        if (provider.CredentialFields.Length == 0)
+        var serviceFields = _serviceFields;
+        if (serviceFields is null)
         {
+            if (LocalCatalogRequiresCredentials(provider))
+            {
+                _viewModel.SetConnectionTestError(UnmanagedCredentialsMessage(provider));
+                return;
+            }
+
             _viewModel.SetConnectionTestSuccess();
             _viewModel.CurrentStep = 3;
             return;
         }
 
         var fields = CollectEnteredCredentialFields();
+        if (fields.Count == 0 && !serviceFields.Any(field => field.Required))
+        {
+            // The vault needs no credentials for this provider (for example Interactive Brokers,
+            // whose host and port are connection settings), so there is nothing to verify.
+            _viewModel.SetConnectionTestSuccess();
+            _viewModel.CurrentStep = 3;
+            return;
+        }
+
         _operationInProgress = true;
         _viewModel.SetConnectionTestTesting(provider.DisplayName);
         try
@@ -200,10 +225,31 @@ public partial class AddProviderWizardPage : Page
         if (backfillOptions is not null && int.TryParse(PriorityBox.Text, out var priority) && priority >= 0)
             backfillOptions.Priority = priority;
 
+        var serviceFields = _serviceFields;
+        if (serviceFields is null && LocalCatalogRequiresCredentials(provider))
+        {
+            _viewModel.SetSaveError(UnmanagedCredentialsMessage(provider));
+            return;
+        }
+
         _operationInProgress = true;
         try
         {
-            await PersistCredentialsAsync(provider, fields);
+            if (fields.Count > 0)
+            {
+                await PersistCredentialsAsync(provider, fields);
+            }
+            else if (serviceFields?.Any(field => field.Required) == true)
+            {
+                // Nothing was entered, so success depends on credentials the vault already holds.
+                // Re-read the service rather than trusting the status captured when the page opened.
+                var current = FindStatus(await _settingsConfigService.GetProviderCredentialStatusesAsync(), provider);
+                if (current?.State != CredentialState.Configured)
+                {
+                    _viewModel.SetSaveError("Enter the required credentials. The credential service reports none saved for this provider.");
+                    return;
+                }
+            }
 
             if (backfillOptions is not null)
                 await _configService.SetBackfillProviderOptionsAsync(provider.Id, backfillOptions);
@@ -257,13 +303,13 @@ public partial class AddProviderWizardPage : Page
         return fields;
     }
 
-    private static bool IsSecretCredentialField(CredentialFieldInfo field)
-    {
-        return field.DisplayName.Contains("secret", StringComparison.OrdinalIgnoreCase)
-            || field.DisplayName.Contains("token", StringComparison.OrdinalIgnoreCase)
-            || field.DisplayName.Contains("key", StringComparison.OrdinalIgnoreCase)
-            || field.Name.Contains("secret", StringComparison.OrdinalIgnoreCase)
-            || field.Name.Contains("token", StringComparison.OrdinalIgnoreCase)
-            || field.Name.Contains("key", StringComparison.OrdinalIgnoreCase);
-    }
+    private static ProviderCredentialStatus? FindStatus(IReadOnlyList<ProviderCredentialStatus> statuses, ProviderCatalogEntry provider)
+        => statuses.FirstOrDefault(status => string.Equals(status.ProviderId, provider.Id, StringComparison.OrdinalIgnoreCase));
+
+    private static bool LocalCatalogRequiresCredentials(ProviderCatalogEntry provider)
+        => provider.CredentialFields.Any(field => field.Required);
+
+    private static string UnmanagedCredentialsMessage(ProviderCatalogEntry provider)
+        => $"{provider.DisplayName} credentials are not managed by the authenticated credential service, or its status " +
+           "could not be read, so they cannot be saved from this wizard.";
 }

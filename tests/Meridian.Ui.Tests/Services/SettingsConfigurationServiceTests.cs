@@ -131,6 +131,23 @@ public sealed class SettingsConfigurationServiceTests
         error.Which.Message.Should().Contain("not confirmed").And.Contain("tenant").And.NotContain("private-test-value");
     }
 
+    [Fact]
+    public async Task ServerCredentialStatus_CarriesTheVaultFieldSchemaOnlyWhenReported()
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK,
+            "[{\"providerId\":\"tiingo\",\"credentialState\":1,\"credentialFields\":[{\"name\":\"ApiKey\",\"label\":\"API key\",\"required\":true,\"inputKind\":1}]}," +
+            "{\"providerId\":\"alpaca\",\"credentialState\":1}]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync();
+
+        var tiingo = statuses.Single(s => s.ProviderId == "tiingo");
+        tiingo.HasServiceFieldSchema.Should().BeTrue();
+        tiingo.CredentialFields!.Should().ContainSingle().Which.Name.Should().Be("ApiKey");
+        statuses.Single(s => s.ProviderId == "alpaca").HasServiceFieldSchema.Should().BeFalse();
+        statuses.Where(s => s.ProviderId is not ("tiingo" or "alpaca")).Should().OnlyContain(s => !s.HasServiceFieldSchema,
+            "providers the service did not report have no vault schema");
+    }
+
     [Theory]
     [InlineData(3, CredentialState.Configured)]
     [InlineData(4, CredentialState.Configured)]

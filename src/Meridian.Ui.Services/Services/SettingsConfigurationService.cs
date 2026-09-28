@@ -245,7 +245,7 @@ public sealed class SettingsConfigurationService
                 CredentialState.Missing => "Credentials are missing or require correction",
                 _ => "Credential status is unavailable from the service."
             };
-            return new ProviderCredentialStatus(provider.Id, provider.DisplayName, state, message, []);
+            return new ProviderCredentialStatus(provider.Id, provider.DisplayName, state, message, [], row.CredentialFields);
         }).ToArray();
     }
 
@@ -624,4 +624,13 @@ public sealed record ProviderCredentialStatus(
     string DisplayName,
     CredentialState State,
     string StatusMessage,
-    string[] MissingEnvVars);
+    string[] MissingEnvVars,
+    IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null)
+{
+    /// <summary>
+    /// True when the authenticated credential service reported this provider together with the
+    /// field names its vault accepts. Editors must use these names; the local provider catalog's
+    /// field names are not the vault schema.
+    /// </summary>
+    public bool HasServiceFieldSchema => CredentialFields is not null;
+}

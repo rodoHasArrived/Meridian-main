@@ -386,6 +386,18 @@ public sealed class AddProviderWizardViewModel : BindableBase
     }
 
     /// <summary>Transitions the connection-test dot to the "testing" (warning) state.</summary>
+    /// <summary>
+    /// Explains that the credential service reported no vault schema for this provider, so the
+    /// wizard shows no editors instead of submitting field names the vault would reject.
+    /// </summary>
+    public void ApplyUnmanagedCredentialsInfo(string providerName, bool requiresCredentials)
+    {
+        CredentialsInfoText = requiresCredentials
+            ? $"{providerName} credentials are not managed by the authenticated credential service, or its status could not be read."
+            : $"{providerName} does not require API credentials.";
+        NoCredentialsVisibility = requiresCredentials ? Visibility.Collapsed : Visibility.Visible;
+    }
+
     public void SetConnectionTestTesting(string providerName)
     {
         ConnectionTestDotBrush = WarningBrush;

@@ -36,7 +36,13 @@ start blank, and a test reports success only when the service verifies the crede
 unverified credentials are shown as a warning. Every provider and credential endpoint requires tenant
 scope, so a company-less desktop account sees an explicit refusal naming that requirement. While a test
 or save awaits the service, provider selection and the other command are ignored, and backfill inputs
-are captured before the first await. The settings shell counts unavailable credential status
+are captured before the first await. The wizard and credential management build their editors from the
+vault field schema the service reports with each status row, not from the local provider catalog, whose
+names differ (Tiingo's local field is `Token`, the vault accepts `ApiKey`). A provider the service reports
+without a schema, such as NYSE, shows no editors and cannot be saved from the wizard. A provider whose
+schema has no required fields, such as Interactive Brokers, tests as ready without a verification call. A
+blank save for a provider with required fields succeeds only when the service reports credentials already
+configured. The settings shell counts unavailable credential status
 separately from missing credentials, so a refused or failed status read is shown as unknown readiness.
 The setup-wizard state service and the Backfill page still write environment variables and remain
 separate cutover work.
