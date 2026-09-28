@@ -51,10 +51,10 @@ Each checked against current source today, not against its own record:
 | ~1 GB consumer installer decision | tracker line 107 | **Unchanged.** `Meridian-Setup.exe` still recorded at 1,043,350,783 bytes, still "a product decision to revisit" |
 | Tenancy fail-closed default (Tier 1, `W9-GOV-008`) | `TenantScopeServiceRegistration.cs:16-18` | **Unchanged.** Default is still `DeploymentBoundary`, still selectable by environment variable alone, still no configuration key |
 | `W9-GOV-008` row hygiene | `roadmap-items.yml:1235` | **Worse.** `last_reviewed: 2026-08-29` is now 30 days stale; the self-contradicting remainder clause is still there |
-| Statement/reconciliation PostgreSQL round trip (Tier 2) | `grep -rl "LedgerDatabaseFact" tests/ \| grep -i "statement\|reconcil\|ingest"` | **Unchanged. Still no matches.** Nothing proves that path on PostgreSQL |
-| `.gitattributes` merge driver (Tier 3) | `cat .gitattributes` | **Unchanged.** Two rules, both `text`; no merge driver for any generated tree |
+| Statement/reconciliation PostgreSQL **round trip** (Tier 2) | `grep -rho "\[[A-Za-z]*DatabaseFact\]" tests/ \| sort -u`, then the statement/reconciliation subset | **Gap is narrower than the 2026-09-27 document said.** That document probed only `LedgerDatabaseFact`; there are **seven** `*DatabaseFact` attributes, and statement/reconciliation rows *are* covered on PostgreSQL — `StatementReconciliationReportAuthorityStoreTests.cs`, and `PostgresFundAccountStoreTests.cs` for atomic/idempotent custodian-statement persistence and rollback. What is missing is the **end-to-end import → journal-sourced ledger → deterministic match → casework round trip**, not database coverage as such |
+| Generated-tree merge remedy (Tier 3) | `cat .gitattributes`; `docs/engineering/docs-regeneration-automation-design.md:263-267` | **The carried-forward remedy was the wrong one.** `.gitattributes` still has two `text` rules and no driver — but the repository has already **formally rejected** a `.gitattributes` driver for this exact workflow. The remedy is the documented resolve-and-regenerate command, not a driver |
 | `W9-CORPACT-011` acceptance (Tier 4) | `roadmap-items.yml:1335` | **Unchanged.** Still `ready_for_acceptance`, now **6 days** |
-| `W10-LOT-002` "shadow-operation acceptance" (Tier 5) | `grep -rli "shadow.operation" src/ tests/` | **Unchanged. Still zero hits.** A criterion on the slate's only `critical` row that exists nowhere in the tree |
+| `W10-LOT-002` "shadow-operation acceptance" (Tier 5) | `grep -rli "shadow" docs/engineering/blueprints/`; `security-lot-convergence-blueprint.md:252-253` | **The 2026-09-27 reading was wrong, and so was mine.** The `src/`+`tests/` grep returns nothing, but that probe never searched `docs/`. Step 5 of the roadmap-linked lot-convergence blueprint **defines** shadow operation: dual-project legacy and canonical results, block cutover on quantity, basis, relief, amortization or corporate-action differences. It is **unimplemented, not unscoped** |
 
 Nine re-verifications, nine unchanged. That is the finding, and it is why this document is short:
 re-arguing a ranking that nothing has acted on would be noise. What follows is only what is new.
@@ -113,11 +113,25 @@ Two changes in one day, and they point in opposite directions:
   `docs/roadmap/data/roadmap-items.yml`, and it appeared purely because `main` moved underneath it.
   Nothing was done to #3004.
 
-That second line is the merge-driver argument acquiring its own measurement. The last document
-argued from churn volume — 1,820 touch events across 1,452 distinct paths in 30 days over 118
-tracked asset files, all still true today. **#3004 is the same argument observed happening**:
-a branch got harder to merge in twenty-four hours of documentation-only commits. The queue decays
-whether or not anyone works it.
+That second line measures the decay the last three documents argued from churn volume — 1,820
+touch events across 1,452 distinct paths in 30 days over 118 tracked asset files, all still true
+today. **#3004 is that argument observed happening**: a branch got harder to merge in twenty-four
+hours of documentation-only commits. The queue decays whether or not anyone works it.
+
+**But the remedy those documents proposed does not work, and the repository already said so.**
+The `.gitattributes` merge driver carried forward since 2026-09-23 is listed under **Rejected
+alternatives** in `docs/engineering/docs-regeneration-automation-design.md:263-267`: "A custom
+driver runs only where `merge.<driver>.driver` is configured locally, and GitHub's server-side
+merge inherits no contributor configuration, so it would never run for the normal pull-request
+merge this work exists to fix." `docs/engineering/generated-merge-recovery.md:71-75` says the same
+and explains why an explicit command exists instead. So the recommendation was for a mechanism that
+cannot act on the merges being measured — the decay is real, the proposed fix was not.
+
+**The remedy is the resolve-and-regenerate command that `generated-merge-recovery.md` already
+documents**, or the hosted automation its design note describes. This is not theory: resolving
+*this* document's own base-merge conflict is exactly what worked — take the base side of the
+generated status files, re-run `run-docs-automation.py --profile core`, verify both sides survive.
+That is the drain procedure, and it needs no `.gitattributes` change at all.
 
 Current hand-written conflict counts, generated trees excluded:
 
@@ -165,12 +179,22 @@ The 2026-09-27 ranking stands as written for:
 - **Tier 1 (that document's)** — `W9-GOV-008`: backfill, promote `FailClosed` to the supported
   default with a real configuration key, add the rejection regressions, record the posture in the
   support matrix. Still sequenced with Tier 0 because `PRD-000` must declare this posture.
-- **Tier 2 (that document's)** — `StatementReconciliationPostgresRoundTripTests`. Still the highest-value
-  engineering item; still nothing covering that path on PostgreSQL; the identical gap held
-  `W9-CORPACT-011` and its round trip found two real defects.
+- **Tier 2 (that document's)** — `StatementReconciliationPostgresRoundTripTests`, still the
+  highest-value engineering item, but **stated correctly**: the gap is the end-to-end round trip,
+  not database coverage. Statement rows already have PostgreSQL evidence
+  (`StatementReconciliationReportAuthorityStoreTests.cs`, `PostgresFundAccountStoreTests.cs`);
+  what is missing is import → journal-sourced ledger → deterministic match → casework in one test
+  over the real stores. The identical *round-trip* gap held `W9-CORPACT-011`, and closing it found
+  two real defects.
 - **Tier 4** — take or decline `W9-CORPACT-011`. Zero engineering. Now six days.
 - **Tier 5** — `W10-SEAM-001` then `W10-MARK-001` live certification; continue `W10-LOT-002` on
-  successors and advance refunding; **scope or drop "shadow-operation acceptance."**
+  successors and advance refunding. **Correcting 2026-09-27 and my own first pass: do not drop
+  "shadow-operation acceptance."** Both readings grepped only `src/` and `tests/` and concluded the
+  criterion was undefined. It is defined — `security-lot-convergence-blueprint.md:252-253`, step 5
+  of the convergence sequence — so it is implementation-and-test work. Dropping it would remove the
+  stage that blocks a lot-model cutover on quantity, basis, relief, amortization and
+  corporate-action differences, which is the one gate standing between a canonical-lot cutover and
+  silent basis corruption.
 
 ## What not to work on
 
@@ -181,27 +205,49 @@ ten planned W10 rows (`W10-RECON-001`, `W10-PROV-001`, `W10-RECON-002`, `W10-JRN
 eight), no re-cutting the large stranded branches except #2789, no untracking the
 built asset tree, no re-litigating accepted W9 rows, no re-proving the certification lane.
 
-One addition: **do not treat "the list did not change" as permission to skip the list.** Nine
+One addition: **do not treat "the list did not change" as permission to skip the list.** The
 re-verifications came back identical because nothing was acted on, not because the items resolved
-themselves. Two of them — the tenancy default and the missing PostgreSQL round trip — are open
-correctness exposure, and one is a `critical` row carrying a criterion that exists nowhere in source.
+themselves. The tenancy default and the missing end-to-end reconciliation round trip are both open
+correctness exposure.
+
+## A note on method, because this document got several things wrong
+
+Review of this document found eleven defects, and the pattern behind the worst of them is worth
+recording so the next determination avoids it. **Three came from probing too narrow a surface and
+reporting the null result as fact:**
+
+- "No PostgreSQL coverage of statement/reconciliation" came from grepping one attribute name.
+  There are seven `*DatabaseFact` attributes and the coverage exists; the real gap was narrower.
+- "Shadow-operation acceptance exists nowhere in the tree" came from grepping `src/` and `tests/`
+  but never `docs/`. It is defined in a roadmap-linked blueprint. Acting on that reading would have
+  deleted a specified pre-cutover safety gate.
+- The merge-driver remedy was carried forward for three documents without checking whether the
+  repository had already evaluated it. It had — under **Rejected alternatives**, for this exact
+  workflow.
+
+**A grep that returns nothing is evidence about the grep, not about the repository.** Before a
+determination states that something does not exist, it should search the documentation tree and the
+design notes, not just source and tests — and before it recommends a mechanism, it should check
+whether that mechanism has already been considered and rejected here. Four further defects were
+miscounts inherited verbatim from 2026-09-27 and republished under a headline claiming
+re-verification; a carried-forward claim is a claim, and re-verification has to include it.
 
 ## Summary
 
 | Priority | Work | Why now |
 | --- | --- | --- |
-| P0 | Provide `MDC_SIGNING_CERT_PFX_BASE64` in the protected `desktop-release-signing` environment | Hard prerequisite for **freezing and running the signed RC**, not for the rest of Tier 0; not engineering work. Everything else below can proceed while the credential is outstanding |
+| P0 | Provide **both** `MDC_SIGNING_CERT_PFX_BASE64` **and `MDC_SIGNING_CERT_PASSWORD`** in the protected `desktop-release-signing` environment | Hard prerequisite for **freezing and running the signed RC**, not for the rest of Tier 0; not engineering work. The 2026-09-27 document named only the PFX: the password is passed to Authenticode signing (`desktop-installer-packaging.yml:383,389`) and into installed lifecycle certification (`:483,492`), where `certify-desktop-install-lifecycle.ps1:177` imports the PFX with it, and the tracker names both (`implementation-todo-list.md:120-122`). Provisioning only the PFX leaves the tag workflow unable to sign or import a password-protected certificate. Everything else below can proceed while they are outstanding |
 | P0 | Decide the ~1 GB consumer installer question | It ships inside the RC; decide before the tag |
 | P0 | **Drain the six eligible zero-conflict dependency PRs before the freeze** (seven are clean; #2878 is held back) | The RC freezes the dependency set; bumping after the tag invalidates the same-commit evidence the tag exists to mint. Oldest has been open 73 days |
 | P0 | Freeze a commit, cut `v0.1.0-rc.1`, **and separately dispatch `Publish Smoke` at the tagged SHA** | Still no `v*` tag in the repository. The tag run does not mint everything: `publish-smoke.yml:3` is `workflow_dispatch`-only, so `PRD-013`'s `web-workstation`/`win-x64` evidence needs its own dispatch at the frozen commit. `0b956b06` is green on run #98 |
 | P0 | Backfill tenancy; make `FailClosed` the supported default with a real config key; add the rejection regressions | Re-verified today: still env-var-only, still defaults open. The one `W9-GOV-008` remainder |
-| P0 | Add `StatementReconciliationPostgresRoundTripTests` | Re-verified today: still zero PostgreSQL coverage of statement/reconciliation |
+| P0 | Add `StatementReconciliationPostgresRoundTripTests` | Corrected scope: statement rows **do** have PostgreSQL coverage (`StatementReconciliationReportAuthorityStoreTests.cs`, `PostgresFundAccountStoreTests.cs`). The gap is the **end-to-end round trip** — import → journal-sourced ledger → deterministic match → casework — over the real stores |
 | P1 | **Merge #2998 — it conflicts with nothing today** | Cheapest merge in the queue, in-scope accounting work, and clean merges do not stay clean |
 | P1 | Take or decline `W9-CORPACT-011` (6 days) | Zero engineering; clears the last W9 acceptance lane |
-| P1 | Resolve the two shared operations-continuity fixtures once on `main`; drain the five generated-only branches | One resolution converts #2929 and #2930; the other five need no product decision |
-| P1 | Add the `.gitattributes` merge driver — **over generator-owned paths only, excluding `src/*/README.md`** | #3004 got harder to merge in one day of documentation-only commits; the decay is now measured, not projected. Narrowing the 2026-09-27 path list: `docs/documentation-ownership.md:21` classifies registered `src/**/README.md` as source-module truth, not generated output, so an ours-style driver there could silently discard real README changes |
+| P1 | Resolve the two shared operations-continuity fixtures once on `main`; drain the **four** remaining generated-only branches (#2928, #2920, #2953, #2896) | One resolution converts #2929 and #2930; the four need no product decision. The baseline table listed five — **#2999 merged in `80219e32`** and has left the queue |
+| P1 | **Adopt the documented resolve-and-regenerate command** for generated-tree conflicts — **not** a `.gitattributes` merge driver | #3004 got harder to merge in one day of documentation-only commits, so the decay is measured, not projected. But `docs-regeneration-automation-design.md:263-267` lists a custom driver under **Rejected alternatives** — it runs only where configured locally and never during GitHub's server-side merge, i.e. never for the merges being measured. `generated-merge-recovery.md:71-75` says the same and documents the command instead. Two further reasons the old path list was wrong: it covered `src/*/README.md`, which `documentation-ownership.md:21` classifies as source-module truth rather than generated output, so an ours-style driver there could silently discard real README changes |
 | P2 | Read #3010 and #2931 together before merging either | #3010 is a live successor; merging both lands the same change twice |
 | P2 | Schedule `W10-SEAM-001` live certification, then `W10-MARK-001` | Both one operator session from closing; `SEAM` unblocks the desktop lane |
-| P2 | Continue `W10-LOT-002`; **scope or drop "shadow-operation acceptance"** | Only `critical` row, still carrying a criterion with zero source presence |
+| P2 | Continue `W10-LOT-002`; **implement and test "shadow-operation acceptance" — do not drop it** | Only `critical` row. It is **defined** at `security-lot-convergence-blueprint.md:252-253` (dual-project legacy and canonical, block cutover on quantity/basis/relief/amortization/corporate-action differences); the earlier "no definition anywhere" reading came from grepping `src/` and `tests/` but never `docs/`. Unimplemented, not unscoped — and it is the gate protecting the lot-model cutover |
 | P3 | Correct the `W9-GOV-008` row (self-contradicting remainder, now 30 days stale); close #2983 | Both still misdescribe the program; #2983 was asked to be closed yesterday and is still open |
 | P3 | Hold #2878 and #2587 (major bumps) until after the RC; re-cut #2587 | Majors do not belong in a pre-freeze drain; #2587 spreads 607 conflicts over 1,421 files |
