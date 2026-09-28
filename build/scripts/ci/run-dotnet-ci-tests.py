@@ -26,6 +26,14 @@ from typing import Sequence
 
 CORE_TEST_PROJECT_PATH = "tests/Meridian.Tests/Meridian.Tests.csproj"
 
+# Hosted observations are scheduling hints only. Filters and report order remain
+# authoritative; unknown shards retain their roster order.
+SHARD_DURATION_HINTS = {
+    "core-ui-workstation-endpoints": 307, "core-execution-strategy": 207,
+    "core-ui-other": 205, "core-platform-domain-root": 74, "quantscript": 64,
+    "core-application": 40, "core-remainder": 31,
+}
+
 # Test projects that cannot execute on the ubuntu PR lane and are exercised by the
 # windows-desktop workflows instead: Meridian.Wpf.Tests compiles an empty stub off-Windows
 # (EnableDefaultCompileItems=false) and Meridian.LifecycleSupervisor.Tests targets
@@ -487,6 +495,7 @@ def run_tests(
     results_dir: Path,
     dry_run: bool,
     max_parallel: int = 1,
+    properties: Sequence[str] = (),
 ) -> list[TestResult]:
     if max_parallel < 1:
         raise ValueError("max_parallel must be a positive integer")
@@ -502,6 +511,10 @@ def run_tests(
             test_filter=test_filter,
             results_dir=shard_dir,
         )
+        command.extend(properties)
+        filter_index = command.index("--filter") if "--filter" in command else -1
+        if filter_index >= 0 and not command[filter_index + 1]:
+            del command[filter_index:filter_index + 2]
         with output_lock:
             print(f"Starting {project.name}; log: {log_path}", flush=True)
             if dry_run:
@@ -564,10 +577,12 @@ def run_tests(
                     print(f"Unable to read shard log: {exc}", file=sys.stderr, flush=True)
         return result
 
-    # map preserves roster order in summaries even when shards finish out of order.
+    # Start long shards first when parallel; local sequential runs retain their order.
     # Every submitted shard runs, including after another process fails to launch.
+    scheduled = sorted(projects, key=lambda p: -SHARD_DURATION_HINTS.get(p.name, 0)) if max_parallel > 1 else projects
     with ThreadPoolExecutor(max_workers=max_parallel) as executor:
-        return list(executor.map(run_project, projects))
+        by_name = {result.name: result for result in executor.map(run_project, scheduled)}
+    return [by_name[project.name] for project in projects]
 
 
 def write_summaries(

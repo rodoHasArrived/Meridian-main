@@ -1,50 +1,6 @@
 name: WPF Route Validation
 
 on:
-  pull_request:
-    paths:
-      - "src/Meridian.Wpf/**"
-      - "src/Meridian.Ui.Shared/**"
-      - "src/Meridian.Ui.Services/**"
-      - "src/Meridian.Application/**"
-      - "src/Meridian.Backtesting/**"
-      - "src/Meridian.Contracts/**"
-      - "src/Meridian.Core/**"
-      - "src/Meridian.Identity/**"
-      - "src/Meridian.Infrastructure/**"
-      - "src/Meridian.Platform/**"
-      - "src/Meridian.QuantScript/**"
-      - "src/Meridian.Reporting/**"
-      - "src/Meridian.Storage/**"
-      - "src/Meridian.Strategies/**"
-      - "src/Meridian.Workflow/**"
-      - "tests/Meridian.Wpf.Tests/**"
-      - "scripts/dev/validate-position-blotter-route.ps1"
-      - "scripts/dev/validate-operator-inbox-route.ps1"
-      - ".github/workflows/wpf-route-validation.yml"
-  push:
-    branches:
-      - main
-    paths:
-      - "src/Meridian.Wpf/**"
-      - "src/Meridian.Ui.Shared/**"
-      - "src/Meridian.Ui.Services/**"
-      - "src/Meridian.Application/**"
-      - "src/Meridian.Backtesting/**"
-      - "src/Meridian.Contracts/**"
-      - "src/Meridian.Core/**"
-      - "src/Meridian.Identity/**"
-      - "src/Meridian.Infrastructure/**"
-      - "src/Meridian.Platform/**"
-      - "src/Meridian.QuantScript/**"
-      - "src/Meridian.Reporting/**"
-      - "src/Meridian.Storage/**"
-      - "src/Meridian.Strategies/**"
-      - "src/Meridian.Workflow/**"
-      - "tests/Meridian.Wpf.Tests/**"
-      - "scripts/dev/validate-position-blotter-route.ps1"
-      - "scripts/dev/validate-operator-inbox-route.ps1"
-      - ".github/workflows/wpf-route-validation.yml"
   workflow_dispatch:
 
 permissions:
@@ -64,21 +20,9 @@ env:
 
 jobs:
   route-validation:
-    name: ${{ matrix.route.name }}
+    name: WPF Route Validation
     runs-on: windows-latest
-    timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      matrix:
-        route:
-          - name: Position Blotter Route Validation
-            script: scripts/dev/validate-position-blotter-route.ps1
-            artifact_path: artifacts/wpf-validation/position-blotter-route/
-            artifact_name: position-blotter-route-results
-          - name: Operator Inbox Route Validation
-            script: scripts/dev/validate-operator-inbox-route.ps1
-            artifact_path: artifacts/wpf-validation/operator-inbox-route/
-            artifact_name: operator-inbox-route-results
+    timeout-minutes: 55
 
     steps:
       - name: Check out repository
@@ -96,20 +40,26 @@ jobs:
         uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-wpf-
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v1-
+
+      - name: Set up Python
+        uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.12"
 
       - name: Run route validation
-        shell: pwsh
-        run: ${{ matrix.route.script }}
+        run: >-
+          python build/scripts/ci/run-windows-ci-tests.py
+          --slice position-blotter-route --slice operator-inbox-route
+          --results-dir artifacts/wpf-validation/routes
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: ${{ matrix.route.artifact_name }}-${{ github.run_number }}
-          path: ${{ matrix.route.artifact_path }}
-          if-no-files-found: ignore
+          name: wpf-route-results-${{ github.run_number }}-${{ github.run_attempt }}
+          path: artifacts/wpf-validation/routes/
+          if-no-files-found: error
           retention-days: 14

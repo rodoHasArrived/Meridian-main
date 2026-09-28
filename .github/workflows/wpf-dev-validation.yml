@@ -1,50 +1,6 @@
 name: WPF Dev Loop Validation
 
 on:
-  pull_request:
-    paths:
-      - "src/Meridian.Wpf/**"
-      - "tests/Meridian.Wpf.Tests/**"
-      - "src/Meridian.Application/**"
-      - "src/Meridian.Backtesting/**"
-      - "src/Meridian.Contracts/**"
-      - "src/Meridian.Core/**"
-      - "src/Meridian.Identity/**"
-      - "src/Meridian.Infrastructure/**"
-      - "src/Meridian.Platform/**"
-      - "src/Meridian.QuantScript/**"
-      - "src/Meridian.Reporting/**"
-      - "src/Meridian.Storage/**"
-      - "src/Meridian.Strategies/**"
-      - "src/Meridian.Ui.Services/**"
-      - "src/Meridian.Ui.Shared/**"
-      - "src/Meridian.Workflow/**"
-      - "scripts/dev/desktop-workflows.json"
-      - "scripts/dev/validate-wpf-dev.ps1"
-      - ".github/workflows/wpf-dev-validation.yml"
-  push:
-    branches:
-      - main
-    paths:
-      - "src/Meridian.Wpf/**"
-      - "tests/Meridian.Wpf.Tests/**"
-      - "src/Meridian.Application/**"
-      - "src/Meridian.Backtesting/**"
-      - "src/Meridian.Contracts/**"
-      - "src/Meridian.Core/**"
-      - "src/Meridian.Identity/**"
-      - "src/Meridian.Infrastructure/**"
-      - "src/Meridian.Platform/**"
-      - "src/Meridian.QuantScript/**"
-      - "src/Meridian.Reporting/**"
-      - "src/Meridian.Storage/**"
-      - "src/Meridian.Strategies/**"
-      - "src/Meridian.Ui.Services/**"
-      - "src/Meridian.Ui.Shared/**"
-      - "src/Meridian.Workflow/**"
-      - "scripts/dev/desktop-workflows.json"
-      - "scripts/dev/validate-wpf-dev.ps1"
-      - ".github/workflows/wpf-dev-validation.yml"
   workflow_dispatch:
     inputs:
       build_only:
@@ -96,10 +52,14 @@ jobs:
         uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-wpf-
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v1-
+
+      - name: Set up Python
+        uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.12"
 
       - name: Run WPF dev loop validation
         shell: pwsh
@@ -107,16 +67,10 @@ jobs:
           BUILD_ONLY: ${{ inputs.build_only }}
           TEST_FILTER: ${{ inputs.filter }}
         run: |
-          $devArgs = @{
-            Restore = $true
-          }
-          if ($env:BUILD_ONLY -eq 'true') {
-            $devArgs.BuildOnly = $true
-          }
-          if ($env:TEST_FILTER -ne '') {
-            $devArgs.Filter = $env:TEST_FILTER
-          }
-          & scripts/dev/validate-wpf-dev.ps1 @devArgs
+          $sliceArgs = @('--slice', 'dev-loop', '--results-dir', 'artifacts/wpf-validation/dev-loop')
+          if ($env:BUILD_ONLY -eq 'true') { $sliceArgs += '--build-only' }
+          if ($env:TEST_FILTER) { $sliceArgs += @('--filter', $env:TEST_FILTER) }
+          python build/scripts/ci/run-windows-ci-tests.py @sliceArgs
 
       - name: Upload validation artifacts
         if: always()
