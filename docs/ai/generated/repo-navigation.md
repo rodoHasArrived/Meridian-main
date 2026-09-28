@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-09-21T06:29:51Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-09-28T06:31:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/src/lib/reporting-approval.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-approval.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-certification.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-certification.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-distribution.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-distribution.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-publication.test.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-publication.ts` | Desktop and UI Workflows | `9c01f3f42` (2026-09-16T14:47:04Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 3 |
-| `src/Meridian.Ui/dashboard/src/lib/report-health.test.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/lib/report-health.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.test.tsx` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-lineage-summary.tsx` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-datum.test.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-datum.ts` | Desktop and UI Workflows | `a693b3da2` (2026-09-16T06:33:31Z) | 1 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `2d1621987` (2026-09-28T00:40:02Z) | 3 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `2d1621987` (2026-09-28T00:40:02Z) | 2 |
+| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | `2d1621987` (2026-09-28T00:40:02Z) | 1 |
+| `src/Meridian.QuantScript/README.md` | Backtesting and Strategy Analytics | `2d1621987` (2026-09-28T00:40:02Z) | 1 |
+| `src/Meridian.Execution/Adapters/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
+| `src/Meridian.Execution/Adapters/PaperTradingGatewaySupport.cs` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
+| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `aff38fd00` (2026-09-25T19:49:41-07:00) | 1 |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | Execution, Risk, and Strategies | `dcc87676c` (2026-09-25T18:37:15-07:00) | 1 |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | Execution, Risk, and Strategies | `dcc87676c` (2026-09-25T18:37:15-07:00) | 1 |
+| `src/Meridian.Identity/Application/UserProfileRegistry.cs` | Unmapped | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
+| `src/Meridian.Identity/README.md` | Unmapped | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
+| `src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs` | Desktop and UI Workflows | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `462d4da03` (2026-09-25T14:28:59-07:00) | 2 |
 
