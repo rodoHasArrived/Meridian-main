@@ -16,7 +16,7 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// replacing scattered provider creation logic throughout the codebase.
 /// </remarks>
 [ImplementsAdr("ADR-001", "Unified DI registration for all provider types")]
-public static class ProviderServiceExtensions
+public static partial class ProviderServiceExtensions
 {
     /// <summary>
     /// Adds the provider registry and factory to the service collection.
@@ -39,41 +39,8 @@ public static class ProviderServiceExtensions
         ILogger? log = null,
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? sidecars = null)
     {
-        // Register credential resolver
         services.AddSingleton(credentialResolver);
-
-        // Register provider registry as singleton
-        services.AddSingleton(sp =>
-        {
-            var alertDispatcher = sp.GetService<IAlertDispatcher>();
-            return new ProviderRegistry(alertDispatcher, log);
-        });
-
-        // Register data source registry and module-driven provider registration
-        services.AddSingleton(sp =>
-        {
-            var registry = new DataSourceRegistry(
-                sp.GetService<Microsoft.Extensions.Logging.ILogger<DataSourceRegistry>>());
-
-            // Pre-configure modules from ProviderModules config before discovery so
-            // each module receives resolved credentials before Register() is called.
-            if (config.ProviderModules?.Modules is { Count: > 0 } modules)
-                registry.ConfigureModules(BuildModuleContexts(modules, sidecars));
-
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            registry.DiscoverFromAssemblies(assemblies);
-            registry.RegisterModules(services, assemblies);
-            registry.RegisterServices(services);
-            return registry;
-        });
-
-        // Register provider factory
-        services.AddSingleton(sp => new ProviderFactory(
-            config,
-            sp.GetRequiredService<IProviderCredentialResolver>(),
-            log));
-
-        return services;
+        return services.AddProviderServices(config, _ => config, log, sidecars);
     }
 
     /// <summary>
@@ -83,14 +50,20 @@ public static class ProviderServiceExtensions
     /// <param name="serviceProvider">The built service provider.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The provider creation result.</returns>
-    public static async Task<ProviderCreationResult> InitializeProvidersAsync(
+    public static Task<ProviderCreationResult> InitializeProvidersAsync(
         this IServiceProvider serviceProvider,
         CancellationToken ct = default)
     {
-        var factory = serviceProvider.GetRequiredService<ProviderFactory>();
+        ct.ThrowIfCancellationRequested();
         var registry = serviceProvider.GetRequiredService<ProviderRegistry>();
-
-        return await factory.CreateAndRegisterAllAsync(registry, ct);
+        // Resolving the registry initializes it once. Repeated startup calls must not construct
+        // and discard additional adapters with their own clients, timers, or connections.
+        var result = new ProviderCreationResult();
+        result.BackfillProviders.AddRange(registry.GetProviders<IHistoricalDataProvider>()
+            .Select(provider => ProviderIdentity.NormalizeId(provider.ProviderId)));
+        result.SymbolSearchProviders.AddRange(registry.GetProviders<ISymbolSearchProvider>()
+            .Select(provider => ProviderIdentity.NormalizeId(provider.ProviderId)));
+        return Task.FromResult(result);
     }
 
     /// <summary>
@@ -152,13 +125,16 @@ public static class ProviderServiceExtensions
         Dictionary<string, ProviderModuleSettings> modules,
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? sidecars = null)
     {
-        var result = new Dictionary<string, ProviderModuleContext>(StringComparer.OrdinalIgnoreCase);
+        var result = new Dictionary<string, ProviderModuleContext>(StringComparer.Ordinal);
+        var canonicalSidecars = sidecars?.ToDictionary(
+            pair => ProviderIdentity.NormalizeId(pair.Key), pair => pair.Value, StringComparer.Ordinal);
         foreach (var (moduleId, settings) in modules)
         {
+            var canonicalId = ProviderIdentity.NormalizeId(moduleId);
             var resolvedCredentials = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
             // 1. Sidecar values take priority (actual values saved by the setup UI)
-            if (sidecars is not null && sidecars.TryGetValue(moduleId, out var sidecar))
+            if (canonicalSidecars is not null && canonicalSidecars.TryGetValue(canonicalId, out var sidecar))
             {
                 foreach (var (key, value) in sidecar)
                     if (!string.IsNullOrEmpty(value))
@@ -184,13 +160,13 @@ public static class ProviderServiceExtensions
                     resolvedSettings[key] = value;
             }
 
-            result[moduleId] = new ProviderModuleContext
+            result.Add(canonicalId, new ProviderModuleContext
             {
                 Enabled = settings.Enabled,
                 Priority = settings.Priority,
                 Credentials = resolvedCredentials,
                 Settings = resolvedSettings
-            };
+            });
         }
         return result;
     }
@@ -271,8 +247,8 @@ public static class ProviderAvailabilityExtensions
         var allStatus = streamingStatus
             .Concat(backfillStatus)
             .Concat(searchStatus)
-            .GroupBy(x => x.Key)
-            .ToDictionary(g => g.Key, g => g.First().Value);
+            .GroupBy(x => ProviderIdentity.NormalizeId(x.Key), StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => g.All(status => status.Value), StringComparer.Ordinal);
 
         return new ProviderAvailabilitySummary
         {

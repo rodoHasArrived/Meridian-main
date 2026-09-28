@@ -1,5 +1,6 @@
 using Meridian.Core.Config;
 using Meridian.Contracts.Configuration;
+using Meridian.Infrastructure.Adapters.Core;
 
 namespace Meridian.DataIntegration.Credentials;
 
@@ -71,7 +72,7 @@ public static class ProviderCredentialCatalog
             AffectedWorkflows: ["Historical backfill", "Market data validation"],
             RecommendedActionWhenMissing: "Add the Alpha Vantage API key before using it as a fallback source."),
         new(
-            ProviderId: "nasdaqdatalink",
+            ProviderId: "nasdaq",
             DisplayName: "Nasdaq Data Link",
             Capability: ProviderConnectionCapabilityDto.Data,
             RequiredFields:
@@ -193,7 +194,7 @@ public static class ProviderCredentialCatalog
             RecommendedActionWhenMissing: "Create an IB Activity Flex Query, enable the required sections, and add its token and query ID.",
             ActionHref: "/settings#provider-ib-flex-connection"),
         new(
-            ProviderId: "ib",
+            ProviderId: "ibkr",
             DisplayName: "Interactive Brokers",
             Capability: ProviderConnectionCapabilityDto.DataAndBrokerage,
             RequiredFields: [],
@@ -222,43 +223,6 @@ public static class ProviderCredentialCatalog
             RecommendedActionWhenMissing: "No credential action required for synthetic data.")
     ];
 
-    private static readonly IReadOnlyDictionary<string, string> Aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-    {
-        ["alpaca-brokerage"] = "alpaca",
-        ["alpaca-corp-actions"] = "alpaca",
-        ["alpaca-options"] = "alpaca",
-        ["alphaVantage"] = "alphavantage",
-        ["alpha-vantage"] = "alphavantage",
-        ["alphavantage-corp-actions"] = "alphavantage",
-        ["alphavantage-symbols"] = "alphavantage",
-        ["finnhub-corp-actions"] = "finnhub",
-        ["ibflex"] = "ib-flex",
-        ["ib-flex-web-service"] = "ib-flex",
-        ["nasdaq"] = "nasdaqdatalink",
-        ["nasdaq-corp-actions"] = "nasdaqdatalink",
-        ["nasdaq-data-link"] = "nasdaqdatalink",
-        ["nasdaq-symbols"] = "nasdaqdatalink",
-        ["polygon-options"] = "polygon",
-        ["fred-symbols"] = "fred",
-        ["robinhood-brokerage"] = "robinhood",
-        ["robinhood-live"] = "robinhood",
-        ["robinhood-options"] = "robinhood",
-        ["robinhood-symbols"] = "robinhood",
-        ["tiingo-corp-actions"] = "tiingo",
-        ["tiingo-symbols"] = "tiingo",
-        ["twelve-data"] = "twelvedata",
-        ["twelve_data"] = "twelvedata",
-        ["twelveData"] = "twelvedata",
-        ["twelvedata-corp-actions"] = "twelvedata",
-        ["twelvedata-symbols"] = "twelvedata",
-        ["interactivebrokers"] = "ib",
-        ["interactive-brokers"] = "ib",
-        ["plaid-api"] = "plaid",
-        ["qbo"] = "quickbooks",
-        ["quickbooks-online"] = "quickbooks",
-        ["qbo-fixture"] = "quickbooks-fixture"
-    };
-
     public static IReadOnlyList<ProviderCredentialCatalogEntry> All => Entries;
 
     public static ProviderCredentialCatalogEntry? Find(string providerId)
@@ -268,10 +232,7 @@ public static class ProviderCredentialCatalog
     }
 
     public static string NormalizeProviderId(string providerId)
-    {
-        var trimmed = (providerId ?? string.Empty).Trim();
-        return Aliases.TryGetValue(trimmed, out var canonical) ? canonical : trimmed.ToLowerInvariant();
-    }
+        => string.IsNullOrWhiteSpace(providerId) ? string.Empty : ProviderIdentity.NormalizeId(providerId);
 
     public static IReadOnlyList<ProviderCredentialFieldMetadataDto> BuildCredentialFields(ProviderCredentialCatalogEntry entry)
     {

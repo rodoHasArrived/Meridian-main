@@ -30,6 +30,15 @@ This layer is the plugin contract for provider adapters. It should expose stable
 ## Important workflows
 
 Use this module when a provider abstraction must be consumed by multiple adapters or higher-level services.
+`ProviderIdentity` owns canonical adapter-family IDs and an explicit immutable map of accepted
+configuration/capability aliases. Discovery metadata and module context lookup normalize through
+that map; unknown plugin names retain their identity after trimming and lower-casing. `ibkr` is the
+Interactive Brokers family, while `ib-flex` and `ib-sim` remain distinct integration/transport IDs.
+`DataSourceAttribute.IsProductionProvider` and `IProviderModule.IsProductionProvider` exclude
+copy-only scaffolds even when configuration enables them. `DataSourceRegistry.RegisterModules`
+can exclude families already owned by an application catalog. Module and attribute registrations
+must run before the service provider is built; attribute registration preserves a module's existing
+factory for each implementation type.
 `IMarketDataClient` inherits `IProviderConnectionDiagnosticsSource`, making a safe connection
 snapshot a contract-level expectation for every streaming provider. The default implementation is
 compatibility-preserving and conservative: enabled adapters report `Configured`, disabled adapters
@@ -93,7 +102,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PluginLoaderServiceTests|FullyQualifiedName~ProviderModuleLoaderTests|FullyQualifiedName~DataSourceRegistryTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PluginLoaderServiceTests|FullyQualifiedName~ProviderModuleLoaderTests|FullyQualifiedName~DataSourceRegistryTests|FullyQualifiedName~ProviderIdentityTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ## Change rules

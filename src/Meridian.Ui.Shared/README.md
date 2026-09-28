@@ -11,6 +11,12 @@ last_reviewed: 2026-09-25
 
 # src/Meridian.Ui.Shared
 
+Provider readiness resolves configuration, credential and telemetry aliases through the shared
+ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and
+`interactive-brokers` project one `ibkr` readiness row. An explicitly disabled module family
+overrides enabled source rows and retained healthy connection evidence, so configuration aliases
+cannot promote a disabled factory to readiness.
+
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
 session resolution recheck the account scope after runtime account changes. Unpartitioned
