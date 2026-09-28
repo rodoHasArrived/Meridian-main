@@ -16,7 +16,7 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     slate, and all retained normative invariants (customer-neutral core model, ledger truth and
     treasury-ledger principles, fail-closed authority, governed-autonomy AI boundary, seven-root
     navigation, no mobile lane). The superseded 0.15–0.25 lineage is summarized in its Section 25
-    and archived in full at `archive/docs/design/meridian-design-document-v0.25.md`
+    and archived in full at [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md)
   - [Implementation and Readiness Tracker](implementation-todo-list.md) — current execution, evidence, and readiness follow-up
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
@@ -123,7 +123,7 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     booking); records the three built-but-dead fixes landed on the same branch
   - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — prior
     independent review pass that motivated the activation-over-expansion and truth-discipline
-    doctrines; see its 2026-07-26 follow-up in `archive/docs/assessments/`
+    doctrines; see its [2026-07-26 follow-up](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/adversarial-program-review-2026-07-26.md) (removed from the tree by the 2026-09-11 archive cleanup; the link is its last version)
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status
   - [Data Provider & Accounting Code Brainstorm (2026-07)](data-provider-accounting-brainstorm-2026-07.md) —
@@ -347,8 +347,8 @@ Use this matrix to avoid source-of-truth drift:
 
 Stakeholder-facing high-traffic legacy pages map here:
 
-- `docs/plans/current-direction-and-status.md` → [archive copy](../../archive/docs/plans/current-direction-and-status.md)
-- `docs/plans/evidence-backed-investment-operations-plan.md` → [archive copy](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
+- `docs/plans/current-direction-and-status.md` → [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md)
+- `docs/plans/evidence-backed-investment-operations-plan.md` → [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/evidence-backed-investment-operations-plan.md)
 - `docs/status/ROADMAP.md`, `docs/status/FEATURE_INVENTORY.md`, `docs/status/TARGET_END_PRODUCT.md` → `roadmap/data/*.yml` + generated roadmap outputs
 
 If a legacy page is still actively needed for non-stakeholder operations, keep a short replacement pointer in the same page and move it to `archive/docs/plans/` or `archive/docs/status/` once the replacement is stable.
@@ -370,18 +370,18 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 Legacy links that remain for context but not primary truth:
 
-- [Current Direction and Status (Archived)](../../archive/docs/plans/current-direction-and-status.md)
-- [Evidence-Backed Investment Operations Plan (Archived)](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
-- [Feature Inventory (Archived)](../../archive/docs/status/FEATURE_INVENTORY.md)
+- [Current Direction and Status (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md)
+- [Evidence-Backed Investment Operations Plan (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/evidence-backed-investment-operations-plan.md)
+- [Feature Inventory (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/FEATURE_INVENTORY.md)
 - [Project Roadmap (Registry Snapshot)](../roadmap/generated/ROADMAP_SUMMARY.md)
-- [Target End Product (Archived)](../../archive/docs/status/TARGET_END_PRODUCT.md)
+- [Target End Product (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/TARGET_END_PRODUCT.md)
 
 ## Legacy Source-Material Index
 
 - If you need historical decision rationale, see:
-  - [plans (archive index)](../../archive/docs/plans/README.md)
+  - [plans (archive index)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/README.md)
   - [status migration index](../status/README.md)
-  - [archive `archive/docs/`](../../archive/docs/README.md)
+  - [archive `archive/docs/`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/README.md)
 
 ## Product-Owner Validation
 

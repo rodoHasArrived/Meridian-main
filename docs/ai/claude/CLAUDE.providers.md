@@ -262,7 +262,7 @@ export MERIDIAN_SECURITY_MASTER_SCHEMA="security_master"
 | `FSharp/Domain/SecurityMaster.fs` | Domain types and asset class definitions |
 | `Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | REST API endpoints |
 
-**Related (historic setup):** [Security Master Guide](../../../archive/docs/providers/security-master-guide.md) — archived setup reference
+**Related (historic setup):** [Security Master Guide](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/security-master-guide.md) — archived setup reference
 
 ---
 

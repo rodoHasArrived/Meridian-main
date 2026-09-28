@@ -26,7 +26,7 @@ maintenance prompt belongs and how to avoid duplicate guidance.
 - Keep `AGENTS.md` and `CLAUDE.md` short. Link to maintained docs instead of
   pasting generated repository trees.
 - Put developer workflow commands in `docs/start/README.md` and
-  `docs/engineering/README.md`; use `archive/docs/developer/` only for
+  `docs/engineering/README.md`; use [`archive/docs/developer/`](https://github.com/rodoHasArrived/Meridian-main/tree/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer) only for
   historical context.
 - Put archive and cleanup rules in `docs/documentation-ownership.md` and
   `docs/documentation-inventory.md`; use `docs/operations/cleanup-and-maintenance.md`
@@ -35,7 +35,7 @@ maintenance prompt belongs and how to avoid duplicate guidance.
   workstation design rules lane, and point prompts there instead of creating
   screen-specific design notes.
 - For historical design-system details, use
-  `archive/docs/design/design-system-usage.md` with an explicit reason and a
+  [`archive/docs/design/design-system-usage.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/design-system-usage.md) with an explicit reason and a
   temporary replacement pointer if needed.
 - Archive obsolete maintenance notes under `archive/docs/` with a short reason
   and replacement link.

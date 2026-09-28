@@ -11,8 +11,8 @@ links to now lives in the canonical operator lane.
 
 - **Active runbook: [operators/operator-runbook.md](../operators/operator-runbook.md)**
 - Canonical operator guidance: [operators/README.md](../operators/README.md)
-- Archived copy: [archive/docs/operations/operator-runbook.md](../../archive/docs/operations/operator-runbook.md)
-- Archive migration index: [archive/docs/operations/README.md](../../archive/docs/operations/README.md)
+- Archived copy: [archive/docs/operations/operator-runbook.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/operator-runbook.md)
+- Archive migration index: [archive/docs/operations/README.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/README.md)
 
 ## Troubleshooting
 

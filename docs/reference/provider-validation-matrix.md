@@ -57,7 +57,7 @@ Evidence anchors for this run date:
 
 - `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs`
 - `tests/Meridian.Tests/Infrastructure/Providers/RobinhoodMarketDataClientTests.cs`
-- `archive/docs/providers/provider-confidence-baseline.md`
+- [`archive/docs/providers/provider-confidence-baseline.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/provider-confidence-baseline.md)
 
 
 ## 2026-05-19 focused execution-provider validation artifacts
@@ -186,4 +186,4 @@ Use `./scripts/dev/run-provider-validation-evidence-bundle.ps1` to generate:
 The evidence bundle standardizes schema and emits promotion posture (`candidate-approved`, `candidate-rejected`, or `not-run`) with baseline-versus-candidate kernel metadata.
 Bundle outputs are written under the same date-scoped automation root (`artifacts/provider-validation/_automation/<yyyy-mm-dd>/`) so provider-validation summaries, DK1 packet/sign-off outputs, and degradation governance evidence remain in one canonical artifact structure.
 
-Promotion checklist and rollback triggers are authoritative in `archive/docs/operations/provider-degradation-calibration.md`; this matrix requires those checks for any DK1 promotion decision.
+Promotion checklist and rollback triggers are authoritative in [`archive/docs/operations/provider-degradation-calibration.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/provider-degradation-calibration.md); this matrix requires those checks for any DK1 promotion decision. The 2026-09-11 archive cleanup (`982eea2d`) removed that file from the tree and no maintained replacement exists yet; the link is its last version.

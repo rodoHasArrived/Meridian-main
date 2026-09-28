@@ -4,7 +4,7 @@
 **Owner:** core-team
 **Reviewed:** 2026-08-03
 **Supersedes:** Version 0.25 (full text preserved at
-[`archive/docs/design/meridian-design-document-v0.25.md`](../../archive/docs/design/meridian-design-document-v0.25.md))
+[`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md))
 **Source:** Ground-up rewrite of the 0.15–0.25 charter lineage. Grounded in the roadmap registry
 (`docs/roadmap/data/*.yml`, snapshot 2026-08-03), the program state and P0 readiness tracker, the
 source-module registry, repository measurements taken 2026-07-28, the 2026-07 adversarial program
@@ -1500,7 +1500,7 @@ stays in [`docs/product/implementation-todo-list.md`](implementation-todo-list.m
 
 The superseded Version 0.25 text — including the Executive Marketecture Deck and the v0.15–v0.20
 addenda in their original form — is preserved at
-[`archive/docs/design/meridian-design-document-v0.25.md`](../../archive/docs/design/meridian-design-document-v0.25.md).
+[`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md).
 
 ### 25.2 Version History
 

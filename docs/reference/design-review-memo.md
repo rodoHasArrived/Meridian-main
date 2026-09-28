@@ -96,7 +96,7 @@ ledger/position evidence screens where dense master-detail review already improv
 Wave 3 can reach Reporting, Strategy, and Trading only where schedule or evidence workflows exist.
 Do not restyle unrelated screens solely for visual uniformity.
 
-The reusable component contract lives in the archived historical note: [`../../archive/docs/ui/README.md`](../../archive/docs/ui/README.md). Current product planning for this lane lives in the [Meridian Design Document](../product/meridian-design-document.md); the old [`web-ui-development-pivot`](../../archive/docs/plans/web-ui-development-pivot.md) plan is historical source material only.
+The reusable component contract lives in the archived historical note: [`../../archive/docs/ui/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/ui/README.md). Current product planning for this lane lives in the [Meridian Design Document](../product/meridian-design-document.md); the old [`web-ui-development-pivot`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/web-ui-development-pivot.md) plan is historical source material only.
 
 ### Key Control: Unified Event Stream
 All market data outputs normalize to `MarketEvent(Type, Symbol, Timestamp, Payload)` with typed payload records (Trade, L2Snapshot, BboQuote, OrderFlow, IntegrityEvent). This provides:

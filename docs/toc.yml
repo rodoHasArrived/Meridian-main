@@ -114,5 +114,5 @@
       href: documentation-ownership.md
     - name: Current Folder Inventory
       href: documentation-inventory.md
-    - name: Archive Index
-      href: ../archive/docs/README.md
+    - name: Archive Index (pre-cleanup snapshot)
+      href: https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/README.md

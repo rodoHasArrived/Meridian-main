@@ -158,4 +158,4 @@ Keep backtesting deterministic and separate from live broker actions.
 ## Related docs
 
 - `docs/source/generated/source-roadmap-traceability.md`
-- `archive/docs/plans/waves-2-4-operator-readiness-addendum.md`
+- [`archive/docs/plans/waves-2-4-operator-readiness-addendum.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/waves-2-4-operator-readiness-addendum.md)
