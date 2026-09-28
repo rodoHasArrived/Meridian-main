@@ -220,6 +220,38 @@ public sealed class CredentialManagementViewModelTests
         });
     }
 
+    [Fact]
+    public void Edit_BeforeTheStatusReadCompletes_RebuildsTheEditorWhenTheSchemaArrives()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var status = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var handler = new Handler(async request =>
+            {
+                if (request.RequestUri!.AbsolutePath == "/api/provider-routing/connections")
+                    return Json(Connections);
+                var response = await status.Task;
+                return Json(await response.Content.ReadAsStringAsync());
+            });
+            using var api = new ApiClientService(new Factory(handler));
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            await viewModel.LoadCredentialsAsync();
+            viewModel.SelectedCredential = viewModel.Credentials.First();
+
+            viewModel.EditCredentialCommand.Execute(null);
+            viewModel.IsEditPanelVisible.Should().BeTrue();
+            viewModel.EditFields.Should().OnlyContain(field => field.FieldName == string.Empty,
+                "no field names are known until the service reports the schema");
+
+            status.SetResult(Json("[{\"providerId\":\"alpaca\",\"credentialState\":1,\"credentialFields\":[{\"name\":\"ApiKey\",\"label\":\"API key\",\"required\":true,\"inputKind\":1}]}]"));
+            await viewModel.SelectionStatusLoad;
+
+            viewModel.IsEditPanelVisible.Should().BeTrue();
+            viewModel.EditFields.Should().ContainSingle().Which.FieldName.Should().Be("ApiKey",
+                "the open editor must be rebuilt once the schema arrives instead of staying inert");
+        });
+    }
+
     private static HttpResponseMessage Json(string body, HttpStatusCode status = HttpStatusCode.OK)
         => new(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
 
