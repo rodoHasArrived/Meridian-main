@@ -60,6 +60,9 @@ public sealed class SettingsConfigurationServiceTests
     [InlineData(200, "alpaca", false, 2, true, false)]
     [InlineData(200, "alpaca", true, 1, true, false)]
     [InlineData(200, "alpaca", true, 2, false, false)]
+    [InlineData(200, "alpaca", true, 0, false, true)]
+    [InlineData(200, "alpaca", false, 0, false, false)]
+    [InlineData(200, "polygon", true, 0, false, false)]
     public async Task CredentialVerification_RequiresMatchingServerEvidence(int status, string provider, bool success, int state, bool dated, bool expected)
     {
         var timestamp = dated ? "\"2026-09-06T12:00:00Z\"" : "null";
@@ -146,6 +149,22 @@ public sealed class SettingsConfigurationServiceTests
         statuses.Single(s => s.ProviderId == "alpaca").HasServiceFieldSchema.Should().BeFalse();
         statuses.Where(s => s.ProviderId is not ("tiingo" or "alpaca")).Should().OnlyContain(s => !s.HasServiceFieldSchema,
             "providers the service did not report have no vault schema");
+    }
+
+    [Fact]
+    public async Task ServerCredentialStatus_IncludesManagedProvidersAbsentFromTheLocalCatalog()
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK,
+            "[{\"providerId\":\"quickbooks\",\"displayName\":\"QuickBooks Online\",\"credentialState\":1,\"credentialFields\":[]}]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+
+        var statuses = await service.GetProviderCredentialStatusesAsync();
+
+        service.GetProviderCatalog().Should().NotContain(provider => provider.Id == "quickbooks");
+        var quickBooks = statuses.Should().ContainSingle(status => status.ProviderId == "quickbooks").Subject;
+        quickBooks.DisplayName.Should().Be("QuickBooks Online");
+        quickBooks.State.Should().Be(CredentialState.Missing);
     }
 
     [Theory]

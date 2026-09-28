@@ -44,7 +44,9 @@ schema has no required fields, such as Interactive Brokers, tests as ready witho
 blank save for a provider with required fields succeeds only when the service reports credentials already
 configured. Opening the credential-management editor before the selected connection's schema arrives (or
 after Test All superseded that read) starts a fresh status read and rebuilds the open editor when it
-completes. The settings shell counts unavailable credential status
+completes. Credential management also lists owned connections for managed providers the local catalog omits,
+and matches a connection's status to the single row the service reports for it, so a retained alias still
+resolves. The settings shell counts unavailable credential status
 separately from missing credentials, so a refused or failed status read is shown as unknown readiness.
 The setup-wizard state service and the Backfill page still write environment variables and remain
 separate cutover work.

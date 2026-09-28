@@ -36,7 +36,12 @@ public static class ProviderConnectionEndpoints
                     var row = await service.GetConnectionStatusForTenantAsync(connectionId, tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
                     return Results.Json(new[] { row }, jsonOptions);
                 }
-                var rows = await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+                // Readiness includes the authenticated tenant's own connection credentials, so a scoped
+                // save is reflected here; other tenants' connections never contribute.
+                var requestTenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var rows = requestTenant.HasTenantScope
+                    ? await service.GetConnectionsForTenantAsync(requestTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
+                    : await service.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(rows, jsonOptions);
             }
             catch (UnauthorizedAccessException)

@@ -220,16 +220,16 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             var catalog = _settingsService.GetProviderCatalog();
             foreach (var connection in connections)
             {
+                // Managed providers such as QuickBooks or Plaid are absent from the local market-data
+                // catalog but are still owned connections; the service schema drives their editor.
                 var provider = catalog.FirstOrDefault(item => string.Equals(item.Id, connection.ProviderFamilyId, StringComparison.OrdinalIgnoreCase));
-                if (provider is null)
-                    continue;
                 Credentials.Add(new CredentialEntryViewModel
                 {
-                    ProviderId = provider.Id,
+                    ProviderId = provider?.Id ?? connection.ProviderFamilyId,
                     ConnectionId = connection.ConnectionId,
                     DisplayName = $"{connection.DisplayName} · {connection.ExternalAccountId} · {connection.CredentialEnvironment}",
-                    CredentialType = GetCredentialType(provider),
-                    RequiresCredentials = provider.CredentialFields.Length > 0,
+                    CredentialType = provider is null ? "Provider credentials" : GetCredentialType(provider),
+                    RequiresCredentials = provider is null || provider.CredentialFields.Length > 0,
                     StatusText = "Select to load status",
                     StatusColor = "#AABCCD"
                 });
@@ -256,7 +256,12 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         var statuses = await _settingsService.GetProviderCredentialStatusesAsync(connectionId: selected.ConnectionId);
         if (version != _credentialLoadVersion || statusVersion != _selectedStatusVersion || !ReferenceEquals(SelectedCredential, selected) || selected.IsTesting)
             return;
-        var status = statuses.FirstOrDefault(item => item.ProviderId == selected.ProviderId);
+        // A connection-scoped read returns exactly one service row, keyed by the canonical provider ID.
+        // Prefer it so a retained alias (alpha-vantage, qbo) still finds its connection's status.
+        var serviceRows = statuses.Where(item => item.HasServiceFieldSchema).ToArray();
+        var status = serviceRows.Length == 1
+            ? serviceRows[0]
+            : statuses.FirstOrDefault(item => string.Equals(item.ProviderId, selected.ProviderId, StringComparison.OrdinalIgnoreCase));
         selected.ServiceFields = status?.CredentialFields;
         selected.HasCredentials = status?.State is CredentialState.Configured or CredentialState.Partial;
         selected.StatusText = status?.StatusMessage ?? "Credential status is unavailable from the service.";

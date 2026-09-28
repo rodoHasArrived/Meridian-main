@@ -527,6 +527,43 @@ public sealed class ProviderConnectionEndpointsTests
         audit.Should().NotContain("test-quickbooks-verifier");
     }
 
+    [Fact]
+    public async Task ProviderReadiness_CountsOnlyTheTenantsOwnScopedCredentials()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "owned", "provider-tenant", "polygon", "account-a", "default");
+        await RetainConnectionAsync(app, "foreign", "another-tenant", "finnhub", "account-b", "default");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("polygon", new Dictionary<string, string?> { ["ApiKey"] = "owned-key" }, "default"),
+            new ProviderCredentialScope("provider-tenant", "owned", "account-a", "default"));
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("finnhub", new Dictionary<string, string?> { ["ApiKey"] = "foreign-key" }, "default"),
+            new ProviderCredentialScope("another-tenant", "foreign", "account-b", "default"));
+
+        var rows = await ReadAsync<ProviderConnectionRowDto[]>(await app.GetTestClient().GetAsync("/api/providers/connections"));
+
+        rows.Single(row => row.ProviderId == "polygon").CredentialState.Should().Be(ProviderCredentialStateDto.Configured,
+            "a scoped save on the tenant's own connection makes the provider ready for that tenant");
+        rows.Single(row => row.ProviderId == "polygon").DisplayName.Should().Be(ProviderCredentialCatalog.Find("polygon")!.DisplayName,
+            "the provider-level row keeps the provider's name rather than the connection's");
+        rows.Single(row => row.ProviderId == "finnhub").CredentialState.Should().NotBe(ProviderCredentialStateDto.Configured,
+            "another tenant's scoped credentials never contribute");
+    }
+
+    [Fact]
+    public async Task ScopedCredentialRoute_AcceptsARetainedProviderAlias()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "av", "provider-tenant", "alpha-vantage", "account-a", "default");
+        var client = app.GetTestClient();
+
+        var saved = await client.PutAsync("/api/providers/alphavantage/credentials?connectionId=av",
+            JsonContent(new { credentials = new { ApiKey = "alias-key" } }));
+
+        saved.StatusCode.Should().Be(HttpStatusCode.OK, "the retained alias and the requested provider resolve to one catalog entry");
+        var rows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections?connectionId=av"));
+        rows.Should().ContainSingle().Which.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+    }
+
     private static Task<Meridian.Contracts.Api.ProviderConnectionDto> RetainConnectionAsync(WebApplication app, string id, string tenant, string provider, string account, string environment)
         => new Meridian.Application.ProviderRouting.ProviderConnectionService(
             new Meridian.Application.UI.ConfigStore(app.Services.GetRequiredService<ConfigStore>().ConfigPath))

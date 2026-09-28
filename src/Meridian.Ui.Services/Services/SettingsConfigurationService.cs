@@ -170,7 +170,11 @@ public sealed class SettingsConfigurationService
     {
         var route = CredentialRoute(UiApiRoutes.ProviderCredentialVerify, providerId, connectionId);
         var response = await _apiClient.PostWithResponseAsync<ProviderCredentialVerificationResultDto>(route, null, ct).ConfigureAwait(false);
-        return response.Success && response.Data is { Success: true, VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null } result &&
+        // A dated Verified result proves the credentials. A successful NotRequired result is the service
+        // confirming the provider needs no credentials (IB, Yahoo, Synthetic), which is also ready.
+        return response.Success && response.Data is { Success: true } result &&
+            (result is { VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null } ||
+             result.VerificationState == ProviderVerificationStateDto.NotRequired) &&
             string.Equals(result.ProviderId, providerId, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -222,31 +226,48 @@ public sealed class SettingsConfigurationService
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (Exception) { /* Failed reads never authorize a configured state. */ }
 
-        return GetProviderCatalog().Select(provider =>
+        var catalog = GetProviderCatalog();
+        var localStatuses = catalog.Select(provider =>
         {
             var matches = rows.Where(row => row is not null && string.Equals(row.ProviderId, provider.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
             if (matches.Length != 1)
                 return new ProviderCredentialStatus(provider.Id, provider.DisplayName, CredentialState.Unavailable,
                     "Credential status is unavailable from the service.", []);
-            var row = matches[0];
-            var state = row.CredentialState switch
-            {
-                ProviderCredentialStateDto.NotRequired => CredentialState.NotRequired,
-                ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified => CredentialState.Configured,
-                ProviderCredentialStateDto.Partial => CredentialState.Partial,
-                ProviderCredentialStateDto.Missing or ProviderCredentialStateDto.Invalid => CredentialState.Missing,
-                _ => CredentialState.Unavailable
-            };
-            var message = state switch
-            {
-                CredentialState.Configured => "Configured in the credential service",
-                CredentialState.NotRequired => "No credentials required",
-                CredentialState.Partial => "Credential setup is incomplete",
-                CredentialState.Missing => "Credentials are missing or require correction",
-                _ => "Credential status is unavailable from the service."
-            };
-            return new ProviderCredentialStatus(provider.Id, provider.DisplayName, state, message, [], row.CredentialFields);
-        }).ToArray();
+            return ToStatus(provider.Id, provider.DisplayName, matches[0]);
+        });
+
+        // Managed providers the service reports but the local market-data catalog omits (for example
+        // QuickBooks, Plaid or IB Flex) are still credentials the operator owns, so they are included.
+        var serverOnlyStatuses = rows
+            .Where(row => row is not null && !string.IsNullOrWhiteSpace(row.ProviderId) &&
+                !catalog.Any(provider => string.Equals(provider.Id, row.ProviderId, StringComparison.OrdinalIgnoreCase)))
+            .GroupBy(row => row.ProviderId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1)
+            .Select(group => group.Single())
+            .Select(row => ToStatus(row.ProviderId, string.IsNullOrWhiteSpace(row.DisplayName) ? row.ProviderId : row.DisplayName, row));
+
+        return localStatuses.Concat(serverOnlyStatuses).ToArray();
+    }
+
+    private static ProviderCredentialStatus ToStatus(string providerId, string displayName, ProviderConnectionRowDto row)
+    {
+        var state = row.CredentialState switch
+        {
+            ProviderCredentialStateDto.NotRequired => CredentialState.NotRequired,
+            ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified => CredentialState.Configured,
+            ProviderCredentialStateDto.Partial => CredentialState.Partial,
+            ProviderCredentialStateDto.Missing or ProviderCredentialStateDto.Invalid => CredentialState.Missing,
+            _ => CredentialState.Unavailable
+        };
+        var message = state switch
+        {
+            CredentialState.Configured => "Configured in the credential service",
+            CredentialState.NotRequired => "No credentials required",
+            CredentialState.Partial => "Credential setup is incomplete",
+            CredentialState.Missing => "Credentials are missing or require correction",
+            _ => "Credential status is unavailable from the service."
+        };
+        return new ProviderCredentialStatus(providerId, displayName, state, message, [], row.CredentialFields);
     }
 
     /// <summary>

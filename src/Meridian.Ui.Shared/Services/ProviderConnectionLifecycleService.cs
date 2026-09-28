@@ -48,7 +48,8 @@ public sealed class ProviderConnectionLifecycleService
     {
         var descriptor = RequireDescriptor(providerId);
         var connection = RequireOwnedConnection(connectionId, tenantId);
-        if (!string.Equals(connection.ProviderFamilyId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase))
+        // Retained provider families may be aliases (alpha-vantage, qbo); compare canonical catalog IDs.
+        if (!string.Equals(ProviderCredentialCatalog.NormalizeProviderId(connection.ProviderFamilyId), descriptor.ProviderId, StringComparison.OrdinalIgnoreCase))
             throw new UnauthorizedAccessException("Credential connection ownership could not be established.");
         return BindConnection(connection);
     }
@@ -86,6 +87,55 @@ public sealed class ProviderConnectionLifecycleService
             throw new UnauthorizedAccessException("Credential connection ownership could not be established.");
         return connection;
     }
+
+    /// <summary>
+    /// Provider-level readiness for one tenant. Each provider starts from its provider-wide row; when that
+    /// row is not ready, a better credential state on one of the tenant's own retained connections for
+    /// the same provider replaces it. Other tenants' connections and unassigned connections never contribute.
+    /// </summary>
+    public async Task<IReadOnlyList<ProviderConnectionRowDto>> GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        var rows = (await GetConnectionsAsync(ct).ConfigureAwait(false)).ToList();
+        var owned = (ConfigStore.LoadConfig(_configStore.ConfigPath).ProviderConnections?.Connections ?? [])
+            .GroupBy(c => c.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1).Select(group => group.Single())
+            .Where(c => string.Equals(c.TenantId, tenantId, StringComparison.Ordinal) &&
+                !string.IsNullOrWhiteSpace(c.ExternalAccountId) && !string.IsNullOrWhiteSpace(c.CredentialEnvironment))
+            .ToArray();
+
+        foreach (var connection in owned)
+        {
+            var descriptor = ProviderCredentialCatalog.Find(connection.ProviderFamilyId);
+            var index = descriptor is null ? -1 : rows.FindIndex(row => string.Equals(row.ProviderId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase));
+            if (index < 0 || ReadinessRank(rows[index].CredentialState) >= ReadinessRank(ProviderCredentialStateDto.Configured))
+                continue;
+
+            ProviderConnectionRowDto scoped;
+            try
+            {
+                scoped = await GetConnectionStatusForTenantAsync(connection.ConnectionId, tenantId, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or ArgumentException)
+            {
+                continue;
+            }
+
+            if (ReadinessRank(scoped.CredentialState) > ReadinessRank(rows[index].CredentialState))
+                rows[index] = scoped with { DisplayName = rows[index].DisplayName };
+        }
+
+        return rows;
+    }
+
+    private static int ReadinessRank(ProviderCredentialStateDto state) => state switch
+    {
+        ProviderCredentialStateDto.Verified => 5,
+        ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.NotRequired => 4,
+        ProviderCredentialStateDto.Partial => 2,
+        ProviderCredentialStateDto.Invalid => 1,
+        _ => 0
+    };
 
     public async Task<IReadOnlyList<ProviderConnectionRowDto>> GetConnectionsAsync(CancellationToken ct = default)
     {

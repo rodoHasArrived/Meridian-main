@@ -31,6 +31,12 @@ scope receives no routing rows. Duplicate or case-variant connection IDs are exc
 preview candidates, and duplicate certification rows leave a connection uncertified, instead of failing
 the read.
 
+`GET /api/providers/connections` without a connection ID returns provider-level readiness for the
+authenticated tenant: a provider whose provider-wide row is not ready takes the better credential state
+of one of that tenant's own retained connections, so a scoped save is reflected in Settings. Other
+tenants' and unassigned connections never contribute. Ownership checks compare canonical provider IDs,
+so a connection retained under an alias such as `alpha-vantage` or `qbo` still resolves.
+
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
 session resolution recheck the account scope after runtime account changes. Unpartitioned

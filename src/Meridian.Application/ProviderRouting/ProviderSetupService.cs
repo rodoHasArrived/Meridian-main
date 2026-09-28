@@ -39,7 +39,9 @@ public sealed class ProviderSetupService
             string.IsNullOrWhiteSpace(connection.ExternalAccountId) || string.IsNullOrWhiteSpace(connection.CredentialEnvironment))
             throw new UnauthorizedAccessException("Provider setup connection ownership could not be established.");
         var handler = _setupRegistry.Find(request.Kind ?? string.Empty);
-        if (handler is null || !string.Equals(handler.Descriptor.ProviderId, connection.ProviderFamilyId, StringComparison.OrdinalIgnoreCase))
+        // Retained provider families may be aliases (alpha-vantage, qbo); compare canonical catalog IDs.
+        if (handler is null || !string.Equals(ProviderCredentialCatalog.NormalizeProviderId(handler.Descriptor.ProviderId),
+                ProviderCredentialCatalog.NormalizeProviderId(connection.ProviderFamilyId), StringComparison.OrdinalIgnoreCase))
             throw new UnauthorizedAccessException("Provider setup connection ownership could not be established.");
         var descriptor = ProviderCredentialCatalog.Find(handler.Descriptor.ProviderId)
             ?? throw new InvalidOperationException("Provider credential catalog entry is unavailable.");

@@ -64,7 +64,8 @@ history or result telemetry. Unscoped latency/quality metrics are excluded with 
 reasons; default runtime routing and tenant-aware operational history remain separate work.
 The routing snapshot excludes duplicate or case-variant connection IDs instead of failing every route,
 and a binding that references one is skipped with an explicit ambiguity reason. Trust scoring treats a
-connection with duplicate certification rows as uncertified.
+connection with duplicate certification rows as uncertified. `ProviderSetupService.ConfigureForConnectionAsync`
+compares canonical provider IDs, so a connection retained under an alias still accepts setup.
 
 `ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
 environment with the external account. Scope resolution uses that retained ownership, returns no scope

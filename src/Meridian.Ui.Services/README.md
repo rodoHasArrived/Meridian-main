@@ -26,6 +26,8 @@ A 401 or 403 refusal throws `CredentialServiceRefusedException`, a subclass of t
 with a tenant assignment and ManageCredentials. Nothing falls back to a local or environment store.
 Each `ProviderCredentialStatus` carries the vault field schema the service reported for that provider,
 or null when the service reported none; editors must use those names rather than the local catalog's.
+Status reads also include managed providers the service reports but the local market-data catalog
+omits (QuickBooks, Plaid, IB Flex). Verification treats a successful `NotRequired` result as ready.
 
 `SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
 credential states. Missing, ambiguous or refused responses remain unavailable, even when environment

@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "c9f4eef34abbbc4ab8746217ddaa1c1c5a3d4885a043b4342f2954fa2cf47628",
-      "source_hash": "05772acdf6dfb9f8165795340450005a7cc9421c8ba2c6fabb4cdd87e96f8399"
+      "readme_hash": "ddc22ffddc15d06eed91afb0bd5dffd6bcbc18c2a5ad0e39cf7e49dd67165ce4",
+      "source_hash": "fa18f3a640ccdda6a5317bfc5e4b0426415b6a6f2bae039de7e26ef753d7165c"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -275,22 +275,22 @@
       "id": "SRC-UI-SERVICES",
       "path": "src/Meridian.Ui.Services",
       "readme": "src/Meridian.Ui.Services/README.md",
-      "readme_hash": "78860c58da37aef904a9c9374b3964c651edf115d381ac22b82c0a373928d6a1",
-      "source_hash": "e0e309b04df45b7a3230d9991c3a624ebc9d1b42f09614397bbf044fa4b9c114"
+      "readme_hash": "ec344ebc90c18f15adad95c2a927209ee5e80d691cfcb667c5edd29431b8769e",
+      "source_hash": "dabc8855518d289f6c2b3b4471713691403a738098b2103f1927c8672fe70a03"
     },
     {
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "f3a44a2204214beb585015c78f5dfabd691efa2136cb910450b5fc30e4f8a684",
-      "source_hash": "fbc2021967f832dea4cdfc5ee1508e90ff80970e33b1e76a854353b004ef6547"
+      "readme_hash": "5d8b51231f59ec6ec5e8c60663f77fa460a18f9c925d5cd96d1a6c83d4fd9f97",
+      "source_hash": "971fb239629a23d82623c3faafee34dcb3da89c4e47ff0dafbfae39c5a7210b2"
     },
     {
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
-      "readme_hash": "f89841056267e736119a061eeb72f139ae6536860203585267d7f97e73eb486a",
-      "source_hash": "bb3dd801311d8c79ee3f84e544479743276407eab3693a6a2abb68a8b88494d2"
+      "readme_hash": "ad474301c3e631994ca3da2e3664280fe8e79d6007ad6f6bbf956aa681c0fc9c",
+      "source_hash": "1fea9171126391fec059215dc7104976d3705d67ed93e06865a8eef8a601f437"
     }
   ],
   "schema": {
