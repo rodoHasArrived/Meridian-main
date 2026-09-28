@@ -298,7 +298,8 @@ public sealed class SettingsConfigurationServiceTests
         status.CredentialFields.Should().ContainSingle().Which.Name.Should().Be("ServiceField");
         status.VerificationState.Should().Be(ProviderVerificationStateDto.Verified);
         status.LastVerifiedAt.Should().Be(new DateTimeOffset(2026, 9, 28, 12, 0, 0, TimeSpan.Zero));
-        statuses.Should().NotContain(row => row.ProviderId is "nasdaqdatalink" or "ib" or "qbo" or "quickbooks-online");
+        statuses.Should().NotContain(row => row.ProviderId == "nasdaqdatalink" || row.ProviderId == "ib" ||
+            row.ProviderId == "qbo" || row.ProviderId == "quickbooks-online");
         statuses.Should().OnlyHaveUniqueItems(row => row.ProviderId);
     }
 
@@ -326,7 +327,8 @@ public sealed class SettingsConfigurationServiceTests
         nasdaq.HasServiceFieldSchema.Should().BeFalse();
         nasdaq.VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
         nasdaq.LastVerifiedAt.Should().BeNull();
-        statuses.Should().NotContain(row => row.ProviderId is "quickbooks" or "qbo" or "nasdaqdatalink");
+        statuses.Should().NotContain(row => row.ProviderId == "quickbooks" || row.ProviderId == "qbo" ||
+            row.ProviderId == "nasdaqdatalink");
     }
 
     [Fact]
