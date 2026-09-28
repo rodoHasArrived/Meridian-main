@@ -162,7 +162,7 @@ public sealed class SettingsConfigurationService
         ThrowIfRefused(response.StatusCode, "removal");
         if (!response.Success || response.Data is null ||
             !ProviderIdentity.EqualsId(response.Data.ProviderId, providerId) ||
-            response.Data.CredentialState != ProviderCredentialStateDto.Missing)
+            response.Data.CredentialState is not (ProviderCredentialStateDto.Missing or ProviderCredentialStateDto.NotRequired))
             throw new InvalidOperationException("Credential removal was not confirmed by the authenticated service.");
     }
 

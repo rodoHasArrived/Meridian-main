@@ -27,7 +27,7 @@ with a tenant assignment and ManageCredentials. Nothing falls back to a local or
 Each `ProviderCredentialStatus` carries the vault field schema the service reported for that provider,
 or null when the service reported none; editors must use those names rather than the local catalog's.
 Status reads also include managed providers the service reports but the local market-data catalog
-omits (QuickBooks, Plaid, IB Flex). Verification treats a successful `NotRequired` result as ready.
+omits (QuickBooks, Plaid, IB Flex). Verification treats a successful `NotRequired` result as ready, and removal accepts `NotRequired` as well as `Missing` as the confirmed terminal state.
 `providerWideOnly: true` reads provider-wide records only, without the tenant's connection credentials.
 Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the

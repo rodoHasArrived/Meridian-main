@@ -190,6 +190,21 @@ public sealed class SettingsConfigurationServiceTests
     }
 
     [Theory]
+    [InlineData("yahoo", null)]
+    [InlineData("ibkr", "owned")]
+    public async Task CredentialRemoval_AcceptsNotRequiredAsTheConfirmedTerminalState(string providerId, string? connectionId)
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, $"{{\"providerId\":\"{providerId}\",\"credentialState\":0}}");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+
+        Func<Task> remove = () => service.RemoveProviderCredentialsAsync(providerId, connectionId);
+
+        await remove.Should().NotThrowAsync("a provider that needs no credentials has nothing left to remove");
+        handler.Method.Should().Be("DELETE");
+    }
+
+    [Theory]
     [InlineData(false, 403, "{}")]
     [InlineData(true, 403, "{}")]
     [InlineData(false, 200, "null")]

@@ -1,5 +1,6 @@
 using Moq;
 using Meridian.ProviderSdk;
+using Meridian.Core.Config;
 using FluentAssertions;
 using Meridian.Application.UI;
 using Meridian.Application.ProviderRouting;
@@ -165,6 +166,43 @@ public sealed class ConfigStoreTests : IDisposable
         after.Should().NotBeNull();
         after!.StorageKey("alpaca").Should().Be(before!.StorageKey("alpaca"), "credentials stored under the retained scope must stay reachable");
         (await service.GetConnectionsForTenantAsync("tenant-a")).Should().ContainSingle(row => row.ConnectionId == "owned");
+    }
+
+    [Fact]
+    public async Task TenantConnection_RetainsTheProvidersCanonicalCredentialEnvironment()
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, "{}");
+        var service = new ProviderConnectionService(new ConfigStore(path));
+        var request = new CreateProviderConnectionRequest("ledger", "quickbooks", "Ledger", ExternalAccountId: "realm-a");
+
+        var created = await service.UpsertForTenantAsync(request, "tenant-a", "Live");
+        var scope = await service.GetCredentialScopeForTenantAsync("ledger", "tenant-a");
+        var updated = await service.UpsertForTenantAsync(request with { DisplayName = "Renamed" }, "tenant-a", "production");
+
+        created.ConnectionId.Should().Be("ledger");
+        scope!.Environment.Should().Be("production", "the scoped vault only accepts the canonical environment");
+        updated.DisplayName.Should().Be("Renamed");
+        (await service.GetCredentialScopeForTenantAsync("ledger", "tenant-a"))!.Environment.Should().Be("production");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request, "tenant-a", "sandbox"));
+    }
+
+    [Fact]
+    public async Task TenantConnection_RetainedUnderAnEnvironmentAliasMovesToTheCanonicalSpelling()
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        var legacy = new ProviderConnectionConfig("ledger", "quickbooks", "Ledger", ExternalAccountId: "realm-a",
+            TenantId: "tenant-a", CredentialEnvironment: "live");
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new AppConfig() with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(Connections: [legacy])
+        }));
+        var service = new ProviderConnectionService(new ConfigStore(path));
+
+        await service.UpsertForTenantAsync(new CreateProviderConnectionRequest("ledger", "quickbooks", "Ledger", ExternalAccountId: "realm-a"),
+            "tenant-a", "live");
+
+        (await service.GetCredentialScopeForTenantAsync("ledger", "tenant-a"))!.Environment.Should().Be("production");
     }
 
     [Fact]

@@ -100,8 +100,17 @@ public sealed class ProviderConnectionService
                 connectionId = existing.ConnectionId;
             if (tenantId is not null)
             {
+                // Retain the provider's canonical environment (for example QuickBooks `live` becomes
+                // `production`); the scoped vault refuses any other spelling of the same environment.
+                var descriptor = ProviderCredentialCatalog.Find(request.ProviderFamilyId);
+                environment = descriptor?.NormalizeEnvironment(environment) ?? environment;
                 var scope = new ProviderCredentialScope(tenantId, connectionId, request.ExternalAccountId ?? string.Empty, environment!);
-                if (existing is not null && (existing.ExternalAccountId != scope.ExternalAccountId || existing.CredentialEnvironment != scope.Environment ||
+                // A record retained under an alias could never hold scoped credentials, so moving it to
+                // the canonical spelling of the same environment is not a reassignment.
+                var retainedEnvironment = existing?.CredentialEnvironment is { } retained && descriptor is not null
+                    ? descriptor.NormalizeEnvironment(retained)
+                    : existing?.CredentialEnvironment;
+                if (existing is not null && (existing.ExternalAccountId != scope.ExternalAccountId || retainedEnvironment != scope.Environment ||
                     !string.Equals(existing.ProviderFamilyId, request.ProviderFamilyId.Trim(), StringComparison.OrdinalIgnoreCase)))
                     throw new InvalidOperationException("Existing credential ownership cannot be reassigned.");
                 // A provider-wide or caller-supplied vault reference is not ownership evidence.
