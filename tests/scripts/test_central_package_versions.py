@@ -1,1 +1,153 @@
-aW1wb3J0IHVuaXR0ZXN0CmltcG9ydCB4bWwuZXRyZWUuRWxlbWVudFRyZWUgYXMgRVQKaW1wb3J0IG9zCmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAoKClJFUE9fUk9PVCA9IFBhdGgoX19maWxlX18pLnJlc29sdmUoKS5wYXJlbnRzWzJdCkNFTlRSQUxfUEFDS0FHRVMgPSBSRVBPX1JPT1QgLyAiRGlyZWN0b3J5LlBhY2thZ2VzLnByb3BzIgpCVUlMRF9QUk9QUyA9IFJFUE9fUk9PVCAvICJEaXJlY3RvcnkuQnVpbGQucHJvcHMiCgoKY2xhc3MgQ2VudHJhbFBhY2thZ2VWZXJzaW9uVGVzdHModW5pdHRlc3QuVGVzdENhc2UpOgogICAgQGNsYXNzbWV0aG9kCiAgICBkZWYgc2V0VXBDbGFzcyhjbHMpIC0+IE5vbmU6CiAgICAgICAgcm9vdCA9IEVULnBhcnNlKENFTlRSQUxfUEFDS0FHRVMpLmdldHJvb3QoKQogICAgICAgIGNscy5wcm9wZXJ0aWVzID0gewogICAgICAgICAgICBpdGVtLnRhZzogaXRlbS50ZXh0CiAgICAgICAgICAgIGZvciBpdGVtIGluIHJvb3QuZmluZGFsbCgiLi9Qcm9wZXJ0eUdyb3VwLyoiKQogICAgICAgICAgICBpZiBpdGVtLnRleHQgaXMgbm90IE5vbmUKICAgICAgICB9CiAgICAgICAgY2xzLnZlcnNpb25zID0gewogICAgICAgICAgICBpdGVtLmF0dHJpYlsiSW5jbHVkZSJdOiBpdGVtLmF0dHJpYlsiVmVyc2lvbiJdCiAgICAgICAgICAgIGZvciBpdGVtIGluIHJvb3QuZmluZGFsbCgiLi8vUGFja2FnZVZlcnNpb24iKQogICAgICAgIH0KCiAgICBkZWYgdGVzdF9taWNyb3NvZnRfZXh0ZW5zaW9uc19waW5zX21hdGNoX2hvc3RpbmdfdHJhbnNpdGl2ZXMoc2VsZikgLT4gTm9uZToKICAgICAgICBwYWNrYWdlcyA9IFsKICAgICAgICAgICAgIk1pY3Jvc29mdC5FeHRlbnNpb25zLkNvbmZpZ3VyYXRpb24iLAogICAgICAgICAgICAiTWljcm9zb2Z0LkV4dGVuc2lvbnMuQ29uZmlndXJhdGlvbi5Kc29uIiwKICAgICAgICAgICAgIk1pY3Jvc29mdC5FeHRlbnNpb25zLkNvbmZpZ3VyYXRpb24uQmluZGVyIiwKICAgICAgICAgICAgIk1pY3Jvc29mdC5FeHRlbnNpb25zLkNvbmZpZ3VyYXRpb24uRW52aXJvbm1lbnRWYXJpYWJsZXMiLAogICAgICAgICAgICAiTWljcm9zb2Z0LkV4dGVuc2lvbnMuQ29uZmlndXJhdGlvbi5Db21tYW5kTGluZSIsCiAgICAgICAgICAgICJNaWNyb3NvZnQuRXh0ZW5zaW9ucy5EZXBlbmRlbmN5SW5qZWN0aW9uIiwKICAgICAgICAgICAgIk1pY3Jvc29mdC5FeHRlbnNpb25zLkRlcGVuZGVuY3lJbmplY3Rpb24uQWJzdHJhY3Rpb25zIiwKICAgICAgICAgICAgIk1pY3Jvc29mdC5FeHRlbnNpb25zLkhvc3RpbmciLAogICAgICAgICAgICAiTWljcm9zb2Z0LkV4dGVuc2lvbnMuSG9zdGluZy5BYnN0cmFjdGlvbnMiLAogICAgICAgICAgICAiTWljcm9zb2Z0LkV4dGVuc2lvbnMuQ2FjaGluZy5NZW1vcnkiLAogICAgICAgICAgICAiTWljcm9zb2Z0LkV4dGVuc2lvbnMuTG9nZ2luZyIsCiAgICAgICAgICAgICJNaWNyb3NvZnQuRXh0ZW5zaW9ucy5Mb2dnaW5nLkFic3RyYWN0aW9ucyIsCiAgICAgICAgICAgICJNaWNyb3NvZnQuRXh0ZW5zaW9ucy5Mb2dnaW5nLkRlYnVnIiwKICAgICAgICAgICAgIk1pY3Jvc29mdC5FeHRlbnNpb25zLk9wdGlvbnMiLAogICAgICAgICAgICAiTWljcm9zb2Z0LkV4dGVuc2lvbnMuT3B0aW9ucy5Db25maWd1cmF0aW9uRXh0ZW5zaW9ucyIsCiAgICAgICAgXQoKICAgICAgICBmb3IgcGFja2FnZSBpbiBwYWNrYWdlczoKICAgICAgICAgICAgd2l0aCBzZWxmLnN1YlRlc3QocGFja2FnZT1wYWNrYWdlKToKICAgICAgICAgICAgICAgIGV4cGVjdGVkID0gIjEwLjAuMTIiIGlmIHBhY2thZ2UgaW4gewogICAgICAgICAgICAgICAgICAgICJNaWNyb3NvZnQuRXh0ZW5zaW9ucy5Db25maWd1cmF0aW9uIiwKICAgICAgICAgICAgICAgICAgICAiTWljcm9zb2Z0LkV4dGVuc2lvbnMuRGVwZW5kZW5jeUluamVjdGlvbi5BYnN0cmFjdGlvbnMiLAogICAgICAgICAgICAgICAgICAgICJNaWNyb3NvZnQuRXh0ZW5zaW9ucy5Mb2dnaW5nLkFic3RyYWN0aW9ucyIsCiAgICAgICAgICAgICAgICAgICAgIk1pY3Jvc29mdC5FeHRlbnNpb25zLk9wdGlvbnMiLAogICAgICAgICAgICAgICAgfSBlbHNlICIxMC4wLjciCiAgICAgICAgICAgICAgICBzZWxmLmFzc2VydEVxdWFsKHNlbGYudmVyc2lvbnNbcGFja2FnZV0sIGV4cGVjdGVkKQoKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKHNlbGYudmVyc2lvbnNbIk1pY3Jvc29mdC5FeHRlbnNpb25zLk9iamVjdFBvb2wiXSwgIjEwLjAuMTIiKQoKICAgIGRlZiB0ZXN0X2pzb25fc3RhY2tfcGluc19tYXRjaF9zeXN0ZW1fdGV4dF9qc29uX3RyYW5zaXRpdmVzKHNlbGYpIC0+IE5vbmU6CiAgICAgICAgc2VsZi5hc3NlcnRFcXVhbChzZWxmLnZlcnNpb25zWyJTeXN0ZW0uVGV4dC5Kc29uIl0sICIxMC4wLjciKQogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwoc2VsZi52ZXJzaW9uc1siU3lzdGVtLklPLlBpcGVsaW5lcyJdLCAiMTAuMC43IikKCiAgICBkZWYgdGVzdF9xdWFudGNvbm5lY3RfbGVhbl9zdGF5c19vbl9uZXQ5X2NvbXBhdGlibGVfbGluZShzZWxmKSAtPiBOb25lOgogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwoc2VsZi5wcm9wZXJ0aWVzWyJRdWFudENvbm5lY3RMZWFuVmVyc2lvbiJdLCAiMi41LjE3NDE0IikKCiAgICAgICAgcGFja2FnZXMgPSBbCiAgICAgICAgICAgICJRdWFudENvbm5lY3QuTGVhbiIsCiAgICAgICAgICAgICJRdWFudENvbm5lY3QuTGVhbi5FbmdpbmUiLAogICAgICAgICAgICAiUXVhbnRDb25uZWN0LkNvbW1vbiIsCiAgICAgICAgICAgICJRdWFudENvbm5lY3QuSW5kaWNhdG9ycyIsCiAgICAgICAgXQoKICAgICAgICBmb3IgcGFja2FnZSBpbiBwYWNrYWdlczoKICAgICAgICAgICAgd2l0aCBzZWxmLnN1YlRlc3QocGFja2FnZT1wYWNrYWdlKToKICAgICAgICAgICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwoc2VsZi52ZXJzaW9uc1twYWNrYWdlXSwgIiQoUXVhbnRDb25uZWN0TGVhblZlcnNpb24pIikKICAgICAgICAgICAgICAgIHNlbGYuYXNzZXJ0Tm90RXF1YWwoc2VsZi52ZXJzaW9uc1twYWNrYWdlXSwgIjIuNS4xNzY3NyIpCgogICAgZGVmIHRlc3RfYXNwbmV0X3Rlc3RfaG9zdF9oYXNfY2VudHJhbF9waW4oc2VsZikgLT4gTm9uZToKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKHNlbGYudmVyc2lvbnNbIk1pY3Jvc29mdC5Bc3BOZXRDb3JlLk12Yy5UZXN0aW5nIl0sICI5LjAuMTUiKQogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwoc2VsZi52ZXJzaW9uc1siTWljcm9zb2Z0LkFzcE5ldENvcmUuVGVzdEhvc3QiXSwgIjkuMC4xNSIpCgogICAgZGVmIHRlc3Rfc2VjdXJpdHlfdHJhbnNpdGl2ZV9waW5zX2NvdmVyX2N1cnJlbnRfYXVkaXRfZml4ZXMoc2VsZikgLT4gTm9uZToKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKHNlbGYucHJvcGVydGllc1siQ2VudHJhbFBhY2thZ2VUcmFuc2l0aXZlUGlubmluZ0VuYWJsZWQiXSwgInRydWUiKQogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwoc2VsZi52ZXJzaW9uc1siU25hcHBpZXIiXSwgIjEuMy4xIikKCiAgICBkZWYgdGVzdF9udWdldF9hdWRpdF9zdXBwcmVzc2lvbl9pc19hZHZpc29yeV9zcGVjaWZpYyhzZWxmKSAtPiBOb25lOgogICAgICAgICIiIkV2ZXJ5IHN1cHByZXNzaW9uIG11c3QgbmFtZSBvbmUgYWR2aXNvcnkgYW5kIGNhcnJ5IGl0cyBhY2NlcHRlZC1yaXNrIG1ldGFkYXRhLgoKICAgICAgICBUaGlzIHByZXZpb3VzbHkgcGlubmVkIHRoZSBleGFjdCBHSFNBLXhoZzYtOWo1ai13NHZmIGVudHJ5LCBzbyByZW1vdmluZyBhIHN1cHByZXNzaW9uCiAgICAgICAgd2hvc2UgYWR2aXNvcnkgbm8gbG9uZ2VyIGFwcGxpZXMg4oCUIHRoZSBvdXRjb21lIHRoZSBwb2xpY3kgd2FudHMg4oCUIGZhaWxlZCB0aGUgc3VpdGUuIEFzc2VydAogICAgICAgIHRoZSBwcm9wZXJ0eSB0aGF0IG11c3QgYWx3YXlzIGhvbGQgaW5zdGVhZDsgbm8gc3VwcHJlc3Npb25zIGF0IGFsbCBpcyB2YWxpZCBhbmQgcHJlZmVycmVkLgogICAgICAgICIiIgogICAgICAgIHJvb3QgPSBFVC5wYXJzZShCVUlMRF9QUk9QUykuZ2V0cm9vdCgpCiAgICAgICAgYWR2aXNvcnlfc3VwcHJlc3Npb25zID0gWwogICAgICAgICAgICBpdGVtIGZvciBpdGVtIGluIHJvb3QuZmluZGFsbCgiLi8vTWVyaWRpYW5OdUdldEF1ZGl0U3VwcHJlc3Npb24iKQogICAgICAgIF0KICAgICAgICBzdXBwcmVzc2lvbnMgPSBbCiAgICAgICAgICAgIGl0ZW0uYXR0cmliWyJJbmNsdWRlIl0KICAgICAgICAgICAgZm9yIGl0ZW0gaW4gcm9vdC5maW5kYWxsKCIuLy9OdUdldEF1ZGl0U3VwcHJlc3MiKQogICAgICAgIF0KCiAgICAgICAgZm9yIGl0ZW0gaW4gYWR2aXNvcnlfc3VwcHJlc3Npb25zOgogICAgICAgICAgICBpbmNsdWRlID0gaXRlbS5hdHRyaWJbIkluY2x1ZGUiXQogICAgICAgICAgICBzZWxmLmFzc2VydFJlZ2V4KAogICAgICAgICAgICAgICAgaW5jbHVkZSwKICAgICAgICAgICAgICAgIHIiXmh0dHBzOi8vZ2l0aHViXC5jb20vYWR2aXNvcmllcy9HSFNBLVtcdy1dKyQiLAogICAgICAgICAgICAgICAgImEgc3VwcHJlc3Npb24gbXVzdCBuYW1lIGV4YWN0bHkgb25lIGFkdmlzb3J5IGJ5IFVSTCwgbmV2ZXIgYSBwYWNrYWdlIG9yIHdpbGRjYXJkIiwKICAgICAgICAgICAgKQogICAgICAgICAgICBmb3IgZmllbGQgaW4gKCJPd25lciIsICJKdXN0aWZpY2F0aW9uIiwgIlJhdGNoZXRQbGFuIik6CiAgICAgICAgICAgICAgICBlbGVtZW50ID0gaXRlbS5maW5kKGZpZWxkKQogICAgICAgICAgICAgICAgc2VsZi5hc3NlcnRJc05vdE5vbmUoZWxlbWVudCwgZiJ7aW5jbHVkZX0gaXMgbWlzc2luZyB7ZmllbGR9IikKICAgICAgICAgICAgICAgIHNlbGYuYXNzZXJ0VHJ1ZSgKICAgICAgICAgICAgICAgICAgICAoZWxlbWVudC50ZXh0IG9yICIiKS5zdHJpcCgpLAogICAgICAgICAgICAgICAgICAgIGYie2luY2x1ZGV9IGhhcyBhbiBlbXB0eSB7ZmllbGR9IiwKICAgICAgICAgICAgICAgICkKCiAgICAgICAgIyBUaGUgaW5kaXJlY3Rpb24gZXhpc3RzIHNvIHN1cHByZXNzaW9ucyBjYW4gb25seSBiZSBhZGRlZCB0aHJvdWdoIHRoZSBkb2N1bWVudGVkIGl0ZW0sCiAgICAgICAgIyBhbmQgbXVzdCBzdGF5IHdpcmVkIHdoZW5ldmVyIGFueSBzdXBwcmVzc2lvbiBleGlzdHMuCiAgICAgICAgaWYgYWR2aXNvcnlfc3VwcHJlc3Npb25zOgogICAgICAgICAgICBzZWxmLmFzc2VydEVxdWFsKFsiQChNZXJpZGlhbk51R2V0QXVkaXRTdXBwcmVzc2lvbikiXSwgc3VwcHJlc3Npb25zKQogICAgICAgIGVsc2U6CiAgICAgICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwoW10sIHN1cHByZXNzaW9ucykKCiAgICBkZWYgdGVzdF9hbGxfcHJvamVjdF9wYWNrYWdlX3JlZmVyZW5jZXNfaGF2ZV9jZW50cmFsX3ZlcnNpb25zKHNlbGYpIC0+IE5vbmU6CiAgICAgICAgbWlzc2luZzogbGlzdFtzdHJdID0gW10KICAgICAgICBleGNsdWRlZF9kaXJzID0geyJiaW4iLCAib2JqIiwgIm5vZGVfbW9kdWxlcyIsICIuZ2l0In0KCiAgICAgICAgcHJvamVjdF9wYXRoczogbGlzdFtQYXRoXSA9IFtdCiAgICAgICAgZm9yIGN1cnJlbnRfcm9vdCwgZGlybmFtZXMsIGZpbGVuYW1lcyBpbiBvcy53YWxrKFJFUE9fUk9PVCk6CiAgICAgICAgICAgIGRpcm5hbWVzWzpdID0gW25hbWUgZm9yIG5hbWUgaW4gZGlybmFtZXMgaWYgbmFtZSBub3QgaW4gZXhjbHVkZWRfZGlyc10KICAgICAgICAgICAgcHJvamVjdF9wYXRocy5leHRlbmQoCiAgICAgICAgICAgICAgICBQYXRoKGN1cnJlbnRfcm9vdCkgLyBmaWxlbmFtZQogICAgICAgICAgICAgICAgZm9yIGZpbGVuYW1lIGluIGZpbGVuYW1lcwogICAgICAgICAgICAgICAgaWYgZmlsZW5hbWUuZW5kc3dpdGgoInByb2oiKSBhbmQgIi4iIGluIGZpbGVuYW1lCiAgICAgICAgICAgICkKCiAgICAgICAgZm9yIHByb2plY3RfcGF0aCBpbiBzb3J0ZWQocHJvamVjdF9wYXRocyk6CiAgICAgICAgICAgIHJvb3QgPSBFVC5wYXJzZShwcm9qZWN0X3BhdGgpLmdldHJvb3QoKQogICAgICAgICAgICBmb3IgcmVmZXJlbmNlIGluIHJvb3QuZmluZGFsbCgiLi8vUGFja2FnZVJlZmVyZW5jZSIpOgogICAgICAgICAgICAgICAgcGFja2FnZSA9IHJlZmVyZW5jZS5hdHRyaWIuZ2V0KCJJbmNsdWRlIikKICAgICAgICAgICAgICAgIGlmIG5vdCBwYWNrYWdlOgogICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlCgogICAgICAgICAgICAgICAgaWYgcmVmZXJlbmNlLmF0dHJpYi5nZXQoIlZlcnNpb24iKSBvciByZWZlcmVuY2UuZmluZCgiVmVyc2lvbiIpIGlzIG5vdCBOb25lOgogICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlCgogICAgICAgICAgICAgICAgaWYgcGFja2FnZSBub3QgaW4gc2VsZi52ZXJzaW9uczoKICAgICAgICAgICAgICAgICAgICByZWxhdGl2ZV9wYXRoID0gcHJvamVjdF9wYXRoLnJlbGF0aXZlX3RvKFJFUE9fUk9PVCkuYXNfcG9zaXgoKQogICAgICAgICAgICAgICAgICAgIG1pc3NpbmcuYXBwZW5kKGYie3JlbGF0aXZlX3BhdGh9OiB7cGFja2FnZX0iKQoKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKFtdLCBtaXNzaW5nKQoKCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICB1bml0dGVzdC5tYWluKCkK
+import unittest
+import xml.etree.ElementTree as ET
+import os
+from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CENTRAL_PACKAGES = REPO_ROOT / "Directory.Packages.props"
+BUILD_PROPS = REPO_ROOT / "Directory.Build.props"
+
+
+class CentralPackageVersionTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        root = ET.parse(CENTRAL_PACKAGES).getroot()
+        cls.properties = {
+            item.tag: item.text
+            for item in root.findall("./PropertyGroup/*")
+            if item.text is not None
+        }
+        cls.versions = {
+            item.attrib["Include"]: item.attrib["Version"]
+            for item in root.findall(".//PackageVersion")
+        }
+
+    def test_microsoft_extensions_pins_match_hosting_transitives(self) -> None:
+        packages = [
+            "Microsoft.Extensions.Configuration",
+            "Microsoft.Extensions.Configuration.Json",
+            "Microsoft.Extensions.Configuration.Binder",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables",
+            "Microsoft.Extensions.Configuration.CommandLine",
+            "Microsoft.Extensions.DependencyInjection",
+            "Microsoft.Extensions.DependencyInjection.Abstractions",
+            "Microsoft.Extensions.Hosting",
+            "Microsoft.Extensions.Hosting.Abstractions",
+            "Microsoft.Extensions.Caching.Memory",
+            "Microsoft.Extensions.Logging",
+            "Microsoft.Extensions.Logging.Abstractions",
+            "Microsoft.Extensions.Logging.Debug",
+            "Microsoft.Extensions.Options",
+            "Microsoft.Extensions.Options.ConfigurationExtensions",
+        ]
+
+        for package in packages:
+            with self.subTest(package=package):
+                expected = "10.0.12" if package in {
+                    "Microsoft.Extensions.Configuration",
+                    "Microsoft.Extensions.DependencyInjection.Abstractions",
+                    "Microsoft.Extensions.Logging.Abstractions",
+                    "Microsoft.Extensions.Options",
+                } else "10.0.7"
+                self.assertEqual(self.versions[package], expected)
+
+        self.assertEqual(self.versions["Microsoft.Extensions.ObjectPool"], "10.0.12")
+
+    def test_json_stack_pins_match_system_text_json_transitives(self) -> None:
+        self.assertEqual(self.versions["System.Text.Json"], "10.0.7")
+        self.assertEqual(self.versions["System.IO.Pipelines"], "10.0.7")
+
+    def test_quantconnect_lean_stays_on_net9_compatible_line(self) -> None:
+        self.assertEqual(self.properties["QuantConnectLeanVersion"], "2.5.17414")
+
+        packages = [
+            "QuantConnect.Lean",
+            "QuantConnect.Lean.Engine",
+            "QuantConnect.Common",
+            "QuantConnect.Indicators",
+        ]
+
+        for package in packages:
+            with self.subTest(package=package):
+                self.assertEqual(self.versions[package], "$(QuantConnectLeanVersion)")
+                self.assertNotEqual(self.versions[package], "2.5.17677")
+
+    def test_aspnet_test_host_has_central_pin(self) -> None:
+        self.assertEqual(self.versions["Microsoft.AspNetCore.Mvc.Testing"], "9.0.15")
+        self.assertEqual(self.versions["Microsoft.AspNetCore.TestHost"], "9.0.15")
+
+    def test_security_transitive_pins_cover_current_audit_fixes(self) -> None:
+        self.assertEqual(self.properties["CentralPackageTransitivePinningEnabled"], "true")
+        self.assertEqual(self.versions["Snappier"], "1.3.1")
+
+    def test_nuget_audit_suppression_is_advisory_specific(self) -> None:
+        """Every suppression must name one advisory and carry its accepted-risk metadata.
+
+        This previously pinned the exact GHSA-xhg6-9j5j-w4vf entry, so removing a suppression
+        whose advisory no longer applies — the outcome the policy wants — failed the suite. Assert
+        the property that must always hold instead; no suppressions at all is valid and preferred.
+        """
+        root = ET.parse(BUILD_PROPS).getroot()
+        advisory_suppressions = [
+            item for item in root.findall(".//MeridianNuGetAuditSuppression")
+        ]
+        suppressions = [
+            item.attrib["Include"]
+            for item in root.findall(".//NuGetAuditSuppress")
+        ]
+
+        for item in advisory_suppressions:
+            include = item.attrib["Include"]
+            self.assertRegex(
+                include,
+                r"^https://github\.com/advisories/GHSA-[\w-]+$",
+                "a suppression must name exactly one advisory by URL, never a package or wildcard",
+            )
+            for field in ("Owner", "Justification", "RatchetPlan"):
+                element = item.find(field)
+                self.assertIsNotNone(element, f"{include} is missing {field}")
+                self.assertTrue(
+                    (element.text or "").strip(),
+                    f"{include} has an empty {field}",
+                )
+
+        # The indirection exists so suppressions can only be added through the documented item,
+        # and must stay wired whenever any suppression exists.
+        if advisory_suppressions:
+            self.assertEqual(["@(MeridianNuGetAuditSuppression)"], suppressions)
+        else:
+            self.assertEqual([], suppressions)
+
+    def test_all_project_package_references_have_central_versions(self) -> None:
+        missing: list[str] = []
+        excluded_dirs = {"bin", "obj", "node_modules", ".git"}
+
+        project_paths: list[Path] = []
+        for current_root, dirnames, filenames in os.walk(REPO_ROOT):
+            dirnames[:] = [name for name in dirnames if name not in excluded_dirs]
+            project_paths.extend(
+                Path(current_root) / filename
+                for filename in filenames
+                if filename.endswith("proj") and "." in filename
+            )
+
+        for project_path in sorted(project_paths):
+            root = ET.parse(project_path).getroot()
+            for reference in root.findall(".//PackageReference"):
+                package = reference.attrib.get("Include")
+                if not package:
+                    continue
+
+                if reference.attrib.get("Version") or reference.find("Version") is not None:
+                    continue
+
+                if package not in self.versions:
+                    relative_path = project_path.relative_to(REPO_ROOT).as_posix()
+                    missing.append(f"{relative_path}: {package}")
+
+        self.assertEqual([], missing)
+
+
+if __name__ == "__main__":
+    unittest.main()
