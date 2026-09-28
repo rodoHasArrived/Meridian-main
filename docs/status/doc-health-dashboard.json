@@ -1,7 +1,7 @@
 {
   "total_files": 674,
   "total_lines": 145538,
-  "orphaned_count": 249,
+  "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 271,
@@ -34,7 +34,6 @@
     ".agents/skills/meridian-simulated-user-panel/references/sample-prompts.md",
     ".agents/skills/meridian-test-writer/SKILL.md",
     "AGENTS.md",
-    "Meridian Design System/BRAND_GUIDELINES.md",
     "Meridian Design System/CONTENT_FUNDAMENTALS.md",
     "Meridian Design System/ICONOGRAPHY.md",
     "Meridian Design System/INSPIRATION_BRIEF.md",
