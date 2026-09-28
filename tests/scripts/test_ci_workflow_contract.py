@@ -37,7 +37,7 @@ class CiWorkflowContractTests(unittest.TestCase):
         secret_block = self._job_block("secret-scan")
 
         self.assertNotIn("if: github.event_name != 'pull_request'", secret_block)
-        self.assertIn("gitleaks/gitleaks-action@v3", secret_block)
+        self.assertIn("gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e", secret_block)
         self.assertIn('GITLEAKS_VERSION: "8.25.1"', secret_block)
 
 

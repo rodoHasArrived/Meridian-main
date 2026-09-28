@@ -85,7 +85,7 @@ class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
         workflow = MAINTENANCE_WORKFLOW.read_text(encoding="utf-8")
 
         self.assertIn("python3 build/scripts/ci/check-workflow-hygiene.py", workflow)
-        self.assertIn("rhysd/actionlint@v1.7.12", workflow)
+        self.assertIn("rhysd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca", workflow)
         self.assertIn("check-ai-contract-drift.py", workflow)
 
     def test_codeql_csharp_analysis_builds_with_current_sdk(self) -> None:
