@@ -67,18 +67,24 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
     public async Task<AccountingSystemConnectionVerificationResult> VerifyConnectionAsync(CancellationToken ct = default)
     {
         await _connectionGate.WaitAsync(ct).ConfigureAwait(false);
+        var generation = string.Empty;
         try
         {
             var connection = await ConnectionAsync(ct).ConfigureAwait(false);
-            var token = await RefreshAsync(connection, ct).ConfigureAwait(false);
+            generation = connection.CredentialGeneration;
+            var refreshed = await RefreshAsync(connection, ct).ConfigureAwait(false);
+            generation = refreshed.Generation;
+            var token = refreshed.Token;
             await VerifyScopeAsync(connection, token, ct).ConfigureAwait(false);
             // The connection lifecycle persists this result once, with the requesting actor.
-            return new(true, connection.Get(CompanyField), null, DateTimeOffset.UtcNow, ["Read-only connection verified; live posting remains disabled."]);
+            return new(true, connection.Get(CompanyField), null, DateTimeOffset.UtcNow, ["Read-only connection verified; live posting remains disabled."])
+            { ExpectedCredentialGeneration = generation };
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             return new(false, null, "Provider verification failed. Check credentials, account scope, permissions and availability.",
-                DateTimeOffset.UtcNow, []);
+                DateTimeOffset.UtcNow, [])
+            { ExpectedCredentialGeneration = generation };
         }
         finally { _connectionGate.Release(); }
     }
@@ -93,29 +99,36 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
         if (request.ProviderId is not null && !string.Equals(request.ProviderId.Trim(), ProviderId, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Import provider does not match this adapter.", nameof(request));
         await _connectionGate.WaitAsync(ct).ConfigureAwait(false);
+        var generation = string.Empty;
         try
         {
             var connection = await ConnectionAsync(ct).ConfigureAwait(false);
-            var token = await RefreshAsync(connection, ct).ConfigureAwait(false);
+            generation = connection.CredentialGeneration;
+            var refreshed = await RefreshAsync(connection, ct).ConfigureAwait(false);
+            generation = refreshed.Generation;
+            var token = refreshed.Token;
             var detail = await ReadAsync(connection, token, request with { PeriodStart = start, PeriodEnd = end }, ct).ConfigureAwait(false);
-            await RecordAsync(true, connection.Get(CompanyField), ct).ConfigureAwait(false);
+            await RecordAsync(true, connection.Get(CompanyField), generation, ct).ConfigureAwait(false);
             return detail;
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            await RecordAsync(false, null, ct).ConfigureAwait(false);
+            try
+            { await RecordAsync(false, null, generation, ct).ConfigureAwait(false); }
+            catch (ProviderCredentialConflictException) { }
             // Provider bodies, tokens, and transport exception messages never cross the public boundary.
             throw new InvalidOperationException("Read-only GL import failed. Check credentials, scope, permissions and provider response completeness.");
         }
         finally { _connectionGate.Release(); }
     }
 
-    private Task RecordAsync(bool success, string? company, CancellationToken ct)
+    private Task RecordAsync(bool success, string? company, string generation, CancellationToken ct)
         => _store.RecordVerificationAsync(new(ProviderId, success,
             ErrorMessage: success ? null : "Read-only GL verification or import failed.", ExternalAccountId: company,
-            VerifiedAt: DateTimeOffset.UtcNow, Actor: $"{ProviderId}-read-only-import"), ct);
+            VerifiedAt: DateTimeOffset.UtcNow, Actor: $"{ProviderId}-read-only-import")
+        { ExpectedCredentialGeneration = generation }, ct);
 
-    private async Task<string> RefreshAsync(ProviderCredentialReadResult connection, CancellationToken ct)
+    private async Task<(string Token, string Generation)> RefreshAsync(ProviderCredentialReadResult connection, CancellationToken ct)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, TokenEndpoint(connection));
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
@@ -128,16 +141,14 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
         using var document = await SendAsync(request, ct).ConfigureAwait(false);
         var token = RequiredText(document.RootElement, "access_token");
         var refresh = Text(document.RootElement, "refresh_token");
+        // Compare and replace under the vault lock: an operator's replacement connection wins.
+        // Persist a complete snapshot even when the provider does not rotate its refresh token.
+        var credentials = connection.Credentials.ToDictionary(p => p.Key, p => (string?)p.Value, StringComparer.OrdinalIgnoreCase);
         if (!string.IsNullOrWhiteSpace(refresh))
-        {
-            // Environment credentials must migrate as a complete snapshot. Once the provider
-            // rotates, caller cancellation must not discard the only usable replacement.
-            var credentials = connection.Credentials.ToDictionary(p => p.Key, p => (string?)p.Value, StringComparer.OrdinalIgnoreCase);
             credentials["RefreshToken"] = refresh;
-            await _store.SaveRotatedCredentialsAsync(new(ProviderId, credentials, connection.Environment,
-                Actor: $"{ProviderId}-token-exchange"), CancellationToken.None).ConfigureAwait(false);
-        }
-        return token;
+        var generation = await _store.SaveRotatedCredentialsAsync(new(ProviderId, credentials, connection.Environment,
+            Actor: $"{ProviderId}-token-exchange"), connection, CancellationToken.None).ConfigureAwait(false);
+        return (token, generation);
     }
 
     protected async Task<JsonDocument> SendAsync(HttpRequestMessage request, CancellationToken ct)

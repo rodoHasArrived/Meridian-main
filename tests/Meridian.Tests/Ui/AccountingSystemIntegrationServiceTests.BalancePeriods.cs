@@ -14,14 +14,54 @@ namespace Meridian.Tests.Ui;
 public sealed partial class AccountingSystemIntegrationServiceTests
 {
     [Theory]
-    [InlineData("xero", false, false)]
-    [InlineData("netsuite", false, false)]
-    [InlineData("netsuite", true, false)]
-    [InlineData("xero", false, true)]
-    [InlineData("netsuite", false, true)]
-    public async Task LiveProviders_ReconcileReportBalancesAcrossPeriods_AndExportOnlyRequestedActivity(string id, bool unnumbered, bool effectiveDates)
+    [InlineData("xero", "duplicate")]
+    [InlineData("netsuite", "duplicate")]
+    [InlineData("xero", "unknown")]
+    [InlineData("netsuite", "unknown")]
+    [InlineData("xero", "collision")]
+    [InlineData("netsuite", "collision")]
+    public async Task LiveProviders_RejectAmbiguousReconciliationMappings(string id, string fault)
+    {
+        using var handler = new ExternalGlTestHandler(ExternalGlTestData.Respond);
+        using var client = new HttpClient(handler);
+        var provider = ExternalGlTestData.Provider(id, new(id), client);
+        var ledger = CreateMatchedFixtureLedgerStore([("100", LedgerAccountType.Asset, 100.25m, 0m), ("300", LedgerAccountType.Equity, 0m, 100.25m)]);
+        var service = CreateService(ledger, provider);
+        await service.ImportAsync(ExternalGlTestData.Request(id) with { FundProfileId = "default-fund", TenantId = null, CompanyId = null });
+        var profile = CertifiedQuickBooksMappingProfile() with
+        {
+            ProviderId = id,
+            ProfileId = id + "-ambiguous",
+            AccountMappings = fault switch
+            {
+                "duplicate" => new Dictionary<string, string> { ["100"] = "cash", ["300"] = "cash" },
+                "unknown" => new Dictionary<string, string> { ["100"] = "missing", ["300"] = "capital" },
+                _ => new Dictionary<string, string> { ["300"] = "cash" }
+            }
+        };
+        await service.UpsertMappingProfileAsync(new(profile, "accounting-ops", ProviderId: id,
+            FundProfileId: "default-fund", LedgerBookId: ExternalGlLedgerBookId, EvidenceLinks: [$"approval:external-gl-mapping:{profile.ProfileId}"]));
+        await service.Invoking(s => s.ReconcileLatestAsync(id, "default-fund", ExternalGlLedgerBookId))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("Live GL reconciliation*");
+    }
+
+    [Theory]
+    [InlineData("xero", false, false, false, false, false)]
+    [InlineData("netsuite", false, false, false, false, false)]
+    [InlineData("netsuite", true, false, false, false, false)]
+    [InlineData("xero", false, true, false, false, false)]
+    [InlineData("netsuite", false, true, false, false, false)]
+    [InlineData("xero", false, false, true, false, false)]
+    [InlineData("netsuite", false, false, true, false, false)]
+    [InlineData("xero", false, false, false, true, false)]
+    [InlineData("netsuite", false, false, false, true, false)]
+    [InlineData("xero", false, false, true, true, true)]
+    [InlineData("netsuite", true, false, true, true, true)]
+    public async Task LiveProviders_ReconcileReportBalancesAcrossPeriods_AndExportOnlyRequestedActivity(
+        string id, bool unnumbered, bool effectiveDates, bool renamed, bool closeJournals, bool reverseClosings)
     {
         string Code(string account) => unnumbered ? $"netsuite-account:{account}" : account switch { "cash" => "100", "income" => "400", _ => "320" };
+        string MeridianCode(string account) => renamed ? account switch { "cash" => "Assets:Cash", "income" => "Revenue:Sales", _ => "Equity:RetainedEarnings" } : Code(account);
         var credentials = new ExternalGlTestStore(id);
         using var handler = new ExternalGlTestHandler((request, body) =>
         {
@@ -98,10 +138,31 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             var journalId = Guid.NewGuid();
             var journal = new JournalEntry(journalId, timestamp, date,
             [
-                new(Guid.NewGuid(), journalId, timestamp, new(Code("cash"), LedgerAccountType.Asset), amount, 0m, date),
-                new(Guid.NewGuid(), journalId, timestamp, new(Code("income"), LedgerAccountType.Revenue), 0m, amount, date)
+                new(Guid.NewGuid(), journalId, timestamp, new(MeridianCode("cash"), LedgerAccountType.Asset), amount, 0m, date),
+                new(Guid.NewGuid(), journalId, timestamp, new(MeridianCode("income"), LedgerAccountType.Revenue), 0m, amount, date)
             ], effectiveDates ? new JournalEntryMetadata(EffectiveDate: accountingDate) : null);
             records.Add(new(journal, Guid.NewGuid(), period.PeriodId, null, null, records.Count + 1, timestamp));
+        }
+        if (closeJournals)
+        {
+            foreach (var (date, amount) in new[] { ("2024-12-31", 100m), ("2025-05-31", 50m), ("2026-01-31", 20m), ("2026-02-10", 30m) })
+            {
+                var timestamp = DateTimeOffset.Parse(date + "T00:00:00Z");
+                var period = periods.Single(p => p.StartDate.Year == timestamp.Year && p.StartDate.Month == timestamp.Month);
+                var draft = PeriodCloseDraftBuilder.BuildDraft(PeriodCloseProjector.Project(new PeriodCloseInput(
+                    period.PeriodId.ToString(), timestamp,
+                    [new PeriodCloseAccountBalance(new(MeridianCode("income"), LedgerAccountType.Revenue), amount)], "controller")))!;
+                var journalId = Guid.NewGuid();
+                var closing = new JournalEntry(journalId, timestamp, draft.Description,
+                    draft.Lines.Select(line => new LedgerEntry(Guid.NewGuid(), journalId, timestamp, line.account,
+                        line.debit, line.credit, draft.Description, line.dimensions)).ToArray(), draft.Metadata);
+                records.Add(new(closing, Guid.NewGuid(), period.PeriodId, null, null, records.Count + 1, timestamp));
+                if (reverseClosings)
+                {
+                    var reversal = LedgerJournalReversal.Reverse(closing, Guid.NewGuid(), timestamp.AddHours(1), "Reopen period");
+                    records.Add(new(reversal, Guid.NewGuid(), period.PeriodId, null, null, records.Count + 1, timestamp.AddHours(1)));
+                }
+            }
         }
         var ledger = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
         ledger.Setup(s => s.ListPeriodsAsync(ExternalGlLedgerBookId, null, "default-fund", null, It.IsAny<CancellationToken>()))
@@ -116,21 +177,32 @@ public sealed partial class AccountingSystemIntegrationServiceTests
         var import = await service.ImportAsync(new(id, "default-fund", ExternalGlLedgerBookId, start, end));
         import.Summary.PeriodStart.Should().Be(start);
         import.Summary.TrialBalanceBasis!.IncomeStatementPeriodStart.Should().Be(id == "xero" ? new(2025, 4, 1) : new(2026, 1, 1));
-        var reconciliation = await service.ReconcileLatestAsync(id, "default-fund", ExternalGlLedgerBookId);
-        reconciliation.BreakCount.Should().Be(0);
-        reconciliation.Rows.Single(r => r.AccountCode == Code("cash")).MeridianDebit.Should().Be(210m);
-        reconciliation.Rows.Single(r => r.AccountCode == Code("income")).MeridianCredit.Should().Be(id == "xero" ? 110m : 60m);
-        reconciliation.Rows.Single(r => r.AccountCode == Code("retained")).MeridianCredit.Should().Be(id == "xero" ? 100m : 150m);
         var template = CertifiedQuickBooksMappingProfile();
         var profile = template with
         {
             ProviderId = id,
             ProfileId = $"{id}-period-basis",
-            AccountMappings = new[] { "cash", "income", "retained" }.ToDictionary(Code, a => a),
+            AccountMappings = new[] { "cash", "income", "retained" }.ToDictionary(MeridianCode, a => a),
             DimensionMappings = template.DimensionMappings.Select(m => m with { ProviderId = id }).ToArray()
         };
         await service.UpsertMappingProfileAsync(new(profile, "accounting-ops", ProviderId: id,
             FundProfileId: "default-fund", LedgerBookId: ExternalGlLedgerBookId, EvidenceLinks: [$"approval:external-gl-mapping:{profile.ProfileId}"]));
+        var reconciliation = await service.ReconcileLatestAsync(id, "default-fund", ExternalGlLedgerBookId);
+        reconciliation.BreakCount.Should().Be(0);
+        reconciliation.Rows.Single(r => r.AccountCode == MeridianCode("cash")).MeridianDebit.Should().Be(210m);
+        reconciliation.Rows.Single(r => r.AccountCode == MeridianCode("income")).MeridianCredit.Should().Be(id == "xero" ? 110m : 60m);
+        reconciliation.Rows.Single(r => r.AccountCode == MeridianCode("retained")).MeridianCredit.Should().Be(id == "xero" ? 100m : 150m);
+        if (renamed)
+        {
+            var alternative = profile with
+            {
+                ProfileId = profile.ProfileId + "-alternative",
+                UpdatedAtUtc = DateTimeOffset.UtcNow.AddMinutes(1),
+                AccountMappings = new[] { "cash", "income", "retained" }.ToDictionary(account => "Other:" + account, account => account)
+            };
+            await service.UpsertMappingProfileAsync(new(alternative, "accounting-ops", ProviderId: id,
+                FundProfileId: "default-fund", LedgerBookId: ExternalGlLedgerBookId, EvidenceLinks: [$"approval:external-gl-mapping:{alternative.ProfileId}"]));
+        }
         var controls = id == "xero" ? new[] { "tracking-category-options", "contact-mapping", "tax-rate-mapping", "bank-account-scope" }
             : ["subsidiary-scope", "classification-segments", "entity-mapping", "intercompany-controls"];
         var evidence = controls.Select(c => $"approval:external-gl-provider:{id}:{c}:import:{import.Summary.ImportId}:ledger-book:{ExternalGlLedgerBookId:D}:{start:yyyy-MM-dd}:{end:yyyy-MM-dd}").ToArray();
@@ -148,8 +220,8 @@ public sealed partial class AccountingSystemIntegrationServiceTests
         var changeId = Guid.NewGuid();
         var changeDate = new DateTimeOffset(2026, 2, 7, 0, 0, 0, TimeSpan.Zero);
         records.Add(new(new(changeId, changeDate, "Gross activity amendment",
-            [new(Guid.NewGuid(), changeId, changeDate, new(Code("cash"), LedgerAccountType.Asset), 5m, 0m, "Gross activity amendment"),
-             new(Guid.NewGuid(), changeId, changeDate, new(Code("cash"), LedgerAccountType.Asset), 0m, 5m, "Gross activity amendment")]),
+            [new(Guid.NewGuid(), changeId, changeDate, new(MeridianCode("cash"), LedgerAccountType.Asset), 5m, 0m, "Gross activity amendment"),
+             new(Guid.NewGuid(), changeId, changeDate, new(MeridianCode("cash"), LedgerAccountType.Asset), 0m, 5m, "Gross activity amendment")]),
             Guid.NewGuid(), periods.Last().PeriodId, null, null, 99, changeDate));
         (await service.GetExportPackageManifestAsync(package.ExportPackageId))!.ValidationIssues
             .Should().Contain(i => i.Severity == AccountingConfigurationValidationSeverityDto.Critical);

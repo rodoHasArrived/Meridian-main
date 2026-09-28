@@ -42,6 +42,10 @@ identity; imports persist their own result. Export validation requires currently
 verified credentials, so credential replacement blocks review until verification succeeds.
 Vault status honors the pending verification marker even when an earlier success
 timestamp is retained for audit history.
+Conditional token saves compare the complete expected connection while holding the
+vault writer lock and return a new opaque credential generation. Import and lifecycle
+verification results must still match that generation when persisted. A concurrent
+operator replacement is preserved and the stale operation cannot verify it.
 
 ## OAuth token ownership
 

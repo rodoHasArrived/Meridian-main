@@ -92,7 +92,12 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
     public Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
         => SaveCredentialsAsync(request, true, ct);
 
-    private async Task SaveCredentialsAsync(ProviderCredentialSaveRequest request, bool retainCurrentGenerationAsBackup, CancellationToken ct)
+    public Task<string> SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request,
+        ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
+        => SaveCredentialsAsync(request, true, ct, expectedConnection);
+
+    private async Task<string> SaveCredentialsAsync(ProviderCredentialSaveRequest request, bool retainCurrentGenerationAsBackup,
+        CancellationToken ct, ProviderCredentialReadResult? expectedConnection = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         var descriptor = RequireDescriptor(request.ProviderId);
@@ -106,6 +111,19 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             vault.Providers.TryGetValue(descriptor.ProviderId, out var existing);
 
+            if (expectedConnection is not null)
+            {
+                var currentRecord = existing ?? ReadEnvironmentFallback(descriptor);
+                var current = currentRecord is null ? null : ToReadResult(descriptor, currentRecord,
+                    existing is null ? ProviderCredentialSourceDto.Environment : ProviderCredentialSourceDto.LocalEncryptedStore);
+                if (current is null || current.Source != expectedConnection.Source ||
+                    current.CredentialGeneration != expectedConnection.CredentialGeneration ||
+                    !string.Equals(current.Environment, expectedConnection.Environment, StringComparison.Ordinal) ||
+                    current.Credentials.Count != expectedConnection.Credentials.Count ||
+                    current.Credentials.Any(pair => expectedConnection.Get(pair.Key) != pair.Value))
+                    throw new ProviderCredentialConflictException();
+            }
+
             var updated = CreateUpdatedRecord(descriptor, request, normalizedCredentials, existing, now);
 
             vault.Providers[descriptor.ProviderId] = updated;
@@ -117,6 +135,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
                 BuildStatus(descriptor, ToReadResult(descriptor, updated, ProviderCredentialSourceDto.LocalEncryptedStore)),
                 updated.Fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(),
                 ct).ConfigureAwait(false);
+            return updated.Metadata["credentialGeneration"];
         }
         finally
         {
@@ -163,6 +182,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
         metadata["lastRotatedAt"] = now.ToString("O");
         metadata["rotationDueAt"] = now.AddDays(DefaultRotationWindowDays).ToString("O");
         metadata["verificationRequired"] = "true";
+        metadata["credentialGeneration"] = Guid.NewGuid().ToString("N");
         metadata["credentialStore"] = "local-encrypted-vault";
 
         return new ProviderCredentialVaultRecord
@@ -436,8 +456,14 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore, ILeg
             var vault = await LoadVaultAsync(ct).ConfigureAwait(false);
             if (!vault.Providers.TryGetValue(descriptor.ProviderId, out var record))
             {
+                if (update.ExpectedCredentialGeneration is not null)
+                    throw new ProviderCredentialConflictException();
                 return;
             }
+
+            if (update.ExpectedCredentialGeneration is not null &&
+                record.Metadata.GetValueOrDefault("credentialGeneration", string.Empty) != update.ExpectedCredentialGeneration)
+                throw new ProviderCredentialConflictException();
 
             record.LastVerifiedAt = verifiedAt;
             record.LastError = update.Success ? null : SanitizeError(update.ErrorMessage);

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-09-05
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.FinancialOperations
@@ -30,6 +30,11 @@ Journal accounting effective dates control both report and export windows; legac
 entries use their UTC event date. Live accrual reports require a resolved Primary
 or Gaap ledger book; Cash, Tax and Statutory books are unsupported at reconciliation
 and every export boundary.
+Live reconciliation resolves imported account IDs through the scoped certified
+mapping, including income-year classification and retained earnings. Export review
+uses its selected profile at every boundary. Ambiguous many-to-one mappings and
+collisions are rejected. Meridian period-close journals and their reversals are
+excluded from provider-basis balances and gross export activity.
 
 Statement matching retains exact tolerance rules/version and matcher revision with population
 availability. Missing/failed internal populations and empty statements cannot certify source clearing;

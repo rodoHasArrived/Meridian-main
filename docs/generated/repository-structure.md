@@ -9414,6 +9414,7 @@ Meridian-main
 │   │   │   │   ├── QuickBooks
 │   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
 │   │   │   │   ├── ExternalGlConnectionLifecycleTests.cs
+│   │   │   │   ├── ExternalGlCredentialConcurrencyTests.cs
 │   │   │   │   ├── ExternalGlCredentialRecoveryTests.cs
 │   │   │   │   ├── ExternalGlFailureBoundaryTests.cs
 │   │   │   │   ├── ExternalGlLiveProviderTests.cs

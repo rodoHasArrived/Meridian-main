@@ -46,6 +46,11 @@ operator's identity. Imports record their own verification result. Replacing any
 credentials clears verification, including replacements that keep the same external
 company. Successful verification or a complete successful import is required before
 export review can resume.
+Token saves compare the expected connection atomically under the vault writer lock.
+Every credential save changes an opaque generation identifier; import and verification
+results can only update that same generation. Replacing credentials during an in-flight
+request therefore preserves the operator's replacement and blocks the stale operation.
+Retry the import or verification against the current connection after replacement.
 
 ## Import semantics and boundaries
 
@@ -128,6 +133,19 @@ require a resolved Meridian book with Primary or Gaap accounting basis. Cash, Ta
 Statutory and unresolved book bases are unsupported and are rejected even when
 numeric balances match or balanced reconciliation is not requested. Xero wage and
 superannuation expense account types participate in the income-year roll-forward.
+Meridian's period-close closing journals and their reversals are excluded from both
+provider-basis totals and export activity. The report projection derives retained
+earnings from underlying income activity, so a completed monthly close cannot erase
+current-year income or double-count earlier carry-forward.
+
+Certified account mappings resolve imported account identities to Meridian account
+names before comparison, including income and retained-earnings classification.
+Thus `Assets:Cash` can reconcile with a differently numbered Xero/NetSuite account.
+Mappings must belong to the same provider, fund, ledger book and access scope.
+Current support requires unambiguous one-to-one mappings; many-to-one allocations,
+missing external identities and collisions with other account names are rejected.
+Export creation, certification and manifest reads use the package's selected mapping
+profile even when another certified profile is newer.
 
 ## Provider-owned export checks
 
@@ -188,6 +206,11 @@ Credential replacement regressions cover creation, certification and manifest re
 real-vault tests require one verification audit event with the requesting actor.
 Rate-limit regressions cover delta and HTTP-date delays, unchanged pagination cursors,
 retry exhaustion, daily limits, malformed hints and cancellation during the wait.
+`ExternalGlCredentialConcurrencyTests` pause token exchanges and provider reads while
+another vault instance replaces credentials, proving that stale rotations and
+verification results cannot overwrite or verify that replacement. Reconciliation
+tests use real period-close projections and reversals, different internal/external
+account names, and a competing certified mapping profile.
 
 Issue #2752 originally referred to `docs/status/accounting-productization-checklist.md`.
 That historical snapshot is retained in the [archived checklist](../../archive/docs/summaries/accounting-productization-checklist.md).

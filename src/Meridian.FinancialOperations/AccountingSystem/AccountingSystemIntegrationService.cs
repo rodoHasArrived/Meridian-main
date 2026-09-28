@@ -191,7 +191,7 @@ public sealed partial class AccountingSystemIntegrationService
         var companyId = NormalizeOptional(request.CompanyId);
         var providerSupportsPosting = ProviderSupportsPosting(providerId);
         var mappingProfile = ResolveMappingProfile(providerId, fundProfileId, request.LedgerBookId, request.MappingProfileId, tenantId, companyId);
-        var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
+        var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct, tenantId, companyId, mappingProfile).ConfigureAwait(false);
         var periodStart = request.PeriodStart ?? reconciliation?.PeriodStart ?? CurrentMonthStart();
         var periodEnd = request.PeriodEnd ?? reconciliation?.PeriodEnd ?? CurrentMonthEnd(periodStart);
         var requestEvidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
@@ -497,7 +497,8 @@ public sealed partial class AccountingSystemIntegrationService
         Guid? ledgerBookId,
         CancellationToken ct,
         string? tenantId = null,
-        string? companyId = null)
+        string? companyId = null,
+        ScopedExternalGlMappingProfile? mappingProfile = null)
     {
         if (!_providers.Any(provider => string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase)))
         {
@@ -506,13 +507,13 @@ public sealed partial class AccountingSystemIntegrationService
 
         try
         {
-            return await ReconcileLatestAsync(providerId, fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
+            return await ReconcileLatestCoreAsync(providerId, fundProfileId, ledgerBookId, ct, tenantId, companyId, mappingProfile).ConfigureAwait(false);
         }
         catch (InvalidOperationException ex) when (
             ledgerBookId.HasValue &&
             ex.Message.Contains("returned ledger book", StringComparison.OrdinalIgnoreCase))
         {
-            return await ReconcileLatestAsync(providerId, fundProfileId, null, ct, tenantId, companyId).ConfigureAwait(false);
+            return await ReconcileLatestCoreAsync(providerId, fundProfileId, null, ct, tenantId, companyId, mappingProfile).ConfigureAwait(false);
         }
         catch (ArgumentException)
         {
@@ -537,7 +538,8 @@ public sealed partial class AccountingSystemIntegrationService
             package.LedgerBookId,
             ct,
             package.TenantId,
-            package.CompanyId).ConfigureAwait(false);
+            package.CompanyId,
+            mappingProfile).ConfigureAwait(false);
         var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation, package.LedgerBookId);
         var currentReconciliationSnapshotHash = ComputeReconciliationSnapshotHash(reconciliation);
 

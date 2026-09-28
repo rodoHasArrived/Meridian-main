@@ -497,6 +497,11 @@ Credential replacement requires fresh verification at all three export boundarie
 Connection verification persists one audit event with the requesting operator's
 identity. Xero GET reads honor bounded, cancellable `Retry-After` delays while
 retaining their journal offset; exhausted or unsupported limits fail closed.
+Credential rotation and verification use conditional vault writes so concurrent
+operator replacements remain authoritative. Provider-basis reconciliation excludes
+Meridian period-close journals and reversals, resolves certified account mappings
+by external identity, and honors the package's selected mapping profile throughout
+export review. Ambiguous mappings fail closed.
 
 `NetSuiteTrialBalanceTests` and the external GL regression suites cover multi-year
 balances, every income-statement type, the year boundary, offsetting accounts,

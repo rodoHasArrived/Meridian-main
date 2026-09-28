@@ -6,7 +6,7 @@ module_id: SRC-PROVIDER-SDK
 path: src/Meridian.ProviderSdk
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.ProviderSdk
@@ -15,6 +15,9 @@ last_reviewed: 2026-07-25
 provider validate retained import scope, generated lines, and provider-specific
 human review evidence during controlled export certification. It exposes no
 posting method and does not grant external posting capability.
+Connection verification results can carry an opaque expected credential generation.
+The shared lifecycle uses it to reject stale results after concurrent credential
+replacement without exposing credential values to operator responses.
 
 ## Purpose
 

@@ -23,12 +23,14 @@ internal sealed class ExternalGlTestStore(string providerId) : IProviderCredenti
     };
     public List<ProviderCredentialVerificationUpdate> Verifications { get; } = [];
     private ProviderVerificationStateDto _verificationState = ProviderVerificationStateDto.NotVerified;
+    private string _generation = Guid.NewGuid().ToString("N");
     public string VaultPath => "unused-test-vault";
     public Task<ProviderCredentialReadResult?> ReadForProviderAsync(string id, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         return Task.FromResult<ProviderCredentialReadResult?>(new(providerId, ProviderCredentialSourceDto.LocalEncryptedStore,
-            new Dictionary<string, string>(Values), "sandbox", null, null, null, null, null, null, new Dictionary<string, string>()));
+            new Dictionary<string, string>(Values), "sandbox", null, null, null, null, null, null,
+            new Dictionary<string, string> { ["credentialGeneration"] = _generation }));
     }
     public Task<ProviderCredentialStoreStatus> GetStatusAsync(string id, CancellationToken ct = default)
         => Task.FromResult(new ProviderCredentialStoreStatus(providerId, providerId, ProviderCredentialStateDto.Configured,
@@ -37,15 +39,27 @@ internal sealed class ExternalGlTestStore(string providerId) : IProviderCredenti
     public Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
     {
         _verificationState = ProviderVerificationStateDto.NotVerified;
+        _generation = Guid.NewGuid().ToString("N");
         foreach (var field in request.Credentials)
             Values[field.Key] = field.Value!;
         return Task.CompletedTask;
     }
     public Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
         => SaveAsync(request, ct);
+    public async Task<string> SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request,
+        ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
+    {
+        if (expectedConnection.CredentialGeneration != _generation ||
+            Values.Count != expectedConnection.Credentials.Count || Values.Any(pair => expectedConnection.Get(pair.Key) != pair.Value))
+            throw new ProviderCredentialConflictException();
+        await SaveAsync(request, ct);
+        return _generation;
+    }
     public Task DeleteAsync(string id, string? actor = null, CancellationToken ct = default) => Task.CompletedTask;
     public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default)
     {
+        if (update.ExpectedCredentialGeneration is not null && update.ExpectedCredentialGeneration != _generation)
+            throw new ProviderCredentialConflictException();
         Verifications.Add(update);
         _verificationState = update.Success ? ProviderVerificationStateDto.Verified : ProviderVerificationStateDto.Failed;
         return Task.CompletedTask;

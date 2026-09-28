@@ -32,6 +32,10 @@ public sealed class ProviderInstrumentCapabilityMatrixService : IProviderInstrum
             .ToArray();
 
         var rows = ProviderCapabilityDescriptorCatalog.Descriptors
+            // The catalog also inventories symbol resolvers and compatibility-only sources.
+            // Only project families with a surface that this matrix can represent.
+            .Where(static provider => provider.HasStreaming || provider.HasHistorical || provider.HasSearch ||
+                provider.HasCorporateActions || provider.HasOptions || provider.HasBrokerage)
             .OrderBy(static descriptor => descriptor.ProviderId, StringComparer.OrdinalIgnoreCase)
             .Select(provider => new ProviderInstrumentCapabilityRowDto(
                 ProviderId: provider.ProviderId,
