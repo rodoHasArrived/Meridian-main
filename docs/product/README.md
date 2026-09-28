@@ -345,8 +345,8 @@ Use this matrix to avoid source-of-truth drift:
 
 Stakeholder-facing high-traffic legacy pages map here:
 
-- `docs/plans/current-direction-and-status.md` → [archive copy](../../archive/docs/plans/current-direction-and-status.md)
-- `docs/plans/evidence-backed-investment-operations-plan.md` → [archive copy](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
+- `docs/plans/current-direction-and-status.md` → [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md)
+- `docs/plans/evidence-backed-investment-operations-plan.md` → [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/evidence-backed-investment-operations-plan.md)
 - `docs/status/ROADMAP.md`, `docs/status/FEATURE_INVENTORY.md`, `docs/status/TARGET_END_PRODUCT.md` → `roadmap/data/*.yml` + generated roadmap outputs
 
 If a legacy page is still actively needed for non-stakeholder operations, keep a short replacement pointer in the same page and move it to `archive/docs/plans/` or `archive/docs/status/` once the replacement is stable.
@@ -368,18 +368,18 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 Legacy links that remain for context but not primary truth:
 
-- [Current Direction and Status (Archived)](../../archive/docs/plans/current-direction-and-status.md)
-- [Evidence-Backed Investment Operations Plan (Archived)](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
-- [Feature Inventory (Archived)](../../archive/docs/status/FEATURE_INVENTORY.md)
+- [Current Direction and Status (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md)
+- [Evidence-Backed Investment Operations Plan (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/evidence-backed-investment-operations-plan.md)
+- [Feature Inventory (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/FEATURE_INVENTORY.md)
 - [Project Roadmap (Registry Snapshot)](../roadmap/generated/ROADMAP_SUMMARY.md)
-- [Target End Product (Archived)](../../archive/docs/status/TARGET_END_PRODUCT.md)
+- [Target End Product (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/TARGET_END_PRODUCT.md)
 
 ## Legacy Source-Material Index
 
 - If you need historical decision rationale, see:
-  - [plans (archive index)](../../archive/docs/plans/README.md)
+  - [plans (archive index)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/README.md)
   - [status migration index](../status/README.md)
-  - [archive `archive/docs/`](../../archive/docs/README.md)
+  - [archive `archive/docs/`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/README.md)
 
 ## Product-Owner Validation
 

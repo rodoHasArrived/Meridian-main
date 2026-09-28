@@ -1,7 +1,7 @@
 {
   "total_files": 674,
-  "total_lines": 146208,
-  "orphaned_count": 252,
+  "total_lines": 146218,
+  "orphaned_count": 250,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 270,
@@ -215,8 +215,6 @@
     "docs/development/score-reason-taxonomy.md",
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
-    "docs/engineering/security-master-architecture-audit-2026-08-13.md",
-    "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
     "docs/generated/configuration-schema.md",
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
@@ -2311,7 +2309,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 323,
+      "line_count": 325,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3279,7 +3277,7 @@
     },
     {
       "path": "docs/README.md",
-      "line_count": 102,
+      "line_count": 110,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

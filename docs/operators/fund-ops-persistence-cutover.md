@@ -71,5 +71,5 @@ Rollback should restore last known-good persistence posture and re-run pre-cutov
 
 ## Source-Material Source and Archive
 
-- Legacy source: [archive/docs/operations/fund-ops-persistence-cutover-runbook.md](../../archive/docs/operations/fund-ops-persistence-cutover-runbook.md)
-- Archive copy: [archive/docs/operations/fund-ops-persistence-cutover-runbook.md](../../archive/docs/operations/fund-ops-persistence-cutover-runbook.md)
+- Legacy source: [archive/docs/operations/fund-ops-persistence-cutover-runbook.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/fund-ops-persistence-cutover-runbook.md)
+- Archive copy: [archive/docs/operations/fund-ops-persistence-cutover-runbook.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/fund-ops-persistence-cutover-runbook.md)

@@ -138,9 +138,9 @@ path:
   reconciliation summaries, report-pack approvals).
 
 > Note: the out-of-process Chief of Staff (CoS) ADK runtime that previously owned this heavy-duty
-> path was archived in commit `7ee19e38f`. Its code and plan now live under
-> `archive/code/tools/chief-of-staff-runtime/` and `archive/docs/plans/chief-of-staff-runtime.md`
-> for historical reference only. Do not wire new work to it — use specialist agents plus the
+> path was archived in commit `7ee19e38f`, and the archive copies of its code and plan were
+> removed from the tree by the 2026-09-11 archive cleanup (`982eea2d`). For historical reference
+> only, recover them from the parent commit, e.g. `git show 8a420730:archive/docs/plans/chief-of-staff-runtime.md`. Do not wire new work to it — use specialist agents plus the
 > workflow-contract gates instead.
 
 ### Agent Design Patterns

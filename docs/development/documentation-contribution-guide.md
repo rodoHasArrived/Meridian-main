@@ -414,7 +414,7 @@ See `src/Meridian.Core/Config/AppConfig.cs` for implementation.
 See [ROADMAP Phase 6](../roadmap/README.md).
 
 # Reference external resources
-Based on [ADR-001](../../archive/docs/adr/001-provider-abstraction.md).
+Based on [ADR-001](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/001-provider-abstraction.md).
 ```
 
 ---
@@ -578,7 +578,7 @@ When documentation becomes outdated:
    ```
 
 2. **Move to `archive/docs/`** when no longer relevant
-3. **Add an entry to [archive/docs/README.md](../../archive/docs/README.md)** explaining why archived
+3. **Add an entry to [archive/docs/README.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/README.md)** explaining why archived
 
 ---
 

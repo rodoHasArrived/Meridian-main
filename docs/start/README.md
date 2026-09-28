@@ -259,8 +259,8 @@ Broaden to full solution, WPF, UI-service, MCP, integration, or performance lane
 
 The older pages below remain source material during migration. Prefer this page and the canonical lanes above for new links.
 
-- [Getting Started](../../archive/docs/getting-started/README.md)
-- [Developer Setup](../../archive/docs/developer/setup.md)
-- [Build, Test, Run](../../archive/docs/developer/build-test-run.md)
-- [Pilot Operator Quickstart](../../archive/docs/getting-started/pilot-operator-quickstart.md)
+- [Getting Started](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/getting-started/README.md)
+- [Developer Setup](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/setup.md)
+- [Build, Test, Run](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/build-test-run.md)
+- [Pilot Operator Quickstart](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/getting-started/pilot-operator-quickstart.md)
 - [HELP](../HELP.md)
