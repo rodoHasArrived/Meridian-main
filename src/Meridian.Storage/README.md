@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-08-04
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Storage
@@ -83,14 +83,48 @@ Durable disposal now uses the canonical decimal relief guard. Missing identity, 
 
 ### Reviewed fund tenant backfill
 
-`PostgresFundStructureTenantBackfillStore` locks retained ledger ownership evidence and the fund
-graph in a stable order, then commits reviewed tenant stamps, quarantine, and an immutable receipt
-together. Legacy Account nodes inferred from retained links/assignments are included in preview
+Strict PostgreSQL account operations require caller authority for account creation and retained
+ownership for updates, balance and statement ingestion, reconciliation, sync, and margin records.
+Child reads check the same account owner. Write transactions retain the owner lock and reject
+forged batch, reconciliation, and sync identities. Ordinary writes cannot claim unattributed legacy
+accounts; transactional legacy import preserves them for reviewed backfill.
+
+`PostgresFundStructureTenantBackfillStore` locks retained ledger ownership evidence, the fund
+graph, ledger books and periods, close workflows, and configured fund accounts in a stable order.
+It commits reviewed tenant stamps, quarantine, reviewed quarantine releases, and an immutable
+receipt together. Apply requires all configured schemas in one database; split databases support
+preview only. Legacy Account nodes inferred from retained links/assignments are included in preview
 and materialized only with an attributable stamp in that same transaction. Entity kinds match
 ledger-book contracts. Retry reads a committed receipt directly before connecting to source
 ledger storage or taking mutation locks, then rechecks after locks to handle concurrent attempts.
 Explicit unscoped tenant sentinels cannot become ownership seeds. Migration 005 creates receipt
-storage and protection; no tenant attribution is performed by a migration or by startup.
+storage and protection. Append-only ledger migration 038 replaces repeatable attribution from
+historical migrations 020/021 while preserving those original scripts. It attributes books before
+unaudited periods and dependent workflows, leaving audit-covered periods and malformed or
+bookless workflow references unchanged for explicit review. Maintenance records protected periods
+as `AuditedPeriodRequiresGovernedTenantRepair` instead of changing a fact protected by the ledger
+audit chain.
+
+`PostgresTenantCutoverInspector` reads every nullable tenant partition affected by strict reads,
+checking missing attribution, mismatched retained ownership references, and unresolved quarantine.
+Startup reports table/reason counts and refuses service while migration work remains. It never
+invents an owner or treats an unresolved legacy row as an empty successful read. Reporting tables
+already require explicit tenant identity and are outside the nullable-column cutover.
+
+Strict fund-structure mutations insert a new ownership link or assignment with its tenant stamp
+in the same SQL write. Scoped updates require the retained stamp to match and never reassign
+another tenant's edge. This keeps ordinary post-cutover writes ready for the next startup check.
+
+Strict ledger mutations require current caller authority matching the retained period, book,
+and fund ownership. Book and tax-lot policy upserts also check retained ownership in their
+conflict clauses, so a caller cannot acquire a foreign identifier by racing its first insert.
+Period loads inside strict writes retain the caller predicate. Tax-lot policy and atomic
+posting receipt reads apply the same retained book authority. Explicit deployment-boundary
+maintenance keeps the existing import and attribution seams available.
+Public tax-lot, historical disposal, and wash-sale APIs also check the retained book owner.
+Wash-sale deferrals require their referenced replacement lot and disposal batch to belong to
+that book. Global posting-identity collision checks reject foreign authority before returning
+any retained journal contents.
 
 ## Purpose
 
@@ -621,6 +655,7 @@ selected-lot cost basis.
 <!-- source-roadmap-traceability:begin module=SRC-STORAGE -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |

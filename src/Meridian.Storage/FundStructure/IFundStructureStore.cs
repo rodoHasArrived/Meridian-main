@@ -51,10 +51,16 @@ public interface IFundStructureStore
 
     // Ownership Links
     Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, CancellationToken ct = default);
+    /// <summary>Persists a scoped link and its tenant in one write; existing foreign ownership cannot change.</summary>
+    Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, string? tenantId, CancellationToken ct)
+        => UpsertOwnershipLinkAsync(dto, ct);
     Task<IReadOnlyList<OwnershipLinkDto>> GetAllOwnershipLinksAsync(CancellationToken ct = default);
 
     // Assignments
     Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, CancellationToken ct = default);
+    /// <summary>Persists a scoped assignment and its tenant in one write; existing foreign ownership cannot change.</summary>
+    Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, string? tenantId, CancellationToken ct)
+        => UpsertAssignmentAsync(dto, ct);
     Task<IReadOnlyList<FundStructureAssignmentDto>> GetAllAssignmentsAsync(CancellationToken ct = default);
 
     // Account node identities retained independently from active links/assignments

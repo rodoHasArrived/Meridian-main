@@ -410,9 +410,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IUserAccountStore>(sp => new FileUserAccountStore(
             new Meridian.Storage.StorageOptions { RootPath = Path.GetFullPath(identityDataRoot) },
             sp.GetService<Microsoft.Extensions.Logging.ILogger<FileUserAccountStore>>()));
-        services.AddSingleton<UserProfileRegistry>(sp => new UserProfileRegistry(
-            roleProfileStore: null,
-            accountStore: sp.GetRequiredService<IUserAccountStore>()));
+        services.AddDesktopTenantScopeServices();
 
         // W9-GOV-008 criterion 2. AccountingFeatureModule registers the unpartitioned in-memory
         // fund structure, and this desktop never calls AddWorkstationSharedServices, so the

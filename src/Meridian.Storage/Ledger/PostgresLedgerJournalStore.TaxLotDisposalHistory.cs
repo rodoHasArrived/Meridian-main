@@ -46,6 +46,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         IReadOnlyList<Guid> journalEntryIds,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         if (ledgerBookId == Guid.Empty)
         {
             throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
@@ -59,6 +60,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerTaxLotDisposalHi
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, ledgerBookId, ct).ConfigureAwait(false);
         var lotsByBatch = await LoadDisposalLotsAsync(connection, ledgerBookId, journalIds, ct).ConfigureAwait(false);
         if (lotsByBatch.Count == 0)
         {

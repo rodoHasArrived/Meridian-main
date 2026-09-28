@@ -37,6 +37,8 @@ public sealed class TenantReadPredicateTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
+    [InlineData("all")]
+    [InlineData("  ALL  ")]
     public void ShouldRejectRead_IsTrue_ForATenantlessCallerUnderFailClosed(string? callerTenantId)
         => TenantReadPredicate.ShouldRejectRead(callerTenantId, TenantScopeEnforcementMode.FailClosed)
             .Should().BeTrue(
@@ -170,4 +172,3 @@ public sealed class TenantScopeEnforcementOptionsTests
         parse.Should().Throw<ArgumentException>().WithMessage($"*{value}*");
     }
 }
-

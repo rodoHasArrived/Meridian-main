@@ -33,6 +33,11 @@ public static class TenantReadPredicate
     /// <summary>The conventional bind-parameter name for the caller's tenant.</summary>
     public const string ParameterName = "caller_tenant";
 
+    /// <summary>A concrete tenant excludes the legacy unscoped <c>all</c> sentinel.</summary>
+    public static bool IsResolvedTenant(string? tenantId)
+        => !string.IsNullOrWhiteSpace(tenantId)
+            && !string.Equals(tenantId.Trim(), "all", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>
     /// True when the caller has a resolved tenant and the read must be scoped to it.
     /// </summary>
@@ -57,7 +62,7 @@ public static class TenantReadPredicate
     /// <see cref="FundScopeTenantAuthority"/> instead of being exempted here.
     /// </remarks>
     public static bool ShouldRejectRead(string? callerTenantId, TenantScopeEnforcementMode mode)
-        => mode == TenantScopeEnforcementMode.FailClosed && string.IsNullOrWhiteSpace(callerTenantId);
+        => mode == TenantScopeEnforcementMode.FailClosed && !IsResolvedTenant(callerTenantId);
 
     /// <summary>
     /// The normalized tenant value to bind as the predicate parameter, trimmed to match the

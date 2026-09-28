@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-05
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Wpf
@@ -62,6 +62,17 @@ scope fails before any provider rows are read.
 - `Shell/` and `Services/` - navigation, route, launch, and desktop service seams.
 
 ## Important workflows
+
+The desktop's independent host registers the shared tenant-enforcement setting through
+`AddDesktopTenantScopeServices`. An omitted setting selects strict enforcement, and the identity
+registry receives that same posture. Direct tenant-scoped reads resolve authority from the live
+authenticated desktop session; missing company scope or sign-out cannot borrow background-worker
+authority. The local fund-account and entity-setup services have no retained tenant attribution:
+strict enforcement refuses their reads and writes with a migration-required message while keeping
+the existing JSON files and the server-backed shell available. All account query and mutation
+aliases share this gate. A configured company cannot silently become the owner of old snapshots.
+The explicit deployment-boundary setting retains isolated single-company migration/demo access;
+the existing graph guard still refuses multiple configured companies in that posture.
 
 **Startup refusals are fatal.** `App.StartHostServicesAsync` deliberately tolerates a hosted service
 that fails to start -- a database-backed projection or worker that cannot reach its store leaves the
@@ -793,6 +804,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-WPF -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |

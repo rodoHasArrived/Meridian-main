@@ -55,6 +55,11 @@ and the governed ledger boundary rejects mismatches.
 
 ## Purpose
 
+`TenantScopeEnforcementOptions.ConfigurationKey` names the supported `TenantScopeEnforcement`
+setting; host composition defaults to strict and honors its environment override. Compatibility
+mode is an explicit migration posture. Missing request/session authority cannot be replaced by
+client-supplied tenant IDs or an ambient worker scope.
+
 `Coordination/IExecutionLease.cs` defines execution-scoped ownership. A unique run owner can
 execute a side effect only while the coordination store excludes lease transfer. Managers or
 stores that do not implement this capability throw rather than falling back to a check followed
@@ -1457,6 +1462,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-CONTRACTS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W3-CONT-001` | Research to paper continuity |

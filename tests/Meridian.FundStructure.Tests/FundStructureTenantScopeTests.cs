@@ -153,18 +153,27 @@ public sealed class FundStructureTenantScopeTests
         Assert.DoesNotContain(legacyOrganization, nodeIds);
     }
 
-    [Fact]
-    public async Task FailClosed_RejectsACallerWithNoResolvableTenantRatherThanDefaultingTheRead()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("all")]
+    [InlineData(" ALL ")]
+    public async Task FailClosed_RejectsACallerWithNoResolvableTenantRatherThanDefaultingTheRead(string? tenant)
     {
         var store = new FakeFundStructureStore(isTenantPartitioned: true);
         await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
 
-        var tenantless = CreateService(store, callerTenantId: null, TenantScopeEnforcementOptions.FailClosed);
+        var tenantless = CreateService(store, tenant, TenantScopeEnforcementOptions.FailClosed);
 
         // Not an empty graph: the caller could not tell that apart from a genuinely empty structure,
         // and neither could an operator reading the support ticket it produced.
         await Assert.ThrowsAsync<FundStructureTenantScopeException>(
             () => tenantless.GetOrganizationStructureAsync(new OrganizationStructureQuery()));
+        var newId = Guid.NewGuid();
+        await Assert.ThrowsAsync<FundStructureTenantScopeException>(() => tenantless.CreateOrganizationAsync(
+            new(newId, "UNSCOPED", "Must not persist", "USD", EffectiveFrom, "tenant-scope-test")));
+        Assert.Null(await store.GetOrganizationAsync(newId));
     }
 
     [Fact]

@@ -3439,6 +3439,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterStartup.cs
 │   │   │   ├── ServiceCompositionRoot.cs
 │   │   │   ├── StartupRefusedException.cs
+│   │   │   ├── TenantCutoverGuardService.cs
 │   │   │   ├── TenantPostureHostedService.cs
 │   │   │   └── TenantScopeServiceRegistration.cs
 │   │   ├── Config
@@ -3666,7 +3667,10 @@ Meridian-main
 │   │   │   └── SubscriptionOrchestrator.cs
 │   │   ├── Tenancy
 │   │   │   ├── AuthoritativeScopeFanOutService.cs
-│   │   │   └── FundAccountHoldingScopeAssignmentProvider.cs
+│   │   │   ├── FundAccountHoldingScopeAssignmentProvider.cs
+│   │   │   ├── LocalTenantMigrationGate.cs
+│   │   │   ├── TenantGuardedLocalFundAccountService.cs
+│   │   │   └── TenantGuardedLocalFundStructureService.cs
 │   │   ├── Wizard
 │   │   │   ├── Core
 │   │   │   │   ├── IWizardStep.cs
@@ -5675,7 +5679,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_034__open_lot_acquisition.sql
 │   │   │   │   ├── V_ledger_035__open_lot_backfill.sql
 │   │   │   │   ├── V_ledger_036__ledger_event_audit_chain.sql
-│   │   │   │   └── V_ledger_037__open_lot_basis_adjustment.sql
+│   │   │   │   ├── V_ledger_037__open_lot_basis_adjustment.sql
+│   │   │   │   └── V_ledger_038__audit_safe_tenant_attribution.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5709,6 +5714,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLots.cs
+│   │   │   ├── PostgresLedgerJournalStore.TenantWrites.cs
 │   │   │   ├── PostgresLedgerJournalStore.Validation.cs
 │   │   │   ├── PostgresLedgerJournalStore.WashSale.cs
 │   │   │   ├── RetainedPostingEquivalence.cs
@@ -5922,6 +5928,8 @@ Meridian-main
 │   │   │   ├── JsonFileIBDataResultStore.cs
 │   │   │   ├── JsonFileSnapshotStore.cs
 │   │   │   └── JsonlMarketDataStore.cs
+│   │   ├── Tenancy
+│   │   │   └── PostgresTenantCutoverInspector.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Storage.csproj
 │   │   ├── MeridianDatabaseEnvironment.cs
@@ -7837,6 +7845,7 @@ Meridian-main
 │   │   │   ├── DesktopLaunchArguments.cs
 │   │   │   ├── DesktopLaunchTicketClient.cs
 │   │   │   ├── DesktopMutationPermissionResolver.cs
+│   │   │   ├── DesktopTenantScopeServiceRegistration.cs
 │   │   │   ├── DesktopWorkflowReadScopeResolver.cs
 │   │   │   ├── DesktopWorkstationTenantContextAccessor.cs
 │   │   │   ├── DropImportService.cs
@@ -9189,6 +9198,7 @@ Meridian-main
 │   │   │   │   ├── HostTenantScopeCompositionTests.cs
 │   │   │   │   ├── LedgerFeatureRegistrationTests.cs
 │   │   │   │   ├── LegacySnapshotStartupTests.cs
+│   │   │   │   ├── LocalTenantCapabilityCompositionTests.cs
 │   │   │   │   ├── MaintenanceFeatureRegistrationTests.cs
 │   │   │   │   ├── PipelineFeatureRegistrationTests.cs
 │   │   │   │   ├── ProcessWideHostedServiceRegistrationTests.cs
@@ -9203,6 +9213,8 @@ Meridian-main
 │   │   │   │   ├── SecurityMasterStartupTests.cs
 │   │   │   │   ├── StartupRefusalPreflightTests.cs
 │   │   │   │   ├── StorageFeatureRegistrationTests.cs
+│   │   │   │   ├── TenantCutoverConfigurationTests.cs
+│   │   │   │   ├── TenantCutoverGuardServiceTests.cs
 │   │   │   │   └── TenantPostureHostedServiceTests.cs
 │   │   │   ├── Config
 │   │   │   │   ├── AppSettingsSampleTests.cs
@@ -10200,7 +10212,9 @@ Meridian-main
 │   │   │   ├── StorageProfilePresetsTests.cs
 │   │   │   ├── StorageSearchServiceTests.cs
 │   │   │   ├── StorageSinkRegistryTests.cs
+│   │   │   ├── StrictTenantMutationPostgresTests.cs
 │   │   │   ├── SymbolRegistryServiceTests.cs
+│   │   │   ├── TenantCutoverInspectorTests.cs
 │   │   │   ├── TenantLowerIndexMigrationTests.cs
 │   │   │   ├── TenantReadPredicateTests.cs
 │   │   │   ├── TierMigrationServiceTests.cs
@@ -10337,6 +10351,7 @@ Meridian-main
 │   │   │   ├── CapitalCallFundingIntakeTests.cs
 │   │   │   ├── CapitalCallIssuanceIntakeTests.cs
 │   │   │   ├── CashOperationsOrchestratorServiceTests.cs
+│   │   │   ├── ClosePublicationWorkerAuthorityTests.cs
 │   │   │   ├── CloseReadinessSubjectSourceTests.cs
 │   │   │   ├── CollateralExposureServiceTests.cs
 │   │   │   ├── CookieCsrfProtectionTests.cs
@@ -10640,7 +10655,9 @@ Meridian-main
 │   │   │   ├── DataWorkspacePresentationBuilderTests.cs
 │   │   │   ├── DesktopAuthenticationSessionTests.cs
 │   │   │   ├── DesktopConfigurationRecoveryServiceTests.cs
+│   │   │   ├── DesktopLocalTenantIsolationTests.cs
 │   │   │   ├── DesktopMutationPermissionResolverTests.cs
+│   │   │   ├── DesktopTenantScopeCompositionTests.cs
 │   │   │   ├── DesktopWorkflowReadScopeResolverTests.cs
 │   │   │   ├── DesktopWorkstationTenantContextAccessorTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs

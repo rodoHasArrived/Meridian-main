@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -792,6 +793,9 @@ public sealed class StatementImportServiceTests : IDisposable
         ingestion.LastAuthorizationCommand.ExternalAccountId.Should().Be("EXT-001");
         ingestion.LastAuthorizationCommand.SourceInstitution.Should().Be("Fake Custodian");
         ingestion.LastAuthorizationCommand.AccountingScope.Should().Be(accountingScope);
+        ingestion.AuthorizationTenant.Should().Be("tenant-scheduled");
+        ingestion.IngestionTenant.Should().Be("tenant-scheduled");
+        FundScopeTenantAuthority.CurrentTenantId.Should().BeNull("completed work must release retained authority");
         _fetchingConnector.LastRequest.Should().NotBeNull();
         _fetchingConnector.LastRequest!.Since.Should().Be(
             new DateTimeOffset(periodStart, TimeOnly.MinValue, TimeSpan.Zero),
@@ -831,6 +835,8 @@ public sealed class StatementImportServiceTests : IDisposable
         ingestion.LastAuthorizationCommand.CompanyId.Should().Be("company-scheduled");
         ingestion.LastAuthorizationCommand.FundAccountId.Should().Be("FUND-SCHED");
         ingestion.LastAuthorizationCommand.ExternalAccountId.Should().Be("EXT-001");
+        ingestion.AuthorizationTenant.Should().Be("tenant-scheduled");
+        FundScopeTenantAuthority.CurrentTenantId.Should().BeNull("failed reauthorization must release retained authority");
         ingestion.LastCommand.Should().BeNull(
             "a revoked account must never enter the statement ingestion workflow");
         _fetchingConnector.LastRequest.Should().BeNull(
@@ -840,6 +846,60 @@ public sealed class StatementImportServiceTests : IDisposable
             .LastRunStatus
             .Should()
             .Be("Failed: InvalidOperationException");
+    }
+
+    [Theory]
+    [InlineData(null, "company-scheduled")]
+    [InlineData(" ", "company-scheduled")]
+    [InlineData("tenant-scheduled", null)]
+    [InlineData("tenant-scheduled", " ")]
+    public async Task ScheduleRunner_MissingRetainedAuthority_CannotBorrowAnAmbientWorkerTenant(
+        string? tenantId, string? companyId)
+    {
+        var scheduleStore = new FileStatementFetchScheduleStore(_root);
+        var schedule = await scheduleStore.UpsertAsync(CreateScopedSchedule(
+            "missing-authority", new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 30)));
+        var ingestion = new RecordingStatementFetchIngestionAuthority(_service);
+        var runner = new StatementFetchScheduleRunner(scheduleStore, _service, ingestion);
+
+        using (FundScopeTenantAuthority.Enter("tenant-scheduled", "unrelated enclosing worker"))
+        {
+            var result = await runner.RunScheduleAsync(schedule with { TenantId = tenantId, CompanyId = companyId },
+                new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero));
+
+            result.Should().BeNull();
+            ingestion.LastAuthorizationCommand.Should().BeNull();
+            ingestion.LastCommand.Should().BeNull();
+            _fetchingConnector.LastRequest.Should().BeNull();
+            FundScopeTenantAuthority.CurrentTenantId.Should().Be("tenant-scheduled");
+        }
+        FundScopeTenantAuthority.CurrentTenantId.Should().BeNull();
+        (await scheduleStore.ListAsync()).Single().LastRunStatus.Should().Be("Failed: InvalidOperationException");
+    }
+
+    [Fact]
+    public async Task ScheduleRunner_MismatchedReauthorizedScope_RefusesProviderAccessAndRestoresEnclosingAuthority()
+    {
+        var scheduleStore = new FileStatementFetchScheduleStore(_root);
+        var schedule = await scheduleStore.UpsertAsync(CreateScopedSchedule(
+            "mismatched-authority", new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 30)));
+        var ingestion = new RecordingStatementFetchIngestionAuthority(_service,
+            authorizedScope: schedule.AccountingScope! with { FundProfileId = "foreign-fund" });
+        var runner = new StatementFetchScheduleRunner(scheduleStore, _service, ingestion);
+
+        using (FundScopeTenantAuthority.Enter("outer-tenant", "enclosing dispatcher"))
+        {
+            var result = await runner.RunScheduleAsync(schedule,
+                new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero));
+
+            result.Should().BeNull();
+            ingestion.AuthorizationTenant.Should().Be("tenant-scheduled");
+            ingestion.LastCommand.Should().BeNull();
+            _fetchingConnector.LastRequest.Should().BeNull();
+            FundScopeTenantAuthority.CurrentTenantId.Should().Be("outer-tenant");
+        }
+        FundScopeTenantAuthority.CurrentTenantId.Should().BeNull();
+        (await scheduleStore.ListAsync()).Single().LastRunStatus.Should().Be("Failed: InvalidOperationException");
     }
 
     [Fact]
@@ -947,11 +1007,14 @@ public sealed class StatementImportServiceTests : IDisposable
 
     private sealed class RecordingStatementFetchIngestionAuthority(
         StatementImportService imports,
-        Exception? authorizationFailure = null)
+        Exception? authorizationFailure = null,
+        StatementAccountingScope? authorizedScope = null)
         : IStatementFetchIngestionAuthority
     {
         public StatementFetchAuthorizationCommand? LastAuthorizationCommand { get; private set; }
         public StatementFetchIngestionCommand? LastCommand { get; private set; }
+        public string? AuthorizationTenant { get; private set; }
+        public string? IngestionTenant { get; private set; }
 
         public Task<StatementAccountingScope> AuthorizeAsync(
             StatementFetchAuthorizationCommand command,
@@ -959,8 +1022,9 @@ public sealed class StatementImportServiceTests : IDisposable
         {
             ct.ThrowIfCancellationRequested();
             LastAuthorizationCommand = command;
+            AuthorizationTenant = FundScopeTenantAuthority.CurrentTenantId;
             return authorizationFailure is null
-                ? Task.FromResult(command.AccountingScope)
+                ? Task.FromResult(authorizedScope ?? command.AccountingScope)
                 : Task.FromException<StatementAccountingScope>(authorizationFailure);
         }
 
@@ -969,6 +1033,7 @@ public sealed class StatementImportServiceTests : IDisposable
             CancellationToken ct = default)
         {
             LastCommand = command;
+            IngestionTenant = FundScopeTenantAuthority.CurrentTenantId;
             return await imports.CommitAsync(
                     new StatementImportCommitRequest(
                         command.Document,
