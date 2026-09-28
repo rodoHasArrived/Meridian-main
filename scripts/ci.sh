@@ -180,6 +180,7 @@ verify_dotnet() {
 }
 
 verify_browser() {
+  run_step "Validate browser evidence reader" node --test src/Meridian.Ui/dashboard/scripts/vitest-evidence.test.mjs
   verify_toolchain_browser
 
   run_step "Install dashboard dependencies from lockfile" \
@@ -345,6 +346,9 @@ verify_docs() {
 
 verify_workflows() {
   verify_toolchain_docs
+
+  run_step "Validate Actions syntax with actionlint" actionlint -shellcheck= -pyflakes=
+  run_step "Check script test dependencies" "$python_cmd" -c 'import yaml; import PIL'
 
   run_step "Validate lane manifest" \
     "$python_cmd" build/scripts/ci/check-lane-manifest.py --summary

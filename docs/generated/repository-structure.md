@@ -883,6 +883,7 @@ Meridian-main
 │   ├── workflows
 │   │   ├── ai-navigation-refresh.yml
 │   │   ├── branch-cleanup.yml
+│   │   ├── ci-concurrency-benchmark.yml
 │   │   ├── ci.yml
 │   │   ├── codeql.yml
 │   │   ├── copilot-setup-steps.yml
@@ -1032,7 +1033,8 @@ Meridian-main
 │   └── run-bottleneck-benchmarks.sh
 ├── build
 │   ├── ci
-│   │   └── lane-manifest.json
+│   │   ├── lane-manifest.json
+│   │   └── windows-test-slices.json
 │   ├── config
 │   │   ├── contracts
 │   │   │   └── type-parity-registry.json
@@ -1099,6 +1101,7 @@ Meridian-main
 │       │   └── promptfoo_adapter.py
 │       ├── ci
 │       │   ├── apiclient-caller-baseline.json
+│       │   ├── benchmark-ci.py
 │       │   ├── check-action-origin-derivation.py
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-contract-type-parity.py
@@ -1116,14 +1119,18 @@ Meridian-main
 │       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
+│       │   ├── ci-metrics.py
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
 │       │   ├── inline-sha256-baseline.json
+│       │   ├── requirements.txt
 │       │   ├── run-dotnet-ci-tests.py
 │       │   ├── run-script-tests.py
+│       │   ├── run-windows-ci-tests.py
 │       │   ├── script-test-quarantine.json
 │       │   ├── summarize-ci-artifacts.py
+│       │   ├── test_evidence.py
 │       │   ├── validate-monitoring-deployment.py
 │       │   ├── validate-npm-audit.py
 │       │   ├── validate-observability-contract.py
@@ -1739,6 +1746,7 @@ Meridian-main
 │   │   │   ├── README.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   └── wpf-web-ui-alignment-plan.md
+│   │   ├── ci-cd-optimization.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
 │   │   ├── etl-execution-ownership.md
@@ -1866,6 +1874,7 @@ Meridian-main
 │   ├── operators
 │   │   ├── browser-workstation-installer.md
 │   │   ├── deployment-packaging.md
+│   │   ├── external-gl-providers.md
 │   │   ├── failover-and-recovery.md
 │   │   ├── fund-ops-persistence-cutover.md
 │   │   ├── fund-structure-tenant-backfill.md
@@ -3387,8 +3396,6 @@ Meridian-main
 │   │   │   │   ├── MaintenanceFeatureRegistration.cs
 │   │   │   │   ├── PipelineFeatureRegistration.cs
 │   │   │   │   ├── ProviderFeatureRegistration.cs
-│   │   │   │   ├── ProviderFeatureRegistration.OptionsChain.cs
-│   │   │   │   ├── ProviderFeatureRegistration.Registry.cs
 │   │   │   │   ├── ProviderRoutingFeatureRegistration.cs
 │   │   │   │   ├── StorageFeatureRegistration.cs
 │   │   │   │   └── SymbolManagementFeatureRegistration.cs
@@ -4262,10 +4269,14 @@ Meridian-main
 │   │   ├── AccountingSystem
 │   │   │   ├── Fixtures
 │   │   │   │   └── FixtureAccountingProviders.cs
-│   │   │   └── QuickBooks
-│   │   │       ├── QuickBooksFixtureAccountingProvider.cs
-│   │   │       ├── QuickBooksOnlineAccountingProvider.cs
-│   │   │       └── QuickBooksOnlineProviderCredentialConnectionStore.cs
+│   │   │   ├── QuickBooks
+│   │   │   │   ├── QuickBooksFixtureAccountingProvider.cs
+│   │   │   │   ├── QuickBooksOnlineAccountingProvider.cs
+│   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStore.cs
+│   │   │   ├── AccountingProviderJson.cs
+│   │   │   ├── CredentialedAccountingProvider.cs
+│   │   │   ├── NetSuiteAccountingProvider.cs
+│   │   │   └── XeroAccountingProvider.cs
 │   │   ├── Canonicalization
 │   │   │   ├── CanonicalizationMetrics.cs
 │   │   │   ├── CanonicalizingPublisher.cs
@@ -4547,7 +4558,8 @@ Meridian-main
 │   │   │   ├── AccountingCloseServices.cs
 │   │   │   └── AccountingReportPackageService.cs
 │   │   ├── AccountingSystem
-│   │   │   └── AccountingSystemIntegrationService.cs
+│   │   │   ├── AccountingSystemIntegrationService.cs
+│   │   │   └── AccountingSystemIntegrationService.Reconciliation.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -4865,10 +4877,12 @@ Meridian-main
 │   │   │   │   ├── ProviderCapabilityDescriptorCatalog.cs
 │   │   │   │   ├── ProviderDataQualityValidator.cs
 │   │   │   │   ├── ProviderFactory.cs
+│   │   │   │   ├── ProviderFactory.Runtime.cs
 │   │   │   │   ├── ProviderHealthTracker.cs
-│   │   │   │   ├── ProviderIdentity.cs
 │   │   │   │   ├── ProviderRegistry.cs
 │   │   │   │   ├── ProviderRotationStrategy.cs
+│   │   │   │   ├── ProviderServiceExtensions.Catalog.cs
+│   │   │   │   ├── ProviderServiceExtensions.Composition.cs
 │   │   │   │   ├── ProviderServiceExtensions.cs
 │   │   │   │   ├── ProviderSubscriptionRanges.cs
 │   │   │   │   ├── ProviderTemplate.cs
@@ -5348,6 +5362,7 @@ Meridian-main
 │   │   └── Meridian.ProcessIsolation.csproj
 │   ├── Meridian.ProviderSdk
 │   │   ├── AccountingSystem
+│   │   │   ├── IAccountingSystemExportValidator.cs
 │   │   │   └── IAccountingSystemProvider.cs
 │   │   ├── Backfill
 │   │   │   └── BackfillJob.cs
@@ -5385,6 +5400,7 @@ Meridian-main
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   ├── PluginLoaderService.cs
 │   │   ├── ProviderHttpUtilities.cs
+│   │   ├── ProviderIdentity.cs
 │   │   ├── ProviderModuleContext.cs
 │   │   ├── ProviderModuleLoader.cs
 │   │   ├── ProviderRoutingModels.cs
@@ -6018,7 +6034,9 @@ Meridian-main
 │   │   │   │   ├── eslint-rules
 │   │   │   │   │   └── kebab-filename.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
-│   │   │   │   └── smoke-workstation.mjs
+│   │   │   │   ├── smoke-workstation.mjs
+│   │   │   │   ├── vitest-evidence.mjs
+│   │   │   │   └── vitest-evidence.test.mjs
 │   │   │   ├── src
 │   │   │   │   ├── assets
 │   │   │   │   │   ├── brand
@@ -9186,7 +9204,10 @@ Meridian-main
 │   │   │   │   ├── ProductionRegistrationGuardServiceTests.cs
 │   │   │   │   ├── ProductionServiceRegistrationPolicyTests.cs
 │   │   │   │   ├── ProviderCapabilityContractRegistrationTests.cs
+│   │   │   │   ├── ProviderCatalogCompositionTests.cs
+│   │   │   │   ├── ProviderCompositionTests.cs
 │   │   │   │   ├── ProviderFeatureRegistrationTests.cs
+│   │   │   │   ├── ProviderModuleCompositionTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
 │   │   │   │   ├── StartupRefusalPreflightTests.cs
 │   │   │   │   ├── StorageFeatureRegistrationTests.cs
@@ -9404,8 +9425,17 @@ Meridian-main
 │   │   │   └── CryptoProjectionServiceTests.cs
 │   │   ├── DataIntegration
 │   │   │   ├── AccountingSystem
-│   │   │   │   └── QuickBooks
-│   │   │   │       └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── QuickBooks
+│   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── ExternalGlConnectionLifecycleTests.cs
+│   │   │   │   ├── ExternalGlCredentialConcurrencyTests.cs
+│   │   │   │   ├── ExternalGlCredentialRecoveryTests.cs
+│   │   │   │   ├── ExternalGlFailureBoundaryTests.cs
+│   │   │   │   ├── ExternalGlLiveProviderTests.cs
+│   │   │   │   ├── ExternalGlRateLimitTests.cs
+│   │   │   │   ├── ExternalGlScopeTests.cs
+│   │   │   │   ├── ExternalGlTestSupport.cs
+│   │   │   │   └── NetSuiteTrialBalanceTests.cs
 │   │   │   ├── Canonicalization
 │   │   │   │   ├── Fixtures
 │   │   │   │   │   ├── alpaca_trade_extended_hours.json
@@ -9706,6 +9736,7 @@ Meridian-main
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderDataQualityValidatorTests.cs
 │   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
+│   │   │   │   ├── ProviderHealthTrackerTests.cs
 │   │   │   │   ├── ProviderMarketDataCapabilityTests.cs
 │   │   │   │   ├── ProviderRateLimitTrackerTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
@@ -9903,6 +9934,7 @@ Meridian-main
 │   │   │   ├── ExceptionTypeTests.cs
 │   │   │   ├── OptionalProviderCapabilityContractsTests.cs
 │   │   │   ├── PluginLoaderServiceTests.cs
+│   │   │   ├── ProviderIdentityTests.cs
 │   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Reconciliation
 │   │   │   ├── Connectors
@@ -10290,7 +10322,9 @@ Meridian-main
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
 │   │   │   ├── AccountingProjectionQueryServiceTests.cs
 │   │   │   ├── AccountingReportPackageServiceTests.cs
+│   │   │   ├── AccountingSystemIntegrationServiceTests.BalancePeriods.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
+│   │   │   ├── AccountingSystemIntegrationServiceTests.LiveProviders.cs
 │   │   │   ├── AggregatePortfolioExposureProviderTests.cs
 │   │   │   ├── AlpacaBrokerageConnectionServiceTests.cs
 │   │   │   ├── AlpacaCredentialEnvironmentCollection.cs
@@ -10842,10 +10876,13 @@ Meridian-main
 │   │   ├── test_check_ledger_dimension_coverage.py
 │   │   ├── test_check_posture_env_serialization.py
 │   │   ├── test_check_program_state_consistency.py
+│   │   ├── test_check_sample_config_datasources.py
 │   │   ├── test_check_status_delivery_claims.py
 │   │   ├── test_check_store_concurrency_posture.py
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_workflow_docs_parity.py
+│   │   ├── test_ci_evidence_controls.py
+│   │   ├── test_ci_metrics.py
 │   │   ├── test_ci_summary.py
 │   │   ├── test_ci_workflow_contract.py
 │   │   ├── test_cleanup_generated_script.py
@@ -10915,6 +10952,7 @@ Meridian-main
 │   │   ├── test_validate_tooling_metadata.py
 │   │   ├── test_validate_workstation_cockpit_acceptance_matrix.py
 │   │   ├── test_web_workstation_installer.py
+│   │   ├── test_windows_ci_runner.py
 │   │   ├── test_windows_desktop_build_workflow.py
 │   │   ├── test_wpf_msix_install_guidance.py
 │   │   └── test_wpf_msix_manifest.py

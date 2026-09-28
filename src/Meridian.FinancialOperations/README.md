@@ -6,10 +6,35 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-09-05
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.FinancialOperations
+
+Accounting-system export package creation, certification, and manifest reads call
+`IAccountingSystemExportValidator` when the selected provider implements it.
+Xero and NetSuite use this seam to require current live import scope and their
+own retained control evidence in addition to the existing mapping, reconciliation,
+and human-origin checks. Successful certification never enables posting.
+Live GL reconciliation projects all retained Meridian history through the report date
+using the imported trial-balance basis, including the provider's income year and
+retained-earnings carry-forward. Gross activity within the requested inclusive dates
+is retained separately and is the only amount used for generated export review lines.
+Hashes cover both the basis and activity, so later journal changes invalidate stale
+certifications even when closing account balances remain equal.
+Reconciliation requires matching provider and ledger-book currencies, including
+zero balances omitted from the provider report. Export review retains Meridian's
+currency; a mismatch blocks provider certification even when balanced reconciliation
+is not requested. No implicit currency conversion or relabeling is performed.
+Journal accounting effective dates control both report and export windows; legacy
+entries use their UTC event date. Live accrual reports require a resolved Primary
+or Gaap ledger book; Cash, Tax and Statutory books are unsupported at reconciliation
+and every export boundary.
+Live reconciliation resolves imported account IDs through the scoped certified
+mapping, including income-year classification and retained earnings. Export review
+uses its selected profile at every boundary. Ambiguous many-to-one mappings and
+collisions are rejected. Meridian period-close journals and their reversals are
+excluded from provider-basis balances and gross export activity.
 
 Statement matching retains exact tolerance rules/version and matcher revision with population
 availability. Missing/failed internal populations and empty statements cannot certify source clearing;
@@ -94,6 +119,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
+- `AccountingSystem/AccountingSystemIntegrationService.Reconciliation.cs` - provider report balance projection, requested-period activity, currency identity checks, and reconciliation read models.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
 - `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
 - `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.

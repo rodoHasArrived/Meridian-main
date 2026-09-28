@@ -10,6 +10,15 @@ public interface IProviderCredentialStore
 
     Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default);
 
+    /// <summary>Save a complete rotated credential snapshot in both current and recovery generations.</summary>
+    Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default)
+        => throw new NotSupportedException("This credential store cannot durably retain rotated credentials.");
+
+    /// <summary>Atomically replace the expected connection and return its new credential generation.</summary>
+    Task<string> SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request,
+        ProviderCredentialReadResult expectedConnection, CancellationToken ct = default)
+        => throw new NotSupportedException("This credential store cannot conditionally retain rotated credentials.");
+
     Task<ProviderCredentialReadResult?> ReadForProviderAsync(string providerId, CancellationToken ct = default);
 
     Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default);
@@ -55,7 +64,13 @@ public sealed record ProviderCredentialVerificationUpdate(
     string? ErrorMessage = null,
     string? ExternalAccountId = null,
     DateTimeOffset? VerifiedAt = null,
-    string? Actor = null);
+    string? Actor = null)
+{
+    public string? ExpectedCredentialGeneration { get; init; }
+}
+
+public sealed class ProviderCredentialConflictException()
+    : InvalidOperationException("Provider credentials changed during the operation. Retry using the current connection.");
 
 public sealed record ProviderCredentialStoreStatus(
     string ProviderId,
@@ -89,6 +104,8 @@ public sealed record ProviderCredentialReadResult(
     string? LastError,
     IReadOnlyDictionary<string, string> AuditMetadata)
 {
+    public string CredentialGeneration => AuditMetadata.GetValueOrDefault("credentialGeneration", string.Empty);
+
     public string? Get(string fieldName)
         => Credentials.TryGetValue(fieldName, out var value) ? value : null;
 }

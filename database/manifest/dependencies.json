@@ -442,6 +442,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemTrialBalanceBasisDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemTrialBalanceLineDto"
     },
     {
@@ -18964,6 +18970,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemTrialBalanceBasisDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemTrialBalanceLineDto"
     },
     {
@@ -22655,6 +22667,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemImportSummaryDto",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemImportStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemImportSummaryDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemTrialBalanceBasisDto"
     },
     {
       "kind": "contract-reference",
@@ -47347,7 +47365,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "adf4c4df6ccc68d2ea1f38c66cddccd10631ea4177d7ac19cf2f78316b4459b0",
+  "fingerprint": "fd3b05100a96071a4a065968fd820226659e40b20d36494f68a1a7c665b5f5c2",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -47837,6 +47855,12 @@
       "id": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemReconciliationSummaryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AccountingSystem.AccountingSystemReconciliationSummaryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemTrialBalanceBasisDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.AccountingSystemTrialBalanceBasisDto"
     },
     {
       "classification": "dto",
@@ -69412,11 +69436,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3106,
-    "contract_set_memberships": 3687,
-    "edges": 7866,
+    "contract_references": 3107,
+    "contract_set_memberships": 3689,
+    "edges": 7869,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3824
+    "nodes": 3825
   }
 }

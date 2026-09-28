@@ -3,7 +3,7 @@
   "requiredStatusCheck": {
     "workflow": "Meridian CI",
     "job": "quality-gate",
-    "checkName": "Meridian CI / quality-gate"
+    "checkName": "quality-gate"
   },
   "lanes": [
     {
@@ -52,7 +52,7 @@
       "localCommand": "bash scripts/ci.sh --lane verify-browser",
       "hostedMode": "browser-workstation",
       "artifacts": [
-        "src/Meridian.Ui/dashboard/dist",
+        "src/Meridian.Ui/wwwroot/workstation/",
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 25,
@@ -97,7 +97,7 @@
       "artifacts": [
         "artifacts/build-logs/",
         "artifacts/test-results/dotnet/",
-        "src/Meridian.Ui/dashboard/dist",
+        "src/Meridian.Ui/wwwroot/workstation/",
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 60,
@@ -125,7 +125,7 @@
       "id": "verify-desktop",
       "displayName": "Windows Desktop Build",
       "runner": "windows-latest",
-      "localCommand": "pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore -Filter \"Category!=Integration&FullyQualifiedName!~Integration\"",
+      "localCommand": "python build/scripts/ci/run-windows-ci-tests.py",
       "hostedMode": "windows-desktop-build",
       "artifacts": [
         "artifacts/wpf-validation/windows-desktop-build/",

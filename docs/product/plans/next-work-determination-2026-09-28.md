@@ -15,6 +15,10 @@ run, a commit, a PR number, a `file:line`, or a reproducible command.
 > This document ranks work. It does not move a roadmap row, accept an item, or certify a release.
 > The roadmap registry remains authoritative for status; the tracker remains authoritative for the
 > P0 release gate.
+> Queue counts, conflict measurements and "today" below refer to the `0b956b06` snapshot, not a
+> continuously refreshed queue. This branch later integrated `87dc5bf15`; the post-baseline note
+> records known completed actions. Recheck each remaining PR's current head, reviews and gates
+> before acting on the baseline ranking.
 
 ## Headline
 
@@ -24,7 +28,7 @@ ten open dependency pull requests, seven of which merge with zero conflicts — 
 major bump among them is held back — the oldest open for seventy-three days. That lane is sequenced against the release candidate, because the RC freezes
 whatever dependency set is in the tree when it is tagged.**
 
-- Every commit since the `5980fa00` baseline is documentation. Twelve commits, 118 changed paths
+- The measured `5980fa00..0b956b06` baseline range is documentation and validation work. Twelve commits, 118 changed paths
   under `docs/`, and the single `src/*.cs` change is a comment-only path repair
   (`src/Meridian.Contracts/Api/UiApiRoutes.cs:388`). **No product runtime behaviour changed** — but
   validation behaviour did: `80f54a3d` added `check_shared_project_context` to
@@ -33,8 +37,10 @@ whatever dependency set is in the tree when it is tagged.**
   shared-context section now turns that workflow from passing to reporting drift. That is a new CI
   contract landing inside a range this document otherwise calls documentation-only, and it is worth
   knowing before anyone treats the range as inert.
-- **`Production Certification` is green on the current tip** — [run #98](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36386907387),
-  `event: push`, `head_sha: 0b956b06`, all four jobs. The per-push trigger keeps paying out.
+- **`Production Certification` is green on baseline `0b956b06`** — [run #98](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36386907387),
+  `event: push`, `head_sha: 0b956b06`, all four jobs. This is baseline evidence only: the PR has
+  since integrated `87dc5bf15`, including the #2999, #3017 and #2998 source changes. This run does not
+  certify that updated head or a future frozen release commit.
 - **The pull-request queue holds 26 open PRs at the baseline** — counted directly, and the number to
   trust. The 2026-09-27 document reported 25, and two opened since (#3010, #3011), which would give
   27; the delta does not reconcile, so one of the two counts is wrong and I did not verify the
@@ -80,10 +86,15 @@ all. Measured today with `git merge-tree --write-tree origin/main <branch>`:
 | #2981 | logging group, 3 updates | 1, `tests/Meridian.Tests/Futures/FutureProjectionServiceTests.cs` | 2026-09-21 |
 | #2587 | `react-router` / `react-router-dom` (**major**) | 607 across 1,421 files | 2026-08-09 |
 
-**Seven merge clean. Six of those seven touch one or two files each.** #2981 is green on all five
-workflows — `Meridian CI`, `CI`, `Maintenance`, `CodeQL`, `Windows Desktop Build` — on
-[run 35663808195](https://github.com/rodoHasArrived/Meridian-main/actions/runs/35663808195) and has
-sat seven days since.
+**Seven merge clean. Six of those seven touch one or two files each.** #2981 has successful runs
+on head `f928a6d97d2246e0ecc9b721fd771e6646ff2fc5` for all five workflows:
+[Meridian CI](https://github.com/rodoHasArrived/Meridian-main/actions/runs/35663808195),
+[CI](https://github.com/rodoHasArrived/Meridian-main/actions/runs/35663808173),
+[Maintenance](https://github.com/rodoHasArrived/Meridian-main/actions/runs/35663808166),
+[CodeQL](https://github.com/rodoHasArrived/Meridian-main/actions/runs/35663808189), and
+[Windows Desktop Build](https://github.com/rodoHasArrived/Meridian-main/actions/runs/35663808186).
+Those runs establish that head's results; resolving its conflict requires fresh final-head validation
+before review and merge.
 
 Why this is ranked rather than filed as chores: **an RC tag freezes the dependency set.** The Tier 0
 sequence produces same-commit evidence for five P0 rows on a frozen commit. If that commit carries a
@@ -92,14 +103,24 @@ bumps, and every one of them invalidates the same-commit evidence the tag was cu
 the eligible clean ones costs nothing and has to happen **before** the freeze, not after. Be precise
 about which: seven carry zero conflicts (#2968, #2967, #2965, #2944, #2932, #2878, #2307), and
 **#2878 is a major bump held back below, so the pre-freeze drain is the other six.**
+Since that snapshot, #2967 merged in `8123e84798`; the other five baseline members need a fresh
+readiness check. The six-member count remains the baseline measurement, not six still-open PRs.
 
-Two exceptions to handle separately, not in the drain:
+Three exception groups to handle separately from the six clean PRs:
 
 - **#2878 and #2587 are major bumps** (`lucide-react` 0→1, `react-router`). Majors do not belong in
   a pre-freeze drain; hold them until after the RC. #2587 is already correctly a draft, and its
   607-conflict / 1,421-file spread says it needs re-cutting rather than merging.
 - **#2981's one conflict is a real test file**, not generated output — resolve it rather than
-  batching it.
+  batching it, then validate and review the refreshed head before including it in the candidate.
+- **#2903 is a non-major patch update to prepare before the freeze.** Resolve its source-hash
+  manifest conflict using the [source documentation workflow](../../source/README.md): review the
+  affected source/README alignment before refreshing only the justified module hashes. The
+  [merge-recovery guide](../../engineering/generated-merge-recovery.md) treats that manifest as a
+  reviewed baseline, so do not accept either side or new hashes automatically. Regenerate any
+  genuinely affected output, validate the final head, and obtain review before merging it into the
+  candidate. If it cannot pass those gates, explicitly record its deferral before freezing; it is
+  not silently excluded with the two major updates.
 
 ## New — Tier 2: #2998 is now a clean merge, and the queue is measurably decaying
 
@@ -158,6 +179,9 @@ Current hand-written conflict counts, generated trees excluded:
 > after the `0b956b06` baseline this document was measured at. It is the first branch to leave the
 > table above, and it left as the mechanical case the table predicted. The rest of the measurement
 > stands as recorded at the baseline.
+> **Follow-up integration (`87dc5bf15`):** #2967 merged in `8123e84798`, and #2998 merged in
+> `87dc5bf15`. Their baseline recommendations are completed and must not be queued again. These
+> known closures do not establish a new whole-queue count or refresh other PRs' conflict evidence.
 
 Resolving `OperationsContinuityWorkflowServiceTests.cs` and
 `FinancialOperationsCommandCenterReadService.PublicationTests.cs` once on `main` still converts
@@ -251,11 +275,11 @@ re-verification; a carried-forward claim is a claim, and re-verification has to 
 | P0 | Provide **both** `MDC_SIGNING_CERT_PFX_BASE64` **and `MDC_SIGNING_CERT_PASSWORD`** in the protected `desktop-release-signing` environment | Hard prerequisite for **freezing and running the signed RC**, not for the rest of Tier 0; not engineering work. The 2026-09-27 document named only the PFX: the password is passed to Authenticode signing (`desktop-installer-packaging.yml:383,389`) and into installed lifecycle certification (`:483,492`), where `certify-desktop-install-lifecycle.ps1:177` imports the PFX with it, and the tracker names both (`implementation-todo-list.md:120-122`). Provisioning only the PFX leaves the tag workflow unable to sign or import a password-protected certificate. Everything else below can proceed while they are outstanding |
 | P0 | Decide the ~1 GB consumer installer question | It ships inside the RC; decide before the tag |
 | P0 | **Fix the prerelease → MSIX version mapping, or choose a tag scheme with distinct increasing identities** | **Blocks the tag.** `desktop-installer-packaging.yml:196-199` matches `^v(\d+)\.(\d+)\.(\d+)` and stamps `$1.$2.$3.0`, so `v0.1.0-rc.1` and a later `v0.1.0` both produce MSIX `0.1.0.0`. An operator who installs the signed RC then cannot be updated to the final package, and `certify-desktop-install-lifecycle.ps1:206-209` throws "Update did not advance package version" on exactly that transition. Tagging `v0.1.0-rc.1` as written burns the `0.1.0.0` identity on a throwaway candidate |
-| P0 | **Drain the six eligible zero-conflict dependency PRs before the freeze** (seven are clean; #2878 is held back) | The RC freezes the dependency set; bumping after the tag invalidates the same-commit evidence the tag exists to mint. Oldest has been open 73 days |
+| P0 | **Drain the remaining five members of the six-PR baseline dependency set before the freeze** (#2967 has merged; #2878 remains outside that set); separately resolve, validate and review #2981 and #2903 for inclusion, or record an explicit pre-freeze deferral | Recheck current heads and gates first. The RC freezes the dependency set; bumping after the tag invalidates same-commit evidence. #2903's source-hash conflict requires the reviewed-baseline procedure above, not automatic hash acceptance |
 | P0 | Backfill tenancy; make `FailClosed` the supported default with a real config key; add the rejection regressions — **before the freeze** | Re-verified today: still env-var-only, still defaults open. The one `W9-GOV-008` remainder, and it changes the candidate, so it cannot follow the tag |
 | P0 | Add `StatementReconciliationPostgresRoundTripTests` — **before the freeze** | Corrected scope: statement rows **do** have PostgreSQL coverage (`StatementReconciliationReportAuthorityStoreTests.cs`, `PostgresFundAccountStoreTests.cs`). The gap is the **end-to-end round trip** — import → journal-sourced ledger → deterministic match → casework — over the real stores. Candidate-changing, so it precedes the tag |
 | P0 | **Then** freeze a commit, cut the RC tag, **and separately dispatch `Publish Smoke` at the tagged SHA** | Still no `v*` tag in the repository. **This row is last among the P0s by necessity:** the tracker requires every P0 row complete on **one** release commit (`implementation-todo-list.md:125-127`), so a tag cut before the two rows above would certify the pre-fix tenancy posture, omit the new test, and force a second tag and a full second evidence run. The tag run also does not mint everything: `publish-smoke.yml:3` is `workflow_dispatch`-only, so `PRD-013`'s `web-workstation`/`win-x64` evidence needs its own dispatch at the frozen commit |
-| P1 | **Merge #2998 — it conflicts with nothing today** | Cheapest merge in the queue, in-scope accounting work, and clean merges do not stay clean |
+| P1 | **Completed after baseline: #2998 merged in `87dc5bf15`** | The baseline recommendation is retained as history; no further merge action remains |
 | P1 | Take or decline `W9-CORPACT-011` (6 days) | Zero engineering; clears the last W9 acceptance lane |
 | P1 | Resolve the two shared operations-continuity fixtures once on `main`; drain the **four** remaining generated-only branches (#2928, #2920, #2953, #2896) | One resolution converts #2929 and #2930; the four need no product decision. The baseline table listed five — **#2999 merged in `80219e32`** and has left the queue |
 | P1 | **Adopt the documented resolve-and-regenerate command** for generated-tree conflicts — **not** a `.gitattributes` merge driver | #3004 got harder to merge in one day of documentation-only commits, so the decay is measured, not projected. But `docs-regeneration-automation-design.md:263-267` lists a custom driver under **Rejected alternatives** — it runs only where configured locally and never during GitHub's server-side merge, i.e. never for the merges being measured. `generated-merge-recovery.md:71-75` says the same and documents the command instead. Two further reasons the old path list was wrong: it covered `src/*/README.md`, which `documentation-ownership.md:21` classifies as source-module truth rather than generated output, so an ours-style driver there could silently discard real README changes |
