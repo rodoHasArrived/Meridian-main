@@ -11,6 +11,12 @@ last_reviewed: 2026-09-28
 
 # src/Meridian.Ui.Shared
 
+Provider readiness resolves configuration, credential and telemetry aliases through the shared
+ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and
+`interactive-brokers` project one `ibkr` readiness row. An explicitly disabled module family
+overrides enabled source rows and retained healthy connection evidence, so configuration aliases
+cannot promote a disabled factory to readiness.
+
 The shared workstation registers credentialed Xero and NetSuite accounting
 providers alongside the existing fixtures. Their HTTP client disables redirects;
 provider-neutral credential setup and connection verification expose them to

@@ -134,6 +134,19 @@ public sealed class ProviderModuleLoaderTests
     }
 
     [Fact]
+    public async Task LoadModulesAsync_TemplateModuleCannotBeEnabledByConfiguration()
+    {
+        var loader = new ProviderModuleLoader();
+        var module = new TemplateOnlyTestModule();
+        loader.ConfigureModule(module.ModuleId, new ProviderModuleContext { Enabled = true });
+
+        var report = await loader.LoadModulesAsync(new ServiceCollection(), new DataSourceRegistry(), [module]);
+
+        report.Loaded.Should().BeEmpty();
+        module.RegisterWasCalled.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task LoadModulesAsync_MultipleModules_AllLoaded()
     {
         var loader = new ProviderModuleLoader();
@@ -292,6 +305,24 @@ public sealed class ProviderModuleLoaderTests
         module.ReceivedContext.Should().NotBeNull();
         module.ReceivedContext!.GetCredential("apiKey").Should().Be("resolved-key");
         module.RegisterWasCalled.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("interactive-brokers", "ibkr")]
+    [InlineData("ibkr", "interactive-brokers")]
+    [InlineData("nasdaqdatalink", "nasdaq")]
+    public async Task ConfigureModule_AliasesShareCanonicalContextAndLoadReport(string configuredId, string moduleId)
+    {
+        var loader = new ProviderModuleLoader();
+        var module = new ContextCapturingProviderModule(moduleId, "Aliased module");
+        var context = new ProviderModuleContext { Priority = 43 };
+        loader.ConfigureModule(configuredId, context);
+
+        var report = await loader.LoadModulesAsync(new ServiceCollection(), new DataSourceRegistry(), [module]);
+
+        module.ReceivedContext.Should().BeSameAs(context);
+        module.RegisterWasCalled.Should().BeTrue();
+        report.Loaded.Should().ContainSingle(info => info.ModuleId == ProviderIdentity.NormalizeId(configuredId));
     }
 
     [Fact]
@@ -516,6 +547,16 @@ internal sealed class ThrowingConstructorProviderModule : IProviderModule
 internal sealed class MinimalProviderModule : IProviderModule
 {
     public void Register(IServiceCollection services, DataSourceRegistry registry) { }
+}
+
+internal sealed class TemplateOnlyTestModule : IProviderModule
+{
+    public string ModuleId => "templates";
+    public bool IsProductionProvider => false;
+    public bool RegisterWasCalled { get; private set; }
+
+    public void Register(IServiceCollection services, DataSourceRegistry registry)
+        => RegisterWasCalled = true;
 }
 
 /// <summary>

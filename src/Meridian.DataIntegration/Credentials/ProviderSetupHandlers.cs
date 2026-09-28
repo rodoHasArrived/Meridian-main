@@ -257,7 +257,7 @@ public static class DefaultProviderSetupHandlers
             new GenericReadOnlyDataProviderSetupHandler("finnhub"),
             new GenericReadOnlyDataProviderSetupHandler("tiingo"),
             new GenericReadOnlyDataProviderSetupHandler("alphavantage", aliases: ["alpha-vantage", "alphaVantage"]),
-            new GenericReadOnlyDataProviderSetupHandler("nasdaqdatalink", aliases: ["nasdaq", "nasdaq-data-link"]),
+            new GenericReadOnlyDataProviderSetupHandler("nasdaq", aliases: ["nasdaqdatalink", "nasdaq-data-link"]),
             new GenericReadOnlyDataProviderSetupHandler("twelvedata", aliases: ["twelve-data", "twelvedata-api"]),
             new GenericReadOnlyDataProviderSetupHandler("openfigi", aliases: ["open-figi", "openfigi-api"]),
             new GenericReadOnlyDataProviderSetupHandler("stooq"),
