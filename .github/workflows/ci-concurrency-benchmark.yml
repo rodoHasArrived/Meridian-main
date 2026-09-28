@@ -43,6 +43,9 @@ jobs:
       - name: Restore browser dependencies
         if: matrix.subject == 'browser'
         run: npm --prefix src/Meridian.Ui/dashboard ci
+      - name: Restore .NET dependencies before either measured variant
+        if: matrix.subject == 'dotnet'
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
       - name: Measure paired test execution
         run: python build/scripts/ci/benchmark-ci.py --subject ${{ matrix.subject }} --pair ${{ matrix.pair }} --output artifacts/benchmark/${{ matrix.subject }}-${{ matrix.pair }}/pair.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
