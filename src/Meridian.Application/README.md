@@ -41,6 +41,9 @@ both supported configuration sections reach the same authentication path.
 Normal host composition registers the NYSE compatibility source and its realtime/historical aliases
 from that same configuration. Symbol-search coverage is projected independently, so synthetic
 option-chain cells remain visible without advertising unavailable option-symbol searches.
+The catalog also retains OpenFIGI's symbol-resolution contract; the matrix projects only families
+with at least one of its six displayed capabilities, preserving the complete inventory without
+adding empty reference-only rows.
 
 Provider setup accepts the initiating actor from its HTTP boundary and retains it in credential
 vault audit records. Operator endpoints reject missing identity; internal callers retain an explicit
