@@ -1,6 +1,6 @@
 {
   "total_files": 674,
-  "total_lines": 145448,
+  "total_lines": 145464,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -3155,7 +3155,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-09-28.md",
-      "line_count": 191,
+      "line_count": 207,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
