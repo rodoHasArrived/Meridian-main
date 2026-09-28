@@ -129,6 +129,7 @@ class AdapterReadinessRenderTests(unittest.TestCase):
                 self.assertIn(detail, rendered)
         self.assertIn("does not grant runtime entitlements", rendered)
         self.assertIn("their presence does not claim a passing live run", rendered)
+        self.assertNotIn("No catalogued provider implementation is listed", rendered)
 
     def test_separate_contracts_do_not_advertise_shared_capabilities(self):
         row = adapter("Core", None)
@@ -144,9 +145,25 @@ class AdapterReadinessRenderTests(unittest.TestCase):
         self.assertIn("**Aliases:** None.", rendered)
         self.assertIn("Symbol resolver: `CoreResolver` (separate contract)", rendered)
         self.assertIn("Compatibility data source: `CoreDataSource` (separate contract)", rendered)
+        self.assertNotIn("No catalogued provider implementation is listed", rendered)
 
-        row["other_types"] = {key: None for key in row["other_types"]}
-        self.assertIn("No shared-contract provider implementation", renderer.render_matrix(registry(row)))
+    def test_excluded_families_do_not_deny_uncatalogued_implementations(self):
+        rows = {row["folder"]: row for row in renderer.load_registry(ROOT)["adapters"]}
+        for folder in ("Core", "Failover", "Templates", "Plaid", "TradeStation", "Tradier"):
+            with self.subTest(folder=folder):
+                row = rows[folder]
+                before = copy.deepcopy(row)
+                rendered = renderer.render_matrix(registry(row))
+                self.assertIn(
+                    "- No catalogued provider implementation is listed; see the scoped evidence below.",
+                    rendered,
+                )
+                self.assertNotIn("No shared-contract provider implementation", rendered)
+                self.assertIn("| No | No | No | No | No | No |", rendered)
+                self.assertIn(row["degradation"], rendered)
+                for item in row["evidence"]:
+                    self.assertIn(renderer.reference(item), rendered)
+                self.assertEqual(before, row)
 
     def test_reference_labels_escape_table_delimiters_and_newlines(self):
         rendered = renderer.reference({"symbol": "Alpha|Beta\nGamma", "path": "tests/AlphaTests.cs"})

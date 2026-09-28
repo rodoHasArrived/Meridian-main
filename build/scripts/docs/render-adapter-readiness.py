@@ -112,7 +112,7 @@ def render_matrix(data: dict) -> str:
         for key, label in (("symbol_resolver", "Symbol resolver"), ("compatibility_data_source", "Compatibility data source")):
             if row["other_types"][key]:
                 implementations.append(f"- {label}: `{row['other_types'][key]}` (separate contract)")
-        lines.extend(implementations or ["- No shared-contract provider implementation; see the scoped evidence below."])
+        lines.extend(implementations or ["- No catalogued provider implementation is listed; see the scoped evidence below."])
         lines.extend(["", "**Registration path:**", ""])
         lines.extend(f"- {reference(item)}" for item in row["registration"])
         lines.extend(["", "**Targeted evidence:**", ""])

@@ -155,7 +155,7 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Implementation types:**
 
-- No shared-contract provider implementation; see the scoped evidence below.
+- No catalogued provider implementation is listed; see the scoped evidence below.
 
 **Registration path:**
 
@@ -225,7 +225,7 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Implementation types:**
 
-- No shared-contract provider implementation; see the scoped evidence below.
+- No catalogued provider implementation is listed; see the scoped evidence below.
 
 **Registration path:**
 
@@ -481,7 +481,7 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Implementation types:**
 
-- No shared-contract provider implementation; see the scoped evidence below.
+- No catalogued provider implementation is listed; see the scoped evidence below.
 
 **Registration path:**
 
@@ -673,7 +673,7 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Implementation types:**
 
-- No shared-contract provider implementation; see the scoped evidence below.
+- No catalogued provider implementation is listed; see the scoped evidence below.
 
 **Registration path:**
 
@@ -743,7 +743,7 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Implementation types:**
 
-- No shared-contract provider implementation; see the scoped evidence below.
+- No catalogued provider implementation is listed; see the scoped evidence below.
 
 **Registration path:**
 
@@ -775,7 +775,7 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Implementation types:**
 
-- No shared-contract provider implementation; see the scoped evidence below.
+- No catalogued provider implementation is listed; see the scoped evidence below.
 
 **Registration path:**
 
