@@ -33,7 +33,10 @@ keeps the other retained fields.
 The add-provider wizard saves and tests credentials through the same authenticated service, writing the
 provider-wide vault record. It no longer reads or writes Windows user environment variables, its editors
 start blank, and a test reports success only when the service verifies the credentials. Saved but
-unverified credentials are shown as a warning. The settings shell counts unavailable credential status
+unverified credentials are shown as a warning. Every provider and credential endpoint requires tenant
+scope, so a company-less desktop account sees an explicit refusal naming that requirement. While a test
+or save awaits the service, provider selection and the other command are ignored, and backfill inputs
+are captured before the first await. The settings shell counts unavailable credential status
 separately from missing credentials, so a refused or failed status read is shown as unknown readiness.
 The setup-wizard state service and the Backfill page still write environment variables and remain
 separate cutover work.

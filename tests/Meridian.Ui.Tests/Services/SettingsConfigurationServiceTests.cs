@@ -116,6 +116,22 @@ public sealed class SettingsConfigurationServiceTests
     }
 
     [Theory]
+    [InlineData(false, 401)]
+    [InlineData(false, 403)]
+    [InlineData(true, 403)]
+    public async Task CredentialMutation_RefusedSessionExplainsTenantRequirement(bool remove, int status)
+    {
+        using var handler = new StatusHandler((HttpStatusCode)status, "{}");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+        Func<Task> action = () => remove ? service.RemoveProviderCredentialsAsync("alpaca") :
+            service.SaveProviderCredentialsAsync("alpaca", new Dictionary<string, string?> { ["SecretKey"] = "private-test-value" });
+
+        var error = await action.Should().ThrowAsync<CredentialServiceRefusedException>();
+        error.Which.Message.Should().Contain("not confirmed").And.Contain("tenant").And.NotContain("private-test-value");
+    }
+
+    [Theory]
     [InlineData(3, CredentialState.Configured)]
     [InlineData(4, CredentialState.Configured)]
     [InlineData(2, CredentialState.Partial)]

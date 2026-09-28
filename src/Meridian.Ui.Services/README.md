@@ -6,7 +6,7 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-25
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Ui.Services
@@ -21,6 +21,9 @@ Credential-management save, remove and verification operations use the shared au
 client. Saves send canonical field names; mutations require a matching provider and an acknowledged
 result state. Verification requires a successful, dated server result. Optional connection IDs route
 to retained scoped ownership. Fixed failure messages do not echo secrets or server response bodies.
+A 401 or 403 refusal throws `CredentialServiceRefusedException`, a subclass of the existing
+`InvalidOperationException`, whose message states that credential changes need a signed-in account
+with a tenant assignment and ManageCredentials. Nothing falls back to a local or environment store.
 
 `SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
 credential states. Missing, ambiguous or refused responses remain unavailable, even when environment

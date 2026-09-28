@@ -407,10 +407,11 @@ public sealed class AddProviderWizardViewModel : BindableBase
     }
 
     /// <summary>Marks the connection test as failed because the service did not confirm the save.</summary>
-    public void SetConnectionTestError()
+    public void SetConnectionTestError(string? message = null)
     {
         ConnectionTestDotBrush = ErrorBrush;
-        ConnectionTestStatusText = "Credential save was not confirmed by the authenticated service. Check the required fields and try again.";
+        ConnectionTestStatusText = message
+            ?? "Credential save was not confirmed by the authenticated service. Check the required fields and try again.";
     }
 
     /// <summary>Sets a success message on the save-status line.</summary>

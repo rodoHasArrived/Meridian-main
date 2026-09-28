@@ -29,6 +29,11 @@ public partial class AddProviderWizardPage : Page
 
     private ProviderCatalogEntry? _selectedProvider;
 
+    // True while a Test or Save awaits the credential service. Provider selection and the other
+    // wizard command are ignored until it completes, so results and shared inputs cannot be
+    // applied to a different provider than the one the operation started for.
+    private bool _operationInProgress;
+
     public AddProviderWizardPage(
         WpfServices.NavigationService navigationService,
         WpfServices.NotificationService notificationService)
@@ -60,7 +65,7 @@ public partial class AddProviderWizardPage : Page
 
     private void ProviderCard_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button button || button.Tag is not string providerId)
+        if (_operationInProgress || sender is not Button button || button.Tag is not string providerId)
             return;
 
         _selectedProvider = _viewModel.FindProvider(providerId);
@@ -142,7 +147,7 @@ public partial class AddProviderWizardPage : Page
     private async void TestProviderConnection_Click(object sender, RoutedEventArgs e)
     {
         var provider = _selectedProvider;
-        if (provider == null)
+        if (provider == null || _operationInProgress)
             return;
 
         if (provider.CredentialFields.Length == 0)
@@ -152,13 +157,13 @@ public partial class AddProviderWizardPage : Page
             return;
         }
 
+        var fields = CollectEnteredCredentialFields();
+        _operationInProgress = true;
         _viewModel.SetConnectionTestTesting(provider.DisplayName);
         try
         {
-            await PersistCredentialsAsync(provider);
+            await PersistCredentialsAsync(provider, fields);
             var verified = await _settingsConfigService.VerifyProviderCredentialsAsync(provider.Id);
-            if (!ReferenceEquals(provider, _selectedProvider))
-                return;
 
             if (verified)
                 _viewModel.SetConnectionTestSuccess();
@@ -166,35 +171,42 @@ public partial class AddProviderWizardPage : Page
                 _viewModel.SetConnectionTestUnverified();
             _viewModel.CurrentStep = 3;
         }
+        catch (CredentialServiceRefusedException ex)
+        {
+            _viewModel.SetConnectionTestError(ex.Message);
+        }
         catch (Exception)
         {
-            if (ReferenceEquals(provider, _selectedProvider))
-                _viewModel.SetConnectionTestError();
+            _viewModel.SetConnectionTestError();
+        }
+        finally
+        {
+            _operationInProgress = false;
         }
     }
 
     private async void SaveProvider_Click(object sender, RoutedEventArgs e)
     {
         var provider = _selectedProvider;
-        if (provider == null)
+        if (provider == null || _operationInProgress)
             return;
 
+        // Capture every input before the first await; the shared controls belong to whichever
+        // provider is selected when they are read.
+        var fields = CollectEnteredCredentialFields();
+        var backfillOptions = provider.SupportsHistorical
+            ? new Meridian.Contracts.Configuration.BackfillProviderOptionsDto { Enabled = EnableBackfillCheck.IsChecked == true }
+            : null;
+        if (backfillOptions is not null && int.TryParse(PriorityBox.Text, out var priority) && priority >= 0)
+            backfillOptions.Priority = priority;
+
+        _operationInProgress = true;
         try
         {
-            await PersistCredentialsAsync(provider);
+            await PersistCredentialsAsync(provider, fields);
 
-            if (provider.SupportsHistorical)
-            {
-                var options = new Meridian.Contracts.Configuration.BackfillProviderOptionsDto
-                {
-                    Enabled = EnableBackfillCheck.IsChecked == true,
-                };
-
-                if (int.TryParse(PriorityBox.Text, out var priority) && priority >= 0)
-                    options.Priority = priority;
-
-                await _configService.SetBackfillProviderOptionsAsync(provider.Id, options);
-            }
+            if (backfillOptions is not null)
+                await _configService.SetBackfillProviderOptionsAsync(provider.Id, backfillOptions);
 
             _viewModel.CurrentStep = 4;
             _viewModel.SetSaveSuccess(provider.DisplayName);
@@ -207,6 +219,10 @@ public partial class AddProviderWizardPage : Page
         {
             _viewModel.SetSaveError(ex.Message);
         }
+        finally
+        {
+            _operationInProgress = false;
+        }
     }
 
     /// <summary>
@@ -214,9 +230,8 @@ public partial class AddProviderWizardPage : Page
     /// which writes the provider's encrypted vault record. Nothing is written to the process or
     /// user environment, and blank fields are omitted because the vault treats blanks as deletions.
     /// </summary>
-    private async Task PersistCredentialsAsync(ProviderCatalogEntry provider)
+    private async Task PersistCredentialsAsync(ProviderCatalogEntry provider, Dictionary<string, string?> fields)
     {
-        var fields = CollectEnteredCredentialFields();
         if (fields.Count == 0)
             return;
 
