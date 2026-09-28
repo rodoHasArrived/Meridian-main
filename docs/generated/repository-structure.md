@@ -1082,6 +1082,8 @@ Meridian-main
 │   │   └── __init__.py
 │   ├── rules
 │   │   └── doc-rules.yaml
+│   ├── schema-control
+│   │   └── migrations.json
 │   └── scripts
 │       ├── ai
 │       │   ├── tests
