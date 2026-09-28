@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "b93df375948b",
+  "sourceFingerprint": "259d954d5fee",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 98,
@@ -676,6 +676,7 @@
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/DesktopLocalTenantIsolationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
@@ -698,7 +699,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, +10 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, +11 more."
         }
       ],
       "openTaskCount": 0
