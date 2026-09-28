@@ -11,6 +11,12 @@ last_reviewed: 2026-09-28
 
 # src/Meridian.Contracts
 
+External GL import summaries optionally retain `TrialBalanceBasis`: the provider's
+income-statement year start, income account codes and retained-earnings identity.
+It is distinct from the requested journal period. Reconciliation rows optionally
+retain gross `PeriodDebit`/`PeriodCredit` for export review, independently of report
+balances. These additive fields are omitted when absent to preserve legacy payloads.
+
 Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
 first/last observation and successful-run clearing evidence. This metadata is omitted when absent
 so legacy integrity-checked snapshots keep their serialized shape. Source clearing is distinct from

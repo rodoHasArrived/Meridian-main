@@ -120,9 +120,19 @@ public sealed class ProviderConnectionLifecycleService
         if (accountingVerification is not null)
         {
             var result = await accountingVerification.VerifyConnectionAsync(ct).ConfigureAwait(false);
-            await _credentialStore.RecordVerificationAsync(new ProviderCredentialVerificationUpdate(
-                descriptor.ProviderId, result.Success, result.LastError, result.ExternalCompanyId,
-                result.VerifiedAtUtc, actor ?? "provider-connection-lifecycle"), ct).ConfigureAwait(false);
+            try
+            {
+                await _credentialStore.RecordVerificationAsync(new ProviderCredentialVerificationUpdate(
+                    descriptor.ProviderId, result.Success, result.LastError, result.ExternalCompanyId,
+                    result.VerifiedAtUtc, actor ?? "provider-connection-lifecycle")
+                { ExpectedCredentialGeneration = result.ExpectedCredentialGeneration }, ct).ConfigureAwait(false);
+            }
+            catch (ProviderCredentialConflictException)
+            {
+                return new(descriptor.ProviderId, false, ProviderVerificationStateDto.NotVerified,
+                    ProviderContinuityHealthDto.Blocked, null,
+                    "Provider credentials changed during verification. Verify the current connection again.", null, []);
+            }
             return new ProviderCredentialVerificationResultDto(
                 descriptor.ProviderId,
                 result.Success,

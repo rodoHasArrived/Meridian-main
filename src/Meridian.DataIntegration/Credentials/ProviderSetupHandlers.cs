@@ -234,6 +234,14 @@ public sealed class GenericReadOnlyDataProviderSetupHandler : ProviderSetupHandl
     }
 }
 
+public sealed class ExternalGlProviderSetupHandler : ProviderSetupHandlerBase
+{
+    public ExternalGlProviderSetupHandler(string providerId)
+        : base(providerId, [], true, ProviderConnectionMode.ReadOnly, false, credentialOnly: true)
+    {
+    }
+}
+
 public static class DefaultProviderSetupHandlers
 {
     public static IReadOnlyList<IProviderSetupHandler> Create()
@@ -243,6 +251,8 @@ public static class DefaultProviderSetupHandlers
             new PolygonProviderSetupHandler(),
             new PlaidProviderSetupHandler(),
             new QuickBooksProviderSetupHandler(),
+            new ExternalGlProviderSetupHandler("xero"),
+            new ExternalGlProviderSetupHandler("netsuite"),
             new GenericReadOnlyDataProviderSetupHandler("ib-flex", aliases: ["ibflex", "ib-flex-web-service"]),
             new GenericReadOnlyDataProviderSetupHandler("finnhub"),
             new GenericReadOnlyDataProviderSetupHandler("tiingo"),

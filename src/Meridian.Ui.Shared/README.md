@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-25
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Ui.Shared
@@ -16,6 +16,14 @@ ProviderSdk family identity map before joining evidence. Accepted names such as 
 `interactive-brokers` project one `ibkr` readiness row. An explicitly disabled module family
 overrides enabled source rows and retained healthy connection evidence, so configuration aliases
 cannot promote a disabled factory to readiness.
+
+The shared workstation registers credentialed Xero and NetSuite accounting
+providers alongside the existing fixtures. Their HTTP client disables redirects;
+provider-neutral credential setup and connection verification expose them to
+both workstation lanes. Transport and export-control policy stay in Data Integration.
+Connection verification records the provider's expected credential generation once
+with the requesting actor. Concurrent replacements reject stale results and return
+a blocked verification response without changing the replacement's status.
 
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
