@@ -121,7 +121,7 @@ authenticate a human reviewer or turn free text into ownership authority.
 ## Apply and recover
 
 Apply requires all included schemas to reside in the same explicitly configured host/port/database.
-It uses the fund-structure connection role, which must have permission to read/lock both schemas,
+It uses the fund-structure connection role, which must have permission to read/lock all included schemas,
 stamp tenant columns, and retain quarantine and receipt rows. Split-database configurations can
 produce previews but are blocked from apply. A future coordinated migration protocol is needed
 for those deployments; there is no override that pretends separate transactions are atomic.
@@ -172,9 +172,9 @@ Meridian --fund-tenant-backfill --action resolve --run-id <new-uuid> --plan-hash
 Only rows whose current retained evidence derives exactly one owner can be released. The command
 accepts no caller-supplied tenant assignment. Resolutions, first tenant stamps, and the immutable
 receipt commit together under the same locks; old quarantine evidence is retained. New ambiguity,
-stale evidence, or a conflicting prior resolution refuses the transaction. A resolution hash cannot
-be used as an ordinary apply hash. Retry the exact run identity and review fields after an uncertain
-response to recover the retained receipt.
+stale evidence, or a conflicting prior resolution refuses the transaction. Quarantine release requires
+`resolve`; ordinary `apply` cannot release those rows. Retry the exact run identity and review fields
+after an uncertain response to recover the retained receipt.
 
 ## Evidence and remaining deployment work
 
