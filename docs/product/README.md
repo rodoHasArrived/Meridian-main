@@ -43,9 +43,11 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     future roadmap row must produce before a deferred product area can move into active delivery;
     boundaries, not implementation claims
 - Treat the following as dated working design inputs, not canonical status sources:
-  - [What To Work On Next (2026-09-23)](next-work-determination-2026-09-23.md) — latest
-    prioritization input, anchored at `main` `13aa7576`; ranks work against the registry, the
-    readiness tracker, live CI, and the pull-request queue, and supersedes the
+  - [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) — latest
+    prioritization input, anchored at `main` `5980fa00`; ranks work against the registry, the
+    readiness tracker, live CI, and the pull-request queue, verifies each named roadmap remainder
+    against current source, and supersedes the
+    [2026-09-23 determination](next-work-determination-2026-09-23.md) and the
     [2026-09-20 determination](next-work-determination-2026-09-20.md). It moves no roadmap row
     and certifies no release
   - [Reporting Operating Model (2026-09)](reporting-operating-model-2026-09.md) — refined
