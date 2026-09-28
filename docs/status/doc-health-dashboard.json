@@ -1,11 +1,11 @@
 {
   "total_files": 676,
-  "total_lines": 146103,
+  "total_lines": 146122,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 272,
-  "average_lines": 216.1,
+  "average_lines": 216.2,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -411,7 +411,7 @@
   "all_files": [
     {
       "path": ".agents/skills/_shared/project-context.md",
-      "line_count": 244,
+      "line_count": 248,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -803,7 +803,7 @@
     },
     {
       "path": "AGENTS.md",
-      "line_count": 174,
+      "line_count": 179,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -979,7 +979,7 @@
     },
     {
       "path": "CLAUDE.md",
-      "line_count": 212,
+      "line_count": 217,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3859,7 +3859,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 238,
+      "line_count": 243,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

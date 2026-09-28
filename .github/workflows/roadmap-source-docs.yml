@@ -20,6 +20,7 @@ on:
       - "AGENTS.md"
       - "CLAUDE.md"
   push:
+    branches: [main]
     paths:
       - "docs/roadmap/**"
       - "docs/source/**"
