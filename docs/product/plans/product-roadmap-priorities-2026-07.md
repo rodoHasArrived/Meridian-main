@@ -3,8 +3,8 @@
 **Status:** accepted planning input; live status lives in the roadmap registry
 **Owner:** core-team
 **Reviewed:** 2026-07-21
-**Registry decision:** `DEC-PRIORITY-SLATE-001` in [`docs/roadmap/data/decision-log.yml`](../roadmap/data/decision-log.yml)
-**Registry rows:** `W9-TRUTH-001` through `W9-INGEST-009` in [`docs/roadmap/data/roadmap-items.yml`](../roadmap/data/roadmap-items.yml)
+**Registry decision:** `DEC-PRIORITY-SLATE-001` in [`docs/roadmap/data/decision-log.yml`](../../roadmap/data/decision-log.yml)
+**Registry rows:** `W9-TRUTH-001` through `W9-INGEST-009` in [`docs/roadmap/data/roadmap-items.yml`](../../roadmap/data/roadmap-items.yml)
 
 This document records the ranked first-order improvement slate adopted on 2026-07-21 and maps each
 rank to its durable roadmap row and to the production-readiness rows it strengthens. Treat the
@@ -58,7 +58,7 @@ fund-accounting deliverables, then safety and governance hardening, then institu
 ## Production-Readiness Tracker Mapping
 
 Each slate row strengthens named rows in the
-[Implementation and Readiness Tracker](implementation-todo-list.md); the slate does not replace that
+[Implementation and Readiness Tracker](../implementation-todo-list.md); the slate does not replace that
 tracker's release-gate semantics.
 
 | Roadmap row | Related tracker rows |

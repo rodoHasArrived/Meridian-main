@@ -38,7 +38,7 @@ persistence (§10), contracts and endpoints (§12).
 > the [incentive-fee](incentive-fee-mechanics.md) and
 > [commitment & capital-call](commitment-and-capital-call-engine.md) blueprints. Migration ordinals,
 > DDL precision, route prefixes, terminology, and the HWM-ownership contract are recorded in the
-> canonical [blueprint register](../../engineering/blueprints/README.md#shared-conventions).
+> canonical [blueprint register](../README.md#shared-conventions).
 >
 > **Spelling:** this document uses UK spelling ("equalisation", "crystallisation") in **prose only**.
 > Every identifier it proposes — types, interfaces, DTOs, enum members, table and column names, route
@@ -252,7 +252,7 @@ Design consequence: series are modeled as a **lightweight series registry keyed 
 `add column if not exists`, `create index if not exists`, and `is null`-guarded backfills
 (see `V_ledger_020__fund_scope_tenant_columns.sql`, `V_ledger_003__ledger_books.sql`). New scripts
 here use this blueprint's reserved range **033–035**
-([register](../../engineering/blueprints/README.md#ledger-migration-ordinals)); confirm the next
+([register](../README.md#ledger-migration-ordinals)); confirm the next
 free ordinal at implementation time.
 
 ---
@@ -559,7 +559,7 @@ New engine types live beside the existing projector in **`Meridian.Ledger`** (se
 >
 > Ordinal `1` already means exactly this blueprint's `EqualizationCreditDebit`, so the change is a
 > single **append** of `SeriesOfShares = 2` (append-only shared enum — see the
-> [register](../../engineering/blueprints/README.md#enum-extension)). Member `1` keeps its shipped
+> [register](../README.md#enum-extension)). Member `1` keeps its shipped
 > UK spelling `Equalisation` as a grandfathered exception (§0); do not rename it in passing, because
 > `ShareClassUnitRegisterProjector` compares against it. A series-of-shares fund correctly falls
 > outside that Method A branch.
@@ -973,7 +973,7 @@ Method A is the lighter, recommended default.
 >
 > If a fund adopts Method B, this blueprint's series accounting and the incentive-fee blueprint's
 > `InvestorSeries` fork must land as one slice. Both documents record this contract; the canonical
-> copy is the [blueprint register](../../engineering/blueprints/README.md#cross-blueprint-contracts).
+> copy is the [blueprint register](../README.md#cross-blueprint-contracts).
 
 ---
 
@@ -982,7 +982,7 @@ Method A is the lighter, recommended default.
 Follow the `V_ledger_###__name.sql` convention (§2.7): `__SCHEMA__` placeholder, idempotent,
 replay-safe, `is null`-guarded backfills. The highest ordinal on disk is
 `V_ledger_028__wash_sale_activation.sql`; this blueprint's reserved range is **033–035**
-([register](../../engineering/blueprints/README.md#ledger-migration-ordinals)). Verify at
+([register](../README.md#ledger-migration-ordinals)). Verify at
 implementation time and update the register if another lane lands first.
 
 ### 10.1 `V_ledger_033__equalization_policy.sql`
@@ -1120,7 +1120,7 @@ create table if not exists __SCHEMA__.fund_series_consolidations (
 
 **Rounding/precision note:** every **numeric amount, rate, share-count, and per-share** column above
 uses the ledger convention `numeric(38, 12)`
-([register](../../engineering/blueprints/README.md#ddl-precision)). This applies to the numeric
+([register](../README.md#ddl-precision)). This applies to the numeric
 columns only — the same tables also carry `uuid`, `text`, `date`, `boolean`, and `timestamptz`
 columns, which keep their natural types. Storage precision is *not* the rounding policy: posted
 monetary amounts are still rounded in C# to the 2-dp `RoundCurrency` policy. Never post an
@@ -1217,7 +1217,7 @@ source-generated JSON context (Critical Quality Guardrail: respect source-genera
 Routes use the existing **`/api/ledger/...`** prefix — `UiApiRoutes` has no `/api/accounting/`
 prefix, and these sit beside the incentive-fee blueprint's `/api/ledger/incentive-fee/...` surface
 that shares their crystallization boundary
-([register](../../engineering/blueprints/README.md#api-route-prefixes)). Route segments use US
+([register](../README.md#api-route-prefixes)). Route segments use US
 spelling, matching the shipped `EqualizationCalculator`.
 
 - `GET  /api/ledger/equalization/policy/{ledgerBookId}` → `EqualizationPolicyDto`.
@@ -1354,7 +1354,7 @@ Run targeted: `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTarge
     Crystallisation Cockpit + Series Roll-up panel under **Accounting** in
     `src/Meridian.Ui/dashboard/`. WPF parity follows.
 12. **Service/integration tests** — §13.3.
-13. **Docs** — link this blueprint from `docs/development/accounting-blueprints/` index and the
+13. **Docs** — link this blueprint from `docs/engineering/blueprints/accounting/` index and the
     accounting docs front door; note the `EqualizationMethod` policy fork in operator docs.
 14. **Validation** — `bash scripts/ci.sh` locally; targeted `dotnet test ...~Equalization`; then the
     authoritative GitHub `Meridian CI / quality-gate`.

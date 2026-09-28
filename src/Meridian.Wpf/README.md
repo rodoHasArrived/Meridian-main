@@ -76,7 +76,7 @@ flag cannot stand in for the retained package. Windows execution remains a separ
 WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside
 the browser workstation. It projects the seven canonical workspaces over shared contracts and read
 models; its current lane focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`, see
-`docs/development/wpf-web-ui-alignment-plan.md`) without forking product state.
+`docs/engineering/plans/wpf-web-ui-alignment-plan.md`) without forking product state.
 
 ## Layer responsibility
 

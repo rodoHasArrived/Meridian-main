@@ -1,11 +1,11 @@
 {
-  "total_files": 675,
-  "total_lines": 146723,
-  "orphaned_count": 250,
+  "total_files": 674,
+  "total_lines": 145747,
+  "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 272,
-  "average_lines": 217.4,
+  "todo_count": 271,
+  "average_lines": 216.2,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -34,7 +34,6 @@
     ".agents/skills/meridian-simulated-user-panel/references/sample-prompts.md",
     ".agents/skills/meridian-test-writer/SKILL.md",
     "AGENTS.md",
-    "Meridian Design System/BRAND_GUIDELINES.md",
     "Meridian Design System/CONTENT_FUNDAMENTALS.md",
     "Meridian Design System/ICONOGRAPHY.md",
     "Meridian Design System/INSPIRATION_BRIEF.md",
@@ -232,7 +231,6 @@
     "docs/security/buyer-packet/threat-model-summary.md",
     "docs/security/buyer-packet/vulnerability-management.md",
     "docs/security/codex-security-remediation-2026-05-20.md",
-    "docs/security/security-remediation-backlog.md",
     "docs/source/generated/source-module-index.md",
     "docs/source/generated/source-roadmap-traceability.md",
     "docs/source/generated/source-todo-checklist.md",
@@ -413,9 +411,9 @@
   "all_files": [
     {
       "path": ".agents/skills/_shared/project-context.md",
-      "line_count": 192,
+      "line_count": 244,
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -1612,14 +1610,6 @@
       "stale": false
     },
     {
-      "path": "docs/architecture/security-lot-convergence-blueprint.md",
-      "line_count": 334,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/architecture/security-master-extensibility-review.md",
       "line_count": 5553,
       "has_heading": true,
@@ -1710,38 +1700,6 @@
     {
       "path": "docs/DEPENDENCIES.md",
       "line_count": 133,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/development/accounting-blueprints/commitment-and-capital-call-engine.md",
-      "line_count": 1033,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/development/accounting-blueprints/equalization-and-series-accounting.md",
-      "line_count": 1388,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/development/accounting-blueprints/incentive-fee-mechanics.md",
-      "line_count": 1736,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/development/accounting-blueprints/README.md",
-      "line_count": 72,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1870,14 +1828,6 @@
     {
       "path": "docs/development/github-actions-testing.md",
       "line_count": 48,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/development/god-file-burn-down-plan.md",
-      "line_count": 290,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2020,14 +1970,6 @@
       "stale": false
     },
     {
-      "path": "docs/development/tooling-workflow-backlog.md",
-      "line_count": 183,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/development/ui-fixture-mode-guide.md",
       "line_count": 458,
       "has_heading": true,
@@ -2046,14 +1988,6 @@
     {
       "path": "docs/development/wpf-implementation-notes.md",
       "line_count": 579,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/development/wpf-web-ui-alignment-plan.md",
-      "line_count": 204,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2141,7 +2075,7 @@
     },
     {
       "path": "docs/documentation-inventory.md",
-      "line_count": 90,
+      "line_count": 92,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2204,6 +2138,38 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/blueprints/accounting/commitment-and-capital-call-engine.md",
+      "line_count": 1033,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/accounting/equalization-and-series-accounting.md",
+      "line_count": 1388,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/accounting/incentive-fee-mechanics.md",
+      "line_count": 1736,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/accounting/README.md",
+      "line_count": 72,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md",
       "line_count": 780,
       "has_heading": true,
@@ -2212,8 +2178,24 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/blueprints/portfolio-cash-ladder-blueprint-2026-07.md",
+      "line_count": 716,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 179,
+      "line_count": 220,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/report-writer-auto-preview-blueprint.md",
+      "line_count": 587,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2228,8 +2210,32 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/blueprints/security-lot-convergence-blueprint.md",
+      "line_count": 334,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/security-master-passport-workbench.md",
+      "line_count": 738,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md",
       "line_count": 3029,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/web-ui-report-run-stream-blueprint-2026-07.md",
+      "line_count": 402,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2284,6 +2290,38 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/god-file-burn-down-plan.md",
+      "line_count": 290,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/README.md",
+      "line_count": 21,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/web-ui-improvements-implementation-plan-2026-07.md",
+      "line_count": 377,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
+      "line_count": 204,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/practical-csharp-wpf-financial-markets.md",
       "line_count": 57,
       "has_heading": true,
@@ -2309,7 +2347,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 325,
+      "line_count": 320,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2693,7 +2731,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11033,
+      "line_count": 11034,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2989,7 +3027,7 @@
     },
     {
       "path": "docs/plans/README.md",
-      "line_count": 56,
+      "line_count": 39,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2997,7 +3035,7 @@
     },
     {
       "path": "docs/plans/report-writer-auto-preview-blueprint.md",
-      "line_count": 587,
+      "line_count": 12,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3008,14 +3046,6 @@
       "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/plans/security-master-passport-workbench.md",
-      "line_count": 738,
-      "has_heading": true,
-      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3056,14 +3086,6 @@
       "line_count": 556,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/adversarial-review-2026-08-remediation-plan.md",
-      "line_count": 1231,
-      "has_heading": true,
-      "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3124,23 +3146,15 @@
       "stale": false
     },
     {
-      "path": "docs/product/next-work-determination-2026-09-20.md",
-      "line_count": 251,
+      "path": "docs/product/plans/adversarial-review-2026-08-remediation-plan.md",
+      "line_count": 1231,
       "has_heading": true,
-      "todo_count": 2,
+      "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
     {
-      "path": "docs/product/next-work-determination-2026-09-23.md",
-      "line_count": 263,
-      "has_heading": true,
-      "todo_count": 3,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/next-work-determination-2026-09-27.md",
+      "path": "docs/product/plans/next-work-determination-2026-09-27.md",
       "line_count": 293,
       "has_heading": true,
       "todo_count": 2,
@@ -3148,15 +3162,7 @@
       "stale": false
     },
     {
-      "path": "docs/product/portfolio-cash-ladder-blueprint-2026-07.md",
-      "line_count": 716,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/product-roadmap-priorities-2026-07.md",
+      "path": "docs/product/plans/product-roadmap-priorities-2026-07.md",
       "line_count": 93,
       "has_heading": true,
       "todo_count": 1,
@@ -3164,7 +3170,7 @@
       "stale": false
     },
     {
-      "path": "docs/product/production-readiness-backlog-2026-08.md",
+      "path": "docs/product/plans/production-readiness-backlog-2026-08.md",
       "line_count": 303,
       "has_heading": true,
       "todo_count": 0,
@@ -3172,8 +3178,32 @@
       "stale": false
     },
     {
+      "path": "docs/product/plans/README.md",
+      "line_count": 24,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/plans/w10-depth-slate-2026-07.md",
+      "line_count": 592,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/plans/w9-close-out-delivery-plan-2026-08.md",
+      "line_count": 935,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/README.md",
-      "line_count": 393,
+      "line_count": 394,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3184,22 +3214,6 @@
       "line_count": 848,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/w10-depth-slate-2026-07.md",
-      "line_count": 592,
-      "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/w9-close-out-delivery-plan-2026-08.md",
-      "line_count": 935,
-      "has_heading": true,
-      "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3222,30 +3236,6 @@
     {
       "path": "docs/product/web-ui-improvements-brainstorm-2026-07.md",
       "line_count": 266,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/web-ui-improvements-implementation-plan-2026-07.md",
-      "line_count": 377,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/web-ui-report-run-stream-blueprint-2026-07.md",
-      "line_count": 402,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/web-ui-stream-fan-out-blueprint-2026-07.md",
-      "line_count": 383,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3853,7 +3843,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 266,
+      "line_count": 238,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

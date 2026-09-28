@@ -43,7 +43,7 @@ persistence and stores (§6), endpoints (§8.3), and the commitment workbench re
 > `AutomatedJournalEventKind` enum with the
 > [incentive-fee](incentive-fee-mechanics.md) and [equalization](equalization-and-series-accounting.md)
 > blueprints. Migration ordinals, DDL precision, and route prefixes are recorded in the canonical
-> [blueprint register](../../engineering/blueprints/README.md#shared-conventions).
+> [blueprint register](../README.md#shared-conventions).
 
 ---
 
@@ -230,7 +230,7 @@ public sealed record AutomatedJournalDraft(
 `__SCHEMA__` placeholder, `create table if not exists`, `create index if not exists`, `constraint
 ck_...` checks and `unique(...)`. Highest existing is `V_ledger_028__wash_sale_activation.sql`; this
 blueprint's reserved range is **031–032**
-([register](../../engineering/blueprints/README.md#ledger-migration-ordinals)), so the engine's
+([register](../README.md#ledger-migration-ordinals)), so the engine's
 first migration is **`V_ledger_031__private_capital_commitments.sql`**. Re-derive the next free
 ordinal from disk at implementation time. (Fund-account master data under
 `src/Meridian.Storage/FundAccounts/Migrations/` uses the simpler `001_*.sql` convention; policy fork

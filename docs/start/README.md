@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-24
+**Reviewed:** 2026-09-28
 
 Use this page for the fastest safe orientation in a fresh Meridian checkout. Run commands from the
 repository root unless a command says otherwise.
@@ -191,46 +191,7 @@ persisting the password in WPF config files.
 
 ## First Validation Paths
 
-Use the narrowest command that covers the surface you touched:
-
-For completed PR-ready work, use the canonical repository gate:
-
-```powershell
-bash scripts/ci.sh
-```
-
-GitHub Actions `Meridian CI / quality-gate` remains the authoritative merge result after the branch
-is pushed and the pull request is opened.
-
-For local .NET tests, use the contention-aware runner when another agent, desktop shell, or test
-lane may be active:
-
-```powershell
-python build/python/cli/buildctl.py validation-status --summary
-python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~<TestClassOrMethod>" --queue
-```
-
-After a timed-out generation, build, or test attempt, run `python build/python/cli/buildctl.py
-validation-status --summary`, then `dotnet build-server shutdown`. Stop only abandoned repo-owned
-`dotnet`, `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines
-point at this checkout.
-
-If local machine limits make the relevant proof lane unreliable, push the branch and use the
-manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts. Select a
-whitelisted `mode`; `mode=dotnet-filtered` requires a repo-relative test project under `tests/`
-plus `dotnet_filter` so it runs the failing slice instead of a whole test project. Use a positive
-class, method, trait, or fully qualified name selector rather than a negative-only or broad CI
-filter:
-
-```powershell
-gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
-```
-
-The validated dispatcher wrapper builds the same hosted command and can wait for the run:
-
-```powershell
-python build/scripts/ci/dispatch-targeted-test.py --ref <branch> --mode dotnet-filtered --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj --dotnet-filter "FullyQualifiedName~<TestClassOrMethod>" --wait
-```
+Use the narrowest command that covers the surface you touched. These are safe first checks:
 
 ```powershell
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
@@ -238,12 +199,23 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
 python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --queue
 npm --prefix src/Meridian.Ui/dashboard run test
 python build/scripts/docs/check-ai-inventory.py --summary
-python build/scripts/docs/check-ai-handoff.py --output docs/ai/generated/ai-handoff-checklist-report.md
-python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
-python build/scripts/docs/run-docs-automation.py --scripts check-ai-handoff-strict
-``` 
+```
 
-Broaden to full solution, WPF, UI-service, MCP, integration, or performance lanes only when the changed layer requires it.
+For completed PR-ready work, run the canonical repository gate, `bash scripts/ci.sh`; GitHub Actions
+`Meridian CI / quality-gate` remains the authoritative merge result.
+
+If local machine limits make a lane unreliable, dispatch the GitHub-hosted `Targeted Test` workflow
+for just the failing slice instead of retrying broad local scripts:
+
+```powershell
+gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+```
+
+The full validation guide lives in [Engineering → Build/Test/Run](../engineering/README.md#buildtestrun):
+the contention-aware local test runner, recovery after a timed-out build or test, the
+GitHub-hosted `Targeted Test` workflow for when local limits make a lane unreliable, and the
+per-surface lanes (browser, WPF, schema control). Broaden to full solution, WPF, UI-service, MCP,
+integration, or performance lanes only when the changed layer requires it.
 
 ## Choose Your Next Path
 

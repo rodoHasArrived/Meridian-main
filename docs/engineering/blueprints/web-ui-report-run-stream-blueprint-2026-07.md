@@ -12,8 +12,8 @@ landed additively, leaving `WorkstationEndpoints.Stream.cs` un-refactored (§9 D
 `StreamSubscription.cs`, `UiApiRoutes.ReportingRunStream`, and
 `src/Meridian.Ui/dashboard/src/lib/report-run-stream.ts` are in source. Read this as the design
 record for shipped behavior, not as pending work.
-**Extends:** [`web-ui-stream-fan-out-blueprint-2026-07.md`](web-ui-stream-fan-out-blueprint-2026-07.md) (§9 "PR D — Additional topics"), and supersedes its `workspace` / `inbox` topic proposal (§1 below).
-**Registered in:** [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).
+**Extends:** [`web-ui-stream-fan-out-blueprint-2026-07.md`](../../../archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) (§9 "PR D — Additional topics"), and supersedes its `workspace` / `inbox` topic proposal (§1 below).
+**Registered in:** [`docs/engineering/blueprints/README.md`](README.md).
 **Scope owner surfaces:** `src/Meridian.Reporting` (notify seam), `src/Meridian.Ui.Shared` (broadcaster generalization + SSE endpoint), `src/Meridian.Ui/dashboard` (stream client + reporting screen).
 
 > **Post-delivery drift.** `StreamTopic` shipped with a tenant/fund-scoped `ReportRun` overload and
