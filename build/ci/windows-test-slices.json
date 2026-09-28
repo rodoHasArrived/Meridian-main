@@ -1,0 +1,32 @@
+[
+  {
+    "name": "full",
+    "project": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+    "filter": "Category!=Integration&FullyQualifiedName!~Integration"
+  },
+  {
+    "name": "dev-loop",
+    "project": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+    "filter": "FullyQualifiedName~DesktopWorkflowScriptTests"
+  },
+  {
+    "name": "position-blotter-route",
+    "project": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+    "filter": "FullyQualifiedName~PositionBlotterViewModelTests|FullyQualifiedName~WorkspaceDeepPageChromeTests|FullyQualifiedName~TradingWorkspaceShellPageTests|FullyQualifiedName~ShellRouteRegistryTests|FullyQualifiedName~ShellNavigationCatalogTests.WorkspaceShellDefinitions_ShouldOnlyReferenceRegisteredPages|FullyQualifiedName~ShellNavigationCatalogTests.ResolveDefaultPanes_TradingWorkbenchPreset_UsesPresetPanes|FullyQualifiedName~ShellNavigationCatalogTests.TradingShellRelatedPages_ShouldExposePortfolioContinuity"
+  },
+  {
+    "name": "operator-inbox-route",
+    "project": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+    "filter": "FullyQualifiedName~MainPage_OperatorInbox|FullyQualifiedName~TradingWorkspaceShellPageTests|FullyQualifiedName~WorkspaceShellContextStripControlTests"
+  },
+  {
+    "name": "supervisor",
+    "project": "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+    "filter": "Category!=Integration&FullyQualifiedName!~Integration"
+  },
+  {
+    "name": "setup",
+    "project": "tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj",
+    "filter": ""
+  }
+]

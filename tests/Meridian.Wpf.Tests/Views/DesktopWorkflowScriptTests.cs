@@ -316,10 +316,12 @@ public sealed class DesktopWorkflowScriptTests
     {
         var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\windows-desktop-build.yml"));
 
-        workflow.Should().Contain("pwsh ./scripts/dev/validate-wpf-dev.ps1");
-        workflow.Should().Contain("-Restore");
-        workflow.Should().Contain("-Filter \"Category!=Integration&FullyQualifiedName!~Integration\"");
-        workflow.Should().Contain("-OutputRoot \"artifacts/wpf-validation/windows-desktop-build\"");
+        workflow.Should().Contain("python build/scripts/ci/run-windows-ci-tests.py");
+        workflow.Should().Contain("--results-dir artifacts/wpf-validation/windows-desktop-build");
+        var slices = File.ReadAllText(GetRepositoryFilePath(@"build\ci\windows-test-slices.json"));
+        slices.Should().Contain("Category!=Integration&FullyQualifiedName!~Integration");
+        slices.Should().Contain("Meridian.Setup.Tests.csproj");
+        slices.Should().Contain("Meridian.LifecycleSupervisor.Tests.csproj");
         workflow.Should().Contain("run_smoke_publish");
         workflow.Should().Contain("Decide desktop smoke publish");
         workflow.Should().Contain("if: steps.desktop-smoke.outputs.run == 'true'");
