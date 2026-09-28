@@ -20,7 +20,7 @@ Source-of-truth for active wave status is [`docs/roadmap/README.md`](../../roadm
 
 - [`docs/roadmap/data/*.yml`](../../roadmap/data/) for wave and gate records for the corresponding scope
 - [`docs/roadmap/generated/ROADMAP_SUMMARY.md`](../../roadmap/generated/ROADMAP_SUMMARY.md) for the generated historical summary
-- Legacy context: [`archive/docs/plans/paper-trading-cockpit-reliability-sprint.md`](../../../archive/docs/plans/paper-trading-cockpit-reliability-sprint.md)
+- Legacy context: [`archive/docs/plans/paper-trading-cockpit-reliability-sprint.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/paper-trading-cockpit-reliability-sprint.md)
 
 ### Acceptance gate map (sprint → code)
 

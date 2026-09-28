@@ -521,4 +521,4 @@ If two candidate names are both correct, choose the one that:
 - [`CLAUDE.fsharp.md`](CLAUDE.fsharp.md) — F# domain module patterns and interop rules
 - [`CLAUDE.providers.md`](CLAUDE.providers.md) — provider adapter naming (different conventions)
 - [`../_shared/project-context.md`](../../../docs/generated/project-context.md) — codebase statistics and key abstractions
-- [`../../../archive/docs/plans/ufl-supported-assets-index.md`](../../../archive/docs/plans/ufl-supported-assets-index.md) — archived UFL asset package index
+- [`../../../archive/docs/plans/ufl-supported-assets-index.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/ufl-supported-assets-index.md) — archived UFL asset package index

@@ -1903,6 +1903,7 @@ Meridian-main
 │   │   ├── meridian-design-document.md
 │   │   ├── next-work-determination-2026-09-20.md
 │   │   ├── next-work-determination-2026-09-23.md
+│   │   ├── next-work-determination-2026-09-27.md
 │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   ├── production-readiness-backlog-2026-08.md
@@ -2295,7 +2296,6 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
-│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── ui-route-wiring-report.json
 │   │   ├── ui-route-wiring-report.md
@@ -4803,6 +4803,7 @@ Meridian-main
 │   │   ├── FundStructure
 │   │   │   └── FundAccountTraversalQueryService.cs
 │   │   ├── Infrastructure
+│   │   │   ├── LoginSessionStoreLock.cs
 │   │   │   ├── RolePermissionProfileStore.cs
 │   │   │   ├── ScopedAccessAssignmentStore.cs
 │   │   │   └── UserAccountStore.cs
@@ -8527,7 +8528,8 @@ Meridian-main
 │   │   ├── Meridian.ProcessTestHelper.csproj
 │   │   ├── Meridian.ProcessTestHelper.runtimeconfig.json
 │   │   ├── Program.cs
-│   │   └── Program.Etl.cs
+│   │   ├── Program.Etl.cs
+│   │   └── Program.Identity.cs
 │   ├── Meridian.QuantScript.Tests
 │   │   ├── Helpers
 │   │   │   ├── FakeQuantDataContext.cs
@@ -9533,6 +9535,7 @@ Meridian-main
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
 │   │   │   ├── PaperGatewayLiveFeedPricingTests.cs
+│   │   │   ├── PaperGatewayTickSizeBoundaryTests.cs
 │   │   │   ├── PaperOrderMatchingPolicyTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperSessionRecoveryConcurrencyTests.cs
@@ -9596,6 +9599,7 @@ Meridian-main
 │   │   ├── Identity
 │   │   │   ├── FundStructure
 │   │   │   │   └── FundAccountTraversalQueryServiceTests.cs
+│   │   │   ├── DurableLoginSessionTests.cs
 │   │   │   ├── FileUserAccountStoreTests.cs
 │   │   │   ├── FundStructureAccessScopeLineageProviderTests.cs
 │   │   │   ├── GovernanceStoreDataIntegrityTests.cs

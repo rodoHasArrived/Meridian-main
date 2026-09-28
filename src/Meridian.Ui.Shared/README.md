@@ -24,6 +24,11 @@ query parameters cannot select another tenant. Route preview uses the same authe
 before candidate selection and failover expansion. Default setup ownership and remaining whole-configuration
 snapshot callers still require integration.
 
+Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
+deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
+session resolution recheck the account scope after runtime account changes. Unpartitioned
+fund-structure stores continue to refuse multiple companies under either posture.
+
 The provider setup compatibility store passes a complete legacy sidecar snapshot to the
 Data Integration vault's atomic importer. It validates all entries before publication,
 preserves existing credentials and deletion markers on retries, and removes the plaintext

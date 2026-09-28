@@ -16,15 +16,15 @@ maintained in:
 ## Current Role In The Rebuild
 
 - Treat plan files as source material unless explicitly linked from canonical targets.
-- High-traffic or completed plans are archived in [`../../archive/docs/plans/README.md`](../../archive/docs/plans/README.md).
+- High-traffic or completed plans are archived in [`../../archive/docs/plans/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/README.md).
 - Durable roadmap truth belongs in `docs/roadmap/data/*.yml` and generated roadmap views.
 - Durable implementation rules belong in `docs/engineering/README.md` and `docs/reference/` where appropriate.
 
 ## Migration Summary
 
-Legacy planning content has been migrated to [`../../archive/docs/plans/`](../../archive/docs/plans/),
+Legacy planning content has been migrated to [`../../archive/docs/plans/`](https://github.com/rodoHasArrived/Meridian-main/tree/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans),
 and the archive-migration stubs that previously mirrored each archived plan in this folder have been
-removed. Use [`../../archive/docs/plans/README.md`](../../archive/docs/plans/README.md) for the full
+removed. Use [`../../archive/docs/plans/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/README.md) for the full
 historical index; migration batch evidence is captured in `docs/documentation-inventory.md` as
 `archive` action rows.
 

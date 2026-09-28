@@ -133,11 +133,10 @@ public static class WorkstationServiceCollectionExtensions
         // Replace only the core worker fallback. Preserve an explicitly supplied host accessor;
         // otherwise HTTP scope must take precedence over any ambient background authority.
         services.AddFundScopeTenantServices<WorkstationFundScopeTenantAccessor>();
-        // SEC-005 slice 4c-iii: fund-scoped write tenant gate switch. Off by default (detection-first) so
-        // the tenantless legacy admin still writes; a shared multi-tenant deployment opts into fail-closed
-        // enforcement via MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true.
-        services.TryAddSingleton(new FundScopedWriteTenantOptions(
-            Enforce: string.Equals(
+        // Strict tenant reads must be paired with strict writes. The explicit write switch can
+        // tighten the single-company migration posture, but cannot weaken the strict posture.
+        services.TryAddSingleton(sp => new FundScopedWriteTenantOptions(
+            Enforce: sp.GetRequiredService<Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions>().IsFailClosed || string.Equals(
                 Environment.GetEnvironmentVariable("MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"),
                 "true",
                 StringComparison.OrdinalIgnoreCase)));

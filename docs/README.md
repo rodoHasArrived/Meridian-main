@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-09-28
 
 This is the canonical front door for Meridian documentation. Start from an audience or task below,
 then follow the named source of truth. Folder names alone do not establish current status: roadmap,
@@ -10,12 +10,15 @@ source, and generated content remain registry-owned.
 
 ## Current Project Snapshot
 
-The current program-state snapshot is dated **2026-07-18**:
+The current program-state snapshot is dated **2026-09-26**:
 
 - the W1-W5 baseline, shared Financial Record Explorers, Financial Operations control center,
-  statement connector library, and bounded W7 live-readiness governance are complete;
-- Evidence Vault productization, statement reconciliation onboarding, and WPF workstation parity
-  are in progress;
+  statement connector library, Evidence Vault, statement reconciliation onboarding, the bounded W6
+  backtest-evidence loop, and bounded W7 live-readiness governance are complete;
+- WPF workstation parity (`W8-WPF-PARITY-001`), browser screen consolidation (`W8-UX-CONSOL-001`),
+  and the W9 close-out rows `W9-GOV-008` and `W9-INGEST-009` are the active productization
+  targets; the rest of the W9 slate is accepted or done, with `W9-CORPACT-011` awaiting operator
+  acceptance (see [Product](product/README.md#current-project-snapshot) for the per-row breakdown);
 - production readiness remains blocked until every P0 item in the
   [Implementation and Readiness Tracker](product/implementation-todo-list.md) is complete on the
   same release commit with required release evidence.
@@ -85,12 +88,17 @@ Archive rather than delete when a document has historical value, stale evidence,
 
 ## Migration Status
 
-- Historical audit and evaluation material now lives in `archive/docs/assessments/`. Use it for context and extraction work, not as canonical guidance.
+- The 2026-09-11 archive cleanup (`982eea2d`) removed every `archive/docs/` bucket except
+  `summaries/`, and removed `archive/code/`. Active docs that linked into the removed buckets now
+  point at GitHub permalinks pinned to the last commit that still carried them (`8a420730`). Use
+  that material for context and extraction work only, not as canonical guidance; recover a file
+  locally with `git show 8a420730:<path>`.
 - `docs/operations/` and `docs/plans/` remain compatibility lanes because active tools, tests, or
   links still consume specific paths. Their indexes identify why each retained file remains.
 - `docs/status/` is a supporting automation-owned lane, not a hand-authored roadmap source. Use
   `docs/product/` for stakeholder interpretation and `docs/roadmap/data/*.yml` for durable status.
-- `archive/docs/assessments/`, `archive/docs/plans/`, `archive/docs/status/`, `archive/docs/summaries/`, `archive/docs/migrations/`, and `archive/docs/workflows/` have bucket indexes for staged archive batches.
+- `archive/docs/summaries/` is the only archive bucket currently in the tree. New archive batches
+  may recreate a bucket, and each bucket they create needs its own index.
 - High-traffic archived material should keep a short redirect stub at the old path until all active links move to the replacement.
 
 ## Documentation Acceptance Criteria
