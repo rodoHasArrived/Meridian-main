@@ -68,7 +68,7 @@ connection with duplicate certification rows as uncertified. `ProviderSetupServi
 compares canonical provider IDs, so a connection retained under an alias still accepts setup.
 A tenant route only fails over to connections whose own scope matches the requested route; a fallback
 scoped to another account or fund is skipped with an explicit reason instead of inheriting the primary's
-scope match.
+scope match. A tenant fallback ranks by its own scope match, capped at its primary's rank.
 
 `ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
 environment with the external account. Scope resolution uses that retained ownership, returns no scope
@@ -104,7 +104,8 @@ the provider-wide OAuth runtime.
 
 `ConfigureForConnectionAsync` configures credentials for an already-owned connection. It validates
 the retained tenant, provider and environment before saving scoped secrets, preserves its external
-account, and does not recreate routing or bindings. Credential verification remains a separate step.
+account, and does not recreate routing or bindings. Its result reports the canonical provider ID and
+the connection ID as separate identities. Credential verification remains a separate step.
 
 `ProviderFeatureRegistration` uses the shared `AddProviderServices` composition path. The
 Infrastructure descriptor catalog supplies built-in factories for streaming, historical backfill,

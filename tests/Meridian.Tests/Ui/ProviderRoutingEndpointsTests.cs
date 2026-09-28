@@ -380,6 +380,36 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
+    public async Task RoutePreview_RanksATenantFallbackByItsOwnScopeWithoutOutrankingItsPrimary()
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var config = store.Load() with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(
+            Connections: [new("fund-a-primary", "yahoo", "Fund A primary", TenantId: "tenant-test", Scope: new ProviderConnectionScope(FundProfileId: "fund-a")),
+                new("broad-fallback", "yahoo", "Broad fallback", TenantId: "tenant-test"),
+                new("workspace-primary", "yahoo", "Workspace primary", TenantId: "tenant-test", Scope: new ProviderConnectionScope(Workspace: "research")),
+                new("fund-a-fallback", "yahoo", "Fund A fallback", TenantId: "tenant-test", Scope: new ProviderConnectionScope(FundProfileId: "fund-a"))],
+            Bindings: [new("fund-a-binding", ProviderCapabilityKind.HistoricalBars, "fund-a-primary", FailoverConnectionIds: ["broad-fallback"]),
+                new("workspace-binding", ProviderCapabilityKind.HistoricalBars, "workspace-primary", Priority: 200, FailoverConnectionIds: ["fund-a-fallback"])])
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderRoutingPreview,
+            JsonContent(new RoutePreviewRequest(Capability: "HistoricalBars", Workspace: "research", FundProfileId: "fund-a", Symbol: "SPY")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var preview = Deserialize<RoutePreviewResponse>(await response.Content.ReadAsStringAsync());
+        var ranks = preview.Candidates.ToDictionary(candidate => candidate.ConnectionId, candidate => candidate.ScopeRank);
+        ranks["fund-a-primary"].Should().Be(300);
+        ranks["broad-fallback"].Should().BeLessThan(ranks["workspace-primary"], "a broad fallback keeps only the broad binding's rank, not its primary's fund-specific match");
+        ranks["workspace-primary"].Should().Be(100);
+        ranks["fund-a-fallback"].Should().Be(100, "a fallback never outranks the primary it backs up");
+        preview.SelectedConnectionId.Should().Be("fund-a-primary");
+    }
+
+    [Fact]
     public async Task AmbiguousConnectionAndCertificationIds_AreExcludedInsteadOfFailingPreviewAndTrust()
     {
         await using var app = await CreateAppAsync();
@@ -708,6 +738,7 @@ public sealed class ProviderRoutingEndpointsTests
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var result = Deserialize<ProviderSetupResult>(await response.Content.ReadAsStringAsync());
             result.ConnectionId.Should().Be("existing");
+            result.ProviderId.Should().Be("alpaca", "the provider identity is separate from the connection identity");
             result.BindingIds.Should().BeEmpty();
             var stored = await vault.ReadScopedAsync("alpaca", new ProviderCredentialScope(owner, "existing", "account-a", "paper"));
             stored!.Get("KeyId").Should().Be("scoped-setup-key");

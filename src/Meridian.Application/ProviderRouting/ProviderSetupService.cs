@@ -58,7 +58,7 @@ public sealed class ProviderSetupService
             await scopedStore.SaveScopedAsync(new ProviderCredentialSaveRequest(descriptor.ProviderId, validation.Credentials,
                 scope.Environment, actor), scope, ct).ConfigureAwait(false);
         var status = await scopedStore.GetScopedStatusAsync(descriptor.ProviderId, scope, ct).ConfigureAwait(false);
-        return new ProviderSetupResult(true, connection.ConnectionId, connection.DisplayName,
+        return new ProviderSetupResult(true, descriptor.ProviderId, connection.DisplayName,
             "Connection credentials were configured; verify the retained account before use.", null,
             connection.ConnectionId, [], status.CredentialState, status.CredentialSource, connection.CredentialReference,
             scope.Environment, validation.Warnings?.ToArray() ?? []);

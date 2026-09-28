@@ -127,6 +127,7 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             };
 
             var fallbackConnectionIds = ResolveFallbacks(binding, connection, connections, effectivePolicy);
+            var fallbackScopeRanks = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             if (tenantId is not null)
             {
                 // A tenant's fallback must match the requested route by its own scope; the primary's
@@ -135,8 +136,12 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                 {
                     if (!connections.TryGetValue(id, out var fallback))
                         return false;
-                    if ((fallback.Scope ?? new ProviderConnectionScope()).GetMatchScore(context) >= 0)
+                    var fallbackScopeRank = (fallback.Scope ?? new ProviderConnectionScope()).GetMatchScore(context);
+                    if (fallbackScopeRank >= 0)
+                    {
+                        fallbackScopeRanks[id] = fallbackScopeRank;
                         return true;
+                    }
                     skipped.Add($"Fallback connection '{fallback.ConnectionId}' scope does not match the requested route.");
                     return false;
                 }).ToArray();
@@ -176,7 +181,10 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                     ProviderFamilyId: fallbackConnection.ProviderFamilyId,
                     Capability: context.Capability,
                     SafetyMode: effectivePolicy.Mode,
-                    ScopeRank: Math.Max(scopeRank, connectionScopeRank),
+                    // A tenant fallback ranks by its own scope match, never above the primary it backs up.
+                    ScopeRank: fallbackScopeRanks.TryGetValue(fallbackConnectionId, out var ownScopeRank)
+                        ? Math.Max(scopeRank, Math.Min(connectionScopeRank, ownScopeRank))
+                        : Math.Max(scopeRank, connectionScopeRank),
                     Priority: binding.Priority + 1,
                     IsHealthy: fallbackHealth.IsHealthy,
                     ReasonCodes:
