@@ -1,3 +1,4 @@
+using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
@@ -9,6 +10,174 @@ namespace Meridian.Tests.Storage;
 
 public sealed class AtomicFileWriterTests : TempDirectoryTestBase
 {
+    [Theory]
+    [InlineData("sync")]
+    [InlineData("text")]
+    [InlineData("bytes")]
+    [InlineData("writer")]
+    [InlineData("stream")]
+    [InlineData("append")]
+    [InlineData("checksum")]
+    public async Task Write_WithOpenSnapshot_PublishesNewContentAndRetainsOldReader(string surface)
+    {
+        var path = Path.Combine(TestDataRoot, "snapshot.txt");
+        await File.WriteAllTextAsync(path, "original");
+        using var snapshot = new StreamReader(new FileStream(
+            path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete));
+
+        await PublishAsync(surface, path);
+
+        (await snapshot.ReadToEndAsync()).Should().Be("original");
+        (await File.ReadAllTextAsync(path)).Should().Be(
+            surface == "append" ? "originalupdated" : "updated");
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+        if (surface == "checksum")
+        {
+            (await AtomicFileWriter.VerifyChecksumAsync(path)).Should().BeTrue();
+        }
+    }
+
+    [Fact]
+    public async Task WriteAsync_ReaderRefusesReplacement_PreservesOriginalAndCleansTemporaryFiles()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "blocked.txt");
+        await File.WriteAllTextAsync(path, "original");
+        using var snapshot = new StreamReader(new FileStream(
+            path, FileMode.Open, FileAccess.Read, FileShare.Read));
+
+        var failure = await Record.ExceptionAsync(() => AtomicFileWriter.WriteAsync(path, "updated"));
+
+        (failure is IOException or UnauthorizedAccessException).Should().BeTrue(
+            "a reader denying deletion must block publication; actual error: {0}", failure);
+        (await snapshot.ReadToEndAsync()).Should().Be("original");
+        (await File.ReadAllTextAsync(path)).Should().Be("original");
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task WriteStreamAsync_FailedWrite_PreservesOriginalAndCleansTemporaryFiles()
+    {
+        var path = Path.Combine(TestDataRoot, "failed-write.txt");
+        await File.WriteAllTextAsync(path, "original");
+        var expected = new IOException("The write failed before publication.");
+
+        var failure = await Record.ExceptionAsync(() => AtomicFileWriter.WriteStreamAsync(
+            path, async stream =>
+            {
+                await stream.WriteAsync(Encoding.UTF8.GetBytes("incomplete"));
+                throw expected;
+            }));
+
+        failure.Should().BeSameAs(expected);
+        (await File.ReadAllTextAsync(path)).Should().Be("original");
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task WriteAsync_ConcurrentPublications_PreserveTheOpenedGeneration()
+    {
+        var path = Path.Combine(TestDataRoot, "concurrent.txt");
+        await File.WriteAllTextAsync(path, "original");
+        using var snapshot = new StreamReader(new FileStream(
+            path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete));
+        var generations = Enumerable.Range(0, 16)
+            .Select(index => $"generation-{index}:" + new string((char)('a' + index), 8192))
+            .ToArray();
+
+        await Task.WhenAll(generations.Select(content => AtomicFileWriter.WriteAsync(path, content)));
+
+        (await snapshot.ReadToEndAsync()).Should().Be("original");
+        generations.Should().Contain(await File.ReadAllTextAsync(path));
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task WriteAsync_WithOpenWindowsSnapshot_PreservesProtectedAccessRules()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "protected.txt");
+        await File.WriteAllTextAsync(path, "original");
+        var file = new FileInfo(path);
+        var access = file.GetAccessControl();
+        access.SetAccessRuleProtection(isProtected: true, preserveInheritance: true);
+        file.SetAccessControl(access);
+        var expected = file.GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access);
+        using var snapshot = new StreamReader(new FileStream(
+            path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete));
+
+        await AtomicFileWriter.WriteAsync(path, "updated");
+
+        (await snapshot.ReadToEndAsync()).Should().Be("original");
+        (await File.ReadAllTextAsync(path)).Should().Be("updated");
+        new FileInfo(path).GetAccessControl().GetSecurityDescriptorSddlForm(AccessControlSections.Access)
+            .Should().Be(expected);
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task WriteAsync_ReadOnlyWindowsDestination_PreservesOriginal()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "read-only.txt");
+        await File.WriteAllTextAsync(path, "original");
+        File.SetAttributes(path, FileAttributes.ReadOnly);
+        try
+        {
+            var failure = await Record.ExceptionAsync(() => AtomicFileWriter.WriteAsync(path, "updated"));
+
+            failure.Should().BeOfType<UnauthorizedAccessException>();
+            (await File.ReadAllTextAsync(path)).Should().Be("original");
+            Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+        }
+        finally
+        {
+            File.SetAttributes(path, FileAttributes.Normal);
+        }
+    }
+
+    private static async Task PublishAsync(string surface, string path)
+    {
+        var bytes = Encoding.UTF8.GetBytes("updated");
+        switch (surface)
+        {
+            case "sync":
+                AtomicFileWriter.Write(path, "updated");
+                break;
+            case "text":
+                await AtomicFileWriter.WriteAsync(path, "updated");
+                break;
+            case "bytes":
+                await AtomicFileWriter.WriteAsync(path, bytes);
+                break;
+            case "writer":
+                await AtomicFileWriter.WriteAsync(path, writer => writer.WriteAsync("updated"));
+                break;
+            case "stream":
+                await AtomicFileWriter.WriteStreamAsync(path, stream => stream.WriteAsync(bytes).AsTask());
+                break;
+            case "append":
+                await AtomicFileWriter.AppendAsync(path, stream => stream.WriteAsync(bytes).AsTask());
+                break;
+            case "checksum":
+                await AtomicFileWriter.WriteWithChecksumAsync(path, bytes);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(surface), surface, "Unknown write surface.");
+        }
+    }
 
     [Fact]
     public async Task WriteAsync_String_CreatesFile()

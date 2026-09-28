@@ -53,7 +53,7 @@ public static partial class AtomicFileWriter
             }
 
             ct.ThrowIfCancellationRequested();
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
             SyncDirectory(directory!);
 
             Log.Debug("Atomically wrote {Bytes} bytes to {Path}",
@@ -122,7 +122,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
 
             // Sync the directory to ensure rename is persisted (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -196,7 +196,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
 
             // Sync the directory (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -252,7 +252,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
 
             // Sync directory (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -312,7 +312,7 @@ public static partial class AtomicFileWriter
             }
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
 
             // Sync the directory to ensure the rename is persisted (post-commit: non-cancellable).
             await SyncCommittedDirectoryAsync(directory!);
@@ -375,7 +375,7 @@ public static partial class AtomicFileWriter
             }
 
             await SyncFileAsync(tempPath, ct);
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
             // post-commit: non-cancellable
             await SyncCommittedDirectoryAsync(directory!);
         }
@@ -454,7 +454,7 @@ public static partial class AtomicFileWriter
             await SyncFileAsync(tempPath, ct);
 
             // Atomic rename
-            File.Move(tempPath, destinationPath, overwrite: true);
+            PublishTempFile(tempPath, destinationPath);
 
             // Write the checksum sidecar atomically (temp + fsync + rename). A bare
             // File.WriteAllTextAsync could leave a torn sidecar on a crash mid-write, which a later
@@ -583,6 +583,50 @@ public static partial class AtomicFileWriter
 
             // Re-throw the original failure with its stack trace intact.
             ExceptionDispatchInfo.Throw(writeException);
+        }
+    }
+
+    private static void PublishTempFile(string tempPath, string destinationPath)
+    {
+        try
+        {
+            File.Move(tempPath, destinationPath, overwrite: true);
+        }
+        catch (UnauthorizedAccessException) when (OperatingSystem.IsWindows() && File.Exists(destinationPath))
+        {
+            // Windows MoveFileEx can refuse an open destination even when its readers allow
+            // FileShare.Delete. ReplaceFile supports those readers: they retain their opened
+            // generation while subsequent opens see the complete replacement.
+            var backupPath = GetTempPath(destinationPath);
+            try
+            {
+                // A backup protects the old generation if ReplaceFile fails partway through
+                // publication. Do not ignore metadata/ACL errors or delete the destination first.
+                File.Replace(tempPath, destinationPath, backupPath);
+            }
+            catch
+            {
+                if (File.Exists(backupPath) && !File.Exists(destinationPath))
+                {
+                    try
+                    {
+                        // Never overwrite a generation another writer may have published.
+                        File.Move(backupPath, destinationPath);
+                    }
+                    catch (Exception restoreException)
+                    {
+                        Log.Error(restoreException,
+                            "Failed to restore {Path}; its previous generation is retained at {BackupPath}",
+                            destinationPath, backupPath);
+                    }
+                }
+
+                // Retain any un-restored backup for recovery and preserve the publication error.
+                throw;
+            }
+
+            // Publication has committed; backup cleanup must not turn success into a failed write.
+            TryDeleteFile(backupPath);
         }
     }
 

@@ -6,10 +6,19 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-08-04
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Storage
+
+Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, if the rename
+is denied while an existing destination is open, publication uses `File.Replace` with a temporary
+backup. Readers that share deletion keep their old generation while fresh readers see the complete
+replacement. A failed replacement restores the old generation only when the destination is absent;
+an unrestored backup is retained for recovery. Backup cleanup after successful publication is best
+effort. Readers that deny deletion still block publication, and permission failures remain visible.
+`AtomicFileWriterTests` covers the seven overwrite surfaces, concurrent publishers, and failure
+retention. This does not add a Windows power-loss guarantee or make concurrent appends transactional.
 
 Parquet conversion derives session dates from paths beneath the configured storage root and from
 archive filenames. Dates in the root or its parent directories do not suppress completed-day
