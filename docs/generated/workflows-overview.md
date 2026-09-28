@@ -4,12 +4,13 @@
 
 This inventory is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml` on disk.
 
-- Workflow count: `30`
+- Workflow count: `31`
 
 | Workflow File | Name | Triggers |
 |---|---|---|
 | `.github/workflows/ai-navigation-refresh.yml` | AI Navigation Refresh | schedule, workflow_dispatch |
 | `.github/workflows/branch-cleanup.yml` | Branch Cleanup | workflow_dispatch |
+| `.github/workflows/ci-concurrency-benchmark.yml` | CI Concurrency Benchmark | workflow_dispatch |
 | `.github/workflows/ci.yml` | CI | pull_request, merge_group, push, schedule, workflow_dispatch |
 | `.github/workflows/codeql.yml` | CodeQL | pull_request, merge_group, push, schedule, workflow_dispatch |
 | `.github/workflows/copilot-setup-steps.yml` | Copilot Setup Steps | workflow_dispatch, push, pull_request |

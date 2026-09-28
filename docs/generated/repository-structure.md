@@ -883,6 +883,7 @@ Meridian-main
 │   ├── workflows
 │   │   ├── ai-navigation-refresh.yml
 │   │   ├── branch-cleanup.yml
+│   │   ├── ci-concurrency-benchmark.yml
 │   │   ├── ci.yml
 │   │   ├── codeql.yml
 │   │   ├── copilot-setup-steps.yml
@@ -1100,6 +1101,7 @@ Meridian-main
 │       │   └── promptfoo_adapter.py
 │       ├── ci
 │       │   ├── apiclient-caller-baseline.json
+│       │   ├── benchmark-ci.py
 │       │   ├── check-action-origin-derivation.py
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-contract-type-parity.py
@@ -1122,11 +1124,13 @@ Meridian-main
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
 │       │   ├── inline-sha256-baseline.json
+│       │   ├── requirements.txt
 │       │   ├── run-dotnet-ci-tests.py
 │       │   ├── run-script-tests.py
 │       │   ├── run-windows-ci-tests.py
 │       │   ├── script-test-quarantine.json
 │       │   ├── summarize-ci-artifacts.py
+│       │   ├── test_evidence.py
 │       │   ├── validate-monitoring-deployment.py
 │       │   ├── validate-npm-audit.py
 │       │   ├── validate-observability-contract.py
@@ -6030,7 +6034,9 @@ Meridian-main
 │   │   │   │   ├── eslint-rules
 │   │   │   │   │   └── kebab-filename.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
-│   │   │   │   └── smoke-workstation.mjs
+│   │   │   │   ├── smoke-workstation.mjs
+│   │   │   │   ├── vitest-evidence.mjs
+│   │   │   │   └── vitest-evidence.test.mjs
 │   │   │   ├── src
 │   │   │   │   ├── assets
 │   │   │   │   │   ├── brand
@@ -10881,6 +10887,7 @@ Meridian-main
 │   │   ├── test_check_store_concurrency_posture.py
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_workflow_docs_parity.py
+│   │   ├── test_ci_evidence_controls.py
 │   │   ├── test_ci_metrics.py
 │   │   ├── test_ci_summary.py
 │   │   ├── test_ci_workflow_contract.py

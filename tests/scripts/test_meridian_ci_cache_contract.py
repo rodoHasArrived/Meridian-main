@@ -81,12 +81,12 @@ class MeridianCiCacheContractTests(unittest.TestCase):
                 setup = self._step_block(job, "Set up Python")
                 install = self._step_block(job, "Install docs script dependencies")
                 self.assertIn("cache: pip", setup)
-                self.assertIn("cache-dependency-path: build/scripts/docs/requirements.txt", setup)
+                self.assertIn("build/scripts/docs/requirements.txt", setup)
                 self.assertNotRegex(install, r"(?m)^        if:")
                 self.assertRegex(
                     install,
                     r"(?m)^        run: python -m pip install --requirement "
-                    r"build/scripts/docs/requirements\.txt\s*$",
+                    rf"build/scripts/{'ci' if lane == 'verify-workflows' else 'docs'}/requirements\.txt\s*$",
                 )
                 self.assertLess(job.index(setup), job.index(install))
                 self.assertLess(job.index(install), job.index(f"bash scripts/ci.sh --lane {lane}"))
