@@ -16,6 +16,8 @@ def scan(binary: str, commit: str, report: Path) -> int:
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
     if head != commit:
         raise ValueError('Secret scan checkout does not match the requested commit.')
+    if subprocess.check_output(['git', 'rev-parse', '--is-shallow-repository'], text=True).strip() != 'false':
+        raise ValueError('Complete secret scanning requires fetch-depth: 0; shallow history is insufficient.')
     report.parent.mkdir(parents=True, exist_ok=True)
     report.unlink(missing_ok=True)
     # -m includes merge-resolution changes; the explicit SHA limits history to this commit.
