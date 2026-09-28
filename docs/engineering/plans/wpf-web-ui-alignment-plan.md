@@ -8,9 +8,9 @@ This plan operationalizes the v0.25 design-charter decision to reactivate the WP
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
 workstation. It is the working companion to roadmap item `W8-WPF-PARITY-001`.
 
-- Charter decision: [`../product/meridian-design-document.md`](../product/meridian-design-document.md) (decision originated in the Version 0.25 reactivation statement; carried forward by the Version 1.0 charter's active-surfaces policy and version history).
-- Roadmap item: `W8-WPF-PARITY-001` in [`../roadmap/data/roadmap-items.yml`](../roadmap/data/roadmap-items.yml).
-- Desktop architecture: [`wpf-implementation-notes.md`](./wpf-implementation-notes.md), [`../architecture/desktop-layers.md`](../architecture/desktop-layers.md).
+- Charter decision: [`../product/meridian-design-document.md`](../../product/meridian-design-document.md) (decision originated in the Version 0.25 reactivation statement; carried forward by the Version 1.0 charter's active-surfaces policy and version history).
+- Roadmap item: `W8-WPF-PARITY-001` in [`../roadmap/data/roadmap-items.yml`](../../roadmap/data/roadmap-items.yml).
+- Desktop architecture: [`wpf-implementation-notes.md`](../../development/wpf-implementation-notes.md), [`../architecture/desktop-layers.md`](../../architecture/desktop-layers.md).
 
 ## Reactivation Summary
 
@@ -79,7 +79,7 @@ shipped 2026-08-05 — see the matrix rows above and the delivery notes under ea
 ## Closure Sequence
 
 Each wave follows the established desktop contribution pattern (see
-[`wpf-implementation-notes.md`](./wpf-implementation-notes.md) → *Contributing*): add the page + view
+[`wpf-implementation-notes.md`](../../development/wpf-implementation-notes.md) → *Contributing*): add the page + view
 model, register one `ShellNavigationCatalog` entry, add a `CommandPaletteService` entry with the
 workspace label, and add a workspace default-pane entry only if it belongs in a dock layout. Every
 view model must consume the same shared read model the browser screen consumes.

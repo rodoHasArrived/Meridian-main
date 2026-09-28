@@ -3,8 +3,8 @@
 **Status:** accepted planning input; live status lives in the roadmap registry
 **Owner:** core-team
 **Reviewed:** 2026-07-31
-**Registry decision:** `DEC-DEPTH-SLATE-001` in [`docs/roadmap/data/decision-log.yml`](../roadmap/data/decision-log.yml)
-**Registry rows:** `W10-MARK-001` through `W10-CONSOL-001` in [`docs/roadmap/data/roadmap-items.yml`](../roadmap/data/roadmap-items.yml)
+**Registry decision:** `DEC-DEPTH-SLATE-001` in [`docs/roadmap/data/decision-log.yml`](../../roadmap/data/decision-log.yml)
+**Registry rows:** `W10-MARK-001` through `W10-CONSOL-001` in [`docs/roadmap/data/roadmap-items.yml`](../../roadmap/data/roadmap-items.yml)
 
 This document records the depth slate adopted on 2026-07-31 and maps each rank to its durable
 roadmap row and to the production-readiness rows it strengthens. Treat the roadmap registry as live
@@ -89,7 +89,7 @@ other arc, and `W10-PERF-001` depends on rank 1's mark discipline to be honest a
 ## Posture Relative to Production Readiness
 
 The program's production readiness is `blocked` in `docs/roadmap/data/program-state.yml`, gated on
-every P0 row in [`implementation-todo-list.md`](implementation-todo-list.md) completing on one
+every P0 row in [`implementation-todo-list.md`](../implementation-todo-list.md) completing on one
 release commit.
 
 **This slate is post-W9 depth work and does not precede certification.** Two rows are the deliberate

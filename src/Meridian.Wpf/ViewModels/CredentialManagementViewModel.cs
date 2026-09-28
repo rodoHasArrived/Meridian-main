@@ -202,6 +202,10 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
     private int _credentialLoadVersion;
     private int _selectedStatusVersion;
 
+    // Set when the editor opened before the service reported this connection's field schema. The
+    // next status read for that connection rebuilds the open editor instead of leaving it inert.
+    private bool _editAwaitingSchema;
+
     public async Task LoadCredentialsAsync()
     {
         var version = ++_credentialLoadVersion;
@@ -257,29 +261,55 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         selected.HasCredentials = status?.State is CredentialState.Configured or CredentialState.Partial;
         selected.StatusText = status?.StatusMessage ?? "Credential status is unavailable from the service.";
         selected.StatusColor = status?.State == CredentialState.Configured ? "#3FB950" : "#AABCCD";
+        if (_editAwaitingSchema && IsEditPanelVisible)
+        {
+            _editAwaitingSchema = false;
+            BuildEditFields(selected, allowSchemaReload: false);
+        }
     }
 
     private void BeginEdit()
     {
         if (SelectedCredential is null)
             return;
-        EditFields.Clear();
         IsTestResultVisible = false;
+        BuildEditFields(SelectedCredential, allowSchemaReload: true);
+        IsEditPanelVisible = true;
+    }
 
-        EditPanelTitle = SelectedCredential.HasCredentials
-            ? $"Edit credentials — {SelectedCredential.DisplayName}"
-            : $"Add credentials — {SelectedCredential.DisplayName}";
+    private void BuildEditFields(CredentialEntryViewModel selected, bool allowSchemaReload)
+    {
+        EditFields.Clear();
+        EditPanelTitle = selected.HasCredentials
+            ? $"Edit credentials — {selected.DisplayName}"
+            : $"Add credentials — {selected.DisplayName}";
 
-        var serviceFields = SelectedCredential.ServiceFields;
+        var serviceFields = selected.ServiceFields;
         if (serviceFields is null)
         {
             // Informational rows have no FieldName, so Save never submits them.
+            if (allowSchemaReload && !selected.IsTesting)
+            {
+                // The selection's status read is still pending or was superseded (for example by
+                // Test All). Start a fresh read; it rebuilds this editor when it completes.
+                _editAwaitingSchema = true;
+                EditFields.Add(new CredentialFieldViewModel
+                {
+                    Label = "Loading credential fields",
+                    EnvVarName = string.Empty,
+                    IsSecret = false,
+                    Value = "Reading the credential fields for this connection from the service."
+                });
+                SelectionStatusLoad = LoadSelectedStatusAsync(selected);
+                return;
+            }
+
             EditFields.Add(new CredentialFieldViewModel
             {
                 Label = "Credential fields unavailable",
                 EnvVarName = string.Empty,
                 IsSecret = false,
-                Value = "The credential service has not reported the fields for this connection. Refresh and try again."
+                Value = "The credential service did not report the fields for this connection. Reselect it to try again."
             });
         }
         else if (serviceFields.Count == 0)
@@ -306,8 +336,6 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
                 });
             }
         }
-
-        IsEditPanelVisible = true;
     }
 
     private async Task SaveCredentialAsync()
@@ -348,6 +376,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     private void CancelEdit()
     {
+        _editAwaitingSchema = false;
         IsEditPanelVisible = false;
         EditFields.Clear();
         IsTestResultVisible = false;

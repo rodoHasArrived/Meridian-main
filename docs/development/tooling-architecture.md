@@ -115,4 +115,4 @@ The root `make help` output mirrors this split so contributors can distinguish b
 - [Developer Quick Guides](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/README.md)
 - [Build, Test, Run](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/build-test-run.md)
 - [GitHub Actions Workflows - Summary](github-actions-summary.md)
-- [Tooling & Workflow Backlog](tooling-workflow-backlog.md)
+- [Tooling & Workflow Backlog](../../archive/docs/plans/tooling-workflow-backlog.md) (completed and archived; every MW item is delivered)

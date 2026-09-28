@@ -42,7 +42,9 @@ names differ (Tiingo's local field is `Token`, the vault accepts `ApiKey`). A pr
 without a schema, such as NYSE, shows no editors and cannot be saved from the wizard. A provider whose
 schema has no required fields, such as Interactive Brokers, tests as ready without a verification call. A
 blank save for a provider with required fields succeeds only when the service reports credentials already
-configured. The settings shell counts unavailable credential status
+configured. Opening the credential-management editor before the selected connection's schema arrives (or
+after Test All superseded that read) starts a fresh status read and rebuilds the open editor when it
+completes. The settings shell counts unavailable credential status
 separately from missing credentials, so a refused or failed status read is shown as unknown readiness.
 The setup-wizard state service and the Backfill page still write environment variables and remain
 separate cutover work.
@@ -76,7 +78,7 @@ flag cannot stand in for the retained package. Windows execution remains a separ
 WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside
 the browser workstation. It projects the seven canonical workspaces over shared contracts and read
 models; its current lane focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`, see
-`docs/development/wpf-web-ui-alignment-plan.md`) without forking product state.
+`docs/engineering/plans/wpf-web-ui-alignment-plan.md`) without forking product state.
 
 ## Layer responsibility
 

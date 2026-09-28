@@ -6,7 +6,7 @@ rebuild it). Open: the remaining Economics/Venues/History read tabs, restatement
 lifecycle integration tests, and the ADR record (see the `[~]` items in the Implementation Checklist)
 **Owner:** Data Confidence and Validation / Accounting and Ledger
 **Reviewed:** 2026-08-01
-**Registered in:** [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).
+**Registered in:** [`docs/engineering/blueprints/README.md`](README.md).
 
 > **Created:** 2026-06-26 · **Owner lane:** Data Confidence and Validation / Accounting and Ledger
 > **Roadmap anchors:** W5-MASSET-001 (multi-asset reference-data workbench — read-model slice complete per `docs/product/implementation-todo-list.md`; this blueprint is the deferred write-surface follow-on), W4-RPT-001 (governed report-pack restatement lifecycle)
