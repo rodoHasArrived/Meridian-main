@@ -84,7 +84,7 @@ instead of introducing one-off screen styling.
 
 Legacy `/overview/*` links remain compatibility redirects in the app shell. The retired overview
 screen, Today panel, and unrouted Settings admin operations console are recorded as comment-only
-tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/`.
+tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/` until the 2026-09-11 archive cleanup (`982eea2d`) removed `archive/code/`; [the last copies](https://github.com/rodoHasArrived/Meridian-main/tree/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/code/src/Meridian.Ui/dashboard/src/screens) remain in history.
 
 
 ## Dense row detail accessibility contract

@@ -372,7 +372,7 @@ Add provider by implementing interface.
 ### Special Cases
 
 - **ADRs**: Use format `NNN-short-title.md` (e.g., `001-provider-abstraction.md`)
-- **Archived**: Preserve original names and add a note in `archive/docs/README.md`
+- **Archived**: Preserve original names and add a note in `archive/docs/README.md` (the 2026-09-11 archive cleanup removed it; recreate it with the first new archive batch)
 - **Generated**: Prefix with `generated-` or use `generated/` directory
 
 ---

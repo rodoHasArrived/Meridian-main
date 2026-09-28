@@ -6,7 +6,7 @@
 
 This inventory records conservative dead-code cleanup evidence for Meridian. It replaces the old
 status snapshot route at `docs/status/dead-code-inventory.md` (historical copy retained at
-`archive/docs/status/dead-code-inventory.md`), and it is intentionally scoped to cleanup triage
+[`archive/docs/status/dead-code-inventory.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/dead-code-inventory.md)), and it is intentionally scoped to cleanup triage
 rather than public API redesign.
 
 ## Scan Scope
