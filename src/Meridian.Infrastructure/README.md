@@ -35,14 +35,18 @@ This layer owns external integration details while depending on lower contracts 
 Use this module for provider implementation, external service integration, and adapter behavior.
 
 `ProviderCapabilityDescriptorCatalog` records runtime adapter families and their implemented
-capabilities, including Synthetic, Polygon and NYSE compatibility data sources. OpenFIGI remains
-explicitly excluded from the matrix-backed inventory until that UI contract exposes symbol
-resolution; the resolver itself remains available. Streaming instrument coverage is independently
+capabilities, including Synthetic, Polygon, NYSE's streaming and compatibility data-source adapters,
+and OpenFIGI's `ISymbolResolver`. The operator matrix projects only its six supported surfaces,
+so resolver-only families remain in the catalog without rendering an empty matrix row.
+Streaming instrument coverage is independently
 declared, so Polygon's Forex/Crypto/Index historical coverage does not advertise unsupported
 streams and synthetic option-chain coverage does not imply option streaming. Explicit exclusions
 also distinguish hosted ingestion, mapper-only, template-only and orchestration families.
-Catalog tests enumerate the actual adapter folders, check interfaces and resolve the compatibility
-data-source slot; catalog presence alone does not establish live-provider readiness.
+Catalog tests compare an explicit provider/capability inventory, enumerate the actual adapter folders,
+audit implemented shared contracts by reflection, and require reasons for excluded families. Polygon's
+corporate-action fetcher remains a hosted Security Master ingestion workflow; EDGAR reference-data
+ingestion and NYSE compatibility history likewise do not advertise unsupported shared contracts.
+Catalog presence alone does not establish live-provider readiness.
 Search instrument coverage is also independent of options coverage. The NYSE registration helper
 can bind configuration from the final host service provider; its compatibility interfaces resolve
 the same source instance, and streaming uses those bound authentication options.

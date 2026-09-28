@@ -96,6 +96,51 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Write_ConcurrentPublicationsAcrossPathAliases_PreserveEveryOpenedGeneration(
+        bool usePathAliases)
+    {
+        var path = Path.Combine(TestDataRoot, "concurrent-rounds.txt");
+        const int publisherCount = 16;
+
+        for (var round = 0; round < 8; round++)
+        {
+            var original = $"original-{round}";
+            await File.WriteAllTextAsync(path, original);
+            using var snapshot = new StreamReader(new FileStream(
+                path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete));
+            var generations = Enumerable.Range(0, publisherCount)
+                .Select(index => $"round-{round}-generation-{index}:" + new string((char)('a' + index), 8192))
+                .ToArray();
+            using var release = new Barrier(publisherCount);
+            var publications = generations.Select((content, index) =>
+            {
+                var destination = usePathAliases && index % 2 == 1
+                    ? Path.Combine(TestDataRoot, ".", Path.GetFileName(path))
+                    : path;
+                // Dedicated threads exercise overlapping synchronous publication even on a
+                // runner whose thread-pool minimum is lower than the publisher count.
+                return Task.Factory.StartNew(
+                    () =>
+                    {
+                        release.SignalAndWait(TimeSpan.FromSeconds(30)).Should().BeTrue();
+                        AtomicFileWriter.Write(destination, content);
+                    },
+                    CancellationToken.None,
+                    TaskCreationOptions.LongRunning,
+                    TaskScheduler.Default);
+            }).ToArray();
+
+            await Task.WhenAll(publications);
+
+            (await snapshot.ReadToEndAsync()).Should().Be(original);
+            generations.Should().Contain(await File.ReadAllTextAsync(path));
+            Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+        }
+    }
+
     [Fact]
     public async Task WriteAsync_WithOpenWindowsSnapshot_PreservesProtectedAccessRules()
     {
