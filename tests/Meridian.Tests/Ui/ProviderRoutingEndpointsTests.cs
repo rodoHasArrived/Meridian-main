@@ -351,6 +351,35 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
+    public async Task RoutePreview_FailsOverOnlyToFallbacksWhoseOwnScopeMatchesTheRoute()
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var config = store.Load() with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(
+            Connections: [new("fund-a-primary", "yahoo", "Fund A primary", TenantId: "tenant-test", Scope: new ProviderConnectionScope(FundProfileId: "fund-a")),
+                new("fund-b-fallback", "yahoo", "Fund B fallback", TenantId: "tenant-test", Scope: new ProviderConnectionScope(FundProfileId: "fund-b")),
+                new("fund-a-fallback", "yahoo", "Fund A fallback", TenantId: "tenant-test", Scope: new ProviderConnectionScope(FundProfileId: "fund-a"))],
+            Bindings: [new("fund-a-binding", ProviderCapabilityKind.HistoricalBars, "fund-a-primary",
+                FailoverConnectionIds: ["fund-b-fallback", "fund-a-fallback"])])
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
+        var health = (HealthyProviderConnectionHealthSource)app.Services.GetRequiredService<IProviderConnectionHealthSource>();
+        health.UnhealthyConnectionIds.Add("fund-a-primary");
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderRoutingPreview,
+            JsonContent(new RoutePreviewRequest(Capability: "HistoricalBars", FundProfileId: "fund-a", Symbol: "SPY")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var preview = Deserialize<RoutePreviewResponse>(await response.Content.ReadAsStringAsync());
+        preview.SelectedConnectionId.Should().Be("fund-a-fallback", "the primary's scope match must not vouch for another fund's fallback");
+        preview.Candidates.Should().NotContain(candidate => candidate.ConnectionId == "fund-b-fallback");
+        preview.SkippedCandidates.Should().Contain("Fallback connection 'fund-b-fallback' scope does not match the requested route.");
+        health.ConnectionIds.Should().NotContain("fund-b-fallback");
+    }
+
+    [Fact]
     public async Task AmbiguousConnectionAndCertificationIds_AreExcludedInsteadOfFailingPreviewAndTrust()
     {
         await using var app = await CreateAppAsync();
@@ -816,6 +845,7 @@ public sealed class ProviderRoutingEndpointsTests
     private sealed class HealthyProviderConnectionHealthSource : IProviderConnectionHealthSource
     {
         public List<string> ConnectionIds { get; } = [];
+        public HashSet<string> UnhealthyConnectionIds { get; } = new(StringComparer.OrdinalIgnoreCase);
         public ValueTask<ProviderConnectionHealthSnapshot> GetHealthAsync(
             string connectionId,
             string providerFamilyId,
@@ -826,9 +856,9 @@ public sealed class ProviderRoutingEndpointsTests
             return ValueTask.FromResult(new ProviderConnectionHealthSnapshot(
                 connectionId,
                 providerFamilyId,
-                IsHealthy: true,
-                Status: "healthy",
-                Score: 100,
+                IsHealthy: !UnhealthyConnectionIds.Contains(connectionId),
+                Status: UnhealthyConnectionIds.Contains(connectionId) ? "unhealthy" : "healthy",
+                Score: UnhealthyConnectionIds.Contains(connectionId) ? 0 : 100,
                 CheckedAt: DateTimeOffset.UtcNow));
         }
     }

@@ -94,6 +94,10 @@ public sealed class ProviderConnectionService
             var existing = existingIndex >= 0 ? connections[existingIndex] : null;
             if (existing is not null && !string.Equals(existing.TenantId, tenantId, StringComparison.Ordinal))
                 throw new InvalidOperationException("Connection ownership does not match the authorized tenant.");
+            // Scoped vault keys hash the connection ID exactly, so a case-variant update keeps the
+            // retained identity instead of orphaning the credentials stored under it.
+            if (existing is not null)
+                connectionId = existing.ConnectionId;
             if (tenantId is not null)
             {
                 var scope = new ProviderCredentialScope(tenantId, connectionId, request.ExternalAccountId ?? string.Empty, environment!);

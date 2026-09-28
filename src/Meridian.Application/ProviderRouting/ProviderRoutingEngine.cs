@@ -128,7 +128,19 @@ public sealed class ProviderRoutingService : ICapabilityRouter
 
             var fallbackConnectionIds = ResolveFallbacks(binding, connection, connections, effectivePolicy);
             if (tenantId is not null)
-                fallbackConnectionIds = fallbackConnectionIds.Where(connections.ContainsKey).ToArray();
+            {
+                // A tenant's fallback must match the requested route by its own scope; the primary's
+                // scope match never vouches for another account's or fund's connection.
+                fallbackConnectionIds = fallbackConnectionIds.Where(id =>
+                {
+                    if (!connections.TryGetValue(id, out var fallback))
+                        return false;
+                    if ((fallback.Scope ?? new ProviderConnectionScope()).GetMatchScore(context) >= 0)
+                        return true;
+                    skipped.Add($"Fallback connection '{fallback.ConnectionId}' scope does not match the requested route.");
+                    return false;
+                }).ToArray();
+            }
             var policyGate = DeterminePolicyGate(context, connection, binding, effectivePolicy);
 
             candidates.Add(new ProviderRouteDecision(

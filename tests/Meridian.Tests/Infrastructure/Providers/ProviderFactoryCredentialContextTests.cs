@@ -223,6 +223,22 @@ public sealed class ProviderFactoryCredentialContextTests
     }
 
     [Fact]
+    public void ScopedRuntimeResolver_PluginProviderOutsideTheCatalogCannotBypassOwnershipThroughFallback()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "scoped-runtime", Guid.NewGuid().ToString("N"));
+        var fallback = new TrackingCredentialResolver();
+        var resolver = new StoredProviderCredentialResolver(new FileProviderCredentialStore(root), fallback,
+            new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "paper"));
+        var resolve = () => resolver.CreateContext(typeof(UncataloguedPluginProvider));
+        resolve.Should().Throw<InvalidOperationException>();
+        fallback.ContextRequests.Should().BeEmpty();
+        Directory.Exists(root).Should().BeFalse();
+    }
+
+    [DataSource("uncatalogued-plugin", "Uncatalogued plugin", Meridian.Infrastructure.DataSources.DataSourceType.Historical, DataSourceCategory.Free)]
+    private sealed class UncataloguedPluginProvider;
+
+    [Fact]
     public async Task StoredResolver_CorruptVaultDoesNotSilentlySwitchToAnotherCredentialSource()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "credential-source-isolation", Guid.NewGuid().ToString("N"));

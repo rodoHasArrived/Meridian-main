@@ -148,6 +148,26 @@ public sealed class ConfigStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task CaseVariantConnectionUpdate_KeepsTheRetainedCredentialScope()
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, "{}");
+        var service = new ProviderConnectionService(new ConfigStore(path));
+        var request = new CreateProviderConnectionRequest("owned", "alpaca", "Original", ExternalAccountId: "account-a");
+        await service.UpsertForTenantAsync(request, "tenant-a", "paper");
+        var before = await service.GetCredentialScopeForTenantAsync("owned", "tenant-a");
+
+        var updated = await service.UpsertForTenantAsync(request with { ConnectionId = "OWNED", DisplayName = "Renamed" }, "tenant-a", "paper");
+
+        updated.ConnectionId.Should().Be("owned");
+        updated.DisplayName.Should().Be("Renamed");
+        var after = await service.GetCredentialScopeForTenantAsync("OWNED", "tenant-a");
+        after.Should().NotBeNull();
+        after!.StorageKey("alpaca").Should().Be(before!.StorageKey("alpaca"), "credentials stored under the retained scope must stay reachable");
+        (await service.GetConnectionsForTenantAsync("tenant-a")).Should().ContainSingle(row => row.ConnectionId == "owned");
+    }
+
+    [Fact]
     public async Task ConnectionMutation_RechecksOwnershipAfterWaitingForConfigurationWriter()
     {
         var path = Path.Combine(CreateTempDirectory(), "appsettings.json");

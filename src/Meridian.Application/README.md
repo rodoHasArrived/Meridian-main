@@ -66,11 +66,16 @@ The routing snapshot excludes duplicate or case-variant connection IDs instead o
 and a binding that references one is skipped with an explicit ambiguity reason. Trust scoring treats a
 connection with duplicate certification rows as uncertified. `ProviderSetupService.ConfigureForConnectionAsync`
 compares canonical provider IDs, so a connection retained under an alias still accepts setup.
+A tenant route only fails over to connections whose own scope matches the requested route; a fallback
+scoped to another account or fund is skipped with an explicit reason instead of inheriting the primary's
+scope match.
 
 `ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
 environment with the external account. Scope resolution uses that retained ownership, returns no scope
 to another tenant, and refuses incomplete records. Owned connections cannot be reassigned or modified
-through legacy mutation methods; legacy connections require an explicit ownership migration. Shared
+through legacy mutation methods; legacy connections require an explicit ownership migration. An update
+that names an existing connection with different casing keeps the retained connection ID, so credentials
+stored under its case-sensitive scope key stay reachable. Shared
 configuration and API DTOs preserve the fields on reload. Default runtime ownership propagation and
 remaining whole-configuration snapshot callers still require integration; external editors do not honor the sidecar transaction.
 
@@ -81,7 +86,8 @@ source. Unmanaged provider types retain their legacy resolver. Storage failures 
 
 The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScopedProviderCredentialStore`
 and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and
-environment, rejects unmanaged provider types, and never falls back to provider-wide records or config.
+environment, rejects unmanaged and non-catalog provider types, and never falls back to provider-wide
+records or config.
 The scoped store registration aliases the existing vault instance. Default host construction and the
 legacy setup route still use provider-wide resolution until authorized scope is propagated by callers;
 this constructor alone does not establish end-to-end tenant isolation.

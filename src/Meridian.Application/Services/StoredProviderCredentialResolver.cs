@@ -55,6 +55,10 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         var descriptor = ProviderCredentialCatalog.Find(providerId);
         if (descriptor is null)
         {
+            // A scoped runtime never reaches provider-wide configuration or environment secrets,
+            // even if the catalog entry disappears between identity resolution and this lookup.
+            if (_scope is not null)
+                throw new InvalidOperationException("Scoped credentials require a catalog-managed provider.");
             return _fallback.CreateContext(providerType, configuredValues);
         }
 
