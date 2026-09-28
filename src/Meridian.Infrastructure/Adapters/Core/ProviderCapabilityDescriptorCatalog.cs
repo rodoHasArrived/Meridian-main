@@ -16,12 +16,14 @@ using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.NYSE;
+using Meridian.Infrastructure.Adapters.OpenFigi;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
 /// <summary>
 /// Canonical capability descriptors used to keep provider metadata, implemented interfaces,
-/// and registration paths aligned.
+/// and registration paths aligned, including reference-only and compatibility families that
+/// do not expose the market-data surfaces shown by the operator capability matrix.
 /// </summary>
 public static class ProviderCapabilityDescriptorCatalog
 {
@@ -56,6 +58,10 @@ public static class ProviderCapabilityDescriptorCatalog
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Forex, InstrumentType.Crypto, InstrumentType.Index],
             StreamingInstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption]),
         new("nyse", Streaming: typeof(NyseMarketDataClient), CompatibilityDataSource: typeof(NYSEDataSource),
+            Exclusions:
+            [
+                new(nameof(IHistoricalDataProvider), "NYSEDataSource exposes historical access through IHistoricalDataSource; NyseHistoricalDataProvider is an internal helper, not an IHistoricalDataProvider adapter.")
+            ],
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Index]),
         new(
             "robinhood",
@@ -66,7 +72,16 @@ public static class ProviderCapabilityDescriptorCatalog
             Brokerage: typeof(RobinhoodBrokerageGateway),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.Crypto]),
         new("edgar", Search: typeof(EdgarSymbolSearchProvider),
+            Exclusions:
+            [
+                new(nameof(ICorporateActionProvider), "EdgarReferenceDataProvider and EdgarSecurityMasterIngestProvider serve reference-data and Security Master ingestion workflows; neither implements ICorporateActionProvider.")
+            ],
             InstrumentTypes: [InstrumentType.Equity]),
+        new("openfigi", SymbolResolver: typeof(OpenFigiSymbolResolver),
+            Exclusions:
+            [
+                new(nameof(ISymbolSearchProvider), "OpenFigiSymbolResolver implements ISymbolResolver, whose search result contract differs from ISymbolSearchProvider.")
+            ]),
         new("tiingo", Historical: typeof(TiingoHistoricalDataProvider), Search: typeof(TiingoSymbolSearchProvider), CorporateActions: typeof(TiingoCorporateActionProvider),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Crypto]),
         new("twelvedata", Historical: typeof(TwelveDataHistoricalDataProvider), Search: typeof(TwelveDataSymbolSearchProvider), CorporateActions: typeof(TwelveDataCorporateActionProvider),
@@ -91,7 +106,6 @@ public static class ProviderCapabilityDescriptorCatalog
     [
         new("Core", "Shared provider primitives and orchestration, not a vendor adapter family."),
         new("Failover", "Composite streaming orchestration over catalogued providers, not an independent provider family."),
-        new("OpenFigi", "Symbol resolution remains available through ISymbolResolver; the operator capability matrix does not expose a symbol-resolution surface."),
         new("Plaid", "Runtime financial-connectivity adapters implement Plaid-specific Contracts ports, not market-data provider capabilities."),
         new("Templates", "Copy-only provider and brokerage scaffolds are not runtime registrations."),
         new("TradeStation", "Mapper-only brokerage assets; no concrete shared-contract runtime adapter exists."),

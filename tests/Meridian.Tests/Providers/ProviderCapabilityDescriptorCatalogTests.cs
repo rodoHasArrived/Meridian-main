@@ -13,6 +13,7 @@ using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.NYSE;
+using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Synthetic;
@@ -24,15 +25,69 @@ using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using ProviderCapabilityDescriptor = Meridian.Infrastructure.Adapters.Core.ProviderCapabilityDescriptor;
 
 namespace Meridian.Tests.Providers;
 
 /// <summary>
-/// Guards provider capability metadata against runtime-readiness drift for inventory-only ingestion providers.
+/// Guards the complete runtime provider inventory, implemented shared contracts, and reasoned exclusions.
 /// </summary>
 public sealed class ProviderCapabilityDescriptorCatalogTests
 {
+    private static readonly IReadOnlyDictionary<string, string> ExpectedProviderCapabilities =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["alpaca"] = "streaming,historical,search,corporate-actions,options,brokerage",
+            ["alphavantage"] = "historical,search,corporate-actions",
+            ["edgar"] = "search",
+            ["finnhub"] = "historical,search,corporate-actions",
+            ["fred"] = "historical,search",
+            ["ibkr"] = "streaming,historical,brokerage",
+            ["nasdaq"] = "historical,search,corporate-actions",
+            ["nyse"] = "streaming,data-source-compatibility",
+            ["openfigi"] = "symbol-resolution",
+            ["polygon"] = "streaming,historical,search,options",
+            ["robinhood"] = "streaming,historical,search,options,brokerage",
+            ["stooq"] = "historical",
+            ["synthetic"] = "streaming,historical,search,options",
+            ["tiingo"] = "historical,search,corporate-actions",
+            ["twelvedata"] = "historical,search,corporate-actions",
+            ["yahoo"] = "historical"
+        };
+
+    // A new folder must be audited explicitly; these reasons must survive catalog changes.
+    private static readonly IReadOnlyDictionary<string, string> ExpectedExcludedFamilies =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Core"] = "Shared provider primitives",
+            ["Failover"] = "Composite streaming orchestration",
+            ["Plaid"] = "Plaid-specific Contracts ports",
+            ["Templates"] = "scaffolds",
+            ["TradeStation"] = "Mapper-only",
+            ["Tradier"] = "Mapper-only"
+        };
+
+    [Fact]
+    public void Descriptors_match_expected_provider_inventory_and_capabilities()
+    {
+        var providerIds = ProviderCapabilityDescriptorCatalog.Descriptors
+            .Select(static descriptor => descriptor.ProviderId)
+            .ToArray();
+        providerIds.Should().OnlyHaveUniqueItems(static providerId => providerId.ToUpperInvariant(),
+            "provider identifiers are case-insensitive");
+        providerIds.Should().BeEquivalentTo(ExpectedProviderCapabilities.Keys,
+            "missing providers must fail even when their folders are moved to the exclusion list");
+
+        foreach (var (providerId, capabilities) in ExpectedProviderCapabilities)
+        {
+            var descriptor = ProviderCapabilityDescriptorCatalog.Descriptors
+                .Single(descriptor => descriptor.ProviderId == providerId);
+            GetCapabilityInventory(descriptor).Should().Be(capabilities,
+                "provider '{0}' must expose its complete audited shared-contract inventory", providerId);
+        }
+    }
+
     [Fact]
     public void Descriptors_match_implemented_interfaces()
     {
@@ -89,10 +144,9 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         repository.Should().NotBeNull("source inventory validation requires the repository checkout");
         var adapterRoot = Path.Combine(repository!.FullName, "src", "Meridian.Infrastructure", "Adapters");
         var actualFolders = Directory.GetDirectories(adapterRoot).Select(Path.GetFileName).ToArray();
-        const string adapterNamespace = "Meridian.Infrastructure.Adapters.";
         var declaredFolders = ProviderCapabilityDescriptorCatalog.Descriptors
             .SelectMany(static descriptor => descriptor.Implementations())
-            .Select(implementation => implementation.Namespace![adapterNamespace.Length..].Split('.')[0])
+            .Select(GetAdapterFolder)
             .Distinct(StringComparer.Ordinal)
             .Concat(ProviderCapabilityDescriptorCatalog.ExcludedAdapterFamilies.Select(static exclusion => exclusion.FolderName))
             .ToArray();
@@ -103,31 +157,53 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             static exclusion => !string.IsNullOrWhiteSpace(exclusion.Reason),
             "every non-provider adapter folder must retain an explicit exclusion reason");
 
-        var expectedCapabilities = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        ProviderCapabilityDescriptorCatalog.ExcludedAdapterFamilies
+            .Select(static exclusion => exclusion.FolderName)
+            .Should().BeEquivalentTo(ExpectedExcludedFamilies.Keys);
+        foreach (var exclusion in ProviderCapabilityDescriptorCatalog.ExcludedAdapterFamilies)
         {
-            ["alpaca"] = "streaming,historical,search,corporate-actions,options,brokerage",
-            ["alphavantage"] = "historical,search,corporate-actions",
-            ["edgar"] = "search",
-            ["finnhub"] = "historical,search,corporate-actions",
-            ["fred"] = "historical,search",
-            ["ibkr"] = "streaming,historical,brokerage",
-            ["nasdaq"] = "historical,search,corporate-actions",
-            ["nyse"] = "streaming,data-source-compatibility",
-            ["polygon"] = "streaming,historical,search,options",
-            ["robinhood"] = "streaming,historical,search,options,brokerage",
-            ["stooq"] = "historical",
-            ["synthetic"] = "streaming,historical,search,options",
-            ["tiingo"] = "historical,search,corporate-actions",
-            ["twelvedata"] = "historical,search,corporate-actions",
-            ["yahoo"] = "historical"
-        };
+            exclusion.Reason.Should().Contain(ExpectedExcludedFamilies[exclusion.FolderName]);
+        }
+    }
 
-        foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
+    [Fact]
+    public void Descriptors_cover_shared_contracts_implemented_by_every_runtime_family()
+    {
+        (Type Contract, Func<ProviderCapabilityDescriptor, Type?> Implementation)[] capabilities =
+        [
+            (typeof(IMarketDataClient), static descriptor => descriptor.Streaming),
+            (typeof(IHistoricalDataProvider), static descriptor => descriptor.Historical),
+            (typeof(ISymbolSearchProvider), static descriptor => descriptor.Search),
+            (typeof(ICorporateActionProvider), static descriptor => descriptor.CorporateActions),
+            (typeof(IOptionsChainProvider), static descriptor => descriptor.Options),
+            (typeof(IBrokerageGateway), static descriptor => descriptor.Brokerage),
+            (typeof(ISymbolResolver), static descriptor => descriptor.SymbolResolver),
+            (typeof(IDataSource), static descriptor => descriptor.CompatibilityDataSource)
+        ];
+        var runtimeFamilies = typeof(ProviderCapabilityDescriptorCatalog).Assembly.GetTypes()
+            .Where(static type => type.IsClass && !type.IsAbstract && type.IsPublic &&
+                type.Namespace?.StartsWith("Meridian.Infrastructure.Adapters.", StringComparison.Ordinal) == true)
+            .Where(type => !ExpectedExcludedFamilies.ContainsKey(GetAdapterFolder(type)))
+            .GroupBy(GetAdapterFolder);
+
+        foreach (var family in runtimeFamilies)
         {
-            GetCapabilityInventory(descriptor).Should().Be(
-                expectedCapabilities[descriptor.ProviderId],
-                "provider '{0}' must expose its complete audited shared-contract inventory",
-                descriptor.ProviderId);
+            var descriptor = ProviderCapabilityDescriptorCatalog.Descriptors.Should().ContainSingle(
+                descriptor => descriptor.Implementations().Any(type => GetAdapterFolder(type) == family.Key),
+                "runtime adapter family '{0}' must have a descriptor", family.Key).Which;
+
+            foreach (var (contract, implementation) in capabilities)
+            {
+                var implementingTypes = family.Where(contract.IsAssignableFrom).ToArray();
+                if (implementingTypes.Length == 0)
+                    continue;
+
+                implementation(descriptor).Should().NotBeNull(
+                    "family '{0}' implements {1} through {2}", family.Key, contract.Name,
+                    string.Join(", ", implementingTypes.Select(static type => type.Name)));
+                implementingTypes.Should().Contain(implementation(descriptor),
+                    "the descriptor must select an implementation from its own adapter family");
+            }
         }
     }
 
@@ -155,16 +231,27 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         polygon.ExplicitExclusions.Should().ContainSingle(exclusion =>
             exclusion.Capability == nameof(ICorporateActionProvider) &&
             exclusion.Reason.Contains(nameof(PolygonCorporateActionFetcher), StringComparison.Ordinal));
+        typeof(PolygonCorporateActionFetcher).Should().BeAssignableTo<IHostedService>();
+        typeof(PolygonCorporateActionFetcher).Should().NotBeAssignableTo<ICorporateActionProvider>();
 
         var nyse = descriptors["nyse"];
         nyse.Streaming.Should().Be(typeof(NyseMarketDataClient));
         nyse.CompatibilityDataSource.Should().Be(typeof(NYSEDataSource));
         nyse.Historical.Should().BeNull(
             "NYSE historical access remains on its IDataSource compatibility adapter rather than IHistoricalDataProvider");
+        nyse.CompatibilityDataSource.Should().BeAssignableTo<IHistoricalDataSource>();
+        nyse.CompatibilityDataSource.Should().BeAssignableTo<IRealtimeDataSource>();
+        nyse.ExplicitExclusions.Should().ContainSingle(exclusion =>
+            exclusion.Capability == nameof(IHistoricalDataProvider) &&
+            exclusion.Reason.Contains(nameof(IHistoricalDataSource), StringComparison.Ordinal));
 
-        descriptors.Should().NotContainKey("openfigi");
-        ProviderCapabilityDescriptorCatalog.ExcludedAdapterFamilies.Should().ContainSingle(exclusion =>
-            exclusion.FolderName == "OpenFigi" && exclusion.Reason.Contains(nameof(ISymbolResolver), StringComparison.Ordinal));
+        var openFigi = descriptors["openfigi"];
+        openFigi.SymbolResolver.Should().Be(typeof(OpenFigiSymbolResolver));
+        openFigi.Search.Should().BeNull("ISymbolResolver.SearchAsync is not the ISymbolSearchProvider contract");
+        openFigi.ExplicitExclusions.Should().ContainSingle(exclusion =>
+            exclusion.Capability == nameof(ISymbolSearchProvider) &&
+            exclusion.Reason.Contains(nameof(ISymbolResolver), StringComparison.Ordinal));
+        openFigi.Implementations().Should().Equal(typeof(OpenFigiSymbolResolver));
     }
 
     [Fact]
@@ -239,6 +326,9 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         edgar.Brokerage.Should().BeNull();
         edgar.CorporateActions.Should().BeNull(
             "EDGAR corporate-action support is routed through Security Master/reference-data workflows, not an ICorporateActionProvider implementation");
+        edgar.ExplicitExclusions.Should().ContainSingle(exclusion =>
+            exclusion.Capability == nameof(ICorporateActionProvider) &&
+            exclusion.Reason.Contains(nameof(EdgarSecurityMasterIngestProvider), StringComparison.Ordinal));
 
         descriptorsById.Keys.Should().NotContain("ib",
             "the IB family uses one provider identifier across streaming, historical, and brokerage capabilities");
@@ -415,6 +505,9 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             }
         }
     }
+
+    private static string GetAdapterFolder(Type implementation)
+        => implementation.Namespace!["Meridian.Infrastructure.Adapters.".Length..].Split('.')[0];
 
     private static string GetCapabilityInventory(ProviderCapabilityDescriptor descriptor)
     {
