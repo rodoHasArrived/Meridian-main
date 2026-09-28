@@ -3388,8 +3388,6 @@ Meridian-main
 │   │   │   │   ├── MaintenanceFeatureRegistration.cs
 │   │   │   │   ├── PipelineFeatureRegistration.cs
 │   │   │   │   ├── ProviderFeatureRegistration.cs
-│   │   │   │   ├── ProviderFeatureRegistration.OptionsChain.cs
-│   │   │   │   ├── ProviderFeatureRegistration.Registry.cs
 │   │   │   │   ├── ProviderRoutingFeatureRegistration.cs
 │   │   │   │   ├── StorageFeatureRegistration.cs
 │   │   │   │   └── SymbolManagementFeatureRegistration.cs
@@ -4871,10 +4869,12 @@ Meridian-main
 │   │   │   │   ├── ProviderCapabilityDescriptorCatalog.cs
 │   │   │   │   ├── ProviderDataQualityValidator.cs
 │   │   │   │   ├── ProviderFactory.cs
+│   │   │   │   ├── ProviderFactory.Runtime.cs
 │   │   │   │   ├── ProviderHealthTracker.cs
-│   │   │   │   ├── ProviderIdentity.cs
 │   │   │   │   ├── ProviderRegistry.cs
 │   │   │   │   ├── ProviderRotationStrategy.cs
+│   │   │   │   ├── ProviderServiceExtensions.Catalog.cs
+│   │   │   │   ├── ProviderServiceExtensions.Composition.cs
 │   │   │   │   ├── ProviderServiceExtensions.cs
 │   │   │   │   ├── ProviderSubscriptionRanges.cs
 │   │   │   │   ├── ProviderTemplate.cs
@@ -5392,6 +5392,7 @@ Meridian-main
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   ├── PluginLoaderService.cs
 │   │   ├── ProviderHttpUtilities.cs
+│   │   ├── ProviderIdentity.cs
 │   │   ├── ProviderModuleContext.cs
 │   │   ├── ProviderModuleLoader.cs
 │   │   ├── ProviderRoutingModels.cs
@@ -9194,7 +9195,10 @@ Meridian-main
 │   │   │   │   ├── ProductionRegistrationGuardServiceTests.cs
 │   │   │   │   ├── ProductionServiceRegistrationPolicyTests.cs
 │   │   │   │   ├── ProviderCapabilityContractRegistrationTests.cs
+│   │   │   │   ├── ProviderCatalogCompositionTests.cs
+│   │   │   │   ├── ProviderCompositionTests.cs
 │   │   │   │   ├── ProviderFeatureRegistrationTests.cs
+│   │   │   │   ├── ProviderModuleCompositionTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
 │   │   │   │   ├── StartupRefusalPreflightTests.cs
 │   │   │   │   ├── StorageFeatureRegistrationTests.cs
@@ -9723,6 +9727,7 @@ Meridian-main
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderDataQualityValidatorTests.cs
 │   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
+│   │   │   │   ├── ProviderHealthTrackerTests.cs
 │   │   │   │   ├── ProviderMarketDataCapabilityTests.cs
 │   │   │   │   ├── ProviderRateLimitTrackerTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
@@ -9920,6 +9925,7 @@ Meridian-main
 │   │   │   ├── ExceptionTypeTests.cs
 │   │   │   ├── OptionalProviderCapabilityContractsTests.cs
 │   │   │   ├── PluginLoaderServiceTests.cs
+│   │   │   ├── ProviderIdentityTests.cs
 │   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Reconciliation
 │   │   │   ├── Connectors
@@ -10862,6 +10868,7 @@ Meridian-main
 │   │   ├── test_check_ledger_dimension_coverage.py
 │   │   ├── test_check_posture_env_serialization.py
 │   │   ├── test_check_program_state_consistency.py
+│   │   ├── test_check_sample_config_datasources.py
 │   │   ├── test_check_status_delivery_claims.py
 │   │   ├── test_check_store_concurrency_posture.py
 │   │   ├── test_check_test_skip_register.py

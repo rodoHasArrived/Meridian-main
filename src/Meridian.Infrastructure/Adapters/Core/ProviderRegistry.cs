@@ -58,6 +58,49 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     private readonly ConcurrentDictionary<string, Func<IMarketDataClient>> _streamingFactories
         = new(StringComparer.OrdinalIgnoreCase);
 
+    // Capabilities without IProviderMetadata (corporate actions and brokerage) participate
+    // through the same family key. Their lifetimes remain owned by the DI container.
+    private readonly ConcurrentDictionary<(string ProviderId, Type Contract), Func<object?>> _capabilityFactories = new();
+    private readonly ConcurrentDictionary<string, byte> _disabledFamilies = new(StringComparer.Ordinal);
+
+    public void RegisterCapabilityFactory(string providerId, Type contract, Func<object?> factory)
+    {
+        ArgumentNullException.ThrowIfNull(contract);
+        ArgumentNullException.ThrowIfNull(factory);
+        _capabilityFactories[(ProviderIdentity.NormalizeId(providerId), contract)] = factory;
+    }
+
+    /// <summary>Resolves any declared capability using its canonical family ID or a configured alias.</summary>
+    public T? GetCapability<T>(string providerId) where T : class
+        => (T?)GetCapability(providerId, typeof(T));
+
+    public object? GetCapability(string providerId, Type contract)
+    {
+        ArgumentNullException.ThrowIfNull(contract);
+        var key = ProviderIdentity.NormalizeId(providerId);
+        if (_disabledFamilies.ContainsKey(key))
+            return null;
+        // A multi-interface search adapter is not the configured streaming client. Explicit
+        // contract factories take precedence and retain their declared lifetime.
+        if (_capabilityFactories.TryGetValue((key, contract), out var factory))
+            return factory();
+        var registered = _allProviders.Values
+            .Where(p => p.IsEnabled && p.Name == key && contract.IsInstanceOfType(p.Provider))
+            .OrderBy(p => p.Priority)
+            .ThenBy(p => p.Provider.GetType().FullName, StringComparer.Ordinal)
+            .FirstOrDefault();
+        return registered?.Provider;
+    }
+
+    // A concrete DI service may expose a registry-created historical/search adapter. Once
+    // the container tracks that instance it becomes its sole disposal owner.
+    internal void TransferLifetimeToContainer(object provider)
+    {
+        foreach (var pair in _allProviders.Where(pair => ReferenceEquals(pair.Value.Provider, provider)))
+            _allProviders.AddOrUpdate(pair.Key, pair.Value with { OwnsLifetime = false },
+                (_, current) => current with { OwnsLifetime = false });
+    }
+
     private readonly ILogger _log;
     private readonly IAlertDispatcher? _alertDispatcher;
     private bool _disposed;
@@ -76,7 +119,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     /// <typeparam name="T">The provider type.</typeparam>
     /// <param name="provider">The provider instance.</param>
     /// <param name="priorityOverride">Optional priority override.</param>
-    public void Register<T>(T provider, int? priorityOverride = null) where T : IProviderMetadata
+    /// <param name="ownsLifetime">Whether the registry disposes the instance; false for container-owned module adapters.</param>
+    public void Register<T>(T provider, int? priorityOverride = null, bool ownsLifetime = true) where T : IProviderMetadata
     {
         ArgumentNullException.ThrowIfNull(provider);
 
@@ -85,7 +129,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         ValidateName(id);
 
         var registrationKey = CreateRegistrationKey(provider, id);
-        var registered = new RegisteredProvider(id, provider, priority, true);
+        var registered = new RegisteredProvider(id, provider, priority, true, ownsLifetime);
         if (_allProviders.TryAdd(registrationKey, registered))
         {
             MigrationDiagnostics.IncProviderRegistered();
@@ -145,7 +189,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     public IMarketDataClient CreateStreamingClient(string providerId)
     {
         var key = ProviderIdentity.NormalizeId(providerId);
-        if (_streamingFactories.TryGetValue(key, out var factory))
+        if (!_disabledFamilies.ContainsKey(key) && _streamingFactories.TryGetValue(key, out var factory))
         {
             MigrationDiagnostics.IncStreamingFactoryHit(key);
             _log.Information("Creating streaming client for {DataSource}", key);
@@ -340,7 +384,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
             {
                 var isAvailable = registered.IsEnabled &&
                     await CheckProviderAvailabilityAsync(registered.Provider, ct);
-                results[registered.Name] = isAvailable;
+                results[registered.Name] = isAvailable && results.GetValueOrDefault(registered.Name, true);
             }
             catch
             {
@@ -440,6 +484,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     public void Enable(string name)
     {
         var key = ProviderIdentity.NormalizeId(name);
+        _disabledFamilies.TryRemove(key, out _);
         var matches = _allProviders
             .Where(kvp => string.Equals(kvp.Value.Name, key, StringComparison.Ordinal))
             .ToList();
@@ -465,6 +510,7 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
     public void Disable(string name)
     {
         var key = ProviderIdentity.NormalizeId(name);
+        _disabledFamilies[key] = 0;
         var matches = _allProviders
             .Where(kvp => string.Equals(kvp.Value.Name, key, StringComparison.Ordinal))
             .ToList();
@@ -586,6 +632,8 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
 
         foreach (var registered in _allProviders.Values)
         {
+            if (!registered.OwnsLifetime)
+                continue;
             try
             {
                 switch (registered.Provider)
@@ -607,12 +655,14 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
         }
 
         _allProviders.Clear();
+        _streamingFactories.Clear();
+        _capabilityFactories.Clear();
     }
 
     /// <summary>
     /// Internal record for tracking registered providers in the unified registry.
     /// </summary>
-    private sealed record RegisteredProvider(string Name, IProviderMetadata Provider, int Priority, bool IsEnabled);
+    private sealed record RegisteredProvider(string Name, IProviderMetadata Provider, int Priority, bool IsEnabled, bool OwnsLifetime);
 }
 
 /// <summary>

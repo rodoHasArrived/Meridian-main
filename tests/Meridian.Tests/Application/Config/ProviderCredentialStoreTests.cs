@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
@@ -57,6 +60,84 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         status.AuditMetadata.Should().ContainKey("lastRotatedAt");
         status.AuditMetadata.Should().ContainKey("rotationDueAt");
         status.AuditMetadata.Should().Contain("verificationRequired", "true");
+    }
+
+    [Fact]
+    public async Task LegacyVaultAlias_RemainsReadableAndSharesFutureSaveAndDeleteOperations()
+    {
+        using var fallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", "false");
+        var store = new FileProviderCredentialStore(_root);
+        await WriteLegacyNasdaqVaultAsync(store, includeCredential: true);
+        var originalVault = await File.ReadAllTextAsync(store.VaultPath);
+
+        var read = await store.ReadForProviderAsync("nasdaq");
+
+        read.Should().NotBeNull();
+        read!.ProviderId.Should().Be("nasdaq");
+        read.Get("ApiKey").Should().Be("legacy-test-key");
+        (await File.ReadAllTextAsync(store.VaultPath)).Should().Be(originalVault,
+            "reading a legacy alias must not require a writable vault");
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest("nasdaq",
+            new Dictionary<string, string?> { ["ApiKey"] = "rotated-test-key" }));
+        (await store.ReadForProviderAsync("nasdaqdatalink"))!.Get("ApiKey").Should().Be("rotated-test-key");
+
+        await store.DeleteAsync("nasdaqdatalink");
+        (await store.ReadForProviderAsync("nasdaq")).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task LegacyVaultAlias_DeletionMarkerPreventsCredentialResurrection()
+    {
+        using var fallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", "false");
+        var store = new FileProviderCredentialStore(_root);
+        await WriteLegacyNasdaqVaultAsync(store, includeCredential: false);
+
+        await store.ImportLegacyAsync([
+            new ProviderCredentialSaveRequest("nasdaq", new Dictionary<string, string?> { ["ApiKey"] = "stale-sidecar-key" })
+        ]);
+
+        (await store.ReadForProviderAsync("nasdaqdatalink")).Should().BeNull();
+    }
+
+    private static async Task WriteLegacyNasdaqVaultAsync(FileProviderCredentialStore store, bool includeCredential)
+    {
+        // Build an encrypted v1 fixture using the retained on-disk identity. This exercises the
+        // public vault read path without teaching the current save API to emit legacy aliases.
+        var records = new Dictionary<string, object>();
+        if (includeCredential)
+        {
+            records["nasdaqdatalink"] = new
+            {
+                providerId = "nasdaqdatalink",
+                fields = new Dictionary<string, string> { ["ApiKey"] = "legacy-test-key" },
+                savedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+                updatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            };
+        }
+
+        var plainBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+        {
+            version = 1,
+            providers = records,
+            legacyImportedProviderIds = new[] { "nasdaqdatalink" }
+        }));
+        var key = RandomNumberGenerator.GetBytes(32);
+        var nonce = RandomNumberGenerator.GetBytes(12);
+        var tag = new byte[16];
+        var cipher = new byte[plainBytes.Length];
+        using (var aes = new AesGcm(key, tag.Length))
+            aes.Encrypt(nonce, plainBytes, cipher, tag);
+
+        var directory = Path.GetDirectoryName(store.VaultPath)!;
+        Directory.CreateDirectory(directory);
+        await File.WriteAllBytesAsync(Path.Combine(directory, "provider-credentials.key"), key);
+        await File.WriteAllTextAsync(store.VaultPath, JsonSerializer.Serialize(new
+        {
+            version = 1,
+            protection = "local-aes-gcm",
+            cipherText = Convert.ToBase64String([.. nonce, .. tag, .. cipher])
+        }));
     }
 
     [Theory]
@@ -345,7 +426,7 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     [InlineData("finnhub", "finnhub", "FINNHUB_API_KEY")]
     [InlineData("tiingo", "tiingo", "TIINGO_API_TOKEN")]
     [InlineData("alpha-vantage", "alphavantage", "ALPHA_VANTAGE_API_KEY")]
-    [InlineData("nasdaq", "nasdaqdatalink", "NASDAQ_DATA_LINK_API_KEY")]
+    [InlineData("nasdaqdatalink", "nasdaq", "NASDAQ_DATA_LINK_API_KEY")]
     [InlineData("twelve-data", "twelvedata", "TWELVEDATA_API_KEY")]
     [InlineData("open-figi", "openfigi", "OPENFIGI_API_KEY")]
     [InlineData("stooq", "stooq", null)]

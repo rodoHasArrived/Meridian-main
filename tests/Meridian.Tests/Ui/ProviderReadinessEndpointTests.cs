@@ -23,6 +23,64 @@ namespace Meridian.Tests.Ui;
 
 public sealed class ProviderReadinessEndpointTests
 {
+    [Theory]
+    [InlineData("interactive-brokers")]
+    [InlineData(" IB ")]
+    public async Task GetProviderReadiness_DisabledModuleAliasOverridesHealthyConnectionAndEnabledSource(string moduleAlias)
+    {
+        using var env = ProviderConnectionEnvironmentScope.Clear();
+        await using var app = await CreateAppAsync();
+        var configStore = app.Services.GetRequiredService<ConfigStore>();
+        await configStore.SaveAsync(configStore.Load() with
+        {
+            DataSources = new DataSourcesConfig(Sources:
+            [
+                new DataSourceConfig("ibkr", "Configured IB connection", DataSourceKind.IB, Enabled: true)
+            ]),
+            ProviderModules = new ProviderModulesConfig(new()
+            {
+                [moduleAlias] = new(Enabled: false)
+            })
+        });
+        var connections = await app.Services.GetRequiredService<ProviderConnectionLifecycleService>().GetConnectionsAsync();
+        connections.Should().ContainSingle(row => row.ProviderId == "ibkr").Subject.Health
+            .Should().Be(ProviderContinuityHealthDto.Healthy);
+
+        var readiness = await app.GetTestClient().GetFromJsonAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, JsonOptions);
+
+        readiness.Should().NotBeNull();
+        var row = readiness!.Providers.Should().ContainSingle(provider => provider.ProviderId == "ibkr").Subject;
+        row.IsEnabled.Should().BeFalse();
+        row.Status.Should().Be(ProviderReadinessStatusDto.Review,
+            "retained healthy connection evidence cannot override an explicitly disabled provider family");
+    }
+
+    [Theory]
+    [InlineData("ib")]
+    [InlineData("interactive-brokers")]
+    [InlineData(" INTERACTIVEBROKERS ")]
+    public async Task GetProviderReadiness_ConfiguredAliasProjectsOneCanonicalFamily(string configuredAlias)
+    {
+        using var env = ProviderConnectionEnvironmentScope.Clear();
+        await using var app = await CreateAppAsync();
+        var configStore = app.Services.GetRequiredService<ConfigStore>();
+        await configStore.SaveAsync(configStore.Load() with
+        {
+            DataSources = new DataSourcesConfig(Sources:
+            [
+                new DataSourceConfig(configuredAlias, "Configured IB connection", DataSourceKind.IB, Enabled: false)
+            ])
+        });
+
+        var readiness = await app.GetTestClient().GetFromJsonAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, JsonOptions);
+
+        readiness.Should().NotBeNull();
+        var row = readiness!.Providers.Should().ContainSingle(provider => provider.ProviderId == "ibkr").Subject;
+        row.IsEnabled.Should().BeFalse();
+        readiness.Providers.Should().NotContain(provider =>
+            provider.ProviderId == "ib" || provider.ProviderId == "interactive-brokers" || provider.ProviderId == "interactivebrokers");
+    }
+
     [Fact]
     public async Task GetProviderReadiness_ComposesCredentialAndPlaidEvidenceWithoutSecrets()
     {

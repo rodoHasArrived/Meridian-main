@@ -16,6 +16,12 @@ together after resolving deployment dependencies. The scheduling gate uses that 
 so a successful first delivery cycle cannot leave a stale peer blocker. Bootstrap requires valid
 worker options; failed, stopped, or stale workers and unrelated deployment blockers remain refused.
 
+Provider readiness resolves configuration, credential and telemetry aliases through the shared
+ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and
+`interactive-brokers` project one `ibkr` readiness row. An explicitly disabled module family
+overrides enabled source rows and retained healthy connection evidence, so configuration aliases
+cannot promote a disabled factory to readiness.
+
 The shared workstation registers credentialed Xero and NetSuite accounting
 providers alongside the existing fixtures. Their HTTP client disables redirects;
 provider-neutral credential setup and connection verification expose them to

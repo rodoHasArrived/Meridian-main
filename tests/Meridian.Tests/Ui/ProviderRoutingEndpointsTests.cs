@@ -532,7 +532,7 @@ public sealed class ProviderRoutingEndpointsTests
                 "alpaca",
                 "polygon",
                 "yahoo",
-                "ib",
+                "ibkr",
                 "synthetic"
             }.ToDictionary(
                 static providerId => providerId,
