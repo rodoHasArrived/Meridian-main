@@ -105,12 +105,10 @@ public sealed class ProviderConnectionService
                 var descriptor = ProviderCredentialCatalog.Find(request.ProviderFamilyId);
                 environment = descriptor?.NormalizeEnvironment(environment) ?? environment;
                 var scope = new ProviderCredentialScope(tenantId, connectionId, request.ExternalAccountId ?? string.Empty, environment!);
-                // A record retained under an alias could never hold scoped credentials, so moving it to
-                // the canonical spelling of the same environment is not a reassignment.
-                var retainedEnvironment = existing?.CredentialEnvironment is { } retained && descriptor is not null
-                    ? descriptor.NormalizeEnvironment(retained)
-                    : existing?.CredentialEnvironment;
-                if (existing is not null && (existing.ExternalAccountId != scope.ExternalAccountId || retainedEnvironment != scope.Environment ||
+                // Retained environments are part of the exact vault ownership key, including OAuth
+                // records that may use a legacy alias. Changing that identity requires an explicit
+                // migration of both configuration and secrets; ordinary updates must fail closed.
+                if (existing is not null && (existing.ExternalAccountId != scope.ExternalAccountId || existing.CredentialEnvironment != scope.Environment ||
                     !string.Equals(existing.ProviderFamilyId, request.ProviderFamilyId.Trim(), StringComparison.OrdinalIgnoreCase)))
                     throw new InvalidOperationException("Existing credential ownership cannot be reassigned.");
                 // A provider-wide or caller-supplied vault reference is not ownership evidence.

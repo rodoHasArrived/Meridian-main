@@ -75,9 +75,10 @@ environment with the external account. Scope resolution uses that retained owner
 to another tenant, and refuses incomplete records. Owned connections cannot be reassigned or modified
 through legacy mutation methods; legacy connections require an explicit ownership migration. An update
 that names an existing connection with different casing keeps the retained connection ID, so credentials
-stored under its case-sensitive scope key stay reachable. The retained credential environment is the
-provider's canonical value (for example QuickBooks `live` is kept as `production`), and a record retained
-under an alias moves to the canonical spelling on its next update. Shared
+stored under its case-sensitive scope key stay reachable. New connections retain the provider's canonical
+credential environment (for example QuickBooks `live` is kept as `production`). Existing environments
+remain exact ownership identities: an update that would change a retained alias is refused until an
+explicit configuration-and-vault migration can preserve any OAuth tokens stored under that scope. Shared
 configuration and API DTOs preserve the fields on reload. Default runtime ownership propagation and
 remaining whole-configuration snapshot callers still require integration; external editors do not honor the sidecar transaction.
 

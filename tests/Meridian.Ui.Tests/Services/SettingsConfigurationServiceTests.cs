@@ -191,10 +191,12 @@ public sealed class SettingsConfigurationServiceTests
 
     [Theory]
     [InlineData("yahoo", null)]
+    [InlineData("yahoo-finance", "owned")]
     [InlineData("ibkr", "owned")]
     public async Task CredentialRemoval_AcceptsNotRequiredAsTheConfirmedTerminalState(string providerId, string? connectionId)
     {
-        using var handler = new StatusHandler(HttpStatusCode.OK, $"{{\"providerId\":\"{providerId}\",\"credentialState\":0}}");
+        using var handler = new StatusHandler(HttpStatusCode.OK,
+            $"{{\"providerId\":\"{providerId}\",\"credentialState\":0,\"credentialSource\":4}}");
         using var api = new ApiClientService(new StatusClientFactory(handler));
         var service = new SettingsConfigurationService(api);
 
@@ -202,6 +204,37 @@ public sealed class SettingsConfigurationServiceTests
 
         await remove.Should().NotThrowAsync("a provider that needs no credentials has nothing left to remove");
         handler.Method.Should().Be("DELETE");
+    }
+
+    [Theory]
+    [InlineData("alpaca", "alpaca", null)]
+    [InlineData(" ALPACA-API ", "alpaca", "owned")]
+    [InlineData("yahoo", "yahoo", null)]
+    [InlineData("yahoo-finance", "yahoo", "owned")]
+    public async Task CredentialRemoval_RejectsDefaultOrUnconfirmedNotRequiredAcknowledgements(
+        string requestedId, string responseId, string? connectionId)
+    {
+        // NotRequired is enum zero: an omitted state must not turn a malformed response into success.
+        foreach (var fields in new[]
+        {
+            string.Empty,
+            ",\"credentialState\":0",
+            ",\"credentialSource\":0",
+            ",\"credentialState\":0,\"credentialSource\":0",
+            ",\"credentialState\":0,\"credentialSource\":1",
+            ",\"credentialState\":0,\"credentialSource\":2",
+            ",\"credentialState\":0,\"credentialSource\":3"
+        })
+        {
+            using var handler = new StatusHandler(HttpStatusCode.OK, $"{{\"providerId\":\"{responseId}\"{fields}}}");
+            using var api = new ApiClientService(new StatusClientFactory(handler));
+            var service = new SettingsConfigurationService(api);
+
+            Func<Task> remove = () => service.RemoveProviderCredentialsAsync(requestedId, connectionId);
+
+            var error = await remove.Should().ThrowAsync<InvalidOperationException>();
+            error.Which.Message.Should().Be("Credential removal was not confirmed by the authenticated service.");
+        }
     }
 
     [Theory]
