@@ -125,7 +125,7 @@
       "id": "verify-desktop",
       "displayName": "Windows Desktop Build",
       "runner": "windows-latest",
-      "localCommand": "pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore -Filter \"Category!=Integration&FullyQualifiedName!~Integration\"",
+      "localCommand": "python build/scripts/ci/run-windows-ci-tests.py",
       "hostedMode": "windows-desktop-build",
       "artifacts": [
         "artifacts/wpf-validation/windows-desktop-build/",

@@ -1032,7 +1032,8 @@ Meridian-main
 │   └── run-bottleneck-benchmarks.sh
 ├── build
 │   ├── ci
-│   │   └── lane-manifest.json
+│   │   ├── lane-manifest.json
+│   │   └── windows-test-slices.json
 │   ├── config
 │   │   ├── contracts
 │   │   │   └── type-parity-registry.json
@@ -1123,6 +1124,7 @@ Meridian-main
 │       │   ├── inline-sha256-baseline.json
 │       │   ├── run-dotnet-ci-tests.py
 │       │   ├── run-script-tests.py
+│       │   ├── run-windows-ci-tests.py
 │       │   ├── script-test-quarantine.json
 │       │   ├── summarize-ci-artifacts.py
 │       │   ├── validate-monitoring-deployment.py
@@ -10949,6 +10951,7 @@ Meridian-main
 │   │   ├── test_validate_tooling_metadata.py
 │   │   ├── test_validate_workstation_cockpit_acceptance_matrix.py
 │   │   ├── test_web_workstation_installer.py
+│   │   ├── test_windows_ci_runner.py
 │   │   ├── test_windows_desktop_build_workflow.py
 │   │   ├── test_wpf_msix_install_guidance.py
 │   │   └── test_wpf_msix_manifest.py
