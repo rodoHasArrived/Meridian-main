@@ -1,7 +1,7 @@
 # Browser Workstation UI Improvements — Implementation Plan (2026-07)
 
 > **Status:** Proposed · **Created:** 2026-07-02 · **Owner lane:** Workstation Shell and UX
-> **Source:** [Browser Workstation UI Improvements Brainstorm (2026-07)](web-ui-improvements-brainstorm-2026-07.md)
+> **Source:** [Browser Workstation UI Improvements Brainstorm (2026-07)](../../product/web-ui-improvements-brainstorm-2026-07.md)
 > **Depth:** phased implementation plan (all nine brainstorm ideas), code-ready anchors, no code in this change
 
 This plan sequences the nine brainstorm ideas into seven phases. Each phase names the files to
@@ -192,7 +192,7 @@ No feature work; confirm and document the rules each later phase must follow.
       workspace topics need the event-driven fan-out seam, not a 30s poll-bridge.
 - [ ] Step-2 fan-out seam (separate PR, hot-path review required) + workspace topics + per-session
       stream caps. **Design:** see
-      [`web-ui-stream-fan-out-blueprint-2026-07.md`](web-ui-stream-fan-out-blueprint-2026-07.md) —
+      [`web-ui-stream-fan-out-blueprint-2026-07.md`](../../../archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) —
       code-ready blueprint (notifier seam + `QuoteStreamBroadcaster` + connection registry;
       companion-pane stream sharing over the `BroadcastChannel`), phased for hot-path review.
 

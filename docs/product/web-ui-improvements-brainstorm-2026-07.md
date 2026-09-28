@@ -7,7 +7,7 @@
 > **Session date:** 2026-07-02
 > **Grounding:** `src/Meridian.Ui/dashboard/src/` (app shell, screens, hooks, charts, design
 > primitives), `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`, prior brainstorm ledger.
-> **Implementation plan:** [Browser Workstation UI Improvements Implementation Plan (2026-07)](web-ui-improvements-implementation-plan-2026-07.md)
+> **Implementation plan:** [Browser Workstation UI Improvements Implementation Plan (2026-07)](../engineering/plans/web-ui-improvements-implementation-plan-2026-07.md)
 
 ## What already exists (and is therefore not proposed here)
 

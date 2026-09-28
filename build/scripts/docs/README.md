@@ -397,7 +397,7 @@ python3 generate-health-dashboard.py \
 
 Detects and optionally auto-fixes broken internal links. The default output path is
 `docs/status/link-repair-report.md`; pass `--output` to write to an alternate location such as
-[`.artifacts/link-repair-report.md`](../../../.artifacts/link-repair-report.md).
+`.artifacts/link-repair-report.md`.
 
 ```bash
 # Report only

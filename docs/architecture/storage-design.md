@@ -3302,4 +3302,4 @@ The modular design allows incremental adoption—start with basic naming convent
 **Version:** 2.1.3
 **Last Updated:** 2026-08-05
 **Focus:** Data Collection, Archival & External Analysis Export
-**See Also:** [Meridian README](https://github.com/rodoHasArrived/Meridian/blob/main/README.md) | [Architecture Overview](overview.md) | [Configuration Guide](../HELP.md#configuration) | [ADR-002: Tiered Storage](../../archive/docs/adr/002-tiered-storage-architecture.md)
+**See Also:** [Meridian README](https://github.com/rodoHasArrived/Meridian/blob/main/README.md) | [Architecture Overview](overview.md) | [Configuration Guide](../HELP.md#configuration) | [ADR-002: Tiered Storage](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/002-tiered-storage-architecture.md)

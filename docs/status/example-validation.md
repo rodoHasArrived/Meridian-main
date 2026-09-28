@@ -8,20 +8,20 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1038 |
-| Valid | 590 |
+| Total code blocks | 1025 |
+| Valid | 585 |
 | Invalid | 0 |
-| Skipped | 448 |
+| Skipped | 440 |
 
 ## Summary by Language
 
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
-| `(none)` | 117 | 0 | 0 | 117 |
-| `bash` | 165 | 165 | 0 | 0 |
+| `(none)` | 113 | 0 | 0 | 113 |
+| `bash` | 163 | 163 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 328 | 328 | 0 | 0 |
+| `csharp` | 325 | 325 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 64 | 64 | 0 | 0 |
@@ -31,12 +31,12 @@
 | `markdown` | 16 | 0 | 0 | 16 |
 | `md` | 10 | 0 | 0 | 10 |
 | `mermaid` | 40 | 0 | 0 | 40 |
-| `powershell` | 87 | 0 | 0 | 87 |
+| `powershell` | 84 | 0 | 0 | 84 |
 | `python` | 3 | 3 | 0 | 0 |
 | `sql` | 12 | 0 | 0 | 12 |
 | `text` | 66 | 0 | 0 | 66 |
 | `toml` | 31 | 0 | 0 | 31 |
-| `ts` | 10 | 0 | 0 | 10 |
+| `ts` | 9 | 0 | 0 | 9 |
 | `xml` | 10 | 10 | 0 | 0 |
 | `yaml` | 18 | 18 | 0 | 0 |
 
@@ -87,12 +87,8 @@ No invalid code examples found.
 | `docs/architecture/ledger-architecture.md` | 4 |
 | `docs/architecture/provider-integration-manifest-runtime.md` | 1 |
 | `docs/architecture/provider-management.md` | 7 |
-| `docs/architecture/security-lot-convergence-blueprint.md` | 1 |
 | `docs/architecture/security-master-extensibility-review.md` | 4 |
 | `docs/architecture/storage-design.md` | 77 |
-| `docs/development/accounting-blueprints/commitment-and-capital-call-engine.md` | 21 |
-| `docs/development/accounting-blueprints/equalization-and-series-accounting.md` | 15 |
-| `docs/development/accounting-blueprints/incentive-fee-mechanics.md` | 13 |
 | `docs/development/adding-custom-rules.md` | 6 |
 | `docs/development/build-observability.md` | 3 |
 | `docs/development/central-package-management.md` | 9 |
@@ -102,24 +98,30 @@ No invalid code examples found.
 | `docs/development/documentation-contribution-guide.md` | 7 |
 | `docs/development/expanding-scripts.md` | 8 |
 | `docs/development/git-hooks.md` | 4 |
-| `docs/development/god-file-burn-down-plan.md` | 6 |
 | `docs/development/otlp-trace-visualization.md` | 5 |
 | `docs/development/provider-implementation.md` | 23 |
 | `docs/development/repository-organization-guide.md` | 8 |
 | `docs/development/synthetic-provider-test-harness.md` | 1 |
 | `docs/development/ui-fixture-mode-guide.md` | 20 |
 | `docs/development/wpf-implementation-notes.md` | 2 |
-| `docs/development/wpf-web-ui-alignment-plan.md` | 1 |
 | `docs/diagrams/README.md` | 7 |
 | `docs/diagrams/ui/README.md` | 1 |
 | `docs/diagrams/uml/README.md` | 2 |
 | `docs/docfx/README.md` | 2 |
 | `docs/docfx/api/index.md` | 1 |
-| `docs/engineering/README.md` | 1 |
+| `docs/engineering/blueprints/accounting/commitment-and-capital-call-engine.md` | 21 |
+| `docs/engineering/blueprints/accounting/equalization-and-series-accounting.md` | 15 |
+| `docs/engineering/blueprints/accounting/incentive-fee-mechanics.md` | 13 |
 | `docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md` | 9 |
+| `docs/engineering/blueprints/portfolio-cash-ladder-blueprint-2026-07.md` | 6 |
 | `docs/engineering/blueprints/risk-engine-severity-and-decision-journal-blueprint.md` | 7 |
+| `docs/engineering/blueprints/security-lot-convergence-blueprint.md` | 1 |
+| `docs/engineering/blueprints/security-master-passport-workbench.md` | 4 |
 | `docs/engineering/blueprints/w10-mark-001-fail-closed-marks.md` | 17 |
+| `docs/engineering/blueprints/web-ui-report-run-stream-blueprint-2026-07.md` | 7 |
 | `docs/engineering/live-trading-engine.md` | 1 |
+| `docs/engineering/plans/god-file-burn-down-plan.md` | 6 |
+| `docs/engineering/plans/wpf-web-ui-alignment-plan.md` | 1 |
 | `docs/engineering/production-certification-evidence-chain.md` | 2 |
 | `docs/examples/agent-improvement-loop/README.md` | 1 |
 | `docs/generated/README.md` | 1 |
@@ -127,15 +129,11 @@ No invalid code examples found.
 | `docs/integrations/language-strategy.md` | 4 |
 | `docs/integrations/lean-integration.md` | 17 |
 | `docs/operators/provider-backfill-operations.md` | 1 |
-| `docs/plans/security-master-passport-workbench.md` | 4 |
 | `docs/product/adversarial-program-review-2026-08-25.md` | 3 |
 | `docs/product/functionality-deepening-brainstorm-2026-07.md` | 1 |
-| `docs/product/portfolio-cash-ladder-blueprint-2026-07.md` | 6 |
-| `docs/product/product-roadmap-priorities-2026-07.md` | 1 |
-| `docs/product/w10-depth-slate-2026-07.md` | 1 |
-| `docs/product/w9-close-out-delivery-plan-2026-08.md` | 2 |
-| `docs/product/web-ui-report-run-stream-blueprint-2026-07.md` | 7 |
-| `docs/product/web-ui-stream-fan-out-blueprint-2026-07.md` | 4 |
+| `docs/product/plans/product-roadmap-priorities-2026-07.md` | 1 |
+| `docs/product/plans/w10-depth-slate-2026-07.md` | 1 |
+| `docs/product/plans/w9-close-out-delivery-plan-2026-08.md` | 2 |
 | `docs/reference/accounting-report-packs.md` | 1 |
 | `docs/reference/api-conflict-contract.md` | 1 |
 | `docs/reference/api-reference.md` | 11 |

@@ -2,7 +2,7 @@
 title: External GL import and controlled export review
 status: active
 owner: core-team
-reviewed: 2026-09-26
+reviewed: 2026-09-28
 ---
 
 # External GL import and controlled export review
@@ -48,18 +48,26 @@ replace retained evidence. The integration service supplies scoped content hashe
   the YTD debit/credit columns provide balances in organisation base currency.
   The import does not substitute manual journals for full GL journal access.
 - NetSuite reads posted accounting lines for one subsidiary and its primary
-  accounting book, in subsidiary base currency. Period journals include all
-  posting transaction types. Balances aggregate accounting-line net amounts through
-  period end. Imports fail closed if any income, expense, other income/expense, or
-  cost-of-goods-sold account has a nonzero balance from before the calendar year of
-  the requested end date. NetSuite's native date-based Trial Balance moves that
-  prior-year income into retained earnings; this adapter does not yet implement
-  that reporting adjustment. Narrowing the requested journal period cannot bypass
-  this guard. This remains an ACCT-CHECKLIST-06 acceptance gap, not a completed
-  NetSuite Trial Balance implementation. Report customisations, consolidated
-  eliminations, secondary books and period-based reporting remain unsupported.
-  Reconcile supported imports to the provider-owned date-based report before
-  certifying any review package.
+  accounting book, in subsidiary base currency. Its standard date-based accrual
+  Trial Balance uses calendar-year-to-date balances for Income, Expense, Other
+  Income, Other Expense and Cost of Goods Sold. Prior-calendar-year net income or
+  loss is added to cumulative direct postings in the system retained-earnings
+  account. Other balance-sheet accounts remain cumulative through the end date.
+  The adapter reads cumulative and prior-year amounts together under the same
+  subsidiary, book and end-date filters. The requested journal start does not
+  change the trial-balance year boundary, including when a request spans years.
+  Period-end journals (`PEJrnl`) are excluded from both populations because they
+  belong to the separate post-closing report.
+- NetSuite identifies system retained earnings from Account `sspecacct`
+  (`RetEarnings`), not an account name, account number or a residual used to force
+  balance. Missing, ambiguous, inactive or non-equity system identity fails the
+  import. The role must expose that metadata and all accounting rows in the
+  selected scope; use an unrestricted accounting role for report comparison.
+  Report basis and retained-earnings identity appear in trial-balance evidence.
+  Report customisations, consolidated eliminations, secondary books, cash-basis,
+  period-based and post-closing reporting remain unsupported. Reconcile to the
+  provider's standard Trial Balance for the same subsidiary, primary book and
+  As of date, with Report by Period disabled, before certifying a review package.
 - NetSuite SuiteQL uses POST only for read queries; no record-write URL exists in
   this adapter. Pages use a fixed 1,000-row limit and locally computed offsets.
 - Rate limits, expired consent, permission errors, malformed amounts, duplicate
@@ -107,22 +115,29 @@ Live posting stays disabled even after successful certification.
 
 ## Validation evidence
 
-`ExternalGlLiveProviderTests`, `ExternalGlFailureBoundaryTests`, and
+`ExternalGlLiveProviderTests`, `ExternalGlFailureBoundaryTests`, `NetSuiteTrialBalanceTests`, and
 `AccountingSystemIntegrationServiceTests.LiveProviders` exercise credentialed HTTP
 request/response contracts, pagination, safe failure, scoped evidence, and the
 controlled export path without tenant secrets. They are transport contract tests,
 not a live customer-tenant attestation. Deployment owners must retain the actual
 credentialed import and provider-report reconciliation evidence before approving
-their own export package.
+their own export package. Multi-year regressions cover all five income-statement
+types, calendar-year boundaries, profit and loss carry-forward, direct retained
+postings, offsetting prior-year accounts, account renaming, scope filters,
+period-end journal exclusion, invalid identity and malformed aggregates. The
+normalization creates report evidence only; no synthetic closing journal is posted.
 
 Issue #2752 originally referred to `docs/status/accounting-productization-checklist.md`.
 That historical snapshot is retained in the [archived checklist](../../archive/docs/summaries/accounting-productization-checklist.md).
 Current acceptance is tracked in the [active implementation list](../product/implementation-todo-list.md#acct-checklist-06-external-gl-provider-depth).
-Keep #2752 open until the remaining NetSuite reporting gap and validation evidence
-are resolved; contract tests are not customer-tenant smoke tests or vendor approval.
+Implementation acceptance requires passing validation on the current PR head;
+contract tests do not constitute customer-tenant smoke tests or vendor approval.
 
 Protocol references: [Xero Accounting OpenAPI](https://github.com/XeroAPI/Xero-OpenAPI/blob/master/xero_accounting.yaml),
 [Xero journal pagination](https://developer.xero.com/documentation/best-practices/api-call-efficiencies/rate-limits),
 [NetSuite SuiteQL REST](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_157909186990.html),
 [NetSuite Trial Balance semantics](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N1520986.html),
+[NetSuite system retained earnings](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N1457773.html),
+[NetSuite Account analytics metadata](https://www.netsuite.com/help/helpcenter/en_US/srbrowser/Browser2020_2/analytics/record/account.html),
+[NetSuite reports and period-end journals](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_1513210940.html),
 and [NetSuite OAuth](https://blogs.oracle.com/developers/netsuite-as-oidc-provider).

@@ -738,7 +738,7 @@ This guide should evolve as the repository grows. To suggest improvements:
 
 - **Implementation Guides:**
   - [Provider Implementation Guide](./provider-implementation.md) - Adding data providers
-  - [Desktop Platform Improvements archive](../../archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical desktop development assessment; use current engineering/operator docs for active work
+  - [Desktop Platform Improvements archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical desktop development assessment; use current engineering/operator docs for active work
   - [WPF Implementation Notes](./wpf-implementation-notes.md) - WPF architecture
 
 - **Architecture:**

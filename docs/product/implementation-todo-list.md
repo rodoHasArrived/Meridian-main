@@ -58,7 +58,7 @@ not a renewed assessment of every implementation row on the current baseline.
 
 | Gate | Closure-candidate state | Interpretation |
 | --- | --- | --- |
-| P0 (`PRD-000` through `PRD-020`) | 15 implementation-complete; 6 evidence-gated; 0 open; 0 production-certified | `PRD-001` through `PRD-012`, `PRD-018`, `PRD-019`, and `PRD-020` have closure implementations and focused proof in this candidate — that enumeration is the fifteen. `PRD-010` rejoined that set on 2026-08-30 against `quality-gate` on `f9f920a6` (run 33291893043), a head that was green across every lane and that a review round had left unchanged. It was withdrawn three times before this, twice because a later round changed a parser the standing citation covered. The standard was reapplied each time rather than relaxed once the row had cleared it, which is what makes the fourth grading worth more than the first. `PRD-000` and `PRD-013` through `PRD-017` now have executable gates but remain production-blocking until the external same-commit evidence listed below exists. `PRD-018` through `PRD-020` were added 2026-08-09 from the [2026-07-26 adversarial program review](../../archive/docs/assessments/adversarial-program-review-2026-07-26.md) follow-up and rescoped the same day against `e7e9528b8` after post-merge review corrected two premises (the fresh-clone demo passes its readiness check from the repo root; `/health` is mapped and alert-rule gating exists). `PRD-018` gained a closure candidate on 2026-08-09 (one tracked canonical bundle, launch-directory-independent resolution, CI freshness gate); `PRD-019` gained its closure candidate in an earlier change — the canonical monitoring exemption set consumed by both authentication gates, with the deployment chain repointed at the unauthenticated probe surface — and remains evidence- and ADR-019-gated; `PRD-020` gained its closure candidate on 2026-09-04: a designer-document live strategy source over a closed expression grammar, with every unsupported construct failing closed into the operator-visible `ActivationDeferred` state. Its other two clauses were already closed under #2726. |
+| P0 (`PRD-000` through `PRD-020`) | 15 implementation-complete; 6 evidence-gated; 0 open; 0 production-certified | `PRD-001` through `PRD-012`, `PRD-018`, `PRD-019`, and `PRD-020` have closure implementations and focused proof in this candidate — that enumeration is the fifteen. `PRD-010` rejoined that set on 2026-08-30 against `quality-gate` on `f9f920a6` (run 33291893043), a head that was green across every lane and that a review round had left unchanged. It was withdrawn three times before this, twice because a later round changed a parser the standing citation covered. The standard was reapplied each time rather than relaxed once the row had cleared it, which is what makes the fourth grading worth more than the first. `PRD-000` and `PRD-013` through `PRD-017` now have executable gates but remain production-blocking until the external same-commit evidence listed below exists. `PRD-018` through `PRD-020` were added 2026-08-09 from the [2026-07-26 adversarial program review](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/adversarial-program-review-2026-07-26.md) follow-up and rescoped the same day against `e7e9528b8` after post-merge review corrected two premises (the fresh-clone demo passes its readiness check from the repo root; `/health` is mapped and alert-rule gating exists). `PRD-018` gained a closure candidate on 2026-08-09 (one tracked canonical bundle, launch-directory-independent resolution, CI freshness gate); `PRD-019` gained its closure candidate in an earlier change — the canonical monitoring exemption set consumed by both authentication gates, with the deployment chain repointed at the unauthenticated probe surface — and remains evidence- and ADR-019-gated; `PRD-020` gained its closure candidate on 2026-09-04: a designer-document live strategy source over a closed expression grammar, with every unsupported construct failing closed into the operator-visible `ActivationDeferred` state. Its other two clauses were already closed under #2726. |
 | P1 (`PRD-100` through `PRD-114`) | 1 closed; 3 substantially advanced; 11 open | `PRD-103` is closed in source with focused proof. `PRD-104`, `PRD-109`, and `PRD-112` have their code-side defects fixed and executable gates in place; each row names exactly what remains (packaged SFTP, serialization parity, a benchmark lane on stable hosts). `PRD-111` stays open and gained a named prerequisite. The other rows are untouched. A row may move out only through an explicit support-matrix scope decision. |
 | P2 (`PRD-200` through `PRD-205`) | 6 open | Compatibility cleanup remains sequenced after the P0/P1 policy migrations it depends on. |
 | Active roadmap acceptance | 4 in progress | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W9-GOV-008`, and `W9-INGEST-009` are active; `W9-SAFETY-007` left this group for `ready_for_acceptance` on 2026-09-01 once criterion one was discharged, criterion three swept, and the Windows WPF build-and-test result recorded and are not production-certified by this tracker. `W9-GOV-008` and `W9-INGEST-009` were corrected from `planned` because substantial implementation had already shipped; `W9-CORPACT-011`, reopened by `DEC-W9-ACCEPTANCE-002` on 2026-08-30, left this group for `ready_for_acceptance` on 2026-09-22 once its accounting lane was proven end to end on PostgreSQL. |
@@ -425,7 +425,7 @@ These are documented as implemented evidence, supported foundations, or design-l
 - [x] Add focused endpoint, browser, and WPF proof only where the existing Security Master detail flow exposes the new workbench state.
   Evidence: endpoint proof in `tests/Meridian.Tests/Ui/SecurityMasterInstrumentPassportTests.cs` (asserts all six workbench section ids, provider-evidence and ledger-classification summaries, operations panels, readiness rows, and handoff completeness); browser proof in `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` (reference-data workbench and operations workbench rendering; 43 tests passing on 2026-07-04); WPF proof in `tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs` (instrument passport fields including `Multi-asset reference-data workbench` and `Operations handoff`).
 - [x] Closed-period propagation: replace the no-op restatement candidate resolver with a report-pack-backed `ReportPackRestatementCandidateResolver` that locates the published packs which consumed the edited security (from retained report-line provenance) and surfaces them as governed restatement candidates, so a closed-period reference-data edit no longer always degrades to a manual locate-affected-packs task. Remaining: soft-closed governed-adjustment posting, period-precise candidate narrowing, and a durable security→report-line index.
-- [x] Passport governed-write workbench foundation: the write-surface slice now has shared command DTOs, source-generated JSON metadata, workbench route constants/endpoints, conflict-authority policy, field edit → submit → approve → publish lifecycle services, browser/WPF editor entry points, report-pack-backed restatement candidates, and `SecurityMasterWorkbench` configuration defaults, tracked in `docs/plans/security-master-passport-workbench.md`. Remaining follow-ons stay explicit: soft-closed governed-adjustment posting, repeated-restatement workflow support, period-precise candidate narrowing, a durable security→report-line index, and a single closed-period no-mutation lifecycle integration test.
+- [x] Passport governed-write workbench foundation: the write-surface slice now has shared command DTOs, source-generated JSON metadata, workbench route constants/endpoints, conflict-authority policy, field edit → submit → approve → publish lifecycle services, browser/WPF editor entry points, report-pack-backed restatement candidates, and `SecurityMasterWorkbench` configuration defaults, tracked in `docs/engineering/blueprints/security-master-passport-workbench.md`. Remaining follow-ons stay explicit: soft-closed governed-adjustment posting, repeated-restatement workflow support, period-precise candidate narrowing, a durable security→report-line index, and a single closed-period no-mutation lifecycle integration test.
 
 ## W5X-FINOPS-001 TODOs: Financial Operations Control Center
 
@@ -465,7 +465,7 @@ Acceptance evidence produced for this FINOPS slice:
 
 ## ACCT-CHECKLIST-06: External GL provider depth
 
-- [ ] Complete [#2752](https://github.com/rodoHasArrived/Meridian-main/issues/2752): credentialed Xero and NetSuite import adapters plus provider-owned controlled export certification.
+- [x] Implement [#2752](https://github.com/rodoHasArrived/Meridian-main/issues/2752): credentialed Xero and NetSuite import adapters plus provider-owned controlled export certification.
 
 [PR #2998](https://github.com/rodoHasArrived/Meridian-main/pull/2998) implements
 read-only credentialed adapters, scoped retained import/control evidence and
@@ -475,19 +475,22 @@ scope and deployment evidence. The former checklist is an
 [archived snapshot](../../archive/docs/summaries/accounting-productization-checklist.md);
 its historical checkbox is not current acceptance authority.
 
-The September 25 [Meridian CI run](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36195716508)
-passed on `9273bb6eda86ef7615b589d84fd943402959d41b`. That is prior-head evidence,
-not validation of the September 26 refresh. Focused regression coverage now includes
-mixed debit/credit account activity in certified review packages and rejection of
-unbalanced or malformed provider trial balances.
+The September 28 implementation resolves the NetSuite reporting gap identified in
+the September 26 review. Standard date-based accrual Trial Balance evidence keeps
+calendar-year income and expense balances, moves prior-year net income or loss into
+the system retained-earnings account identified by provider metadata, and preserves
+direct retained-earnings postings. Period-end journals are excluded. Ambiguous
+identity, duplicate or malformed aggregates and unbalanced evidence fail closed.
 
-**Remaining:** NetSuite's native date-based Trial Balance reports income-statement
-accounts year to date and rolls prior-year income into retained earnings. The
-adapter's accounting-line aggregate does not implement that reporting adjustment;
-it now refuses imports with nonzero prior-year income-statement account balances.
-Complete and validate that reporting basis with authoritative retained-earnings
-identity before claiming general NetSuite Trial Balance coverage. Keep #2752 open
-and require passing validation on the refreshed PR head before acceptance.
+`NetSuiteTrialBalanceTests` and the external GL regression suites cover multi-year
+balances, every income-statement type, the year boundary, offsetting accounts,
+renamed system accounts, direct retained postings and exact subsidiary/book scope.
+Shared certification regressions cover gross debit/credit account activity,
+retained human controls, current connection/import scope and unchanged manifests.
+Live posting stays disabled. Release acceptance requires `bash scripts/ci.sh` and
+passing required checks on the current [PR head](https://github.com/rodoHasArrived/Meridian-main/pull/2998/checks);
+the PR records execution results. Customer-tenant reconciliation remains a
+deployment requirement, separate from automated implementation coverage.
 
 Evidence: `ExternalGlLiveProviderTests`, `ExternalGlFailureBoundaryTests`, and
 `AccountingSystemIntegrationServiceTests.LiveProviders` exercise HTTP contract

@@ -40,7 +40,7 @@ Expected for WPF-affecting changes:
 - **Desktop Development:**
   - [Desktop Testing Guide](../desktop-testing-guide.md) - Testing procedures and requirements
   - [WPF Implementation Notes](../wpf-implementation-notes.md) - WPF architecture details
-  - [Desktop Platform Improvements archive](../../../archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical improvement assessment; use current engineering/operator docs for active guidance
+  - [Desktop Platform Improvements archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical improvement assessment; use current engineering/operator docs for active guidance
 
 - **Architecture and Quality:**
   - [Desktop Architecture Layers](../../architecture/desktop-layers.md) - Layer boundaries

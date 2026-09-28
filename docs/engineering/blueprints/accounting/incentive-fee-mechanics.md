@@ -13,7 +13,7 @@ supports both US and European fund conventions.
 > [equalization / series-accounting blueprint](equalization-and-series-accounting.md) and the
 > [commitment & capital-call blueprint](commitment-and-capital-call-engine.md). Migration ordinals,
 > DDL precision, route prefixes, and the HWM-ownership contract are recorded in the canonical
-> [blueprint register](../../engineering/blueprints/README.md#shared-conventions). Do not claim an
+> [blueprint register](../README.md#shared-conventions). Do not claim an
 > ordinal or a new route prefix without checking it.
 
 ---
@@ -157,7 +157,7 @@ running accrual — a policy fork, not a requirement.
 - Migrations live in `src/Meridian.Storage/Ledger/Migrations/` as `V_ledger_###__name.sql`. Highest
   current number is **`V_ledger_028__wash_sale_activation.sql`** (note two files share `008`; keep new
   numbers unique). This blueprint's reserved range is **029–030** — see the
-  [register](../../engineering/blueprints/README.md#ledger-migration-ordinals); re-derive the next
+  [register](../README.md#ledger-migration-ordinals); re-derive the next
   free ordinal from disk at implementation time. Scripts use the `__SCHEMA__` placeholder, `create table if not exists`,
   `create index/unique index if not exists`, `ck_`/`ix_`/`ux_` naming, `numeric(38, 12)` for
   money/quantity precision, `timestamptz`, and `references __SCHEMA__.ledger_books(ledger_book_id)
@@ -268,7 +268,7 @@ today's behavior for funds that do not opt in.
 > `InvestorId`. Per-investor HWM rows are not permitted under either method. If Fork G is set to
 > `InvestorSeries`, this blueprint and the equalization blueprint's Method B must land as one slice.
 > Both documents record this contract; the canonical copy is the
-> [blueprint register](../../engineering/blueprints/README.md#cross-blueprint-contracts).
+> [blueprint register](../README.md#cross-blueprint-contracts).
 
 ### Fork H — Downward accrual adjustments (NAV falls below prior accrual)
 - Options: `ReverseAccrual` (post a contra entry Dr Payable / Cr Expense), `ClampToZeroNoReversal`
@@ -719,7 +719,7 @@ so the Section 7 DTOs can name them.
 > a direct reference would need Contracts→Ledger and invert it. The `LedgerTaxLotReliefMethod`
 > precedent that draft cited does not support the claim either: that enum lives in
 > `src/Meridian.Ledger/LedgerTaxLotReliefMethod.cs`, so Contracts cannot name it directly for the
-> same reason. See the [register's DTO-layering convention](../../engineering/blueprints/README.md#dto-layering).
+> same reason. See the [register's DTO-layering convention](../README.md#dto-layering).
 
 ---
 
@@ -934,7 +934,7 @@ current accrual path regresses.
 Follow `V_ledger_###__name.sql` with `__SCHEMA__`, `create table/index if not exists`, `numeric(38, 12)`
 money precision, `timestamptz`, and `references __SCHEMA__.ledger_books(ledger_book_id) on delete cascade`.
 The highest ordinal on disk is `V_ledger_028__wash_sale_activation.sql`; this blueprint's reserved
-range is **029–030** ([register](../../engineering/blueprints/README.md#ledger-migration-ordinals)).
+range is **029–030** ([register](../README.md#ledger-migration-ordinals)).
 Re-derive from disk at implementation time and update the register if another lane lands first.
 
 > **Enablement gate — the fund-level scope must exist before the first evaluation.**

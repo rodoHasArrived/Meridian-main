@@ -8,10 +8,10 @@ The no-new-god-file ratchet (`build/scripts/ci/check-file-size.py`) stops the pr
 does not shrink it. This plan sets the target and sequencing that turn a frozen baseline into a
 falling one, and records the mechanism changes that make progress visible.
 
-- Ratchet: [`../../build/scripts/ci/check-file-size.py`](../../build/scripts/ci/check-file-size.py)
-- Baseline: [`../../build/config/file-size-baseline.json`](../../build/config/file-size-baseline.json)
-- Contracts: [ADR-017 (modular operational monolith)](../adr/017-modular-operational-monolith.md)
-  and [module conventions](../architecture/module-conventions.md)
+- Ratchet: [`../../build/scripts/ci/check-file-size.py`](../../../build/scripts/ci/check-file-size.py)
+- Baseline: [`../../build/config/file-size-baseline.json`](../../../build/config/file-size-baseline.json)
+- Contracts: [ADR-017 (modular operational monolith)](../../adr/017-modular-operational-monolith.md)
+  and [module conventions](../../architecture/module-conventions.md)
 - Origin: issue #2619
 
 ## Where the baseline stands
@@ -223,7 +223,7 @@ paired. This is where the volume is — 48% of the baseline.
 **3. Endpoint and query-service monoliths.**
 
 `WorkstationEndpoints.cs` (4,478) decomposes into **independent capability groups**, not into more
-partials of itself. [Module conventions](../architecture/module-conventions.md) names that
+partials of itself. [Module conventions](../../architecture/module-conventions.md) names that
 distinction explicitly: a capability group is a static class exposing one `Map…` extension that
 registers its own `MapGroup("/api/workstation/<capability>")`, and *"accreting handlers onto a single
 `partial class` such as `WorkstationEndpoints`"* is called out there as an anti-pattern being

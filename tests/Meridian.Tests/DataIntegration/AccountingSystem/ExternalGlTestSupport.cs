@@ -123,18 +123,25 @@ internal static class ExternalGlTestData
             return ExternalGlTestHandler.Page([new { id = "1" }]);
         if (query.Contains("FROM account ORDER", StringComparison.Ordinal))
             return ExternalGlTestHandler.Page([
-                new { id = "cash", acctnumber = "100", acctname = "Cash", accttype = "Bank", isinactive = "F" },
-                new { id = "capital", acctnumber = "300", acctname = "Capital", accttype = "Equity", isinactive = "F" }
+                new { id = "cash", acctnumber = "100", acctname = "Cash", accttype = "Bank", isinactive = "F", specialaccounttype = "NONE" },
+                new { id = "capital", acctnumber = "300", acctname = "Capital", accttype = "Equity", isinactive = "F", specialaccounttype = "NONE" },
+                NetSuiteAccount("retained", "Equity", "RetEarnings")
             ]);
-        if (query.Contains("AS prioryearbalance", StringComparison.Ordinal))
-            return ExternalGlTestHandler.Page([]);
         if (query.Contains("SUM(", StringComparison.Ordinal))
-            return ExternalGlTestHandler.Page([new { accountid = "cash", balance = "100.25" }, new { accountid = "capital", balance = "-100.25" }]);
+            return ExternalGlTestHandler.Page([NetSuiteBalance("cash", 100.25m), NetSuiteBalance("capital", -100.25m)]);
         return ExternalGlTestHandler.Page([
             new { journalid = "7", accountingdate = "2026-01-06", lineid = "1", accountid = "cash", debit = "100.25", credit = "0" },
             new { journalid = "7", accountingdate = "2026-01-06", lineid = "2", accountid = "capital", debit = "0", credit = "100.25" }
         ]);
     }
+
+    public static object NetSuiteAccount(string id, string type, string special = "NONE", string inactive = "F", string? name = null) => new
+    {
+        id, acctnumber = id, acctname = name ?? id, accttype = type, isinactive = inactive, specialaccounttype = special
+    };
+
+    public static object NetSuiteBalance(string id, decimal balance, decimal prior = 0m)
+        => new { accountid = id, balance, prioryearbalance = prior };
 
     public static object XeroBalance(string id, string debit, string credit) => new
     {

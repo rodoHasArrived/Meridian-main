@@ -3,7 +3,7 @@
 **Status:** active working plan; not a governance or roadmap-status document
 **Owner:** core-team
 **Reviewed:** 2026-08-11
-**Source:** [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md)
+**Source:** [Adversarial Program Review (2026-08)](../adversarial-program-review-2026-08.md)
 
 > A prioritized ten-item production-readiness ordering of this estate — re-verified against
 > source on 2026-08-18, with corrections for stale claims and one new blocker finding — lives in
@@ -12,7 +12,7 @@
 This document turns every finding in the 2026-08 adversarial review into a tracked todo with a
 code-ready implementation plan. It is a **working plan**, not a status source: live roadmap truth
 stays in `docs/roadmap/data/*.yml`, and release-gate truth stays in the
-[Implementation and Readiness Tracker](implementation-todo-list.md). Where a todo overlaps an
+[Implementation and Readiness Tracker](../implementation-todo-list.md). Where a todo overlaps an
 existing `PRD-*`, `W9-*`, or `W10-*` row, the row is named so work is not duplicated or
 double-counted.
 
@@ -798,7 +798,7 @@ still `in_progress`.
   pull-request code, direct pushes to protected `main` are prohibited, and a `merge_group` tree is
   synthetic and cannot be written to, which means no design removes the manual toll in every case.
   The full analysis and the two implementable shapes live in
-  [Docs Regeneration Automation — Design Constraints](../engineering/docs-regeneration-automation-design.md).
+  [Docs Regeneration Automation — Design Constraints](../../engineering/docs-regeneration-automation-design.md).
   Read that note before implementing; six earlier attempts at a one-line fix were each refuted by a
   different interaction.
   **Verify:** per the note's verification section, which enumerates ten scenarios — including an
@@ -1154,7 +1154,7 @@ still `in_progress`.
   **Effort:** M
 
 - [ ] **AR8-54 — Make WPF parity honest in-product.**
-  **Evidence:** `docs/development/wpf-web-ui-alignment-plan.md` shows 15 of 29 screens "Partial" and
+  **Evidence:** `docs/engineering/plans/wpf-web-ui-alignment-plan.md` shows 15 of 29 screens "Partial" and
   2 hard gaps, assessed 2026-07-06. The desktop lane does carry real governed actions — journal
   approve/post/reverse and rules-studio promotion approval
   (`src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:360-375`), close-evidence

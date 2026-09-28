@@ -24,7 +24,7 @@ public sealed class ExternalGlLiveProviderTests
         detail.Summary.State.Should().Be(AccountingSystemImportStateDto.Imported);
         detail.Summary.TenantId.Should().Be("tenant");
         detail.Summary.CompanyId.Should().Be("company");
-        detail.ChartAccounts.Should().HaveCount(2);
+        detail.ChartAccounts.Should().HaveCount(id == "netsuite" ? 3 : 2);
         detail.JournalEntries.Should().ContainSingle().Which.TotalDebits.Should().Be(100.25m);
         detail.TrialBalance.Should().Contain(b => b.ExternalAccountId == "cash" && b.Debit == 100.25m);
         detail.TrialBalance.Should().OnlyContain(b => b.Currency == "USD" && b.AsOfDate == new DateOnly(2026, 1, 31));
@@ -77,16 +77,17 @@ public sealed class ExternalGlLiveProviderTests
             {
                 using var document = System.Text.Json.JsonDocument.Parse(body);
                 var query = document.RootElement.GetProperty("q").GetString()!;
-                // The guard uses the selected account/book and the report's calendar boundary,
+                // The report uses the selected account/book and the report's calendar boundary,
                 // not the requested period start or balance-sheet account history.
                 query.Should().Contain("tl.subsidiary = 2").And.Contain("al.accountingbook = 1");
                 query.Should().Contain("t.posting = 'T'").And.Contain("al.posting = 'T'");
                 query.Should().Contain("tl.transaction = al.transaction AND tl.id = al.transactionline");
                 query.Should().Contain("t.trandate < TO_DATE('2026-01-01', 'YYYY-MM-DD')");
-                query.Should().Contain("UPPER(a.accttype) IN ('INCOME', 'EXPENSE', 'OTHINCOME', 'OTHEXPENSE', 'COGS')");
-                return ExternalGlTestHandler.Page(hasZeroPriorYearBalance
-                    ? [new { accountid = "income", prioryearbalance = "0.00" }]
-                    : []);
+                query.Should().Contain("t.type <> 'PEJrnl'");
+                // Historic balance-sheet amounts must remain cumulative even though P&L resets.
+                return ExternalGlTestHandler.Page([
+                    ExternalGlTestData.NetSuiteBalance("cash", 100.25m, hasZeroPriorYearBalance ? 0m : 90m),
+                    ExternalGlTestData.NetSuiteBalance("capital", -100.25m, hasZeroPriorYearBalance ? 0m : -90m)]);
             }
             return ExternalGlTestData.Respond(request, body);
         });

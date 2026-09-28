@@ -69,7 +69,7 @@ public sealed class ExternalGlFailureBoundaryTests
         using var handler = new ExternalGlTestHandler((request, body) =>
         {
             if (id == "netsuite" && body.Contains("AS balance", StringComparison.Ordinal))
-                return ExternalGlTestHandler.Page([new { accountid = "cash", balance = "100.25" }]);
+                return ExternalGlTestHandler.Page([ExternalGlTestData.NetSuiteBalance("cash", 100.25m)]);
             if (request.RequestUri!.AbsolutePath.EndsWith("TrialBalance", StringComparison.Ordinal))
             {
                 var rows = fault switch
@@ -101,43 +101,64 @@ public sealed class ExternalGlFailureBoundaryTests
     [InlineData("OthIncome", "-10.00")]
     [InlineData("OthExpense", "10.00")]
     [InlineData("COGS", "10.00")]
-    public async Task NetSuite_PriorYearProfitAndLossBalancesRequireReportNormalization(string accountType, string balance)
+    public async Task NetSuite_PriorYearProfitAndLossBalancesAreNormalizedWithoutLosingCurrentActivity(string accountType, string balance)
+    {
+        var prior = decimal.Parse(balance, System.Globalization.CultureInfo.InvariantCulture);
+        var store = new ExternalGlTestStore("netsuite");
+        using var handler = new ExternalGlTestHandler((request, body) =>
+        {
+            if (body.Contains("FROM account ORDER", StringComparison.Ordinal))
+                return ExternalGlTestHandler.Page([
+                    ExternalGlTestData.NetSuiteAccount("cash", "Bank"),
+                    ExternalGlTestData.NetSuiteAccount("capital", "Equity"),
+                    ExternalGlTestData.NetSuiteAccount("retained", "Equity", "RetEarnings"),
+                    ExternalGlTestData.NetSuiteAccount("pnl", accountType)]);
+            if (body.Contains("AS prioryearbalance", StringComparison.Ordinal))
+                return ExternalGlTestHandler.Page([
+                    ExternalGlTestData.NetSuiteBalance("cash", -prior - 3m),
+                    ExternalGlTestData.NetSuiteBalance("pnl", prior + 3m, prior)]);
+            return ExternalGlTestData.Respond(request, body);
+        });
+        using var client = new HttpClient(handler);
+        var detail = await ExternalGlTestData.Provider("netsuite", store, client).ImportAsync(ExternalGlTestData.Request("netsuite"));
+        detail.TrialBalance.Single(b => b.ExternalAccountId == "pnl").Debit.Should().Be(3m);
+        var retained = detail.TrialBalance.Single(b => b.ExternalAccountId == "retained");
+        (retained.Debit - retained.Credit).Should().Be(prior);
+        detail.TrialBalance.Sum(b => b.Debit - b.Credit).Should().Be(0m);
+        store.Verifications.Should().ContainSingle().Which.Success.Should().BeTrue();
+        var balanceRequest = handler.Requests.Should().ContainSingle(r => r.Body.Contains("AS prioryearbalance", StringComparison.Ordinal)).Which;
+        using var document = JsonDocument.Parse(balanceRequest.Body);
+        var query = document.RootElement.GetProperty("q").GetString()!;
+        query.Should().Contain("t.trandate < TO_DATE('2026-01-01', 'YYYY-MM-DD')");
+        query.Should().Contain("tl.subsidiary = 2").And.Contain("al.accountingbook = 1");
+        query.Should().Contain("AS balance");
+    }
+
+    [Fact]
+    public async Task NetSuite_OffsettingPriorYearAccountsAreBothNormalized()
     {
         var store = new ExternalGlTestStore("netsuite");
         using var handler = new ExternalGlTestHandler((request, body) =>
         {
+            if (body.Contains("FROM account ORDER", StringComparison.Ordinal))
+                return ExternalGlTestHandler.Page([
+                    ExternalGlTestData.NetSuiteAccount("cash", "Bank"),
+                    ExternalGlTestData.NetSuiteAccount("capital", "Equity"),
+                    ExternalGlTestData.NetSuiteAccount("retained", "Equity", "RetEarnings"),
+                    ExternalGlTestData.NetSuiteAccount("income", "Income"),
+                    ExternalGlTestData.NetSuiteAccount("expense", "Expense")]);
             if (body.Contains("AS prioryearbalance", StringComparison.Ordinal))
-                return ExternalGlTestHandler.Page([new { accountid = "prior-year-pnl", prioryearbalance = balance }]);
+                return ExternalGlTestHandler.Page([
+                    ExternalGlTestData.NetSuiteBalance("income", -120m, -100m),
+                    ExternalGlTestData.NetSuiteBalance("expense", 120m, 100m)]);
             return ExternalGlTestData.Respond(request, body);
         });
         using var client = new HttpClient(handler);
-        await ExternalGlTestData.Provider("netsuite", store, client).Invoking(p => p.ImportAsync(ExternalGlTestData.Request("netsuite")))
-            .Should().ThrowAsync<InvalidOperationException>();
-        store.Verifications.Should().ContainSingle().Which.Success.Should().BeFalse();
-        var guardRequest = handler.Requests.Should().ContainSingle(r => r.Body.Contains("AS prioryearbalance", StringComparison.Ordinal)).Which;
-        using var document = JsonDocument.Parse(guardRequest.Body);
-        var query = document.RootElement.GetProperty("q").GetString()!;
-        query.Should().Contain($"'{accountType.ToUpperInvariant()}'");
-        query.Should().Contain("t.trandate < TO_DATE('2026-01-01', 'YYYY-MM-DD')");
-        query.Should().Contain("tl.subsidiary = 2").And.Contain("al.accountingbook = 1");
-        handler.Requests.Should().NotContain(r => r.Body.Contains("AS balance", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public async Task NetSuite_PriorYearProfitAndLossAccountsCannotOffsetAwayTheReportingGap()
-    {
-        var store = new ExternalGlTestStore("netsuite");
-        using var handler = new ExternalGlTestHandler((request, body) =>
-            body.Contains("AS prioryearbalance", StringComparison.Ordinal)
-                ? ExternalGlTestHandler.Page([
-                    new { accountid = "income", prioryearbalance = "-100.00" },
-                    new { accountid = "expense", prioryearbalance = "100.00" }
-                ])
-                : ExternalGlTestData.Respond(request, body));
-        using var client = new HttpClient(handler);
-        await ExternalGlTestData.Provider("netsuite", store, client).Invoking(p => p.ImportAsync(ExternalGlTestData.Request("netsuite")))
-            .Should().ThrowAsync<InvalidOperationException>();
-        store.Verifications.Should().ContainSingle().Which.Success.Should().BeFalse();
+        var detail = await ExternalGlTestData.Provider("netsuite", store, client).ImportAsync(ExternalGlTestData.Request("netsuite"));
+        detail.TrialBalance.Single(b => b.ExternalAccountId == "income").Credit.Should().Be(20m);
+        detail.TrialBalance.Single(b => b.ExternalAccountId == "expense").Debit.Should().Be(20m);
+        detail.TrialBalance.Should().HaveCount(2);
+        store.Verifications.Should().ContainSingle().Which.Success.Should().BeTrue();
     }
 
     [Fact]
@@ -155,7 +176,8 @@ public sealed class ExternalGlFailureBoundaryTests
                         acctnumber = $"A{i}",
                         acctname = $"Account {i}",
                         accttype = "Bank",
-                        isinactive = "F"
+                        isinactive = "F",
+                        specialaccounttype = "NONE"
                     }).ToArray(), more: true);
                 using var original = ExternalGlTestData.Respond(request, body);
                 using var doc = JsonDocument.Parse(original.Content.ReadAsStringAsync().GetAwaiter().GetResult());
@@ -165,7 +187,7 @@ public sealed class ExternalGlFailureBoundaryTests
         });
         using var client = new HttpClient(handler);
         var detail = await ExternalGlTestData.Provider("netsuite", store, client).ImportAsync(ExternalGlTestData.Request("netsuite"));
-        detail.ChartAccounts.Should().HaveCount(1002);
+        detail.ChartAccounts.Should().HaveCount(1003);
         handler.Requests.Should().Contain(r => r.Uri.Query == "?limit=1000&offset=1000");
     }
 

@@ -63,8 +63,8 @@ Release workflow. Workflow changes require explicit human governance review.
 
 ## Legacy Migration
 
-- Source content: [archive/docs/operations/web-workstation-installer.md](../../archive/docs/operations/web-workstation-installer.md)
-- Archive copy: [archive/docs/operations/web-workstation-installer.md](../../archive/docs/operations/web-workstation-installer.md)
+- Source content: [archive/docs/operations/web-workstation-installer.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/web-workstation-installer.md)
+- Archive copy: [archive/docs/operations/web-workstation-installer.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/web-workstation-installer.md)
 
 ## Related operator pages
 

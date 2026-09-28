@@ -1301,7 +1301,7 @@ Consumes the same shared contracts PR 3 exposes; no new read model, no forked pr
       endpoint from view models directly
 - [ ] View-model tests in `tests/Meridian.Wpf.Tests`, including the escalated and
       rejected-with-multiple-violations cases
-- [ ] Cross-check against `docs/development/wpf-web-ui-alignment-plan.md` (`W8-WPF-PARITY-001`) and
+- [ ] Cross-check against `docs/engineering/plans/wpf-web-ui-alignment-plan.md` (`W8-WPF-PARITY-001`) and
       record the surface there
 
 ### Wrap-up (final PR)

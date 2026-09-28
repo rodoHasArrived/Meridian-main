@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-09-26
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.DataIntegration
@@ -19,9 +19,11 @@ The shared base serializes token rotation, persists rotated refresh tokens in th
 provider vault, and sanitizes transport failures. Provider adapters own scope,
 pagination, strict mapping, and controlled export validation. They never post
 journals. Imports reject unbalanced or malformed trial balances. Export review lines
-retain gross debit/credit account totals. NetSuite imports with nonzero prior-year
-income-statement balances fail closed pending native retained-earnings reporting
-support; ACCT-CHECKLIST-06 remains open. See [External GL Providers](../../docs/operators/external-gl-providers.md)
+retain gross debit/credit account totals. NetSuite standard date-based trial balances
+normalize calendar-year income-statement balances and carry prior-year net income
+into the provider-identified system retained-earnings account, preserving direct
+postings. Both journal and balance reads exclude period-end journals; ambiguous
+system account identity fails closed. See [External GL Providers](../../docs/operators/external-gl-providers.md)
 for supported scope, permissions, failure recovery and human review evidence.
 
 ## OAuth token ownership

@@ -59,7 +59,7 @@ This directory contains documentation about the system's design, architectural d
 | [Domain Boundaries](domains.md) | Domain model responsibilities |
 | [Security Master Extensibility Review](security-master-extensibility-review.md) | Cross-asset extensibility assessment of the Security Master: asset model normalization, identifier resolution, projection coverage, provenance depth, editable-workflow reach, and refactoring priorities |
 | [Security Master Identifier Conflict Detection](security-master-identifier-conflict-detection.md) | Canonical identifier equality, validity-window overlap, complete claimant-pair detection, and indexed rebuild behavior |
-| [Security-Identified Open-Lot Convergence Blueprint](security-lot-convergence-blueprint.md) | Target contract and staged migration for SecurityId-keyed unit/face lots, acquisition FX, relief, amortization, and corporate-action continuity |
+| [Security-Identified Open-Lot Convergence Blueprint](../engineering/blueprints/security-lot-convergence-blueprint.md) | Target contract and staged migration for SecurityId-keyed unit/face lots, acquisition FX, relief, amortization, and corporate-action continuity |
 | [C4 Diagrams Reference](c4-diagrams.md) | C4 views plus the runtime, workstation, Security Master, and fund-ops diagram catalog |
 | [Crystallized Storage Format](crystallized-storage-format.md) | Storage format specification |
 | [Ledger Architecture](ledger-architecture.md) | Ledger, portfolio, Security Master expected accounting, and accounting architecture notes |
@@ -74,11 +74,11 @@ This directory contains documentation about the system's design, architectural d
 | [Evidence Workflow Fabric](evidence-workflow-fabric.md) | Cross-workflow evidence packets, lineage, validation, and manifest-only export architecture |
 | [Reporting Workstation Model](reporting-workstation-model.md) | Reporting production pipeline, controlled state vocabularies, reporting period, health gates, and change-since-review |
 | [Stakeholder Product Charter](../product/meridian-design-document.md) | Product-facing strategy and capability model used for current direction framing |
-| [Trading Workstation Migration Blueprint (Archived)](../../archive/docs/plans/trading-workstation-migration-blueprint.md) | Historical migration model retained for reference; active architecture execution posture is now under canonical product/engineering documentation |
-| [Current Direction and Status (Archived)](../../archive/docs/plans/current-direction-and-status.md) | Historical planning interpretation retained for context; active direction now in `docs/product/` |
+| [Trading Workstation Migration Blueprint (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/trading-workstation-migration-blueprint.md) | Historical migration model retained for reference; active architecture execution posture is now under canonical product/engineering documentation |
+| [Current Direction and Status (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md) | Historical planning interpretation retained for context; active direction now in `docs/product/` |
 | [MCP Server](layer-boundaries.md#dependency-graph) | MCP tool server — dependency position and boundary rules |
 
-Historical UI redesign notes now live in [`../../archive/docs/assessments/ui-redesign.md`](../../archive/docs/assessments/ui-redesign.md).
+Historical UI redesign notes now live in [`../../archive/docs/assessments/ui-redesign.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/ui-redesign.md).
 
 ## Related
 

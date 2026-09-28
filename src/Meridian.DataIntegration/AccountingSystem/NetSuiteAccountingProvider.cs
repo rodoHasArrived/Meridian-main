@@ -21,7 +21,7 @@ public sealed class NetSuiteAccountingProvider(IProviderCredentialStore store, H
     protected override string CompanyField => "AccountId";
     protected override string[] ExportControls => ["subsidiary-scope", "classification-segments", "entity-mapping", "intercompany-controls"];
     protected override string ConnectionScope(ProviderCredentialReadResult connection)
-        => $"netsuite:account:{Account(connection)}:subsidiary:{NumericField(connection, "SubsidiaryId")}:book:{NumericField(connection, "AccountingBookId")}";
+        => $"netsuite:account:{Account(connection)}:subsidiary:{NumericField(connection, "SubsidiaryId")}:book:{NumericField(connection, "AccountingBookId")}:basis:date-accrual-calendar-year";
     protected override Uri TokenEndpoint(ProviderCredentialReadResult connection)
         => new($"{BaseUrl(connection)}/services/rest/auth/oauth2/v1/token");
 
@@ -87,27 +87,21 @@ public sealed class NetSuiteAccountingProvider(IProviderCredentialStore store, H
         var currency = await BaseCurrencyAsync(connection, token, ct).ConfigureAwait(false);
         var scope = ConnectionScope(connection);
         var accountRows = await QueryAsync(connection, token,
-            "SELECT id, acctnumber, acctname, accttype, isinactive, parent FROM account ORDER BY id", ct).ConfigureAwait(false);
+            "SELECT id, acctnumber, acctname, accttype, isinactive, parent, NVL(sspecacct, 'NONE') AS specialaccounttype FROM account ORDER BY id", ct).ConfigureAwait(false);
         var accounts = accountRows.Select(row => new AccountingSystemChartAccountDto(RequiredText(row, "id"),
             Text(row, "acctnumber"), RequiredText(row, "acctname"), RequiredText(row, "accttype"), currency,
             RequiredText(row, "isinactive") == "F", Text(row, "parent"), $"{scope}:account:{RequiredText(row, "id")}")).ToArray();
         var lookup = accounts.ToDictionary(a => a.ExternalAccountId, StringComparer.Ordinal);
+        // The system account can be renamed or renumbered. Never infer its identity from a label.
+        var retainedEarningsIds = accountRows.Where(row => RequiredText(row, "specialaccounttype") == "RetEarnings")
+            .Select(row => RequiredText(row, "id")).ToArray();
+        if (retainedEarningsIds.Length != 1 || !lookup[retainedEarningsIds[0]].IsActive ||
+            !string.Equals(lookup[retainedEarningsIds[0]].AccountType, "Equity", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("NetSuite must expose exactly one active system retained-earnings equity account.");
         var joins = "FROM transaction t INNER JOIN transactionaccountingline al ON al.transaction = t.id " +
             "INNER JOIN transactionline tl ON tl.transaction = al.transaction AND tl.id = al.transactionline ";
-        var filters = $"WHERE t.posting = 'T' AND al.posting = 'T' AND al.account IS NOT NULL AND tl.subsidiary = {NumericField(connection, "SubsidiaryId")} " +
+        var filters = $"WHERE t.posting = 'T' AND t.type <> 'PEJrnl' AND al.posting = 'T' AND al.account IS NOT NULL AND tl.subsidiary = {NumericField(connection, "SubsidiaryId")} " +
             $"AND al.accountingbook = {NumericField(connection, "AccountingBookId")} AND t.trandate <= TO_DATE('{request.PeriodEnd:yyyy-MM-dd}', 'YYYY-MM-DD') ";
-        // NetSuite's date-based trial balance rolls prior-calendar-year income into retained
-        // earnings without posting a closing entry. A cumulative accounting-line sum cannot
-        // represent that report when any P&L account has a nonzero prior-year balance.
-        var calendarYearStart = new DateOnly(request.PeriodEnd!.Value.Year, 1, 1);
-        var priorYearBalances = await QueryAsync(connection, token,
-            "SELECT al.account AS accountid, SUM(NVL(al.debit, 0) - NVL(al.credit, 0)) AS prioryearbalance " +
-            joins + "INNER JOIN account a ON a.id = al.account " + filters +
-            $"AND t.trandate < TO_DATE('{calendarYearStart:yyyy-MM-dd}', 'YYYY-MM-DD') " +
-            "AND UPPER(a.accttype) IN ('INCOME', 'EXPENSE', 'OTHINCOME', 'OTHEXPENSE', 'COGS') " +
-            "GROUP BY al.account ORDER BY al.account", ct).ConfigureAwait(false);
-        if (priorYearBalances.Any(row => Amount(RequiredText(row, "prioryearbalance")) != 0m))
-            throw new InvalidOperationException("NetSuite prior-year income statement balances require retained-earnings normalization before trial-balance import.");
         var journalRows = await QueryAsync(connection, token,
             "SELECT t.id AS journalid, TO_CHAR(t.trandate, 'YYYY-MM-DD') AS accountingdate, t.memo, al.transactionline AS lineid, al.account AS accountid, NVL(al.debit, 0) AS debit, NVL(al.credit, 0) AS credit " +
             joins + filters + $"AND t.trandate >= TO_DATE('{request.PeriodStart:yyyy-MM-dd}', 'YYYY-MM-DD') ORDER BY t.id, al.transactionline, al.account", ct).ConfigureAwait(false);
@@ -133,17 +127,43 @@ public sealed class NetSuiteAccountingProvider(IProviderCredentialStore store, H
             return new AccountingSystemJournalEntryDto(group.Key, date, Text(group.First(), "memo"), currency,
                 lines.Sum(l => l.Debit), lines.Sum(l => l.Credit), lines, evidence);
         }).ToArray();
+        // Standard date-based Trial Balance uses the calendar year, independently of the
+        // requested journal start and subsidiary fiscal calendar. Period-end journals belong
+        // to the separate post-closing report and are excluded from both read populations.
+        var calendarYearStart = new DateOnly(request.PeriodEnd!.Value.Year, 1, 1);
         var balanceRows = await QueryAsync(connection, token,
-            "SELECT al.account AS accountid, SUM(NVL(al.debit, 0) - NVL(al.credit, 0)) AS balance " + joins + filters + "GROUP BY al.account ORDER BY al.account", ct).ConfigureAwait(false);
-        var balances = balanceRows.Select(row =>
+            "SELECT al.account AS accountid, SUM(NVL(al.debit, 0) - NVL(al.credit, 0)) AS balance, " +
+            $"SUM(CASE WHEN t.trandate < TO_DATE('{calendarYearStart:yyyy-MM-dd}', 'YYYY-MM-DD') " +
+            "THEN NVL(al.debit, 0) - NVL(al.credit, 0) ELSE 0 END) AS prioryearbalance " +
+            joins + filters + "GROUP BY al.account ORDER BY al.account", ct).ConfigureAwait(false);
+        var amounts = new Dictionary<string, decimal>(StringComparer.Ordinal);
+        var priorIncome = 0m;
+        foreach (var row in balanceRows)
         {
             var account = lookup[RequiredText(row, "accountid")];
             var amount = Amount(RequiredText(row, "balance"));
+            var priorYear = Amount(RequiredText(row, "prioryearbalance"));
+            if (account.AccountType.ToUpperInvariant() is "INCOME" or "EXPENSE" or "OTHINCOME" or "OTHEXPENSE" or "COGS")
+            {
+                amount -= priorYear;
+                priorIncome += priorYear;
+            }
+            // Add rejects duplicate identities even if the duplicate amounts would offset.
+            amounts.Add(account.ExternalAccountId, amount);
+        }
+        var retainedId = retainedEarningsIds[0];
+        if (priorIncome != 0m)
+            amounts[retainedId] = amounts.GetValueOrDefault(retainedId) + priorIncome;
+        var balances = amounts.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair =>
+        {
+            var account = lookup[pair.Key];
+            var amount = pair.Value;
             return new AccountingSystemTrialBalanceLineDto(account.ExternalAccountId, account.AccountCode, account.DisplayName,
                 account.AccountType, Math.Max(amount, 0), Math.Max(-amount, 0), currency, request.PeriodEnd!.Value,
-                $"{scope}:trial-balance:{request.PeriodEnd:yyyy-MM-dd}:{account.ExternalAccountId}");
+                $"{scope}:trial-balance:date-accrual-calendar-year:{request.PeriodEnd:yyyy-MM-dd}:{account.ExternalAccountId}:retained-earnings:{retainedId}");
         }).ToArray();
         return Detail(connection, request, accounts, journals, balances,
-            "NetSuite evidence is limited to the selected subsidiary and primary accounting book in subsidiary base currency; consolidated and secondary-book reporting are not supported.");
+            "NetSuite standard date-based accrual trial balance uses calendar-year income and expense balances with prior-year net income in system retained earnings; period-end journals are excluded.",
+            "NetSuite evidence is limited to the selected subsidiary and primary accounting book in subsidiary base currency; consolidated, secondary-book, period-based and post-closing reporting are not supported.");
     }
 }
