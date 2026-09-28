@@ -45,6 +45,8 @@ The workflow lane requires actionlint 1.7.12 on PATH and Python dependencies fro
 `build/scripts/ci/requirements.txt`. Hosted installation verifies the actionlint archive digest.
 External actions use verified full commit SHAs with version comments; Dependabot maintains
 the pins. CodeQL keeps manual C# extraction and its measured cold-restore policy.
+SVGs, the dashboard HTML input and generated workstation text assets use LF checkout line
+endings so embedded bytes, bundle hashes and freshness checks match on Windows and Linux.
 
 Required .NET/Windows slices need fresh TRX evidence and nonzero passing discovery. Browser
 batches need fresh JSON evidence for every selected file. Existing summary fields are retained,
