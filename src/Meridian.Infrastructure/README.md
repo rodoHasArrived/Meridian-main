@@ -34,6 +34,13 @@ This layer owns external integration details while depending on lower contracts 
 
 Use this module for provider implementation, external service integration, and adapter behavior.
 
+The [adapter readiness registry](../../docs/source/data/adapter-readiness.yml) owns the source-level
+inventory of every direct adapter family. Its [generated readiness matrix](../../docs/source/generated/adapter-readiness-matrix.md)
+records capability claims, credentials and SDK dependencies, risks, degradation behavior, registration,
+targeted evidence, ownership, and next actions. Readiness describes the implementation and its linked
+evidence; live-provider validation and operator sign-off remain governed by the
+[provider validation matrix](../../docs/reference/provider-validation-matrix.md).
+
 `ProviderCapabilityDescriptorCatalog` owns built-in adapter types and factories for streaming,
 historical backfill, symbol search, corporate actions, options, and brokerage. `ProviderFactory`
 and `AddProviderServices` consume those same descriptors; the merged catalog derives its six

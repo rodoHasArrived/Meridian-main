@@ -336,6 +336,13 @@ verify_docs() {
   run_step "Validate source READMEs" \
     "$python_cmd" build/scripts/docs/validate-source-readmes.py --summary
 
+  run_step "Validate adapter readiness and generated matrix" \
+    "$python_cmd" build/scripts/docs/run-docs-automation.py \
+      --scripts validate-adapter-readiness,check-adapter-readiness-matrix
+
+  run_step "Validate adapter readiness automation tests" \
+    bash -c '"$0" -m unittest tests/scripts/test_adapter_readiness.py tests/scripts/test_render_adapter_readiness.py' "$python_cmd"
+
   run_step "Scan source TODOs" \
     "$python_cmd" build/scripts/docs/scan-source-todos.py --summary
 

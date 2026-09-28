@@ -283,6 +283,12 @@ jobs:
       - name: Validate source READMEs
         run: python3 build/scripts/docs/validate-source-readmes.py --summary
 
+      - name: Validate adapter readiness and generated matrix
+        run: |
+          python3 -m pip install --requirement build/scripts/docs/requirements.txt
+          python3 build/scripts/docs/run-docs-automation.py --scripts validate-adapter-readiness,check-adapter-readiness-matrix
+          python3 -m unittest tests/scripts/test_adapter_readiness.py tests/scripts/test_render_adapter_readiness.py
+
       - name: Scan source TODOs
         run: python3 build/scripts/docs/scan-source-todos.py --summary
 

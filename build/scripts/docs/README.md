@@ -52,6 +52,24 @@ front matter, required sections, and generated block markers.
 python3 build/scripts/docs/validate-source-readmes.py --summary
 ```
 
+### validate-adapter-readiness.py and render-adapter-readiness.py
+
+Validate `docs/source/data/adapter-readiness.yml` against the canonical provider IDs and aliases,
+`ProviderCapabilityDescriptorCatalog`, direct adapter folders, declared implementation types,
+registration symbols, and targeted test/source evidence. The registry records implementation
+readiness; operator validation and release sign-off retain their existing owners.
+
+```bash
+python3 build/scripts/docs/validate-adapter-readiness.py --summary
+python3 build/scripts/docs/render-adapter-readiness.py
+python3 build/scripts/docs/render-adapter-readiness.py --check
+python3 -m unittest tests/scripts/test_adapter_readiness.py tests/scripts/test_render_adapter_readiness.py
+```
+
+The matrix is generated under `docs/source/generated/`. Documentation automation's `quick`,
+`core`, and `full` profiles validate the registry and reject stale output without rewriting it.
+The required `verify-docs` lane also runs the validator's regression tests.
+
 ### sync-source-readmes.py
 
 Creates missing source READMEs from `docs/source/data/source-modules.yml` so new modules can be
