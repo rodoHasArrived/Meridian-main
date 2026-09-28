@@ -1,11 +1,11 @@
 {
-  "total_files": 675,
-  "total_lines": 146034,
+  "total_files": 676,
+  "total_lines": 146104,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 272,
-  "average_lines": 216.3,
+  "todo_count": 273,
+  "average_lines": 216.1,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2242,6 +2242,14 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/ci-cd-optimization.md",
+      "line_count": 66,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/dead-code-inventory.md",
       "line_count": 55,
       "has_heading": true,
@@ -2347,7 +2355,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 320,
+      "line_count": 321,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2731,7 +2739,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11054,
+      "line_count": 11057,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

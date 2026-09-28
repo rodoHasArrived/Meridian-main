@@ -1116,6 +1116,7 @@ Meridian-main
 │       │   ├── check-test-skip-register.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
+│       │   ├── ci-metrics.py
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
@@ -1739,6 +1740,7 @@ Meridian-main
 │   │   │   ├── README.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   └── wpf-web-ui-alignment-plan.md
+│   │   ├── ci-cd-optimization.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
 │   │   ├── etl-execution-ownership.md
@@ -10871,6 +10873,7 @@ Meridian-main
 │   │   ├── test_check_store_concurrency_posture.py
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_workflow_docs_parity.py
+│   │   ├── test_ci_metrics.py
 │   │   ├── test_ci_summary.py
 │   │   ├── test_ci_workflow_contract.py
 │   │   ├── test_cleanup_generated_script.py
