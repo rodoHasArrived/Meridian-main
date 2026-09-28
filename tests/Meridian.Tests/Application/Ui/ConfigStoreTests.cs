@@ -5,6 +5,7 @@ using FluentAssertions;
 using Meridian.Application.UI;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
+using Meridian.DataIntegration.Credentials;
 using System.Text.Json;
 
 namespace Meridian.Tests.Application.UI;
@@ -168,8 +169,10 @@ public sealed class ConfigStoreTests : IDisposable
         (await service.GetConnectionsForTenantAsync("tenant-a")).Should().ContainSingle(row => row.ConnectionId == "owned");
     }
 
-    [Fact]
-    public async Task TenantConnection_RetainsTheProvidersCanonicalCredentialEnvironment()
+    [Theory]
+    [InlineData("live")]
+    [InlineData("production")]
+    public async Task TenantConnection_RetainsTheProvidersCanonicalCredentialEnvironment(string requestedEnvironment)
     {
         var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
         await File.WriteAllTextAsync(path, "{}");
@@ -178,7 +181,7 @@ public sealed class ConfigStoreTests : IDisposable
 
         var created = await service.UpsertForTenantAsync(request, "tenant-a", "Live");
         var scope = await service.GetCredentialScopeForTenantAsync("ledger", "tenant-a");
-        var updated = await service.UpsertForTenantAsync(request with { DisplayName = "Renamed" }, "tenant-a", "production");
+        var updated = await service.UpsertForTenantAsync(request with { DisplayName = "Renamed" }, "tenant-a", requestedEnvironment);
 
         created.ConnectionId.Should().Be("ledger");
         scope!.Environment.Should().Be("production", "the scoped vault only accepts the canonical environment");
@@ -187,10 +190,13 @@ public sealed class ConfigStoreTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpsertForTenantAsync(request, "tenant-a", "sandbox"));
     }
 
-    [Fact]
-    public async Task TenantConnection_RetainedUnderAnEnvironmentAliasMovesToTheCanonicalSpelling()
+    [Theory]
+    [InlineData("live")]
+    [InlineData("production")]
+    public async Task TenantConnection_RetainedEnvironmentAliasCannotOrphanScopedOAuthTokens(string requestedEnvironment)
     {
-        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        var root = CreateTempDirectory();
+        var path = Path.Combine(root, "appsettings.json");
         var legacy = new ProviderConnectionConfig("ledger", "quickbooks", "Ledger", ExternalAccountId: "realm-a",
             TenantId: "tenant-a", CredentialEnvironment: "live");
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new AppConfig() with
@@ -198,11 +204,33 @@ public sealed class ConfigStoreTests : IDisposable
             ProviderConnections = new ProviderConnectionsConfig(Connections: [legacy])
         }));
         var service = new ProviderConnectionService(new ConfigStore(path));
+        var originalScope = (await service.GetCredentialScopeForTenantAsync("ledger", "tenant-a"))!;
+        var vaultRoot = Path.Combine(root, "data");
+        var vault = new FileProviderCredentialStore(vaultRoot);
+        var token = new OAuthToken("retained-access-token", "Bearer", DateTimeOffset.UtcNow.AddHours(1), "retained-refresh-token");
+        await vault.SaveScopedOAuthTokenAsync("quickbooks", token, originalScope);
+        var configBefore = await File.ReadAllBytesAsync(path);
+        var vaultDirectory = Path.GetDirectoryName(vault.VaultPath)!;
+        var vaultBefore = Directory.GetFiles(vaultDirectory).ToDictionary(file => file, File.ReadAllBytes);
 
-        await service.UpsertForTenantAsync(new CreateProviderConnectionRequest("ledger", "quickbooks", "Ledger", ExternalAccountId: "realm-a"),
-            "tenant-a", "live");
+        var update = () => service.UpsertForTenantAsync(new CreateProviderConnectionRequest("ledger", "quickbooks", "Renamed", ExternalAccountId: "realm-a"),
+            "tenant-a", requestedEnvironment);
 
-        (await service.GetCredentialScopeForTenantAsync("ledger", "tenant-a"))!.Environment.Should().Be("production");
+        await update.Should().ThrowAsync<InvalidOperationException>().WithMessage("Existing credential ownership cannot be reassigned.");
+
+        (await File.ReadAllBytesAsync(path)).Should().Equal(configBefore);
+        Directory.GetFiles(vaultDirectory).Should().BeEquivalentTo(vaultBefore.Keys);
+        foreach (var (file, bytes) in vaultBefore)
+            (await File.ReadAllBytesAsync(file)).Should().Equal(bytes);
+        var reloadedScope = (await new ProviderConnectionService(new ConfigStore(path))
+            .GetCredentialScopeForTenantAsync("ledger", "tenant-a"))!;
+        reloadedScope.Should().Be(originalScope);
+        reloadedScope.Environment.Should().Be("live");
+        var reopenedVault = new FileProviderCredentialStore(vaultRoot);
+        (await reopenedVault.ReadScopedOAuthTokensAsync(reloadedScope)).Should().ContainSingle()
+            .Which.Value.Should().Be(token, "reloading retained ownership must still resolve its persisted OAuth token");
+        (await reopenedVault.ReadScopedOAuthTokensAsync(new ProviderCredentialScope("tenant-a", "ledger", "realm-a", "production")))
+            .Should().BeEmpty("a normal connection update must not move credentials into a different scope");
     }
 
     [Fact]
