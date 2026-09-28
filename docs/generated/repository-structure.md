@@ -1866,6 +1866,7 @@ Meridian-main
 │   ├── operators
 │   │   ├── browser-workstation-installer.md
 │   │   ├── deployment-packaging.md
+│   │   ├── external-gl-providers.md
 │   │   ├── failover-and-recovery.md
 │   │   ├── fund-ops-persistence-cutover.md
 │   │   ├── fund-structure-tenant-backfill.md
@@ -4262,10 +4263,14 @@ Meridian-main
 │   │   ├── AccountingSystem
 │   │   │   ├── Fixtures
 │   │   │   │   └── FixtureAccountingProviders.cs
-│   │   │   └── QuickBooks
-│   │   │       ├── QuickBooksFixtureAccountingProvider.cs
-│   │   │       ├── QuickBooksOnlineAccountingProvider.cs
-│   │   │       └── QuickBooksOnlineProviderCredentialConnectionStore.cs
+│   │   │   ├── QuickBooks
+│   │   │   │   ├── QuickBooksFixtureAccountingProvider.cs
+│   │   │   │   ├── QuickBooksOnlineAccountingProvider.cs
+│   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStore.cs
+│   │   │   ├── AccountingProviderJson.cs
+│   │   │   ├── CredentialedAccountingProvider.cs
+│   │   │   ├── NetSuiteAccountingProvider.cs
+│   │   │   └── XeroAccountingProvider.cs
 │   │   ├── Canonicalization
 │   │   │   ├── CanonicalizationMetrics.cs
 │   │   │   ├── CanonicalizingPublisher.cs
@@ -4547,7 +4552,8 @@ Meridian-main
 │   │   │   ├── AccountingCloseServices.cs
 │   │   │   └── AccountingReportPackageService.cs
 │   │   ├── AccountingSystem
-│   │   │   └── AccountingSystemIntegrationService.cs
+│   │   │   ├── AccountingSystemIntegrationService.cs
+│   │   │   └── AccountingSystemIntegrationService.Reconciliation.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -5348,6 +5354,7 @@ Meridian-main
 │   │   └── Meridian.ProcessIsolation.csproj
 │   ├── Meridian.ProviderSdk
 │   │   ├── AccountingSystem
+│   │   │   ├── IAccountingSystemExportValidator.cs
 │   │   │   └── IAccountingSystemProvider.cs
 │   │   ├── Backfill
 │   │   │   └── BackfillJob.cs
@@ -9405,8 +9412,17 @@ Meridian-main
 │   │   │   └── CryptoProjectionServiceTests.cs
 │   │   ├── DataIntegration
 │   │   │   ├── AccountingSystem
-│   │   │   │   └── QuickBooks
-│   │   │   │       └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── QuickBooks
+│   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   │   ├── ExternalGlConnectionLifecycleTests.cs
+│   │   │   │   ├── ExternalGlCredentialConcurrencyTests.cs
+│   │   │   │   ├── ExternalGlCredentialRecoveryTests.cs
+│   │   │   │   ├── ExternalGlFailureBoundaryTests.cs
+│   │   │   │   ├── ExternalGlLiveProviderTests.cs
+│   │   │   │   ├── ExternalGlRateLimitTests.cs
+│   │   │   │   ├── ExternalGlScopeTests.cs
+│   │   │   │   ├── ExternalGlTestSupport.cs
+│   │   │   │   └── NetSuiteTrialBalanceTests.cs
 │   │   │   ├── Canonicalization
 │   │   │   │   ├── Fixtures
 │   │   │   │   │   ├── alpaca_trade_extended_hours.json
@@ -10291,7 +10307,9 @@ Meridian-main
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
 │   │   │   ├── AccountingProjectionQueryServiceTests.cs
 │   │   │   ├── AccountingReportPackageServiceTests.cs
+│   │   │   ├── AccountingSystemIntegrationServiceTests.BalancePeriods.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
+│   │   │   ├── AccountingSystemIntegrationServiceTests.LiveProviders.cs
 │   │   │   ├── AggregatePortfolioExposureProviderTests.cs
 │   │   │   ├── AlpacaBrokerageConnectionServiceTests.cs
 │   │   │   ├── AlpacaCredentialEnvironmentCollection.cs

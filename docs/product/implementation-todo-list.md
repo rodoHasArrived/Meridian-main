@@ -463,6 +463,62 @@ Acceptance evidence produced for this FINOPS slice:
 - `docs/roadmap/data/roadmap-items.yml`
 - `docs/roadmap/generated/roadmap-register.md`
 
+## ACCT-CHECKLIST-06: External GL provider depth
+
+- [x] Implement [#2752](https://github.com/rodoHasArrived/Meridian-main/issues/2752): credentialed Xero and NetSuite import adapters plus provider-owned controlled export certification.
+
+[PR #2998](https://github.com/rodoHasArrived/Meridian-main/pull/2998) implements
+read-only credentialed adapters, scoped retained import/control evidence and
+provider checks at export creation, certification and manifest read. The
+[operator procedure](../operators/external-gl-providers.md) defines the supported
+scope and deployment evidence. The former checklist is an
+[archived snapshot](../../archive/docs/summaries/accounting-productization-checklist.md);
+its historical checkbox is not current acceptance authority.
+
+The September 28 implementation resolves the NetSuite reporting gap identified in
+the September 26 review. Standard date-based accrual Trial Balance evidence keeps
+calendar-year income and expense balances, moves prior-year net income or loss into
+the system retained-earnings account identified by provider metadata, and preserves
+direct retained-earnings postings. Period-end journals are excluded. Ambiguous
+identity, duplicate or malformed aggregates and unbalanced evidence fail closed.
+Subsequent review fixes retain complete rotated credentials in both vault generations,
+scope NetSuite chart accounts through direct/inherited subsidiary assignments, and
+give unnumbered accounts stable identities. The report balance basis is retained
+separately from the journal/export period, enabling cumulative and year-to-date
+reconciliation while generating only requested-period activity for export review.
+Currency mismatches remain breaks even when numeric balances match or a zero balance
+is omitted from the provider report. Generated export lines retain the Meridian book
+currency, and provider certification refuses implicit currency conversion.
+Accounting effective dates control report/export windows, and live accrual
+reconciliation requires a resolved Primary or Gaap book at every review boundary.
+Xero payroll expense types join the income-year roll-forward. Transport timeouts
+record sanitized failures while caller cancellation keeps its cancellation semantics.
+Credential replacement requires fresh verification at all three export boundaries.
+Connection verification persists one audit event with the requesting operator's
+identity. Xero GET reads honor bounded, cancellable `Retry-After` delays while
+retaining their journal offset; exhausted or unsupported limits fail closed.
+Credential rotation and verification use conditional vault writes so concurrent
+operator replacements remain authoritative. Provider-basis reconciliation excludes
+Meridian period-close journals and reversals, resolves certified account mappings
+by external identity, and honors the package's selected mapping profile throughout
+export review. Ambiguous mappings fail closed.
+
+`NetSuiteTrialBalanceTests` and the external GL regression suites cover multi-year
+balances, every income-statement type, the year boundary, offsetting accounts,
+renamed system accounts, direct retained postings and exact subsidiary/book scope.
+Shared certification regressions cover gross debit/credit account activity,
+retained human controls, current connection/import scope and unchanged manifests.
+Live posting stays disabled. Release acceptance requires `bash scripts/ci.sh` and
+passing required checks on the current [PR head](https://github.com/rodoHasArrived/Meridian-main/pull/2998/checks);
+the PR records execution results. Customer-tenant reconciliation remains a
+deployment requirement, separate from automated implementation coverage.
+
+Evidence: `ExternalGlLiveProviderTests`, `ExternalGlFailureBoundaryTests`, and
+`AccountingSystemIntegrationServiceTests.LiveProviders` exercise HTTP contract
+doubles and retained export controls. No customer-tenant smoke test, deployment
+reconciliation or vendor approval is claimed. Live posting remains disabled and
+requires separate approval and implementation.
+
 ## W9-ASSET-010 Complete: Asset Accounting Event Spine
 
 - [x] Complete all eight canonical event kinds—acquisition, capitalization, valuation, income, corporate action, impairment, depreciation/amortization, and disposal—using typed retained evidence and authoritative Security Master, position, ledger, period, accounting-basis, and promoted-rule-pack inputs before candidate drafting.

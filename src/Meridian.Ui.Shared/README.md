@@ -16,6 +16,14 @@ together after resolving deployment dependencies. The scheduling gate uses that 
 so a successful first delivery cycle cannot leave a stale peer blocker. Bootstrap requires valid
 worker options; failed, stopped, or stale workers and unrelated deployment blockers remain refused.
 
+The shared workstation registers credentialed Xero and NetSuite accounting
+providers alongside the existing fixtures. Their HTTP client disables redirects;
+provider-neutral credential setup and connection verification expose them to
+both workstation lanes. Transport and export-control policy stay in Data Integration.
+Connection verification records the provider's expected credential generation once
+with the requesting actor. Concurrent replacements reject stale results and return
+a blocked verification response without changing the replacement's status.
+
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
 session resolution recheck the account scope after runtime account changes. Unpartitioned
