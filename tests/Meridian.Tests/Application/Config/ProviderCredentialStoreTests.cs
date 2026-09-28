@@ -203,7 +203,8 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         replacement.Get("ApiKey").Should().Be("replacement-key");
         replacement.CredentialGeneration.Should().NotBe("owned-generation");
         await store.RecordScopedVerificationAsync(new ProviderCredentialVerificationUpdate("nasdaqdatalink", true,
-            ExternalAccountId: owner.ExternalAccountId) { ExpectedCredentialGeneration = replacement.CredentialGeneration }, owner);
+            ExternalAccountId: owner.ExternalAccountId)
+        { ExpectedCredentialGeneration = replacement.CredentialGeneration }, owner);
         (await store.GetScopedStatusAsync("nasdaq", owner)).CredentialState.Should().Be(ProviderCredentialStateDto.Verified);
         await store.DeleteScopedAsync("nasdaq", owner, "test-operator");
 

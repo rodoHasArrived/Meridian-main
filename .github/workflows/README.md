@@ -77,8 +77,8 @@ hosted job and shard timings separately from runner queue delays before claiming
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
-| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports one stable `quality-gate` aggregator result. `Meridian CI / quality-gate` is the required status check for protected `main` merges after repository rulesets are enabled. | Lane summaries, build logs, TRX summaries, docs outputs, and workflow-hygiene evidence |
-| CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | Keeps PR secret scanning separate from the required `Meridian CI / quality-gate`, while legacy dotnet/browser/docs evidence jobs are gated away from normal PR runs. Nightly/manual `main` runs keep verify-full coverage evidence current. | Secret scan SARIF/evidence, .NET build logs, TRX summaries, browser bundle, and coverage artifacts |
+| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports one stable `quality-gate` aggregator result. `quality-gate` is the required status check for protected `main` merges after repository rulesets are enabled. | Lane summaries, build logs, TRX summaries, docs outputs, and workflow-hygiene evidence |
+| CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | Runs Secret Scan on PRs, main pushes and merge groups. Nightly/manual `main` runs retain full coverage and scenario evidence; canonical Meridian CI owns .NET/browser/docs checks. | Secret scan SARIF/evidence and nightly coverage artifacts |
 | CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | CodeQL security alerts surfaced in the repository Security tab |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop, WPF route, and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |
 | Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Runs browser `test:w4`, Windows `Category=W4Acceptance`, and the pilot harness/dashboard checks in parallel. The stable `Pilot Acceptance Evidence` gate requires all three jobs to succeed; diagnostic evidence remains available on failure. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
@@ -242,3 +242,8 @@ python3 build/scripts/docs/generate-workflow-manifest.py
 - Test lanes that enable hang diagnostics upload uniquely named evidence artifacts for reruns so passing and failing runs both leave inspectable logs.
 - Generated outputs stay under ignored `artifacts/`, `bin/`, `obj/`, `publish/`, `dist/`, or `TestResults/` paths.
 - Publish smoke artifacts are uploaded for inspection, and desktop installer tag runs publish packaged installer assets to GitHub Releases.
+
+CI/CD validation ownership and administrator rollout are maintained in
+[CI/CD ownership and rollout](../../docs/engineering/ci-cd-optimization.md). Meridian CI owns the four canonical
+`scripts/ci.sh` lanes; legacy CI owns Secret Scan and nightly/manual coverage.
+All CI governance changes require human review.

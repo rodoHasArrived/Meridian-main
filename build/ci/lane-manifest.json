@@ -3,7 +3,7 @@
   "requiredStatusCheck": {
     "workflow": "Meridian CI",
     "job": "quality-gate",
-    "checkName": "Meridian CI / quality-gate"
+    "checkName": "quality-gate"
   },
   "lanes": [
     {
@@ -52,7 +52,7 @@
       "localCommand": "bash scripts/ci.sh --lane verify-browser",
       "hostedMode": "browser-workstation",
       "artifacts": [
-        "src/Meridian.Ui/dashboard/dist",
+        "src/Meridian.Ui/wwwroot/workstation/",
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 25,
@@ -97,7 +97,7 @@
       "artifacts": [
         "artifacts/build-logs/",
         "artifacts/test-results/dotnet/",
-        "src/Meridian.Ui/dashboard/dist",
+        "src/Meridian.Ui/wwwroot/workstation/",
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 60,

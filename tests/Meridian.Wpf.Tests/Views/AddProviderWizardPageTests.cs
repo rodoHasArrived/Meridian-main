@@ -362,7 +362,8 @@ public sealed class AddProviderWizardPageTests
             Records[providerId] = new(true, true, verifiedAt);
             return Json(new
             {
-                providerId, success = true,
+                providerId,
+                success = true,
                 verificationState = ProviderVerificationStateDto.Verified,
                 lastVerifiedAt = verifiedAt
             });

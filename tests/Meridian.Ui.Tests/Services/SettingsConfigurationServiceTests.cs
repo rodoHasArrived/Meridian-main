@@ -114,9 +114,9 @@ public sealed class SettingsConfigurationServiceTests
             (" plugin-options ", "PLUGIN-OPTIONS", "plugin-options")
         ];
         foreach (var identity in identities)
-        foreach (var connectionId in new string?[] { null, "account / A" })
-        foreach (var operation in new[] { "save", "remove", "verify" })
-            yield return [identity.RequestId, identity.ResponseId, identity.CanonicalId, connectionId, operation];
+            foreach (var connectionId in new string?[] { null, "account / A" })
+                foreach (var operation in new[] { "save", "remove", "verify" })
+                    yield return [identity.RequestId, identity.ResponseId, identity.CanonicalId, connectionId, operation];
     }
 
     [Theory]

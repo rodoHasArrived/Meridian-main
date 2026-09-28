@@ -295,7 +295,7 @@ public partial class AddProviderWizardPage : Page
 
             var hasPendingEdits = CollectEnteredCredentialFields().Count > 0;
             var verified = !hasPendingEdits && (current is
-                { State: CredentialState.Configured, VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null }
+            { State: CredentialState.Configured, VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null }
                 or { State: CredentialState.NotRequired } ||
                 serviceFields is null && !LocalCatalogRequiresCredentials(provider));
             if (hasPendingEdits)
