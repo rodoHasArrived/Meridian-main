@@ -665,8 +665,12 @@ def write_summaries(
         )
     lines.extend(["", "#### Reproduce (after restore/build)", ""])
     for result in results:
-        command = subprocess.list2cmdline(result.command) if os.name == "nt" else shlex.join(result.command)
-        lines.extend([f"{result.name}: {result.evidence_error or result.status}", "", "```sh", command, "```", ""])
+        # list2cmdline targets the Windows argv parser, not a shell: filters containing
+        # &, |, parentheses and logger semicolons need PowerShell literal quoting.
+        shell = "powershell" if os.name == "nt" else "sh"
+        command = ("& " + " ".join("'" + arg.replace("'", "''") + "'" for arg in result.command)
+                   if os.name == "nt" else shlex.join(result.command))
+        lines.extend([f"{result.name}: {result.evidence_error or result.status}", "", f"```{shell}", command, "```", ""])
     if build_results:
         lines.extend(["", "#### Build evidence", "", "| Build | Status | Duration (s) | Log |",
                       "| --- | --- | ---: | --- |"])
