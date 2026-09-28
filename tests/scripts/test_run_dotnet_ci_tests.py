@@ -27,6 +27,22 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             results_dir=Path(results_dir), dry_run=False, **kwargs,
         )
 
+    def test_long_shards_start_first_but_results_keep_roster_order(self):
+        projects = MODULE.parse_project_entries([])
+        submitted = []
+        class Executor:
+            def __init__(self, **kwargs): pass
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+            def map(self, fn, items):
+                submitted.extend(p.name for p in items)
+                return [MODULE.TestResult(p.name, p.path, 0, []) for p in items]
+        with patch.object(MODULE, "ThreadPoolExecutor", Executor):
+            results = MODULE.run_tests(projects, configuration="Release", test_filter="", results_dir=Path("unused"), dry_run=True, max_parallel=2)
+        self.assertEqual(submitted[:3], ["core-ui-workstation-endpoints", "core-execution-strategy", "core-ui-other"])
+        self.assertCountEqual(submitted, [p.name for p in projects])
+        self.assertEqual([r.name for r in results], [p.name for p in projects])
+
     def test_default_projects_are_used_when_no_overrides_are_supplied(self):
         projects = MODULE.parse_project_entries([])
 

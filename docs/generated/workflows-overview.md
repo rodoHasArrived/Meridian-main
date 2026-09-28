@@ -36,5 +36,5 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/targeted-test.yml` | Targeted Test | workflow_dispatch |
 | `.github/workflows/web-screenshot-capture.yml` | Web Screenshot Capture | workflow_dispatch, pull_request |
 | `.github/workflows/windows-desktop-build.yml` | Windows Desktop Build | pull_request, push, workflow_dispatch |
-| `.github/workflows/wpf-dev-validation.yml` | WPF Dev Loop Validation | pull_request, push, workflow_dispatch |
-| `.github/workflows/wpf-route-validation.yml` | WPF Route Validation | pull_request, push, workflow_dispatch |
+| `.github/workflows/wpf-dev-validation.yml` | WPF Dev Loop Validation | workflow_dispatch |
+| `.github/workflows/wpf-route-validation.yml` | WPF Route Validation | workflow_dispatch |
