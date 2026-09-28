@@ -489,6 +489,10 @@ reconciliation while generating only requested-period activity for export review
 Currency mismatches remain breaks even when numeric balances match or a zero balance
 is omitted from the provider report. Generated export lines retain the Meridian book
 currency, and provider certification refuses implicit currency conversion.
+Accounting effective dates control report/export windows, and live accrual
+reconciliation requires a resolved Primary or Gaap book at every review boundary.
+Xero payroll expense types join the income-year roll-forward. Transport timeouts
+record sanitized failures while caller cancellation keeps its cancellation semantics.
 
 `NetSuiteTrialBalanceTests` and the external GL regression suites cover multi-year
 balances, every income-statement type, the year boundary, offsetting accounts,

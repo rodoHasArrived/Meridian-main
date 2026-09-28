@@ -4,12 +4,70 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Tests.DataIntegration.AccountingSystem;
 using Meridian.Ledger;
+using Meridian.Storage.Ledger;
+using Moq;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
 
 public sealed partial class AccountingSystemIntegrationServiceTests
 {
+    [Theory]
+    [InlineData("xero", AccountingBasisKindDto.Cash)]
+    [InlineData("netsuite", AccountingBasisKindDto.Cash)]
+    [InlineData("xero", AccountingBasisKindDto.Tax)]
+    [InlineData("netsuite", AccountingBasisKindDto.Tax)]
+    [InlineData("xero", AccountingBasisKindDto.Statutory)]
+    [InlineData("netsuite", AccountingBasisKindDto.Statutory)]
+    [InlineData("xero", null)]
+    [InlineData("netsuite", null)]
+    public async Task LiveProviders_RequireAccrualCompatibleBookAtReconciliationAndEveryExportBoundary(string id, AccountingBasisKindDto? incompatibleBasis)
+    {
+        var fixture = CreateMatchedFixtureLedgerStore([("100", LedgerAccountType.Asset, 100.25m, 0m), ("300", LedgerAccountType.Equity, 0m, 100.25m)]);
+        LedgerBookRecord? book = (await fixture.GetLedgerBookAsync(ExternalGlLedgerBookId))! with { AccountingBasis = AccountingBasisKindDto.Gaap };
+        var periods = await fixture.ListPeriodsAsync(ExternalGlLedgerBookId, fundProfileId: "default-fund");
+        var records = await fixture.GetByPeriodAsync(periods.Single().PeriodId);
+        var ledger = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
+        ledger.Setup(s => s.GetLedgerBookAsync(ExternalGlLedgerBookId, It.IsAny<CancellationToken>())).ReturnsAsync(() => book);
+        ledger.Setup(s => s.ListPeriodsAsync(ExternalGlLedgerBookId, null, "default-fund", null, It.IsAny<CancellationToken>())).ReturnsAsync(periods);
+        ledger.Setup(s => s.GetByPeriodAsync(periods.Single().PeriodId, It.IsAny<CancellationToken>())).ReturnsAsync(records);
+        using var handler = new ExternalGlTestHandler(ExternalGlTestData.Respond);
+        using var client = new HttpClient(handler);
+        var service = CreateService(ledger.Object, ExternalGlTestData.Provider(id, new(id), client));
+        var import = await service.ImportAsync(ExternalGlTestData.Request(id) with { FundProfileId = "default-fund", TenantId = null, CompanyId = null });
+        var template = CertifiedQuickBooksMappingProfile();
+        var profile = template with
+        {
+            ProviderId = id,
+            ProfileId = $"{id}-book-basis",
+            AccountMappings = new Dictionary<string, string> { ["100"] = "cash", ["300"] = "capital" },
+            DimensionMappings = template.DimensionMappings.Select(mapping => mapping with { ProviderId = id }).ToArray()
+        };
+        await service.UpsertMappingProfileAsync(new(profile, "accounting-ops", ProviderId: id,
+            FundProfileId: "default-fund", LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: [$"approval:external-gl-mapping:{profile.ProfileId}"]));
+        var controls = id == "xero"
+            ? new[] { "tracking-category-options", "contact-mapping", "tax-rate-mapping", "bank-account-scope" }
+            : ["subsidiary-scope", "classification-segments", "entity-mapping", "intercompany-controls"];
+        var evidence = controls.Select(control => $"approval:external-gl-provider:{id}:{control}:import:{import.Summary.ImportId}:ledger-book:{ExternalGlLedgerBookId:D}:2026-01-01:2026-01-31").ToArray();
+        var request = new AccountingSystemExportPackageRequestDto("accounting-ops", id, "default-fund", ExternalGlLedgerBookId,
+            new(2026, 1, 1), new(2026, 1, 31), profile.ProfileId, RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId, id), .. evidence]);
+        var package = await service.CreateExportPackageAsync(request);
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        book = incompatibleBasis is { } basis ? book with { AccountingBasis = basis } : null;
+        await service.Invoking(s => s.ReconcileLatestAsync(id, "default-fund", ExternalGlLedgerBookId))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*accrual-compatible*");
+        await service.Invoking(s => s.CreateExportPackageAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*accrual-compatible*");
+        await service.Invoking(s => s.CertifyExportPackageAsync(new(package.ExportPackageId, "controller",
+            "An incompatible or unresolved book basis cannot satisfy accrual report evidence.",
+            [$"approval:external-gl-export-certification:{package.ExportPackageId}:{package.Certification.CertificationId}:ledger-book:{ExternalGlLedgerBookId:D}:2026-01-01:2026-01-31"])))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*accrual-compatible*");
+        await service.Invoking(s => s.GetExportPackageManifestAsync(package.ExportPackageId))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*accrual-compatible*");
+    }
+
     [Theory]
     [InlineData("xero", true, false)]
     [InlineData("netsuite", true, false)]
@@ -33,14 +91,7 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             if (body.Contains("FROM subsidiary", StringComparison.Ordinal))
                 return ExternalGlTestHandler.Page([new { id = "2", currency = "EUR" }]);
             if (omittedZeroBalances && path.EndsWith("TrialBalance", StringComparison.Ordinal))
-                return ExternalGlTestHandler.Json(new
-                {
-                    Reports = new[] { new { ReportType = "TrialBalance", Rows = new[]
-                    {
-                        new { RowType = "Header", Cells = new[] { "Account", "Debit", "Credit", "YTD Debit", "YTD Credit" }
-                            .Select(value => new { Value = value }) }
-                    } } }
-                });
+                return ExternalGlTestData.XeroEmptyTrialBalance();
             if (omittedZeroBalances && body.Contains("SUM(", StringComparison.Ordinal))
                 return ExternalGlTestHandler.Page([]);
             return ExternalGlTestData.Respond(request, body);
@@ -101,19 +152,28 @@ public sealed partial class AccountingSystemIntegrationServiceTests
     }
 
     [Theory]
-    [InlineData("xero")]
-    [InlineData("netsuite")]
-    public async Task LiveProviders_CertifyBalancedGrossAccountActivity_WithoutChangingRetainedAmounts(string id)
+    [InlineData("xero", false)]
+    [InlineData("netsuite", false)]
+    [InlineData("xero", true)]
+    [InlineData("netsuite", true)]
+    public async Task LiveProviders_CertifyBalancedGrossAccountActivity_WithoutChangingRetainedAmounts(string id, bool omittedZeroBalances)
     {
         var credentials = new ExternalGlTestStore(id);
-        using var handler = new ExternalGlTestHandler(ExternalGlTestData.Respond);
+        using var handler = new ExternalGlTestHandler((request, body) =>
+        {
+            if (omittedZeroBalances && request.RequestUri!.AbsolutePath.EndsWith("TrialBalance", StringComparison.Ordinal))
+                return ExternalGlTestData.XeroEmptyTrialBalance();
+            if (omittedZeroBalances && body.Contains("SUM(", StringComparison.Ordinal))
+                return ExternalGlTestHandler.Page([]);
+            return ExternalGlTestData.Respond(request, body);
+        });
         using var client = new HttpClient(handler);
         var provider = ExternalGlTestData.Provider(id, credentials, client);
         var ledger = CreateMatchedFixtureLedgerStore([
             ("100", LedgerAccountType.Asset, 125.25m, 0m),
             ("300", LedgerAccountType.Equity, 0m, 125.25m),
-            ("100", LedgerAccountType.Asset, 0m, 25m),
-            ("300", LedgerAccountType.Equity, 25m, 0m)]);
+            ("100", LedgerAccountType.Asset, 0m, omittedZeroBalances ? 125.25m : 25m),
+            ("300", LedgerAccountType.Equity, omittedZeroBalances ? 125.25m : 25m, 0m)]);
         var service = CreateService(ledger, provider);
         var import = await service.ImportAsync(ExternalGlTestData.Request(id) with { FundProfileId = "default-fund", TenantId = null, CompanyId = null });
         var template = CertifiedQuickBooksMappingProfile();
@@ -139,8 +199,8 @@ public sealed partial class AccountingSystemIntegrationServiceTests
 
         package.ValidationIssues.Should().NotContain(i => i.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
-        package.GeneratedLines.Should().ContainSingle(line => line.ExternalAccountId == "cash" && line.Debit == 125.25m && line.Credit == 25m);
-        package.GeneratedLines.Should().ContainSingle(line => line.ExternalAccountId == "capital" && line.Debit == 25m && line.Credit == 125.25m);
+        package.GeneratedLines.Should().ContainSingle(line => line.ExternalAccountId == "cash" && line.Debit == 125.25m && line.Credit == (omittedZeroBalances ? 125.25m : 25m));
+        package.GeneratedLines.Should().ContainSingle(line => line.ExternalAccountId == "capital" && line.Debit == (omittedZeroBalances ? 125.25m : 25m) && line.Credit == 125.25m);
         var certified = await service.CertifyExportPackageAsync(new(package.ExportPackageId, "controller",
             "Reviewed gross account activity and matching provider balances.",
             [$"approval:external-gl-export-certification:{package.ExportPackageId}:{package.Certification.CertificationId}:ledger-book:{ExternalGlLedgerBookId:D}:2026-01-01:2026-01-31"]));

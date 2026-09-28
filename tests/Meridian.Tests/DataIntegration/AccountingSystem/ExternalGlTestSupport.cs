@@ -150,6 +150,14 @@ internal static class ExternalGlTestData
     public static object NetSuiteBalance(string id, decimal balance, decimal prior = 0m)
         => new { accountid = id, balance, prioryearbalance = prior };
 
+    public static HttpResponseMessage XeroEmptyTrialBalance() => ExternalGlTestHandler.Json(new
+    {
+        Reports = new[] { new { ReportType = "TrialBalance", Rows = new[]
+        {
+            new { RowType = "Header", Cells = new[] { "Account", "Debit", "Credit", "YTD Debit", "YTD Credit" }.Select(value => new { Value = value }) }
+        } } }
+    });
+
     public static object XeroBalance(string id, string debit, string credit) => new
     {
         RowType = "Row",

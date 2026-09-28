@@ -90,7 +90,9 @@ replace retained evidence. The integration service supplies scoped content hashe
   identities, incomplete pagination, unbalanced journals or trial balances, and
   negative or two-sided trial-balance amounts fail the entire
   import. No partial result replaces the last retained import. Requests are
-  cancellable. A failed or cancelled read may already have rotated a refresh token.
+  cancellable. HTTP timeouts record a sanitized provider failure; cancellation
+  requested by the caller remains cancellation. A failed or cancelled read may
+  already have rotated a refresh token.
 - Xero imports stop with an error after 1,000 nonempty journal pages; NetSuite
   stops with an error if additional rows remain beyond the REST SuiteQL
   100,000-row ceiling. Narrow or repair the provider source before retrying;
@@ -101,7 +103,8 @@ journal/export dates. Reconciliation reads Meridian history through the as-of
 date, keeps cumulative balance-sheet activity, and moves income/expense activity
 before the provider's report year into retained earnings for comparison. This is
 a report projection, not a ledger mutation. Date filtering applies to each journal,
-including when a selected period cuts through a month. Export review uses only
+using its accounting effective date, with UTC event dates only for legacy entries.
+This includes late-posted journals and periods that cut through a month. Export review uses only
 gross activity within the requested inclusive dates; opening balances and report
 carry-forward amounts never become generated export activity. The import and
 reconciliation hashes retain this distinction and invalidate stale certifications.
@@ -110,6 +113,11 @@ omitted from a provider report. Equal numeric amounts in different currencies re
 reconciliation breaks. Export review retains Meridian's currency and provider
 certification blocks mismatches even when balanced reconciliation is not requested;
 this adapter does not perform currency conversion.
+Both provider reports use accrual accounting. Reconciliation and each export boundary
+require a resolved Meridian book with Primary or Gaap accounting basis. Cash, Tax,
+Statutory and unresolved book bases are unsupported and are rejected even when
+numeric balances match or balanced reconciliation is not requested. Xero wage and
+superannuation expense account types participate in the income-year roll-forward.
 
 ## Provider-owned export checks
 

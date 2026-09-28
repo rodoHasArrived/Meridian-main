@@ -8,6 +8,28 @@ namespace Meridian.Tests.DataIntegration.AccountingSystem;
 
 public sealed class ExternalGlScopeTests
 {
+    [Theory]
+    [InlineData("WAGESEXPENSE")]
+    [InlineData("SUPERANNUATIONEXPENSE")]
+    public async Task Xero_PayrollExpenseTypesParticipateInIncomeYearRollForward(string accountType)
+    {
+        using var handler = new ExternalGlTestHandler((request, body) => request.RequestUri!.AbsolutePath.EndsWith("Accounts", StringComparison.Ordinal)
+            ? ExternalGlTestHandler.Json(new
+            {
+                Accounts = new[]
+                {
+                    new { AccountID = "cash", Code = "100", Name = "Cash", Type = "BANK", Status = "ACTIVE", SystemAccount = "" },
+                    new { AccountID = "capital", Code = "300", Name = "Capital", Type = "EQUITY", Status = "ACTIVE", SystemAccount = "" },
+                    new { AccountID = "payroll", Code = "600", Name = "Payroll", Type = accountType, Status = "ACTIVE", SystemAccount = "" },
+                    new { AccountID = "retained", Code = "320", Name = "Prior results", Type = "EQUITY", Status = "ACTIVE", SystemAccount = "RETAINEDEARNINGS" }
+                }
+            }) : ExternalGlTestData.Respond(request, body));
+        using var client = new HttpClient(handler);
+        var detail = await ExternalGlTestData.Provider("xero", new("xero"), client).ImportAsync(ExternalGlTestData.Request("xero"));
+        detail.Summary.TrialBalanceBasis!.IncomeStatementAccountCodes.Should().Equal("600");
+        detail.Summary.TrialBalanceBasis.RetainedEarningsAccountCode.Should().Be("320");
+    }
+
     [Fact]
     public async Task NetSuite_RestrictsAccountsToDirectOrInheritedSubsidiaryAssignments_AndRejectsForeignExportAccount()
     {

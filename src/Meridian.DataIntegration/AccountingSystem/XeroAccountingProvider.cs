@@ -63,7 +63,7 @@ public sealed class XeroAccountingProvider(IProviderCredentialStore store, HttpC
             RequiredText(row, "AccountID"), string.IsNullOrWhiteSpace(Text(row, "Code")) ? $"xero-account:{RequiredText(row, "AccountID")}" : Text(row, "Code").Trim(), RequiredText(row, "Name"), RequiredText(row, "Type"),
             currency, RequiredText(row, "Status") == "ACTIVE", EvidenceRef: $"{scope}:account:{RequiredText(row, "AccountID")}")).ToArray();
         var accountLookup = accounts.ToDictionary(a => a.ExternalAccountId, StringComparer.OrdinalIgnoreCase);
-        var incomeCodes = accounts.Where(a => a.AccountType.ToUpperInvariant() is "REVENUE" or "SALES" or "OTHERINCOME" or "EXPENSE" or "OVERHEADS" or "DIRECTCOSTS" or "DEPRECIATN")
+        var incomeCodes = accounts.Where(a => a.AccountType.ToUpperInvariant() is "REVENUE" or "SALES" or "OTHERINCOME" or "EXPENSE" or "OVERHEADS" or "DIRECTCOSTS" or "DEPRECIATN" or "WAGESEXPENSE" or "SUPERANNUATIONEXPENSE")
             .Select(a => a.AccountCode).ToArray();
         var retainedIds = accountRows.Where(row => Text(row, "SystemAccount") == "RETAINEDEARNINGS")
             .Select(row => RequiredText(row, "AccountID")).ToArray();

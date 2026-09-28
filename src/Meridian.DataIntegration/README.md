@@ -32,6 +32,9 @@ Include Children, using a validated ancestor chain. Unnumbered accounts have sta
 provider-prefixed internal-ID codes. Both providers retain an explicit balance basis:
 NetSuite uses the calendar year; Xero uses the organisation's financial year and system
 retained-earnings identity. The requested journal period remains independent.
+Xero payroll wage and superannuation expense types participate in that income-year
+roll-forward. HTTP timeouts are sanitized provider failures and update verification
+status; cancellation requested by the caller remains cancellation.
 
 ## OAuth token ownership
 

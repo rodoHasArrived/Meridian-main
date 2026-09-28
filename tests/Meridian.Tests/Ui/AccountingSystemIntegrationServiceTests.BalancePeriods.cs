@@ -14,10 +14,12 @@ namespace Meridian.Tests.Ui;
 public sealed partial class AccountingSystemIntegrationServiceTests
 {
     [Theory]
-    [InlineData("xero", false)]
-    [InlineData("netsuite", false)]
-    [InlineData("netsuite", true)]
-    public async Task LiveProviders_ReconcileReportBalancesAcrossPeriods_AndExportOnlyRequestedActivity(string id, bool unnumbered)
+    [InlineData("xero", false, false)]
+    [InlineData("netsuite", false, false)]
+    [InlineData("netsuite", true, false)]
+    [InlineData("xero", false, true)]
+    [InlineData("netsuite", false, true)]
+    public async Task LiveProviders_ReconcileReportBalancesAcrossPeriods_AndExportOnlyRequestedActivity(string id, bool unnumbered, bool effectiveDates)
     {
         string Code(string account) => unnumbered ? $"netsuite-account:{account}" : account switch { "cash" => "100", "income" => "400", _ => "320" };
         var credentials = new ExternalGlTestStore(id);
@@ -83,12 +85,13 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             ("2026-02-01", 10m), ("2026-02-06", 30m), ("2026-02-25", 999m) };
         foreach (var (date, amount) in activities)
         {
-            var timestamp = DateTimeOffset.Parse(date + "T00:00:00Z");
-            var periodStart = new DateOnly(timestamp.Year, timestamp.Month, 1);
+            var accountingDate = DateOnly.Parse(date);
+            var timestamp = DateTimeOffset.Parse((effectiveDates ? date == "2026-02-25" ? "2026-02-06" : "2026-03-10" : date) + "T00:00:00Z");
+            var periodStart = new DateOnly(accountingDate.Year, accountingDate.Month, 1);
             var period = periods.SingleOrDefault(p => p.StartDate == periodStart);
             if (period is null)
             {
-                period = new(Guid.NewGuid(), ExternalGlLedgerBookId, timestamp.Year, timestamp.Month, date,
+                period = new(Guid.NewGuid(), ExternalGlLedgerBookId, accountingDate.Year, accountingDate.Month, date,
                     periodStart, periodStart.AddMonths(1).AddDays(-1), "Open", timestamp, null, 1);
                 periods.Add(period);
             }
@@ -97,7 +100,7 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             [
                 new(Guid.NewGuid(), journalId, timestamp, new(Code("cash"), LedgerAccountType.Asset), amount, 0m, date),
                 new(Guid.NewGuid(), journalId, timestamp, new(Code("income"), LedgerAccountType.Revenue), 0m, amount, date)
-            ]);
+            ], effectiveDates ? new JournalEntryMetadata(EffectiveDate: accountingDate) : null);
             records.Add(new(journal, Guid.NewGuid(), period.PeriodId, null, null, records.Count + 1, timestamp));
         }
         var ledger = new Mock<ILedgerJournalStore>(MockBehavior.Strict);

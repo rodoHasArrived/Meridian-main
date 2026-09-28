@@ -9,6 +9,51 @@ namespace Meridian.Tests.DataIntegration.AccountingSystem;
 public sealed class ExternalGlLiveProviderTests
 {
     [Theory]
+    [InlineData("xero", false)]
+    [InlineData("netsuite", false)]
+    [InlineData("xero", true)]
+    [InlineData("netsuite", true)]
+    public async Task TransportTimeout_IsRecordedAsFailure_WhileCallerCancellationRemainsCancellation(string id, bool callerCancels)
+    {
+        var store = new ExternalGlTestStore(id);
+        using var client = new HttpClient(new StalledHandler())
+        {
+            Timeout = callerCancels ? Timeout.InfiniteTimeSpan : TimeSpan.FromMilliseconds(100)
+        };
+        using var cancellation = new CancellationTokenSource();
+        if (callerCancels)
+            cancellation.CancelAfter(TimeSpan.FromMilliseconds(100));
+        var provider = ExternalGlTestData.Provider(id, store, client);
+        if (callerCancels)
+        {
+            await provider.Invoking(p => p.ImportAsync(ExternalGlTestData.Request(id), cancellation.Token))
+                .Should().ThrowAsync<OperationCanceledException>();
+            store.Verifications.Should().BeEmpty();
+        }
+        else
+        {
+            var error = await provider.Invoking(p => p.ImportAsync(ExternalGlTestData.Request(id), cancellation.Token))
+                .Should().ThrowAsync<InvalidOperationException>();
+            error.Which.Message.Should().Be("Read-only GL import failed. Check credentials, scope, permissions and provider response completeness.");
+            error.Which.InnerException.Should().BeNull();
+            store.Verifications.Should().ContainSingle().Which.Success.Should().BeFalse();
+            var verification = await provider.VerifyConnectionAsync();
+            verification.Success.Should().BeFalse();
+            verification.LastError.Should().Be("Provider verification failed. Check credentials, account scope, permissions and availability.");
+            store.Verifications.Should().HaveCount(2).And.OnlyContain(v => !v.Success);
+        }
+    }
+
+    private sealed class StalledHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            throw new InvalidOperationException("The stalled transport must end through cancellation.");
+        }
+    }
+
+    [Theory]
     [InlineData("xero")]
     [InlineData("netsuite")]
     public async Task Import_UsesCredentialedTransport_RotatesTokenAndReturnsScopedBalancedEvidence(string id)

@@ -1,6 +1,6 @@
 {
   "total_files": 675,
-  "total_lines": 145852,
+  "total_lines": 145873,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2731,7 +2731,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11043,
+      "line_count": 11044,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2859,7 +2859,7 @@
     },
     {
       "path": "docs/operators/external-gl-providers.md",
-      "line_count": 181,
+      "line_count": 189,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3139,7 +3139,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 601,
+      "line_count": 605,
       "has_heading": true,
       "todo_count": 6,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5323,7 +5323,7 @@
     },
     {
       "path": "src/Meridian.DataIntegration/README.md",
-      "line_count": 340,
+      "line_count": 343,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5371,7 +5371,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 782,
+      "line_count": 787,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

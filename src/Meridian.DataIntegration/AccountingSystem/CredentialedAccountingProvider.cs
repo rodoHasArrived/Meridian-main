@@ -74,7 +74,7 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
             await RecordAsync(true, connection.Get(CompanyField), ct).ConfigureAwait(false);
             return new(true, connection.Get(CompanyField), null, DateTimeOffset.UtcNow, ["Read-only connection verified; live posting remains disabled."]);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             await RecordAsync(false, null, ct).ConfigureAwait(false);
             return new(false, null, "Provider verification failed. Check credentials, account scope, permissions and availability.",
@@ -101,7 +101,7 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
             await RecordAsync(true, connection.Get(CompanyField), ct).ConfigureAwait(false);
             return detail;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             await RecordAsync(false, null, ct).ConfigureAwait(false);
             // Provider bodies, tokens, and transport exception messages never cross the public boundary.
@@ -196,10 +196,9 @@ public abstract class CredentialedAccountingProvider : IAccountingSystemProvider
                 Block($"ExternalGlProviderControlMissing:{control}", $"Provider review evidence is required: {evidence}");
         }
         var accounts = import.ChartAccounts.ToDictionary(a => a.ExternalAccountId, StringComparer.Ordinal);
-        var currencies = import.TrialBalance.Select(b => b.Currency).Distinct(StringComparer.Ordinal).ToArray();
         // Review lines retain gross account activity, so one account can have both debits and credits.
         if (context.Lines.Count == 0 || context.Lines.Any(line => !accounts.TryGetValue(line.ExternalAccountId, out var account) ||
-                !account.IsActive || !currencies.Contains(line.Currency, StringComparer.Ordinal) ||
+                !account.IsActive || !string.Equals(account.Currency, line.Currency, StringComparison.OrdinalIgnoreCase) ||
                 line.Debit < 0 || line.Credit < 0) ||
             context.Lines.Sum(line => line.Debit) != context.Lines.Sum(line => line.Credit))
             Block("ExternalGlProviderExportLinesInvalid", "Provider export lines must balance in imported currencies and target active, imported accounts.");
