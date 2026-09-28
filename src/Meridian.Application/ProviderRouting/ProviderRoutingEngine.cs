@@ -738,34 +738,28 @@ internal sealed class DefaultProviderConnectionHealthSource : IProviderConnectio
         string connectionId,
         string providerFamilyId,
         CancellationToken ct = default)
-        => GetCoreAsync(connectionId, providerFamilyId, includeProviderFamily: true);
+        => GetCoreAsync(connectionId, providerFamilyId);
 
     /// <summary>
-    /// Runtime metrics are recorded per provider family and shared by every owner, so only a metric
-    /// recorded for this exact connection counts; otherwise health is reported as neutral unknown.
+    /// Runtime metrics do not carry connection ownership provenance. Even an exact ID match cannot
+    /// establish ownership, so scoped health remains neutral unknown until an ownership-aware source is available.
     /// </summary>
     public ValueTask<ProviderConnectionHealthSnapshot> GetConnectionHealthAsync(
         string connectionId,
         string providerFamilyId,
         CancellationToken ct = default)
-        => GetCoreAsync(connectionId, providerFamilyId, includeProviderFamily: false);
+        => UnknownHealth(connectionId, providerFamilyId);
 
-    private ValueTask<ProviderConnectionHealthSnapshot> GetCoreAsync(string connectionId, string providerFamilyId, bool includeProviderFamily)
+    private ValueTask<ProviderConnectionHealthSnapshot> GetCoreAsync(string connectionId, string providerFamilyId)
     {
         var metrics = _store.TryLoadProviderMetrics();
         var match = metrics?.Providers.FirstOrDefault(p =>
             string.Equals(p.ProviderId, connectionId, StringComparison.OrdinalIgnoreCase) ||
-            (includeProviderFamily && string.Equals(p.ProviderId, providerFamilyId, StringComparison.OrdinalIgnoreCase)));
+            string.Equals(p.ProviderId, providerFamilyId, StringComparison.OrdinalIgnoreCase));
 
         if (match is null)
         {
-            return ValueTask.FromResult(new ProviderConnectionHealthSnapshot(
-                ConnectionId: connectionId,
-                ProviderFamilyId: providerFamilyId,
-                IsHealthy: true,
-                Status: "unknown",
-                Score: 100,
-                CheckedAt: DateTimeOffset.UtcNow));
+            return UnknownHealth(connectionId, providerFamilyId);
         }
 
         return ValueTask.FromResult(new ProviderConnectionHealthSnapshot(
@@ -776,6 +770,15 @@ internal sealed class DefaultProviderConnectionHealthSource : IProviderConnectio
             Score: Math.Clamp(match.DataQualityScore, 0, 100),
             CheckedAt: match.Timestamp));
     }
+
+    private static ValueTask<ProviderConnectionHealthSnapshot> UnknownHealth(string connectionId, string providerFamilyId)
+        => ValueTask.FromResult(new ProviderConnectionHealthSnapshot(
+            ConnectionId: connectionId,
+            ProviderFamilyId: providerFamilyId,
+            IsHealthy: true,
+            Status: "unknown",
+            Score: 100,
+            CheckedAt: DateTimeOffset.UtcNow));
 }
 
 internal sealed class DefaultProviderCertificationRunner : IProviderCertificationRunner

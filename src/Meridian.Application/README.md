@@ -69,8 +69,10 @@ compares canonical provider IDs, so a connection retained under an alias still a
 A tenant route only fails over to connections whose own scope matches the requested route; a fallback
 scoped to another account or fund is skipped with an explicit reason instead of inheriting the primary's
 scope match. A tenant fallback ranks by its own scope match, capped at its primary's rank. Tenant
-routing and trust read connection-scoped health, so the default metrics source reports neutral unknown
-health instead of another owner's provider-family telemetry.
+routing, trust and provider selection read connection-scoped health. Runtime metrics lack ownership
+provenance, so the default metrics source reports neutral unknown health for scoped connections even
+when a connection ID matches a provider-family or runtime metric ID. An ownership-aware health source
+is required to attribute runtime telemetry to a retained connection.
 
 `ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
 environment with the external account. Scope resolution uses that retained ownership, returns no scope
