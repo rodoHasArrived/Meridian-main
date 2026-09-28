@@ -16,6 +16,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Application.Composition;
 
+// Resolving ProviderRegistry installs process-wide ProviderCatalog callbacks. Keep the
+// host's entire lifetime exclusive, including async disposal before fixture cleanup.
+[Collection("Sequential")]
 public sealed class ProviderCapabilityContractRegistrationTests : IDisposable
 {
     public void Dispose()

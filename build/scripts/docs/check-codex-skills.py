@@ -14,7 +14,8 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 CODEX_SKILLS = REPO_ROOT / ".codex" / "skills"
 CODEX_SKILLS_README = CODEX_SKILLS / "README.md"
 CODEX_DOCS_README = REPO_ROOT / "docs" / "ai" / "codex" / "README.md"
-CI_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "ci.yml"
+CI_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "meridian-ci.yml"
+CI_SCRIPT = REPO_ROOT / "scripts" / "ci.sh"
 SHARED_CONTEXT_MARKER = "../_shared/project-context.md"
 EXECUTION_CONTRACT_MARKER = "../_shared/codex-execution-contract.md"
 REQUIRED_SECTIONS = (
@@ -283,7 +284,7 @@ def validate_skill(skill_dir: Path, catalog_text: str, docs_text: str) -> list[F
 
 def collect_findings() -> list[Finding]:
     findings: list[Finding] = []
-    for required in (CODEX_SKILLS, CODEX_SKILLS_README, CODEX_DOCS_README, CI_WORKFLOW):
+    for required in (CODEX_SKILLS, CODEX_SKILLS_README, CODEX_DOCS_README, CI_WORKFLOW, CI_SCRIPT):
         add_missing_file_finding(findings, required)
 
     if findings:
@@ -293,9 +294,11 @@ def collect_findings() -> list[Finding]:
     docs_text = read_text(CODEX_DOCS_README)
     ci_text = read_text(CI_WORKFLOW)
 
-    if "Validate AI contract drift" not in ci_text:
+    script_text = read_text(CI_SCRIPT)
+    docs_lane = script_text.split("verify_docs() {", 1)[-1].split("verify_workflows() {", 1)[0]
+    if "bash scripts/ci.sh --lane verify-docs" not in ci_text or "Validate AI contract drift" not in docs_lane:
         findings.append(
-            Finding("error", repo_relative(CI_WORKFLOW), "CI workflow is missing Validate AI contract drift.")
+            Finding("error", repo_relative(CI_WORKFLOW), "Canonical docs lane is missing Validate AI contract drift.")
         )
 
     if "codex-execution-contract.md" not in catalog_text:
