@@ -24,7 +24,7 @@ class LaneManifestTests(unittest.TestCase):
 
         self.assertEqual(payload["requiredStatusCheck"]["workflow"], "Meridian CI")
         self.assertEqual(payload["requiredStatusCheck"]["job"], "quality-gate")
-        self.assertEqual(payload["requiredStatusCheck"]["checkName"], "Meridian CI / quality-gate")
+        self.assertEqual(payload["requiredStatusCheck"]["checkName"], "quality-gate")
 
     def test_manifest_contains_required_lane_ids(self) -> None:
         payload = MODULE.load_manifest(MANIFEST_PATH)
