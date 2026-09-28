@@ -105,6 +105,11 @@ including when a selected period cuts through a month. Export review uses only
 gross activity within the requested inclusive dates; opening balances and report
 carry-forward amounts never become generated export activity. The import and
 reconciliation hashes retain this distinction and invalidate stale certifications.
+Provider and Meridian ledger-book currencies must match, including for zero balances
+omitted from a provider report. Equal numeric amounts in different currencies remain
+reconciliation breaks. Export review retains Meridian's currency and provider
+certification blocks mismatches even when balanced reconciliation is not requested;
+this adapter does not perform currency conversion.
 
 ## Provider-owned export checks
 

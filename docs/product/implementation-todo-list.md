@@ -486,6 +486,9 @@ scope NetSuite chart accounts through direct/inherited subsidiary assignments, a
 give unnumbered accounts stable identities. The report balance basis is retained
 separately from the journal/export period, enabling cumulative and year-to-date
 reconciliation while generating only requested-period activity for export review.
+Currency mismatches remain breaks even when numeric balances match or a zero balance
+is omitted from the provider report. Generated export lines retain the Meridian book
+currency, and provider certification refuses implicit currency conversion.
 
 `NetSuiteTrialBalanceTests` and the external GL regression suites cover multi-year
 balances, every income-statement type, the year boundary, offsetting accounts,

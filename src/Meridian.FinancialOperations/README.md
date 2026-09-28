@@ -22,6 +22,10 @@ retained-earnings carry-forward. Gross activity within the requested inclusive d
 is retained separately and is the only amount used for generated export review lines.
 Hashes cover both the basis and activity, so later journal changes invalidate stale
 certifications even when closing account balances remain equal.
+Reconciliation requires matching provider and ledger-book currencies, including
+zero balances omitted from the provider report. Export review retains Meridian's
+currency; a mismatch blocks provider certification even when balanced reconciliation
+is not requested. No implicit currency conversion or relabeling is performed.
 
 Statement matching retains exact tolerance rules/version and matcher revision with population
 availability. Missing/failed internal populations and empty statements cannot certify source clearing;

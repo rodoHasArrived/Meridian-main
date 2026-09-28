@@ -479,9 +479,13 @@ public sealed class AccountingSystemIntegrationService
             var meridianDebit = meridian?.Debit ?? 0m;
             var meridianCredit = meridian?.Credit ?? 0m;
             var variance = (externalDebit - externalCredit) - (meridianDebit - meridianCredit);
-            var status = latest.Summary.TrialBalanceBasis is not null && variance == 0m &&
-                latest.ChartAccounts.Any(a => string.Equals(a.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase))
-                ? AccountingSystemReconciliationStatusDto.Matched : ResolveStatus(external, meridian is not null, variance);
+            var chartAccount = latest.ChartAccounts.FirstOrDefault(a => string.Equals(a.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase));
+            var externalCurrency = external?.Currency ?? chartAccount?.Currency;
+            var currencyMismatch = meridian is not null && externalCurrency is not null &&
+                !string.Equals(externalCurrency, meridian.Currency, StringComparison.OrdinalIgnoreCase);
+            var status = currencyMismatch ? AccountingSystemReconciliationStatusDto.Variance
+                : latest.Summary.TrialBalanceBasis is not null && variance == 0m && chartAccount is not null
+                    ? AccountingSystemReconciliationStatusDto.Matched : ResolveStatus(external, meridian is not null, variance);
             var rowExternalEvidenceReferences = NormalizeEvidenceReferences([external?.EvidenceRef]);
             var meridianEvidenceReferences = meridian is null ? [] : NormalizeEvidenceReferences(meridian.EvidenceReferences);
             var rowEvidenceReferences = NormalizeEvidenceReferences(rowExternalEvidenceReferences.Concat(meridianEvidenceReferences));
@@ -490,14 +494,16 @@ public sealed class AccountingSystemIntegrationService
                 $"gl-recon-{SanitizeId(accountCode)}",
                 accountCode,
                 external?.AccountName ?? meridian?.AccountName ?? accountCode,
-                external?.Currency ?? meridian?.Currency ?? "USD",
+                meridian?.Currency ?? externalCurrency ?? "USD",
                 status,
                 externalDebit,
                 externalCredit,
                 meridianDebit,
                 meridianCredit,
                 variance,
-                BuildDetail(status, variance),
+                currencyMismatch
+                    ? $"External GL currency '{externalCurrency}' differs from Meridian ledger book currency '{meridian!.Currency}'; amounts cannot be reconciled without governed conversion."
+                    : BuildDetail(status, variance),
                 external?.EvidenceRef)
             {
                 PeriodDebit = latest.Summary.TrialBalanceBasis is null ? null : meridian?.PeriodDebit ?? 0m,
