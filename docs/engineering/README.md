@@ -220,22 +220,15 @@ launched processes, then restores the caller's environment.
 
 ### Persistence
 
-**Without database configuration, every money-path store (ledger, fund accounts, banking,
-money market, reporting, and more) runs in-memory: journal entries, reconciliations, and
-approvals are lost on restart.** Hosts surface this loudly — a `PERSISTENCE: NONE`/`PARTIAL`
-warning at startup, in the `postgresql` readiness check, and as a red banner in the browser
-workstation.
+Every launch except `--seed-demo` needs a persistence decision and **fails closed at startup**
+without one: `StorageFeatureRegistration` throws, naming the missing variable, rather than silently
+running in-memory. Set `MERIDIAN_DATABASE_URL` to persist every store domain to one PostgreSQL
+database; per-domain `MERIDIAN_*_CONNECTION_STRING` variables take precedence over it, so
+split-database deployments keep working. `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` is an explicit
+local/dev fixture opt-in and is refused when the environment is `Production`.
 
-Set the single unified variable to persist every store domain to one PostgreSQL database:
-
-```bash
-export MERIDIAN_DATABASE_URL="postgres://user:password@localhost:5432/meridian"
-# or Npgsql keyword form:
-export MERIDIAN_DATABASE_URL="Host=localhost;Port=5432;Database=meridian;Username=user;Password=password"
-```
-
-Per-domain `MERIDIAN_*_CONNECTION_STRING` variables remain supported and always take
-precedence over `MERIDIAN_DATABASE_URL`, so split-database deployments keep working.
+The canonical description of these defaults, including simulated market data and authentication,
+is [Start → Persistence and simulation defaults](../start/README.md#persistence-and-simulation-defaults).
 
 ## Workstation Architecture Rules
 

@@ -1,10 +1,10 @@
 {
   "total_files": 675,
-  "total_lines": 145728,
+  "total_lines": 145723,
   "orphaned_count": 249,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 270,
+  "todo_count": 271,
   "average_lines": 215.9,
   "health_score": 81,
   "orphaned_files": [
@@ -412,9 +412,9 @@
   "all_files": [
     {
       "path": ".agents/skills/_shared/project-context.md",
-      "line_count": 192,
+      "line_count": 244,
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -2356,7 +2356,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 327,
+      "line_count": 320,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2740,7 +2740,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11052,
+      "line_count": 11030,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3852,7 +3852,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 266,
+      "line_count": 238,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
