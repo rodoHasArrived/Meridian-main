@@ -98,6 +98,22 @@ the provider-wide OAuth runtime.
 the retained tenant, provider and environment before saving scoped secrets, preserves its external
 account, and does not recreate routing or bindings. Credential verification remains a separate step.
 
+`ProviderFeatureRegistration` uses the shared `AddProviderServices` composition path. The
+Infrastructure descriptor catalog supplies built-in factories for streaming, historical backfill,
+symbol search, corporate actions, options, and brokerage. Registration and explicitly supplied
+plugin module discovery complete before the container is built; the final configuration and
+credential resolver are consumed when factories run. Stored credentials therefore participate
+in optional provider selection without mutating the service collection after build. Bootstrap
+configuration defers registry-backed self-healing until the provider graph exists.
+The ProviderSdk `ProviderIdentity` map resolves configured aliases, including
+`interactive-brokers` to `ibkr`, before family enablement and factory lookup. Discovered modules
+cannot override descriptor-owned built-in families; plugin modules own their additional factories.
+`ProviderCompositionTests` loads configured aliases through Configuration, Collector, and Provider
+features, resolves every descriptor capability, and rejects template-only and mapper-only families.
+`ProviderModuleCompositionTests` proves that explicit discovery invokes configured plugin factories
+before build; `ProviderCatalogCompositionTests` checks the resulting canonical inventory and
+preservation of entitlement metadata.
+
 The shared provider capability matrix uses per-instrument streaming coverage independently of
 historical and options coverage. Runtime Polygon factories retain the configured feed and resolved
 API key; NYSE factories consume the registered options used by its compatibility data source, so
@@ -813,6 +829,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"
 ```
 
 ## Change rules

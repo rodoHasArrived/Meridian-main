@@ -29,6 +29,10 @@ or null when the service reported none; editors must use those names rather than
 Status reads also include managed providers the service reports but the local market-data catalog
 omits (QuickBooks, Plaid, IB Flex). Verification treats a successful `NotRequired` result as ready.
 `providerWideOnly: true` reads provider-wide records only, without the tenant's connection credentials.
+Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
+status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
+service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
+verification state and timestamp so callers can distinguish configured from verified credentials.
 
 `SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
 credential states. Missing, ambiguous or refused responses remain unavailable, even when environment
@@ -43,6 +47,9 @@ API acknowledgements fail the save with fixed error text; there is no local plai
 Batch exports reject duplicate queue entries, skip cancelled attempts, and serialize atomic job-store writes with observable failures. Initial creation and manual or scheduled requeues persist before publishing to workers. Cancellation and removal persist before signalling an execution token or releasing job ownership; failed writes restore the previous status and keep queued work retryable. Successful cancellations and removals remain effective after restart; completion and failure notifications follow durable history and execution cleanup so subscribers can queue a repeat or retry. Raw, JSONL, and CSV are supported; Parquet is rejected until a physical writer exists. JSONL accounting uses the actual decompressed artifact path. CSV discovers all columns, quotes every cell, and fails with rejected row numbers before replacing an artifact. Backfill checkpoint mutations serialize per job and reclaim locks after the last holder or waiter leaves, including cancellation and persistence failures. Activity-feed persistence coalesces pending snapshots while preserving waiter completion and shutdown draining.
 
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
+
+Provider health caches and history use ProviderSdk canonical family identities so accepted
+configuration and telemetry aliases address the same health row.
 
 
 `Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, dimension-scoped roll-forward, source-linked audit rows, and close-state evidence gates.

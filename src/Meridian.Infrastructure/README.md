@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Infrastructure
@@ -34,19 +34,29 @@ This layer owns external integration details while depending on lower contracts 
 
 Use this module for provider implementation, external service integration, and adapter behavior.
 
-`ProviderCapabilityDescriptorCatalog` records runtime adapter families and their implemented
-capabilities, including Synthetic, Polygon, NYSE's streaming and compatibility data-source adapters,
-and OpenFIGI's `ISymbolResolver`. The operator matrix projects only its six supported surfaces,
-so resolver-only families remain in the catalog without rendering an empty matrix row.
-Streaming instrument coverage is independently
+`ProviderCapabilityDescriptorCatalog` owns built-in adapter types and factories for streaming,
+historical backfill, symbol search, corporate actions, options, and brokerage. `ProviderFactory`
+and `AddProviderServices` consume those same descriptors; the merged catalog derives its six
+factory flags from them without constructing disabled adapters. Module discovery runs before
+`BuildServiceProvider` and excludes descriptor-owned families, so a discovered Alpaca module
+cannot replace configured built-in factories. Explicit plugin assemblies retain ownership of
+their module-registered concrete factories and lifetimes. Attribute metadata alone cannot bypass
+module configuration. External discovery metadata projects module-only corporate-action and
+brokerage families into inventory without constructing them, including when disabled or awaiting
+configuration. Synthetic, Polygon and NYSE compatibility data sources are also recorded.
+OpenFIGI's `ISymbolResolver` remains in the adapter inventory, while the operator matrix
+projects only its six supported surfaces and omits resolver-only rows. Streaming instrument coverage is independently
 declared, so Polygon's Forex/Crypto/Index historical coverage does not advertise unsupported
 streams and synthetic option-chain coverage does not imply option streaming. Explicit exclusions
 also distinguish hosted ingestion, mapper-only, template-only and orchestration families.
-Catalog tests compare an explicit provider/capability inventory, enumerate the actual adapter folders,
-audit implemented shared contracts by reflection, and require reasons for excluded families. Polygon's
-corporate-action fetcher remains a hosted Security Master ingestion workflow; EDGAR reference-data
-ingestion and NYSE compatibility history likewise do not advertise unsupported shared contracts.
-Catalog presence alone does not establish live-provider readiness.
+Catalog tests compare an explicit provider/capability inventory, enumerate adapter folders,
+audit implemented shared contracts by reflection, and require reasons for excluded families.
+Polygon's corporate-action fetcher, EDGAR reference-data ingestion, and NYSE compatibility
+history retain their explicit exclusions from unsupported shared contracts. `ProviderCompositionTests`, `ProviderCatalogCompositionTests`, and
+`ProviderModuleCompositionTests` exercise application features or the public registration method,
+configured aliases, every declared capability, module factory precedence, and template/mapper
+exclusions. Catalog presence alone does not establish live-provider readiness, and merged granular
+product metadata retains feed, entitlement, pacing, source timestamp, and quality declarations.
 Search instrument coverage is also independent of options coverage. The NYSE registration helper
 can bind configuration from the final host service provider; its compatibility interfaces resolve
 the same source instance, and streaming uses those bound authentication options.
@@ -112,10 +122,13 @@ existing namespaces but are owned by ProviderSdk so plugin contracts do not depe
 Infrastructure. Infrastructure publishes type forwarders for adapters compiled against the former
 assembly location.
 
-Provider registry paths normalize configured provider identifiers before factory lookup, and the
-registry can hold multiple adapter contracts for one provider family ID. This allows identifiers
-such as `alpaca` to resolve independently for streaming, backfill, and symbol-search contracts
-without dropping one registration because another adapter uses the same family ID.
+Provider registry paths use the ProviderSdk-owned `ProviderIdentity` alias map before lookup,
+capability reporting, and health aggregation. `ib` and `interactive-brokers` resolve to `ibkr`;
+`nasdaqdatalink` resolves to `nasdaq`. The registry can hold all six contracts for one canonical
+family and resolves each through its declared factory. Streaming factories create independent
+clients. `ib-sim` transport and `ib-flex` credential resources keep their separate identities.
+Family disable settings apply across capabilities; inventory does not grant a production factory
+to template-only or mapper-only families.
 Composite historical failover treats provider rate limits as structured signals only:
 `RateLimitException` (including wrapped instances) or `HttpRequestException.StatusCode` equal to
 HTTP 429. Adapter implementations should map vendor 429 responses at the HTTP boundary instead of
@@ -219,7 +232,7 @@ request and observation carries required provenance: provider and configured con
 and receipt times, reported entitlement/feed/availability, request descriptor,
 provider-native identity, correlation, and a deterministic de-duplication key. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
-deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
+deterministic: nonproduction discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let
 copied providers and tests prove lifecycle behavior before replacing the template seams with broker
 APIs.
@@ -294,6 +307,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"
 ```
 
 ## Change rules

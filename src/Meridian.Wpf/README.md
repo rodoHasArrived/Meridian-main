@@ -49,6 +49,13 @@ completes. Credential management also lists owned connections for managed provid
 and matches a connection's status to the single row the service reports for it, so a retained alias still
 resolves. The settings shell counts unavailable credential status
 separately from missing credentials, so a refused or failed status read is shown as unknown readiness.
+After a confirmed wizard save, only unchanged submitted secret editors are cleared. Test then Save
+therefore reuses the persisted credentials and rereads provider-wide verification without replacing
+them. Edits during persistence or verification remain in the editor and require another test; refused
+saves retain editor values for retry. External rotation or removal is reflected by the final status read.
+Provider badges and selections join canonical IDs, including retained aliases. Credential management
+retains a selected connection's field schema when a status read finishes during or after verification,
+without replacing the newer verification result with an older status label.
 The setup-wizard state service and the Backfill page still write environment variables and remain
 separate cutover work.
 

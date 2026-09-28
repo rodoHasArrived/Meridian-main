@@ -8,6 +8,7 @@ using System.Windows.Media;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Contracts.Configuration;
+using ProviderIdentity = Meridian.Infrastructure.Adapters.Core.ProviderIdentity;
 using ProviderCatalogEntry = Meridian.Ui.Services.Services.ProviderCatalogEntry;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -39,23 +40,35 @@ public partial class AddProviderWizardPage : Page
     // wizard command are ignored until it completes, so results and shared inputs cannot be
     // applied to a different provider than the one the operation started for.
     private bool _operationInProgress;
+    private bool _clearingPersistedFields;
 
     public AddProviderWizardPage(
         WpfServices.NavigationService navigationService,
         WpfServices.NotificationService notificationService)
+        : this(navigationService, notificationService, SettingsConfigurationService.Instance)
+    {
+    }
+
+    internal AddProviderWizardPage(
+        WpfServices.NavigationService navigationService,
+        WpfServices.NotificationService notificationService,
+        SettingsConfigurationService settingsConfigService)
     {
         InitializeComponent();
 
         _navigationService = navigationService;
         _notificationService = notificationService;
         _configService = WpfServices.ConfigService.Instance;
-        _settingsConfigService = SettingsConfigurationService.Instance;
+        _settingsConfigService = settingsConfigService;
 
         _viewModel = new AddProviderWizardViewModel();
         DataContext = _viewModel;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
+        => await LoadProviderCatalogAsync();
+
+    internal async Task LoadProviderCatalogAsync()
     {
         var providers = _settingsConfigService.GetProviderCatalog();
         // The wizard writes provider-wide records, so it reads provider-wide status rather than the
@@ -74,7 +87,13 @@ public partial class AddProviderWizardPage : Page
 
     private void ProviderCard_Click(object sender, RoutedEventArgs e)
     {
-        if (_operationInProgress || sender is not Button button || button.Tag is not string providerId)
+        if (sender is Button { Tag: string providerId })
+            SelectProvider(providerId);
+    }
+
+    internal void SelectProvider(string providerId)
+    {
+        if (_operationInProgress)
             return;
 
         _selectedProvider = _viewModel.FindProvider(providerId);
@@ -83,6 +102,8 @@ public partial class AddProviderWizardPage : Page
 
         // Update ViewModel display properties (XAML binds to these)
         _viewModel.ApplySelectedProvider(_selectedProvider);
+        _viewModel.ResetConnectionTest();
+        _viewModel.SaveStatusText = string.Empty;
 
         // Show wizard step panels
         Step2Panel.Visibility = Visibility.Visible;
@@ -139,6 +160,11 @@ public partial class AddProviderWizardPage : Page
                     Tag = field.Name,
                 };
 
+            if (input is SecretInputControl secretInput)
+                secretInput.SecretChanged += CredentialEditorChanged;
+            else if (input is TextBox textBox)
+                textBox.TextChanged += CredentialEditorChanged;
+
             var storageHint = new TextBlock
             {
                 Text = field.Required
@@ -156,6 +182,9 @@ public partial class AddProviderWizardPage : Page
     }
 
     private async void TestProviderConnection_Click(object sender, RoutedEventArgs e)
+        => await TestProviderConnectionAsync();
+
+    internal async Task TestProviderConnectionAsync()
     {
         var provider = _selectedProvider;
         if (provider == null || _operationInProgress)
@@ -192,7 +221,9 @@ public partial class AddProviderWizardPage : Page
             await PersistCredentialsAsync(provider, fields);
             var verified = await _settingsConfigService.VerifyProviderCredentialsAsync(provider.Id);
 
-            if (verified)
+            if (CollectEnteredCredentialFields().Count > 0)
+                _viewModel.ResetConnectionTest("Credentials changed. Test connection to verify the current edits.");
+            else if (verified)
                 _viewModel.SetConnectionTestSuccess();
             else
                 _viewModel.SetConnectionTestUnverified();
@@ -213,6 +244,9 @@ public partial class AddProviderWizardPage : Page
     }
 
     private async void SaveProvider_Click(object sender, RoutedEventArgs e)
+        => await SaveProviderAsync();
+
+    internal async Task SaveProviderAsync()
     {
         var provider = _selectedProvider;
         if (provider == null || _operationInProgress)
@@ -241,13 +275,16 @@ public partial class AddProviderWizardPage : Page
             {
                 await PersistCredentialsAsync(provider, fields);
             }
-            else if (serviceFields?.Any(field => field.Required) == true)
+            ProviderCredentialStatus? current = null;
+            if (serviceFields is not null)
             {
-                // Nothing was entered, so success depends on credentials the vault already holds.
-                // Re-read the service rather than trusting the status captured when the page opened.
-                var current = FindStatus(await _settingsConfigService.GetProviderCredentialStatusesAsync(providerWideOnly: true), provider);
-                if (current?.State != CredentialState.Configured)
+                // Test has already persisted unchanged editors. Re-read the provider-wide record
+                // to preserve its verification without replacing it, and detect removal or rotation.
+                _credentialStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync(providerWideOnly: true);
+                current = FindStatus(_credentialStatuses, provider);
+                if (serviceFields.Any(field => field.Required) && current?.State != CredentialState.Configured)
                 {
+                    _viewModel.SetConnectionTestError("The credential service could not confirm saved credentials for this provider.");
                     _viewModel.SetSaveError("Enter the required credentials. The credential service reports none saved for this provider.");
                     return;
                 }
@@ -256,15 +293,34 @@ public partial class AddProviderWizardPage : Page
             if (backfillOptions is not null)
                 await _configService.SetBackfillProviderOptionsAsync(provider.Id, backfillOptions);
 
+            var hasPendingEdits = CollectEnteredCredentialFields().Count > 0;
+            var verified = !hasPendingEdits && (current is
+                { State: CredentialState.Configured, VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null }
+                or { State: CredentialState.NotRequired } ||
+                serviceFields is null && !LocalCatalogRequiresCredentials(provider));
+            if (hasPendingEdits)
+                _viewModel.ResetConnectionTest("Credentials changed during the operation. Save and test the current edits.");
+            else if (verified)
+                _viewModel.SetConnectionTestSuccess();
+            else
+                _viewModel.SetConnectionTestUnverified();
+
             _viewModel.CurrentStep = 4;
             _viewModel.SetSaveSuccess(provider.DisplayName);
+            if (hasPendingEdits)
+                _viewModel.SaveStatusText += " New credential edits remain unsaved.";
 
             _notificationService.NotifySuccess(
                 "Provider Added",
-                $"{provider.DisplayName} has been configured. Use Test Connection to verify its credentials.");
+                hasPendingEdits
+                    ? $"{provider.DisplayName} has been configured. New credential edits remain unsaved."
+                    : verified
+                        ? $"{provider.DisplayName} has been configured and its credentials are verified."
+                        : $"{provider.DisplayName} has been configured. Use Test Connection to verify its credentials.");
         }
         catch (Exception ex)
         {
+            _viewModel.SetConnectionTestError("The save was not confirmed. Test connection again after resolving the error.");
             _viewModel.SetSaveError(ex.Message);
         }
         finally
@@ -284,6 +340,37 @@ public partial class AddProviderWizardPage : Page
             return;
 
         await _settingsConfigService.SaveProviderCredentialsAsync(provider.Id, fields);
+
+        // Release persisted secrets rather than retaining a second plaintext copy to remember
+        // which values were tested. Do not erase an edit made while the save awaited the service.
+        _clearingPersistedFields = true;
+        try
+        {
+            foreach (var child in CredentialFieldsPanel.Children)
+            {
+                switch (child)
+                {
+                    case TextBox { Tag: string textName } textBox when fields.TryGetValue(textName, out var savedText) &&
+                        string.Equals(textBox.Text.Trim(), savedText, StringComparison.Ordinal):
+                        textBox.Clear();
+                        break;
+                    case SecretInputControl { Tag: string secretName } secretInput when fields.TryGetValue(secretName, out var savedSecret) &&
+                        string.Equals(secretInput.Secret.Trim(), savedSecret, StringComparison.Ordinal):
+                        secretInput.ClearSecret();
+                        break;
+                }
+            }
+        }
+        finally
+        {
+            _clearingPersistedFields = false;
+        }
+    }
+
+    private void CredentialEditorChanged(object? sender, EventArgs e)
+    {
+        if (!_clearingPersistedFields)
+            _viewModel.ResetConnectionTest("Credentials changed. Test connection to verify the current edits.");
     }
 
     private Dictionary<string, string?> CollectEnteredCredentialFields()
@@ -306,7 +393,7 @@ public partial class AddProviderWizardPage : Page
     }
 
     private static ProviderCredentialStatus? FindStatus(IReadOnlyList<ProviderCredentialStatus> statuses, ProviderCatalogEntry provider)
-        => statuses.FirstOrDefault(status => string.Equals(status.ProviderId, provider.Id, StringComparison.OrdinalIgnoreCase));
+        => statuses.FirstOrDefault(status => ProviderIdentity.EqualsId(status.ProviderId, provider.Id));
 
     private static bool LocalCatalogRequiresCredentials(ProviderCatalogEntry provider)
         => provider.CredentialFields.Any(field => field.Required);

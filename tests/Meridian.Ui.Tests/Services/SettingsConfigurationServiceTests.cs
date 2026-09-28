@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services.Services;
 using Meridian.Ui.Services;
 using System.Net;
@@ -98,6 +99,96 @@ public sealed class SettingsConfigurationServiceTests
         }
     }
 
+    public static IEnumerable<object?[]> CredentialAliasOperations()
+    {
+        (string RequestId, string ResponseId, string CanonicalId)[] identities =
+        [
+            (" nasdaqdatalink ", "NASDAQ", "nasdaq"),
+            ("nasdaq", "nasdaq-data-link", "nasdaq"),
+            (" qBo ", "quickbooks", "quickbooks"),
+            ("quickbooks", "QBO", "quickbooks"),
+            ("alpha-vantage", "alphavantage", "alphavantage"),
+            ("twelve_data", "twelvedata", "twelvedata"),
+            ("IB", "ibkr", "ibkr"),
+            ("ibflex", "ib-flex", "ib-flex"),
+            (" plugin-options ", "PLUGIN-OPTIONS", "plugin-options")
+        ];
+        foreach (var identity in identities)
+        foreach (var connectionId in new string?[] { null, "account / A" })
+        foreach (var operation in new[] { "save", "remove", "verify" })
+            yield return [identity.RequestId, identity.ResponseId, identity.CanonicalId, connectionId, operation];
+    }
+
+    [Theory]
+    [MemberData(nameof(CredentialAliasOperations))]
+    public async Task CredentialOperations_NormalizeRequestAndAcknowledgementIdentities(
+        string requestedId, string responseId, string canonicalId, string? connectionId, string operation)
+    {
+        var state = operation == "remove" ? 1 : 3;
+        var body = $$"""
+            {"providerId":"{{responseId}}","credentialState":{{state}},"success":true,
+             "verificationState":2,"lastVerifiedAt":"2026-09-28T12:00:00Z"}
+            """;
+        using var handler = new StatusHandler(HttpStatusCode.OK, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+
+        switch (operation)
+        {
+            case "save":
+                await service.SaveProviderCredentialsAsync(requestedId,
+                    new Dictionary<string, string?> { ["ApiKey"] = "alias-test-key" }, connectionId);
+                handler.Method.Should().Be("PUT");
+                break;
+            case "remove":
+                await service.RemoveProviderCredentialsAsync(requestedId, connectionId);
+                handler.Method.Should().Be("DELETE");
+                break;
+            default:
+                (await service.VerifyProviderCredentialsAsync(requestedId, connectionId)).Should().BeTrue();
+                handler.Method.Should().Be("POST");
+                break;
+        }
+
+        handler.Path.Should().Be($"/api/providers/{canonicalId}/{(operation == "verify" ? "verify" : "credentials")}");
+        handler.Query.Should().Be(connectionId is null ? string.Empty : "?connectionId=account%20%2F%20A");
+    }
+
+    [Theory]
+    [InlineData("qbo", "plaid", null)]
+    [InlineData("qbo", "plaid", "owned")]
+    [InlineData("ibflex", "ibkr", null)]
+    [InlineData("ibflex", "ibkr", "owned")]
+    [InlineData("plugin-options", "plugin", null)]
+    [InlineData("plugin-options", "plugin", "owned")]
+    [InlineData("qbo", "", "owned")]
+    public async Task CredentialOperations_RejectDifferentOrMissingProviderIdentity(
+        string requestedId, string responseId, string? connectionId)
+    {
+        foreach (var operation in new[] { "save", "remove", "verify" })
+        {
+            var state = operation == "remove" ? 1 : 3;
+            var body = $$"""
+                {"providerId":"{{responseId}}","credentialState":{{state}},"success":true,
+                 "verificationState":2,"lastVerifiedAt":"2026-09-28T12:00:00Z"}
+                """;
+            using var handler = new StatusHandler(HttpStatusCode.OK, body);
+            using var api = new ApiClientService(new StatusClientFactory(handler));
+            var service = new SettingsConfigurationService(api);
+            if (operation == "verify")
+                (await service.VerifyProviderCredentialsAsync(requestedId, connectionId)).Should().BeFalse();
+            else
+            {
+                Func<Task> mutation = () => operation == "remove"
+                    ? service.RemoveProviderCredentialsAsync(requestedId, connectionId)
+                    : service.SaveProviderCredentialsAsync(requestedId,
+                        new Dictionary<string, string?> { ["ApiKey"] = "private-alias-test-value" }, connectionId);
+                var error = await mutation.Should().ThrowAsync<InvalidOperationException>();
+                error.Which.Message.Should().Contain("not confirmed").And.NotContain("private-alias-test-value");
+            }
+        }
+    }
+
     [Theory]
     [InlineData(false, 403, "{}")]
     [InlineData(true, 403, "{}")]
@@ -180,6 +271,93 @@ public sealed class SettingsConfigurationServiceTests
         var quickBooks = statuses.Should().ContainSingle(status => status.ProviderId == "quickbooks").Subject;
         quickBooks.DisplayName.Should().Be("QuickBooks Online");
         quickBooks.State.Should().Be(CredentialState.Missing);
+    }
+
+    [Theory]
+    [InlineData("nasdaq", "nasdaq", null)]
+    [InlineData(" nasdaqdatalink ", "nasdaq", "owned")]
+    [InlineData("ibkr", "ibkr", null)]
+    [InlineData(" IB ", "ibkr", "owned")]
+    [InlineData(" QBO ", "quickbooks", null)]
+    [InlineData("quickbooks-online", "quickbooks", "owned")]
+    public async Task ServerCredentialStatus_JoinsAliasesOnceAndRetainsServiceSchemaAndVerification(
+        string serverId, string canonicalId, string? connectionId)
+    {
+        var body = $$"""
+            [{"providerId":"{{serverId}}","credentialState":4,"verificationState":2,
+              "lastVerifiedAt":"2026-09-28T12:00:00Z",
+              "credentialFields":[{"name":"ServiceField","label":"Service field","required":true,"inputKind":1}]}]
+            """;
+        using var handler = new StatusHandler(HttpStatusCode.OK, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+
+        var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync(connectionId: connectionId);
+
+        var status = statuses.Should().ContainSingle(row => row.ProviderId == canonicalId).Subject;
+        status.State.Should().Be(CredentialState.Configured);
+        status.CredentialFields.Should().ContainSingle().Which.Name.Should().Be("ServiceField");
+        status.VerificationState.Should().Be(ProviderVerificationStateDto.Verified);
+        status.LastVerifiedAt.Should().Be(new DateTimeOffset(2026, 9, 28, 12, 0, 0, TimeSpan.Zero));
+        statuses.Should().NotContain(row => row.ProviderId is "nasdaqdatalink" or "ib" or "qbo" or "quickbooks-online");
+        statuses.Should().OnlyHaveUniqueItems(row => row.ProviderId);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("owned")]
+    public async Task ServerCredentialStatus_DuplicateAliasRowsCannotAuthorizeCredentialState(string? connectionId)
+    {
+        const string body = """
+            [
+              {"providerId":"nasdaq","credentialState":4,"verificationState":2,"credentialFields":[]},
+              {"providerId":" NASDAQDATALINK ","credentialState":1,"credentialFields":[]},
+              {"providerId":"quickbooks","credentialState":4,"credentialFields":[]},
+              {"providerId":"qbo","credentialState":4,"credentialFields":[]},
+              {"providerId":" ","credentialState":4,"credentialFields":[]}
+            ]
+            """;
+        using var handler = new StatusHandler(HttpStatusCode.OK, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+
+        var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync(connectionId: connectionId);
+
+        var nasdaq = statuses.Should().ContainSingle(row => row.ProviderId == "nasdaq").Subject;
+        nasdaq.State.Should().Be(CredentialState.Unavailable);
+        nasdaq.HasServiceFieldSchema.Should().BeFalse();
+        nasdaq.VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+        nasdaq.LastVerifiedAt.Should().BeNull();
+        statuses.Should().NotContain(row => row.ProviderId is "quickbooks" or "qbo" or "nasdaqdatalink");
+    }
+
+    [Fact]
+    public async Task ServerCredentialStatus_CatalogAliasesProduceOneCanonicalRow()
+    {
+        var entries = new[] { "nasdaqdatalink", "nasdaq" }.Select(id => new Meridian.Contracts.Api.ProviderCatalogEntry
+        {
+            ProviderId = id,
+            DisplayName = "Nasdaq Data Link",
+            ProviderType = ProviderTypeKind.Backfill,
+            CredentialFields = []
+        }).ToArray();
+        try
+        {
+            ProviderCatalog.InitializeFromRegistry(() => entries, id => entries.FirstOrDefault(entry => entry.Id == id));
+            using var handler = new StatusHandler(HttpStatusCode.OK,
+                "[{\"providerId\":\"nasdaq\",\"credentialState\":3,\"credentialFields\":[]}]");
+            using var api = new ApiClientService(new StatusClientFactory(handler));
+
+            var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync();
+
+            var status = statuses.Should().ContainSingle().Subject;
+            status.ProviderId.Should().Be("nasdaq");
+            status.State.Should().Be(CredentialState.Configured);
+            status.HasServiceFieldSchema.Should().BeTrue();
+        }
+        finally
+        {
+            ProviderCatalog.RuntimeCatalogProvider = null;
+            ProviderCatalog.RuntimeCatalogEntryProvider = null;
+        }
     }
 
     [Theory]

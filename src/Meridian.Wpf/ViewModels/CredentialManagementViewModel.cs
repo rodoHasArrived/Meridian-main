@@ -201,6 +201,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
     private int _credentialLoadVersion;
     private int _selectedStatusVersion;
+    private int _credentialVerificationVersion;
 
     // Set when the editor opened before the service reported this connection's field schema. The
     // next status read for that connection rebuilds the open editor instead of leaving it inert.
@@ -253,8 +254,9 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         if (selected is null)
             return;
         var version = _credentialLoadVersion;
+        var verificationVersion = _credentialVerificationVersion;
         var statuses = await _settingsService.GetProviderCredentialStatusesAsync(connectionId: selected.ConnectionId);
-        if (version != _credentialLoadVersion || statusVersion != _selectedStatusVersion || !ReferenceEquals(SelectedCredential, selected) || selected.IsTesting)
+        if (version != _credentialLoadVersion || statusVersion != _selectedStatusVersion || !ReferenceEquals(SelectedCredential, selected))
             return;
         // A connection-scoped read returns exactly one service row, keyed by the canonical provider ID.
         // Prefer it so a retained alias (alpha-vantage, qbo) still finds its connection's status.
@@ -264,8 +266,13 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             : statuses.FirstOrDefault(item => string.Equals(item.ProviderId, selected.ProviderId, StringComparison.OrdinalIgnoreCase));
         selected.ServiceFields = status?.CredentialFields;
         selected.HasCredentials = status?.State is CredentialState.Configured or CredentialState.Partial;
-        selected.StatusText = status?.StatusMessage ?? "Credential status is unavailable from the service.";
-        selected.StatusColor = status?.State == CredentialState.Configured ? "#3FB950" : "#AABCCD";
+        // Keep the schema even when verification superseded this read. Its status label
+        // remains newer than the configured/unconfigured result captured by the older request.
+        if (verificationVersion == _credentialVerificationVersion && !selected.IsTesting)
+        {
+            selected.StatusText = status?.StatusMessage ?? "Credential status is unavailable from the service.";
+            selected.StatusColor = status?.State == CredentialState.Configured ? "#3FB950" : "#AABCCD";
+        }
         if (_editAwaitingSchema && IsEditPanelVisible)
         {
             _editAwaitingSchema = false;
@@ -435,7 +442,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         if (selected.IsTesting)
             return;
         selected.IsTesting = true;
-        ++_selectedStatusVersion;
+        ++_credentialVerificationVersion;
         IsTestResultVisible = true;
         TestResultText = $"Testing {selected.DisplayName}�";
         TestResultColor = "#AABCCD";

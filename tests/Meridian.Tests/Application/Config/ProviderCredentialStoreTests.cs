@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
@@ -57,6 +60,262 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         status.AuditMetadata.Should().ContainKey("lastRotatedAt");
         status.AuditMetadata.Should().ContainKey("rotationDueAt");
         status.AuditMetadata.Should().Contain("verificationRequired", "true");
+    }
+
+    [Fact]
+    public async Task LegacyVaultAlias_RemainsReadableAndSharesFutureSaveAndDeleteOperations()
+    {
+        using var fallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", "false");
+        var store = new FileProviderCredentialStore(_root);
+        await WriteLegacyNasdaqVaultAsync(store, includeCredential: true);
+        var originalVault = await File.ReadAllTextAsync(store.VaultPath);
+
+        var read = await store.ReadForProviderAsync("nasdaq");
+
+        read.Should().NotBeNull();
+        read!.ProviderId.Should().Be("nasdaq");
+        read.Get("ApiKey").Should().Be("legacy-test-key");
+        (await File.ReadAllTextAsync(store.VaultPath)).Should().Be(originalVault,
+            "reading a legacy alias must not require a writable vault");
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest("nasdaq",
+            new Dictionary<string, string?> { ["ApiKey"] = "rotated-test-key" }));
+        (await store.ReadForProviderAsync("nasdaqdatalink"))!.Get("ApiKey").Should().Be("rotated-test-key");
+
+        await store.DeleteAsync("nasdaqdatalink");
+        (await store.ReadForProviderAsync("nasdaq")).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task LegacyVaultAlias_DeletionMarkerPreventsCredentialResurrection()
+    {
+        using var fallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", "false");
+        var store = new FileProviderCredentialStore(_root);
+        await WriteLegacyNasdaqVaultAsync(store, includeCredential: false);
+
+        await store.ImportLegacyAsync([
+            new ProviderCredentialSaveRequest("nasdaq", new Dictionary<string, string?> { ["ApiKey"] = "stale-sidecar-key" })
+        ]);
+
+        (await store.ReadForProviderAsync("nasdaqdatalink")).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task LegacyScopedVaultAlias_RehashesEachOwnershipScopeWithoutWritingOnRead()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        ProviderCredentialScope[] owners =
+        [
+            new("tenant-a", "connection-a", "account-a", "default"),
+            new("tenant-b", "connection-a", "account-a", "default"),
+            new("tenant-a", "connection-b", "account-a", "default"),
+            new("tenant-a", "connection-a", "account-b", "default"),
+            new("tenant-a", "connection-a", "account-a", "production")
+        ];
+        var savedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var records = owners.Select((scope, index) => (scope, index)).ToDictionary(
+            item => ScopedFixtureKey("nasdaqdatalink", item.scope),
+            item => (object)ScopedFixtureRecord("nasdaqdatalink", item.scope, $"owner-{item.index}",
+                savedAt, $"generation-{item.index}", verified: true));
+        await WriteEncryptedFixtureAsync(store, records, scoped: true);
+        var directory = Path.GetDirectoryName(store.VaultPath)!;
+        var before = Directory.GetFiles(directory).ToDictionary(path => path, File.ReadAllBytes);
+
+        using (new ReadOnlyVaultScope(directory))
+        {
+            foreach (var (scope, index) in owners.Select((scope, index) => (scope, index)))
+            {
+                var canonical = await store.ReadScopedAsync("nasdaq", scope);
+                var alias = await store.ReadScopedAsync("nasdaqdatalink", scope);
+                canonical.Should().NotBeNull();
+                canonical!.ProviderId.Should().Be("nasdaq");
+                canonical.Get("ApiKey").Should().Be($"owner-{index}");
+                canonical.CredentialGeneration.Should().Be($"generation-{index}");
+                canonical.ExternalAccountId.Should().Be(scope.ExternalAccountId);
+                canonical.Environment.Should().Be(scope.Environment);
+                canonical.LastVerifiedAt.Should().Be(savedAt);
+                alias.Should().BeEquivalentTo(canonical);
+                (await store.GetScopedStatusAsync("nasdaq", scope)).CredentialState.Should().Be(ProviderCredentialStateDto.Verified);
+            }
+            (await store.ReadScopedAsync("nasdaq", new ProviderCredentialScope("missing", "connection-a", "account-a", "default")))
+                .Should().BeNull("a migrated alias cannot supply another tenant's missing record");
+        }
+
+        Directory.GetFiles(directory).Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, bytes) in before)
+            (await File.ReadAllBytesAsync(path)).Should().Equal(bytes, "canonicalizing an alias during reads must not rewrite storage");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LegacyScopedVaultAlias_CollisionRetainsTheNewestWholeRecordWithinItsOwner(bool aliasIsNewer)
+    {
+        var store = new FileProviderCredentialStore(_root);
+        var owner = new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "default");
+        var other = new ProviderCredentialScope("tenant-b", "connection-a", "account-a", "default");
+        var older = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var newer = older.AddDays(1);
+        var alias = ScopedFixtureRecord("nasdaqdatalink", owner, "alias-key", aliasIsNewer ? newer : older,
+            "alias-generation", verified: aliasIsNewer);
+        var canonical = ScopedFixtureRecord("nasdaq", owner, "canonical-key", aliasIsNewer ? older : newer,
+            "canonical-generation", verified: !aliasIsNewer);
+        ((Dictionary<string, string>)(aliasIsNewer ? canonical : alias)["fields"]!)["OlderGenerationOnly"] = "must-not-merge";
+        await WriteEncryptedFixtureAsync(store, new Dictionary<string, object>
+        {
+            [ScopedFixtureKey("nasdaqdatalink", owner)] = alias,
+            [ScopedFixtureKey("nasdaq", owner)] = canonical,
+            [ScopedFixtureKey("nasdaqdatalink", other)] = ScopedFixtureRecord("nasdaqdatalink", other, "foreign-key",
+                newer.AddDays(1), "foreign-generation")
+        }, scoped: true);
+        var before = await File.ReadAllBytesAsync(store.VaultPath);
+
+        var retained = (await store.ReadScopedAsync("nasdaq", owner))!;
+
+        retained.ProviderId.Should().Be("nasdaq");
+        retained.Credentials.Should().ContainSingle().Which.Value.Should().Be(aliasIsNewer ? "alias-key" : "canonical-key");
+        retained.CredentialGeneration.Should().Be(aliasIsNewer ? "alias-generation" : "canonical-generation");
+        retained.LastVerifiedAt.Should().Be(newer);
+        (await store.GetScopedStatusAsync("nasdaqdatalink", owner)).CredentialState.Should().Be(ProviderCredentialStateDto.Verified);
+        (await store.ReadScopedAsync("nasdaq", other))!.Get("ApiKey").Should().Be("foreign-key");
+        (await File.ReadAllBytesAsync(store.VaultPath)).Should().Equal(before);
+    }
+
+    [Fact]
+    public async Task LegacyScopedVaultAlias_SaveVerifyAndDeleteAddressOnlyTheCanonicalOwnedRecord()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        var owner = new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "default");
+        var other = new ProviderCredentialScope("tenant-b", "connection-a", "account-a", "default");
+        var savedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        await WriteEncryptedFixtureAsync(store, new Dictionary<string, object>
+        {
+            [ScopedFixtureKey("nasdaqdatalink", owner)] = ScopedFixtureRecord("nasdaqdatalink", owner, "legacy-key", savedAt, "owned-generation"),
+            [ScopedFixtureKey("nasdaqdatalink", other)] = ScopedFixtureRecord("nasdaqdatalink", other, "foreign-key", savedAt, "foreign-generation"),
+            ["nasdaqdatalink"] = new { providerId = "nasdaqdatalink", fields = new Dictionary<string, string> { ["ApiKey"] = "unassigned-key" }, updatedAt = savedAt }
+        }, scoped: true);
+        var foreign = (await store.ReadScopedAsync("nasdaq", other))!;
+        var unassigned = (await store.ReadForProviderAsync("nasdaq"))!;
+
+        await store.SaveScopedAsync(new ProviderCredentialSaveRequest("nasdaqdatalink",
+            new Dictionary<string, string?> { ["ApiKey"] = "replacement-key" }, "default"), owner);
+        var replacement = (await store.ReadScopedAsync("nasdaq", owner))!;
+        replacement.Get("ApiKey").Should().Be("replacement-key");
+        replacement.CredentialGeneration.Should().NotBe("owned-generation");
+        await store.RecordScopedVerificationAsync(new ProviderCredentialVerificationUpdate("nasdaqdatalink", true,
+            ExternalAccountId: owner.ExternalAccountId) { ExpectedCredentialGeneration = replacement.CredentialGeneration }, owner);
+        (await store.GetScopedStatusAsync("nasdaq", owner)).CredentialState.Should().Be(ProviderCredentialStateDto.Verified);
+        await store.DeleteScopedAsync("nasdaq", owner, "test-operator");
+
+        (await new FileProviderCredentialStore(_root).ReadScopedAsync("nasdaqdatalink", owner)).Should().BeNull();
+        (await store.ReadScopedAsync("nasdaq", other)).Should().BeEquivalentTo(foreign);
+        (await store.ReadForProviderAsync("nasdaq")).Should().BeEquivalentTo(unassigned);
+    }
+
+    [Theory]
+    [InlineData("key")]
+    [InlineData("provider")]
+    [InlineData("account")]
+    [InlineData("environment")]
+    [InlineData("missing-scope")]
+    public async Task LegacyScopedVaultAlias_MalformedOwnershipFailsClosedBeforeReadOrMutation(string mismatch)
+    {
+        var store = new FileProviderCredentialStore(_root);
+        var owner = new ProviderCredentialScope("tenant-a", "connection-a", "account-a", "default");
+        var record = ScopedFixtureRecord("nasdaqdatalink", owner, "must-not-return", DateTimeOffset.UtcNow, "generation");
+        var key = ScopedFixtureKey("nasdaqdatalink", owner);
+        if (mismatch == "key")
+            key = ScopedFixtureKey("nasdaqdatalink", new ProviderCredentialScope("tenant-b", "connection-a", "account-a", "default"));
+        else if (mismatch == "provider")
+            record["providerId"] = "polygon";
+        else if (mismatch == "account")
+            record["externalAccountId"] = "account-b";
+        else if (mismatch == "environment")
+            record["environment"] = "production";
+        else
+            record["scope"] = null;
+        await WriteEncryptedFixtureAsync(store, new Dictionary<string, object> { [key] = record }, scoped: true);
+        var before = await File.ReadAllBytesAsync(store.VaultPath);
+        var read = () => store.ReadScopedAsync("nasdaq", owner);
+        var save = () => store.SaveScopedAsync(new ProviderCredentialSaveRequest("nasdaq",
+            new Dictionary<string, string?> { ["ApiKey"] = "replacement" }, "default"), owner);
+        var delete = () => store.DeleteScopedAsync("nasdaqdatalink", owner);
+
+        await read.Should().ThrowAsync<InvalidDataException>();
+        await save.Should().ThrowAsync<InvalidDataException>();
+        await delete.Should().ThrowAsync<InvalidDataException>();
+
+        (await File.ReadAllBytesAsync(store.VaultPath)).Should().Equal(before);
+        File.Exists(Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl")).Should().BeFalse();
+    }
+
+    private static string ScopedFixtureKey(string providerId, ProviderCredentialScope scope)
+        => providerId + "@scope:" + Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new[]
+            { providerId, scope.TenantId, scope.ConnectionId, scope.ExternalAccountId, scope.Environment })));
+
+    private static Dictionary<string, object?> ScopedFixtureRecord(string providerId, ProviderCredentialScope scope,
+        string apiKey, DateTimeOffset updatedAt, string generation, bool verified = false)
+        => new()
+        {
+            ["providerId"] = providerId,
+            ["scope"] = scope,
+            ["fields"] = new Dictionary<string, string> { ["ApiKey"] = apiKey },
+            ["environment"] = scope.Environment,
+            ["externalAccountId"] = scope.ExternalAccountId,
+            ["savedAt"] = updatedAt,
+            ["updatedAt"] = updatedAt,
+            ["lastVerifiedAt"] = verified ? updatedAt : null,
+            ["lastSuccessfulAt"] = verified ? updatedAt : null,
+            ["metadata"] = new Dictionary<string, string>
+            {
+                ["credentialGeneration"] = generation,
+                ["verificationRequired"] = verified ? "false" : "true"
+            }
+        };
+
+    private static async Task WriteLegacyNasdaqVaultAsync(FileProviderCredentialStore store, bool includeCredential)
+    {
+        // Build an encrypted v1 fixture using the retained on-disk identity. This exercises the
+        // public vault read path without teaching the current save API to emit legacy aliases.
+        var records = new Dictionary<string, object>();
+        if (includeCredential)
+        {
+            records["nasdaqdatalink"] = new
+            {
+                providerId = "nasdaqdatalink",
+                fields = new Dictionary<string, string> { ["ApiKey"] = "legacy-test-key" },
+                savedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+                updatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            };
+        }
+
+        await WriteEncryptedFixtureAsync(store, records, scoped: false);
+    }
+
+    private static async Task WriteEncryptedFixtureAsync(FileProviderCredentialStore store, Dictionary<string, object> records, bool scoped)
+    {
+        var plainBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+        {
+            version = scoped ? 2 : 1,
+            providers = records,
+            legacyImportedProviderIds = new[] { "nasdaqdatalink" }
+        }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+        var key = RandomNumberGenerator.GetBytes(32);
+        var nonce = RandomNumberGenerator.GetBytes(12);
+        var tag = new byte[16];
+        var cipher = new byte[plainBytes.Length];
+        using (var aes = new AesGcm(key, tag.Length))
+            aes.Encrypt(nonce, plainBytes, cipher, tag);
+
+        var directory = Path.GetDirectoryName(store.VaultPath)!;
+        Directory.CreateDirectory(directory);
+        await File.WriteAllBytesAsync(Path.Combine(directory, "provider-credentials.key"), key);
+        await File.WriteAllTextAsync(store.VaultPath, JsonSerializer.Serialize(new
+        {
+            version = scoped ? 2 : 1,
+            protection = scoped ? "local-aes-gcm+scoped-v2" : "local-aes-gcm",
+            cipherText = Convert.ToBase64String([.. nonce, .. tag, .. cipher])
+        }));
     }
 
     [Theory]
@@ -345,7 +604,7 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     [InlineData("finnhub", "finnhub", "FINNHUB_API_KEY")]
     [InlineData("tiingo", "tiingo", "TIINGO_API_TOKEN")]
     [InlineData("alpha-vantage", "alphavantage", "ALPHA_VANTAGE_API_KEY")]
-    [InlineData("nasdaq", "nasdaqdatalink", "NASDAQ_DATA_LINK_API_KEY")]
+    [InlineData("nasdaqdatalink", "nasdaq", "NASDAQ_DATA_LINK_API_KEY")]
     [InlineData("twelve-data", "twelvedata", "TWELVEDATA_API_KEY")]
     [InlineData("open-figi", "openfigi", "OPENFIGI_API_KEY")]
     [InlineData("stooq", "stooq", null)]

@@ -238,9 +238,17 @@ public sealed class ProviderConnectionLifecycleService
         if (accountingVerification is not null)
         {
             var result = await accountingVerification.VerifyConnectionAsync(ct).ConfigureAwait(false);
-            await _credentialStore.RecordVerificationAsync(new ProviderCredentialVerificationUpdate(
-                descriptor.ProviderId, result.Success, result.LastError, result.ExternalCompanyId,
-                result.VerifiedAtUtc, actor ?? "provider-connection-lifecycle"), ct).ConfigureAwait(false);
+            try
+            {
+                await _credentialStore.RecordVerificationAsync(new ProviderCredentialVerificationUpdate(
+                    descriptor.ProviderId, result.Success, result.LastError, result.ExternalCompanyId,
+                    result.VerifiedAtUtc, actor ?? "provider-connection-lifecycle")
+                { ExpectedCredentialGeneration = result.ExpectedCredentialGeneration }, ct).ConfigureAwait(false);
+            }
+            catch (ProviderCredentialConflictException)
+            {
+                return CredentialChangedVerificationResult(descriptor.ProviderId);
+            }
             return new ProviderCredentialVerificationResultDto(
                 descriptor.ProviderId,
                 result.Success,
@@ -320,7 +328,8 @@ public sealed class ProviderConnectionLifecycleService
                     Success: true,
                     ExternalAccountId: accountId,
                     VerifiedAt: verifiedAt,
-                    Actor: actor ?? "provider-connection-lifecycle"),
+                    Actor: actor ?? "provider-connection-lifecycle")
+                { ExpectedCredentialGeneration = read.CredentialGeneration },
                 ct).ConfigureAwait(false);
 
             return new ProviderCredentialVerificationResultDto(
@@ -333,6 +342,10 @@ public sealed class ProviderConnectionLifecycleService
                 ExternalAccountId: accountId,
                 Warnings: BuildAlpacaWarnings(environment));
         }
+        catch (ProviderCredentialConflictException)
+        {
+            return CredentialChangedVerificationResult("alpaca");
+        }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             const string message = "Alpaca account verification failed.";
@@ -340,14 +353,22 @@ public sealed class ProviderConnectionLifecycleService
             _logger.LogWarning("Alpaca account verification failed for {Environment} ({FailureType})",
                 environment, ex.GetType().Name);
             var verifiedAt = DateTimeOffset.UtcNow;
-            await _credentialStore.RecordVerificationAsync(
-                new ProviderCredentialVerificationUpdate(
-                    "alpaca",
-                    Success: false,
-                    ErrorMessage: message,
-                    VerifiedAt: verifiedAt,
-                    Actor: actor ?? "provider-connection-lifecycle"),
-                ct).ConfigureAwait(false);
+            try
+            {
+                await _credentialStore.RecordVerificationAsync(
+                    new ProviderCredentialVerificationUpdate(
+                        "alpaca",
+                        Success: false,
+                        ErrorMessage: message,
+                        VerifiedAt: verifiedAt,
+                        Actor: actor ?? "provider-connection-lifecycle")
+                    { ExpectedCredentialGeneration = read.CredentialGeneration },
+                    ct).ConfigureAwait(false);
+            }
+            catch (ProviderCredentialConflictException)
+            {
+                return CredentialChangedVerificationResult("alpaca");
+            }
 
             return new ProviderCredentialVerificationResultDto(
                 "alpaca",
@@ -360,6 +381,11 @@ public sealed class ProviderConnectionLifecycleService
                 Warnings: ["Alpaca account verification failed; downstream brokerage sync remains blocked."]);
         }
     }
+
+    private static ProviderCredentialVerificationResultDto CredentialChangedVerificationResult(string providerId)
+        => new(providerId, false, ProviderVerificationStateDto.NotVerified,
+            ProviderContinuityHealthDto.Blocked, null,
+            "Provider credentials changed during verification. Verify the current connection again.", null, []);
 
     private static IReadOnlyDictionary<string, string?> NormalizeCredentialFields(
         ProviderCredentialCatalogEntry descriptor,

@@ -1,4 +1,5 @@
 using Meridian.Ui.Services.Services;
+using ProviderIdentity = Meridian.Infrastructure.Adapters.Core.ProviderIdentity;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -323,7 +324,7 @@ public sealed class AddProviderWizardViewModel : BindableBase
     public ProviderCatalogEntry? FindProvider(string providerId)
     {
         return _providerCatalogEntries.FirstOrDefault(provider =>
-            string.Equals(provider.Id, providerId, StringComparison.OrdinalIgnoreCase));
+            ProviderIdentity.EqualsId(provider.Id, providerId));
     }
 
     /// <summary>Populates the right-panel detail properties from the selected provider entry.</summary>
@@ -404,6 +405,13 @@ public sealed class AddProviderWizardViewModel : BindableBase
         ConnectionTestStatusText = $"Testing {providerName} connectivity...";
     }
 
+    /// <summary>Clears readiness when the provider or the credential editors change.</summary>
+    public void ResetConnectionTest(string message = "Not tested yet")
+    {
+        ConnectionTestDotBrush = MutedBrush;
+        ConnectionTestStatusText = message;
+    }
+
     /// <summary>Marks the connection test as successful: verified by the service, or no credentials needed.</summary>
     public void SetConnectionTestSuccess()
     {
@@ -458,14 +466,14 @@ public sealed class AddProviderWizardViewModel : BindableBase
     private void RefreshProviderCatalog()
     {
         var statusesByProviderId = _providerCredentialStatuses
-            .GroupBy(status => status.ProviderId, StringComparer.OrdinalIgnoreCase)
+            .GroupBy(status => ProviderIdentity.NormalizeId(status.ProviderId), StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 
         var filtered = _providerCatalogEntries
             .Where(ProviderMatchesActiveFilter)
             .Select(provider =>
             {
-                statusesByProviderId.TryGetValue(provider.Id, out var status);
+                statusesByProviderId.TryGetValue(ProviderIdentity.NormalizeId(provider.Id), out var status);
                 return new ProviderCatalogViewModel(provider, status);
             })
             .ToArray();

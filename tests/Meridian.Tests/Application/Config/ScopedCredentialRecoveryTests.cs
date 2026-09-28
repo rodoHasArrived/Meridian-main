@@ -14,6 +14,55 @@ public sealed class ScopedCredentialRecoveryTests : IDisposable
     private static readonly ProviderCredentialScope Other = new("tenant-b", "connection-a", "account-a", "paper");
 
     [Theory]
+    [InlineData("current")]
+    [InlineData("replaced")]
+    [InlineData("deleted")]
+    [InlineData("other-scope")]
+    public async Task ScopedVerification_RequiresTheExpectedOwnedGeneration(string transition)
+    {
+        var vault = new FileProviderCredentialStore(_root);
+        await vault.SaveAsync(Request("unassigned"));
+        await vault.SaveScopedAsync(Request("owned"), Owner);
+        await vault.SaveScopedAsync(Request("foreign"), Other);
+        var original = (await vault.ReadScopedAsync("alpaca", Owner))!;
+        var foreign = (await vault.ReadScopedAsync("alpaca", Other))!;
+        var unassigned = (await vault.ReadForProviderAsync("alpaca"))!;
+        if (transition == "replaced")
+            await vault.SaveScopedAsync(Request("replacement"), Owner);
+        else if (transition == "deleted")
+            await vault.DeleteScopedAsync("alpaca", Owner, "operator");
+        var vaultBefore = await File.ReadAllBytesAsync(vault.VaultPath);
+        var auditPath = Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl");
+        var auditBefore = await File.ReadAllBytesAsync(auditPath);
+        var verifiedAt = new DateTimeOffset(2026, 9, 28, 12, 0, 0, TimeSpan.Zero);
+        var update = new ProviderCredentialVerificationUpdate("alpaca", true,
+            ExternalAccountId: Owner.ExternalAccountId, VerifiedAt: verifiedAt, Actor: "controller")
+        {
+            ExpectedCredentialGeneration = transition == "other-scope"
+                ? foreign.CredentialGeneration : original.CredentialGeneration
+        };
+
+        var verify = () => vault.RecordScopedVerificationAsync(update, Owner);
+
+        if (transition == "current")
+        {
+            await verify();
+            var retained = (await new FileProviderCredentialStore(_root).ReadScopedAsync("alpaca", Owner))!;
+            retained.CredentialGeneration.Should().Be(original.CredentialGeneration);
+            retained.LastVerifiedAt.Should().Be(verifiedAt);
+            retained.AuditMetadata["lastVerifiedBy"].Should().Be("controller");
+        }
+        else
+        {
+            await verify.Should().ThrowAsync<ProviderCredentialConflictException>();
+            (await File.ReadAllBytesAsync(vault.VaultPath)).Should().Equal(vaultBefore);
+            (await File.ReadAllBytesAsync(auditPath)).Should().Equal(auditBefore);
+        }
+        (await vault.ReadScopedAsync("alpaca", Other)).Should().BeEquivalentTo(foreign);
+        (await vault.ReadForProviderAsync("alpaca")).Should().BeEquivalentTo(unassigned);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ReadScopedOAuth_WriterLockHeldReadsOnlyOwnedPublishedGeneration(bool recoverBackup)

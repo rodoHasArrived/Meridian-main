@@ -39,6 +39,22 @@ unassigned connections never contribute. `?scope=provider` returns provider-wide
 such as the add-provider wizard that read and write the provider-wide record. Ownership checks compare canonical provider IDs,
 so a connection retained under an alias such as `alpha-vantage` or `qbo` still resolves.
 
+Provider readiness resolves configuration, credential and telemetry aliases through the shared
+ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and
+`interactive-brokers` project one `ibkr` readiness row. An explicitly disabled module family
+overrides enabled source rows and retained healthy connection evidence, so configuration aliases
+cannot promote a disabled factory to readiness.
+
+The shared workstation registers credentialed Xero and NetSuite accounting
+providers alongside the existing fixtures. Their HTTP client disables redirects;
+provider-neutral credential setup and connection verification expose them to
+both workstation lanes. Transport and export-control policy stay in Data Integration.
+Connection verification records the provider's expected credential generation once
+with the requesting actor. Concurrent replacements reject stale results and return
+a blocked verification response without changing the replacement's status. Alpaca applies the same
+generation check to both successful and failed tests, including scoped connections, deletion and
+recreation. A stale test cannot verify or attach an old error to the replacement credentials.
+
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
 session resolution recheck the account scope after runtime account changes. Unpartitioned

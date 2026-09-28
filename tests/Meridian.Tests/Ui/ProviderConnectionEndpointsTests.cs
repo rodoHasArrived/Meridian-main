@@ -379,6 +379,114 @@ public sealed class ProviderConnectionEndpointsTests
         (await store.GetStatusAsync("alpaca")).AuditMetadata["lastVerifiedBy"].Should().Be("provider-ops");
     }
 
+    [Theory]
+    [InlineData(false, "replaced", true)]
+    [InlineData(false, "replaced", false)]
+    [InlineData(false, "deleted", true)]
+    [InlineData(false, "deleted", false)]
+    [InlineData(false, "recreated", true)]
+    [InlineData(false, "recreated", false)]
+    [InlineData(true, "replaced", true)]
+    [InlineData(true, "replaced", false)]
+    [InlineData(true, "deleted", true)]
+    [InlineData(true, "deleted", false)]
+    [InlineData(true, "recreated", true)]
+    [InlineData(true, "recreated", false)]
+    public async Task AlpacaVerification_CredentialChangesRejectTheInFlightResultWithoutMutation(
+        bool scoped, string transition, bool providerSucceeds)
+    {
+        using var env = AlpacaEnvScope.Clear();
+        using var handler = new PausedVerificationHandler(providerSucceeds);
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(handler)));
+        if (scoped)
+            await RetainConnectionAsync(app, "owned", "provider-tenant", "alpaca", "account-a", "paper");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        var scope = new ProviderCredentialScope("provider-tenant", "owned", "account-a", "paper");
+        var otherScope = new ProviderCredentialScope("another-tenant", "owned", "account-a", "paper");
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("alpaca",
+            new Dictionary<string, string?> { ["KeyId"] = "foreign-key", ["SecretKey"] = "foreign-secret" }, "paper"), otherScope);
+        var suffix = scoped ? "?connectionId=owned" : string.Empty;
+        var credentialRoute = "/api/providers/alpaca/credentials" + suffix;
+        var client = app.GetTestClient();
+        (await client.PutAsync(credentialRoute, JsonContent(new
+        {
+            credentials = new { KeyId = "tested-key", SecretKey = "tested-secret" },
+            environment = "paper"
+        }))).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        var verification = client.PostAsync("/api/providers/alpaca/verify" + suffix, null, timeout.Token);
+        byte[] vaultBefore;
+        string auditBefore;
+        var auditPath = Path.Combine(Path.GetDirectoryName(vault.VaultPath)!, "provider-credentials.audit.jsonl");
+        try
+        {
+            await handler.Started.WaitAsync(timeout.Token);
+            handler.TestedKey.Should().Be("tested-key");
+            if (transition is "deleted" or "recreated")
+                (await client.DeleteAsync(credentialRoute)).StatusCode.Should().Be(HttpStatusCode.OK);
+            if (transition is "replaced" or "recreated")
+            {
+                (await client.PutAsync(credentialRoute, JsonContent(new
+                {
+                    credentials = new { KeyId = "replacement-key", SecretKey = "replacement-secret" },
+                    environment = "paper"
+                }))).StatusCode.Should().Be(HttpStatusCode.OK);
+            }
+            vaultBefore = await File.ReadAllBytesAsync(vault.VaultPath);
+            auditBefore = await File.ReadAllTextAsync(auditPath);
+        }
+        finally
+        {
+            handler.Release();
+        }
+
+        var response = await verification;
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadAsync<ProviderCredentialVerificationResultDto>(response);
+        result.Success.Should().BeFalse();
+        result.VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+        result.Health.Should().Be(ProviderContinuityHealthDto.Blocked);
+        result.LastVerifiedAt.Should().BeNull();
+        result.ExternalAccountId.Should().BeNull();
+        result.LastError.Should().Be("Provider credentials changed during verification. Verify the current connection again.");
+        (await File.ReadAllBytesAsync(vault.VaultPath)).Should().Equal(vaultBefore,
+            "neither a stale success nor a stale failure may modify the current credential generation");
+        (await File.ReadAllTextAsync(auditPath)).Should().Be(auditBefore,
+            "rejected verification must not create misleading verification audit evidence");
+        var current = scoped ? await vault.ReadScopedAsync("alpaca", scope) : await vault.ReadForProviderAsync("alpaca");
+        if (transition == "deleted")
+            current.Should().BeNull();
+        else
+        {
+            current!.Get("KeyId").Should().Be("replacement-key");
+            current.LastVerifiedAt.Should().BeNull();
+            current.LastError.Should().BeNull();
+        }
+        (await vault.ReadScopedAsync("alpaca", otherScope))!.Get("KeyId").Should().Be("foreign-key");
+    }
+
+    private sealed class PausedVerificationHandler(bool succeeds) : HttpMessageHandler
+    {
+        private readonly TaskCompletionSource _started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _released = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public Task Started => _started.Task;
+        public string? TestedKey { get; private set; }
+        public void Release() => _released.TrySetResult();
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            TestedKey = request.Headers.GetValues("APCA-API-KEY-ID").Single();
+            _started.TrySetResult();
+            await _released.Task.WaitAsync(ct);
+            return new HttpResponseMessage(succeeds ? HttpStatusCode.OK : HttpStatusCode.Unauthorized)
+            {
+                Content = new StringContent("""{"account_number":"account-a"}""", Encoding.UTF8, "application/json")
+            };
+        }
+    }
+
     private sealed class VerificationRecoveryHandler(string failureKind, string secret) : HttpMessageHandler
     {
         private int _calls;

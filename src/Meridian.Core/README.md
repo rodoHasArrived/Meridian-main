@@ -59,6 +59,9 @@ file hot-reload watching for Application commands, configuration services, WPF s
 shared endpoints.
 Schema generation excludes members marked `JsonIgnore`: those members may remain as in-process
 compatibility aliases, but they are not accepted configuration inputs.
+`DataSourceKindConverter` resolves the ProviderSdk alias map before enum validation, so `ibkr` and
+`interactive-brokers` load as `DataSourceKind.IB`. Unknown providers, unsupported transport modes,
+and undefined numeric values remain configuration errors.
 These Core configuration records and helpers use the `Meridian.Core.Config` namespace; Application
 keeps only configuration orchestration, credential testing, and deployment/startup adapters.
 Core exception, logging, pipeline-policy, subscription model, serialization, and monitoring helper

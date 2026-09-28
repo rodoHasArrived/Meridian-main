@@ -2,6 +2,10 @@
 
 This directory contains Python scripts for automating documentation tasks in the Meridian project.
 
+Repository structure generation excludes temporary schema-control inventory and candidate
+outputs under `build/schema-control`. Canonical manifests in `database/manifest` and schema
+tooling remain visible, so running schema validation does not change the published tree.
+
 ## Table of Contents
 
 - [Core Scripts](#core-scripts)

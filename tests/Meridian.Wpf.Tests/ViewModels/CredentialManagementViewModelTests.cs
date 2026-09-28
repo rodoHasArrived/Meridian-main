@@ -16,6 +16,94 @@ public sealed class CredentialManagementViewModelTests
          {"connectionId":"live-b","providerFamilyId":"alpaca","displayName":"Live","tenantId":"tenant-a","externalAccountId":"account-b","credentialEnvironment":"live"}]
         """;
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void Verification_RetainsTheSelectedSchemaBeforeAndAfterVerification(
+        bool testAll,
+        bool statusCompletesDuringVerification)
+    {
+        WpfTestThread.Run(async () =>
+        {
+            const string configuredStatus = """
+                [{"providerId":"alpaca","credentialState":3,"credentialFields":[
+                  {"name":"KeyId","label":"Key ID","required":true,"inputKind":1},
+                  {"name":"SecretKey","label":"Secret key","required":true,"inputKind":1}]}]
+                """;
+            const string verificationResult = """
+                {"providerId":"alpaca","success":true,"verificationState":2,"lastVerifiedAt":"2026-09-28T12:00:00Z"}
+                """;
+            var statusBody = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var verificationBody = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var verificationStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var verifiedConnections = new List<string>();
+            using var handler = new Handler(async request =>
+            {
+                if (request.Method == HttpMethod.Post)
+                {
+                    verifiedConnections.Add(request.RequestUri!.Query);
+                    if (request.RequestUri.Query.Contains("live-b"))
+                    {
+                        verificationStarted.TrySetResult();
+                        return Json(await verificationBody.Task);
+                    }
+
+                    return Json(verificationResult);
+                }
+
+                if (request.RequestUri!.AbsolutePath == "/api/provider-routing/connections")
+                    return Json(Connections);
+                return Json(request.RequestUri.Query.Contains("live-b")
+                    ? await statusBody.Task : configuredStatus);
+            });
+            using var api = new ApiClientService(new Factory(handler));
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            await viewModel.LoadCredentialsAsync();
+            if (!testAll)
+                viewModel.SelectedCredential = viewModel.Credentials.Single(row => row.ConnectionId == "live-b");
+            var verification = ((IAsyncRelayCommand)(testAll ? viewModel.TestAllCredentialsCommand : viewModel.TestCredentialCommand)).ExecuteAsync(null);
+            try
+            {
+                await verificationStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                viewModel.SelectedCredential!.ConnectionId.Should().Be("live-b");
+                if (statusCompletesDuringVerification)
+                {
+                    statusBody.SetResult(configuredStatus);
+                    await viewModel.SelectionStatusLoad;
+                    viewModel.SelectedCredential.IsTesting.Should().BeTrue();
+                }
+
+                verificationBody.SetResult(verificationResult);
+                await verification;
+                viewModel.SelectedCredential.StatusText.Should().Be("Verified");
+                if (!statusCompletesDuringVerification)
+                {
+                    statusBody.SetResult(configuredStatus);
+                    await viewModel.SelectionStatusLoad;
+                }
+
+                verifiedConnections.Should().Equal(testAll
+                    ? new[] { "?connectionId=paper-a", "?connectionId=live-b" }
+                    : new[] { "?connectionId=live-b" });
+                viewModel.SelectedCredential.StatusText.Should().Be("Verified");
+                viewModel.SelectedCredential.ServiceFields.Should().NotBeNull(
+                    "verification must preserve the in-flight schema for the selected connection");
+                viewModel.EditCredentialCommand.Execute(null);
+                viewModel.EditFields.Select(field => field.FieldName).Should().Equal("KeyId", "SecretKey");
+                viewModel.EditFields.Should().OnlyContain(field => field.Value == string.Empty);
+            }
+            finally
+            {
+                statusBody.TrySetResult(configuredStatus);
+                verificationBody.TrySetResult(verificationResult);
+                await verification;
+                await viewModel.SelectionStatusLoad;
+            }
+        });
+    }
+
     [Fact]
     public void SelectionAndSave_KeepAccountScopeWhenAnOlderStatusCompletesLate()
     {

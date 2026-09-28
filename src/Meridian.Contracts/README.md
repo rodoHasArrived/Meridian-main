@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-09-25
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Contracts
@@ -15,6 +15,12 @@ Provider connection API and configuration DTOs retain optional `TenantId` and `C
 alongside connection and external-account identity. These additive fields preserve server-owned
 credential scope across both workstation lanes. They are not accepted as tenant authority in the
 connection creation request; absent fields remain unassigned legacy ownership.
+
+External GL import summaries optionally retain `TrialBalanceBasis`: the provider's
+income-statement year start, income account codes and retained-earnings identity.
+It is distinct from the requested journal period. Reconciliation rows optionally
+retain gross `PeriodDebit`/`PeriodCredit` for export review, independently of report
+balances. These additive fields are omitted when absent to preserve legacy payloads.
 
 Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
 first/last observation and successful-run clearing evidence. This metadata is omitted when absent
@@ -29,6 +35,18 @@ and are omitted from JSON, preserving the serialized shape of legacy posting fin
 Lifecycle route contracts distinguish sanitized unauthenticated readiness/liveness probes from
 authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
 single monitoring transport owner.
+
+`Api/ProviderCatalog.cs` exposes six provider-factory inventory flags: `SupportsStreaming`,
+`SupportsBackfill`, `SupportsSymbolSearch`, `SupportsCorporateActions`, `SupportsOptionsChain`,
+and `SupportsBrokerage`. Backfill, symbol search, and on-demand corporate actions are additive
+fields; the application projects them from the same descriptor slots that register built-in
+factories. Provider IDs in the application catalog are canonical (`ibkr`, `nasdaq`), while
+ProviderSdk resolves accepted configuration aliases before the projection. Contracts keeps its
+static fallback independent of concrete adapters. Factory inventory alone supplies no readiness
+or entitlement proof: `MarketDataCapabilities` retains the provider's feed, pacing, entitlement,
+timestamp, and quality declarations. Historical dividend/split evidence does not imply an
+on-demand corporate-action factory. `ProviderCatalogCompositionTests` validates these fields and
+metadata through the actual public application registration path.
 
 Operations Continuity journal candidates carry a typed `Provenance` origin mark into the posting
 command. Omitted marks remain `Real`; seeded or simulated evidence must be explicitly marked,
@@ -1507,6 +1525,7 @@ W7 live-readiness gate.
 
 ```bash
 dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCatalogCompositionTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~ClusterCoordinatorServiceTests|FullyQualifiedName~SplitBrainDetectorTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~DiagnosticsEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```

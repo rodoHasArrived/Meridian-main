@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
+using ProviderIdentity = Meridian.Infrastructure.Adapters.Core.ProviderIdentity;
 
 namespace Meridian.Ui.Services.Services;
 
@@ -148,7 +149,7 @@ public sealed class SettingsConfigurationService
             new ProviderCredentialUpsertRequestDto(fields), ct).ConfigureAwait(false);
         ThrowIfRefused(response.StatusCode, "persistence");
         if (!response.Success || response.Data is null ||
-            !string.Equals(response.Data.ProviderId, providerId, StringComparison.OrdinalIgnoreCase) ||
+            !ProviderIdentity.EqualsId(response.Data.ProviderId, providerId) ||
             response.Data.CredentialState is not (ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified))
             throw new InvalidOperationException("Credential persistence was not confirmed by the authenticated service.");
     }
@@ -160,7 +161,7 @@ public sealed class SettingsConfigurationService
         var response = await _apiClient.DeleteWithResponseAsync<ProviderCredentialMutationResultDto>(route, ct).ConfigureAwait(false);
         ThrowIfRefused(response.StatusCode, "removal");
         if (!response.Success || response.Data is null ||
-            !string.Equals(response.Data.ProviderId, providerId, StringComparison.OrdinalIgnoreCase) ||
+            !ProviderIdentity.EqualsId(response.Data.ProviderId, providerId) ||
             response.Data.CredentialState != ProviderCredentialStateDto.Missing)
             throw new InvalidOperationException("Credential removal was not confirmed by the authenticated service.");
     }
@@ -175,7 +176,7 @@ public sealed class SettingsConfigurationService
         return response.Success && response.Data is { Success: true } result &&
             (result is { VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null } ||
              result.VerificationState == ProviderVerificationStateDto.NotRequired) &&
-            string.Equals(result.ProviderId, providerId, StringComparison.OrdinalIgnoreCase);
+            ProviderIdentity.EqualsId(result.ProviderId, providerId);
     }
 
     private static void ThrowIfRefused(int statusCode, string operation)
@@ -191,7 +192,7 @@ public sealed class SettingsConfigurationService
         ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
         if (connectionId is not null)
             ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
-        var route = UiApiRoutes.WithParam(template, "providerId", providerId);
+        var route = UiApiRoutes.WithParam(template, "providerId", ProviderIdentity.NormalizeId(providerId));
         return connectionId is null ? route : UiApiRoutes.WithQuery(route, "connectionId=" + Uri.EscapeDataString(connectionId));
     }
 
@@ -236,25 +237,32 @@ public sealed class SettingsConfigurationService
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (Exception) { /* Failed reads never authorize a configured state. */ }
 
-        var catalog = GetProviderCatalog();
-        var localStatuses = catalog.Select(provider =>
+        var catalog = GetProviderCatalog()
+            .GroupBy(provider => ProviderIdentity.NormalizeId(provider.Id), StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        var rowsByProvider = rows
+            .Where(row => row is not null && !string.IsNullOrWhiteSpace(row.ProviderId))
+            .ToLookup(row => ProviderIdentity.NormalizeId(row.ProviderId), StringComparer.Ordinal);
+        var localStatuses = catalog.Select(entry =>
         {
-            var matches = rows.Where(row => row is not null && string.Equals(row.ProviderId, provider.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
+            var providerId = entry.Key;
+            var provider = entry.Value;
+            var matches = rowsByProvider[providerId].ToArray();
             if (matches.Length != 1)
-                return new ProviderCredentialStatus(provider.Id, provider.DisplayName, CredentialState.Unavailable,
+                return new ProviderCredentialStatus(providerId, provider.DisplayName, CredentialState.Unavailable,
                     "Credential status is unavailable from the service.", []);
-            return ToStatus(provider.Id, provider.DisplayName, matches[0]);
+            return ToStatus(providerId, provider.DisplayName, matches[0]);
         });
 
         // Managed providers the service reports but the local market-data catalog omits (for example
         // QuickBooks, Plaid or IB Flex) are still credentials the operator owns, so they are included.
-        var serverOnlyStatuses = rows
-            .Where(row => row is not null && !string.IsNullOrWhiteSpace(row.ProviderId) &&
-                !catalog.Any(provider => string.Equals(provider.Id, row.ProviderId, StringComparison.OrdinalIgnoreCase)))
-            .GroupBy(row => row.ProviderId, StringComparer.OrdinalIgnoreCase)
-            .Where(group => group.Count() == 1)
-            .Select(group => group.Single())
-            .Select(row => ToStatus(row.ProviderId, string.IsNullOrWhiteSpace(row.DisplayName) ? row.ProviderId : row.DisplayName, row));
+        var serverOnlyStatuses = rowsByProvider
+            .Where(group => !catalog.ContainsKey(group.Key) && group.Count() == 1)
+            .Select(group =>
+            {
+                var row = group.Single();
+                return ToStatus(group.Key, string.IsNullOrWhiteSpace(row.DisplayName) ? group.Key : row.DisplayName, row);
+            });
 
         return localStatuses.Concat(serverOnlyStatuses).ToArray();
     }
@@ -277,7 +285,8 @@ public sealed class SettingsConfigurationService
             CredentialState.Missing => "Credentials are missing or require correction",
             _ => "Credential status is unavailable from the service."
         };
-        return new ProviderCredentialStatus(providerId, displayName, state, message, [], row.CredentialFields);
+        return new ProviderCredentialStatus(providerId, displayName, state, message, [], row.CredentialFields,
+            row.VerificationState, row.LastVerifiedAt);
     }
 
     /// <summary>
@@ -656,7 +665,9 @@ public sealed record ProviderCredentialStatus(
     CredentialState State,
     string StatusMessage,
     string[] MissingEnvVars,
-    IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null)
+    IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null,
+    ProviderVerificationStateDto VerificationState = ProviderVerificationStateDto.NotVerified,
+    DateTimeOffset? LastVerifiedAt = null)
 {
     /// <summary>
     /// True when the authenticated credential service reported this provider together with the
