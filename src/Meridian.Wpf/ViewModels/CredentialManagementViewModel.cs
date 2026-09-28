@@ -305,10 +305,16 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         var selected = SelectedCredential;
         if (selected is null || IsBusy)
             return;
-        var fields = EditFields.Where(field => !string.IsNullOrWhiteSpace(field.FieldName))
+        // Editors start blank and the vault treats a blank value as a field deletion, so only fields
+        // the operator actually filled in are submitted. Untouched fields keep their retained values.
+        var fields = EditFields.Where(field => !string.IsNullOrWhiteSpace(field.FieldName) && !string.IsNullOrWhiteSpace(field.Value))
             .ToDictionary(field => field.FieldName, field => (string?)field.Value, StringComparer.OrdinalIgnoreCase);
         if (fields.Count == 0)
+        {
+            _notificationService.ShowNotification("Nothing to Save",
+                "Enter a value for at least one credential field. Blank fields keep their current values.", NotificationType.Warning);
             return;
+        }
         IsBusy = true;
         try
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -92,8 +93,9 @@ public partial class AddProviderWizardPage : Page
 
         foreach (var field in _selectedProvider.CredentialFields)
         {
-            var envVar = field.EnvironmentVariable ?? string.Empty;
-            var currentValue = GetConfiguredEnvironmentValue(field) ?? "";
+            // Editors start blank: secrets are never read back from the vault or the process
+            // environment, and a blank field keeps whatever value the vault already retains.
+            var automationKey = field.EnvironmentVariable ?? field.Name;
             var isSecret = IsSecretCredentialField(field);
 
             var label = new TextBlock
@@ -106,10 +108,10 @@ public partial class AddProviderWizardPage : Page
             FrameworkElement input = isSecret
                 ? new SecretInputControl
                 {
-                    Secret = currentValue,
-                    Tag = envVar,
-                    InputAutomationId = $"AddProviderCredentialInput_{envVar}",
-                    RevealAutomationId = $"AddProviderCredentialReveal_{envVar}",
+                    Secret = string.Empty,
+                    Tag = field.Name,
+                    InputAutomationId = $"AddProviderCredentialInput_{automationKey}",
+                    RevealAutomationId = $"AddProviderCredentialReveal_{automationKey}",
                     InputAutomationName = field.DisplayName,
                     RevealAutomationName = "Show or hide provider credential",
                     RevealToolTip = "Show or hide provider credential",
@@ -117,13 +119,15 @@ public partial class AddProviderWizardPage : Page
                 : new TextBox
                 {
                     Style = (Style)FindResource("FormTextBoxStyle"),
-                    Text = currentValue,
-                    Tag = envVar,
+                    Text = string.Empty,
+                    Tag = field.Name,
                 };
 
-            var envHint = new TextBlock
+            var storageHint = new TextBlock
             {
-                Text = $"Environment variable: {string.Join(", ", field.AllEnvironmentVariables)}",
+                Text = field.Required
+                    ? "Required. Stored in the encrypted credential vault; leave blank to keep the current value."
+                    : "Optional. Stored in the encrypted credential vault; leave blank to keep the current value.",
                 FontSize = 11,
                 Foreground = (Brush)FindResource("ConsoleTextMutedBrush"),
                 Margin = new Thickness(0, 2, 0, 12),
@@ -131,44 +135,55 @@ public partial class AddProviderWizardPage : Page
 
             CredentialFieldsPanel.Children.Add(label);
             CredentialFieldsPanel.Children.Add(input);
-            CredentialFieldsPanel.Children.Add(envHint);
+            CredentialFieldsPanel.Children.Add(storageHint);
         }
     }
 
-    private void TestProviderConnection_Click(object sender, RoutedEventArgs e)
+    private async void TestProviderConnection_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectedProvider == null)
+        var provider = _selectedProvider;
+        if (provider == null)
             return;
 
-        SaveCredentials();
-        _viewModel.SetConnectionTestTesting(_selectedProvider.DisplayName);
-
-        var hasCredentials = _selectedProvider.CredentialFields.Length == 0 ||
-            _selectedProvider.CredentialFields
-                .Where(field => field.Required)
-                .All(HasConfiguredEnvironmentValue);
-
-        if (hasCredentials)
+        if (provider.CredentialFields.Length == 0)
         {
             _viewModel.SetConnectionTestSuccess();
             _viewModel.CurrentStep = 3;
+            return;
         }
-        else
+
+        _viewModel.SetConnectionTestTesting(provider.DisplayName);
+        try
         {
-            _viewModel.SetConnectionTestError();
+            await PersistCredentialsAsync(provider);
+            var verified = await _settingsConfigService.VerifyProviderCredentialsAsync(provider.Id);
+            if (!ReferenceEquals(provider, _selectedProvider))
+                return;
+
+            if (verified)
+                _viewModel.SetConnectionTestSuccess();
+            else
+                _viewModel.SetConnectionTestUnverified();
+            _viewModel.CurrentStep = 3;
+        }
+        catch (Exception)
+        {
+            if (ReferenceEquals(provider, _selectedProvider))
+                _viewModel.SetConnectionTestError();
         }
     }
 
     private async void SaveProvider_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectedProvider == null)
+        var provider = _selectedProvider;
+        if (provider == null)
             return;
-
-        SaveCredentials();
 
         try
         {
-            if (_selectedProvider.SupportsHistorical)
+            await PersistCredentialsAsync(provider);
+
+            if (provider.SupportsHistorical)
             {
                 var options = new Meridian.Contracts.Configuration.BackfillProviderOptionsDto
                 {
@@ -178,15 +193,15 @@ public partial class AddProviderWizardPage : Page
                 if (int.TryParse(PriorityBox.Text, out var priority) && priority >= 0)
                     options.Priority = priority;
 
-                await _configService.SetBackfillProviderOptionsAsync(_selectedProvider.Id, options);
+                await _configService.SetBackfillProviderOptionsAsync(provider.Id, options);
             }
 
             _viewModel.CurrentStep = 4;
-            _viewModel.SetSaveSuccess(_selectedProvider.DisplayName);
+            _viewModel.SetSaveSuccess(provider.DisplayName);
 
             _notificationService.NotifySuccess(
                 "Provider Added",
-                $"{_selectedProvider.DisplayName} has been configured and is ready to use.");
+                $"{provider.DisplayName} has been configured. Use Test Connection to verify its credentials.");
         }
         catch (Exception ex)
         {
@@ -194,23 +209,37 @@ public partial class AddProviderWizardPage : Page
         }
     }
 
-    private void SaveCredentials()
+    /// <summary>
+    /// Saves only the fields the operator filled in through the authenticated credential service,
+    /// which writes the provider's encrypted vault record. Nothing is written to the process or
+    /// user environment, and blank fields are omitted because the vault treats blanks as deletions.
+    /// </summary>
+    private async Task PersistCredentialsAsync(ProviderCatalogEntry provider)
     {
+        var fields = CollectEnteredCredentialFields();
+        if (fields.Count == 0)
+            return;
+
+        await _settingsConfigService.SaveProviderCredentialsAsync(provider.Id, fields);
+    }
+
+    private Dictionary<string, string?> CollectEnteredCredentialFields()
+    {
+        var fields = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         foreach (var child in CredentialFieldsPanel.Children)
         {
-            if (child is TextBox textBox && textBox.Tag is string envVar)
+            var (fieldName, value) = child switch
             {
-                var value = textBox.Text.Trim();
-                if (!string.IsNullOrWhiteSpace(value))
-                    Environment.SetEnvironmentVariable(envVar, value, EnvironmentVariableTarget.User);
-            }
-            else if (child is SecretInputControl secretInput && secretInput.Tag is string secretEnvVar)
-            {
-                var value = secretInput.Secret.Trim();
-                if (!string.IsNullOrWhiteSpace(value))
-                    Environment.SetEnvironmentVariable(secretEnvVar, value, EnvironmentVariableTarget.User);
-            }
+                TextBox { Tag: string name } textBox => (name, textBox.Text),
+                SecretInputControl { Tag: string name } secretInput => (name, secretInput.Secret),
+                _ => (null, null)
+            };
+
+            if (!string.IsNullOrWhiteSpace(fieldName) && !string.IsNullOrWhiteSpace(value))
+                fields[fieldName] = value.Trim();
         }
+
+        return fields;
     }
 
     private static bool IsSecretCredentialField(CredentialFieldInfo field)
@@ -221,23 +250,5 @@ public partial class AddProviderWizardPage : Page
             || field.Name.Contains("secret", StringComparison.OrdinalIgnoreCase)
             || field.Name.Contains("token", StringComparison.OrdinalIgnoreCase)
             || field.Name.Contains("key", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool HasConfiguredEnvironmentValue(CredentialFieldInfo field)
-    {
-        return field.AllEnvironmentVariables
-            .Any(envVar => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(envVar)));
-    }
-
-    private static string? GetConfiguredEnvironmentValue(CredentialFieldInfo field)
-    {
-        foreach (var envVar in field.AllEnvironmentVariables)
-        {
-            var value = Environment.GetEnvironmentVariable(envVar);
-            if (!string.IsNullOrWhiteSpace(value))
-                return value;
-        }
-
-        return null;
     }
 }

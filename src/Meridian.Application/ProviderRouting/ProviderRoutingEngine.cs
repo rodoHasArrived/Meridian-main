@@ -92,7 +92,9 @@ public sealed class ProviderRoutingService : ICapabilityRouter
 
             if (!connections.TryGetValue(binding.ConnectionId, out var connection))
             {
-                skipped.Add($"Binding '{binding.BindingId}' references missing connection '{binding.ConnectionId}'.");
+                skipped.Add(snapshot.AmbiguousConnectionIds.Contains(binding.ConnectionId)
+                    ? $"Binding '{binding.BindingId}' references ambiguous connection '{binding.ConnectionId}' that is configured more than once."
+                    : $"Binding '{binding.BindingId}' references missing connection '{binding.ConnectionId}'.");
                 continue;
             }
 
@@ -407,11 +409,13 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         private ProviderRoutingSnapshot(
             ProviderRoutingSnapshotStamp stamp,
             IReadOnlyDictionary<string, ProviderConnectionConfig> connectionsById,
+            IReadOnlySet<string> ambiguousConnectionIds,
             IReadOnlyDictionary<ProviderCapabilityKind, ProviderBindingConfig[]> bindingsByCapability,
             IReadOnlyDictionary<ProviderCapabilityKind, ProviderSafetyPolicy> policiesByCapability)
         {
             Stamp = stamp;
             ConnectionsById = connectionsById;
+            AmbiguousConnectionIds = ambiguousConnectionIds;
             _bindingsByCapability = bindingsByCapability;
             _policiesByCapability = policiesByCapability;
         }
@@ -419,6 +423,9 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         public ProviderRoutingSnapshotStamp Stamp { get; }
 
         public IReadOnlyDictionary<string, ProviderConnectionConfig> ConnectionsById { get; }
+
+        /// <summary>Connection IDs that appear more than once and are therefore never routable.</summary>
+        public IReadOnlySet<string> AmbiguousConnectionIds { get; }
 
         public ProviderBindingConfig[] GetBindings(ProviderCapabilityKind capability)
             => _bindingsByCapability.TryGetValue(capability, out var bindings)
@@ -432,9 +439,19 @@ public sealed class ProviderRoutingService : ICapabilityRouter
 
         public static ProviderRoutingSnapshot Build(AppConfig cfg, ProviderRoutingSnapshotStamp stamp)
         {
-            var connectionsById = ProviderRoutingConfigExtensions
+            // Duplicate or case-variant connection IDs cannot identify one owner, so they are
+            // excluded instead of letting the case-insensitive dictionary throw for every route.
+            var connectionGroups = ProviderRoutingConfigExtensions
                 .GetEffectiveConnections(cfg)
-                .ToDictionary(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase);
+                .GroupBy(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var connectionsById = connectionGroups
+                .Where(group => group.Count() == 1)
+                .ToDictionary(group => group.Key, group => group.Single(), StringComparer.OrdinalIgnoreCase);
+            var ambiguousConnectionIds = connectionGroups
+                .Where(group => group.Count() > 1)
+                .Select(group => group.Key)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             var bindingsByCapability = ProviderRoutingConfigExtensions
                 .GetEffectiveBindings(cfg)
@@ -453,6 +470,7 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             return new ProviderRoutingSnapshot(
                 stamp,
                 connectionsById,
+                ambiguousConnectionIds,
                 bindingsByCapability,
                 policiesByCapability);
         }

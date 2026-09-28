@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-25
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Wpf
@@ -26,7 +26,17 @@ connection ID; incomplete or ambiguous ownership cannot become an editable row.
 Credential commands expose asynchronous completion. Desktop regression tests exercise late status
 responses, selected-account saves, blank secret editors and loss of editable rows after refused discovery.
 Conflicting credential commands are disabled during persistence or verification. Refused saves restore
-command availability and retain the current editor values for an explicit retry.
+command availability and retain the current editor values for an explicit retry. Saves submit only the
+fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret
+keeps the other retained fields.
+
+The add-provider wizard saves and tests credentials through the same authenticated service, writing the
+provider-wide vault record. It no longer reads or writes Windows user environment variables, its editors
+start blank, and a test reports success only when the service verifies the credentials. Saved but
+unverified credentials are shown as a warning. The settings shell counts unavailable credential status
+separately from missing credentials, so a refused or failed status read is shown as unknown readiness.
+The setup-wizard state service and the Backfill page still write environment variables and remain
+separate cutover work.
 
 Credential status in the settings shell, settings vault, credential management page and add-provider
 wizard is loaded asynchronously from the shared authenticated API service. Failed reads stay

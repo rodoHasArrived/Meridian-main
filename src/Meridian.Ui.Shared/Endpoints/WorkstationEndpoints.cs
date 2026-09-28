@@ -3188,14 +3188,18 @@ public static partial class WorkstationEndpoints
         var connectionRows = canManageCredentials && providerConnectionLifecycle is not null
             ? await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
-        var routingConnections = canManageCredentials && routingConnectionService is not null
-            ? await routingConnectionService.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
+        // Routing reads mirror the direct /api/provider-routing endpoints: they are filtered to the
+        // authenticated tenant's retained connections, and a request without tenant scope sees none.
+        var routingTenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        var canReadRouting = canManageCredentials && routingTenant.HasTenantScope;
+        var routingConnections = canReadRouting && routingConnectionService is not null
+            ? await routingConnectionService.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
-        var routingBindings = canManageCredentials && routingBindingService is not null
-            ? await routingBindingService.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false)
+        var routingBindings = canReadRouting && routingBindingService is not null
+            ? await routingBindingService.GetBindingsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
-        var trustSnapshots = canManageCredentials && routingTrustService is not null
-            ? await routingTrustService.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false)
+        var trustSnapshots = canReadRouting && routingTrustService is not null
+            ? await routingTrustService.GetTrustSnapshotsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
         var providers = BuildWorkstationDataProviderRecords(
             metricsStatus,

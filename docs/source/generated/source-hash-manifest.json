@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "2af27fd15dc277b5c862c860aa7d17ea3580882e8ccfc062c79c1afa5ac8b044",
-      "source_hash": "55c8bda92cda08a1399de266c6b87cee8f14a63d74fbf6e27b45f777cb51a78f"
+      "readme_hash": "c9f4eef34abbbc4ab8746217ddaa1c1c5a3d4885a043b4342f2954fa2cf47628",
+      "source_hash": "05772acdf6dfb9f8165795340450005a7cc9421c8ba2c6fabb4cdd87e96f8399"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -51,8 +51,8 @@
       "id": "SRC-DESIGN-DATA-INTEGRATION",
       "path": "src/Meridian.DataIntegration",
       "readme": "src/Meridian.DataIntegration/README.md",
-      "readme_hash": "8dacb5a11c4a072792cdd1499865670795b47578ea2d2ad700929d7cecba734a",
-      "source_hash": "94fd5e6fefab8be974a4e3ae0396bc4d36ce7c5784fc5952955dc10b60387101"
+      "readme_hash": "c3c88119386836c4ac1e23918bf0cb04856ad790594ff55a2fadb7fd6c206cc7",
+      "source_hash": "ddc31b44672e1761a10840ef429a5448285d543d9aa513690fbff6fb6db86941"
     },
     {
       "id": "SRC-DESIGN-DOCUMENTS",
@@ -282,15 +282,15 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "859f442ec09c1834e6e69ad0037bb781e08701b0acfd0c9d998f79e8476ec188",
-      "source_hash": "95207f37059d9a10f278c0effe0326989466ce3ab52c3f355813491e74900a91"
+      "readme_hash": "f3a44a2204214beb585015c78f5dfabd691efa2136cb910450b5fc30e4f8a684",
+      "source_hash": "fbc2021967f832dea4cdfc5ee1508e90ff80970e33b1e76a854353b004ef6547"
     },
     {
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
-      "readme_hash": "c5f566e9fb2e3bac83902e6eddd61ee09dfe094a049a5a27e28bdff25bb7f564",
-      "source_hash": "bf5260a7bf52bed579d6a976f3ff2bf3b81beb9bf9b67f84f73dd763859b861d"
+      "readme_hash": "a4e3e1aa7695e5f782f75bc3fa1f6e1c28504a19db504b91d614cdfd7a7512aa",
+      "source_hash": "b9cfaa09260488ada1019885cec12a5ce5cd22f4dc970a1334b60cb29440e62d"
     }
   ],
   "schema": {

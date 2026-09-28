@@ -29,13 +29,17 @@ public sealed class SettingsWorkspaceShellSnapshotService : ISettingsWorkspaceSh
 
         var credentialStatuses = await _settingsConfigurationService.GetProviderCredentialStatusesAsync(cancellationToken).ConfigureAwait(false);
         var configuredCount = credentialStatuses.Count(status => status.State is CredentialState.Configured or CredentialState.NotRequired);
-        var missingCount = credentialStatuses.Count - configuredCount;
+        // A failed or refused status read yields Unavailable rows; that is missing evidence, not an
+        // asserted credential gap, so it is counted separately.
+        var unavailableCount = credentialStatuses.Count(status => status.State == CredentialState.Unavailable);
+        var missingCount = credentialStatuses.Count - configuredCount - unavailableCount;
 
         return new SettingsWorkspaceShellSnapshot
         {
             ProviderCount = credentialStatuses.Count,
             ConfiguredCredentialCount = configuredCount,
             MissingCredentialCount = missingCount,
+            UnavailableCredentialCount = unavailableCount,
             ShellDensityLabel = _settingsConfigurationService.GetShellDensityMode().ToString(),
             AsOfUtc = DateTimeOffset.UtcNow
         };

@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-25
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Ui.Shared
@@ -23,6 +23,13 @@ bindings or evaluating trust; foreign connections do not trigger health queries.
 query parameters cannot select another tenant. Route preview uses the same authenticated tenant
 before candidate selection and failover expansion. Default setup ownership and remaining whole-configuration
 snapshot callers still require integration.
+
+The workstation Data payload (`/api/workstation/data` and `/api/workstation/data-operations`) reads
+routing connections, bindings and trust snapshots through the same tenant-scoped service methods, so
+routing summaries never include another tenant's or an unassigned connection. A request without tenant
+scope receives no routing rows. Duplicate or case-variant connection IDs are excluded from route
+preview candidates, and duplicate certification rows leave a connection uncertified, instead of failing
+the read.
 
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and

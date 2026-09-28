@@ -2296,6 +2296,7 @@ Meridian-main
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
+│   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── ui-route-wiring-report.json
 │   │   ├── ui-route-wiring-report.md
@@ -9201,7 +9202,8 @@ Meridian-main
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
 │   │   │   │   ├── ProviderCredentialStoreTests.cs
 │   │   │   │   ├── ScopedCredentialRecoveryTests.cs
-│   │   │   │   └── ScopedOAuthRotationRecoveryTests.cs
+│   │   │   │   ├── ScopedOAuthRotationRecoveryTests.cs
+│   │   │   │   └── ScopedVaultRollbackFormatTests.cs
 │   │   │   ├── Coordination
 │   │   │   │   └── SubscriptionOrchestratorCoordinationTests.cs
 │   │   │   ├── Credentials
@@ -10584,6 +10586,7 @@ Meridian-main
 │   │   │   │   └── ReportingWorkspaceGovernanceSurfaceTests.cs
 │   │   │   ├── Settings
 │   │   │   │   ├── Shell
+│   │   │   │   │   ├── SettingsWorkspaceShellCredentialPostureTests.cs
 │   │   │   │   │   └── SettingsWorkspaceShellViewModelTests.cs
 │   │   │   │   ├── SettingsFeatureModuleTests.cs
 │   │   │   │   └── SettingsFeatureServiceRegistrationTests.cs

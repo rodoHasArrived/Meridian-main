@@ -1185,18 +1185,39 @@ public sealed partial class WorkstationEndpointsTests
         var connectionService = app.Services.GetRequiredService<ProviderConnectionService>();
         var bindingService = app.Services.GetRequiredService<ProviderBindingService>();
 
-        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+        // Routing summaries follow the direct /api/provider-routing reads: only connections retained
+        // for the request tenant contribute. The foreign and unassigned connections must not.
+        await connectionService.UpsertForTenantAsync(new CreateProviderConnectionRequest(
             ConnectionId: "alpaca-paper",
             ProviderFamilyId: "alpaca",
             DisplayName: "Alpaca Paper",
             ConnectionType: "DataVendor",
             ConnectionMode: "Paper",
             Enabled: true,
-            ProductionReady: false));
-        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+            ExternalAccountId: "account-paper",
+            ProductionReady: false), "tenant-test", "paper");
+        await connectionService.UpsertForTenantAsync(new CreateProviderConnectionRequest(
             ConnectionId: "alpaca-live",
             ProviderFamilyId: "alpaca",
             DisplayName: "Alpaca Live",
+            ConnectionType: "DataVendor",
+            ConnectionMode: "Live",
+            Enabled: true,
+            ExternalAccountId: "account-live",
+            ProductionReady: true), "tenant-test", "live");
+        await connectionService.UpsertForTenantAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "alpaca-foreign",
+            ProviderFamilyId: "alpaca",
+            DisplayName: "Foreign Alpaca",
+            ConnectionType: "DataVendor",
+            ConnectionMode: "Live",
+            Enabled: true,
+            ExternalAccountId: "account-foreign",
+            ProductionReady: true), "tenant-foreign", "live");
+        await connectionService.UpsertAsync(new CreateProviderConnectionRequest(
+            ConnectionId: "alpaca-unassigned",
+            ProviderFamilyId: "alpaca",
+            DisplayName: "Unassigned Alpaca",
             ConnectionType: "DataVendor",
             ConnectionMode: "Live",
             Enabled: true,
@@ -1211,8 +1232,18 @@ public sealed partial class WorkstationEndpointsTests
             BindingId: "alpaca-live-realtime",
             Capability: nameof(ProviderCapabilityKind.RealtimeMarketData),
             ConnectionId: "alpaca-live"));
+        await bindingService.UpsertAsync(new UpdateProviderBindingRequest(
+            BindingId: "alpaca-foreign-realtime",
+            Capability: nameof(ProviderCapabilityKind.RealtimeMarketData),
+            ConnectionId: "alpaca-foreign",
+            FailoverConnectionIds: ["alpaca-unassigned"]));
+        await bindingService.UpsertAsync(new UpdateProviderBindingRequest(
+            BindingId: "alpaca-unassigned-historical",
+            Capability: nameof(ProviderCapabilityKind.HistoricalBars),
+            ConnectionId: "alpaca-unassigned"));
 
         using var dataOperations = await ReadJsonAsync(client: app.GetTestClient(), "/api/workstation/data-operations");
+        dataOperations.RootElement.GetRawText().Should().NotContain("alpaca-foreign").And.NotContain("alpaca-unassigned");
         var providers = dataOperations.RootElement.GetProperty("providers").EnumerateArray().ToArray();
 
         providers.Count(provider => provider.GetProperty("providerId").GetString() == "alpaca").Should().Be(1);

@@ -138,6 +138,41 @@ public sealed class CredentialManagementViewModelTests
         });
     }
 
+    [Fact]
+    public void Save_SubmitsOnlyFieldsTheOperatorFilledSoRetainedValuesSurvive()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var puts = new List<string>();
+            using var handler = new Handler(async request =>
+            {
+                if (request.Method == HttpMethod.Put)
+                {
+                    puts.Add(await request.Content!.ReadAsStringAsync());
+                    return Json("{\"providerId\":\"alpaca\",\"credentialState\":3}");
+                }
+                return Json(request.RequestUri!.AbsolutePath == "/api/provider-routing/connections"
+                    ? Connections : "[{\"providerId\":\"alpaca\",\"credentialState\":3}]");
+            });
+            using var api = new ApiClientService(new Factory(handler));
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            await viewModel.LoadCredentialsAsync();
+            viewModel.SelectedCredential = viewModel.Credentials.Single(row => row.ConnectionId == "paper-a");
+            await viewModel.SelectionStatusLoad;
+
+            viewModel.EditCredentialCommand.Execute(null);
+            await ((IAsyncRelayCommand)viewModel.SaveCredentialCommand).ExecuteAsync(null);
+            puts.Should().BeEmpty("an untouched editor must not submit blanks that the vault treats as deletions");
+            viewModel.IsEditPanelVisible.Should().BeTrue();
+
+            viewModel.EditFields.Single(field => field.FieldName.Contains("Secret", StringComparison.OrdinalIgnoreCase)).Value = "rotated-secret";
+            await ((IAsyncRelayCommand)viewModel.SaveCredentialCommand).ExecuteAsync(null);
+            puts.Should().ContainSingle();
+            puts[0].Should().Contain("SecretKey").And.Contain("rotated-secret");
+            puts[0].Should().NotContain("KeyId", "the untouched key ID must be retained, not cleared");
+        });
+    }
+
     private static HttpResponseMessage Json(string body, HttpStatusCode status = HttpStatusCode.OK)
         => new(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
 

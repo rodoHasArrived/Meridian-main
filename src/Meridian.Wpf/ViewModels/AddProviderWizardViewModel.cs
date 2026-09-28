@@ -375,7 +375,7 @@ public sealed class AddProviderWizardViewModel : BindableBase
         if (hasFields)
         {
             CredentialsInfoText = $"Enter your {providerName} credentials. " +
-                                       "These will be stored as user environment variables.";
+                                       "They are saved to the encrypted credential vault through the authenticated service.";
             NoCredentialsVisibility = Visibility.Collapsed;
         }
         else
@@ -392,18 +392,25 @@ public sealed class AddProviderWizardViewModel : BindableBase
         ConnectionTestStatusText = $"Testing {providerName} connectivity...";
     }
 
-    /// <summary>Marks the connection test as successful.</summary>
+    /// <summary>Marks the connection test as successful: verified by the service, or no credentials needed.</summary>
     public void SetConnectionTestSuccess()
     {
         ConnectionTestDotBrush = SuccessBrush;
-        ConnectionTestStatusText = "Credentials configured. Provider ready.";
+        ConnectionTestStatusText = "Credentials verified. Provider ready.";
     }
 
-    /// <summary>Marks the connection test as failed due to missing credentials.</summary>
+    /// <summary>Marks credentials as saved but not verified by the authenticated service.</summary>
+    public void SetConnectionTestUnverified()
+    {
+        ConnectionTestDotBrush = WarningBrush;
+        ConnectionTestStatusText = "Credentials saved but not verified. Live verification failed or is unavailable for this provider.";
+    }
+
+    /// <summary>Marks the connection test as failed because the service did not confirm the save.</summary>
     public void SetConnectionTestError()
     {
         ConnectionTestDotBrush = ErrorBrush;
-        ConnectionTestStatusText = "Missing credentials. Please fill in all required fields above.";
+        ConnectionTestStatusText = "Credential save was not confirmed by the authenticated service. Check the required fields and try again.";
     }
 
     /// <summary>Sets a success message on the save-status line.</summary>
