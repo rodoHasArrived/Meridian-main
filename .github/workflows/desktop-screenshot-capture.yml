@@ -60,10 +60,9 @@ jobs:
         uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-wpf-
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v1-
 
       - name: Restore WPF project
         shell: pwsh

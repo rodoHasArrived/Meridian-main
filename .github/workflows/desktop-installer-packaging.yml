@@ -61,10 +61,9 @@ jobs:
         uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-desktop-release-preflight-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-desktop-release-preflight-
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v1-
 
       - name: Restore preflight test projects
         shell: pwsh
@@ -159,10 +158,9 @@ jobs:
         uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-desktop-installer-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-desktop-installer-
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v1-
 
       - name: Prepare optional signing certificate (tag releases only)
         if: startsWith(github.ref, 'refs/tags/v')

@@ -42,7 +42,7 @@ class MeridianCiCacheContractTests(unittest.TestCase):
         # Check directory entries, since Path.exists() alone cannot catch a Linux-only
         # case mismatch when this regression test runs on Windows.
         self.assertIn("NuGet.Config", {entry.name for entry in REPO_ROOT.iterdir()})
-        self.assertIn("NuGet.Config", patterns)
+        self.assertIn("**/NuGet.Config", patterns)
         self.assertNotIn("nuget.config", patterns)
         self.assertTrue((REPO_ROOT / "tests" / "Directory.Build.props").is_file())
         for input_pattern in (
