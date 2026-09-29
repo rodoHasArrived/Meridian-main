@@ -226,8 +226,8 @@
       "id": "SRC-PROVIDER-SDK",
       "path": "src/Meridian.ProviderSdk",
       "readme": "src/Meridian.ProviderSdk/README.md",
-      "readme_hash": "752593a2a7bb4ef823b2ae508a560009887db0148ee7526149bd617adf893048",
-      "source_hash": "c39de05776d95ff55c09005a93ce90b03419180811da0efc2e81a152eb8d94db"
+      "readme_hash": "a5c059ff961b418503716fe4247d4c196a153f24c9ab255094d95c77cd618006",
+      "source_hash": "db8765e066a8d474495ffa58ccc010a0b46679cb2783456f0382f5f7c0902e66"
     },
     {
       "id": "SRC-QUANTSCRIPT",
@@ -275,22 +275,22 @@
       "id": "SRC-UI-SERVICES",
       "path": "src/Meridian.Ui.Services",
       "readme": "src/Meridian.Ui.Services/README.md",
-      "readme_hash": "cc16931bb286bdcb2a24b8e5fda123b50115e173640721912acf0ed714fea111",
-      "source_hash": "7b0504b74eee470928878d47291b0c9a559d4ae0f1ca601c20d3cd6e95fcb344"
+      "readme_hash": "90e51ee1f4b43e8322c811aa2b2f6e61795b5418a46011a3c3630e79906360e2",
+      "source_hash": "f5283dc42a33cc088d36b37a493ed1beeeb12304a6b976a7cc69f81f5beb0872"
     },
     {
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "28b7b2910a6fa951e9899f154d1438fd1195fa17c7b7275c56620842b4236bb7",
-      "source_hash": "7c441cbb5bf35a9c9326484c94ea57af9de9ce9daa11fd1ee17ed8fad7a25e77"
+      "readme_hash": "6dda4fd789b359bd592818048f3c8671d14002e5fdcdda9ba0ea8a46e6cf4950",
+      "source_hash": "6cd32541265ffa1544fabda5f712a776e3b9199af1cdbbfd85dfa3af640ab9c5"
     },
     {
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
-      "readme_hash": "9c0ac7297bc2f3b07251f8281168cf996188e32f115f50ec9d2036314617d371",
-      "source_hash": "62985459ff594a8cfba5ca386e1b7d5d9f242be05dab87d447559322a5bf3b05"
+      "readme_hash": "534b05f2d3bb1b170ef91a05c9616db3ac09d56821bdac02294ff96d2f6f057d",
+      "source_hash": "3c6ed3eb83151e4cd1fe14d71c2e846929c6cbea80b1906ae24534ffbdbc9829"
     }
   ],
   "schema": {

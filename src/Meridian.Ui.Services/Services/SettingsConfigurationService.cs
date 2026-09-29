@@ -139,8 +139,12 @@ public sealed class SettingsConfigurationService
         return result;
     }
 
-    /// <summary>Saves credential fields through the authenticated service.</summary>
-    public async Task SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary<string, string?> fields,
+    /// <summary>
+    /// Saves credential fields through the authenticated service and returns the persisted state.
+    /// <see cref="ProviderCredentialStateDto.Partial"/> means the fields were saved but required fields are
+    /// still missing; callers present that as incomplete rather than as a failed save.
+    /// </summary>
+    public async Task<ProviderCredentialStateDto> SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary<string, string?> fields,
         string? connectionId = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(fields);
@@ -150,8 +154,10 @@ public sealed class SettingsConfigurationService
         ThrowIfRefused(response.StatusCode, "persistence");
         if (!response.Success || response.Data is null ||
             !ProviderIdentity.EqualsId(response.Data.ProviderId, providerId) ||
-            response.Data.CredentialState is not (ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified))
+            response.Data.CredentialState is not (ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified
+                or ProviderCredentialStateDto.Partial))
             throw new InvalidOperationException("Credential persistence was not confirmed by the authenticated service.");
+        return response.Data.CredentialState;
     }
 
     /// <summary>Removes credentials through the authenticated service.</summary>

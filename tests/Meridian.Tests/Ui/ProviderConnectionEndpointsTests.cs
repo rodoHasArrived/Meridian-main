@@ -698,6 +698,17 @@ public sealed class ProviderConnectionEndpointsTests
         rows.Should().ContainSingle().Which.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
     }
 
+    [Fact]
+    public async Task ScopedStatusRead_ReturnsNotFoundForAnOwnedConnectionOutsideTheCredentialCatalog()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await RetainConnectionAsync(app, "plugin-owned", "provider-tenant", "uncatalogued-plugin", "account-a", "default");
+
+        var response = await app.GetTestClient().GetAsync("/api/providers/connections?connectionId=plugin-owned");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound, "a provider without managed credentials is a controlled answer, not a server error");
+    }
+
     private static Task<Meridian.Contracts.Api.ProviderConnectionDto> RetainConnectionAsync(WebApplication app, string id, string tenant, string provider, string account, string environment)
         => new Meridian.Application.ProviderRouting.ProviderConnectionService(
             new Meridian.Application.UI.ConfigStore(app.Services.GetRequiredService<ConfigStore>().ConfigPath))

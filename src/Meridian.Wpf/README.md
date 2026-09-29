@@ -22,7 +22,9 @@ editors start blank; this page no longer reads or writes environment secrets or 
 Legacy environment values are not automatically erased or migrated. Server verification capabilities
 still bound the assurance available from these operations. Credential rows represent explicit owned
 connections with account and environment labels. Status, save, removal and verification carry that
-connection ID; incomplete or ambiguous ownership cannot become an editable row.
+connection ID; incomplete or ambiguous ownership cannot become an editable row. A save the service
+records as partial closes the editor and warns that required fields are still missing instead of
+reporting a failed save.
 Credential commands expose asynchronous completion. Desktop regression tests exercise late status
 responses, selected-account saves, blank secret editors and loss of editable rows after refused discovery.
 Conflicting credential commands are disabled during persistence or verification. Refused saves restore

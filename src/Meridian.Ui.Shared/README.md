@@ -39,6 +39,11 @@ unassigned connections never contribute. `?scope=provider` returns provider-wide
 such as the add-provider wizard that read and write the provider-wide record. Ownership checks compare canonical provider IDs,
 so a connection retained under an alias such as `alpha-vantage` or `qbo` still resolves.
 The workstation Data and data-operations payloads use the same tenant readiness for their provider rows.
+A scoped status read for an owned connection whose provider has no credential catalog entry answers 404,
+as the credential mutation routes do. Provider comparison and failover route previews use only the
+authenticated tenant's connections and return an empty, non-routable preview without tenant scope.
+A tenant-authorized provider-ledger reconciliation routes its capability checks with
+`ICapabilityRouter.RouteForTenantAsync`, so another tenant's connection cannot satisfy them.
 
 Provider readiness resolves configuration, credential and telemetry aliases through the shared
 ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and

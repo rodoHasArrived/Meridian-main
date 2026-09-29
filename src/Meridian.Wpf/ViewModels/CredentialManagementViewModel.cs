@@ -368,12 +368,18 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         IsBusy = true;
         try
         {
-            await _settingsService.SaveProviderCredentialsAsync(selected.ProviderId, fields, selected.ConnectionId);
+            var state = await _settingsService.SaveProviderCredentialsAsync(selected.ProviderId, fields, selected.ConnectionId);
             IsEditPanelVisible = false;
             EditFields.Clear();
             await LoadCredentialsAsync();
-            _notificationService.ShowNotification("Credentials Saved",
-                $"Credentials for {selected.DisplayName} have been saved.", NotificationType.Success);
+            // A partial record was durably saved; the operator still has required fields to supply.
+            if (state == ProviderCredentialStateDto.Partial)
+                _notificationService.ShowNotification("Credentials Incomplete",
+                    $"Credentials for {selected.DisplayName} were saved, but required fields are still missing. Edit the credential to add them.",
+                    NotificationType.Warning);
+            else
+                _notificationService.ShowNotification("Credentials Saved",
+                    $"Credentials for {selected.DisplayName} have been saved.", NotificationType.Success);
         }
         catch (Exception)
         {

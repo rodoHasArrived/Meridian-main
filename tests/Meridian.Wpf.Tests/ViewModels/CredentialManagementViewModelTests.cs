@@ -261,6 +261,41 @@ public sealed class CredentialManagementViewModelTests
         });
     }
 
+    [Fact]
+    public void Save_ReportsAPartialRecordAsSavedButIncompleteRatherThanFailed()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var notifications = new List<Meridian.Ui.Services.Services.NotificationEventArgs>();
+            void Capture(object? sender, Meridian.Ui.Services.Services.NotificationEventArgs args) => notifications.Add(args);
+            using var handler = new Handler(request => Task.FromResult(request.Method == HttpMethod.Put
+                ? Json("{\"providerId\":\"alpaca\",\"credentialState\":2}")
+                : Json(request.RequestUri!.AbsolutePath == "/api/provider-routing/connections"
+                    ? Connections : "[{\"providerId\":\"alpaca\",\"credentialState\":1,\"credentialFields\":[{\"name\":\"KeyId\",\"label\":\"Key ID\",\"required\":true,\"inputKind\":1},{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]")));
+            using var api = new ApiClientService(new Factory(handler));
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            Meridian.Wpf.Services.NotificationService.Instance.NotificationReceived += Capture;
+            try
+            {
+                await viewModel.LoadCredentialsAsync();
+                viewModel.SelectedCredential = viewModel.Credentials.Single(row => row.ConnectionId == "paper-a");
+                await viewModel.SelectionStatusLoad;
+                viewModel.EditCredentialCommand.Execute(null);
+                viewModel.EditFields.Single(field => field.FieldName == "KeyId").Value = "only-the-key";
+
+                await ((IAsyncRelayCommand)viewModel.SaveCredentialCommand).ExecuteAsync(null);
+
+                viewModel.IsEditPanelVisible.Should().BeFalse("the partial record was durably saved");
+                notifications.Should().Contain(item => item.Title == "Credentials Incomplete" && item.Type == NotificationType.Warning);
+                notifications.Should().NotContain(item => item.Title == "Save Failed");
+            }
+            finally
+            {
+                Meridian.Wpf.Services.NotificationService.Instance.NotificationReceived -= Capture;
+            }
+        });
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

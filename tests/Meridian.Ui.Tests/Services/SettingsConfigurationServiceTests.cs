@@ -244,7 +244,8 @@ public sealed class SettingsConfigurationServiceTests
     [InlineData(true, 200, "null")]
     [InlineData(false, 200, "{\"providerId\":\"polygon\",\"credentialState\":3}")]
     [InlineData(true, 200, "{\"providerId\":\"polygon\",\"credentialState\":1}")]
-    [InlineData(false, 200, "{\"providerId\":\"alpaca\",\"credentialState\":2}")]
+    [InlineData(false, 200, "{\"providerId\":\"alpaca\",\"credentialState\":5}")]
+    [InlineData(false, 200, "{\"providerId\":\"alpaca\",\"credentialState\":0}")]
     [InlineData(true, 200, "{\"providerId\":\"alpaca\",\"credentialState\":3}")]
     public async Task CredentialMutation_RequiresAcknowledgedMatchingResult(bool remove, int status, string body)
     {
@@ -255,6 +256,21 @@ public sealed class SettingsConfigurationServiceTests
             service.SaveProviderCredentialsAsync("alpaca", new Dictionary<string, string?> { ["SecretKey"] = "private-test-value" });
         var error = await action.Should().ThrowAsync<InvalidOperationException>();
         error.Which.Message.Should().NotContain("private-test-value").And.Contain("not confirmed");
+    }
+
+    [Theory]
+    [InlineData(3, ProviderCredentialStateDto.Configured)]
+    [InlineData(4, ProviderCredentialStateDto.Verified)]
+    [InlineData(2, ProviderCredentialStateDto.Partial)]
+    public async Task CredentialSave_ReturnsThePersistedStateIncludingAnIncompletePartialRecord(int state, ProviderCredentialStateDto expected)
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, $"{{\"providerId\":\"alpaca\",\"credentialState\":{state}}}");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+
+        var persisted = await service.SaveProviderCredentialsAsync("alpaca", new Dictionary<string, string?> { ["KeyId"] = "only-the-key" });
+
+        persisted.Should().Be(expected, "a partial record was durably saved and must not be reported as a failed save");
     }
 
     [Theory]

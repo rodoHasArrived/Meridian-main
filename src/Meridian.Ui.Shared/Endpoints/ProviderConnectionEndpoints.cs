@@ -52,6 +52,12 @@ public static class ProviderConnectionEndpoints
             {
                 return EndpointHelpers.Forbidden();
             }
+            catch (ArgumentException ex)
+            {
+                // An owned connection whose provider has no credential catalog entry (for example a
+                // plugin) has no managed credential status; answer as the mutation routes do.
+                return Results.NotFound(new { error = ex.Message });
+            }
         })
         .WithName("GetProviderConnections").RequirePermission(UserPermission.ManageCredentials)
         .Produces<IReadOnlyList<ProviderConnectionRowDto>>(StatusCodes.Status200OK);

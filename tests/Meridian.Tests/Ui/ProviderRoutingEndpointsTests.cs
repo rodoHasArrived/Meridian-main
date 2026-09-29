@@ -410,6 +410,30 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
+    public async Task ProviderComparison_PreviewsOnlyTheAuthenticatedTenantsConnections()
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var config = store.Load() with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(
+            Connections: [new("owned-stream", "yahoo", "Owned", TenantId: "tenant-test"),
+                new("foreign-stream", "yahoo", "Foreign", TenantId: "tenant-other")],
+            Bindings: [new("foreign-binding", ProviderCapabilityKind.RealtimeMarketData, "foreign-stream", Priority: 1),
+                new("owned-binding", ProviderCapabilityKind.RealtimeMarketData, "owned-stream", Priority: 100)])
+        };
+        await File.WriteAllTextAsync(store.ConfigPath, JsonSerializer.Serialize(config));
+
+        var response = await app.GetTestClient().GetAsync(UiApiRoutes.ProviderComparison);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().NotContain("foreign-stream", "a tenant's diagnostics must not select or disclose another tenant's connection");
+        using var document = JsonDocument.Parse(body);
+        document.RootElement.GetProperty("selection").GetProperty("selectedConnectionId").GetString().Should().Be("owned-stream");
+    }
+
+    [Fact]
     public async Task AmbiguousConnectionAndCertificationIds_AreExcludedInsteadOfFailingPreviewAndTrust()
     {
         await using var app = await CreateAppAsync();

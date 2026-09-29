@@ -19,6 +19,9 @@ provider-wide state. Account and environment metadata remain attached to each co
 
 `SetupWizardService.SaveCredentialsAsync` accepts a save only when the service acknowledges the requested
 provider's canonical ID with a Configured or Verified state.
+`SettingsConfigurationService.SaveProviderCredentialsAsync` returns the persisted state; `Partial` means
+the fields were saved while required fields are still missing, so callers report it as incomplete rather
+than as a failed save.
 Credential-management save, remove and verification operations use the shared authenticated API
 client. Saves send canonical field names; mutations require a matching provider and an acknowledged
 result state. Verification requires a successful, dated server result. Optional connection IDs route

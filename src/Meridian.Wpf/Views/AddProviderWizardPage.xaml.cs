@@ -285,7 +285,9 @@ public partial class AddProviderWizardPage : Page
                 if (serviceFields.Any(field => field.Required) && current?.State != CredentialState.Configured)
                 {
                     _viewModel.SetConnectionTestError("The credential service could not confirm saved credentials for this provider.");
-                    _viewModel.SetSaveError("Enter the required credentials. The credential service reports none saved for this provider.");
+                    _viewModel.SetSaveError(current?.State == CredentialState.Partial
+                        ? "The entered credentials were saved, but required fields are still missing. Enter the remaining required credentials."
+                        : "Enter the required credentials. The credential service reports none saved for this provider.");
                     return;
                 }
             }
