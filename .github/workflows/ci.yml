@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_call:
   pull_request:
   merge_group:
   push:
@@ -15,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -34,17 +35,39 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v3
+        if: github.event_name != 'merge_group' && !startsWith(github.ref, 'refs/tags/')
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
           GITLEAKS_VERSION: "8.25.1"
+
+      # The upstream action rejects merge_group and skips empty tag-push commit arrays.
+      # Keep the same scanner/configuration, but bind these events directly to the checkout.
+      - name: Scan exact merge-group or release commit
+        if: github.event_name == 'merge_group' || startsWith(github.ref, 'refs/tags/')
+        run: |
+          archive="$RUNNER_TEMP/gitleaks_8.25.1_linux_x64.tar.gz"
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.25.1/gitleaks_8.25.1_linux_x64.tar.gz --output "$archive"
+          echo "3000d057342489827ee127310771873000b658f2987be7bbd21968ab7443913a  $archive" | sha256sum -c -
+          tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
+          python3 build/scripts/ci/scan-commit-secrets.py --binary "$RUNNER_TEMP/gitleaks"
+
+      - name: Retain commit secret-scan evidence
+        if: always() && (github.event_name == 'merge_group' || startsWith(github.ref, 'refs/tags/'))
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: commit-secret-scan-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/security/commit-secrets.sarif
+          if-no-files-found: error
+          retention-days: 14
 
   verify-full:
     name: verify-full (coverage + scenario tests)
@@ -56,24 +79,24 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.4.0
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: global.json
 
       - name: Cache NuGet packages
-        uses: actions/cache@v6.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-full-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-full-
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v1-
 
       - name: Restore solution
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
@@ -98,7 +121,7 @@ jobs:
 
       - name: Upload coverage results
         if: always()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: verify-full-coverage-${{ github.run_number }}-${{ github.run_attempt }}
           path: |

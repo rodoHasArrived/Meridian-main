@@ -53,7 +53,8 @@
       "hostedMode": "browser-workstation",
       "artifacts": [
         "src/Meridian.Ui/wwwroot/workstation/",
-        "artifacts/ci-summary/"
+        "artifacts/ci-summary/",
+        "artifacts/test-results/browser/"
       ],
       "timeoutMinutes": 25,
       "pathTriggerNotes": "Covers lockfile-strict dashboard install, generated UI route/catalog drift checks, lint, strict typecheck, tests, and production bundle build.",
@@ -125,7 +126,7 @@
       "id": "verify-desktop",
       "displayName": "Windows Desktop Build",
       "runner": "windows-latest",
-      "localCommand": "pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore -Filter \"Category!=Integration&FullyQualifiedName!~Integration\"",
+      "localCommand": "python build/scripts/ci/run-windows-ci-tests.py",
       "hostedMode": "windows-desktop-build",
       "artifacts": [
         "artifacts/wpf-validation/windows-desktop-build/",
@@ -144,11 +145,11 @@
       "artifacts": [
         "artifacts/publish/",
         "artifacts/release/",
-        "artifacts/publish/publish-smoke/release-evidence.json",
-        "artifacts/release/<runtime>/release-evidence.json"
+        "artifacts/publish-release/release-gate-evidence.json",
+        "artifacts/install-certification/"
       ],
       "timeoutMinutes": 75,
-      "pathTriggerNotes": "Manual publish smoke or tag/manual desktop installer packaging with release evidence manifests.",
+      "pathTriggerNotes": "Tag coordinator and signed manual rehearsal require same-commit CI/security/production/installed-startup evidence and native lifecycle certification before artifact promotion.",
       "requiredCheckRole": "release-evidence"
     },
     {

@@ -1,6 +1,7 @@
 name: CodeQL
 
 on:
+  workflow_call:
   pull_request:
   merge_group:
   push:
@@ -16,7 +17,7 @@ permissions:
   security-events: write
 
 concurrency:
-  group: codeql-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-codeql-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -42,14 +43,15 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 1
 
       - name: Set up .NET SDK
         if: matrix.language == 'csharp'
-        uses: actions/setup-dotnet@v5.4.0
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -62,7 +64,7 @@ jobs:
         run: dotnet restore Meridian.WebWorkstation.slnf /p:EnableWindowsTargeting=true
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
@@ -76,6 +78,6 @@ jobs:
         run: dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false /p:RunAnalyzers=false
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4
         with:
           category: "/language:${{ matrix.language }}"

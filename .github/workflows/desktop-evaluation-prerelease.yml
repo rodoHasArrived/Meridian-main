@@ -50,24 +50,23 @@ jobs:
           }
 
       - name: Check out repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.4.0
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: global.json
 
       - name: Cache NuGet packages
-        uses: actions/cache@v6.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-desktop-release-preflight-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-desktop-release-preflight-
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v1-
 
       - name: Restore WPF tests
         shell: pwsh
@@ -99,29 +98,28 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.4.0
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: global.json
 
       - name: Set up Python
-        uses: actions/setup-python@v7.0.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
 
       - name: Cache NuGet packages
-        uses: actions/cache@v6.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-desktop-installer-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-desktop-installer-
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v1-
 
       # An unsigned MSIX cannot be installed at all, so a genuinely unsigned prerelease would be a
       # file nobody can open. Sign with a throwaway certificate instead and publish its public half,
@@ -178,7 +176,7 @@ jobs:
 
       - name: Upload desktop packaging diagnostics
         if: failure()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: evaluation-packaging-diagnostics-${{ matrix.runtime }}-${{ github.run_id }}
           path: diagnostic-logs/
@@ -205,11 +203,6 @@ jobs:
           Copy-Item -LiteralPath $env:EVALUATION_SIGNING_CERT_CER `
             -Destination (Join-Path $releaseRoot "meridian-evaluation-signing-$runtime.cer") -Force
 
-          Get-ChildItem -LiteralPath $releaseRoot -File | Where-Object Name -ne 'SHA256SUMS' |
-            Sort-Object Name |
-            ForEach-Object { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name } |
-            Set-Content -LiteralPath (Join-Path $releaseRoot 'SHA256SUMS') -Encoding ascii
-
       - name: Generate the evaluation SBOM
         shell: pwsh
         env:
@@ -224,10 +217,15 @@ jobs:
             -PackageVersion "$env:EVALUATION_VERSION-$env:EVALUATION_RUNTIME"
           $generated = Get-ChildItem (Join-Path $releaseRoot '_manifest') -Filter manifest.spdx.json -File -Recurse | Select-Object -First 1
           if ($null -eq $generated) { throw "Microsoft SBOM Tool did not emit manifest.spdx.json." }
-          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $releaseRoot 'sbom.spdx.json') -Force
+          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $releaseRoot "desktop-evaluation-$env:EVALUATION_RUNTIME-sbom.spdx.json") -Force
+
+          Get-ChildItem -LiteralPath $releaseRoot -File | Where-Object Name -notlike '*SHA256SUMS' |
+            Sort-Object Name |
+            ForEach-Object { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name } |
+            Set-Content -LiteralPath (Join-Path $releaseRoot "desktop-evaluation-$env:EVALUATION_RUNTIME-SHA256SUMS") -Encoding ascii
 
       - name: Upload the evaluation artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: meridian-evaluation-${{ matrix.runtime }}-${{ github.run_id }}
           path: artifacts/evaluation/${{ matrix.runtime }}/
@@ -248,34 +246,33 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.4.0
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
           global-json-file: global.json
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6.4.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: "24"
 
       - name: Set up Python
-        uses: actions/setup-python@v7.0.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
 
       - name: Cache NuGet packages
-        uses: actions/cache@v6.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-desktop-installer-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-desktop-installer-
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v1-
 
       # Same payload source as the production installer lane: the hosted image's own PostgreSQL.
       - name: Materialize the PostgreSQL payload
@@ -329,13 +326,13 @@ jobs:
           $staging = 'artifacts/evaluation/consumer-setup'
           New-Item -ItemType Directory -Path $staging -Force | Out-Null
           Copy-Item artifacts/consumer-setup/Meridian-Setup.exe -Destination $staging -ErrorAction Stop
-          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $staging 'consumer-setup.sbom.spdx.json') -Force
-          Copy-Item artifacts/consumer-setup/release-evidence.json -Destination (Join-Path $staging 'consumer-setup-release-evidence.json') -Force
+          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $staging 'consumer-evaluation-win-x64-sbom.spdx.json') -Force
+          Copy-Item artifacts/consumer-setup/release-evidence.json -Destination (Join-Path $staging 'consumer-evaluation-win-x64-release-evidence.json') -Force
           $hash = (Get-FileHash -LiteralPath (Join-Path $staging 'Meridian-Setup.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  Meridian-Setup.exe" | Set-Content -LiteralPath (Join-Path $staging 'Meridian-Setup.exe.sha256') -Encoding ascii
 
       - name: Upload the consumer setup artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: meridian-evaluation-consumer-setup-${{ github.run_id }}
           path: artifacts/evaluation/consumer-setup/
@@ -352,7 +349,7 @@ jobs:
 
     steps:
       - name: Download the evaluation artifacts
-        uses: actions/download-artifact@v5.0.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           pattern: meridian-evaluation-*-${{ github.run_id }}
           path: artifacts/evaluation
@@ -406,7 +403,7 @@ jobs:
           ```
 
           Use the `win-arm64` files instead on an ARM64 device. Verify the download against
-          `SHA256SUMS` first.
+          the runtime-specific `desktop-evaluation-*-SHA256SUMS` first.
 
           ### Removing it again
 
@@ -434,7 +431,7 @@ jobs:
           NOTES
 
       - name: Publish the evaluation prerelease
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: eval-v${{ inputs.version }}
           name: Meridian ${{ inputs.version }} (evaluation, self-signed)
@@ -444,9 +441,9 @@ jobs:
             artifacts/evaluation/**/*.msix
             artifacts/evaluation/**/*.msixbundle
             artifacts/evaluation/**/*.cer
-            artifacts/evaluation/**/SHA256SUMS
-            artifacts/evaluation/**/sbom.spdx.json
+            artifacts/evaluation/**/desktop-evaluation-*-SHA256SUMS
+            artifacts/evaluation/**/desktop-evaluation-*-sbom.spdx.json
             artifacts/evaluation/**/Meridian-Setup.exe
             artifacts/evaluation/**/Meridian-Setup.exe.sha256
-            artifacts/evaluation/**/consumer-setup.sbom.spdx.json
-            artifacts/evaluation/**/consumer-setup-release-evidence.json
+            artifacts/evaluation/**/consumer-evaluation-win-x64-sbom.spdx.json
+            artifacts/evaluation/**/consumer-evaluation-win-x64-release-evidence.json
