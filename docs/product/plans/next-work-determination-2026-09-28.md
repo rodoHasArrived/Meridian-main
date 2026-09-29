@@ -179,9 +179,12 @@ Current hand-written conflict counts, generated trees excluded:
 > after the `0b956b06` baseline this document was measured at. It is the first branch to leave the
 > table above, and it left as the mechanical case the table predicted. The rest of the measurement
 > stands as recorded at the baseline.
-> **Follow-up integration (`87dc5bf15`):** #2967 merged in `8123e84798`, and #2998 merged in
-> `87dc5bf15`. Their baseline recommendations are completed and must not be queued again. These
-> known closures do not establish a new whole-queue count or refresh other PRs' conflict evidence.
+> **Follow-up integration (through reviewed head `27712ad`):** #2967 merged in `8123e84798`, #2998
+> merged in `87dc5bf15`, and **#2968 and #2965 are also in this branch's ancestry** via
+> `208e8c480` and `952e99815`. That is **three of the six eligible baseline dependency PRs closed**,
+> leaving #2944, #2932 and #2307. Their baseline recommendations are completed and must not be
+> queued again. These known closures do not establish a new whole-queue count or refresh other PRs'
+> conflict evidence.
 
 Resolving `OperationsContinuityWorkflowServiceTests.cs` and
 `FinancialOperationsCommandCenterReadService.PublicationTests.cs` once on `main` still converts
@@ -198,7 +201,8 @@ The 2026-09-27 ranking stands as written for:
 - **Tier 0** — the RC sequence, **reordered**: both signing secrets → installer-size decision →
   **fix the prerelease → MSIX version mapping** → dependency drain → **tenancy fail-closed and the
   reconciliation round-trip test** → only then freeze and tag → **dispatch `Publish Smoke` at the
-  tagged SHA** → activate the required check → ADR-019/ADR-020 and support-matrix sign-off.
+  tagged SHA** → **operator replay/reconciliation review of the recovery-drill artifact** →
+  activate the required check → ADR-019/ADR-020 and support-matrix sign-off.
   **Two corrections to the order the 2026-09-27 document implied.** First, the tracker requires
   every P0 row complete on *one* release commit (`implementation-todo-list.md:125-127`), so the
   tenancy fix and the new round-trip test — both candidate-changing P0 work — must land *before* the
@@ -275,9 +279,10 @@ re-verification; a carried-forward claim is a claim, and re-verification has to 
 | P0 | Provide **both** `MDC_SIGNING_CERT_PFX_BASE64` **and `MDC_SIGNING_CERT_PASSWORD`** in the protected `desktop-release-signing` environment | Hard prerequisite for **freezing and running the signed RC**, not for the rest of Tier 0; not engineering work. The 2026-09-27 document named only the PFX: the password is passed to Authenticode signing (`desktop-installer-packaging.yml:383,389`) and into installed lifecycle certification (`:483,492`), where `certify-desktop-install-lifecycle.ps1:177` imports the PFX with it, and the tracker names both (`implementation-todo-list.md:120-122`). Provisioning only the PFX leaves the tag workflow unable to sign or import a password-protected certificate. Everything else below can proceed while they are outstanding |
 | P0 | Decide the ~1 GB consumer installer question | It ships inside the RC; decide before the tag |
 | P0 | **Fix the prerelease → MSIX version mapping, or choose a tag scheme with distinct increasing identities** | **Blocks the tag.** `desktop-installer-packaging.yml:196-199` matches `^v(\d+)\.(\d+)\.(\d+)` and stamps `$1.$2.$3.0`, so `v0.1.0-rc.1` and a later `v0.1.0` both produce MSIX `0.1.0.0`. An operator who installs the signed RC then cannot be updated to the final package, and `certify-desktop-install-lifecycle.ps1:206-209` throws "Update did not advance package version" on exactly that transition. Tagging `v0.1.0-rc.1` as written burns the `0.1.0.0` identity on a throwaway candidate |
-| P0 | **Drain the remaining five members of the six-PR baseline dependency set before the freeze** (#2967 has merged; #2878 remains outside that set); separately resolve, validate and review #2981 and #2903 for inclusion, or record an explicit pre-freeze deferral | Recheck current heads and gates first. The RC freezes the dependency set; bumping after the tag invalidates same-commit evidence. #2903's source-hash conflict requires the reviewed-baseline procedure above, not automatic hash acceptance |
+| P0 | **Drain the remaining three members of the six-PR baseline dependency set before the freeze — #2944, #2932, #2307** (#2967, #2968 and #2965 have merged; #2878 remains outside that set); separately resolve, validate and review #2981 and #2903 for inclusion, or record an explicit pre-freeze deferral | Recheck current heads and gates first. The RC freezes the dependency set; bumping after the tag invalidates same-commit evidence. #2903's source-hash conflict requires the reviewed-baseline procedure above, not automatic hash acceptance |
 | P0 | Backfill tenancy; make `FailClosed` the supported default with a real config key; add the rejection regressions — **before the freeze** | Re-verified today: still env-var-only, still defaults open. The one `W9-GOV-008` remainder, and it changes the candidate, so it cannot follow the tag |
 | P0 | Add `StatementReconciliationPostgresRoundTripTests` — **before the freeze** | Corrected scope: statement rows **do** have PostgreSQL coverage (`StatementReconciliationReportAuthorityStoreTests.cs`, `PostgresFundAccountStoreTests.cs`). The gap is the **end-to-end round trip** — import → journal-sourced ledger → deterministic match → casework — over the real stores. Candidate-changing, so it precedes the tag |
+| P0 | **Schedule the operator replay/reconciliation review of the recovery-drill artifact** | `PRD-015` is not closed by the tag run alone. `implementation-todo-list.md:197` requires a "Successful dated `production-recovery-drill-*` artifact on the release commit **and operator review of replay/reconciliation**" — the tag-triggered `Production Certification` run only *produces* the artifact. This is a human gate like the ADR sign-off and the required-check activation; omitting it lets the sequence finish with a production-blocking P0 row still open |
 | P0 | **Then** freeze a commit, cut the RC tag, **and separately dispatch `Publish Smoke` at the tagged SHA** | Still no `v*` tag in the repository. **This row is last among the P0s by necessity:** the tracker requires every P0 row complete on **one** release commit (`implementation-todo-list.md:125-127`), so a tag cut before the two rows above would certify the pre-fix tenancy posture, omit the new test, and force a second tag and a full second evidence run. The tag run also does not mint everything: `publish-smoke.yml:3` is `workflow_dispatch`-only, so `PRD-013`'s `web-workstation`/`win-x64` evidence needs its own dispatch at the frozen commit |
 | P1 | **Completed after baseline: #2998 merged in `87dc5bf15`** | The baseline recommendation is retained as history; no further merge action remains |
 | P1 | Take or decline `W9-CORPACT-011` (6 days) | Zero engineering; clears the last W9 acceptance lane |
