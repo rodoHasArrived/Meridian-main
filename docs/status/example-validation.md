@@ -8,17 +8,17 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1025 |
-| Valid | 585 |
+| Total code blocks | 1024 |
+| Valid | 586 |
 | Invalid | 0 |
-| Skipped | 440 |
+| Skipped | 438 |
 
 ## Summary by Language
 
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
-| `(none)` | 113 | 0 | 0 | 113 |
-| `bash` | 163 | 163 | 0 | 0 |
+| `(none)` | 111 | 0 | 0 | 111 |
+| `bash` | 164 | 164 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 325 | 325 | 0 | 0 |
@@ -131,6 +131,7 @@ No invalid code examples found.
 | `docs/operators/provider-backfill-operations.md` | 1 |
 | `docs/product/adversarial-program-review-2026-08-25.md` | 3 |
 | `docs/product/functionality-deepening-brainstorm-2026-07.md` | 1 |
+| `docs/product/plans/next-work-determination-2026-09-29.md` | 1 |
 | `docs/product/plans/product-roadmap-priorities-2026-07.md` | 1 |
 | `docs/product/plans/w10-depth-slate-2026-07.md` | 1 |
 | `docs/product/plans/w9-close-out-delivery-plan-2026-08.md` | 2 |

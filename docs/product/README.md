@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-09-27
+**Reviewed:** 2026-09-29
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -43,10 +43,13 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     future roadmap row must produce before a deferred product area can move into active delivery;
     boundaries, not implementation claims
 - Treat the following as dated working design inputs, not canonical status sources:
-  - [What To Work On Next (2026-09-27)](plans/next-work-determination-2026-09-27.md) — latest
-    prioritization input, anchored at `main` `5980fa00`; ranks work against the registry, the
-    readiness tracker, live CI, and the pull-request queue, verifies each named roadmap remainder
-    against current source, and supersedes the
+  - [What To Work On Next (2026-09-29)](plans/next-work-determination-2026-09-29.md) — latest
+    prioritization input, anchored at `main` `95c8a321`; re-measures the whole open pull-request
+    queue against the current head, records that the two highest-ranked engineering items are now
+    in-flight pull requests blocked only by regeneratable output, corrects three claims the CI
+    consolidation program made stale, and reports a registry parse break the fallback parser was
+    hiding. It supersedes the
+    [2026-09-27 determination](../../archive/docs/plans/next-work-determination-2026-09-27.md), the
     [2026-09-23 determination](../../archive/docs/plans/next-work-determination-2026-09-23.md) and the
     [2026-09-20 determination](../../archive/docs/plans/next-work-determination-2026-09-20.md). It moves no roadmap row
     and certifies no release
