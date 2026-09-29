@@ -1,5 +1,10 @@
 # GitHub Workflows
 
+CI quality controls and administrator rollout are maintained in
+[CI/CD ownership and rollout](../../docs/engineering/ci-cd-optimization.md). The canonical
+workflow lane runs actionlint and enforces full-SHA external action references. The manual
+`ci-concurrency-benchmark.yml` collects five comparable pairs; it never promotes concurrency.
+
 Meridian keeps the Actions surface scoped to the current .NET 10 solution, browser workstation,
 retained Windows desktop shell, provider smoke checks, safe publish output, release packaging, and
 documentation/diagram refreshes. Older automation for AI review, Docker publishing, stale issue
