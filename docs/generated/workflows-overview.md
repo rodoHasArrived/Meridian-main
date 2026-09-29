@@ -11,8 +11,8 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/ai-navigation-refresh.yml` | AI Navigation Refresh | schedule, workflow_dispatch |
 | `.github/workflows/branch-cleanup.yml` | Branch Cleanup | workflow_dispatch |
 | `.github/workflows/ci-concurrency-benchmark.yml` | CI Concurrency Benchmark | workflow_dispatch |
-| `.github/workflows/ci.yml` | CI | pull_request, merge_group, push, schedule, workflow_dispatch |
-| `.github/workflows/codeql.yml` | CodeQL | pull_request, merge_group, push, schedule, workflow_dispatch |
+| `.github/workflows/ci.yml` | CI | workflow_call, pull_request, merge_group, push, schedule, workflow_dispatch |
+| `.github/workflows/codeql.yml` | CodeQL | workflow_call, pull_request, merge_group, push, schedule, workflow_dispatch |
 | `.github/workflows/copilot-setup-steps.yml` | Copilot Setup Steps | workflow_dispatch, push, pull_request |
 | `.github/workflows/demo-smoke.yml` | Demo Smoke | pull_request, push, workflow_dispatch |
 | `.github/workflows/desktop-evaluation-prerelease.yml` | Desktop Evaluation Prerelease | workflow_dispatch |
@@ -26,10 +26,10 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/ibapi-runtime.yml` | IB API Official Runtime | workflow_dispatch, schedule |
 | `.github/workflows/ibapi-smoke.yml` | IB API Smoke Build | pull_request, push, workflow_dispatch |
 | `.github/workflows/maintenance.yml` | Maintenance | pull_request, push, schedule, workflow_dispatch |
-| `.github/workflows/meridian-ci.yml` | Meridian CI | pull_request, push, merge_group, workflow_dispatch |
-| `.github/workflows/production-certification.yml` | Production Certification | workflow_dispatch, schedule, push |
+| `.github/workflows/meridian-ci.yml` | Meridian CI | workflow_call, pull_request, push, merge_group, workflow_dispatch |
+| `.github/workflows/production-certification.yml` | Production Certification | workflow_call, workflow_dispatch, schedule, push |
 | `.github/workflows/provider-validation.yml` | Provider Validation | workflow_dispatch, schedule |
-| `.github/workflows/publish-smoke.yml` | Publish Smoke | workflow_dispatch |
+| `.github/workflows/publish-smoke.yml` | Publish Smoke | workflow_call, workflow_dispatch |
 | `.github/workflows/roadmap-source-docs.yml` | Roadmap Source Docs | workflow_dispatch, pull_request, push |
 | `.github/workflows/roadmap-tools-manual.yml` | Roadmap Tools (Manual) | workflow_dispatch |
 | `.github/workflows/robinhood-options-smoke.yml` | Robinhood Options Smoke | workflow_dispatch |

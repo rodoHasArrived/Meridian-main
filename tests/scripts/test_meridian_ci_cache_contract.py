@@ -48,9 +48,8 @@ class MeridianCiCacheContractTests(unittest.TestCase):
         for input_pattern in (
             "**/*.csproj",
             "**/*.fsproj",
-            "**/Directory.Build.props",
-            "**/Directory.Build.targets",
-            "**/Directory.Packages.props",
+            "**/*.props",
+            "**/*.targets",
             "**/packages.lock.json",
             "global.json",
         ):
