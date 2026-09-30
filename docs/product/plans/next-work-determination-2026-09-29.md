@@ -16,6 +16,24 @@ carried-forward claim against current source rather than against its own record.
 > P0 release gate. Every conflict count and CI result below is anchored to `95c8a321` and must be
 > rechecked against the live head before acting.
 
+> **Post-baseline note (added 2026-09-30, when this branch merged `main` at `8e430e2c`).** `main`
+> advanced 78 commits past the `95c8a321` baseline. Two ranked items changed, and both changes
+> sharpen rather than soften the argument below:
+>
+> - **#2931 merged** (with #3010 and #3014). Its P1 row is **completed**; do not queue it again.
+> - **#3028's conflicts went 2 → 52 in one day**, because #2931's credential-ownership merge
+>   touched files it also changes. The disposition still holds — **50 of the 52 are generated
+>   output** (44 under `docs/diagrams/`, 5 under `docs/status/`, and the source-hash manifest) — but
+>   the remedy is no longer the one-command case: `resolve-generated-merge-conflicts.py` deliberately
+>   excludes diagrams and the reviewed source-hash manifest, so #3028 now needs the fuller
+>   regeneration sequence in [generated-merge-recovery](../../engineering/generated-merge-recovery.md),
+>   plus review of the two genuinely hand-written conflicts, `database/manifest/contracts.json` and
+>   `src/Meridian.Core/README.md`. **#3026 went 2 → 3** and remains the cheap case.
+>
+> This is the "landing what is already built" argument observed in a single day, on the highest-value
+> P0 item in the program: waiting cost it a one-command resolution. Every other count below is as
+> measured at `95c8a321`.
+
 ## Headline
 
 **The two engineering items the 2026-09-28 determination ranked highest are no longer open work —

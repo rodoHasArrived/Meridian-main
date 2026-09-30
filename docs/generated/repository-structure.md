@@ -9225,7 +9225,10 @@ Meridian-main
 │   │   │   │   ├── OAuthTokenRefreshFailureTests.cs
 │   │   │   │   ├── OAuthVaultRecoveryTests.cs
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
-│   │   │   │   └── ProviderCredentialStoreTests.cs
+│   │   │   │   ├── ProviderCredentialStoreTests.cs
+│   │   │   │   ├── ScopedCredentialRecoveryTests.cs
+│   │   │   │   ├── ScopedOAuthRotationRecoveryTests.cs
+│   │   │   │   └── ScopedVaultRollbackFormatTests.cs
 │   │   │   ├── Coordination
 │   │   │   │   └── SubscriptionOrchestratorCoordinationTests.cs
 │   │   │   ├── Credentials
@@ -10621,6 +10624,7 @@ Meridian-main
 │   │   │   │   └── ReportingWorkspaceGovernanceSurfaceTests.cs
 │   │   │   ├── Settings
 │   │   │   │   ├── Shell
+│   │   │   │   │   ├── SettingsWorkspaceShellCredentialPostureTests.cs
 │   │   │   │   │   └── SettingsWorkspaceShellViewModelTests.cs
 │   │   │   │   ├── SettingsFeatureModuleTests.cs
 │   │   │   │   └── SettingsFeatureServiceRegistrationTests.cs
@@ -10724,6 +10728,7 @@ Meridian-main
 │   │   │   ├── ChartingPageViewModelTests.cs
 │   │   │   ├── ClusterStatusViewModelTests.cs
 │   │   │   ├── CollectionSessionViewModelTests.cs
+│   │   │   ├── CredentialManagementViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs
 │   │   │   ├── DataExportViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
@@ -10803,6 +10808,7 @@ Meridian-main
 │   │   ├── Views
 │   │   │   ├── AccountingWorkspaceShellPageTests.cs
 │   │   │   ├── AccountingWorkspaceShellSmokeTests.cs
+│   │   │   ├── AddProviderWizardPageTests.cs
 │   │   │   ├── ApplicationPrimitiveControlsTests.cs
 │   │   │   ├── DashboardPageSmokeTests.cs
 │   │   │   ├── DataQualityPageSmokeTests.cs

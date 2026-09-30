@@ -53,7 +53,7 @@ operator replacement is preserved and the stale operation cannot verify it.
 Mutations hold the shared writer lock and update only the named provider token; readers open a stable
 published generation without requiring a writable lock. Legacy imports preserve existing tokens and
 audit every attempted provider, retaining the imported generation in both primary and backup before
-acknowledging the import. OAuth saves also mirror the replacement token to the backup before success,
+acknowledging the import. Scoped and unscoped OAuth saves mirror the replacement token to the backup before success,
 because remote rotation can invalidate the previous refresh token immediately. Backup-write failures
 are reported; the retained replacement can be saved again without another remote rotation.
 Durable markers and sanitized recovery generations prevent deletion reversal;
@@ -61,7 +61,17 @@ empty or missing primaries recover from the retained backup. Both audit surfaces
 lock without copying accumulated history. Before appending, an incomplete final record is durably retained
 in a uniquely named `.partial-*` file, preserving every newline-terminated record in the original log.
 The service never writes plaintext OAuth JSON.
+Scoped readers use the same stable generation path, including backup recovery, without acquiring a
+writer lock or creating storage for an absent vault. Scoped deletion sanitizes recovery generations
+while retaining other owners and unassigned records. Scoped audit appends retain tenant, connection,
+external account and environment through incomplete-tail recovery.
 The existing non-Windows local key file remains a production-hardening gap; this does not certify PRD-002.
+
+`IScopedOAuthTokenVault` isolates tokens by the same four ownership dimensions as provider secrets.
+Scoped token records retain and validate their provider and ownership context; legacy token enumeration
+cannot return scoped tokens. `OAuthTokenRefreshService` accepts trusted `ownershipScope` for loading,
+saving, refresh rotation and deletion. Scoped services never claim or erase an unassigned legacy OAuth
+sidecar. Host callers must supply authorized scope; the default service remains a legacy compatibility path.
 
 ## Credential migration recovery
 
@@ -70,7 +80,12 @@ identity map (`ibkr`, `nasdaq`, and explicit legacy aliases). Existing encrypted
 legacy-import markers normalize in memory when read; a subsequent normal mutation persists the
 canonical keys under the existing writer lock. Alias collisions retain the newest whole saved
 record, preserving verification metadata without mixing credentials from separate generations.
-The IB Flex credential resource keeps its independent `ib-flex` identity.
+The IB Flex credential resource keeps its independent `ib-flex` identity. Scoped legacy provider
+aliases validate their persisted provider/scope key and retained account/environment before re-keying
+to the canonical provider. The ownership hash is rebuilt using all retained dimensions; aliases can
+coalesce only inside that same ownership scope. Malformed or absent scope metadata fails closed.
+Read-only migration preserves credential generation and verification evidence; the next mutation
+persists the canonical key while retaining all other owners.
 
 Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Mutations share a bounded, cancellable file lock across store instances. Readers open one immutable published generation without a writable lock, including on read-only secret volumes; primary and backup generations are both replaced atomically. Audit failure retains the sidecar for retry.
 
@@ -81,6 +96,22 @@ A restart completes cleanup without deserializing partly erased bytes. Empty mig
 remain in place so every process continues to acquire the same lock identity.
 
 ## Purpose
+
+`IScopedProviderCredentialStore` binds provider secrets to explicit tenant, connection, external
+account and environment identities. Scoped operations use independent encrypted records, validate
+persisted scope, and never fall back to provider-wide or process-environment credentials. Rotation,
+verification and deletion operate on one scope; audit entries retain the corresponding scope.
+The provider-only API remains a legacy compatibility surface. Runtime consumer and OAuth routing
+must be migrated to trusted scoped context before PRD-002 can claim end-to-end isolation.
+
+A vault that holds any scoped provider record or scoped OAuth token is written as format version 2
+with a `+scoped-v2` protection tag. Releases that predate scoped ownership ignore the envelope
+version and would otherwise rewrite the vault without `Scope` or scoped OAuth records. They reject
+the new tag as unreadable instead, so after a rollback they fail closed rather than taking scoped
+credentials offline. Every surviving generation carries the tag: the previous generation is
+re-protected when it becomes the backup, and a legacy backup left by a missing or corrupt primary
+is upgraded before the scoped primary is published. Removing the last scoped record restores the
+version 1 format. Readers refuse envelope versions newer than they understand.
 
 ETL runs acquire a unique execution lease before admission. Staging, audit/reject writes, and
 event publication use guarded actions; flush, catalog/export commit, checkpoint, source cleanup,

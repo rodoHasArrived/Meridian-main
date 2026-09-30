@@ -10,6 +10,12 @@ public sealed class SettingsWorkspaceShellSnapshot
 
     public int MissingCredentialCount { get; init; }
 
+    /// <summary>
+    /// Providers whose status the authenticated service did not report. These are unknown, not missing,
+    /// and never count toward the configured or missing totals.
+    /// </summary>
+    public int UnavailableCredentialCount { get; init; }
+
     public string ShellDensityLabel { get; init; } = "Standard";
 
     public DateTimeOffset AsOfUtc { get; init; } = DateTimeOffset.UtcNow;
