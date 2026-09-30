@@ -14,11 +14,14 @@ A Meridian host builds its runtime providers once, for everyone it serves:
 
 - `ProviderFactory` builds one provider for each registration in `ProviderCapabilityDescriptorCatalog`,
   which means one per provider family and capability. The capabilities are streaming, backfill, symbol
-  search, corporate actions, options chains and brokerage. It reads top-level configuration, not
-  individual `DataSources.Sources` rows, and a single `IProviderCredentialResolver` serves the whole
-  factory.
+  search, symbol resolution, corporate actions, options chains and brokerage. It reads top-level
+  configuration, not individual `DataSources.Sources` rows, and a single `IProviderCredentialResolver`
+  serves the whole factory.
 - `AddProviderServices` separately discovers plugin registrations and resolves their implementations
   directly from DI, outside `ProviderFactory`.
+- Some catalogued capabilities are also built outside the factory. OpenFIGI symbol resolution is
+  constructed straight from `Backfill.Providers.OpenFigi.ApiKey` in `SymbolManagementFeatureRegistration`
+  (the canonical symbol-registry spine) and in the `BackfillCoordinator` fallback.
 
 The market-data output (quotes, trades, bars, corporate actions, option chains written to storage) is
 host-wide: every tenant the host serves reads it.
@@ -50,31 +53,48 @@ whole host use?** Facts in the current code shape the answer:
      configuration or environment secrets.
 6. **Configuration loading forgives errors.** `ConfigStore.LoadConfig` substitutes a default
    `AppConfig` when the file is malformed or unreadable.
+7. **The credential catalog is incomplete.** `ProviderCredentialCatalog` does not describe every
+   credential use:
+   - NYSE has no catalog entry, yet `NyseMarketDataClient.ProviderCredentialFields` requires `ApiKey`
+     and `ApiSecret`, and `NYSEOptions` reads them from environment variables;
+   - the `ibkr` entry lists no required fields, because the account is whichever TWS or IB Gateway
+     session is logged in, and `CreateIbBrokerageGateway` builds its gateway from `AppConfig.IB`.
 
 ## Decision
 
 1. **Scope: host-wide market data.** This decision covers the host-wide market-data capabilities:
-   streaming, backfill, symbol search, corporate actions and options chains, whether built by
-   `ProviderFactory` or registered by a plugin.
+   streaming, backfill, symbol search, symbol resolution, corporate actions and options chains. It
+   applies wherever they are built: by `ProviderFactory`, by a plugin, or at a construction site
+   outside the factory such as the OpenFIGI resolvers.
 
-   Execution credentials are separate and never come from a host binding. Under `FailClosed`, a
-   host-wide brokerage gateway built from provider-wide credentials does not start. Execution
+   Execution credentials are separate and never come from a host binding. Under `FailClosed`, every
+   host-wide brokerage capability is refused, whatever its credential source: a provider-wide record,
+   configuration, environment, or an external session such as a TWS or IB Gateway login. Execution
    credential ownership, for example tenant-bound account connections, is its own decision.
 
-2. **One owner per credential-bearing family, fixed at startup.** A family that has a
-   `ProviderCredentialCatalog` entry requiring credentials has exactly one credential owner for all of
-   its host-wide market-data capabilities. That owner is fixed when the providers are built. It is
-   never chosen per request and never inferred, for example from the only, first or most recent
-   connection.
+2. **Every family is explicitly classified; each credential-bearing family has one owner, fixed at
+   startup.** Every enabled family, built-in or plugin, carries one credential classification:
+   - **credential-bearing:** its `ProviderCredentialCatalog` entry requires fields, or any of its
+     adapters declares a required `ProviderCredentialFields` entry (for example NYSE);
+   - **session-backed:** the account is set by an external session the host cannot attribute or
+     verify (for example `ibkr` through TWS or IB Gateway). It is treated as credential-bearing but
+     cannot be bound;
+   - **credential-free:** explicitly listed (for example Synthetic, Yahoo, Stooq and Edgar search), and
+     no adapter in the family declares a required credential field. It runs with credential source
+     `none` and is never refused for being unbound.
 
-   A family without such an entry needs no credentials (for example Yahoo, Stooq or Edgar search). It
-   runs with credential source `none` and is never refused for being unbound.
+   A family with no classification is treated as unbound credential-bearing. A credential-bearing
+   family has exactly one credential owner for all of its host-wide market-data capabilities. That
+   owner is fixed when the providers are built. It is never chosen per request and never inferred, for
+   example from the only, first or most recent connection.
 
 3. **Where each posture gets its credentials.**
    - **`DeploymentBoundary`:** the deployment is one company, so an unbound credential-bearing family
      keeps using the provider-wide record, as today. Bindings are optional.
    - **`FailClosed`:**
-     - an unbound credential-bearing family does not start;
+     - an unbound credential-bearing, session-backed or unclassified family does not start. For
+       OpenFIGI, this means the canonical symbol resolver runs registry-only and `BackfillCoordinator`
+       creates no fallback resolver;
      - the tenant-scoped credential routes refuse provider-wide writes;
      - existing provider-wide records remain stored but unused by host-wide providers;
      - a plugin family starts only if the host operator lists it as credential-free (point 5). Plugins
@@ -115,25 +135,34 @@ whole host use?** Facts in the current code shape the answer:
    that family from starting and records a diagnostic.
 
 7. **Bound families take credentials from the scoped resolver only.** For a bound family:
-   - the factory uses the scope-bound `StoredProviderCredentialResolver`;
+   - every construction site uses the scope-bound `StoredProviderCredentialResolver`, including the
+     sites outside `ProviderFactory` (the OpenFIGI resolvers in `SymbolManagementFeatureRegistration`
+     and `BackfillCoordinator`);
    - module credential overlays are skipped;
-   - every post-resolver fallback in the family's factories is disabled. The implementation must audit
-     all factories, starting with Alpaca's `FirstNonBlank` / `AlpacaCredentialEnvironment.Resolve`
-     path.
+   - every post-resolver fallback in the family's factories and options types is disabled. The
+     implementation must audit all of them, starting with Alpaca's `FirstNonBlank` /
+     `AlpacaCredentialEnvironment.Resolve` path and `NYSEOptions`, which falls back to `NYSE_API_KEY`
+     and `NYSE_API_SECRET`.
 
    A partial scoped record refuses to start rather than being completed from elsewhere.
 
-8. **Binding changes are recoverably audited.** Each `set` or `clear` runs three steps under one
-   correlation ID:
-   1. append a `pending` event to the credential audit trail (`provider-credentials.audit.jsonl`),
+8. **Binding changes are serialized and recoverably audited.** Each `set` or `clear` holds an
+   exclusive host lock (`host-provider-credentials.lock`, opened for exclusive access) for its whole
+   transaction, and runs these steps under one correlation ID:
+   1. read the current binding;
+   2. append a `pending` event to the credential audit trail (`provider-credentials.audit.jsonl`),
       recording the actor, the provider family, and the previous and new connection IDs;
-   2. write the binding file atomically;
-   3. append `committed`, or `aborted` if the write failed.
+   3. write the binding file atomically;
+   4. append `committed`, or `aborted` if the write failed.
 
-   At startup, a `pending` event without an outcome is resolved against the file's actual state and
-   closed as `committed (recovered)` or `aborted (recovered)`. A retry therefore never looks like a
-   second change. The actor is the required `--actor` argument together with the OS identity that ran
-   the command.
+   Concurrent commands therefore run one after another, and each event's previous connection ID is
+   the state it actually replaced. A command that cannot take the lock within a timeout fails without
+   writing anything.
+
+   At startup, under the same lock, a `pending` event without an outcome is resolved against the
+   file's actual state and closed as `committed (recovered)` or `aborted (recovered)`. A retry therefore
+   never looks like a second change. The actor is the required `--actor` argument together with the OS
+   identity that ran the command.
 
 9. **Other tenants' connections never power host-wide providers.** A connection owned by any tenant
    other than the host credential tenant serves only tenant-bound operations: status, verification,
@@ -157,7 +186,11 @@ implemented yet.
 | Scope-bound resolver | `src/Meridian.Application/Services/StoredProviderCredentialResolver.cs` | Resolves one connection scope with no fallback; gains a production caller |
 | Host resolver registration | `src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs` | Currently registers only the provider-wide resolver; will select the resolver per family |
 | Runtime provider construction | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs` | One provider per catalog registration; Alpaca's post-resolver fallback lives here |
-| Module credential overlay | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs` | `WithModuleCredentials` / `ModuleCredentialContext`; skipped for bound families |
+| Capability catalog | `src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs` | The built-in families that need a credential classification |
+| Credential catalog | `src/Meridian.DataIntegration/Credentials/ProviderCredentialCatalog.cs` | Required fields per family; has no NYSE entry and no required `ibkr` fields |
+| Adapter credential metadata | `src/Meridian.ProviderSdk/IProviderMetadata.cs` | `ProviderCredentialFields`, checked against each classification (NYSE declares required fields) |
+| OpenFIGI resolution outside the factory | `src/Meridian.Application/Composition/Features/SymbolManagementFeatureRegistration.cs`, `src/Meridian.Application/Backfill/BackfillCoordinator.cs` | Build `OpenFigiSymbolResolver` from configuration; move to the per-family selection |
+| Module credential overlay and brokerage gateways | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs` | `WithModuleCredentials` / `ModuleCredentialContext`, skipped for bound families; `CreateIbBrokerageGateway` and the other gateways, refused under `FailClosed` |
 | Plugin registration | `src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.Composition.cs` | Registers plugin families outside `ProviderFactory`; gated under `FailClosed` |
 | Provider-wide credential writes | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs` | `ResolveConnectionService` without `connectionId`; refused under `FailClosed` |
 | Retained ownership | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` | `GetCredentialScopeForTenantAsync` resolves the bound scope |
@@ -177,9 +210,11 @@ nothing changes for current deployments. Under `FailClosed`, tenant roles can wr
 record and can grant themselves any permission, so neither can prove host ownership.
 
 An out-of-band host command can. So can a strictly loaded host-only file, a verified connection owned
-by the declared host tenant, and a recoverable audit record. Keying bindings by provider family
-matches how the factory builds providers. Removing every other credential source for bound families
-makes the no-fallback guarantee hold end to end.
+by the declared host tenant, and a serialized, recoverable audit record. Keying bindings by provider
+family matches how the factory builds providers. Removing every other credential source for bound
+families, at every construction site, makes the no-fallback guarantee hold end to end. Classifying
+every family explicitly, and checking that classification against adapter metadata, keeps an
+uncatalogued credential use from passing as credential-free.
 
 ## Alternatives Considered
 
@@ -240,6 +275,8 @@ prove host authority.
   credentials) and list any credential-free plugins first, or those families will not start.
 - Plugin families cannot be bound, and families without scoped verification cannot be bound, until
   that support exists.
+- Under `FailClosed`, session-backed families such as `ibkr` and every host-wide brokerage capability
+  do not run, and OpenFIGI enrichment stays off until OpenFIGI is bound.
 - A bound family does not start after a rotation until its new credentials are verified.
 
 ### Neutral
@@ -255,8 +292,10 @@ prove host authority.
   - the provider-wide resolver, only under `DeploymentBoundary` and only when unbound; or
   - the scope-bound `StoredProviderCredentialResolver` for exactly one validated, verified connection
     scope, with no module overlay and no post-resolver fallback.
-- Only the `--host-credential-binding` command writes `host-provider-credentials.json`, and the file
-  is never loaded through a default-substituting path.
+- Only the `--host-credential-binding` command writes `host-provider-credentials.json`, always while
+  holding the host lock, and the file is never loaded through a default-substituting path.
+- Every enabled family has exactly one credential classification, and `credential-free` never applies
+  to a family whose credential catalog entry or adapter metadata requires a field.
 
 ### Runtime Verification
 
@@ -272,26 +311,36 @@ The implementation PR must add tests that:
 - refuse a present but malformed `MERIDIAN_HOST_CREDENTIAL_TENANT` at startup;
 - treat a missing binding file as no bindings, and a malformed or unreadable one as refusal for every
   credential-bearing family, under both postures;
+- classify every catalog family, keep NYSE credential-bearing and `ibkr` session-backed, and fail
+  when a `credential-free` family's catalog entry or adapter metadata requires a field;
 - under `FailClosed`:
-  - refuse unbound credential-bearing families, provider-wide writes through tenant routes,
-    unlisted plugin families, and provider-wide brokerage gateways;
+  - refuse unbound credential-bearing, session-backed and unclassified families, provider-wide writes
+    through tenant routes, unlisted plugin families, and every host-wide brokerage gateway, including
+    `ibkr`;
+  - run the canonical symbol resolver registry-only when OpenFIGI is unbound, without reading the
+    configured key, and create no `BackfillCoordinator` fallback resolver;
   - start credential-free families with source `none`;
 - under `DeploymentBoundary`, keep unbound families on the provider-wide record;
 - record `pending` and `committed` or `aborted` events with the actor, family and connection IDs,
   including recovery after a crash between the audit append and the file write;
+- serialize concurrent `set` and `clear` commands so each event's previous connection ID is the state
+  it replaced, and fail a command that cannot take the lock without writing;
 - show only the source kind in tenant-visible read models, never the connection ID or tenant.
 
 ## Implementation Plan
 
 1. This ADR (Proposed), for review.
-2. Binding file and command: strict loader, `--host-credential-binding` with recoverable audit, the host
-   credential tenant setting, and the plugin credential-free list.
-3. Construction: validate and verify bindings at startup; per-family scoped resolver with module
-   overlays and post-resolver fallbacks removed; `FailClosed` refusals (unbound families, plugins,
-   brokerage gateways, tenant-route provider-wide writes); the tests above.
-4. Surfacing: source kind in the browser and WPF provider read models; identifiers in the host log and
+2. Binding file and command: strict loader, `--host-credential-binding` with a host lock and
+   recoverable audit, the host credential tenant setting, and the plugin credential-free list.
+3. Classification: a credential classification for every family, with a consistency check against
+   the credential catalog and adapter metadata (adding the missing NYSE entry).
+4. Construction: validate and verify bindings at startup; per-family scoped resolver at every
+   construction site, including OpenFIGI's, with module overlays and post-resolver fallbacks removed;
+   `FailClosed` refusals (unbound, session-backed and unclassified families, plugins, every brokerage
+   gateway, tenant-route provider-wide writes); the tests above.
+5. Surfacing: source kind in the browser and WPF provider read models; identifiers in the host log and
    CLI only.
-5. Update `PRD-002` evidence in the implementation tracker and the Application README.
+6. Update `PRD-002` evidence in the implementation tracker and the Application README.
 
 ## References
 
