@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-09-30
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Application
@@ -104,8 +104,7 @@ environment, rejects unmanaged and non-catalog provider types, and never falls b
 records or config.
 The scoped store registration aliases the existing vault instance. Default host construction and the
 legacy setup route still use provider-wide resolution until authorized scope is propagated by callers;
-this constructor alone does not establish end-to-end tenant isolation. [ADR-023](../../docs/adr/023-host-wide-provider-credential-ownership.md)
-(Proposed) sets which tenant's credentials a host-wide runtime provider may use before it is wired.
+this constructor alone does not establish end-to-end tenant isolation.
 
 `OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
 only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
