@@ -1475,6 +1475,35 @@ public sealed class AlpacaBrokerageGatewayTests
         requestedPaths.Should().Equal("/v2/account");
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("EUR")]
+    public async Task GetActivitySnapshotAsync_PreservesActivityCurrencyWithoutInventingAccountDenomination(string? sourceCurrency)
+    {
+        var handler = new CapturingStubHandler(
+            _ => { },
+            request => request.RequestUri?.AbsolutePath switch
+            {
+                "/v2/account" => BuildAccountResponse(),
+                "/v2/account/activities" => BuildJson(new[]
+                {
+                    new { id = "DIV-1", activity_type = "DIV", net_amount = "25",
+                        date = "2026-06-02", currency = sourceCurrency }
+                }),
+                _ => BuildJson(Array.Empty<object>())
+            });
+        var sut = CreateSut(handler);
+
+        var snapshot = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("TEST123");
+
+        snapshot.CashTransactions.Should().ContainSingle().Which.Currency.Should().Be(sourceCurrency ?? string.Empty);
+        snapshot.Activities.Should().ContainSingle().Which.Currency.Should().Be(sourceCurrency ?? string.Empty);
+        snapshot.CashTransactions[0].Amount.Should().Be(25m);
+        snapshot.Activities[0].NetAmount.Should().Be(25m);
+    }
+
     [Fact]
     public async Task GetActivitySnapshotAsync_BoundedWindow_IncludesStartAndExcludesEnd()
     {

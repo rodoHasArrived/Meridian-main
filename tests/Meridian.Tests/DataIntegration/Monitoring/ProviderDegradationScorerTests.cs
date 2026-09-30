@@ -51,6 +51,25 @@ public sealed class ProviderDegradationScorerTests : IDisposable
     }
 
     [Fact]
+    public void GetAllScores_AliasedHealthLatencyAndErrorsAggregateIntoOneCanonicalFamily()
+    {
+        _healthMonitor.RegisterConnection("gateway-1", "interactive-brokers");
+        _latencyService.RecordLatency(" IB ", 25.0);
+        _scorer.RecordError("ibkr", "timeout");
+
+        var scores = _scorer.GetAllScores();
+
+        scores.Should().ContainSingle();
+        var score = scores.Single();
+        score.ProviderName.Should().Be("ibkr");
+        score.IsConnected.Should().BeTrue();
+        score.P95LatencyMs.Should().Be(25.0);
+        score.ErrorRate.Should().Be(1.0);
+        _scorer.GetScore(" INTERACTIVE-BROKERS ").ProviderName.Should().Be("ibkr");
+        _latencyService.GetAllHistograms().Should().ContainSingle(histogram => histogram.Provider == "ibkr");
+    }
+
+    [Fact]
     public void GetScore_DisconnectedProvider_ReturnsHighConnectionScore()
     {
         // Arrange

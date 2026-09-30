@@ -96,6 +96,7 @@ public sealed class StatementImportServiceTests : IDisposable
     [InlineData("missing-currency")]
     [InlineData("blank-currency")]
     [InlineData("invalid-currency")]
+    [InlineData("unknown-currency")]
     [InlineData("quantity-comma")]
     [InlineData("price-comma")]
     [InlineData("cash-comma")]
@@ -119,6 +120,9 @@ public sealed class StatementImportServiceTests : IDisposable
                 break;
             case "invalid-currency":
                 values[8] = "???";
+                break;
+            case "unknown-currency":
+                values[8] = "ZZZ";
                 break;
             case "quantity-comma":
                 values[2] = "1,25";
@@ -160,15 +164,20 @@ public sealed class StatementImportServiceTests : IDisposable
     [InlineData("<CURSYM></CURSYM>")]
     [InlineData("<CURSYM>  </CURSYM>")]
     [InlineData("<CURSYM/>")]
-    public async Task MonthEndOfxUpload_ExplicitBlankCurrencyCannotBorrowStatementCurrency(string currencyTag)
+    [InlineData("<CURSYM>ZZZ</CURSYM>")]
+    public async Task MonthEndOfxUpload_ExplicitInvalidCurrencyCannotBorrowStatementCurrency(string currencyTag)
     {
         var content = "<OFX><STMTRS><CURDEF>USD</CURDEF><BANKACCTFROM><ACCTID>FUND-A</ACCTID></BANKACCTFROM>"
             + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT><FITID>BANK-1</FITID>"
             + currencyTag + "</STMTTRN></STMTRS></OFX>";
         var document = new StatementSourceDocument("blank-currency.ofx", Encoding.UTF8.GetBytes(content));
 
-        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
-        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        var validation = await _service.ValidateAsync(document, null);
+        validation.IsValid.Should().BeFalse();
+        var preview = await _service.PreviewAsync(document, null);
+        preview.Issues.Should().Contain(issue => issue.Code == "ROW_INVALID_CURRENCY" && issue.RowNumber == null,
+            "retained-record order cannot identify a physical source row for an OFX diagnostic");
+        preview.Status.Should().Be("NeedsAttention");
         await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
         Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
     }
@@ -196,18 +205,45 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task MonthEndOfxUpload_EquivalentAccountCasingPreservesAuthorizedImport()
+    public async Task MonthEndOfxUpload_EquivalentAccountCasingWithinOneStatementPreservesAuthorizedImport()
     {
-        static string Statement(string account, string id) => "<STMTRS><CURDEF>USD</CURDEF>"
-            + $"<BANKACCTFROM><ACCTID>{account}</ACCTID><ACCTID>{account.ToLowerInvariant()}</ACCTID></BANKACCTFROM>"
-            + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT>"
-            + $"<FITID>{id}</FITID></STMTTRN></STMTRS>";
+        static string Transaction(string id) => "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT>"
+            + $"<FITID>{id}</FITID></STMTTRN>";
         var document = new StatementSourceDocument("account-casing.ofx",
-            Encoding.UTF8.GetBytes("<OFX>" + Statement("FUND-A", "1") + Statement("fund-a", "2") + "</OFX>"));
+            Encoding.UTF8.GetBytes("<OFX><STMTRS><CURDEF>USD</CURDEF>"
+                + "<BANKACCTFROM><ACCTID>fund-a</ACCTID><ACCTID>FUND-A</ACCTID></BANKACCTFROM>"
+                + Transaction("1") + Transaction("2") + "</STMTRS></OFX>"));
 
         (await _service.ValidateAsync(document, null)).IsValid.Should().BeTrue();
         (await _service.PreviewAsync(document, null)).Status.Should().Be("ReadyToImport");
         (await _service.CommitAsync(CommitRequest(document))).RecordCount.Should().Be(2);
+    }
+
+    [Theory]
+    [InlineData("STMTRS", "BANKACCTFROM", false)]
+    [InlineData("STMTRS", "BANKACCTFROM", true)]
+    [InlineData("CCSTMTRS", "CCACCTFROM", false)]
+    [InlineData("CCSTMTRS", "CCACCTFROM", true)]
+    [InlineData("INVSTMTRS", "INVACCTFROM", false)]
+    [InlineData("INVSTMTRS", "INVACCTFROM", true)]
+    public async Task MonthEndOfxUpload_MultipleContainingStatementsFailBeforeRetention(
+        string statementTag, string accountTag, bool emptySecondStatement)
+    {
+        string Statement(string account, string id, string date) => $"<{statementTag}><CURDEF>USD</CURDEF>"
+            + $"<{accountTag}><ACCTID>{account}</ACCTID></{accountTag}>"
+            + $"<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>{date}</DTPOSTED><TRNAMT>-25</TRNAMT><FITID>{id}</FITID></STMTTRN>"
+            + $"<LEDGERBAL><BALAMT>1000</BALAMT><DTASOF>{date}</DTASOF></LEDGERBAL></{statementTag}>";
+        var second = emptySecondStatement ? $"<{statementTag}/>" : Statement("fund-a", "2", "20260630");
+        var document = new StatementSourceDocument("multiple-statements.ofx",
+            Encoding.UTF8.GetBytes("<OFX>" + Statement("FUND-A", "1", "20260615") + second + "</OFX>"));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
+        var preview = await _service.PreviewAsync(document, null);
+        preview.Status.Should().Be("NeedsAttention");
+        preview.Issues.Should().Contain(issue => issue.Code == "OFX_MULTIPLE_STATEMENTS");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
     }
 
     [Theory]

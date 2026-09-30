@@ -5,4 +5,4 @@ White paper card mirroring `CardStyle` — 1px hairline border, 8px radius, a wh
 <PanelSurface raised style={{ padding: 18 }}>…</PanelSurface>
 ```
 
-`raised` = off-white `#FAFBFC` (metric tiles, inspector rails); `elevated` = slightly deeper shadow; `flat` = no shadow. Depth comes from borders, never gradients.
+`raised` = off-white `#F6F4F0` (metric tiles, inspector rails); `elevated` = slightly deeper shadow; `flat` = no shadow. Depth comes from borders, never gradients.

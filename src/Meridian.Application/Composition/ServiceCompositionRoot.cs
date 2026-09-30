@@ -74,6 +74,8 @@ public static class ServiceCompositionRoot
     {
         options ??= CompositionOptions.Default;
 
+        services.AddFundScopeTenantServices();
+
         // Core configuration and storage — always required
         services.RegisterFeature<ConfigurationFeatureRegistration>(options);
         services.RegisterFeature<CoordinationFeatureRegistration>(options);

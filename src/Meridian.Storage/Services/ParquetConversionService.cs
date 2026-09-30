@@ -107,8 +107,9 @@ public sealed class ParquetConversionService
         if (fileName.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
             fileName = Path.GetFileNameWithoutExtension(fileName);
 
-        // Try parsing each segment of the path
-        var segments = path.Replace('\\', '/').Split('/');
+        // Only archive-relative segments carry session dates. A date in the configured
+        // storage root or its parents must not replace the date retained by the archive.
+        var segments = Path.GetRelativePath(_options.RootPath, path).Replace('\\', '/').Split('/');
         foreach (var segment in segments.Reverse())
         {
             if (DateOnly.TryParse(segment, out var date))

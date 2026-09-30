@@ -1,4 +1,4 @@
-Dense mono data grid — white paper, small-caps muted headers, hairline row borders with off-white zebra striping, and a teal-blue left rail + blue wash on the hovered/selected row. The workhorse of every Meridian screen.
+Dense mono data grid — white paper, small-caps muted headers, hairline row borders with off-white zebra striping, and a copper left rail + warm wash on the hovered/selected row. The workhorse of every Meridian screen.
 
 ```jsx
 <DenseDataTable

@@ -775,6 +775,18 @@ public sealed class CapabilityInfo
     [JsonPropertyName("supportsStreaming")]
     public bool SupportsStreaming { get; init; }
 
+    /// <summary>Gets whether a historical backfill factory is declared.</summary>
+    [JsonPropertyName("supportsBackfill")]
+    public bool SupportsBackfill { get; init; }
+
+    /// <summary>Gets whether a symbol search factory is declared.</summary>
+    [JsonPropertyName("supportsSymbolSearch")]
+    public bool SupportsSymbolSearch { get; init; }
+
+    /// <summary>Gets whether an on-demand corporate action factory is declared.</summary>
+    [JsonPropertyName("supportsCorporateActions")]
+    public bool SupportsCorporateActions { get; init; }
+
     /// <summary>
     /// Gets a value indicating whether market depth is supported.
     /// </summary>
@@ -850,6 +862,12 @@ public sealed class CapabilityInfo
 
         if (SupportsStreaming)
             dict["SupportsStreaming"] = true;
+        if (SupportsBackfill)
+            dict["SupportsBackfill"] = true;
+        if (SupportsSymbolSearch)
+            dict["SupportsSymbolSearch"] = true;
+        if (SupportsCorporateActions)
+            dict["SupportsCorporateActions"] = true;
         if (SupportsMarketDepth)
             dict["SupportsMarketDepth"] = true;
         if (MaxDepthLevels.HasValue)

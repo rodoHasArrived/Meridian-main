@@ -117,6 +117,6 @@ readiness flag plus treasury and compliance sign-off before transfer creation is
 
 ## Legacy links moved into canonical lane
 
-- [Provider credential management (legacy source)](../../archive/docs/operations/provider-credential-management.md)
-- [Interactive Brokers setup archive](../../archive/docs/providers/interactive-brokers-setup.md)
-- [Alpaca setup archive](../../archive/docs/providers/alpaca-setup.md)
+- [Provider credential management (legacy source)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/provider-credential-management.md)
+- [Interactive Brokers setup archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/interactive-brokers-setup.md)
+- [Alpaca setup archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/alpaca-setup.md)

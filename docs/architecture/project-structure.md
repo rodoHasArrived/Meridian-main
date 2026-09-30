@@ -59,7 +59,7 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `docs/prompts/` | Active documentation | Maintained prompt, agent, and automation guidance indexes |
 | `archive/docs/` | Historical reference only | Superseded docs-tree material retained for traceability |
 | `Meridian Design System/` | Active design-system assets | Local source of truth for visual foundations, previews, governance tests, and icons |
-| `archive/` | Historical reference only | Legacy superseded docs/code kept for traceability; `archive/code/src/` is enforced as comment-only tombstones by `tests/scripts/test_archive_code_tombstones.py` |
+| `archive/` | Historical reference only | Legacy superseded docs kept for traceability. Since the 2026-09-11 cleanup (`982eea2d`) only `archive/docs/summaries/` remains; `archive/code/` was removed, so `tests/scripts/test_archive_code_tombstones.py` skips until archived source tombstones are added again |
 | `docs/generated/` | Generated documentation | Regenerate by script; do not hand edit generated sections |
 | `docs/docfx/api/` | Generated documentation | DocFX API metadata output; regenerate before publishing docs |
 | `wwwroot/workstation/` | Generated/build output currently tracked | Host-served web workstation bundle; review before replacing or deleting |

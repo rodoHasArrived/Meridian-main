@@ -218,11 +218,25 @@ public sealed class LedgerJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task QueryAsync_EffectiveWindow_IncludesEntryPostedAfterWindow()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var periodId = Guid.NewGuid();
-        await database.SavePeriodAsync(periodId, "Open");
+        // The posting belongs to June even though its economic effective date is in May.
+        // Querying by effective date must not require posting into an out-of-range period.
+        var period = BuildAccountingPeriod("Open") with
+        {
+            PeriodId = periodId,
+            LedgerBookId = null,
+            PeriodNo = 6,
+            Label = "2026-06",
+            StartDate = new DateOnly(2026, 6, 1),
+            EndDate = new DateOnly(2026, 6, 30),
+            OpenedAt = DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+            Version = 0
+        };
+        await database.JournalStore.SavePeriodAsync(period, expectedVersion: 0);
         var postedAt = DateTimeOffset.Parse("2026-06-15T14:30:00Z");
         var write = BuildBalancedJournalWrite(periodId, postedAt);
         write = write with
@@ -269,6 +283,7 @@ public sealed class LedgerJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AppendAsync_ClientContextConflictsWithRetainedBook_RejectsEveryConflict()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -354,12 +369,13 @@ public sealed class LedgerJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task RetainedJournal_V30RejectsUpdateAndDeleteAtTheDatabase()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var periodId = Guid.NewGuid();
         await database.SavePeriodAsync(periodId, "Open");
-        var write = BuildBalancedJournalWrite(periodId);
+        var write = BuildBalancedJournalWrite(periodId, DateTimeOffset.Parse("2026-05-15T18:00:00Z"));
         await database.JournalStore.AppendAsync(write);
         var journalEntryId = write.Entry.JournalEntryId;
 
@@ -392,12 +408,13 @@ public sealed class LedgerJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task RetainedJournal_V31SealsNormalAppendAndRejectsLaterBalancedLegPair()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var periodId = Guid.NewGuid();
         await database.SavePeriodAsync(periodId, "Open");
-        var write = BuildBalancedJournalWrite(periodId);
+        var write = BuildBalancedJournalWrite(periodId, DateTimeOffset.Parse("2026-05-15T18:00:00Z"));
 
         await database.JournalStore.AppendAsync(write);
 
@@ -451,12 +468,13 @@ public sealed class LedgerJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task RetainedJournal_V31RepeatableReadConcurrentLegInsertFailsClosedAfterPostingSeal()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var periodId = Guid.NewGuid();
         await database.SavePeriodAsync(periodId, "Open");
-        var write = BuildBalancedJournalWrite(periodId);
+        var write = BuildBalancedJournalWrite(periodId, DateTimeOffset.Parse("2026-05-15T18:00:00Z"));
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 
         await using var postingConnection = new NpgsqlConnection(database.Options.ConnectionString);
@@ -524,6 +542,7 @@ public sealed class LedgerJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task RetainedJournal_V31ZeroLegRawEntry_IsRejectedWhenTheTransactionCommits()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -565,6 +584,7 @@ public sealed class LedgerJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task RetainedJournal_UnbalancedRawInsert_IsRejectedWhenTheTransactionCommits()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -605,6 +625,7 @@ public sealed class LedgerJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AppendAsync_SameCommandAcrossAggregates_V25GlobalIdentityRejectsSecondPosting()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();

@@ -1,5 +1,10 @@
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.Workstation.Controls;
 
 namespace Meridian.Wpf.Tests.Services;
 
@@ -401,5 +406,135 @@ public sealed class KeyboardShortcutServiceTests
         var svc = CreateService();
         var act = () => svc.Detach();
         act.Should().NotThrow();
+    }
+
+    // ── Context-specific gesture deferral ────────────────────────────
+
+    [Fact]
+    public void DefersToFocusedRoutedCommand_YieldsCopyToAFocusedEditorAndOnlyMappedGestures()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var textBox = new TextBox { Text = "copy me" };
+            var window = new Window { Width = 200, Height = 100, Content = textBox };
+            try
+            {
+                window.Show();
+                textBox.Focus();
+                textBox.SelectAll();
+
+                // The focused editor carries a live routed Copy binding, so the tunneling
+                // global handler must leave Ctrl+C unhandled for it — while an unmapped
+                // gesture keeps its global behavior even over a focused editor.
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.C, ModifierKeys.Control).Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.S, ModifierKeys.Control).Should().BeFalse();
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DefersToFocusedRoutedCommand_KeepsGesturesGlobalWhenTheFocusedElementCannotServeThem()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var button = new Button { Content = "No routed targets" };
+            var window = new Window { Width = 200, Height = 100, Content = button };
+            try
+            {
+                window.Show();
+                button.Focus();
+
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.C, ModifierKeys.Control).Should().BeFalse();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.F, ModifierKeys.Control).Should().BeFalse();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.Escape, ModifierKeys.None).Should().BeFalse();
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DefersToFocusedRoutedCommand_YieldsFilterAndCloseGesturesToAFocusedDenseGrid()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var denseGrid = new DenseDataGridControl
+            {
+                FilterTarget = new TextBox(),
+                CloseDetailsCommand = new RelayCommand(() => { })
+            };
+            var window = new Window { Width = 300, Height = 200, Content = denseGrid };
+            try
+            {
+                window.Show();
+                var rowsList = (ListView)denseGrid.FindName("RowsList");
+                rowsList.Focus();
+
+                // With focus inside a grid that can serve them, Ctrl+F and Escape belong to
+                // the grid's filter-focus and close-details bindings, not the global
+                // SearchSymbols / CancelBackfill registrations that share the gestures.
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.F, ModifierKeys.Control).Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.Escape, ModifierKeys.None).Should().BeTrue();
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DefersToFocusedRoutedCommand_HonorsMirroredBindingsOnExternalCompositionSurfaces()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var filterBox = new TextBox();
+            var railButton = new Button { Content = "Inspector action" };
+            var rail = new StackPanel { Children = { railButton } };
+            var denseGrid = new DenseDataGridControl
+            {
+                FilterTarget = filterBox,
+                ShortcutScope = rail,
+                CloseDetailsCommand = new RelayCommand(() => { })
+            };
+            var window = new Window
+            {
+                Width = 400,
+                Height = 300,
+                Content = new StackPanel { Children = { filterBox, rail, denseGrid } }
+            };
+            try
+            {
+                window.Show();
+
+                // The filter target and the inspector rail are siblings of the grid, so a
+                // routed query from focus inside them cannot reach the grid's bindings; the
+                // grid compensates with mirrored key bindings targeting itself, and the global
+                // handler must defer through those targets rather than consume the gesture
+                // before the mirrored binding ever runs.
+                filterBox.Focus();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.F, ModifierKeys.Control).Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.Escape, ModifierKeys.None).Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.S, ModifierKeys.Control).Should().BeFalse();
+
+                railButton.Focus();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.F, ModifierKeys.Control).Should().BeTrue();
+                KeyboardShortcutService.DefersToFocusedRoutedCommand(Key.Escape, ModifierKeys.None).Should().BeTrue();
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
     }
 }

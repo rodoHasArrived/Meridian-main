@@ -9,24 +9,24 @@ function inject() {
   const css = `
 .mds-cb-wrap{position:relative;width:100%;}
 .mds-cb-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#59636F);margin-bottom:5px;}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);margin-bottom:5px;}
 .mds-cb-field{display:flex;align-items:center;width:100%;height:32px;
-  border:1px solid var(--border,#D7DCE2);background:var(--bg-light,#FAFBFC);}
+  border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);}
 .mds-cb-field:focus-within{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-cb-input{flex:1;min-width:0;height:100%;padding:7px 10px;border:none;background:transparent;
-  color:var(--text-primary,#22272E);font-family:var(--font-data);font-size:13px;outline:none;}
-.mds-cb-input::placeholder{color:var(--text-disabled,#889099);}
-.mds-cb-caret{padding:0 10px;color:var(--text-muted,#59636F);pointer-events:none;font-size:11px;}
+  color:var(--text-primary,#22252A);font-family:var(--font-data);font-size:13px;outline:none;}
+.mds-cb-input::placeholder{color:var(--text-disabled,#94999F);}
+.mds-cb-caret{padding:0 10px;color:var(--text-muted,#5E666F);pointer-events:none;font-size:11px;}
 .mds-cb-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:100;
-  background:var(--bg-light,#FAFBFC);border:1px solid var(--border,#D7DCE2);
+  background:var(--bg-light,#FBFAF8);border:1px solid var(--border,#E4E3DE);
   max-height:240px;overflow-y:auto;box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));}
 .mds-cb-opt{padding:8px 12px;font-family:var(--font-data);font-size:12px;
-  color:var(--text-primary,#22272E);cursor:pointer;display:flex;align-items:center;gap:8px;}
-.mds-cb-opt--hl{background:var(--bg-hover,#F1F4F7);}
-.mds-cb-opt--active{background:var(--bg-active,#E1EAF2);color:var(--accent,#2F6F8F);font-weight:600;}
+  color:var(--text-primary,#22252A);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.mds-cb-opt--hl{background:var(--bg-hover,#F0EEE9);}
+.mds-cb-opt--active{background:var(--bg-active,#F2E3DB);color:var(--accent-dim,#8C4429);font-weight:600;}
 .mds-cb-opt--active::after{content:"✓";margin-left:auto;font-size:11px;}
-.mds-cb-empty{padding:10px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#59636F);}
-.mds-cb-mark{background:var(--accent-ghost,#E8F0F7);color:var(--accent,#2F6F8F);}
+.mds-cb-empty{padding:10px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#5E666F);}
+.mds-cb-mark{background:var(--accent-ghost,#F4E7E0);color:var(--accent-dim,#8C4429);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "combobox");

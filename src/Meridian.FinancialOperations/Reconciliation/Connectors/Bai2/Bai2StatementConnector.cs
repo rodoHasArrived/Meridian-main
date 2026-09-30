@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using Meridian.Contracts.Integrity;
+using Meridian.Core.ReferenceData;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
 
@@ -191,10 +192,10 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
                     account = string.IsNullOrWhiteSpace(accountId) ? null : accountId.Trim();
                     accountCurrency = NormalizeCurrency(FieldAt(fields, 2), groupCurrency);
-                    if (accountCurrency.Length != 3 || accountCurrency.Any(static value => value is < 'A' or > 'Z'))
+                    if (!CurrencyCodeCatalog.IsRecognized(accountCurrency))
                     {
                         issues.Add(StatementParseIssue.Error("BAI2_INVALID_CURRENCY",
-                            "Account or containing group must supply explicit three-letter currency before minor-unit conversion."));
+                            "Account or containing group must supply explicit recognized currency before minor-unit conversion."));
                         return Task.FromResult(EmptyResult(issues));
                     }
                     if (account is { } identifiedAccount &&

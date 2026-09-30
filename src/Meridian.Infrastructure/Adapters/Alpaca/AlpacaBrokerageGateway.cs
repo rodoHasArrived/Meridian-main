@@ -683,7 +683,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 TransactionId: BuildActivityId(activity),
                 TransactionType: activity.ActivityType ?? "unknown",
                 Amount: ParseDecimal(activity.NetAmount),
-                Currency: activity.Currency ?? "USD",
+                Currency: activity.Currency ?? string.Empty,
                 PostedAt: ParseActivityTimestamp(activity),
                 Symbol: activity.Symbol,
                 Description: activity.Description))
@@ -1519,7 +1519,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             Category: category,
             Subtype: subtype,
             EffectiveAt: ParseActivityTimestamp(activity),
-            Currency: activity.Currency ?? "USD",
+            Currency: activity.Currency ?? string.Empty,
             NetAmount: ParseDecimal(activity.NetAmount),
             Symbol: activity.Symbol,
             Quantity: ParseSignedActivityQuantity(activity),

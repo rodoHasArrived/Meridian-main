@@ -25,51 +25,53 @@
   :root {
     color-scheme: dark;
 
-    /* Backgrounds — neutral charcoal, flat concrete (no warm tint) */
-    --bg:                 #0E1113;  /* canvas — graphite black */
-    --bg-light:           #1A2026;  /* card — charcoal panel, lifts off canvas */
-    --bg-medium:          #232A32;  /* headers — structural band */
-    --bg-hover:           #283039;  /* hover — flat shift up */
-    --bg-active:          #2F3F4A;  /* active — cool selection */
-    --card-surface-raised:#20272E;  /* raised — lifts ABOVE panel (zebra reads) */
+    /* Backgrounds — warm graphite — material, not luminous */
+    --bg:                 #14120F;  /* canvas — graphite black */
+    --bg-light:           #201D19;  /* card — charcoal panel, lifts off canvas */
+    --bg-medium:          #292520;  /* headers — structural band */
+    --bg-hover:           #2E2A24;  /* hover — flat shift up */
+    --bg-active:          #3A2E26;  /* active — cool selection */
+    --card-surface-raised:#252119;  /* raised — lifts ABOVE panel (zebra reads) */
 
     /* Borders — structural & present in dark too */
-    --border:             #45505C;  /* line — clearly visible, load-bearing */
-    --border-hover:       #5A6776;  /* hover — firm */
-    --border-focus:       #5B9FD9;  /* focus */
-    --border-strong:      #6E7C8A;  /* heavy rule — totals / headers */
-    --border-divider:     #2D353D;  /* divider */
+    --border:             #4A443C;  /* line — clearly visible, load-bearing */
+    --border-hover:       #5F584E;  /* hover — firm */
+    --border-focus:       #D98A64;  /* focus */
+    --border-strong:      #736B60;  /* heavy rule — totals / headers */
+    --border-divider:     #302B25;  /* divider */
 
     /* Text — warmer, less harsh */
-    --text-primary:       #E5EAEF;  /* headings — warm white */
-    --text-secondary:     #A5AFBC;  /* secondary */
-    --text-muted:         #8F9AA7;  /* muted — lifted 2026-07 so it clears AA on --bg-hover rows too (4.67:1 hover · 5.75:1 panel) */
-    --text-disabled:      #5A6574;  /* disabled */
+    --text-primary:       #EFEBE4;  /* headings — warm white */
+    --text-secondary:     #B5AEA4;  /* secondary */
+    --text-muted:         #9A9289;  /* muted — lifted 2026-07 so it clears AA on --bg-hover rows too (4.67:1 hover · 5.75:1 panel) */
+    --text-disabled:      #6A635A;  /* disabled */
 
-    /* Accent — steel blue, muted for dark */
-    --accent:             #5790BE;  /* steel blue */
-    --accent-dim:         #609BC9;  /* pressed — dark ink stays AA (dark pressed goes LIGHTER, between accent and hover; the old #3C6688 left --text-on-accent at 3.11:1 and failed as text on panels) */
-    --accent-hover:       #6BA6D4;  /* hover */
-    --accent-ghost:       #1E2A33;  /* ghost bg */
-    --text-on-accent:     #0D1117;  /* dark ink — white on the lighter dark-mode accent is only ~3.45:1, fails AA */
+    /* Accent — copper, lifted for dark. Illuminated, never glowing. */
+    --accent:             #D98A64;  /* copper */
+    --accent-dim:         #E39A77;  /* pressed — dark ink stays AA (dark pressed goes LIGHTER, between accent and hover; the old #3C6688 left --text-on-accent at 3.11:1 and failed as text on panels) */
+    --accent-hover:       #E6A585;  /* hover */
+    --accent-ghost:       #2A211B;  /* ghost bg */
+    --text-on-accent:     #1A1511;  /* dark ink — white on the lighter dark-mode accent is only ~3.45:1, fails AA */
 
     /* Semantics — desaturated, industrial (dark-tuned) */
-    --green:              #4D9E78;  /* success — muted spruce */
-    --red:                #C9656E;  /* danger — muted brick */
-    --orange:             #BD9038;  /* warning — muted ochre */
-    --purple:             #8B83B8;  /* pending — muted slate-violet */
+    --green:              #5FA37C;  /* success — muted spruce */
+    --red:                #CE7068;  /* danger — muted brick */
+    --orange:             #C29A4A;  /* warning — muted ochre */
+    --purple:             #9089B5;  /* pending — muted slate-violet */
 
     /* Dim mix flips white so tinted-chip text goes lighter, not darker */
     --dim-mix:            #FFFFFF;
 
     /* Chrome — even darker than the light-mode near-black */
-    --topbar-bg:          #0D1117;
-    --topbar-text:        #E6EAF0;
-    --statusbar-bg:       #0D1117;
-    --statusbar-text:     #B1BAC4;
-    --statusbar-border:   #30363D;
+    --topbar-bg:          #1A1511;
+    --topbar-text:        #EDE9E2;
+    --statusbar-bg:       #1A1511;
+    --statusbar-text:     #BDB7AE;
+    --statusbar-border:   #2B2721;
 
     --scrim:              rgba(0, 0, 0, 0.62);  /* stronger over already-dark content */
+
+    --chart-crosshair:    #9A9289;  /* warm neutral hairline, as in the workstation */
   }
 }
 
@@ -77,44 +79,46 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg:                 #0E1113;
-  --bg-light:           #1A2026;
-  --bg-medium:          #232A32;
-  --bg-hover:           #283039;
-  --bg-active:          #2F3F4A;
-  --card-surface-raised:#20272E;
+  --bg:                 #14120F;
+  --bg-light:           #201D19;
+  --bg-medium:          #292520;
+  --bg-hover:           #2E2A24;
+  --bg-active:          #3A2E26;
+  --card-surface-raised:#252119;
 
-  --border:             #45505C;
-  --border-hover:       #5A6776;
-  --border-focus:       #5B9FD9;
-  --border-strong:      #6E7C8A;
-  --border-divider:     #2D353D;
+  --border:             #4A443C;
+  --border-hover:       #5F584E;
+  --border-focus:       #D98A64;
+  --border-strong:      #736B60;
+  --border-divider:     #302B25;
 
-  --text-primary:       #E5EAEF;
-  --text-secondary:     #A5AFBC;
-  --text-muted:         #8F9AA7;
-  --text-disabled:      #5A6574;
+  --text-primary:       #EFEBE4;
+  --text-secondary:     #B5AEA4;
+  --text-muted:         #9A9289;
+  --text-disabled:      #6A635A;
 
-  --accent:             #5790BE;
-  --accent-dim:         #609BC9;
-  --accent-hover:       #6BA6D4;
-  --accent-ghost:       #1E2A33;
-  --text-on-accent:     #0D1117;
+  --accent:             #D98A64;
+  --accent-dim:         #E39A77;
+  --accent-hover:       #E6A585;
+  --accent-ghost:       #2A211B;
+  --text-on-accent:     #1A1511;
 
-  --green:              #4D9E78;
-  --red:                #C9656E;
-  --orange:             #BD9038;
-  --purple:             #8B83B8;
+  --green:              #5FA37C;
+  --red:                #CE7068;
+  --orange:             #C29A4A;
+  --purple:             #9089B5;
 
   --dim-mix:            #FFFFFF;
 
-  --topbar-bg:          #0B0E10;
-  --topbar-text:        #E6EAF0;
-  --statusbar-bg:       #0B0E10;
-  --statusbar-text:     #B1BAC4;
-  --statusbar-border:   #2A3036;
+  --topbar-bg:          #1A1511;
+  --topbar-text:        #EDE9E2;
+  --statusbar-bg:       #1A1511;
+  --statusbar-text:     #BDB7AE;
+  --statusbar-border:   #2B2721;
 
   --scrim:              rgba(0, 0, 0, 0.62);  /* stronger over already-dark content */
+
+  --chart-crosshair:    #9A9289;  /* warm neutral hairline, as in the workstation */
 }
 
 /* ── 3. Forced light — opt out of OS dark by re-asserting the light base values
@@ -124,42 +128,42 @@
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --bg:                 #DEE3EA;
-  --bg-light:           #FFFFFF;
-  --bg-medium:          #EBEFF4;
-  --bg-hover:           #EAEEF3;
-  --bg-active:          #D7E5F1;
-  --card-surface-raised:#F3F6F9;
+  --bg:                 #F2F0EC;
+  --bg-light:           #FBFAF8;
+  --bg-medium:          #EDEAE4;
+  --bg-hover:           #F0EEE9;
+  --bg-active:          #F2E3DB;
+  --card-surface-raised:#F6F4F0;
 
-  --border:             #CBD3DC;
-  --border-hover:       #ADB8C4;
-  --border-focus:       #2F6F8F;
-  --border-strong:      #99A5B2;
-  --border-divider:     #D2D9E2;
+  --border:             #E4E3DE;
+  --border-hover:       #C6C3BB;
+  --border-focus:       #A85436;
+  --border-strong:      #AFABA1;
+  --border-divider:     #DAD8D3;
 
-  --text-primary:       #22272E;
-  --text-secondary:     #4D5967;
-  --text-muted:         #59636F;
-  --text-disabled:      #889099;
+  --text-primary:       #22252A;
+  --text-secondary:     #4E5258;
+  --text-muted:         #5E666F;
+  --text-disabled:      #94999F;
 
-  --accent:             #2F6F8F;
-  --accent-dim:         #255B75;
-  --accent-hover:       #3B82A6;
-  --accent-ghost:       #E1EAF2;
+  --accent:             #A85436;
+  --accent-dim:         #8C4429;
+  --accent-hover:       #AF6143;
+  --accent-ghost:       #F4E7E0;
   --text-on-accent:     #FFFFFF;
 
-  --green:              #16885F;
-  --red:                #BA3F55;
-  --orange:             #8A520E;
-  --purple:             #6F5BA7;
+  --green:              #3A7A56;
+  --red:                #A8443C;
+  --orange:             #8A5C12;
+  --purple:             #5D5486;
 
   --dim-mix:            #000;
 
-  --topbar-bg:          #171A1F;
-  --topbar-text:        #F4F6F8;
-  --statusbar-bg:       #171A1F;
-  --statusbar-text:     #D7DCE2;
-  --statusbar-border:   #262B31;
+  --topbar-bg:          #1F1D1A;
+  --topbar-text:        #F4F2ED;
+  --statusbar-bg:       #1F1D1A;
+  --statusbar-text:     #D8D3CA;
+  --statusbar-border:   #2E2A24;
 
-  --scrim:              rgba(14, 17, 19, 0.5);
+  --scrim:              rgba(20, 18, 15, 0.5);
 }

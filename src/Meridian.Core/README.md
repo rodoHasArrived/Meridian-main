@@ -6,12 +6,16 @@ module_id: SRC-CORE
 path: src/Meridian.Core
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-30
 ---
 
 # src/Meridian.Core
 
 ## Purpose
+
+Provider connection configuration retains optional `TenantId` and `CredentialEnvironment` ownership
+fields. Missing fields identify legacy, unassigned connections; callers must not infer an owner from
+the current session. Application services enforce ownership before scoped credential resolution.
 
 Core contains cross-cutting primitives used throughout Meridian: configuration, validation,
 exceptions, logging, monitoring, scheduling, serialization, redaction, masking, and pipeline
@@ -23,6 +27,9 @@ This layer provides low-level reusable infrastructure. It must stay independent 
 
 ## Key folders and files
 
+- `ReferenceData/CurrencyCodeCatalog.cs` - the shared recognized-currency catalog for statement
+  intake and accounting. Historical statement currencies remain recognized; the separate current
+  transaction list controls new payments. The Ledger compatibility surface delegates to this catalog.
 - `Config/` - shared configuration models, JSON serializer options, JSON Schema generation,
   FluentValidation rules, validation pipeline stages, credential placeholder detection, default
   config-path resolution, environment overrides, configuration templates, config file hot-reload
@@ -55,6 +62,9 @@ file hot-reload watching for Application commands, configuration services, WPF s
 shared endpoints.
 Schema generation excludes members marked `JsonIgnore`: those members may remain as in-process
 compatibility aliases, but they are not accepted configuration inputs.
+`DataSourceKindConverter` resolves the ProviderSdk alias map before enum validation, so `ibkr` and
+`interactive-brokers` load as `DataSourceKind.IB`. Unknown providers, unsupported transport modes,
+and undefined numeric values remain configuration errors.
 These Core configuration records and helpers use the `Meridian.Core.Config` namespace; Application
 keeps only configuration orchestration, credential testing, and deployment/startup adapters.
 Core exception, logging, pipeline-policy, subscription model, serialization, and monitoring helper

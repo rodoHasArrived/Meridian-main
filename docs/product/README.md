@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-08-03
+**Reviewed:** 2026-09-27
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -16,14 +16,14 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     slate, and all retained normative invariants (customer-neutral core model, ledger truth and
     treasury-ledger principles, fail-closed authority, governed-autonomy AI boundary, seven-root
     navigation, no mobile lane). The superseded 0.15–0.25 lineage is summarized in its Section 25
-    and archived in full at `archive/docs/design/meridian-design-document-v0.25.md`
+    and archived in full at [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md)
   - [Implementation and Readiness Tracker](implementation-todo-list.md) — current execution, evidence, and readiness follow-up
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
-  - [2026-07 First-Order Improvement Slate](product-roadmap-priorities-2026-07.md) — ranked W9
+  - [2026-07 First-Order Improvement Slate](plans/product-roadmap-priorities-2026-07.md) — ranked W9
     priority rationale (`W9-TRUTH-001` through `W9-INGEST-009`, decision `DEC-PRIORITY-SLATE-001`);
     live status stays in the roadmap registry
-  - [2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md) — adopted sequence
+  - [2026-08 W9 Close-Out Delivery Plan](plans/w9-close-out-delivery-plan-2026-08.md) — adopted sequence
     for the three original W9 close-out rows (`W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009`, decision
     `DEC-W9-CLOSEOUT-001`), with the source constraints found while checking each row against
     current code; live status stays in the roadmap registry
@@ -32,11 +32,36 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     reassessment that reopens `W9-CORPACT-011`, and the 2026-09-01 closure of the Alpaca hold that
     leaves six rows accepted (decisions `DEC-W9-ACCEPTANCE-001` through `DEC-W9-ACCEPTANCE-003`);
     live status stays in the roadmap registry
-  - [2026-07 Depth Slate](w10-depth-slate-2026-07.md) — W10 rationale for deepening existing
+  - [2026-07 Depth Slate](plans/w10-depth-slate-2026-07.md) — W10 rationale for deepening existing
     functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
     ahead of the W9 close-out because they serve the release gate
+  - [W9-DEMO-002 Closure Record (2026-09-16)](w9-demo-002-closure-2026-09-16.md) — the lane-owned
+    closure documentation that moved `W9-DEMO-002` from `accepted` to `done` (decision
+    `DEC-W9-DONE-001`)
+  - [Deferred Expansion Boundaries](deferred-expansion-boundaries.md) — the minimum evidence a
+    future roadmap row must produce before a deferred product area can move into active delivery;
+    boundaries, not implementation claims
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [What To Work On Next (2026-09-27)](plans/next-work-determination-2026-09-27.md) — latest
+    prioritization input, anchored at `main` `5980fa00`; ranks work against the registry, the
+    readiness tracker, live CI, and the pull-request queue, verifies each named roadmap remainder
+    against current source, and supersedes the
+    [2026-09-23 determination](../../archive/docs/plans/next-work-determination-2026-09-23.md) and the
+    [2026-09-20 determination](../../archive/docs/plans/next-work-determination-2026-09-20.md). It moves no roadmap row
+    and certifies no release
+  - [Reporting Operating Model (2026-09)](reporting-operating-model-2026-09.md) — refined
+    reporting semantics: the `Report`/`Edition`/`Publication` object split, the four-destination
+    consolidation inside the existing Reporting root, the scope contract with separated effective
+    and recorded time, change classification by meaning, four independent status dimensions, and
+    the release-candidate publication boundary. Grounded in current `src/Meridian.Reporting`
+    source evidence with a named gap list, six open decisions, and six acceptance tests
+    (`W4-RPT-001`, `W9-REPORT-005`); changes no behaviour and sets no roadmap status. Its
+    Section 2a reconciles the document against the landed
+    [Reporting Workstation Model](../architecture/reporting-workstation-model.md): the four
+    lifecycle axes, change-since-review and per-class gate policies now exist in the browser
+    workstation's TypeScript modules, so the remaining gap is promoting them into the shared
+    contract seam, and the two documents' competing navigation models are left as an open decision
   - [Adversarial Program Review (2026-08-25)](adversarial-program-review-2026-08-25.md) — latest
     independent whole-program adverse review; re-tests the 2026-08-24 open items against the 39
     commits landed since, then extends into cross-catalog consistency between the authorization
@@ -88,39 +113,40 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     whole-program adverse review of end-user functionality with `file:line` evidence; re-tests the
     2026-07 review's headline, documents acceptance-vs-wired drift, and ranks improvement areas by
     end-user value uplift
-  - [Adversarial Review 2026-08 Remediation Plan](adversarial-review-2026-08-remediation-plan.md) —
+  - [Adversarial Review 2026-08 Remediation Plan](plans/adversarial-review-2026-08-remediation-plan.md) —
     every finding from that review as a tracked todo with a code-ready implementation plan
     (evidence, change, verification, effort, dependencies) across thirteen sequenced workstreams;
     a working plan, not a status source
-  - [Production-Readiness Backlog (2026-08)](production-readiness-backlog-2026-08.md) — the
+  - [Production-Readiness Backlog (2026-08)](plans/production-readiness-backlog-2026-08.md) — the
     ten-item production-readiness ordering of that estate, re-verified against source on
     2026-08-18 with corrections for stale claims and one new blocker finding (fixed-income
     booking); records the three built-but-dead fixes landed on the same branch
   - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — prior
     independent review pass that motivated the activation-over-expansion and truth-discipline
-    doctrines; see its 2026-07-26 follow-up in `archive/docs/assessments/`
+    doctrines; see its [2026-07-26 follow-up](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/adversarial-program-review-2026-07-26.md) (removed from the tree by the 2026-09-11 archive cleanup; the link is its last version)
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status
   - [Data Provider & Accounting Code Brainstorm (2026-07)](data-provider-accounting-brainstorm-2026-07.md) —
     code-grounded improvement lanes for the provider and accounting subsystems with a dated status
     table tracking which lanes have since shipped
-  - [Portfolio Cash Ladder Blueprint (2026-07)](portfolio-cash-ladder-blueprint-2026-07.md) —
+  - [Portfolio Cash Ladder Blueprint (2026-07)](../engineering/blueprints/portfolio-cash-ladder-blueprint-2026-07.md) —
     code-ready design for the wave-8 portfolio cash-flow forecasting and liquidity ladder engine,
     aggregating per-security projection runs into scenario-aware, per-currency cash ladders; the
     first vertical slice has landed and the persisted-run phases remain open
-  - [Quote-stream Fan-out Blueprint (2026-07)](web-ui-stream-fan-out-blueprint-2026-07.md) —
+  - [Quote-stream Fan-out Blueprint (2026-07)](../../archive/docs/plans/web-ui-stream-fan-out-blueprint-2026-07.md) —
     delivered design for event-driven SSE fan-out, per-session stream caps, and companion-pane
-    stream sharing (PRs A–C shipped)
-  - [Report-run Status Stream Blueprint (2026-07)](web-ui-report-run-stream-blueprint-2026-07.md) —
+    stream sharing (PRs A–C shipped); archived once delivered
+  - [Report-run Status Stream Blueprint (2026-07)](../engineering/blueprints/web-ui-report-run-stream-blueprint-2026-07.md) —
     delivered design for the `report-run:<id>` stream and the generic `StreamBroadcaster<TPayload>`;
     supersedes the fan-out blueprint's `workspace` / `inbox` topic proposal
-  - All blueprints across every lane are catalogued in the canonical
-    [blueprint register](../engineering/blueprints/README.md), which also records the shared
-    migration-ordinal, precision, route-prefix, and cross-blueprint contracts
+  - Every plan and blueprint is catalogued in the single
+    [Plans and Blueprints Register](../engineering/blueprints/README.md), which names each plan's
+    home folder and also records the shared migration-ordinal, precision, route-prefix, and
+    cross-blueprint contracts
   - [Browser Workstation UI Improvements Brainstorm (2026-07)](web-ui-improvements-brainstorm-2026-07.md) —
     nine grounded browser-workstation UX ideas with effort/impact triage, platform-bet analysis,
     and sequencing
-  - [Browser Workstation UI Improvements Implementation Plan (2026-07)](web-ui-improvements-implementation-plan-2026-07.md) —
+  - [Browser Workstation UI Improvements Implementation Plan (2026-07)](../engineering/plans/web-ui-improvements-implementation-plan-2026-07.md) —
     phased, code-ready implementation plan for the nine brainstorm ideas with per-phase file
     anchors, contracts, test plans, and validation commands
   - [Excel Onboarding Workbook & Provider Connection UX Brainstorm (2026-07)](excel-onboarding-workbook-brainstorm-2026-07.md) —
@@ -143,20 +169,28 @@ bounded W6 Covered Call evidence loop as complete; WPF parity (`W8-WPF-PARITY-00
 screen consolidation (`W8-UX-CONSOL-001`) remain active. The accepted W1-W7 bounded milestones are
 capability claims, not blanket production certification.
 
-As of 2026-08-30 the W9 slate is mostly closed: `W9-ASSET-010` is `done`; `W9-TRUTH-001`,
-`W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` remain `accepted` on operator
-decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011` is reopened as `in_progress` with
-`evidence_posture: in_progress` and `health: red` under `DEC-W9-ACCEPTANCE-002` pending unchanged
-exit criterion four. Both decisions and their chronology are recorded in the
-[2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md).
-`W9-ALPACA-004` was deliberately held over three recorded fill-path caveats and moved to
-`accepted` on 2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source;
-`W9-SAFETY-007` reached `ready_for_acceptance` the same day, and `W9-GOV-008` and `W9-INGEST-009`
-remain `in_progress`.
-Those latter three open rows are sequenced by the
-[2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md). Acceptance of a bounded
-row is not a release certification and does not move a row to `done`. Every W10 row still carries
-planned-evidence posture. The registry remains live truth for all of this.
+As of 2026-09-27 the W9 slate stands as follows in the registry:
+
+- **`done`:** `W9-ASSET-010`, and `W9-DEMO-002`, closed on 2026-09-16 under `DEC-W9-DONE-001`
+  on the [W9-DEMO-002 Closure Record](w9-demo-002-closure-2026-09-16.md).
+- **`accepted`:** `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` under
+  `DEC-W9-ACCEPTANCE-001`; `W9-TRUTH-001`, whose bounded acceptance was restored on 2026-09-26
+  under `DEC-W9-ACCEPTANCE-005` after the provenance correction, on an explicit owner-review
+  exception in place of independent non-author review; `W9-ALPACA-004`, held over three fill-path caveats and accepted on
+  2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source; and
+  `W9-SAFETY-007`, accepted on 2026-09-11 under `DEC-W9-ACCEPTANCE-004` with an OCO reservation
+  and deferred risk-journal work.
+- **`ready_for_acceptance`:** `W9-CORPACT-011`, reopened under `DEC-W9-ACCEPTANCE-002`, reached
+  this state on 2026-09-22 with all five exit criteria evidenced and awaits a fresh operator
+  acceptance decision.
+- **`in_progress`:** `W9-GOV-008` and `W9-INGEST-009`, sequenced by the
+  [2026-08 W9 Close-Out Delivery Plan](plans/w9-close-out-delivery-plan-2026-08.md).
+
+The acceptance chronology is recorded in the
+[2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md). Acceptance of a
+bounded row is not a release certification and does not move a row to `done`. In W10,
+`W10-MARK-001`, `W10-SEAM-001`, and `W10-LOT-002` are `in_progress`; every other W10 row still
+carries planned-evidence posture. The registry remains live truth for all of this.
 
 Production readiness is currently **blocked**. The release posture changes only when the
 [Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,
@@ -196,7 +230,7 @@ workstation (`src/Meridian.Ui/dashboard/`) and the reactivated WPF desktop works
 `Meridian.Contracts` seams rather than forking product state. The WPF lane's immediate focus is
 closing web-UI parity gaps for screens that shipped browser-first while it was deferred, tracked as
 `W8-WPF-PARITY-001` and detailed in
-[`docs/development/wpf-web-ui-alignment-plan.md`](../development/wpf-web-ui-alignment-plan.md).
+[`docs/engineering/plans/wpf-web-ui-alignment-plan.md`](../engineering/plans/wpf-web-ui-alignment-plan.md).
 
 ## Canonical Product Truth Order
 
@@ -215,7 +249,7 @@ closing web-UI parity gaps for screens that shipped browser-first while it was d
 - The [Meridian Design Document (Version 1.0)](meridian-design-document.md) is the active stakeholder-facing product framing source.
 - It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
 - Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
-- Design Baseline: `Meridian Design Document (Version 1.0)` is the canonical product thesis. It centers the proven-numbers value proposition and Verified Coverage north star, encodes activation-over-expansion and truth-discipline doctrines from the 2026-07 adversarial program review, and preserves the charter invariants (customer-neutral operational-finance core, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the active WPF co-equal lane and web-UI parity policy, and the operational proof layer thesis).
+- Design Baseline: `Meridian Design Document (Version 1.1)` is the canonical product thesis. It centers the proven-numbers value proposition and Verified Coverage north star, encodes activation-over-expansion and truth-discipline doctrines from the 2026-07 adversarial program review, maps the W10 depth slate to charter invariants, and preserves the charter invariants (customer-neutral operational-finance core, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the active WPF co-equal lane and web-UI parity policy, and the operational proof layer thesis).
 
 ## Stakeholder Narrative
 
@@ -277,6 +311,7 @@ and required GitHub Actions evidence.
 - W7-LIVE-001 is complete as a bounded governance milestone. Broader live execution productization and live portfolio operations are not part of that completion claim.
 - W8-WPF-PARITY-001 is in progress, closing browser-first screen gaps while preserving one shared contract/read-model seam.
 - `W9-ASSET-010` is complete. It established the evidence-backed Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal spine, preserves Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states, and joins acquisition or selected-lot disposal consequences to the immutable journal transaction, with focused contract, spine, storage, endpoint, shared-read-model, and readiness suites as evidence.
+- `W9-DEMO-002` is complete. The one-command seeded demo provisions market history, a fund account and position snapshot, draft journals, reconciliation casework, and a review-required report pack over durable stores, each record carrying the seeded provenance token; the closure record is the lane-owned documentation behind `DEC-W9-DONE-001`.
 - The remaining proof-layer targets, including the broader Operational Evidence Graph, fund-event command-center specializations, Capital Account Workbench, and Private-Capital Close Cockpit, remain design priorities until roadmap rows and acceptance evidence move them into delivery status.
 - `Paper-first`, `read-only where uncertain`, and `governance-first` defaults remain active by policy.
 
@@ -307,14 +342,14 @@ Use this matrix to avoid source-of-truth drift:
 | Extensibility engineering boundaries | [Core Extensibility Model](../architecture/core-extensibility-model.md) and `src/Meridian.Contracts/Extensibility/` | Stable-core and governed-configuration rules for implementation |
 | Wave sequencing and acceptance | [Roadmap Registry](../roadmap/README.md) | Durable sequence and acceptance control |
 | Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
-| Detailed planning / historical analysis | `docs/plans/`, `archive/docs/assessments/`, `docs/status/` | Source material only; extract only active facts |
+| Plans, blueprints, and historical analysis | [Plans and Blueprints Register](../engineering/blueprints/README.md), `archive/docs/`, `docs/status/` | Working inputs only; live status stays in the roadmap registry |
 
 ## Product-Critical Migration Index
 
 Stakeholder-facing high-traffic legacy pages map here:
 
-- `docs/plans/current-direction-and-status.md` → [archive copy](../../archive/docs/plans/current-direction-and-status.md)
-- `docs/plans/evidence-backed-investment-operations-plan.md` → [archive copy](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
+- `docs/plans/current-direction-and-status.md` → [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md)
+- `docs/plans/evidence-backed-investment-operations-plan.md` → [archive copy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/evidence-backed-investment-operations-plan.md)
 - `docs/status/ROADMAP.md`, `docs/status/FEATURE_INVENTORY.md`, `docs/status/TARGET_END_PRODUCT.md` → `roadmap/data/*.yml` + generated roadmap outputs
 
 If a legacy page is still actively needed for non-stakeholder operations, keep a short replacement pointer in the same page and move it to `archive/docs/plans/` or `archive/docs/status/` once the replacement is stable.
@@ -336,18 +371,18 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 Legacy links that remain for context but not primary truth:
 
-- [Current Direction and Status (Archived)](../../archive/docs/plans/current-direction-and-status.md)
-- [Evidence-Backed Investment Operations Plan (Archived)](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
-- [Feature Inventory (Archived)](../../archive/docs/status/FEATURE_INVENTORY.md)
+- [Current Direction and Status (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/current-direction-and-status.md)
+- [Evidence-Backed Investment Operations Plan (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/evidence-backed-investment-operations-plan.md)
+- [Feature Inventory (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/FEATURE_INVENTORY.md)
 - [Project Roadmap (Registry Snapshot)](../roadmap/generated/ROADMAP_SUMMARY.md)
-- [Target End Product (Archived)](../../archive/docs/status/TARGET_END_PRODUCT.md)
+- [Target End Product (Archived)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/TARGET_END_PRODUCT.md)
 
 ## Legacy Source-Material Index
 
 - If you need historical decision rationale, see:
-  - [plans (archive index)](../../archive/docs/plans/README.md)
+  - [plans (archive index)](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/README.md)
   - [status migration index](../status/README.md)
-  - [archive `archive/docs/`](../../archive/docs/README.md)
+  - [archive `archive/docs/`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/README.md)
 
 ## Product-Owner Validation
 

@@ -4,6 +4,7 @@ using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.IO;
+using Meridian.Core.ReferenceData;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
 
@@ -506,15 +507,14 @@ public sealed class StatementImportService(
 
     private static StatementParseResult RequireCurrencyEvidence(StatementParseResult parse)
     {
-        for (var index = 0; index < parse.Records.Count; index++)
+        foreach (var record in parse.Records)
         {
-            var currency = parse.Records[index].Currency?.Trim().ToUpperInvariant();
-            if (currency is not { Length: 3 } || currency.Any(static value => value is < 'A' or > 'Z'))
+            if (!CurrencyCodeCatalog.TryNormalizeRecognized(record.Currency, out _))
             {
                 return parse with
                 {
                     Issues = [.. parse.Issues, StatementParseIssue.Error(
-                        "ROW_INVALID_CURRENCY", "Rows require explicit three-letter currency evidence before import.", field: "Currency")]
+                        "ROW_INVALID_CURRENCY", "Rows require explicit recognized currency evidence before import.", field: "Currency")]
                 };
             }
         }

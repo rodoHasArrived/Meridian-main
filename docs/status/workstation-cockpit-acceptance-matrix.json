@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "matrixId": "workstation-cockpit-governance-acceptance",
-  "lastReviewed": "2026-05-28",
-  "scope": "Machine-readable acceptance matrix for cockpit and governance readiness criteria that must stay mapped to route/API ownership, UI state, automated coverage, and evidence artifacts.",
+  "lastReviewed": "2026-09-23",
+  "scope": "Machine-readable acceptance matrix for cockpit and governance readiness criteria that must stay mapped to route/API ownership, UI state, automated coverage, and evidence artifacts. Artifact paths under artifacts/ are required capture locations, not proof that a capture exists or passed; this matrix does not certify a release.",
   "criteria": [
     {
       "id": "cockpit-trading-readiness-posture",
@@ -13,13 +13,13 @@
       ],
       "uiBehaviorState": "The readiness console must show Ready, ReviewRequired, Blocked, and loading/error postures with gate-level disabled reasons, work-item details, and route-aware recovery actions.",
       "automatedTests": [
-        { "project": "tests/Meridian.Tests", "filterableName": "MapWorkstationEndpoints_TradingReadiness_ShouldProjectSharedReadinessAndDegradeWhenEvidenceIsMissing" },
+        { "project": "tests/Meridian.Tests", "filterableName": "MapWorkstationEndpoints_TradingReadiness_ShouldExposeRequiredContractFieldsAndDegradeWhenEvidenceIsMissing" },
         { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > builds the API-first readiness console from shared workstation payloads" },
         { "project": "tests/Meridian.FSharp.Tests", "filterableName": "Trading readiness overall posture follows canonical gate precedence" }
       ],
       "artifacts": [
-        { "kind": "screenshot", "path": "docs/screenshots/workstation/trading-readiness.png", "description": "Readiness console showing current gate states and recovery actions." },
-        { "kind": "packet", "path": "artifacts/provider-validation/_automation/2026-04-27/dk1-pilot-parity-packet.json", "description": "Signed DK1 trust packet that feeds readiness posture." }
+        { "kind": "screenshot", "path": "docs/screenshots/web/web-operator-readiness-console.png", "description": "Readiness console showing current gate states and recovery actions." },
+        { "kind": "packet", "path": "artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json", "description": "Required run-date DK1 trust packet, regenerated and reviewed with packet-bound operator sign-off before acceptance." }
       ]
     },
     {
@@ -36,7 +36,7 @@
         { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > surfaces operator inbox failures while keeping payload fallbacks visible" }
       ],
       "artifacts": [
-        { "kind": "screenshot", "path": "docs/screenshots/workstation/operator-inbox.png", "description": "Inbox queue with critical ordering and selected work-item detail." },
+        { "kind": "screenshot", "path": "docs/screenshots/web/web-operator-readiness-console.png", "description": "Inbox queue with critical ordering and selected work-item detail." },
         { "kind": "json", "path": "artifacts/workstation/operator-inbox/latest-response.json", "description": "Captured inbox response used during acceptance review." }
       ]
     },
@@ -55,7 +55,7 @@
       ],
       "artifacts": [
         { "kind": "manifest", "path": "artifacts/reporting/latest-report-pack-manifest.json", "description": "Report-pack manifest with template, run, approval, and release metadata." },
-        { "kind": "screenshot", "path": "docs/screenshots/workstation/reporting-evidence.png", "description": "Evidence workbench showing subject-scoped report evidence." }
+        { "kind": "screenshot", "path": "docs/screenshots/web/web-reporting-evidence-workbench.png", "description": "Evidence workbench showing subject-scoped report evidence." }
       ]
     },
     {
@@ -68,12 +68,12 @@
       "uiBehaviorState": "The reconciliation lane must render open-break counts, selected detail, resolve/dismiss validation, failure copy, narrative context, and evidence packet actions for the selected run.",
       "automatedTests": [
         { "project": "tests/Meridian.Tests", "filterableName": "MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOpenReconciliationBreaks" },
-        { "project": "src/Meridian.Ui/dashboard", "filterableName": "accounting-screen.view-model.test.ts > derives reconciliation break action state and live announcements" },
-        { "project": "src/Meridian.Ui/dashboard", "filterableName": "accounting-screen.view-model.test.ts > derives reconciliation detail actions from the selected run" }
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "accounting-screen.reconciliation.view-model.test.ts > derives reconciliation break action state and live announcements" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "accounting-screen.reconciliation.view-model.test.ts > derives reconciliation detail actions from the selected run" }
       ],
       "artifacts": [
         { "kind": "replay-output", "path": "artifacts/reconciliation/latest-break-replay.json", "description": "Replay output proving break queue state and transitions." },
-        { "kind": "screenshot", "path": "docs/screenshots/workstation/accounting-reconciliation.png", "description": "Reconciliation detail with evidence packet actions." }
+        { "kind": "screenshot", "path": "docs/screenshots/web/web-accounting-reconciliation.png", "description": "Reconciliation detail with evidence packet actions." }
       ]
     },
     {

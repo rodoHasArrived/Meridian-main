@@ -15,7 +15,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingSystem;
 
-public sealed class AccountingSystemIntegrationService
+public sealed partial class AccountingSystemIntegrationService
 {
     private const string DefaultProviderId = "quickbooks-fixture";
     private const string QuickBooksOnlineProviderId = "quickbooks";
@@ -31,15 +31,15 @@ public sealed class AccountingSystemIntegrationService
         new(
             "xero",
             "Xero",
-            "Xero chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
-            ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"],
-            BuildProviderMappingRequirements("xero-fixture")),
+            "Credentialed Xero read-only GL import requires the Xero provider registration; live posting remains disabled.",
+            ["XeroAccount", "XeroJournal", "XeroTrialBalance"],
+            BuildProviderMappingRequirements("xero")),
         new(
             "netsuite",
             "NetSuite",
-            "NetSuite chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
+            "Credentialed NetSuite read-only GL import requires the NetSuite provider registration; live posting remains disabled.",
             ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"],
-            BuildProviderMappingRequirements("netsuite-fixture"))
+            BuildProviderMappingRequirements("netsuite"))
     ];
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -191,7 +191,7 @@ public sealed class AccountingSystemIntegrationService
         var companyId = NormalizeOptional(request.CompanyId);
         var providerSupportsPosting = ProviderSupportsPosting(providerId);
         var mappingProfile = ResolveMappingProfile(providerId, fundProfileId, request.LedgerBookId, request.MappingProfileId, tenantId, companyId);
-        var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
+        var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct, tenantId, companyId, mappingProfile).ConfigureAwait(false);
         var periodStart = request.PeriodStart ?? reconciliation?.PeriodStart ?? CurrentMonthStart();
         var periodEnd = request.PeriodEnd ?? reconciliation?.PeriodEnd ?? CurrentMonthEnd(periodStart);
         var requestEvidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
@@ -211,6 +211,8 @@ public sealed class AccountingSystemIntegrationService
             generatedLines,
             packageReconciliationSnapshotHash: reconciliationSnapshotHash);
         var evidenceLinks = BuildExportEvidenceLinks(request, mappingProfile, reconciliation);
+        validationIssues = [.. validationIssues, .. await ValidateProviderExportAsync(providerId, fundProfileId,
+            request.LedgerBookId, periodStart, periodEnd, generatedLines, evidenceLinks, tenantId, companyId, ct).ConfigureAwait(false)];
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var certificationState = hasCritical
             ? AccountingCertificationStateDto.Draft
@@ -453,93 +455,6 @@ public sealed class AccountingSystemIntegrationService
             ct).ConfigureAwait(false);
     }
 
-    public async Task<AccountingSystemReconciliationSummaryDto> ReconcileLatestAsync(
-        string? providerId = null,
-        string? fundProfileId = null,
-        Guid? ledgerBookId = null,
-        CancellationToken ct = default,
-        string? tenantId = null,
-        string? companyId = null)
-    {
-        ct.ThrowIfCancellationRequested();
-        var latest = await GetLatestImportAsync(providerId, fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
-        var meridianTotals = await LoadMeridianTotalsAsync(latest.Summary, ct).ConfigureAwait(false);
-        var externalRows = latest.TrialBalance.ToDictionary(static row => row.AccountCode, StringComparer.OrdinalIgnoreCase);
-        var accountCodes = externalRows.Keys.Concat(meridianTotals.Keys).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray();
-        var rows = new List<AccountingSystemReconciliationRowDto>(accountCodes.Length);
-
-        foreach (var accountCode in accountCodes)
-        {
-            externalRows.TryGetValue(accountCode, out var external);
-            meridianTotals.TryGetValue(accountCode, out var meridian);
-            var externalDebit = external?.Debit ?? 0m;
-            var externalCredit = external?.Credit ?? 0m;
-            var meridianDebit = meridian?.Debit ?? 0m;
-            var meridianCredit = meridian?.Credit ?? 0m;
-            var variance = (externalDebit - externalCredit) - (meridianDebit - meridianCredit);
-            var status = ResolveStatus(external, meridian is not null, variance);
-            var rowExternalEvidenceReferences = NormalizeEvidenceReferences([external?.EvidenceRef]);
-            var meridianEvidenceReferences = meridian is null ? [] : NormalizeEvidenceReferences(meridian.EvidenceReferences);
-            var rowEvidenceReferences = NormalizeEvidenceReferences(rowExternalEvidenceReferences.Concat(meridianEvidenceReferences));
-
-            rows.Add(new AccountingSystemReconciliationRowDto(
-                $"gl-recon-{SanitizeId(accountCode)}",
-                accountCode,
-                external?.AccountName ?? meridian?.AccountName ?? accountCode,
-                external?.Currency ?? meridian?.Currency ?? "USD",
-                status,
-                externalDebit,
-                externalCredit,
-                meridianDebit,
-                meridianCredit,
-                variance,
-                BuildDetail(status, variance),
-                external?.EvidenceRef)
-            {
-                ExternalEvidenceReferences = rowExternalEvidenceReferences,
-                MeridianEvidenceReferences = meridianEvidenceReferences,
-                EvidenceReferences = rowEvidenceReferences
-            });
-        }
-
-        var externalEvidenceReferences = NormalizeEvidenceReferences(
-            latest.Summary.EvidenceReferences.Concat(latest.TrialBalance.Select(static row => row.EvidenceRef)));
-        var meridianSummaryEvidenceReferences = NormalizeEvidenceReferences(
-            meridianTotals.Values.SelectMany(static total => total.EvidenceReferences));
-        var summaryEvidenceReferences = NormalizeEvidenceReferences(externalEvidenceReferences.Concat(meridianSummaryEvidenceReferences));
-        var breakCounts = AccountingSystemReconciliationBreakCounts.FromRows(rows);
-
-        return new AccountingSystemReconciliationSummaryDto(
-            $"gl-recon-{latest.Summary.ImportId}",
-            latest.Summary.ImportId,
-            latest.Summary.ProviderId,
-            latest.Summary.FundProfileId,
-            latest.Summary.PeriodStart,
-            latest.Summary.PeriodEnd,
-            DateTimeOffset.UtcNow,
-            rows.Count(static row => row.Status == AccountingSystemReconciliationStatusDto.Matched),
-            breakCounts.Total,
-            latest.TrialBalance.Sum(static row => row.Debit),
-            latest.TrialBalance.Sum(static row => row.Credit),
-            meridianTotals.Values.Sum(static row => row.Debit),
-            meridianTotals.Values.Sum(static row => row.Credit),
-            PostingEnabled: false,
-            PostingDisabledReason: "Meridian is the source of all ledger truth; external GL posting/export is disabled until an approved adapter publishes Meridian-owned ledger entries.",
-            rows,
-            summaryEvidenceReferences,
-            latest.Summary.LedgerBookId,
-            latest.Summary.ContentHash)
-        {
-            EvidencePackages = BuildEvidencePackages(
-                latest,
-                externalEvidenceReferences,
-                meridianSummaryEvidenceReferences,
-                summaryEvidenceReferences,
-                breakCounts,
-                rows.Count)
-        };
-    }
-
     private ScopedExternalGlMappingProfile? ResolveMappingProfile(
         string providerId,
         string fundProfileId,
@@ -582,7 +497,8 @@ public sealed class AccountingSystemIntegrationService
         Guid? ledgerBookId,
         CancellationToken ct,
         string? tenantId = null,
-        string? companyId = null)
+        string? companyId = null,
+        ScopedExternalGlMappingProfile? mappingProfile = null)
     {
         if (!_providers.Any(provider => string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase)))
         {
@@ -591,13 +507,13 @@ public sealed class AccountingSystemIntegrationService
 
         try
         {
-            return await ReconcileLatestAsync(providerId, fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
+            return await ReconcileLatestCoreAsync(providerId, fundProfileId, ledgerBookId, ct, tenantId, companyId, mappingProfile).ConfigureAwait(false);
         }
         catch (InvalidOperationException ex) when (
             ledgerBookId.HasValue &&
             ex.Message.Contains("returned ledger book", StringComparison.OrdinalIgnoreCase))
         {
-            return await ReconcileLatestAsync(providerId, fundProfileId, null, ct, tenantId, companyId).ConfigureAwait(false);
+            return await ReconcileLatestCoreAsync(providerId, fundProfileId, null, ct, tenantId, companyId, mappingProfile).ConfigureAwait(false);
         }
         catch (ArgumentException)
         {
@@ -622,11 +538,12 @@ public sealed class AccountingSystemIntegrationService
             package.LedgerBookId,
             ct,
             package.TenantId,
-            package.CompanyId).ConfigureAwait(false);
+            package.CompanyId,
+            mappingProfile).ConfigureAwait(false);
         var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation, package.LedgerBookId);
         var currentReconciliationSnapshotHash = ComputeReconciliationSnapshotHash(reconciliation);
 
-        return BuildExportValidationIssues(
+        var issues = BuildExportValidationIssues(
             package.ProviderId,
             package.FundProfileId,
             ProviderSupportsPosting(package.ProviderId),
@@ -641,6 +558,21 @@ public sealed class AccountingSystemIntegrationService
             package.ReconciliationId,
             package.ReconciliationSnapshotHash,
             currentReconciliationSnapshotHash);
+        return [.. issues, .. await ValidateProviderExportAsync(package.ProviderId, package.FundProfileId,
+            package.LedgerBookId, package.PeriodStart, package.PeriodEnd, generatedLines, package.EvidenceLinks,
+            package.TenantId, package.CompanyId, ct).ConfigureAwait(false)];
+    }
+
+    private Task<IReadOnlyList<AccountingConfigurationValidationIssueDto>> ValidateProviderExportAsync(
+        string providerId, string fundProfileId, Guid? ledgerBookId, DateOnly periodStart, DateOnly periodEnd,
+        IReadOnlyList<ExternalGlExportLineDto> lines, IReadOnlyList<string> evidenceLinks,
+        string? tenantId, string? companyId, CancellationToken ct)
+    {
+        var provider = _providers.FirstOrDefault(p => string.Equals(p.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
+        if (provider is not IAccountingSystemExportValidator validator)
+            return Task.FromResult<IReadOnlyList<AccountingConfigurationValidationIssueDto>>([]);
+        _latestImports.TryGetValue(ImportKey(providerId, fundProfileId, ledgerBookId, tenantId, companyId), out var import);
+        return validator.ValidateExportAsync(new(ledgerBookId, periodStart, periodEnd, import, lines, evidenceLinks), ct);
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildExportValidationIssues(
@@ -885,7 +817,8 @@ public sealed class AccountingSystemIntegrationService
         => validationIssues
             .Where(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
             .Select(static issue => issue.Code)
-            .Where(static code => ExternalGlReconciliationSafeguardIssueCodes.Contains(code))
+            .Where(static code => ExternalGlReconciliationSafeguardIssueCodes.Contains(code) ||
+                code.StartsWith("ExternalGlProvider", StringComparison.Ordinal))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -962,7 +895,7 @@ public sealed class AccountingSystemIntegrationService
         }
 
         return reconciliation.Rows
-            .Where(static row => row.MeridianDebit != 0m || row.MeridianCredit != 0m)
+            .Where(static row => (row.PeriodDebit ?? row.MeridianDebit) != 0m || (row.PeriodCredit ?? row.MeridianCredit) != 0m)
             .Where(row => mappingProfile.Profile.AccountMappings.ContainsKey(row.AccountCode))
             .OrderBy(static row => row.AccountCode, StringComparer.OrdinalIgnoreCase)
             .Select(row => new ExternalGlExportLineDto(
@@ -973,9 +906,9 @@ public sealed class AccountingSystemIntegrationService
                 mappingProfile.Profile.AccountMappings[row.AccountCode],
                 row.AccountName,
                 row.Currency,
-                row.MeridianDebit,
-                row.MeridianCredit,
-                row.MeridianDebit - row.MeridianCredit,
+                row.PeriodDebit ?? row.MeridianDebit,
+                row.PeriodCredit ?? row.MeridianCredit,
+                (row.PeriodDebit ?? row.MeridianDebit) - (row.PeriodCredit ?? row.MeridianCredit),
                 dimensionMapping?.MeridianDimensions,
                 dimensionMapping?.ExternalDimensions,
                 row.EvidenceReferences))
@@ -1242,7 +1175,9 @@ public sealed class AccountingSystemIntegrationService
             row.EvidenceRef ?? string.Empty,
             string.Join(",", row.ExternalEvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
             string.Join(",", row.MeridianEvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
-            string.Join(",", row.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)));
+            string.Join(",", row.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase))) +
+            (row.PeriodDebit.HasValue || row.PeriodCredit.HasValue
+                ? $"|period:{row.PeriodDebit?.ToString("G29", CultureInfo.InvariantCulture)}:{row.PeriodCredit?.ToString("G29", CultureInfo.InvariantCulture)}" : string.Empty);
 
     private static string FormatGeneratedExportLineForHash(ExternalGlExportLineDto line)
         => string.Join(
@@ -1355,6 +1290,13 @@ public sealed class AccountingSystemIntegrationService
         var chartAccounts = detail.ChartAccounts ?? [];
         var journalEntries = detail.JournalEntries ?? [];
         var trialBalance = detail.TrialBalance ?? [];
+        if (detail.Summary.TrialBalanceBasis is { } basis &&
+            (basis.IncomeStatementPeriodStart > detail.Summary.PeriodEnd ||
+             basis.IncomeStatementAccountCodes.Distinct(StringComparer.OrdinalIgnoreCase).Count() != basis.IncomeStatementAccountCodes.Count ||
+             basis.IncomeStatementAccountCodes.Any(code => !chartAccounts.Any(a => a.AccountCode == code)) ||
+             (basis.IncomeStatementAccountCodes.Count > 0 && !chartAccounts.Any(a => a.AccountCode == basis.RetainedEarningsAccountCode)) ||
+             basis.IncomeStatementAccountCodes.Contains(basis.RetainedEarningsAccountCode ?? string.Empty, StringComparer.OrdinalIgnoreCase)))
+            throw new InvalidOperationException("The imported trial-balance comparison basis is incomplete or invalid.");
         EnsureImportCountMatches(providerId, "chart account", detail.Summary.ChartAccountCount, chartAccounts.Count);
         EnsureImportCountMatches(providerId, "journal entry", detail.Summary.JournalEntryCount, journalEntries.Count);
         EnsureImportCountMatches(providerId, "trial-balance line", detail.Summary.TrialBalanceLineCount, trialBalance.Count);
@@ -1456,6 +1398,9 @@ public sealed class AccountingSystemIntegrationService
                 .OrderBy(static line => line.ExternalAccountId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static line => line.AccountCode, StringComparer.OrdinalIgnoreCase)
                 .Select(FormatTrialBalanceLineForHash)));
+        if (summary.TrialBalanceBasis is { } basis)
+            payload += $"|balance-basis:{basis.IncomeStatementPeriodStart:yyyy-MM-dd}:{basis.RetainedEarningsAccountCode}:" +
+                string.Join(",", basis.IncomeStatementAccountCodes.Order(StringComparer.OrdinalIgnoreCase));
         return Sha256Digest.ComputeUtf8(payload);
     }
 
@@ -1509,49 +1454,6 @@ public sealed class AccountingSystemIntegrationService
             line.Currency,
             line.AsOfDate.ToString("yyyy-MM-dd"),
             line.EvidenceRef ?? string.Empty);
-
-    private async Task<Dictionary<string, MeridianAccountTotal>> LoadMeridianTotalsAsync(
-        AccountingSystemImportSummaryDto summary,
-        CancellationToken ct)
-    {
-        var totals = new Dictionary<string, MeridianAccountTotal>(StringComparer.OrdinalIgnoreCase);
-        if (_ledgerJournalStore is null)
-        {
-            return totals;
-        }
-
-        var periods = await _ledgerJournalStore.ListPeriodsAsync(
-            ledgerBookId: summary.LedgerBookId,
-            fundProfileId: summary.FundProfileId,
-            ct: ct).ConfigureAwait(false);
-
-        foreach (var period in periods.Where(period => period.StartDate <= summary.PeriodEnd && period.EndDate >= summary.PeriodStart))
-        {
-            ct.ThrowIfCancellationRequested();
-            var entries = await _ledgerJournalStore.GetByPeriodAsync(period.PeriodId, ct).ConfigureAwait(false);
-            foreach (var record in entries)
-            {
-                foreach (var line in record.Entry.Lines)
-                {
-                    var accountCode = line.Account.Name;
-                    if (!totals.TryGetValue(accountCode, out var total))
-                    {
-                        total = new MeridianAccountTotal(accountCode, "USD");
-                        totals[accountCode] = total;
-                    }
-
-                    total.Debit += line.Debit;
-                    total.Credit += line.Credit;
-                    foreach (var evidenceReference in BuildMeridianEvidenceReferences(record, line))
-                    {
-                        total.EvidenceReferences.Add(evidenceReference);
-                    }
-                }
-            }
-        }
-
-        return totals;
-    }
 
     private static IReadOnlyList<AccountingSystemReconciliationEvidencePackageDto> BuildEvidencePackages(
         AccountingSystemImportDetailDto latest,
@@ -1728,7 +1630,8 @@ public sealed class AccountingSystemIntegrationService
         };
         var journalEvidenceKind = normalized switch
         {
-            "xero" or "xero-fixture" => "XeroManualJournal",
+            "xero" => "XeroJournal",
+            "xero-fixture" => "XeroManualJournal",
             "netsuite" or "netsuite-fixture" => "NetSuiteJournalEntry",
             _ => "QuickBooksJournalEntry"
         };
@@ -2285,6 +2188,10 @@ public sealed class AccountingSystemIntegrationService
         public decimal Debit { get; set; }
 
         public decimal Credit { get; set; }
+
+        public decimal PeriodDebit { get; set; }
+
+        public decimal PeriodCredit { get; set; }
 
         public HashSet<string> EvidenceReferences { get; } = new(StringComparer.OrdinalIgnoreCase);
     }

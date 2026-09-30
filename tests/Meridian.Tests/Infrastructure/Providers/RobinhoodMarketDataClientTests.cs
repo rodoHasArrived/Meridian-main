@@ -52,7 +52,7 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
     public void Name_ReturnsRobinhoodLive()
     {
         var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")), out _);
-        ((Meridian.Infrastructure.Adapters.Core.IProviderMetadata)sut).ProviderId.Should().Be("robinhood-live");
+        ((Meridian.Infrastructure.Adapters.Core.IProviderMetadata)sut).ProviderId.Should().Be("robinhood");
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
 
         publisher.Published.Should().BeEmpty("crossed quotes must be rejected at the provider boundary");
         var diagnostics = sut.GetDiagnosticsSnapshot();
-        diagnostics.ProviderId.Should().Be("robinhood-live");
+        diagnostics.ProviderId.Should().Be("robinhood");
         diagnostics.LastSuccessfulApiCallAt.Should().NotBeNull();
         diagnostics.DataQualityRejections.Should().Be(1);
         diagnostics.LastError.Should().BeNull();

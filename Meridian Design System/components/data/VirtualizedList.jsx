@@ -27,8 +27,8 @@ export function VirtualizedList({
         height,
         overflowY: "auto",
         position: "relative",
-        border: "1px solid var(--border, #D7DCE2)",
-        background: "var(--bg-light, #FAFBFC)",
+        border: "1px solid var(--border, #E4E3DE)",
+        background: "var(--bg-light, #FBFAF8)",
         ...style,
       }}
       onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
@@ -47,11 +47,11 @@ export function VirtualizedList({
                   display: "flex",
                   alignItems: "center",
                   boxSizing: "border-box",
-                  borderBottom: "1px solid var(--border-divider, #E5E9EE)",
+                  borderBottom: "1px solid var(--border-divider, #DAD8D3)",
                   padding: "0 12px",
                   fontFamily: "var(--font-data)",
                   fontSize: "13px",
-                  color: "var(--text-primary, #22272E)",
+                  color: "var(--text-primary, #22252A)",
                 }}
               >
                 {renderRow ? renderRow(item, index) : String(item)}

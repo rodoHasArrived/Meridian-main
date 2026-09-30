@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Meridian.Contracts.Integrity;
+using Meridian.Core.ReferenceData;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
 
@@ -803,7 +804,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
             return CamtAmountResult.BadDirection;
         }
 
-        if (currency.Length != 3 || currency.Any(static value => value is < 'A' or > 'Z'))
+        if (!CurrencyCodeCatalog.IsRecognized(currency))
         {
             return CamtAmountResult.BadCurrency;
         }

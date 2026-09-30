@@ -240,7 +240,8 @@ public sealed partial class ProviderLedgerReconciliationService
             DefaultOwner: NormalizeOptional(request.DefaultBreakOwner) ?? "fund-accounting",
             SignedOffBreakKeys: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
             SignedOffBy: null,
-            PreviousBreaksByKey: BuildPreviousBreakMap(previousLatest));
+            PreviousBreaksByKey: BuildPreviousBreakMap(previousLatest),
+            RoutingTenantId: accessScope?.TenantId);
 
         var providerProjection = await _brokerageSync.GetActivityAsync(accountId, ct).ConfigureAwait(false);
         var internalSnapshot = await _fundAccountService.GetLatestBalanceSnapshotAsync(accountId, ct).ConfigureAwait(false);
@@ -2291,7 +2292,11 @@ public sealed partial class ProviderLedgerReconciliationService
             Symbol: symbol,
             AssetClass: assetClass,
             RequireProductionReady: capability is ProviderCapabilityKind.ReconciliationFeed);
-        var result = await _capabilityRouter!.RouteAsync(routeContext, ct).ConfigureAwait(false);
+        // A tenant-authorized run only considers that tenant's retained connections, so another tenant's
+        // connection can neither satisfy the capability check nor appear in its evidence.
+        var result = lifecycle.RoutingTenantId is { } routingTenantId
+            ? await _capabilityRouter!.RouteForTenantAsync(routeContext, routingTenantId, ct).ConfigureAwait(false)
+            : await _capabilityRouter!.RouteAsync(routeContext, ct).ConfigureAwait(false);
         var checkId = string.IsNullOrWhiteSpace(checkIdSuffix)
             ? $"provider-capability:{capability}"
             : $"provider-capability:{capability}:{checkIdSuffix}";
@@ -2533,7 +2538,8 @@ public sealed partial class ProviderLedgerReconciliationService
         string? DefaultOwner,
         IReadOnlySet<string> SignedOffBreakKeys,
         string? SignedOffBy,
-        IReadOnlyDictionary<string, ProviderLedgerReconciliationBreakDto> PreviousBreaksByKey);
+        IReadOnlyDictionary<string, ProviderLedgerReconciliationBreakDto> PreviousBreaksByKey,
+        string? RoutingTenantId = null);
 
     private sealed record ProviderLedgerScope(
         LedgerBookDto Book,

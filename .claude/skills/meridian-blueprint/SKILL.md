@@ -30,7 +30,7 @@ Meridian.
 > **Shared project context:** [`../_shared/project-context.md`](../_shared/project-context.md) —
 > authoritative stats, file paths, provider list, ADR table. Read before naming interfaces or
 > namespaces.
-> **GitHub equivalent:** [`.github/agents/meridian-blueprint-agent.md`](../../../.github/agents/meridian-blueprint-agent.md)
+> **GitHub equivalent:** [`.github/agents/blueprint-agent.md`](../../../.github/agents/blueprint-agent.md)
 > **Reference files:**
 > - [`references/blueprint-patterns.md`](references/blueprint-patterns.md) — Meridian interface patterns, ADR contracts, naming conventions
 > - [`references/pipeline-position.md`](references/pipeline-position.md) — Where Blueprint Mode fits in the ideation-to-implementation

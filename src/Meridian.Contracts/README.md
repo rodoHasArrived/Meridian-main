@@ -6,14 +6,47 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-08-03
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Contracts
 
+Provider connection API and configuration DTOs retain optional `TenantId` and `CredentialEnvironment`
+alongside connection and external-account identity. These additive fields preserve server-owned
+credential scope across both workstation lanes. They are not accepted as tenant authority in the
+connection creation request; absent fields remain unassigned legacy ownership.
+
+External GL import summaries optionally retain `TrialBalanceBasis`: the provider's
+income-statement year start, income account codes and retained-earnings identity.
+It is distinct from the requested journal period. Reconciliation rows optionally
+retain gross `PeriodDebit`/`PeriodCredit` for export review, independently of report
+balances. These additive fields are omitted when absent to preserve legacy payloads.
+
+Reconciliation queue items optionally retain `Lineage`: a stable source identity, occurrence identity,
+first/last observation and successful-run clearing evidence. This metadata is omitted when absent
+so legacy integrity-checked snapshots keep their serialized shape. Source clearing is distinct from
+governed disposition, sign-off and close readiness.
+
+Ledger commands add optional `AccountingPostingCommandDto.Actor` and
+`CreateLedgerPeriodRequest.CreatedBy`. Public command boundaries stamp authenticated identities;
+callers cannot use these fields to replace that identity. Absent values stay explicitly unattributed
+and are omitted from JSON, preserving the serialized shape of legacy posting fingerprints.
+
 Lifecycle route contracts distinguish sanitized unauthenticated readiness/liveness probes from
 authenticated comprehensive health and status payloads. The ASP.NET Core workstation host is the
 single monitoring transport owner.
+
+`Api/ProviderCatalog.cs` exposes six provider-factory inventory flags: `SupportsStreaming`,
+`SupportsBackfill`, `SupportsSymbolSearch`, `SupportsCorporateActions`, `SupportsOptionsChain`,
+and `SupportsBrokerage`. Backfill, symbol search, and on-demand corporate actions are additive
+fields; the application projects them from the same descriptor slots that register built-in
+factories. Provider IDs in the application catalog are canonical (`ibkr`, `nasdaq`), while
+ProviderSdk resolves accepted configuration aliases before the projection. Contracts keeps its
+static fallback independent of concrete adapters. Factory inventory alone supplies no readiness
+or entitlement proof: `MarketDataCapabilities` retains the provider's feed, pacing, entitlement,
+timestamp, and quality declarations. Historical dividend/split evidence does not imply an
+on-demand corporate-action factory. `ProviderCatalogCompositionTests` validates these fields and
+metadata through the actual public application registration path.
 
 Operations Continuity journal candidates carry a typed `Provenance` origin mark into the posting
 command. Omitted marks remain `Real`; seeded or simulated evidence must be explicitly marked,
@@ -36,6 +69,10 @@ Meridian contracts contains shared DTOs and cross-layer contracts used by host, 
 dashboard, and WPF.
 
 ## Layer responsibility
+
+`SecurityAssetTermsSchema.ElementFields("Swap", "legs")` declares the serialized swap-leg
+field names and types. Codec tests compare this nested contract with persisted terms and the
+cash-flow reader so a top-level `legs` array alone cannot conceal missing leg economics.
 
 This module owns stable transport payloads, compatibility-safe DTOs, and shared schema objects.
 Consumers depend on contracts; contracts should not depend on host, UI, application orchestration,
@@ -1488,6 +1525,7 @@ W7 live-readiness gate.
 
 ```bash
 dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCatalogCompositionTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~ClusterCoordinatorServiceTests|FullyQualifiedName~SplitBrainDetectorTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~DiagnosticsEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
@@ -1502,3 +1540,21 @@ contract shape, blocker vocabulary, or route-visible payloads change.
 - `docs/status/contract-compatibility-matrix.md`
 - `docs/architecture/module-map.md`
 - `docs/source/generated/source-module-index.md`
+
+### Security Master economics and pricing evidence
+
+Calculated cash-flow projections retain `BlockedReason` and `IsNormalizedPer100`: missing coupon
+terms and unresolved floating fixings never mean zero, and normalized analytical schedules cannot
+drive ledger postings without retained principal/notional. Discount rates on Treasury bills and
+commercial paper are not coupon payments. Classes with no implemented calculated schedule require
+provider evidence. Asset-pack template bindings use exact mappings with declared Fee, Amortization,
+and MarginSettlement lifecycle coverage.
+
+Security Master prices declare CurrencyPerUnit or PercentOfPar. Legacy Unspecified observations
+remain readable but cannot support a golden copy. Selections retain economic, hierarchy and
+knowledge timestamps and an immutable `SelectionReceiptId` with the exact hierarchy and quote
+snapshot. `asOf` and `knownAt` filter eligible evidence but are not a PostgreSQL commit snapshot:
+a pending transaction can become visible later with an earlier recorded timestamp. Reproduce an
+exact evaluation using `receiptId` on the golden-copy endpoint, retaining the security/account
+scope. Unknown or differently scoped receipts return no result and never silently recompute.
+Mixed quote units have no percentage comparison.

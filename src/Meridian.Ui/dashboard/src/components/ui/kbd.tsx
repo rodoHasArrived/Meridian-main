@@ -31,7 +31,7 @@ export function Kbd({ keys, variant = "default", className, children }: KbdProps
   const parts = parseKeys(keys, children);
   const keyClass = cn(
     "inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-[2px] border border-b-2 border-border px-1.5 font-mono text-[11px] font-semibold leading-none",
-    variant === "solid" ? "bg-card text-foreground" : "bg-[#F3F6F9] text-muted-foreground"
+    variant === "solid" ? "bg-card text-foreground" : "bg-[var(--ws-surface-raised)] text-muted-foreground"
   );
 
   return (

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-09-05
+last_reviewed: 2026-09-30
 ---
 
 # src/Meridian.FinancialOperations
@@ -25,11 +25,64 @@ OFX canonical rows retain the containing statement's `CURDEF` currency when no r
 currency is supplied. The parser does not borrow currency from another statement; explicit
 row evidence takes precedence. Missing currency remains absent for downstream refusal.
 
+OFX imports contain one statement section. Multiple bank, credit-card or investment sections are
+refused during validation and preview even when they name the same account or include an empty section.
+Case-equivalent account identifiers remain valid within a single containing statement.
+
+Statement preview, validation and commit require currency from the shared recognized-code catalog
+before retaining connector artifacts. Canonical CSV and bank connectors apply the same catalog;
+BAI2 validates before converting minor units. Historical currencies remain available for statement
+evidence. Service-level diagnostics omit a source row when the connector has not retained that identity.
+
+Statement runs pass the accounting scope retained on their import to the internal population
+provider, preserving the fund, ledger book, and exact period selected by governed intake during
+matching. `StatementRunWorkflowServiceTests` covers that scope handoff.
+
+Accounting-system export package creation, certification, and manifest reads call
+`IAccountingSystemExportValidator` when the selected provider implements it.
+Xero and NetSuite use this seam to require current live import scope and their
+own retained control evidence in addition to the existing mapping, reconciliation,
+and human-origin checks. Successful certification never enables posting.
+Live GL reconciliation projects all retained Meridian history through the report date
+using the imported trial-balance basis, including the provider's income year and
+retained-earnings carry-forward. Gross activity within the requested inclusive dates
+is retained separately and is the only amount used for generated export review lines.
+Hashes cover both the basis and activity, so later journal changes invalidate stale
+certifications even when closing account balances remain equal.
+Reconciliation requires matching provider and ledger-book currencies, including
+zero balances omitted from the provider report. Export review retains Meridian's
+currency; a mismatch blocks provider certification even when balanced reconciliation
+is not requested. No implicit currency conversion or relabeling is performed.
+Journal accounting effective dates control both report and export windows; legacy
+entries use their UTC event date. Live accrual reports require a resolved Primary
+or Gaap ledger book; Cash, Tax and Statutory books are unsupported at reconciliation
+and every export boundary.
+Live reconciliation resolves imported account IDs through the scoped certified
+mapping, including income-year classification and retained earnings. Export review
+uses its selected profile at every boundary. Ambiguous many-to-one mappings and
+collisions are rejected. Meridian period-close journals and their reversals are
+excluded from provider-basis balances and gross export activity.
+
+Statement matching retains exact tolerance rules/version and matcher revision with population
+availability. Missing/failed internal populations and empty statements cannot certify source clearing;
+a narrower source feed is a distinct comparison scope. This evidence is retained with the immutable
+match artifact so later profile updates cannot reinterpret historical breaks.
+
+Generated candidate posts retain the validated posting actor in the approved command. Replays
+use the journal's versioned, command-normalized `postingActor`; unversioned legacy metadata remains unattributed rather
+than acquiring the identity of a later caller. Durable mutation/audit atomicity is owned by the
+PostgreSQL journal store, including the atomic tax-lot posting path.
+
 Operations Continuity forwards the journal candidate's typed provenance to the governed posting
 command. PostgreSQL round-trip coverage verifies that seeded origins retain the `SEEDED` journal
 tag and that fixture evidence marked as real cannot commit a journal or a successful posting audit.
 
 ## Shared close and lot convergence
+
+Factor-paydown candidates require lot quantity as of the event effective date, reconstructed by
+the journal store from retained mutation history. Missing or inconsistent historical quantity
+evidence returns a critical candidate issue and cannot fall back to today's holdings.
+
 
 The Financial Operations command center owns the shared close decision. It requires an explicit fund profile, ledger book, fund account, entity, and period; validates book/profile binding and exact workflow identity; and includes workflow, calendar, version-matched close-plan, and private-capital contributors. Missing, ambiguous, failing, or older-than-five-minute contributor evaluations block. Asset coverage and fund-wide diagnostic metrics do not establish readiness. Focused proof: `FinancialOperationsCommandCenterReadServiceTests`.
 
@@ -116,6 +169,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
+- `AccountingSystem/AccountingSystemIntegrationService.Reconciliation.cs` - provider report balance projection, requested-period activity, currency identity checks, and reconciliation read models.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
 - `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
 - `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
