@@ -9842,6 +9842,8 @@ Meridian-main
 │   │   │   ├── ProviderGoldenPathScenarioGenerator.cs
 │   │   │   ├── ProviderGoldenPathTransactionLedgerReconciliationTests.cs
 │   │   │   ├── StatementImportCaseworkEvidenceTests.cs
+│   │   │   ├── StatementLedgerReconciliationPostgresTests.cs
+│   │   │   ├── StatementLedgerReconciliationPostgresTests.Harness.cs
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
 │   │   ├── Ledger
 │   │   │   ├── AutomatedJournalPostingTargetTests.cs
