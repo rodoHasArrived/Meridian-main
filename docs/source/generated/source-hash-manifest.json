@@ -37,8 +37,8 @@
       "id": "SRC-CORE",
       "path": "src/Meridian.Core",
       "readme": "src/Meridian.Core/README.md",
-      "readme_hash": "dbe18f27127dbd345ae1fb04a0aa5f5e26570217ef6631ccb06c929cfccaa016",
-      "source_hash": "f7a49aff017eeaa5f5088742262f6812014f925a896aa1a78cf029cd87510439"
+      "readme_hash": "7531488c52044af8e93daa7aeb1a378c36c984975edf20c689a10e5bc548e976",
+      "source_hash": "4b1dab1067bb198e4f44df47f5f0b47e5779addb5da6815176cf822ea7e60601"
     },
     {
       "id": "SRC-DESIGN-AUDIT",
@@ -72,8 +72,8 @@
       "id": "SRC-DESIGN-FINANCIAL-OPERATIONS",
       "path": "src/Meridian.FinancialOperations",
       "readme": "src/Meridian.FinancialOperations/README.md",
-      "readme_hash": "402d8d990330ae0bf3986eb573b19964d274eb6b19138d04df4e6216d9e83fdd",
-      "source_hash": "14599e84458619285d956cfb20aa901e0b17accc05058321de5dd30bcca5c13b"
+      "readme_hash": "0beed6e059ad017780ba66de55b5e52c7d4af0efdd0b8ba815f7c39dbcb3eaf9",
+      "source_hash": "fdcd1c855aa0cc1c0ab4664b4c3a2c91e98b3f8dfd22a4a119d61e6314103241"
     },
     {
       "id": "SRC-DESIGN-IDENTITY",
@@ -191,8 +191,8 @@
       "id": "SRC-INFRASTRUCTURE",
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
-      "readme_hash": "60f65e53bcc8049c7dcc705a729fe325dc3b3ef34ab11df4354421837fd756d1",
-      "source_hash": "c229ed6a41abf280a89e6a5294a71c0bd034da2b0f32351fc2d980e143370acc"
+      "readme_hash": "bcffaae801084b15bb91578aef89f27f715ba97baddd41c65bd2ca34326fa080",
+      "source_hash": "6a88d0f09b58895ebc37c9a6a4651e9240653385c9f5d10c5b46962e838b6413"
     },
     {
       "id": "SRC-LAUNCHER",
@@ -205,8 +205,8 @@
       "id": "SRC-LEDGER",
       "path": "src/Meridian.Ledger",
       "readme": "src/Meridian.Ledger/README.md",
-      "readme_hash": "a7f8f56a96be579d86d85b7c5d496c02f8c16738a2aedf18ff939b90b657fc2d",
-      "source_hash": "401eed526b0a4b88c25db7ba9ae0d297ca574c7de8da323badddf8a41df58976"
+      "readme_hash": "010a3a21faf3516d0fea31bd2429742e9539ee16c059a4fd98aa6848d34f85b8",
+      "source_hash": "895b54d43fbe7905cca57ec26477effd06daadf48e979704a2105e7c1f453070"
     },
     {
       "id": "SRC-LIFECYCLE-SUPERVISOR",
