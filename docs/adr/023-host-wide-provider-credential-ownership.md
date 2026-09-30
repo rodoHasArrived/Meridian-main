@@ -10,105 +10,142 @@
 
 ## Context
 
-`ProviderFactory` builds streaming, backfill and symbol-search providers once per host. It builds one
-provider for each registration in `ProviderCapabilityDescriptorCatalog`, which means one per provider
-family and capability. It reads top-level configuration, not individual `DataSources.Sources` rows, and
-a single `IProviderCredentialResolver` serves the whole factory. The providers' output (quotes, trades,
-bars written to storage) is host-wide: every tenant the host serves reads the same collected data.
+A Meridian host builds its runtime providers once, for everyone it serves:
+
+- `ProviderFactory` builds one provider for each registration in `ProviderCapabilityDescriptorCatalog`,
+  which means one per provider family and capability. The capabilities are streaming, backfill, symbol
+  search, corporate actions, options chains and brokerage. It reads top-level configuration, not
+  individual `DataSources.Sources` rows, and a single `IProviderCredentialResolver` serves the whole
+  factory.
+- `AddProviderServices` separately discovers plugin registrations and resolves their implementations
+  directly from DI, outside `ProviderFactory`.
+
+The market-data output (quotes, trades, bars, corporate actions, option chains written to storage) is
+host-wide: every tenant the host serves reads it.
 
 PR #2931 added credentials scoped to a retained connection (tenant, connection, external account,
 environment). It also added a scope-bound `StoredProviderCredentialResolver` constructor that never
 falls back to provider-wide records, configuration or environment. That constructor has no production
-caller yet: `ProviderFeatureRegistration` registers the provider-wide resolver, and nothing links a
-provider family to a connection. So credentials saved on a connection are never used by runtime
-providers.
+caller yet, so credentials saved on a connection are never used by runtime providers.
 
-Wiring the scoped resolver needs an answer to one question first: **whose credentials may a provider
-that serves the whole host use?** Four facts in the current code shape the answer:
+Wiring it needs an answer to one question first: **whose credentials may a provider that serves the
+whole host use?** Facts in the current code shape the answer:
 
 1. **The output is shared.** If tenant A's vendor account powers a host-wide stream, every tenant on
-   the host consumes data fetched under A's entitlements, billing, rate limits and licence terms, and
-   A's account appears in the vendor's audit trail for activity A did not initiate.
+   the host consumes data fetched under A's entitlements, billing, rate limits and licence terms.
 2. **Hosts declare a tenant posture.** `TenantScopeEnforcementMode` is either `DeploymentBoundary` (one
    company per deployment is the actual control) or `FailClosed` (a shared deployment where
    cross-tenant reads are refused).
 3. **The provider-wide record is writable by tenant roles.** A credential `PUT` without `connectionId`
-   writes the provider-wide record (`ProviderConnectionEndpoints.ResolveConnectionService`). It needs
-   only `ManageCredentials`, which the built-in Admin and Developer roles hold. Under `FailClosed`,
-   the provider-wide record therefore cannot be treated as belonging to the deployment.
-4. **Module credential overlays take precedence.** `ProviderFactory` wraps the resolver's context in
-   `WithModuleCredentials`, and `ModuleCredentialContext.Get` returns module sidecar or
-   environment-derived values before the resolver's own values.
+   writes it (`ProviderConnectionEndpoints.ResolveConnectionService`) and needs only
+   `ManageCredentials`, which the built-in Admin and Developer roles hold.
+4. **No permission establishes host authority.** A tenant Admin holds `ManageUsers`, and account
+   validation (`UserAccountStore.ValidateAccountRequest`) accepts permission-name overrides. A tenant
+   Admin could therefore grant any new permission to an account they control.
+5. **Credentials can come from outside the resolver.**
+   - Module overlays: `WithModuleCredentials` returns module sidecar or environment values before the
+     resolver's.
+   - Post-resolver fallbacks inside factories: for example, Alpaca's factory passes resolver results
+     through `FirstNonBlank(...)` with `AlpacaCredentialEnvironment.Resolve(...)`, which can recover
+     configuration or environment secrets.
+6. **Configuration loading forgives errors.** `ConfigStore.LoadConfig` substitutes a default
+   `AppConfig` when the file is malformed or unreadable.
 
 ## Decision
 
-1. **One owner per provider family, fixed by configuration.** A host-wide provider family has exactly
-   one credential owner. The owner applies to every host-wide registration of that family (streaming,
-   backfill, symbol search) and is fixed when the providers are built. It is never chosen per request
-   or subscription, and never inferred, for example from "the only connection", the most recent
-   connection or the first match.
+1. **Scope: host-wide market data.** This decision covers the host-wide market-data capabilities:
+   streaming, backfill, symbol search, corporate actions and options chains, whether built by
+   `ProviderFactory` or registered by a plugin.
 
-2. **The provider-wide default applies only under `DeploymentBoundary`.** There, the deployment is one
-   company, so the provider-wide record is that company's, and an unbound family keeps using it as
-   today. Under `FailClosed`:
-   - a host-wide family with no binding does not start, and records a diagnostic;
-   - the tenant-scoped credential routes refuse to create, change or remove provider-wide records,
-     because a record a tenant role can write must not power data every tenant reads;
-   - existing provider-wide records remain stored but are not used by host-wide providers.
+   Execution credentials are separate and never come from a host binding. Under `FailClosed`, a
+   host-wide brokerage gateway built from provider-wide credentials does not start. Execution
+   credential ownership, for example tenant-bound account connections, is its own decision.
 
-   A deployment moving to `FailClosed` binds each host-wide family first (point 3).
+2. **One owner per credential-bearing family, fixed at startup.** A family that has a
+   `ProviderCredentialCatalog` entry requiring credentials has exactly one credential owner for all of
+   its host-wide market-data capabilities. That owner is fixed when the providers are built. It is
+   never chosen per request and never inferred, for example from the only, first or most recent
+   connection.
 
-3. **Bindings are keyed by provider family.** A new configuration section,
-   `HostProviderCredentials.Bindings`, maps a canonical provider family ID to one retained connection
-   ID. It sits at the factory's actual construction key; it is deliberately not a field on
-   `DataSourceConfig`, whose rows do not correspond to runtime instances. A binding is allowed only
-   when the connection's retained tenant equals the host's declared credential tenant. That tenant is
-   a new startup setting, `MERIDIAN_HOST_CREDENTIAL_TENANT`, read once like
-   `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` and refused at startup when present but malformed. It is
-   required whenever any binding exists, under both postures, so a binding is never resolved against
-   an implicit tenant. Only the party operating the host may lend its vendor account to data every
-   tenant reads.
+   A family without such an entry needs no credentials (for example Yahoo, Stooq or Edgar search). It
+   runs with credential source `none` and is never refused for being unbound.
 
-4. **Validate every binding at construction and fail closed.** Before a bound family's providers are
-   built, the host resolves the scope with
-   `GetCredentialScopeForTenantAsync(connectionId, hostCredentialTenant)` and checks all of the
-   following:
+3. **Where each posture gets its credentials.**
+   - **`DeploymentBoundary`:** the deployment is one company, so an unbound credential-bearing family
+     keeps using the provider-wide record, as today. Bindings are optional.
+   - **`FailClosed`:**
+     - an unbound credential-bearing family does not start;
+     - the tenant-scoped credential routes refuse provider-wide writes;
+     - existing provider-wide records remain stored but unused by host-wide providers;
+     - a plugin family starts only if the host operator lists it as credential-free (point 5). Plugins
+       cannot be bound until a plugin ownership contract exists.
+
+   A deployment moving to `FailClosed` binds each credential-bearing family first.
+
+4. **Bindings live in a host-only file, loaded strictly.** Bindings map a canonical provider family ID
+   to one retained connection ID. They live in a dedicated host file, `host-provider-credentials.json`
+   beside the configuration, not in `AppConfig`. No HTTP endpoint or general configuration writer
+   touches this file, so data-source edits cannot erase a binding. It is loaded strictly:
+   - a missing file means no bindings;
+   - a malformed or unreadable file makes every credential-bearing host-wide family refuse to start,
+     under both postures;
+   - defaults are never substituted.
+
+5. **Only the host operator changes bindings, out of band.** Bindings and the plugin credential-free
+   list change only through a host CLI command, `--host-credential-binding list|set|clear`, run on the
+   host by whoever operates the process. The same pattern is used by `--fund-tenant-backfill`. No
+   tenant account, role or permission can reach it, so tenant user administration cannot grant it. The
+   host credential tenant is a startup setting, `MERIDIAN_HOST_CREDENTIAL_TENANT`:
+   - it is read once, like `MERIDIAN_TENANT_SCOPE_ENFORCEMENT`;
+   - it is refused at startup when present but malformed;
+   - it is required whenever any binding exists.
+
+6. **Validate a binding when it is set and again at every startup, and fail closed.** A binding is
+   accepted, and its family started, only when all of the following hold:
    - the connection ID is unique;
    - retained ownership is complete (tenant, external account, credential environment);
    - the tenant is the host credential tenant;
    - the connection's canonical provider family equals the binding key;
-   - the connection's credential environment matches the family's configured environment (for
-     example Alpaca `paper` or `live`);
-   - the connection is enabled.
+   - the credential environment matches the family's configured environment;
+   - the connection is enabled;
+   - the scoped credential record is complete and `Verified` for its current credential generation,
+     against the retained external account and environment.
 
-   Any failure stops that family from starting and records a diagnostic. There is no fallback to the
-   provider-wide record, configuration or environment.
+   A family whose provider has no scoped verification cannot be bound until it does. Any failure stops
+   that family from starting and records a diagnostic.
 
-5. **Bound families take credentials from the scoped resolver only.** For a bound family, the
-   factory uses the scope-bound `StoredProviderCredentialResolver` and **skips module credential
-   overlays** (`WithModuleCredentials`). Module sidecar and environment values would otherwise take
-   precedence over the scoped context and bypass the no-fallback guarantee.
+7. **Bound families take credentials from the scoped resolver only.** For a bound family:
+   - the factory uses the scope-bound `StoredProviderCredentialResolver`;
+   - module credential overlays are skipped;
+   - every post-resolver fallback in the family's factories is disabled. The implementation must audit
+     all factories, starting with Alpaca's `FirstNonBlank` / `AlpacaCredentialEnvironment.Resolve`
+     path.
 
-6. **Binding changes are attributed and audited.** Bindings change only through a dedicated
-   authenticated command, never through general configuration or data-source writes. That command:
-   - requires a new deployment-level permission that no tenant role receives;
-   - appends an audit event to the credential audit trail (`provider-credentials.audit.jsonl`) before
-     the configuration commits, recording the actor, the provider family, and the previous and new
-     connection IDs;
-   - is the only writer of the section. Every other configuration writer, including the browser and
-     desktop data-source edits, preserves `HostProviderCredentials` unchanged. Clearing a binding is an
-     explicit use of the same command.
+   A partial scoped record refuses to start rather than being completed from elsewhere.
 
-   Changes take effect on restart, like the posture switch.
+8. **Binding changes are recoverably audited.** Each `set` or `clear` runs three steps under one
+   correlation ID:
+   1. append a `pending` event to the credential audit trail (`provider-credentials.audit.jsonl`),
+      recording the actor, the provider family, and the previous and new connection IDs;
+   2. write the binding file atomically;
+   3. append `committed`, or `aborted` if the write failed.
 
-7. **Other tenants' connections never power host-wide providers.** A connection owned by any tenant
+   At startup, a `pending` event without an outcome is resolved against the file's actual state and
+   closed as `committed (recovered)` or `aborted (recovered)`. A retry therefore never looks like a
+   second change. The actor is the required `--actor` argument together with the OS identity that ran
+   the command.
+
+9. **Other tenants' connections never power host-wide providers.** A connection owned by any tenant
    other than the host credential tenant serves only tenant-bound operations: status, verification,
-   setup, reconciliation and account-level flows. Per-tenant runtime providers with tenant-attributed
-   output are a separate decision, deferred (see Alternative 2).
+   setup, reconciliation and account-level flows. Per-tenant runtime providers are a separate decision,
+   deferred (see Alternative 2).
 
-8. **Record the credential source, never its value.** At startup and in provider diagnostics, each
-   host-wide family reports its credential source: `provider-wide`, or `connection <id>` owned by
-   `<tenant>`, or `unbound (refused)`.
+10. **Report the credential source; keep the identifiers host-only.**
+    - Tenant-visible provider read models and diagnostics show only the source kind: `provider-wide`,
+      `host-bound`, `none` or `unbound (refused)`.
+    - The bound connection ID and owning tenant appear only in the host log and in the host CLI's
+      `list` output.
+    - Secret values appear nowhere.
 
 ## Implementation Links
 
@@ -118,134 +155,142 @@ implemented yet.
 | Component | Location | Purpose |
 |-----------|----------|---------|
 | Scope-bound resolver | `src/Meridian.Application/Services/StoredProviderCredentialResolver.cs` | Resolves one connection scope with no fallback; gains a production caller |
-| Host resolver registration | `src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs` | Currently registers only the provider-wide resolver; will select the resolver per provider family |
-| Runtime provider construction | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs` | Builds one provider per catalog registration; `CreateCredentialContext` applies module overlays |
-| Module credential overlay | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs` | `WithModuleCredentials` / `ModuleCredentialContext`; must be skipped for bound families |
-| Provider-wide credential writes | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs` | `ResolveConnectionService` returns the provider-wide service without `connectionId`; refused under `FailClosed` |
+| Host resolver registration | `src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs` | Currently registers only the provider-wide resolver; will select the resolver per family |
+| Runtime provider construction | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs` | One provider per catalog registration; Alpaca's post-resolver fallback lives here |
+| Module credential overlay | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs` | `WithModuleCredentials` / `ModuleCredentialContext`; skipped for bound families |
+| Plugin registration | `src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.Composition.cs` | Registers plugin families outside `ProviderFactory`; gated under `FailClosed` |
+| Provider-wide credential writes | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs` | `ResolveConnectionService` without `connectionId`; refused under `FailClosed` |
 | Retained ownership | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` | `GetCredentialScopeForTenantAsync` resolves the bound scope |
-| Credential audit trail | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Existing append-only audit; records binding changes |
-| Role permissions | `src/Meridian.Identity/Contracts/Auth/RolePermissions.cs` | Admin and Developer hold `ManageCredentials`; the binding permission must not be granted to tenant roles |
-| Tenant posture | `src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs` | Pattern for the new startup setting: read once, malformed values refused |
+| Credential audit trail and verification | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Existing append-only audit and per-generation verification state |
+| Lenient configuration load | `src/Meridian.Application/Http/ConfigStore.cs` | `LoadConfig` substitutes defaults; the binding file must not use it |
+| Account permission overrides | `src/Meridian.Identity/Infrastructure/UserAccountStore.cs` | Why no user permission can carry host authority |
+| Out-of-band host command precedent | `src/Meridian.Application/Commands/FundStructureTenantBackfillCommand.cs` | Pattern for `--host-credential-binding` |
+| Atomic file write | `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Writes the binding file |
+| Tenant posture | `src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs` | Pattern for the startup setting: read once, malformed values refused |
 
 ## Rationale
 
 The question is ownership, not plumbing. A host-wide provider acts on behalf of whoever operates the
 host, so its credentials must belong to that party, and the system must be able to prove it. Under
-`DeploymentBoundary` the deployment is one company, so the provider-wide record already meets that bar
-and nothing changes for current deployments. Under `FailClosed` a tenant role can write that record,
-so it cannot prove host ownership. An explicit, validated and audited binding to a connection owned by
-the declared host tenant can. Keying the binding by provider family matches how the factory actually
-builds providers, and skipping module overlays makes the no-fallback guarantee hold end to end rather
-than only inside the resolver.
+`DeploymentBoundary` the deployment is one company, so the provider-wide record meets that bar and
+nothing changes for current deployments. Under `FailClosed`, tenant roles can write the provider-wide
+record and can grant themselves any permission, so neither can prove host ownership.
+
+An out-of-band host command can. So can a strictly loaded host-only file, a verified connection owned
+by the declared host tenant, and a recoverable audit record. Keying bindings by provider family
+matches how the factory builds providers. Removing every other credential source for bound families
+makes the no-fallback guarantee hold end to end.
 
 ## Alternatives Considered
 
 ### Alternative 1: Provider-wide records only
 
-Host-wide providers never use connection credentials.
-
-**Pros:** no new configuration; nothing to validate.
+**Pros:** no new configuration.
 **Cons:** under `FailClosed` a tenant role can place its own account in the record every tenant's data
-depends on; runtime credentials stay outside the scoped, verified and rotated connection model.
+depends on.
 **Why rejected:** unsafe for shared deployments. It remains the default under `DeploymentBoundary` only.
 
 ### Alternative 2: One runtime provider per tenant connection
 
-Each tenant's connection gets its own provider instance, and its output is partitioned by tenant.
-
-**Pros:** true isolation; each tenant pays for and owns its own data.
-**Cons:** requires tenant-partitioned pipelines, storage, subscriptions and per-tenant rate limits, plus
-a per-connection factory redesign, which is a much larger change well beyond credential resolution.
-**Why rejected for now:** deferred as its own decision. This ADR does not block it; per-tenant
-instances would use tenant-bound scopes, not host bindings.
+**Pros:** true isolation; each tenant owns its own data.
+**Cons:** requires tenant-partitioned pipelines, storage, subscriptions and rate limits, and a
+per-connection factory redesign.
+**Why rejected for now:** deferred as its own decision; it would use tenant-bound scopes, not host
+bindings.
 
 ### Alternative 3: Choose credentials per request or subscription tenant
 
 **Pros:** appears to attribute use to the requesting tenant.
-**Cons:** a host-wide session cannot switch vendor accounts mid-stream, the data is still shared, and
-the choice depends on who asked first.
+**Cons:** a host-wide session cannot switch vendor accounts mid-stream, and the data is still shared.
 **Why rejected:** nondeterministic, and it still lends one tenant's account to everyone.
 
 ### Alternative 4: Allow any tenant's connection through an administrator binding
 
 **Pros:** maximum flexibility.
-**Cons:** an administrator could attach a customer tenant's vendor account to data every tenant reads,
-breaching that tenant's entitlements and licence terms.
-**Why rejected:** this is exactly the cross-tenant credential use the scoped model exists to prevent.
+**Cons:** attaches a customer tenant's vendor account to data every tenant reads.
+**Why rejected:** this is the cross-tenant credential use the scoped model exists to prevent.
 
 ### Alternative 5: A binding field on each data-source row
 
-**Pros:** sits next to the per-source settings operators already edit.
-**Cons:** data-source rows do not correspond to runtime provider instances, so a row-level binding
-would be ambiguous or ignored. The existing browser and desktop edits also rebuild rows, which would
-silently clear it.
+**Pros:** sits next to per-source settings.
+**Cons:** rows do not correspond to runtime providers, and data-source edits rebuild rows.
 **Why rejected:** the binding must sit at the factory's construction key and have its own writer.
+
+### Alternative 6: An HTTP binding command gated by a new permission
+
+**Pros:** manageable from the workstation.
+**Cons:** tenant Admins can grant permissions to accounts they control, so the permission would not
+prove host authority.
+**Why rejected:** host authority has to come from outside the tenant identity model.
 
 ## Consequences
 
 ### Positive
 
-- Runtime credentials can be managed, verified and rotated as connections, with ownership checked at
-  startup and every change attributed.
-- `DeploymentBoundary` deployments are unaffected; unbound families behave exactly as today.
-- Under `FailClosed`, no tenant role can place a credential behind data that every tenant reads.
-- A misconfigured binding fails loudly at startup instead of silently borrowing another credential.
+- Runtime market-data credentials can be managed, verified and rotated as connections, with ownership
+  proven at startup and every change recoverably audited.
+- `DeploymentBoundary` deployments are unaffected; credential-free families are never refused.
+- Under `FailClosed`, no tenant role can place a credential behind data every tenant reads, or learn
+  which host connection powers it.
 
 ### Negative
 
-- New configuration (`HostProviderCredentials`), a new startup setting, a new deployment-level
-  permission and a dedicated command to support.
-- A deployment moving to `FailClosed` must bind every host-wide family first, or those families will
-  not start.
-- A bound family does not start when its connection is disabled, rotated to a different environment
-  or reassigned, until the binding or the connection is fixed.
+- A new host file, CLI command and startup setting to support.
+- A deployment moving to `FailClosed` must bind every credential-bearing family (with verified
+  credentials) and list any credential-free plugins first, or those families will not start.
+- Plugin families cannot be bound, and families without scoped verification cannot be bound, until
+  that support exists.
+- A bound family does not start after a rotation until its new credentials are verified.
 
 ### Neutral
 
-- Existing provider-wide records remain stored under `FailClosed`; they are simply not used by
-  host-wide providers.
-- Tenant-owned connections of other tenants continue to serve only tenant-bound flows.
-- Per-tenant runtime isolation remains open work (Alternative 2).
+- Existing provider-wide records remain stored under `FailClosed`, unused by host-wide providers.
+- Execution credential ownership and per-tenant runtime isolation remain open decisions.
 
 ## Compliance
 
 ### Code Contracts
 
-- A host-wide provider family's credential context is either the provider-wide resolver wrapped in
-  module overlays (only under `DeploymentBoundary` and only when unbound), or the scope-bound
-  `StoredProviderCredentialResolver` for exactly one validated connection scope, with no module overlay.
-- No code path selects a connection scope for a host-wide family without a `HostProviderCredentials`
-  binding and the host credential tenant.
-- Only the dedicated binding command writes `HostProviderCredentials`.
+- A credential-bearing host-wide market-data family's credential context is either:
+  - the provider-wide resolver, only under `DeploymentBoundary` and only when unbound; or
+  - the scope-bound `StoredProviderCredentialResolver` for exactly one validated, verified connection
+    scope, with no module overlay and no post-resolver fallback.
+- Only the `--host-credential-binding` command writes `host-provider-credentials.json`, and the file
+  is never loaded through a default-substituting path.
 
 ### Runtime Verification
 
 The implementation PR must add tests that:
 
-- bind a family to a host-tenant connection and resolve only that connection's credentials, even when
-  module sidecar or environment credentials exist for the family;
+- bind a family and resolve only its connection's credentials, even when module sidecar,
+  configuration or environment credentials exist;
+- refuse to start a bound family whose scoped record is partial, rather than completing it from
+  elsewhere;
 - refuse a binding to another tenant's connection, an unknown or ambiguous ID, incomplete ownership, a
-  provider-family mismatch, an environment mismatch, or a disabled connection, with no fallback read;
+  provider-family or environment mismatch, a disabled connection, or missing, partial, failed or
+  post-rotation unverified credentials;
 - refuse a present but malformed `MERIDIAN_HOST_CREDENTIAL_TENANT` at startup;
-- under `FailClosed`, refuse to start an unbound host-wide family, and refuse provider-wide credential
-  writes through the tenant-scoped routes;
+- treat a missing binding file as no bindings, and a malformed or unreadable one as refusal for every
+  credential-bearing family, under both postures;
+- under `FailClosed`:
+  - refuse unbound credential-bearing families, provider-wide writes through tenant routes,
+    unlisted plugin families, and provider-wide brokerage gateways;
+  - start credential-free families with source `none`;
 - under `DeploymentBoundary`, keep unbound families on the provider-wide record;
-- record the actor, provider family, and previous and new connection IDs for every binding change, and
-  deny the change to tenant roles;
-- preserve an existing binding across unrelated configuration and data-source edits;
-- report the credential source in diagnostics without any secret value.
+- record `pending` and `committed` or `aborted` events with the actor, family and connection IDs,
+  including recovery after a crash between the audit append and the file write;
+- show only the source kind in tenant-visible read models, never the connection ID or tenant.
 
 ## Implementation Plan
 
 1. This ADR (Proposed), for review.
-2. Binding model and command: add `HostProviderCredentials`, the host credential tenant setting, the
-   deployment-level permission, and the audited binding command. Make every other configuration writer
-   preserve the section.
-3. Construction: validate bindings when providers are built; select the scope-bound resolver per bound
-   family and skip module overlays; refuse unbound families and tenant-route provider-wide writes under
-   `FailClosed`; add the tests above.
-4. Surfacing: show each family's credential source in the provider status read models used by the
-   browser and WPF workstations.
+2. Binding file and command: strict loader, `--host-credential-binding` with recoverable audit, the host
+   credential tenant setting, and the plugin credential-free list.
+3. Construction: validate and verify bindings at startup; per-family scoped resolver with module
+   overlays and post-resolver fallbacks removed; `FailClosed` refusals (unbound families, plugins,
+   brokerage gateways, tenant-route provider-wide writes); the tests above.
+4. Surfacing: source kind in the browser and WPF provider read models; identifiers in the host log and
+   CLI only.
 5. Update `PRD-002` evidence in the implementation tracker and the Application README.
 
 ## References
@@ -253,3 +298,4 @@ The implementation PR must add tests that:
 - [PR #2931: scoped provider credential ownership](https://github.com/rodoHasArrived/Meridian-main/pull/2931)
 - [Implementation and Readiness Tracker, `PRD-002`](../product/implementation-todo-list.md)
 - [Application README: scoped credential resolution](../../src/Meridian.Application/README.md)
+- [Fund-structure tenant backfill runbook](../operators/fund-structure-tenant-backfill.md) (out-of-band host command precedent)
