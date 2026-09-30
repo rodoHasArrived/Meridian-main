@@ -2,6 +2,7 @@ import importlib.util
 import io
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -21,11 +22,36 @@ SPEC.loader.exec_module(MODULE)
 
 
 class RunDotnetCiTestsTests(unittest.TestCase):
+    @staticmethod
+    def write_trx(command):
+        if len(command) < 2 or command[1] != "test":
+            return
+        directory = Path(command[command.index("--results-directory") + 1])
+        prefix = next(x.split("LogFilePrefix=")[1] for x in command if "LogFilePrefix=" in x)
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / f"{prefix}.trx").write_text('<TestRun><Results><UnitTestResult testName="Example" outcome="Passed"/></Results></TestRun>', encoding="utf-8")
+
     def run_projects(self, projects, results_dir, **kwargs):
         return MODULE.run_tests(
             projects, configuration="Release", test_filter="Category!=Integration&Category!=Performance",
             results_dir=Path(results_dir), dry_run=False, **kwargs,
         )
+
+    def test_long_shards_start_first_but_results_keep_roster_order(self):
+        projects = MODULE.parse_project_entries([])
+        submitted = []
+        class Executor:
+            def __init__(self, **kwargs): pass
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+            def map(self, fn, items):
+                submitted.extend(p.name for p in items)
+                return [MODULE.TestResult(p.name, p.path, 0, []) for p in items]
+        with patch.object(MODULE, "ThreadPoolExecutor", Executor):
+            results = MODULE.run_tests(projects, configuration="Release", test_filter="", results_dir=Path("unused"), dry_run=True, max_parallel=2)
+        self.assertEqual(submitted[:3], ["core-ui-workstation-endpoints", "core-execution-strategy", "core-ui-other"])
+        self.assertCountEqual(submitted, [p.name for p in projects])
+        self.assertEqual([r.name for r in results], [p.name for p in projects])
 
     def test_default_projects_are_used_when_no_overrides_are_supplied(self):
         projects = MODULE.parse_project_entries([])
@@ -317,6 +343,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 attempted.append(command[2])
             try:
                 pair_started.wait()
+                self.write_trx(command)
                 return subprocess.CompletedProcess(command, 0)
             finally:
                 with lock:
@@ -343,6 +370,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 first_started.set()
                 self.assertTrue(release_first.wait(10))
             events.append(f"finish:{name}")
+            self.write_trx(command)
             return subprocess.CompletedProcess(command, 0)
 
         with tempfile.TemporaryDirectory() as tmp, patch.object(MODULE.subprocess, "run", side_effect=complete_shard):
@@ -374,6 +402,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             completion_order.append(name)
             if name == "last":
                 last_finished.set()
+            self.write_trx(command)
             return subprocess.CompletedProcess(command, 1 if name == "failed" else 0)
 
         with tempfile.TemporaryDirectory() as tmp, patch.object(MODULE.subprocess, "run", side_effect=complete_shard):
@@ -407,13 +436,14 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             "print(json.dumps({'name': sys.argv[1], 'cwd': os.getcwd(), "
             "'inherited': os.environ['MERIDIAN_TEST_SENTINEL'], "
             "'tmp': [os.environ[key] for key in ('TMPDIR', 'TMP', 'TEMP')]}), flush=True); "
+            "pathlib.Path(sys.argv[2]).write_text('<TestRun><Results><UnitTestResult testName=\"Example\" outcome=\"Passed\"/></Results></TestRun>'); "
             "print('stderr from ' + sys.argv[1], file=sys.stderr)"
         )
         result_directories = []
 
         def child_command(project, **kwargs):
             result_directories.append(kwargs["results_dir"])
-            return [sys.executable, "-c", child_script, project.name]
+            return [sys.executable, "-c", child_script, project.name, str(kwargs["results_dir"] / f"{project.name}.trx")]
 
         with tempfile.TemporaryDirectory() as tmp:
             with patch.dict(os.environ, {"MERIDIAN_TEST_SENTINEL": "preserved"}):
@@ -442,7 +472,8 @@ class RunDotnetCiTestsTests(unittest.TestCase):
 
     def test_long_fixture_cleanup_preserves_normal_paths_for_child_processes(self):
         child_script = """
-import json, os, pathlib
+import json, os, pathlib, sys
+pathlib.Path(sys.argv[1]).write_text('<TestRun><Results><UnitTestResult testName="Example" outcome="Passed"/></Results></TestRun>')
 temporary = os.environ['TMPDIR']
 assert not temporary.startswith('\\\\\\\\?\\\\'), temporary
 target = pathlib.Path(temporary) / ('nested-' + 'x' * 100) / ('fixture-' + 'y' * 100) / 'evidence.json'
@@ -457,7 +488,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
 """
         project = MODULE.TestProject("long-path", "tests/long-path.csproj")
         with tempfile.TemporaryDirectory() as tmp:
-            with patch.object(MODULE, "build_dotnet_test_command", return_value=[sys.executable, "-c", child_script]):
+            with patch.object(MODULE, "build_dotnet_test_command", return_value=[sys.executable, "-c", child_script, str(Path(tmp) / "long-path" / "long-path.trx")]):
                 result = self.run_projects([project], tmp)[0]
             self.assertEqual(result.exit_code, 0, Path(result.log_path).read_text(encoding="utf-8"))
             lines = Path(result.log_path).read_text(encoding="utf-8").splitlines()
@@ -472,6 +503,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.assertNotIn("capture_output", kwargs)
             self.assertNotIn("cwd", kwargs)
             kwargs["stdout"].write("x" * 100_000 + "\nfinal failure detail\n")
+            self.write_trx(command)
             return subprocess.CompletedProcess(command, 1)
 
         with tempfile.TemporaryDirectory() as tmp, patch.object(MODULE.subprocess, "run", side_effect=noisy_failure):
@@ -507,6 +539,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
 
         def complete(command, **kwargs):
             events.append((command[1], command[2]))
+            self.write_trx(command)
             return subprocess.CompletedProcess(command, 0)
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -524,6 +557,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
 
         def complete(command, **kwargs):
             commands.append(command)
+            self.write_trx(command)
             return subprocess.CompletedProcess(command, 0)
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -570,7 +604,9 @@ print(json.dumps({'temporary': temporary}), flush=True)
                         if isinstance(failure, OSError):
                             raise failure
                         kwargs["stdout"].write("group build failure evidence\n")
+                        self.write_trx(command)
                         return subprocess.CompletedProcess(command, failure)
+                    self.write_trx(command)
                     return subprocess.CompletedProcess(command, 0)
 
                 with patch.object(MODULE, "parse_args", return_value=args):
@@ -596,7 +632,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
             args.configuration = "CustomConfiguration"
             with patch.object(MODULE, "parse_args", return_value=args):
                 with patch.object(MODULE, "write_build_solution_filter") as write_filter:
-                    with patch.object(MODULE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run:
+                    with patch.object(MODULE.subprocess, "run", side_effect=lambda command, **kw: (self.write_trx(command), subprocess.CompletedProcess(command, 0))[1]) as run:
                         self.assertEqual(MODULE.main(), 0)
             write_filter.assert_not_called()
             commands = [call.args[0] for call in run.call_args_list]
@@ -612,7 +648,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
             args = self.main_args(tmp, project=[])
             with patch.object(MODULE, "parse_args", return_value=args):
                 with patch.object(MODULE, "write_build_solution_filter", side_effect=ValueError("invalid Release mapping")):
-                    with patch.object(MODULE.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run:
+                    with patch.object(MODULE.subprocess, "run", side_effect=lambda command, **kw: (self.write_trx(command), subprocess.CompletedProcess(command, 0))[1]) as run:
                         with patch.object(MODULE, "run_tests") as tests, redirect_stderr(io.StringIO()):
                             self.assertEqual(MODULE.main(), 1)
             tests.assert_not_called()
@@ -654,6 +690,7 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.assertNotIn("capture_output", kwargs)
             self.assertNotIn("cwd", kwargs)
             kwargs["stdout"].write("x" * 100_000 + "\nlast build error\n")
+            self.write_trx(command)
             return subprocess.CompletedProcess(command, 1)
 
         with tempfile.TemporaryDirectory() as tmp, patch.object(MODULE.subprocess, "run", side_effect=noisy_failure):
@@ -697,7 +734,9 @@ print(json.dumps({'temporary': temporary}), flush=True)
                     if command[2] == "tests/first.csproj":
                         if isinstance(first_result, OSError):
                             raise first_result
+                        self.write_trx(command)
                         return subprocess.CompletedProcess(command, first_result)
+                    self.write_trx(command)
                     return subprocess.CompletedProcess(command, 0)
                 with patch.object(MODULE, "parse_args", return_value=args), patch.object(MODULE.subprocess, "run", side_effect=complete) as run:
                     with patch.object(MODULE, "run_tests") as tests, redirect_stderr(io.StringIO()):
@@ -718,6 +757,24 @@ print(json.dumps({'temporary': temporary}), flush=True)
                             self.assertEqual(MODULE.main(), 2)
                     write_filter.assert_not_called()
                     run.assert_not_called()
+
+    def test_summary_reproduction_command_preserves_shell_sensitive_arguments(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            probe = root / "argv probe.py"
+            probe.write_text("import json, sys\nprint(json.dumps(sys.argv[1:]))\n", encoding="utf-8")
+            arguments = ["--filter", "(Category!=Integration)&(Name~One|Name~Two)",
+                         "--logger", "trx;LogFilePrefix=core", "a path/O'Brien/$HOME"]
+            result = MODULE.TestResult("probe", str(probe), 0, [sys.executable, str(probe), *arguments])
+            summary_path = root / "summary.md"
+            MODULE.write_summaries([result], summary_output=summary_path, json_output=root / "summary.json")
+            summary = summary_path.read_text(encoding="utf-8")
+            shell = "powershell" if os.name == "nt" else "sh"
+            command = summary.split(f"```{shell}\n", 1)[1].split("\n```", 1)[0]
+            launcher = ([shutil.which("pwsh") or "powershell", "-NoProfile", "-NonInteractive", "-Command"]
+                        if os.name == "nt" else ["sh", "-c"])
+            completed = subprocess.run([*launcher, command], capture_output=True, text=True, check=True)
+            self.assertEqual(json.loads(completed.stdout), arguments)
 
     def test_write_summaries_records_all_project_statuses(self):
         with self.subTest("summary output"):

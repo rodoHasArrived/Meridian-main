@@ -23,21 +23,25 @@ public sealed class SettingsWorkspaceShellSnapshotService : ISettingsWorkspaceSh
         _settingsConfigurationService = settingsConfigurationService ?? throw new ArgumentNullException(nameof(settingsConfigurationService));
     }
 
-    public Task<SettingsWorkspaceShellSnapshot> LoadAsync(CancellationToken cancellationToken = default)
+    public async Task<SettingsWorkspaceShellSnapshot> LoadAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var credentialStatuses = _settingsConfigurationService.GetProviderCredentialStatuses();
+        var credentialStatuses = await _settingsConfigurationService.GetProviderCredentialStatusesAsync(cancellationToken).ConfigureAwait(false);
         var configuredCount = credentialStatuses.Count(status => status.State is CredentialState.Configured or CredentialState.NotRequired);
-        var missingCount = credentialStatuses.Count - configuredCount;
+        // A failed or refused status read yields Unavailable rows; that is missing evidence, not an
+        // asserted credential gap, so it is counted separately.
+        var unavailableCount = credentialStatuses.Count(status => status.State == CredentialState.Unavailable);
+        var missingCount = credentialStatuses.Count - configuredCount - unavailableCount;
 
-        return Task.FromResult(new SettingsWorkspaceShellSnapshot
+        return new SettingsWorkspaceShellSnapshot
         {
             ProviderCount = credentialStatuses.Count,
             ConfiguredCredentialCount = configuredCount,
             MissingCredentialCount = missingCount,
+            UnavailableCredentialCount = unavailableCount,
             ShellDensityLabel = _settingsConfigurationService.GetShellDensityMode().ToString(),
             AsOfUtc = DateTimeOffset.UtcNow
-        });
+        };
     }
 }

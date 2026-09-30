@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { readdir } from "node:fs/promises";
+import { readdir, mkdir, readFile, writeFile, appendFile, mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { readEvidence, identityDigest } from "./vitest-evidence.mjs";
 
 const root = process.cwd();
 const sourceRoot = path.join(root, "src");
@@ -15,38 +16,66 @@ const batchSize = Number.isFinite(requestedBatchSize) && requestedBatchSize > 0
   : defaultBatchSize;
 
 const { passthroughArgs, shard } = parseRunnerArgs(args);
+const outputRoot = path.resolve(process.env.MERIDIAN_BROWSER_RESULTS_DIR ?? path.join(root, "../../../artifacts/test-results/browser"));
+await mkdir(outputRoot, { recursive: true });
+// Unique report directories prevent a stale JSON file from satisfying discovery.
+const reportDirectory = await mkdtemp(path.join(outputRoot, "run-"));
+const results = [];
+const started = performance.now();
+let exitCode = 0;
 
 if (hasExplicitFileFilter(args)) {
-  process.exit(await runVitest(["run", ...args]));
-}
-
-const allFiles = await findTestFiles(sourceRoot);
-const selectedFiles = shard ? applyShard(allFiles, shard.index, shard.total) : allFiles;
-
-if (selectedFiles.length === 0) {
-  console.log("[dashboard-test-runner] No dashboard test files matched.");
-  process.exit(0);
-}
-
-const batches = chunk(selectedFiles, batchSize);
-console.log(
-  `[dashboard-test-runner] Running ${selectedFiles.length} test files in ${batches.length} batch(es).`
-);
-
-if (shard) {
-  console.log(`[dashboard-test-runner] Stable shard ${shard.index}/${shard.total} selected.`);
-}
-
-for (const [index, batch] of batches.entries()) {
-  const files = batch.map((file) => toPosixPath(path.relative(root, file)));
-  console.log(
-    `\n[dashboard-test-runner] Batch ${index + 1}/${batches.length}: ${files.join(", ")}`
-  );
-
-  const code = await runVitest(["run", ...passthroughArgs, ...files]);
-  if (code !== 0) {
-    process.exit(code);
+  exitCode = await runBatch(["run", ...args], []);
+} else {
+  const allFiles = await findTestFiles(sourceRoot);
+  const selectedFiles = shard ? applyShard(allFiles, shard.index, shard.total) : allFiles;
+  if (selectedFiles.length === 0) {
+    console.error("[dashboard-test-runner] No dashboard test files matched.");
+    exitCode = 1;
   }
+  const batches = chunk(selectedFiles, batchSize);
+  console.log(`[dashboard-test-runner] Running ${selectedFiles.length} test files in ${batches.length} batch(es).`);
+  for (const batch of batches) {
+    const files = batch.map((file) => toPosixPath(path.relative(root, file)));
+    exitCode = await runBatch(["run", ...passthroughArgs, ...files], files);
+    if (exitCode) break;
+  }
+}
+
+const counts = { passed: 0, failed: 0, skipped: 0, other: 0 };
+for (const result of results) {
+  for (const key of Object.keys(counts)) counts[key] += result.evidence?.counts[key] ?? 0;
+}
+const identities = results.flatMap(result => result.evidence?.identities ?? []);
+const summary = { counts, testIdentityDigest: identities.length ? identityDigest(identities) : null,
+  testSeconds: (performance.now() - started) / 1000, exitCode, batchSize, workers: 2,
+  commitSha: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT,
+  cacheHit: process.env.MERIDIAN_DEPENDENCY_CACHE_HIT ?? "not reported", queueSeconds: null, results };
+await writeFile(path.join(outputRoot, "summary.json"), JSON.stringify(summary, null, 2) + "\n");
+const markdown = ["### Browser test evidence", "", `Tests: ${JSON.stringify(counts)}; test execution: ${summary.testSeconds.toFixed(3)}s`,
+  `Run attempt: ${summary.runAttempt ?? "local"}; dependency cache hit: ${summary.cacheHit}`,
+  "Queue time is reported separately by ci-metrics.py after the run completes.", "",
+  "| Batch | Duration (s) | Result |", "| --- | ---: | --- |",
+  ...results.map((r, i) => `| ${i + 1} | ${r.seconds.toFixed(3)} | ${r.error ?? r.exitCode} |`), "",
+  "Reproduce: `bash scripts/ci.sh --lane verify-browser`", ""].join("\n");
+await writeFile(path.join(outputRoot, "summary.md"), markdown);
+if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, markdown);
+process.exit(exitCode);
+
+async function runBatch(vitestArgs, files) {
+  const report = path.join(reportDirectory, `batch-${results.length + 1}.json`);
+  const batchStart = performance.now();
+  const code = await runVitest([...vitestArgs, "--reporter=default", "--reporter=json", `--outputFile=${report}`]);
+  const result = { files, report, seconds: (performance.now() - batchStart) / 1000, exitCode: code };
+  try {
+    result.evidence = readEvidence(JSON.parse(await readFile(report, "utf8")), root, files);
+  } catch (error) {
+    result.error = error.message;
+    result.exitCode ||= 1;
+    console.error(`[dashboard-test-runner] Invalid evidence: ${error.message}`);
+  }
+  results.push(result);
+  return result.exitCode;
 }
 
 function parseRunnerArgs(rawArgs) {

@@ -26,9 +26,9 @@ public partial class CredentialManagementPage : Page
         DataContext = _viewModel;
     }
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e)
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        _viewModel.LoadCredentials();
+        await _viewModel.LoadCredentialsAsync();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)

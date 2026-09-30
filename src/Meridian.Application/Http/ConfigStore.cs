@@ -96,7 +96,68 @@ public sealed class ConfigStore
     /// </summary>
     public AppConfig Load() => LoadConfig(ConfigPath);
 
+    /// <summary>Loads existing configuration without substituting defaults when authoritative state cannot be read.</summary>
+    public AppConfig LoadRequired()
+    {
+        var json = File.ReadAllText(ConfigPath);
+        var config = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read)
+            ?? throw new InvalidDataException("Required configuration is empty.");
+        return NormalizeLoadedConfig(ConfigPath, json, config);
+    }
+
+    // The callback must be synchronous and must not reenter configuration persistence.
+    internal async Task<T> UpdateRequiredAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+        using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
+        var current = LoadRequired();
+        var (next, result) = update(current);
+        ct.ThrowIfCancellationRequested();
+        if (!ReferenceEquals(current, next))
+            await SaveCoreAsync(next, ct).ConfigureAwait(false);
+        return result;
+    }
+
+    private async Task<FileStream> AcquireWriteLockAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var directory = Path.GetDirectoryName(ConfigPath);
+        if (!string.IsNullOrEmpty(directory))
+            Directory.CreateDirectory(directory);
+        using var expiry = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        expiry.CancelAfter(TimeSpan.FromSeconds(30));
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                // Keep the sidecar: deleting it could allow two holders on different inodes.
+                return new FileStream(ConfigPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException error) when (OperatingSystem.IsWindows()
+                ? (error.HResult & 0xffff) is 32 or 33
+                : error.HResult is 11 or 35)
+            {
+                try
+                {
+                    await Task.Delay(25, expiry.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    throw new TimeoutException("Timed out waiting for the configuration write lock.", error);
+                }
+            }
+        }
+    }
+
     public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default)
+    {
+        using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
+        await SaveCoreAsync(cfg, ct).ConfigureAwait(false);
+    }
+
+    private async Task SaveCoreAsync(AppConfig cfg, CancellationToken ct)
     {
         try
         {
@@ -123,6 +184,7 @@ public sealed class ConfigStore
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(overrides);
+        using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
 
         try
         {

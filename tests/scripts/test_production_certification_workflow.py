@@ -24,7 +24,8 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
         triggers = workflow["on"]
         self.assertEqual(triggers["push"]["branches"], ["main"])
-        self.assertEqual(triggers["push"]["tags"], ["v*"])
+        self.assertNotIn("tags", triggers["push"])
+        self.assertIn("workflow_call", triggers)
         self.assertNotIn("paths", triggers["push"])
         self.assertNotIn("paths-ignore", triggers["push"])
         self.assertEqual(triggers["schedule"], [{"cron": "17 3 * * 0"}])
