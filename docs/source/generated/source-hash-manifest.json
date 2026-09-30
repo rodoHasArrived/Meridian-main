@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "ddabe38f748b5015b85909231ca17896b66a1fbe3fe0b275adada3e33e44498f",
-      "source_hash": "286348514f088a2eb5749feb714a4bfb4e86fbe03c413ff96e1dabbd136d290c"
+      "readme_hash": "8d0f5186ec276c735bdb9bd7cecd479e44c9091e0fd2d9a43709712dd469cdba",
+      "source_hash": "f2b937c6c97ee7751e45487e950b4294aef5a60ff8bab30301def6095b93f4d2"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -72,8 +72,8 @@
       "id": "SRC-DESIGN-FINANCIAL-OPERATIONS",
       "path": "src/Meridian.FinancialOperations",
       "readme": "src/Meridian.FinancialOperations/README.md",
-      "readme_hash": "9df2be6e26a6b6187f009acbdf01d51d3528097566fe74254553eb6f70dbd534",
-      "source_hash": "61a78093ca86261328bad75289d1588e8875445746197757c1e058ae29695877"
+      "readme_hash": "165dc7a3a4c820aedb3530834fcc5c2c4322df3eb2605a24838a62b2806624a7",
+      "source_hash": "ef1b4ddf02f1aa4b6ca2aa6e377a8e6d25f4e9ca0418bd2440e6f67e93590c92"
     },
     {
       "id": "SRC-DESIGN-IDENTITY",

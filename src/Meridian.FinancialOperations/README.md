@@ -11,6 +11,10 @@ last_reviewed: 2026-09-28
 
 # src/Meridian.FinancialOperations
 
+Statement runs pass the accounting scope retained on their import to the internal population
+provider, preserving the fund, ledger book, and exact period selected by governed intake during
+matching. `StatementRunWorkflowServiceTests` covers that scope handoff.
+
 Accounting-system export package creation, certification, and manifest reads call
 `IAccountingSystemExportValidator` when the selected provider implements it.
 Xero and NetSuite use this seam to require current live import scope and their

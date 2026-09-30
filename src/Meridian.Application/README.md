@@ -11,6 +11,13 @@ last_reviewed: 2026-09-28
 
 # src/Meridian.Application
 
+Governed statement reconciliation carries its resolved fund, primary ledger book, and exact period
+through the retained population provider into journal queries. The journal source validates that
+authority before reading, excludes journals from other periods, and denominates legacy cash legs
+in the retained book currency. Scope-free legacy callers retain their existing account/window
+behavior. Focused coverage lives in `LedgerJournalInternalTransactionSourceTests` and
+`RetainedInternalReconciliationPopulationProviderTests`.
+
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
 the publisher. The outbox worker publishes retained state and retries failures; missing publisher
