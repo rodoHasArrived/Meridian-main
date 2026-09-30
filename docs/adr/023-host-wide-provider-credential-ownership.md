@@ -21,7 +21,10 @@ A Meridian host builds its runtime providers once, for everyone it serves:
   directly from DI, outside `ProviderFactory`.
 - Some catalogued capabilities are also built outside the factory. OpenFIGI symbol resolution is
   constructed straight from `Backfill.Providers.OpenFigi.ApiKey` in `SymbolManagementFeatureRegistration`
-  (the canonical symbol-registry spine) and in the `BackfillCoordinator` fallback.
+  (the canonical symbol-registry spine) and in the `BackfillCoordinator` fallback. The process-wide
+  `PolygonCorporateActionFetcher` hosted service (registered in `StorageFeatureRegistration`) reads
+  `MERIDIAN_POLYGON_API_KEY`, `POLYGON_API_KEY` or configuration directly and writes corporate actions
+  into the shared Security Master.
 
 The market-data output (quotes, trades, bars, corporate actions, option chains written to storage) is
 host-wide: every tenant the host serves reads it.
@@ -39,9 +42,13 @@ whole host use?** Facts in the current code shape the answer:
 2. **Hosts declare a tenant posture.** `TenantScopeEnforcementMode` is either `DeploymentBoundary` (one
    company per deployment is the actual control) or `FailClosed` (a shared deployment where
    cross-tenant reads are refused).
-3. **The provider-wide record is writable by tenant roles.** A credential `PUT` without `connectionId`
-   writes it (`ProviderConnectionEndpoints.ResolveConnectionService`) and needs only
-   `ManageCredentials`, which the built-in Admin and Developer roles hold.
+3. **The provider-wide record is writable by tenant roles, through several routes.** A credential
+   `PUT` without `connectionId` writes it (`ProviderConnectionEndpoints.ResolveConnectionService`). So
+   do the compatibility surfaces: `CredentialEndpoints` (save, delete and test),
+   `ProviderCredentialEndpoints` (connection test) and `ProviderModuleEndpoints` (module credentials).
+   They reach the unscoped operations of `ProviderConnectionLifecycleService` or
+   `ProviderModuleSetupService` with `ManageCredentials` or `ManageProviders`, which the built-in
+   tenant roles hold.
 4. **No permission establishes host authority.** A tenant Admin holds `ManageUsers`, and account
    validation (`UserAccountStore.ValidateAccountRequest`) accepts permission-name overrides. A tenant
    Admin could therefore grant any new permission to an account they control.
@@ -95,12 +102,18 @@ whole host use?** Facts in the current code shape the answer:
      - an unbound credential-bearing, session-backed or unclassified family does not start. For
        OpenFIGI, this means the canonical symbol resolver runs registry-only and `BackfillCoordinator`
        creates no fallback resolver;
-     - the tenant-scoped credential routes refuse provider-wide writes;
+     - provider-wide credential writes and deletes are refused at the service seam, in the unscoped
+       operations of `ProviderConnectionLifecycleService` and in the credential writes of
+       `ProviderModuleSetupService`. Every route inherits the refusal: the canonical route, the
+       compatibility credential and connection-test routes, and the provider-module routes. Module
+       settings that carry no credentials can still change;
      - existing provider-wide records remain stored but unused by host-wide providers;
      - a plugin family starts only if the host operator lists it as credential-free (point 5). Plugins
        cannot be bound until a plugin ownership contract exists.
 
-   A deployment moving to `FailClosed` binds each credential-bearing family first.
+   A deployment moving to `FailClosed` first binds each bindable credential-bearing family. It
+   disables session-backed families (such as `ibkr`) and families that cannot yet be bound, or accepts
+   that they will not start.
 
 4. **Bindings live in a host-only file, loaded strictly.** Bindings map a canonical provider family ID
    to one retained connection ID. They live in a dedicated host file, `host-provider-credentials.json`
@@ -134,10 +147,22 @@ whole host use?** Facts in the current code shape the answer:
    A family whose provider has no scoped verification cannot be bound until it does. Any failure stops
    that family from starting and records a diagnostic.
 
-7. **Bound families take credentials from the scoped resolver only.** For a bound family:
-   - every construction site uses the scope-bound `StoredProviderCredentialResolver`, including the
-     sites outside `ProviderFactory` (the OpenFIGI resolvers in `SymbolManagementFeatureRegistration`
-     and `BackfillCoordinator`);
+7. **Host-wide credentials come from one per-family selection; bound families use the scoped
+   resolver only.** Every host-wide construction site obtains credentials from a single per-family
+   host credential selection: the provider-wide resolver (only when unbound under
+   `DeploymentBoundary`), the scoped resolver (when bound), or nothing (refused, or `none`). That
+   includes the sites outside `ProviderFactory`: the OpenFIGI resolvers in
+   `SymbolManagementFeatureRegistration` and `BackfillCoordinator`, and `PolygonCorporateActionFetcher`.
+
+   Reviews keep finding new direct reads, so completeness is enforced rather than listed. An
+   architecture test fails when production code outside the selection reads a provider credential
+   environment variable or configuration key. The names come from the credential catalog, adapter
+   `ProviderCredentialFields`, and known aliases such as `MERIDIAN_POLYGON_API_KEY`. Reads that only
+   probe presence, or that serve tenant-bound flows, sit on an explicit allowlist, and each entry has
+   a stated reason.
+
+   For a bound family:
+   - the selection returns the scope-bound `StoredProviderCredentialResolver`;
    - module credential overlays are skipped;
    - every post-resolver fallback in the family's factories and options types is disabled. The
      implementation must audit all of them, starting with Alpaca's `FirstNonBlank` /
@@ -192,7 +217,9 @@ implemented yet.
 | OpenFIGI resolution outside the factory | `src/Meridian.Application/Composition/Features/SymbolManagementFeatureRegistration.cs`, `src/Meridian.Application/Backfill/BackfillCoordinator.cs` | Build `OpenFigiSymbolResolver` from configuration; move to the per-family selection |
 | Module credential overlay and brokerage gateways | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs` | `WithModuleCredentials` / `ModuleCredentialContext`, skipped for bound families; `CreateIbBrokerageGateway` and the other gateways, refused under `FailClosed` |
 | Plugin registration | `src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.Composition.cs` | Registers plugin families outside `ProviderFactory`; gated under `FailClosed` |
-| Provider-wide credential writes | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs` | `ResolveConnectionService` without `connectionId`; refused under `FailClosed` |
+| Provider-wide credential writes | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs`, `CredentialEndpoints.cs`, `ProviderCredentialEndpoints.cs`, `ProviderModuleEndpoints.cs` | Canonical and compatibility routes that reach unscoped credential writes; each inherits the service-seam refusal |
+| Unscoped credential services | `src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs`, `src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs` | Where provider-wide writes and deletes are refused under `FailClosed` |
+| Polygon corporate-action ingestion | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs`, `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Process-wide hosted fetcher that reads Polygon keys directly; moves to the per-family selection |
 | Retained ownership | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` | `GetCredentialScopeForTenantAsync` resolves the bound scope |
 | Credential audit trail and verification | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Existing append-only audit and per-generation verification state |
 | Lenient configuration load | `src/Meridian.Application/Http/ConfigStore.cs` | `LoadConfig` substitutes defaults; the binding file must not use it |
@@ -212,7 +239,9 @@ record and can grant themselves any permission, so neither can prove host owners
 An out-of-band host command can. So can a strictly loaded host-only file, a verified connection owned
 by the declared host tenant, and a serialized, recoverable audit record. Keying bindings by provider
 family matches how the factory builds providers. Removing every other credential source for bound
-families, at every construction site, makes the no-fallback guarantee hold end to end. Classifying
+families, at every construction site, makes the no-fallback guarantee hold end to end. Enforcing the
+single selection with an architecture test, and refusing provider-wide writes at the service seam
+rather than per route, keeps both guarantees complete as new code arrives. Classifying
 every family explicitly, and checking that classification against adapter metadata, keeps an
 uncatalogued credential use from passing as credential-free.
 
@@ -271,7 +300,7 @@ prove host authority.
 ### Negative
 
 - A new host file, CLI command and startup setting to support.
-- A deployment moving to `FailClosed` must bind every credential-bearing family (with verified
+- A deployment moving to `FailClosed` must bind every bindable credential-bearing family (with verified
   credentials) and list any credential-free plugins first, or those families will not start.
 - Plugin families cannot be bound, and families without scoped verification cannot be bound, until
   that support exists.
@@ -294,6 +323,10 @@ prove host authority.
     scope, with no module overlay and no post-resolver fallback.
 - Only the `--host-credential-binding` command writes `host-provider-credentials.json`, always while
   holding the host lock, and the file is never loaded through a default-substituting path.
+- Host-wide construction sites obtain credentials only from the per-family host credential selection;
+  an architecture test enforces this with a reviewed allowlist.
+- Under `FailClosed`, provider-wide credential writes and deletes are refused inside the unscoped
+  service operations, not in individual routes.
 - Every enabled family has exactly one credential classification, and `credential-free` never applies
   to a family whose credential catalog entry or adapter metadata requires a field.
 
@@ -311,12 +344,17 @@ The implementation PR must add tests that:
 - refuse a present but malformed `MERIDIAN_HOST_CREDENTIAL_TENANT` at startup;
 - treat a missing binding file as no bindings, and a malformed or unreadable one as refusal for every
   credential-bearing family, under both postures;
+- fail the architecture scan when production code outside the selection reads a provider credential
+  environment variable or configuration key that is not on the allowlist;
 - classify every catalog family, keep NYSE credential-bearing and `ibkr` session-backed, and fail
   when a `credential-free` family's catalog entry or adapter metadata requires a field;
 - under `FailClosed`:
-  - refuse unbound credential-bearing, session-backed and unclassified families, provider-wide writes
-    through tenant routes, unlisted plugin families, and every host-wide brokerage gateway, including
-    `ibkr`;
+  - refuse unbound credential-bearing, session-backed and unclassified families, unlisted plugin
+    families, and every host-wide brokerage gateway, including `ibkr`;
+  - refuse provider-wide credential writes and deletes route by route: the canonical credential
+    route, the `CredentialEndpoints` save, delete and test routes, the `ProviderCredentialEndpoints`
+    connection test, and provider-module create, update and delete requests that carry credentials;
+  - start no `PolygonCorporateActionFetcher` ingestion on an unscoped key when Polygon is unbound;
   - run the canonical symbol resolver registry-only when OpenFIGI is unbound, without reading the
     configured key, and create no `BackfillCoordinator` fallback resolver;
   - start credential-free families with source `none`;
@@ -334,10 +372,11 @@ The implementation PR must add tests that:
    recoverable audit, the host credential tenant setting, and the plugin credential-free list.
 3. Classification: a credential classification for every family, with a consistency check against
    the credential catalog and adapter metadata (adding the missing NYSE entry).
-4. Construction: validate and verify bindings at startup; per-family scoped resolver at every
-   construction site, including OpenFIGI's, with module overlays and post-resolver fallbacks removed;
-   `FailClosed` refusals (unbound, session-backed and unclassified families, plugins, every brokerage
-   gateway, tenant-route provider-wide writes); the tests above.
+4. Construction: validate and verify bindings at startup; the per-family host credential selection
+   at every construction site (including OpenFIGI's and the Polygon corporate-action fetcher), with
+   module overlays and post-resolver fallbacks removed and the architecture scan in place; `FailClosed`
+   refusals (unbound, session-backed and unclassified families, plugins, every brokerage gateway,
+   provider-wide writes at the service seam); the tests above.
 5. Surfacing: source kind in the browser and WPF provider read models; identifiers in the host log and
    CLI only.
 6. Update `PRD-002` evidence in the implementation tracker and the Application README.
