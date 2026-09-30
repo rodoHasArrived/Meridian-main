@@ -126,8 +126,9 @@ whole host use?** Facts in the current code shape the answer:
    that they will not start.
 
 4. **Bindings live in a host-only file, loaded strictly.** Bindings map a canonical provider family ID
-   to one retained connection ID. They live in a dedicated host file, `host-provider-credentials.json`
-   beside the configuration, not in `AppConfig`. No HTTP endpoint or general configuration writer
+   to one retained connection ID. They live, together with the plugin credential-free list (point 5),
+   in a dedicated host file, `host-provider-credentials.json` beside the configuration, not in
+   `AppConfig`. This document calls the file's contents the host credential state. No HTTP endpoint or general configuration writer
    touches this file, so data-source edits cannot erase a binding. It is loaded strictly:
    - a missing file means no bindings;
    - a malformed or unreadable file makes every credential-bearing host-wide family refuse to start,
@@ -135,8 +136,9 @@ whole host use?** Facts in the current code shape the answer:
    - defaults are never substituted.
 
 5. **Only the host operator changes bindings, out of band.** Bindings and the plugin credential-free
-   list change only through a host CLI command, `--host-credential-binding list|set|clear`, run on the
-   host by whoever operates the process. The same pattern is used by `--fund-tenant-backfill`. No
+   list change only through a host CLI command, `--host-credential-binding
+   list|set|clear|plugin-allow|plugin-revoke|recover`, run on the host by whoever operates the
+   process. The same pattern is used by `--fund-tenant-backfill`. No
    tenant account, role or permission can reach it, so tenant user administration cannot grant it. The
    host credential tenant is a startup setting, `MERIDIAN_HOST_CREDENTIAL_TENANT`:
    - it is read once, like `MERIDIAN_TENANT_SCOPE_ENFORCEMENT`;
@@ -186,36 +188,45 @@ whole host use?** Facts in the current code shape the answer:
 
    A partial scoped record refuses to start rather than being completed from elsewhere.
 
-8. **Binding changes happen offline, serialized and recoverably audited.**
+8. **Every change to the host credential state is one offline, audited transaction.** This covers
+   `set`, `clear`, `plugin-allow` and `plugin-revoke` alike, because the plugin credential-free list
+   decides, just as a binding does, what may start under `FailClosed`.
    - **Offline only.** A running host holds the host lock (`host-provider-credentials.lock`, opened
-     for exclusive access) for its whole lifetime. `set` and `clear` need the same lock, so they fail
-     while a host on this configuration is running. A change takes effect when the host next starts.
-     No running provider can keep using a binding that has since been cleared or replaced. `list`
-     only reads the file, which is always written atomically.
-   - **Serialized.** Each `set` or `clear` holds the host lock for its whole transaction and runs these
-     steps under one correlation ID:
-     1. read the current binding;
-     2. append a `pending` event to the credential audit trail (`provider-credentials.audit.jsonl`),
-        recording the actor, the provider family, and the previous and new connection IDs;
-     3. write the binding file atomically;
-     4. append the outcome.
-
-     Concurrent commands therefore run one after another, and each event's previous connection ID is
-     the state it actually replaced. A command that cannot take the lock within a timeout fails
-     without writing anything.
-   - **One audit writer.** Binding events are appended through the credential store's audit writer,
-     which takes `provider-credentials.vault.lock` like every other audit append. The lock order is
-     always the host lock, then the vault lock, and credential-store writers never take the host
-     lock. Binding events and scoped credential saves, rotations and verifications therefore never
-     collide or deadlock.
+     for exclusive access) for its whole lifetime. Every mutating command needs the same lock, so it
+     fails while a host on this configuration is running. A change takes effect when the host next
+     starts, so no running provider keeps using state that has since changed. `list` only reads the
+     file, which is always written atomically.
+   - **Lock order.** A transaction takes the host lock, then `provider-credentials.vault.lock`.
+     Credential-store writers take only the vault lock, never the host lock, so nothing can deadlock.
+     A command that cannot take either lock within a timeout fails without writing anything.
+   - **Recover first.** Before changing anything, the transaction resolves every earlier `pending`
+     event against the current file (see Recovery below). If any event cannot be resolved, the command
+     refuses to change the state. A later change therefore never overtakes an unresolved one.
+   - **Steps.** Holding both locks, under one correlation ID:
+     1. read the current state;
+     2. for `set`, run the point 6 checks against the credential record as it is now. Because the vault
+        lock is held until step 5, no save or rotation can install a new generation between this check
+        and the commit;
+     3. append a `pending` event to the credential audit trail (`provider-credentials.audit.jsonl`)
+        through the credential store's audit writer, under the lock already held. The event records the
+        actor, the kind of change (binding or plugin classification), the subject (provider family or
+        plugin ID), and the previous and new values;
+     4. write the host file atomically;
+     5. append the outcome, then release the vault lock and the host lock.
    - **Outcome from the file, not the exception.** `AtomicFileWriter` can throw after the rename has
      already published the file, for example from the directory sync. So on any write exception the
      command rereads the published file:
-     - if it holds the new bindings, the outcome is `committed`;
-     - if it holds the previous bindings, the outcome is `aborted`;
+     - if it holds the new state, the outcome is `committed`;
+     - if it holds the previous state, the outcome is `aborted`;
      - otherwise the event stays `pending`, and the command exits non-zero.
-   - **Recovery.** At startup, under the host lock, a `pending` event without an outcome is resolved
-     against the file's actual state and closed as `committed (recovered)` or `aborted (recovered)`.
+   - **Recovery.** At startup and at the start of every mutating command, under the host lock, a
+     `pending` event without an outcome is resolved against the file's actual state:
+     - if the file holds the event's new value, it is closed as `committed (recovered)`;
+     - if it holds the event's previous value, it is closed as `aborted (recovered)`;
+     - otherwise the file was changed outside the command. Credential-bearing families then refuse to
+       start, as for a malformed file, and mutation is refused, until the operator runs `recover`.
+       `recover` records the observed state as an `indeterminate` outcome with the actor.
+
      A retry therefore never looks like a second change.
 
    The actor is the required `--actor` argument together with the OS identity that ran the command.
@@ -406,7 +417,14 @@ The implementation PR must add tests that:
   including recovery after a crash between the audit append and the file write;
 - serialize concurrent `set` and `clear` commands so each event's previous connection ID is the state
   it replaced, and fail a command that cannot take the lock without writing;
-- refuse `set` and `clear` while a host on the same configuration is running;
+- refuse `set`, `clear`, `plugin-allow` and `plugin-revoke` while a host on the same configuration is
+  running;
+- audit plugin credential-free changes with the actor, plugin ID, and previous and new classification;
+- abort a `set` when a concurrent save or rotation changes the credential generation during the
+  command, so a committed binding always names a verified generation;
+- after an outcome append fails, have the next mutating command resolve the pending event first and
+  refuse to proceed until it is resolved; when the file matches neither side of the event, refuse
+  credential-bearing families and mutation until `recover` records the observed state;
 - audit both a binding change and a concurrent scoped credential save, rotation or verification,
   with no failed append and no deadlock;
 - record `committed` when the write throws after the rename has published the new file;
@@ -417,8 +435,10 @@ The implementation PR must add tests that:
 ## Implementation Plan
 
 1. This ADR (Proposed), for review.
-2. Binding file and command: strict loader, `--host-credential-binding` with the lifetime host lock,
-   the shared audit writer and recoverable, file-checked outcomes, the host credential tenant setting, and the plugin credential-free list.
+2. Host credential state and command: strict loader for bindings and the plugin credential-free
+   list; `--host-credential-binding` with the lifetime host lock, the host-then-vault lock order,
+   recover-first transactions, the shared audit writer, file-checked outcomes and `recover`; the host
+   credential tenant setting.
 3. Classification: a credential classification for every family, with a consistency check against
    the credential catalog and adapter metadata (adding the missing NYSE entry).
 4. Construction: validate and verify bindings at startup; the per-family host credential selection
