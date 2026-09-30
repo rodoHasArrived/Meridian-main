@@ -2,13 +2,13 @@ namespace Meridian.Core.ReferenceData;
 
 /// <summary>
 /// Repository-owned catalog of currency codes Meridian accepts for accounting and payment
-/// intent. It includes active and historically retained ISO-4217 codes, supranational units,
+/// intent. It includes active and historically retained ISO-4217 currency and fund codes, supranational units,
 /// precious metals, and the operational offshore-renminbi code CNH.
 /// </summary>
 public static class CurrencyCodeCatalog
 {
     // Codes retained for historical ledgers but absent from SIX ISO-4217 List One as of
-    // 2026-08-05. CNH remains an explicitly supported operational code.
+    // 2026-09-17. CNH remains an explicitly supported operational code.
     private static readonly HashSet<string> HistoricalCodeSet = new(StringComparer.OrdinalIgnoreCase)
     {
         "ANG", "BGN", "BYR", "CUC", "HRK", "SLL", "ZWL",
@@ -28,6 +28,8 @@ public static class CurrencyCodeCatalog
         "FJD","PGK","SBD","VUV","WST","TOP","MOP","BND","MMK","KHR","LAK","MNT","NPR","LKR","MVR",
         "BTN","TJS","TMT","KGS","KPW","TWD","BOB","PYG","VES","VED","SVC","SDG","SSP","ERN","DJF",
         "BIF","KMF","CDF","MRU","FKP","GIP","SHP",
+        // Current ISO fund and bond-market units; XXX and XTS are not monetary evidence.
+        "BOV","CHE","CHW","COU","MXV","USN","UYW","XAD","XBA","XBB","XBC","XBD",
     ];
 
     private static readonly HashSet<string> CodeSet = new(CodeValues, StringComparer.OrdinalIgnoreCase);

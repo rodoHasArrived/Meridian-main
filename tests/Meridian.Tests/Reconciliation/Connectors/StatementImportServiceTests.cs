@@ -1,9 +1,11 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
+using Meridian.Execution.Sdk;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
@@ -55,6 +57,31 @@ public sealed class StatementImportServiceTests : IDisposable
 
     private static StatementSourceDocument FixtureDocument(string fileName, string? mappingProfileId = null)
         => new(fileName, StatementConnectorTestData.ReadFixture(fileName), mappingProfileId);
+
+    private static StatementSourceDocument RichAlpacaDocument(
+        string? currency,
+        string? accountCurrency = "USD",
+        BrokerageActivityCategory category = BrokerageActivityCategory.Trade,
+        BrokerageActivitySubtype subtype = BrokerageActivitySubtype.TradeFill)
+    {
+        var snapshot = JsonNode.Parse(StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"))!;
+        snapshot["portfolio"]!["account"]!["currency"] = accountCurrency;
+        snapshot["activity"]!["activities"] = new JsonArray(new JsonObject
+        {
+            ["eventId"] = "rich-fill-1",
+            ["providerCode"] = subtype.ToString(),
+            ["category"] = category.ToString(),
+            ["subtype"] = subtype.ToString(),
+            ["effectiveAt"] = "2026-06-02T14:30:00Z",
+            ["currency"] = currency,
+            ["netAmount"] = category == BrokerageActivityCategory.Trade ? 0m : 25m,
+            ["symbol"] = "AAPL",
+            ["quantity"] = 10m,
+            ["price"] = 187.25m,
+            ["metadata"] = new JsonObject { ["commission"] = "0.55" }
+        });
+        return new StatementSourceDocument("rich-alpaca.json", Encoding.UTF8.GetBytes(snapshot.ToJsonString()));
+    }
 
     private StatementImportCommitRequest CommitRequest(
         StatementSourceDocument document,
@@ -302,6 +329,81 @@ public sealed class StatementImportServiceTests : IDisposable
         var canonical = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
         canonical.Should().Contain(",USD,1.05,fill-1001");
         canonical.Should().Contain(",USD,1.02,fill-1002");
+    }
+
+    [Theory]
+    [InlineData(null, "USD")]
+    [InlineData("", "USD")]
+    [InlineData("EUR", "EUR")]
+    public async Task MonthEndAlpacaSnapshot_RichFillsRetainProvenCurrencyThroughCommit(
+        string? sourceCurrency, string expectedCurrency)
+    {
+        var document = RichAlpacaDocument(sourceCurrency);
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeTrue();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("ReadyToImport");
+        var result = await _service.CommitAsync(CommitRequest(document, externalAccountId: "PA3ALPACA01"));
+
+        result.RecordCount.Should().Be(4, "rich activities replace the legacy fill/cash collections");
+        var canonical = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
+        canonical.Should().Contain($",{expectedCurrency},0.55,rich-fill-1");
+        canonical.Should().Contain("-1872.5");
+        canonical.Should().NotContain("fill-1001");
+    }
+
+    [Theory]
+    [InlineData("", null)]
+    [InlineData("", "")]
+    [InlineData("", "EUR")]
+    [InlineData("ZZZ", "USD")]
+    [InlineData("XXX", "USD")]
+    [InlineData("XTS", "USD")]
+    public async Task MonthEndAlpacaSnapshot_RichFillsWithoutCurrencyEvidenceRefuseBeforeRetention(
+        string sourceCurrency, string? accountCurrency)
+    {
+        var document = RichAlpacaDocument(sourceCurrency, accountCurrency);
+
+        var validation = await _service.ValidateAsync(document, null);
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains("ROW_INVALID_CURRENCY", StringComparison.Ordinal));
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(
+            CommitRequest(document, externalAccountId: "PA3ALPACA01")));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashDeposit)]
+    [InlineData(BrokerageActivityCategory.Dividend, BrokerageActivitySubtype.CashDividend)]
+    [InlineData(BrokerageActivityCategory.Fee, BrokerageActivitySubtype.Fee)]
+    [InlineData(BrokerageActivityCategory.Trade, BrokerageActivitySubtype.TradeCorrection)]
+    [InlineData(BrokerageActivityCategory.Trade, BrokerageActivitySubtype.TradeBust)]
+    public async Task MonthEndAlpacaSnapshot_NonFillRichActivitiesCannotBorrowAccountCurrency(
+        BrokerageActivityCategory category, BrokerageActivitySubtype subtype)
+    {
+        var document = RichAlpacaDocument("", category: category, subtype: subtype);
+
+        var validation = await _service.ValidateAsync(document, null);
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains("ROW_INVALID_CURRENCY", StringComparison.Ordinal));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(
+            CommitRequest(document, externalAccountId: "PA3ALPACA01")));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task MonthEndAlpacaSnapshot_RichFillCannotBorrowAnotherAccountsCurrency()
+    {
+        var snapshot = JsonNode.Parse(RichAlpacaDocument("").Content.Span)!;
+        snapshot["portfolio"]!["account"]!["accountId"] = "OTHER-ACCOUNT";
+        var document = new StatementSourceDocument("foreign-account.json", Encoding.UTF8.GetBytes(snapshot.ToJsonString()));
+
+        var validation = await _service.ValidateAsync(document, null);
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains("ACCOUNT_SCOPE_MISMATCH", StringComparison.Ordinal));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(
+            CommitRequest(document, externalAccountId: "PA3ALPACA01")));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
     }
 
     [Fact]

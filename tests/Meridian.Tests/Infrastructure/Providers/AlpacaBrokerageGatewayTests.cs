@@ -1402,6 +1402,9 @@ public sealed class AlpacaBrokerageGatewayTests
             cash.TransactionId == "cash-1" &&
             cash.TransactionType == "DIV" &&
             cash.Amount == 42.50m);
+        var richFill = activity.Activities!.Single(row => row.EventId == "fill-1");
+        richFill.Currency.Should().Be("USD", "the provider-shaped fill omits currency but its verified account supplies USD");
+        richFill.Metadata!["currencySource"].Should().Be("VerifiedAccount");
         var activityPath = capturedPaths.Single(path =>
             path.StartsWith("/v2/account/activities?", StringComparison.Ordinal));
         activityPath.Should().Contain(
@@ -1476,11 +1479,16 @@ public sealed class AlpacaBrokerageGatewayTests
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData("EUR")]
-    public async Task GetActivitySnapshotAsync_PreservesActivityCurrencyWithoutInventingAccountDenomination(string? sourceCurrency)
+    [InlineData(null, "DIV")]
+    [InlineData("", "DIV")]
+    [InlineData(" ", "DIV")]
+    [InlineData("EUR", "DIV")]
+    [InlineData(null, "CSD")]
+    [InlineData(null, "FEE")]
+    [InlineData(null, "TRADE_CORRECTION")]
+    [InlineData(null, "TRADE_BUST")]
+    public async Task GetActivitySnapshotAsync_PreservesActivityCurrencyWithoutInventingAccountDenomination(
+        string? sourceCurrency, string activityType)
     {
         var handler = new CapturingStubHandler(
             _ => { },
@@ -1489,7 +1497,7 @@ public sealed class AlpacaBrokerageGatewayTests
                 "/v2/account" => BuildAccountResponse(),
                 "/v2/account/activities" => BuildJson(new[]
                 {
-                    new { id = "DIV-1", activity_type = "DIV", net_amount = "25",
+                    new { id = "activity-1", activity_type = activityType, net_amount = "25",
                         date = "2026-06-02", currency = sourceCurrency }
                 }),
                 _ => BuildJson(Array.Empty<object>())
@@ -1502,6 +1510,48 @@ public sealed class AlpacaBrokerageGatewayTests
         snapshot.Activities.Should().ContainSingle().Which.Currency.Should().Be(sourceCurrency ?? string.Empty);
         snapshot.CashTransactions[0].Amount.Should().Be(25m);
         snapshot.Activities[0].NetAmount.Should().Be(25m);
+    }
+
+    [Theory]
+    [InlineData("USD", null, "USD")]
+    [InlineData(" usd ", null, "USD")]
+    [InlineData("USD", "", "USD")]
+    [InlineData("USD", " ", "USD")]
+    [InlineData("USD", "EUR", "EUR")]
+    [InlineData("USD", "ZZZ", "ZZZ")]
+    [InlineData(null, null, "")]
+    [InlineData("", null, "")]
+    [InlineData("EUR", null, "")]
+    public async Task GetActivitySnapshotAsync_RichFillsUseOnlyVerifiedTradingAccountCurrency(
+        string? accountCurrency, string? sourceCurrency, string expectedCurrency)
+    {
+        var handler = new CapturingStubHandler(
+            _ => { },
+            request => request.RequestUri?.AbsolutePath switch
+            {
+                "/v2/account" => BuildJson(new { account_number = "TEST123", currency = accountCurrency }),
+                "/v2/account/activities" => BuildJson(new[]
+                {
+                    new { id = "fill-1", activity_type = "FILL", symbol = "AAPL", qty = "10",
+                        price = "187.25", side = "buy", transaction_time = "2026-06-02T14:30:00Z",
+                        currency = sourceCurrency }
+                }),
+                _ => BuildJson(Array.Empty<object>())
+            });
+        var sut = CreateSut(handler);
+
+        var snapshot = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("TEST123");
+
+        snapshot.Fills.Should().ContainSingle();
+        var activity = snapshot.Activities.Should().ContainSingle().Subject;
+        activity.Subtype.Should().Be(BrokerageActivitySubtype.TradeFill);
+        activity.Currency.Should().Be(expectedCurrency);
+        activity.Quantity.Should().Be(10m);
+        activity.Price.Should().Be(187.25m);
+        if (string.IsNullOrWhiteSpace(sourceCurrency) && expectedCurrency == "USD")
+            activity.Metadata!["currencySource"].Should().Be("VerifiedAccount");
+        else
+            activity.Metadata.Should().NotContainKey("currencySource");
     }
 
     [Fact]

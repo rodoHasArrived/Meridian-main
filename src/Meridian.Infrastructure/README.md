@@ -37,10 +37,15 @@ values to USD only when the authenticated account response explicitly supplies U
 [provider Trading API models](https://alpaca.markets/sdks/python/api_reference/trading/models.html)
 define the account and position dollar-value contract. Unknown assets, crypto quote denominations,
 non-USD accounts, and missing account currency remain unbound; statement intake rejects those
-missing position currencies rather than inferring them from account base currency. The gateway
-preserves missing account and activity currencies as missing evidence instead of supplying USD.
-Cash-transaction and rich-activity projections retain explicit blanks too. Direct canonical CSV
-intake validates currency against Core's shared recognized-code catalog before retaining an import.
+missing position currencies rather than inferring them from account base currency.
+The [Trading Account](https://docs.alpaca.markets/us/docs/account-plans) currency can establish USD
+for [trade fills](https://docs.alpaca.markets/us/v1.4.2/docs/account-activities), whose payload omits
+currency. The gateway binds only Trade/TradeFill events to the already verified account's explicit
+USD and records `currencySource=VerifiedAccount`, including activity-only bounded fetches.
+Explicit activity currencies remain unchanged. Missing account currency and missing or blank
+non-fill currencies stay missing; cash, dividends, fees, corrections, and busts never receive this
+fill-specific binding. Direct canonical CSV intake validates currency against Core's shared
+recognized-code catalog before retaining an import.
 
 Canonical CSV import requires the currency column in the header and at least one data row.
 Header-only statements cannot validate or persist as empty imports; every admitted row retains

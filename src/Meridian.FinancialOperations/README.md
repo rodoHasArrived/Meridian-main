@@ -31,8 +31,15 @@ Case-equivalent account identifiers remain valid within a single containing stat
 
 Statement preview, validation and commit require currency from the shared recognized-code catalog
 before retaining connector artifacts. Canonical CSV and bank connectors apply the same catalog;
-BAI2 validates before converting minor units. Historical currencies remain available for statement
-evidence. Service-level diagnostics omit a source row when the connector has not retained that identity.
+BAI2 validates before converting minor units, including zero-decimal UYI and four-decimal CLF/UYW.
+Recognized units with no defined ISO minor-unit scale are refused for BAI2 integer amounts.
+Historical currencies remain available for statement evidence. Service-level diagnostics omit a
+source row when the connector has not retained that identity.
+
+Alpaca trade fills may inherit explicit USD from the same account's verified portfolio evidence,
+through both legacy fills and rich Trade/TradeFill activities. Explicit activity currencies remain
+authoritative. Missing or non-USD account evidence cannot supply a fill currency; cash, dividends,
+fees, corrections, and busts still require their own currency evidence before import retention.
 
 Statement runs pass the accounting scope retained on their import to the internal population
 provider, preserving the fund, ledger book, and exact period selected by governed intake during

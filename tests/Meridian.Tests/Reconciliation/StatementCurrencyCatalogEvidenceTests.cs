@@ -12,6 +12,7 @@ public sealed class StatementCurrencyCatalogEvidenceTests : IDisposable
     [InlineData("ZZZ")]
     [InlineData("AAA")]
     [InlineData("XXX")]
+    [InlineData("XTS")]
     public async Task DirectCanonicalImport_UnrecognizedCurrencyRefusesBeforeRetention(string currency)
     {
         var (service, store, request) = await CreateImportAsync(currency);
@@ -29,6 +30,18 @@ public sealed class StatementCurrencyCatalogEvidenceTests : IDisposable
     [InlineData("HRK", "HRK")]
     [InlineData("CNH", "CNH")]
     [InlineData("XCG", "XCG")]
+    [InlineData("BOV", "BOV")]
+    [InlineData("CHE", "CHE")]
+    [InlineData("CHW", "CHW")]
+    [InlineData("COU", "COU")]
+    [InlineData("MXV", "MXV")]
+    [InlineData("USN", "USN")]
+    [InlineData("UYW", "UYW")]
+    [InlineData("XAD", "XAD")]
+    [InlineData("XBA", "XBA")]
+    [InlineData("XBB", "XBB")]
+    [InlineData("XBC", "XBC")]
+    [InlineData("XBD", "XBD")]
     public async Task DirectCanonicalImport_RecognizedCurrentHistoricalAndOperationalCurrenciesPreserveAmounts(
         string sourceCurrency, string expectedCurrency)
     {
