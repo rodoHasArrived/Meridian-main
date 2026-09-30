@@ -74,10 +74,20 @@ whole host use?** Facts in the current code shape the answer:
    applies wherever they are built: by `ProviderFactory`, by a plugin, or at a construction site
    outside the factory such as the OpenFIGI resolvers.
 
-   Execution credentials are separate and never come from a host binding. Under `FailClosed`, every
-   host-wide brokerage capability is refused, whatever its credential source: a provider-wide record,
-   configuration, environment, or an external session such as a TWS or IB Gateway login. Execution
-   credential ownership, for example tenant-bound account connections, is its own decision.
+   Execution is out of scope and never uses a host binding. Execution credential ownership, for
+   example tenant-bound account connections, is its own decision. Until that decision exists, a
+   `FailClosed` host composes no execution surface at all, whatever the credential source (a
+   provider-wide record, configuration, environment, or an external session such as a TWS or IB
+   Gateway login):
+   - no brokerage gateway, whether from the catalog through `ProviderFactory` or from the host's own
+     registration (`AddHostedBrokerageGateways` in `UiServer`, including optional StockSharp gateways);
+   - no brokerage sync adapter (account catalog, portfolio or activity sync);
+   - no brokerage connection service or route, such as the Alpaca connect and revoke and the Robinhood
+     connect, callback and revoke routes in `BrokerageConnectionEndpoints`.
+
+   Reviews kept finding execution registrations outside the catalog, so this is decided at host
+   composition, not per site. A test checks the real `UiServer` service collection and endpoint table
+   for the absence of every execution capability.
 
 2. **Every family is explicitly classified; each credential-bearing family has one owner, fixed at
    startup.** Every enabled family, built-in or plugin, carries one credential classification:
@@ -147,6 +157,11 @@ whole host use?** Facts in the current code shape the answer:
    A family whose provider has no scoped verification cannot be bound until it does. Any failure stops
    that family from starting and records a diagnostic.
 
+   Providers can also be constructed lazily after startup, for example from `ProviderRegistry`
+   factories. So the credential checks run again at every resolution, not only at startup. A
+   resolution is refused unless the record's current generation is `Verified`. A rotation after
+   startup therefore reaches no newly constructed provider until the new generation is verified.
+
 7. **Host-wide credentials come from one per-family selection; bound families use the scoped
    resolver only.** Every host-wide construction site obtains credentials from a single per-family
    host credential selection: the provider-wide resolver (only when unbound under
@@ -171,23 +186,39 @@ whole host use?** Facts in the current code shape the answer:
 
    A partial scoped record refuses to start rather than being completed from elsewhere.
 
-8. **Binding changes are serialized and recoverably audited.** Each `set` or `clear` holds an
-   exclusive host lock (`host-provider-credentials.lock`, opened for exclusive access) for its whole
-   transaction, and runs these steps under one correlation ID:
-   1. read the current binding;
-   2. append a `pending` event to the credential audit trail (`provider-credentials.audit.jsonl`),
-      recording the actor, the provider family, and the previous and new connection IDs;
-   3. write the binding file atomically;
-   4. append `committed`, or `aborted` if the write failed.
+8. **Binding changes happen offline, serialized and recoverably audited.**
+   - **Offline only.** A running host holds the host lock (`host-provider-credentials.lock`, opened
+     for exclusive access) for its whole lifetime. `set` and `clear` need the same lock, so they fail
+     while a host on this configuration is running. A change takes effect when the host next starts.
+     No running provider can keep using a binding that has since been cleared or replaced. `list`
+     only reads the file, which is always written atomically.
+   - **Serialized.** Each `set` or `clear` holds the host lock for its whole transaction and runs these
+     steps under one correlation ID:
+     1. read the current binding;
+     2. append a `pending` event to the credential audit trail (`provider-credentials.audit.jsonl`),
+        recording the actor, the provider family, and the previous and new connection IDs;
+     3. write the binding file atomically;
+     4. append the outcome.
 
-   Concurrent commands therefore run one after another, and each event's previous connection ID is
-   the state it actually replaced. A command that cannot take the lock within a timeout fails without
-   writing anything.
+     Concurrent commands therefore run one after another, and each event's previous connection ID is
+     the state it actually replaced. A command that cannot take the lock within a timeout fails
+     without writing anything.
+   - **One audit writer.** Binding events are appended through the credential store's audit writer,
+     which takes `provider-credentials.vault.lock` like every other audit append. The lock order is
+     always the host lock, then the vault lock, and credential-store writers never take the host
+     lock. Binding events and scoped credential saves, rotations and verifications therefore never
+     collide or deadlock.
+   - **Outcome from the file, not the exception.** `AtomicFileWriter` can throw after the rename has
+     already published the file, for example from the directory sync. So on any write exception the
+     command rereads the published file:
+     - if it holds the new bindings, the outcome is `committed`;
+     - if it holds the previous bindings, the outcome is `aborted`;
+     - otherwise the event stays `pending`, and the command exits non-zero.
+   - **Recovery.** At startup, under the host lock, a `pending` event without an outcome is resolved
+     against the file's actual state and closed as `committed (recovered)` or `aborted (recovered)`.
+     A retry therefore never looks like a second change.
 
-   At startup, under the same lock, a `pending` event without an outcome is resolved against the
-   file's actual state and closed as `committed (recovered)` or `aborted (recovered)`. A retry therefore
-   never looks like a second change. The actor is the required `--actor` argument together with the OS
-   identity that ran the command.
+   The actor is the required `--actor` argument together with the OS identity that ran the command.
 
 9. **Other tenants' connections never power host-wide providers.** A connection owned by any tenant
    other than the host credential tenant serves only tenant-bound operations: status, verification,
@@ -215,7 +246,10 @@ implemented yet.
 | Credential catalog | `src/Meridian.DataIntegration/Credentials/ProviderCredentialCatalog.cs` | Required fields per family; has no NYSE entry and no required `ibkr` fields |
 | Adapter credential metadata | `src/Meridian.ProviderSdk/IProviderMetadata.cs` | `ProviderCredentialFields`, checked against each classification (NYSE declares required fields) |
 | OpenFIGI resolution outside the factory | `src/Meridian.Application/Composition/Features/SymbolManagementFeatureRegistration.cs`, `src/Meridian.Application/Backfill/BackfillCoordinator.cs` | Build `OpenFigiSymbolResolver` from configuration; move to the per-family selection |
-| Module credential overlay and brokerage gateways | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs` | `WithModuleCredentials` / `ModuleCredentialContext`, skipped for bound families; `CreateIbBrokerageGateway` and the other gateways, refused under `FailClosed` |
+| Module credential overlay and catalog brokerage gateways | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs` | `WithModuleCredentials` / `ModuleCredentialContext`, skipped for bound families; `CreateIbBrokerageGateway` and the other catalog gateways, not composed under `FailClosed` |
+| Hosted execution composition | `src/Meridian/UiServer.cs`, `src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs` | `AddHostedBrokerageGateways` registers gateways and sync adapters outside the catalog; not composed under `FailClosed` |
+| Brokerage connection routes | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs` | Alpaca and Robinhood connect, callback and revoke routes that write unscoped credentials; not mapped under `FailClosed` |
+| Lazy provider construction | `src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs` | Factories that resolve providers after startup; each resolution revalidates the credential generation |
 | Plugin registration | `src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.Composition.cs` | Registers plugin families outside `ProviderFactory`; gated under `FailClosed` |
 | Provider-wide credential writes | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs`, `CredentialEndpoints.cs`, `ProviderCredentialEndpoints.cs`, `ProviderModuleEndpoints.cs` | Canonical and compatibility routes that reach unscoped credential writes; each inherits the service-seam refusal |
 | Unscoped credential services | `src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs`, `src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs` | Where provider-wide writes and deletes are refused under `FailClosed` |
@@ -304,8 +338,10 @@ prove host authority.
   credentials) and list any credential-free plugins first, or those families will not start.
 - Plugin families cannot be bound, and families without scoped verification cannot be bound, until
   that support exists.
-- Under `FailClosed`, session-backed families such as `ibkr` and every host-wide brokerage capability
-  do not run, and OpenFIGI enrichment stays off until OpenFIGI is bound.
+- Under `FailClosed`, session-backed families such as `ibkr` do not run, no execution surface is
+  composed until the execution-ownership decision exists, and OpenFIGI enrichment stays off until
+  OpenFIGI is bound.
+- Binding changes need a host restart, and the CLI refuses them while the host is running.
 - A bound family does not start after a rotation until its new credentials are verified.
 
 ### Neutral
@@ -327,6 +363,10 @@ prove host authority.
   an architecture test enforces this with a reviewed allowlist.
 - Under `FailClosed`, provider-wide credential writes and deletes are refused inside the unscoped
   service operations, not in individual routes.
+- Under `FailClosed`, the host composes no execution surface: no brokerage gateway, sync adapter,
+  or brokerage connection service or route, from any registration path.
+- A running host holds the host lock for its lifetime, and every credential resolution for a bound
+  family revalidates the current generation's verification.
 - Every enabled family has exactly one credential classification, and `credential-free` never applies
   to a family whose credential catalog entry or adapter metadata requires a field.
 
@@ -349,8 +389,11 @@ The implementation PR must add tests that:
 - classify every catalog family, keep NYSE credential-bearing and `ibkr` session-backed, and fail
   when a `credential-free` family's catalog entry or adapter metadata requires a field;
 - under `FailClosed`:
-  - refuse unbound credential-bearing, session-backed and unclassified families, unlisted plugin
-    families, and every host-wide brokerage gateway, including `ibkr`;
+  - refuse unbound credential-bearing, session-backed and unclassified families, and unlisted plugin
+    families;
+  - find no brokerage gateway, brokerage sync adapter, or brokerage connection service or route in the
+    real `UiServer` service collection and endpoint table, including the hosted Alpaca, IB, Robinhood
+    and StockSharp registrations;
   - refuse provider-wide credential writes and deletes route by route: the canonical credential
     route, the `CredentialEndpoints` save, delete and test routes, the `ProviderCredentialEndpoints`
     connection test, and provider-module create, update and delete requests that carry credentials;
@@ -363,20 +406,27 @@ The implementation PR must add tests that:
   including recovery after a crash between the audit append and the file write;
 - serialize concurrent `set` and `clear` commands so each event's previous connection ID is the state
   it replaced, and fail a command that cannot take the lock without writing;
+- refuse `set` and `clear` while a host on the same configuration is running;
+- audit both a binding change and a concurrent scoped credential save, rotation or verification,
+  with no failed append and no deadlock;
+- record `committed` when the write throws after the rename has published the new file;
+- refuse a lazily constructed provider after a post-startup rotation until the new generation is
+  verified;
 - show only the source kind in tenant-visible read models, never the connection ID or tenant.
 
 ## Implementation Plan
 
 1. This ADR (Proposed), for review.
-2. Binding file and command: strict loader, `--host-credential-binding` with a host lock and
-   recoverable audit, the host credential tenant setting, and the plugin credential-free list.
+2. Binding file and command: strict loader, `--host-credential-binding` with the lifetime host lock,
+   the shared audit writer and recoverable, file-checked outcomes, the host credential tenant setting, and the plugin credential-free list.
 3. Classification: a credential classification for every family, with a consistency check against
    the credential catalog and adapter metadata (adding the missing NYSE entry).
 4. Construction: validate and verify bindings at startup; the per-family host credential selection
    at every construction site (including OpenFIGI's and the Polygon corporate-action fetcher), with
    module overlays and post-resolver fallbacks removed and the architecture scan in place; `FailClosed`
-   refusals (unbound, session-backed and unclassified families, plugins, every brokerage gateway,
-   provider-wide writes at the service seam); the tests above.
+   refusals (unbound, session-backed and unclassified families, plugins, provider-wide writes at the
+   service seam); no execution surface composed under `FailClosed`; revalidation at every resolution;
+   the tests above.
 5. Surfacing: source kind in the browser and WPF provider read models; identifiers in the host log and
    CLI only.
 6. Update `PRD-002` evidence in the implementation tracker and the Application README.
