@@ -252,7 +252,7 @@ closing web-UI parity gaps for screens that shipped browser-first while it was d
 - The [Meridian Design Document (Version 1.0)](meridian-design-document.md) is the active stakeholder-facing product framing source.
 - It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
 - Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
-- Design Baseline: `Meridian Design Document (Version 1.0)` is the canonical product thesis. It centers the proven-numbers value proposition and Verified Coverage north star, encodes activation-over-expansion and truth-discipline doctrines from the 2026-07 adversarial program review, and preserves the charter invariants (customer-neutral operational-finance core, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the active WPF co-equal lane and web-UI parity policy, and the operational proof layer thesis).
+- Design Baseline: `Meridian Design Document (Version 1.1)` is the canonical product thesis. It centers the proven-numbers value proposition and Verified Coverage north star, encodes activation-over-expansion and truth-discipline doctrines from the 2026-07 adversarial program review, maps the W10 depth slate to charter invariants, and preserves the charter invariants (customer-neutral operational-finance core, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the active WPF co-equal lane and web-UI parity policy, and the operational proof layer thesis).
 
 ## Stakeholder Narrative
 
