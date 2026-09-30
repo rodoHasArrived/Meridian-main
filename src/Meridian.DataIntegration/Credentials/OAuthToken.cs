@@ -109,3 +109,10 @@ public interface IOAuthTokenVault
     Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default);
     Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default);
 }
+
+/// <summary>OAuth token persistence isolated by trusted credential ownership context.</summary>
+public interface IScopedOAuthTokenVault : IOAuthTokenVault
+{
+    Task<IReadOnlyDictionary<string, OAuthToken>> ReadScopedOAuthTokensAsync(ProviderCredentialScope scope, CancellationToken ct = default);
+    Task SaveScopedOAuthTokenAsync(string providerName, OAuthToken? token, ProviderCredentialScope scope, CancellationToken ct = default);
+}
