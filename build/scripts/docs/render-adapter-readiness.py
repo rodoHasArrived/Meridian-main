@@ -120,10 +120,15 @@ def render_matrix(data: dict) -> str:
     lines.extend([
         "", "## Regeneration and validation", "", "```bash",
         "python build/scripts/docs/render-adapter-readiness.py",
+        "python build/scripts/docs/render-source-docs.py --summary",
         "python build/scripts/docs/validate-adapter-readiness.py --summary",
         "python build/scripts/docs/render-adapter-readiness.py --check",
         "python -m unittest tests/scripts/test_adapter_readiness.py",
         "```", "",
+        "Run the source-docs renderer after the adapter renderer to refresh "
+        "`docs/source/generated/MANIFEST.json`, which hashes every source registry including "
+        "`adapter-readiness.yml`. A registry edit must refresh both the matrix and that shared manifest.",
+        "",
     ])
     return "\n".join(lines)
 

@@ -27,8 +27,13 @@ The [adapter readiness matrix](generated/adapter-readiness-matrix.md) is generat
 
 ```sh
 python build/scripts/docs/render-adapter-readiness.py
+python build/scripts/docs/render-source-docs.py --summary
 python build/scripts/docs/validate-adapter-readiness.py --summary
 ```
+
+Run the source-docs renderer after the adapter renderer because
+`docs/source/generated/MANIFEST.json` hashes every source registry, including
+`data/adapter-readiness.yml`. A registry edit must refresh both the matrix and that shared manifest.
 
 The validator checks the registry against `ProviderCapabilityDescriptorCatalog`, known adapter
 types, direct adapter folders, readiness states, and targeted test references. Edit registry inputs

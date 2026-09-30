@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import importlib.util
 import io
+import json
+import re
+import shlex
 import sys
 import tempfile
 import unittest
@@ -30,6 +34,7 @@ def load_script(name: str, filename: str):
 
 renderer = load_script("render_adapter_readiness_tests", "render-adapter-readiness.py")
 automation = load_script("readiness_docs_automation_tests", "run-docs-automation.py")
+source_renderer = load_script("readiness_source_docs_tests", "render-source-docs.py")
 
 
 def adapter(folder: str, provider_id: str | None = "alpha") -> dict:
@@ -234,6 +239,48 @@ class AdapterReadinessRenderTests(unittest.TestCase):
 
 
 class AdapterReadinessAutomationTests(unittest.TestCase):
+    def test_documented_regeneration_refreshes_shared_source_manifest(self):
+        documents = {
+            "source README": (ROOT / "docs/source/README.md").read_text(encoding="utf-8"),
+            "scripts README": (DOCS_SCRIPTS / "README.md").read_text(encoding="utf-8"),
+            "generated matrix": renderer.render_matrix(registry()),
+        }
+        renderers = {
+            "build/scripts/docs/render-adapter-readiness.py": renderer,
+            "build/scripts/docs/render-source-docs.py": source_renderer,
+        }
+        for name, document in documents.items():
+            with self.subTest(document=name), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                source = root / renderer.REGISTRY
+                source.parent.mkdir(parents=True)
+                source.write_bytes(b"{}\n")
+                # Empty module maps isolate the shared-manifest behavior from unrelated source docs.
+                with (
+                    patch.object(source_renderer, "module_maps", return_value=({}, {}, {})),
+                    patch.object(renderer, "validate_registry", return_value=[]),
+                    redirect_stdout(io.StringIO()),
+                ):
+                    with patch.object(sys, "argv", ["render-source-docs.py", "--root", str(root)]):
+                        self.assertEqual(0, source_renderer.main())
+                    changed = registry()
+                    changed["adapters"][0]["next_action"] = "A newly reviewed action."
+                    source.write_bytes((json.dumps(changed) + "\n").encode("utf-8"))
+                    block = next(
+                        block for block in re.findall(r"```(?:bash|sh)\n(.*?)\n```", document, re.S)
+                        if "render-adapter-readiness.py" in block
+                    )
+                    for line in block.splitlines():
+                        command = shlex.split(line)
+                        if len(command) < 2 or command[1] not in renderers:
+                            continue
+                        with patch.object(sys, "argv", [*command[1:], "--root", str(root)]):
+                            self.assertEqual(0, renderers[command[1]].main())
+                manifest = json.loads((root / "docs/source/generated/MANIFEST.json").read_text(encoding="utf-8"))
+                recorded = {item["path"]: item["sha256"] for item in manifest["inputs"]}
+                self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), recorded[renderer.REGISTRY.as_posix()])
+                self.assertIn("A newly reviewed action.", (root / renderer.OUTPUT).read_text(encoding="utf-8"))
+
     def test_all_standard_profiles_select_validation_and_matrix_check(self):
         for profile in ("quick", "core", "full"):
             with self.subTest(profile=profile):

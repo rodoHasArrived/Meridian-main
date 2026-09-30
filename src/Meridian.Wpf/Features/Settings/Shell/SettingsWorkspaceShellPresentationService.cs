@@ -15,7 +15,10 @@ public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspa
         ArgumentNullException.ThrowIfNull(snapshot);
 
         var hasCredentialGaps = snapshot.MissingCredentialCount > 0;
-        var heroTone = hasCredentialGaps ? WorkspaceTone.Warning : WorkspaceTone.Success;
+        var hasUnavailableStatus = snapshot.UnavailableCredentialCount > 0;
+        var needsAttention = hasCredentialGaps || hasUnavailableStatus;
+        var heroTone = needsAttention ? WorkspaceTone.Warning : WorkspaceTone.Success;
+        var postureLabel = hasCredentialGaps ? "Needs review" : hasUnavailableStatus ? "Status unavailable" : "Ready";
 
         return new SettingsWorkspaceShellPresentation
         {
@@ -28,23 +31,25 @@ public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspa
                 AsOfValue = snapshot.AsOfUtc.ToLocalTime().ToString("g"),
                 FreshnessValue = "Local workstation",
                 ReviewStateLabel = "Credential posture",
-                ReviewStateValue = hasCredentialGaps ? "Needs review" : "Ready",
+                ReviewStateValue = postureLabel,
                 ReviewStateTone = heroTone,
                 CriticalLabel = "Provider credentials",
-                CriticalValue = $"{snapshot.ConfiguredCredentialCount}/{snapshot.ProviderCount} ready",
+                CriticalValue = hasUnavailableStatus && snapshot.UnavailableCredentialCount == snapshot.ProviderCount
+                    ? "Status unavailable"
+                    : $"{snapshot.ConfiguredCredentialCount}/{snapshot.ProviderCount} ready",
                 CriticalTone = heroTone
             },
             CommandGroup = BuildCommandGroup(),
-            HeroBadgeText = hasCredentialGaps ? "Review" : "Ready",
+            HeroBadgeText = hasCredentialGaps ? "Review" : hasUnavailableStatus ? "Unknown" : "Ready",
             HeroBadgeTone = heroTone,
             HeroFocusText = hasCredentialGaps
                 ? "Credential review needed"
-                : "Support and diagnostics ready",
-            HeroSummaryText = hasCredentialGaps
-                ? $"{snapshot.MissingCredentialCount} provider credential path(s) need setup or validation before live operator workflows depend on them."
-                : "Provider credentials, diagnostics, notifications, and support routes are available from this workspace.",
+                : hasUnavailableStatus
+                    ? "Credential status unavailable"
+                    : "Support and diagnostics ready",
+            HeroSummaryText = BuildCredentialSummary(snapshot),
             HeroDetailText = "Use the default panes for preferences, diagnostics, system health, and notifications without leaving the Settings workspace.",
-            OperationsItems = BuildOperationsItems(snapshot, heroTone),
+            OperationsItems = BuildOperationsItems(snapshot, heroTone, postureLabel),
             SupportItems = BuildSupportItems(),
             QuickLinks = BuildQuickLinks()
         };
@@ -67,15 +72,32 @@ public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspa
         ]
     };
 
-    private static IReadOnlyList<WorkspaceQueueItem> BuildOperationsItems(SettingsWorkspaceShellSnapshot snapshot, string credentialTone) =>
+    private static string BuildCredentialSummary(SettingsWorkspaceShellSnapshot snapshot)
+    {
+        var unavailable = snapshot.UnavailableCredentialCount > 0
+            ? $"{snapshot.UnavailableCredentialCount} provider credential status(es) could not be read from the authenticated service, so their readiness is unknown."
+            : null;
+        if (snapshot.MissingCredentialCount > 0)
+        {
+            var gaps = $"{snapshot.MissingCredentialCount} provider credential path(s) need setup or validation before live operator workflows depend on them.";
+            return unavailable is null ? gaps : $"{gaps} {unavailable}";
+        }
+
+        return unavailable
+            ?? "Provider credentials, diagnostics, notifications, and support routes are available from this workspace.";
+    }
+
+    private static IReadOnlyList<WorkspaceQueueItem> BuildOperationsItems(SettingsWorkspaceShellSnapshot snapshot, string credentialTone, string postureLabel) =>
     [
         new WorkspaceQueueItem
         {
             Title = "Credential readiness",
             Detail = snapshot.MissingCredentialCount > 0
                 ? "Some provider credentials need setup or validation before dependent workflows can be trusted."
-                : "Provider credential requirements are satisfied or not required for the current catalog.",
-            StatusLabel = snapshot.MissingCredentialCount > 0 ? "Needs review" : "Ready",
+                : snapshot.UnavailableCredentialCount > 0
+                    ? "The credential service did not report status. Readiness is unknown until it responds; this is not evidence that credentials are missing."
+                    : "Provider credential requirements are satisfied or not required for the current catalog.",
+            StatusLabel = postureLabel,
             CountLabel = $"{snapshot.ConfiguredCredentialCount}/{snapshot.ProviderCount}",
             Tone = credentialTone,
             PrimaryActionId = "CredentialManagement",

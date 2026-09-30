@@ -172,3 +172,8 @@ installed `make`.
 dotnet run --project src/Meridian/Meridian.csproj -- --help
 python build/python/cli/buildctl.py --help
 ```
+
+CI/CD validation ownership and administrator rollout are maintained in
+[CI/CD ownership and rollout](docs/engineering/ci-cd-optimization.md). Meridian CI owns the four canonical
+`scripts/ci.sh` lanes; legacy CI owns Secret Scan and nightly/manual coverage.
+All CI governance changes require human review.

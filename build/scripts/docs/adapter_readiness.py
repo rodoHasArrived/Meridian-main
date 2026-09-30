@@ -245,9 +245,10 @@ def read_identities(root: Path) -> tuple[set[str], dict[str, set[str]]]:
         if len(row) != 5 or row[0] != "[" or row[2:4] != ["]", "="]:
             raise SourceError("unsupported ProviderIdentity alias syntax")
         alias, canonical = _string(row[1:2]), _string(row[4:])
-        if alias in seen:
+        # ProviderIdentity constructs its alias dictionary with OrdinalIgnoreCase.
+        if alias.lower() in seen:
             raise SourceError(f"duplicate source alias {alias}")
-        seen.add(alias)
+        seen.add(alias.lower())
         aliases.setdefault(canonical, set()).add(alias)
     return set(ids), aliases
 
@@ -265,10 +266,16 @@ def _base_names(tail: str) -> set[str]:
     tokens = _tokens(tail)
     if "where" in tokens:
         tokens = tokens[:tokens.index("where")]
-    if ":" not in tokens:
+    index = 0
+    while index < len(tokens) and tokens[index] != ":":
+        if tokens[index] in {"(", "[", "{"}:
+            _, index = _balanced(tokens, index)
+        else:
+            index += 1
+    if index == len(tokens):
         return set()
     names = set()
-    for base in _arguments(tokens[tokens.index(":") + 1:]):
+    for base in _arguments(tokens[index + 1:]):
         index = 0
         if base[:3] == ["global", ":", ":"]:
             index = 3
@@ -291,7 +298,7 @@ def read_adapter_types(root: Path) -> dict[str, AdapterType]:
     types: dict[str, AdapterType] = {}
     roots = [root / ADAPTER_ROOT, root / "src/Meridian.ProviderSdk", root / "src/Meridian.Infrastructure/DataSources"]
     declaration = re.compile(r"\b(?P<modifiers>(?:(?:public|internal|private|protected|abstract|sealed|static|partial|readonly)\s+)*)"
-                             r"(?P<kind>class|interface)\s+(?P<name>" + IDENTIFIER + r")(?P<tail>[^;{}]*)\{")
+                             r"(?P<kind>class|interface|record(?:\s+(?:class|struct))?)\s+(?P<name>" + IDENTIFIER + r")(?P<tail>[^;{}]*)[;{]")
     for source_root in roots:
         for path in sorted(source_root.rglob("*.cs")):
             if any(part in {"obj", "bin"} for part in path.relative_to(source_root).parts):
@@ -299,12 +306,18 @@ def read_adapter_types(root: Path) -> dict[str, AdapterType]:
             text = code_only(path.read_text(encoding="utf-8"))
             folder = path.relative_to(root / ADAPTER_ROOT).parts[0] if path.is_relative_to(root / ADAPTER_ROOT) else None
             for match in declaration.finditer(text):
-                if match["kind"] == "class" and "public" not in match["modifiers"].split():
+                kind = " ".join(match["kind"].split())
+                modifiers = set(match["modifiers"].split())
+                if kind == "record struct" or (kind != "interface" and "public" not in modifiers):
                     continue
                 name = match["name"]
                 tail = match["tail"]
                 bases = _base_names(tail)
-                concrete = match["kind"] == "class" and "public" in match["modifiers"].split() and "abstract" not in match["modifiers"].split() and "static" not in match["modifiers"].split()
+                # Unrelated data records can share names across namespaces. A record
+                # needs an explicit base/interface to participate in this graph.
+                if kind.startswith("record") and not bases:
+                    continue
+                concrete = kind != "interface" and "public" in modifiers and not modifiers & {"abstract", "static"}
                 if name in types:
                     if types[name].folder != folder:
                         raise SourceError(f"ambiguous source adapter type {name}")
@@ -454,6 +467,8 @@ def validate_registry(root: Path, data: Any) -> list[str]:
                     path = _safe_path(root, ref["path"])
                     if path.suffix != ".cs":
                         raise SourceError(f"reference must target C# source: {ref['path']}")
+                    if field == "registration" and not ref["path"].startswith("src/"):
+                        raise SourceError("registration references must be under src/")
                     if field == "evidence":
                         if not isinstance(ref["kind"], str) or ref["kind"] not in {"test", "source"}:
                             raise SourceError(f"invalid evidence kind: {ref['kind']}")

@@ -62,12 +62,16 @@ readiness; operator validation and release sign-off retain their existing owners
 ```bash
 python3 build/scripts/docs/validate-adapter-readiness.py --summary
 python3 build/scripts/docs/render-adapter-readiness.py
+python3 build/scripts/docs/render-source-docs.py --summary
 python3 build/scripts/docs/render-adapter-readiness.py --check
 python3 -m unittest tests/scripts/test_adapter_readiness.py tests/scripts/test_render_adapter_readiness.py
 ```
 
 The matrix is generated under `docs/source/generated/`. Documentation automation's `quick`,
 `core`, and `full` profiles validate the registry and reject stale output without rewriting it.
+After a registry edit, run the source-docs renderer after the adapter renderer to refresh
+`docs/source/generated/MANIFEST.json`, which hashes every source registry including
+`adapter-readiness.yml`.
 The required `verify-docs` lane also runs the validator's regression tests.
 
 ### sync-source-readmes.py

@@ -116,6 +116,14 @@ public class SampleTests {
         self.replace_source(readiness.IDENTITY_PATH, '["old-sample"] = "sample"', '["old-sample"] = "sample", ["new-sample"] = "sample"')
         self.assert_rejected("aliases must match ProviderIdentity")
 
+    def test_source_alias_duplicates_are_rejected_case_insensitively(self):
+        original = (self.root / readiness.IDENTITY_PATH).read_text(encoding="utf-8")
+        for alias, canonical in (("old-sample", "sample"), ("OLD-SAMPLE", "sample"), ("Old-Sample", "other")):
+            with self.subTest(alias=alias, canonical=canonical):
+                self.write(readiness.IDENTITY_PATH, original.replace(
+                    '["old-sample"] = "sample"', f'["old-sample"] = "sample", ["{alias}"] = "{canonical}"'))
+                self.assert_rejected(f"duplicate source alias {alias}")
+
     def test_missing_duplicate_and_unknown_registry_folders_are_rejected(self):
         original = copy.deepcopy(self.data)
         self.data["adapters"].pop()
@@ -179,6 +187,56 @@ public class SampleTests {
         self.write(f"{readiness.ADAPTER_ROOT}/Sample/NewOptions.cs", "public sealed class NewOptions : IOptionsChainProvider {}")
         self.assert_rejected("missing known adapter capability implemented by NewOptions")
 
+    def test_record_capabilities_missing_from_catalog_are_rejected(self):
+        for declaration in (
+            "public sealed record NewOptions : IOptionsChainProvider {}",
+            "public sealed record class NewOptions : IOptionsChainProvider {}",
+            "public sealed record NewOptions(string ApiKey) : IOptionsChainProvider;",
+            "public sealed record class NewOptions(string ApiKey) : IOptionsChainProvider;",
+        ):
+            with self.subTest(declaration=declaration):
+                self.write(f"{readiness.ADAPTER_ROOT}/Sample/NewOptions.cs", declaration)
+                self.assert_rejected("missing known adapter capability implemented by NewOptions")
+
+    def test_catalog_can_reference_public_record_implementations(self):
+        for declaration in (
+            "public sealed record SampleClient : IMarketDataClient, ISymbolSearchProvider {}",
+            "public sealed record class SampleClient : IMarketDataClient, ISymbolSearchProvider {}",
+            "public sealed record SampleClient(string ApiKey) : IMarketDataClient, ISymbolSearchProvider;",
+            "public sealed record class SampleClient(string ApiKey) : IMarketDataClient, ISymbolSearchProvider;",
+        ):
+            with self.subTest(declaration=declaration):
+                self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", declaration)
+                self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_record_inheritance_handles_positional_parameter_attributes(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Core/BaseClient.cs", "public abstract record BaseClient(string ApiKey) : IMarketDataClient;")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", '''
+public sealed record class SampleClient([property: JsonPropertyName("key")] string ApiKey)
+    : BaseClient(ApiKey), ISymbolSearchProvider;
+''')
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+        self.replace_source(f"{readiness.ADAPTER_ROOT}/Core/BaseClient.cs", " : IMarketDataClient", "")
+        self.assert_rejected("SampleClient does not implement IMarketDataClient")
+
+    def test_record_structs_are_not_class_adapter_implementations(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/NewOptions.cs", "public readonly record struct NewOptions(string Key) : IOptionsChainProvider;")
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "public record struct SampleClient : IMarketDataClient, ISymbolSearchProvider {}")
+        self.assert_rejected("unknown concrete adapter type SampleClient")
+
+    def test_nonpublic_and_abstract_records_do_not_add_runtime_capabilities(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/NewOptions.cs", '''
+internal sealed record NewOptions : IOptionsChainProvider;
+public abstract record class AbstractOptions : IOptionsChainProvider;
+''')
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_unrelated_data_records_do_not_create_ambiguous_adapter_types(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Core/Value.cs", "public sealed record Value(string Key);")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Value.cs", "public sealed record class Value(string Key) {}")
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
     def test_removing_catalog_capability_and_registry_claim_still_rejects_source_drift(self):
         self.replace_source(readiness.CATALOG_PATH, ", Search: typeof(SampleClient)", "")
         self.data["adapters"][1]["capabilities"]["symbol_search"] = False
@@ -225,6 +283,19 @@ public class SampleTests {
         evidence["path"] = readiness.CATALOG_PATH
         evidence["symbol"] = "ProviderCapabilityDescriptorCatalog"
         self.assert_rejected("test evidence must be under tests/")
+
+    def test_registration_references_must_target_source_tree(self):
+        self.data["adapters"][1]["registration"] = [{"path": "tests/SampleTests.cs", "symbol": "SampleTests"}]
+        self.assert_rejected("registration references must be under src/")
+        self.write("tools/Registration.cs", "public class Registration {}")
+        self.data["adapters"][1]["registration"] = [{"path": "tools/Registration.cs", "symbol": "Registration"}]
+        self.assert_rejected("registration references must be under src/")
+
+    def test_source_registration_and_separate_test_evidence_remain_valid(self):
+        self.write("src/Registration.cs", "public class Registration {}")
+        self.data["adapters"][1]["registration"] = [{"path": "src/Registration.cs", "symbol": "Registration"}]
+        self.data["adapters"][1]["evidence"].append({"path": "tests/SampleTests.cs", "symbol": "SampleTests", "kind": "source"})
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
 
     def test_absolute_traversal_and_windows_paths_are_rejected(self):
         evidence = self.data["adapters"][1]["evidence"][0]
