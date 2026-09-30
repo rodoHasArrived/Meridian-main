@@ -1,6 +1,6 @@
 {
   "total_files": 676,
-  "total_lines": 146463,
+  "total_lines": 146476,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -3171,7 +3171,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-09-29.md",
-      "line_count": 184,
+      "line_count": 196,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3219,7 +3219,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 397,
+      "line_count": 398,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

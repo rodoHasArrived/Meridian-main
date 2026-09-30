@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-09-29
+**Reviewed:** 2026-09-30
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -45,8 +45,9 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 - Treat the following as dated working design inputs, not canonical status sources:
   - [What To Work On Next (2026-09-29)](plans/next-work-determination-2026-09-29.md) — latest
     prioritization input, anchored at `main` `95c8a321`; re-measures the whole open pull-request
-    queue against the current head, records that the two highest-ranked engineering items are now
-    in-flight pull requests blocked only by regeneratable output, corrects three claims the CI
+    queue against that baseline, records the two highest-ranked implementation pull requests and
+    the September 30 follow-up boundaries (#2931's deferred runtime-scope P1 and #2633's tenant
+    acceptance evidence beyond #3028), corrects three claims the CI
     consolidation program made stale, and reports a registry parse break the fallback parser was
     hiding. It supersedes the
     [2026-09-27 determination](../../archive/docs/plans/next-work-determination-2026-09-27.md), the

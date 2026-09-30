@@ -2,7 +2,7 @@
 
 **Status:** prioritization input; not a governance decision and not a roadmap-status document
 **Owner:** core-team
-**Reviewed:** 2026-09-29
+**Reviewed:** 2026-09-30
 **Baseline:** `main` at `95c8a321`
 **Supersedes:** [2026-09-27](../../../archive/docs/plans/next-work-determination-2026-09-27.md), and the
 2026-09-28 determination proposed in still-open [#3012](https://github.com/rodoHasArrived/Meridian-main/pull/3012)
@@ -20,7 +20,16 @@ carried-forward claim against current source rather than against its own record.
 > advanced 78 commits past the `95c8a321` baseline. Two ranked items changed, and both changes
 > sharpen rather than soften the argument below:
 >
-> - **#2931 merged** (with #3010 and #3014). Its P1 row is **completed**; do not queue it again.
+> - **#2931 merged** (with #3010 and #3014), but its P1 **"Wire connection scope into runtime
+>   credential resolution" remains open and explicitly deferred**. The
+>   [author's review reply](https://github.com/rodoHasArrived/Meridian-main/pull/2931#discussion_r4128389053)
+>   confirms that `ProviderFactory` runtime construction still uses provider-wide resolution;
+>   scoped verify/status/setup does not complete runtime connection ownership. Queue that bounded
+>   follow-up, not another merge of #2931.
+> - **#3028 is a bounded tenant-cutover implementation, not completion of `W9-GOV-008`.**
+>   [#2633 remains open](https://github.com/rodoHasArrived/Meridian-main/issues/2633#issuecomment-5842632426)
+>   for deployment-specific tenant attribution, exception review, and browser/WPF workstation
+>   cutover evidence. #3028 explicitly does not close that broader acceptance work.
 > - **#3028's conflicts went 2 → 52 in one day**, because #2931's credential-ownership merge
 >   touched files it also changes. The disposition still holds — **50 of the 52 are generated
 >   output** (44 under `docs/diagrams/`, 5 under `docs/status/`, and the source-hash manifest) — but
@@ -36,21 +45,23 @@ carried-forward claim against current source rather than against its own record.
 
 ## Headline
 
-**The two engineering items the 2026-09-28 determination ranked highest are no longer open work —
-they are open pull requests, and each one conflicts with `main` in exactly two files, both of which
-are generated output that a checked-in script exists to resolve.** The program's bottleneck today is
-not deciding what to build. It is landing what is already built.
+**The two engineering items the 2026-09-28 determination ranked highest have implementation work
+in open pull requests. At the `95c8a321` baseline, each conflicted with `main` in exactly two
+generated files that a checked-in script exists to resolve.** Prioritize their review, integration,
+and validation while retaining the runtime-scope P1 and broader tenant-acceptance work below.
 
-- **#3028 `codex/tenant-isolation-cutover`** delivers the `W9-GOV-008` remainder: a real
+- **#3028 `codex/tenant-isolation-cutover`** implements a bounded `W9-GOV-008` tenant-cutover slice: a real
   `TenantScopeEnforcement: fail-closed|deployment-boundary` configuration key, strict mode as the
   default on omission, a pre-serve readiness gate over configured PostgreSQL stores, reviewed
-  backfill with quarantine and immutable receipts, and migration 038. Conflicts: **2**, both
+  backfill mechanism with quarantine and immutable receipts, and migration 038. Deployment-specific
+  attribution, exception review, and workstation cutover evidence remain under #2633; merging this
+  implementation would not complete that acceptance work. Baseline conflicts: **2**, both
   `docs/status/doc-health-dashboard.{json,md}`.
 - **#3026 `codex/postgres-statement-workflow`** delivers the end-to-end statement → journal-sourced
   ledger → deterministic match → casework round trip on PostgreSQL that the last two determinations
   called the highest-value engineering item. `quality-gate` passed at its head `5519d562` across all
   four lanes. Conflicts: **2**, the same two generated files.
-- Both are resolved by `python build/scripts/resolve-generated-merge-conflicts.py --apply` after a
+- Both baseline conflict sets are resolved by `python build/scripts/resolve-generated-merge-conflicts.py --apply` after a
   base merge — both paths are already in that script's `GENERATED_FILES` set
   (`build/scripts/resolve-generated-merge-conflicts.py:22-23`) — followed by regeneration,
   validation, and a fresh hosted gate on the merged head.
@@ -145,17 +156,17 @@ decay argument observed again**, and it is the oldest thing in the queue.
 
 | Priority | Work | Why now |
 | --- | --- | --- |
-| **P0** | **Land #3028.** Merge `main`, run `resolve-generated-merge-conflicts.py --apply`, regenerate, revalidate, get a fresh hosted gate on the merged head | The `W9-GOV-008` remainder — the fail-closed tenancy default with a real configuration key — is **built**. It conflicts in two generated files. Its own body still shows `quality-gate` pending on the refreshed commit; that is the remaining work, not the design |
-| **P0** | **Land #3026.** Same procedure, then dispatch `production-certification.yml` for its branch | The statement → ledger → casework PostgreSQL round trip, ranked highest-value engineering for two consecutive determinations. `quality-gate` already passed at `5519d562`; hosted database proof is the open item |
+| **P0** | **Advance #3028's bounded tenant-cutover implementation.** Follow the post-baseline generated-merge-recovery procedure, review the hand-written conflicts, regenerate, revalidate, and get a fresh hosted gate before merge review | Implements the fail-closed tenancy default, configuration key, and retained-data readiness/backfill mechanisms. Its body still shows full CI and `quality-gate` pending on the refreshed commit. #2633 remains open for deployment-specific tenant attribution, exception review, and browser/WPF cutover evidence; this PR does not complete `W9-GOV-008` |
+| **P0** | **Land #3026.** Refresh against `main`, resolve its generated conflicts, regenerate and revalidate, then dispatch `production-certification.yml` for its branch | The statement → ledger → casework PostgreSQL round trip, ranked highest-value engineering for two consecutive determinations. `quality-gate` already passed at `5519d562`; hosted database proof is the open item |
 | **P0** | Provide **both** `MDC_SIGNING_CERT_PFX_BASE64` and `MDC_SIGNING_CERT_PASSWORD` in the protected `desktop-release-signing` environment | Unchanged and still not engineering work. `desktop-installer-packaging.yml:57-61` throws without both. Hard prerequisite for a signed tag run; nothing else waits on it |
 | **P0** | Decide the ~1 GB consumer installer question | Unchanged (`implementation-todo-list.md:107`, 1,043,350,783 bytes). It ships inside the RC; decide before the freeze |
 | **P0** | Choose the release tag scheme so RC and stable identities strictly increase | **Reclassified from engineering to decision.** The preflight now fails closed on the collision, so this can no longer corrupt a release — but it will refuse the tag. Pick the scheme before freezing |
 | **P0** | Drain the clean dependency PRs **before the freeze**: #2944, #2932. Resolve #2981 (one real test file) and #2903 (source-hash manifest, via the reviewed-baseline procedure) or record an explicit pre-freeze deferral | The RC freezes the dependency set; bumping afterwards invalidates the same-commit evidence the tag exists to mint |
-| **P0** | **Then** freeze a commit and cut the RC tag | The tag run now calls `Publish Smoke` (`web-workstation`/`win-x64`) and `Production Certification` itself. Every candidate-changing row above must land first — the tracker requires all P0 rows on **one** release commit (`implementation-todo-list.md:125-127`) |
+| **P0** | **Then** freeze a commit and cut the RC tag | The tag run now calls `Publish Smoke` (`web-workstation`/`win-x64`) and `Production Certification` itself. Every candidate-changing row above must land first — the tracker requires all P0 rows on **one** release commit (`implementation-todo-list.md:125-127`). Merged implementation and green CI do not substitute for #2633's remaining deployment-specific acceptance evidence |
 | **P0** | **After** the tag run, schedule the operator replay/reconciliation review of the uploaded `production-recovery-drill-*` artifact | `PRD-015` is not closed by the run alone; the artifact does not exist until the run uploads it |
 | **P1** | Fix the registry parse break and enforce the schemas: quote the `W8-UX-CONSOL-001` summary, make `load_data` fail loudly for `docs/roadmap/data/*`, wire `docs/roadmap/schemas/*.json` into `validate-roadmap-registry.py` | New finding above. Under an hour. The file that is authoritative for program status currently parses only in this repository, and the validator cannot distinguish valid from recovered-by-fallback |
-| **P1** | Take or decline `W9-CORPACT-011` | **7 days** in `ready_for_acceptance`. Zero engineering; clears the last W9 acceptance lane |
-| **P1** | Merge #2931 while it is clean, and reconcile the readiness tracker via #3018 | #2931 went 7 → 0 conflicts; that window closes. The tracker is 81 commits behind its own baseline |
+| **P1** | Take or decline `W9-CORPACT-011` | **7 days** in `ready_for_acceptance` at the baseline. Zero engineering for this decision; #2633's separate W9 tenant-acceptance work remains open |
+| **P1** | Follow up #2931's deferred runtime credential-scope P1, and reconcile the readiness tracker via #3018 | #2931 is merged, but `ProviderFactory` runtime construction still resolves provider-wide credentials. The open P1 needs a trusted source-to-owned-connection link and runtime tenant-selection rule; scoped verify/status/setup is not runtime completion. The tracker was 81 commits behind its baseline at measurement |
 | **P2** | Continue `W10-LOT-002` — the only `critical` row | Verified open in source today: `grep -rn "Successor" src/Meridian.Contracts/Accounting/Lots/` returns **nothing**, so append-only predecessor/successor corporate-action mutations are unimplemented. Amortization, advance refunding, and shadow-operation acceptance remain, the last **defined** at `security-lot-convergence-blueprint.md:287,306,334` — unimplemented, not unscoped. Do not drop it: it is the gate between a canonical-lot cutover and silent basis corruption |
 | **P2** | Schedule `W10-SEAM-001` live operator certification, then `W10-MARK-001` | Both are one operator session from closing; `SEAM` unblocks the desktop lane |
 | **P3** | Drain the 2026-09-28 codex/automation set (#3011, #3016, #3018, #3019, #3020, #3024) — generated conflicts only | Cheap, and every day they sit they get more expensive: #2307 proved that in 24 hours |
@@ -170,7 +181,8 @@ lane — it is green on the current head. No re-litigating accepted W9 rows.
 **And: do not write another determination tomorrow.** This is the fourth in ten days, and the third
 in three. The 2026-09-28 document opened by observing that nothing on its predecessor's list had
 moved; this one observes that its own top two items became pull requests that nobody has merged.
-The constraint is review and merge throughput, not ranking. A determination is worth writing when
+Prioritize review, integration, and the remaining runtime-scope and tenant-acceptance work over another
+ranking exercise. A determination is worth writing when
 the queue has drained enough that the ranking would change — not on a cadence.
 
 ## Note on the pending 2026-09-28 document
