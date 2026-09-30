@@ -4244,6 +4244,8 @@ Meridian-main
 │   │   │       └── ThreadingUtilities.cs
 │   │   ├── Pipeline
 │   │   │   └── EventPipelinePolicy.cs
+│   │   ├── ReferenceData
+│   │   │   └── CurrencyCodeCatalog.cs
 │   │   ├── Resilience
 │   │   │   ├── Backoff.cs
 │   │   │   └── CircuitBreaker.cs
@@ -9949,6 +9951,7 @@ Meridian-main
 │   │   │   ├── Connectors
 │   │   │   │   ├── AlpacaActivityStatementConnectorTests.cs
 │   │   │   │   ├── Bai2StatementConnectorTests.cs
+│   │   │   │   ├── BankStatementCurrencyEvidenceTests.cs
 │   │   │   │   ├── Camt053StatementConnectorTests.cs
 │   │   │   │   ├── CsvLineSplitterTests.cs
 │   │   │   │   ├── CsvStatementConnectorTests.cs
@@ -9975,6 +9978,7 @@ Meridian-main
 │   │   │   ├── RetainedInternalReconciliationPopulationProviderTests.cs
 │   │   │   ├── StatementBreakClassifierTests.cs
 │   │   │   ├── StatementCaseworkCommitStoreTests.cs
+│   │   │   ├── StatementCurrencyCatalogEvidenceTests.cs
 │   │   │   ├── StatementFixtureScenarioTests.cs
 │   │   │   ├── StatementImportAndMatchingTests.cs
 │   │   │   ├── StatementRunComparisonEvidenceTests.cs
