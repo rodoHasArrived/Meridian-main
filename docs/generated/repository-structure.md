@@ -1326,6 +1326,7 @@ Meridian-main
 │   │   ├── 020-lifecycle-control-plane.md
 │   │   ├── 021-verified-operation-outcomes-and-case-history.md
 │   │   ├── 022-canonical-asset-class-homes.md
+│   │   ├── 023-host-wide-provider-credential-ownership.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
