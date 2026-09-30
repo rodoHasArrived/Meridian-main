@@ -1,11 +1,11 @@
 {
   "total_files": 676,
-  "total_lines": 146503,
+  "total_lines": 146288,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 273,
-  "average_lines": 216.7,
+  "average_lines": 216.4,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -3155,7 +3155,7 @@
     },
     {
       "path": "docs/product/meridian-design-document.md",
-      "line_count": 1521,
+      "line_count": 1586,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
