@@ -64,7 +64,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
@@ -117,7 +117,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
@@ -203,11 +203,6 @@ jobs:
           Copy-Item -LiteralPath $env:EVALUATION_SIGNING_CERT_CER `
             -Destination (Join-Path $releaseRoot "meridian-evaluation-signing-$runtime.cer") -Force
 
-          Get-ChildItem -LiteralPath $releaseRoot -File | Where-Object Name -ne 'SHA256SUMS' |
-            Sort-Object Name |
-            ForEach-Object { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name } |
-            Set-Content -LiteralPath (Join-Path $releaseRoot 'SHA256SUMS') -Encoding ascii
-
       - name: Generate the evaluation SBOM
         shell: pwsh
         env:
@@ -222,7 +217,12 @@ jobs:
             -PackageVersion "$env:EVALUATION_VERSION-$env:EVALUATION_RUNTIME"
           $generated = Get-ChildItem (Join-Path $releaseRoot '_manifest') -Filter manifest.spdx.json -File -Recurse | Select-Object -First 1
           if ($null -eq $generated) { throw "Microsoft SBOM Tool did not emit manifest.spdx.json." }
-          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $releaseRoot 'sbom.spdx.json') -Force
+          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $releaseRoot "desktop-evaluation-$env:EVALUATION_RUNTIME-sbom.spdx.json") -Force
+
+          Get-ChildItem -LiteralPath $releaseRoot -File | Where-Object Name -notlike '*SHA256SUMS' |
+            Sort-Object Name |
+            ForEach-Object { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name } |
+            Set-Content -LiteralPath (Join-Path $releaseRoot "desktop-evaluation-$env:EVALUATION_RUNTIME-SHA256SUMS") -Encoding ascii
 
       - name: Upload the evaluation artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -270,7 +270,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
@@ -326,8 +326,8 @@ jobs:
           $staging = 'artifacts/evaluation/consumer-setup'
           New-Item -ItemType Directory -Path $staging -Force | Out-Null
           Copy-Item artifacts/consumer-setup/Meridian-Setup.exe -Destination $staging -ErrorAction Stop
-          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $staging 'consumer-setup.sbom.spdx.json') -Force
-          Copy-Item artifacts/consumer-setup/release-evidence.json -Destination (Join-Path $staging 'consumer-setup-release-evidence.json') -Force
+          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $staging 'consumer-evaluation-win-x64-sbom.spdx.json') -Force
+          Copy-Item artifacts/consumer-setup/release-evidence.json -Destination (Join-Path $staging 'consumer-evaluation-win-x64-release-evidence.json') -Force
           $hash = (Get-FileHash -LiteralPath (Join-Path $staging 'Meridian-Setup.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  Meridian-Setup.exe" | Set-Content -LiteralPath (Join-Path $staging 'Meridian-Setup.exe.sha256') -Encoding ascii
 
@@ -403,7 +403,7 @@ jobs:
           ```
 
           Use the `win-arm64` files instead on an ARM64 device. Verify the download against
-          `SHA256SUMS` first.
+          the runtime-specific `desktop-evaluation-*-SHA256SUMS` first.
 
           ### Removing it again
 
@@ -441,9 +441,9 @@ jobs:
             artifacts/evaluation/**/*.msix
             artifacts/evaluation/**/*.msixbundle
             artifacts/evaluation/**/*.cer
-            artifacts/evaluation/**/SHA256SUMS
-            artifacts/evaluation/**/sbom.spdx.json
+            artifacts/evaluation/**/desktop-evaluation-*-SHA256SUMS
+            artifacts/evaluation/**/desktop-evaluation-*-sbom.spdx.json
             artifacts/evaluation/**/Meridian-Setup.exe
             artifacts/evaluation/**/Meridian-Setup.exe.sha256
-            artifacts/evaluation/**/consumer-setup.sbom.spdx.json
-            artifacts/evaluation/**/consumer-setup-release-evidence.json
+            artifacts/evaluation/**/consumer-evaluation-win-x64-sbom.spdx.json
+            artifacts/evaluation/**/consumer-evaluation-win-x64-release-evidence.json

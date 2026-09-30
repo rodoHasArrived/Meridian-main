@@ -1,6 +1,7 @@
 name: Meridian CI
 
 on:
+  workflow_call:
   pull_request:
     branches:
       - main
@@ -14,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: meridian-ci-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-meridian-ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -40,6 +41,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 1
 
       - name: Set up .NET SDK
@@ -57,13 +59,13 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/Directory.Build.props', '**/Directory.Build.targets', '**/Directory.Packages.props', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
       - name: Run .NET lane
         env:
-          MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit }}
+          MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit || 'false' }}
         run: bash scripts/ci.sh --lane verify-dotnet
 
       - name: Upload .NET lane artifacts
@@ -92,6 +94,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 1
 
       - name: Set up Node.js
@@ -109,7 +112,7 @@ jobs:
 
       - name: Run browser workstation lane
         env:
-          MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.node.outputs.cache-hit || 'not reported' }}
+          MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.node.outputs.cache-hit || 'false' }}
         run: bash scripts/ci.sh --lane verify-browser
 
       - name: Upload browser lane artifacts
@@ -136,6 +139,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 1
 
       - name: Set up Python
@@ -193,6 +197,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 1
 
       - name: Set up Python

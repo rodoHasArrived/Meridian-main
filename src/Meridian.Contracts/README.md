@@ -11,6 +11,11 @@ last_reviewed: 2026-09-28
 
 # src/Meridian.Contracts
 
+Provider connection API and configuration DTOs retain optional `TenantId` and `CredentialEnvironment`
+alongside connection and external-account identity. These additive fields preserve server-owned
+credential scope across both workstation lanes. They are not accepted as tenant authority in the
+connection creation request; absent fields remain unassigned legacy ownership.
+
 External GL import summaries optionally retain `TrialBalanceBasis`: the provider's
 income-statement year start, income account codes and retained-earnings identity.
 It is distinct from the requested journal period. Reconciliation rows optionally

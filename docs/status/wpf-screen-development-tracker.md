@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `733ea93387aa`
+- Source fingerprint: `605a478d30b5`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `98`
 - Open automated tasks: `6`
@@ -656,7 +656,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as AddProviderWizard (AddProviderWizardPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-add-provider-wizard.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AddProviderWizardViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AddProviderWizardViewModelTests.cs, +2 more.
 
 #### Archive health (`ArchiveHealth`)
 
@@ -866,7 +866,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Settings (SettingsPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-settings.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, +18 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, +19 more.
 
 #### Credential management (`CredentialManagement`)
 
@@ -874,7 +874,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as CredentialManagement (CredentialManagementPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-credential-management.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, +2 more.
 
 #### System health (`SystemHealth`)
 

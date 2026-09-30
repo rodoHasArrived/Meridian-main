@@ -17,6 +17,56 @@ Menu product.
 
 ## Shared close and lot convergence
 
+Credential management saves, removal and verification use the shared authenticated service. Secret
+editors start blank; this page no longer reads or writes environment secrets or a separate local vault.
+Legacy environment values are not automatically erased or migrated. Server verification capabilities
+still bound the assurance available from these operations. Credential rows represent explicit owned
+connections with account and environment labels. Status, save, removal and verification carry that
+connection ID; incomplete or ambiguous ownership cannot become an editable row. A save the service
+records as partial closes the editor and warns that required fields are still missing instead of
+reporting a failed save.
+Credential commands expose asynchronous completion. Desktop regression tests exercise late status
+responses, selected-account saves, blank secret editors and loss of editable rows after refused discovery.
+Conflicting credential commands are disabled during persistence or verification. Refused saves restore
+command availability and retain the current editor values for an explicit retry. Saves submit only the
+fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret
+keeps the other retained fields.
+
+The add-provider wizard saves and tests credentials through the same authenticated service, writing the
+provider-wide vault record, and reads provider-wide status for its badges and blank-save check, so
+credentials held only on the tenant's own connections never make a provider-wide save look complete. It no longer reads or writes Windows user environment variables, its editors
+start blank, and a test reports success only when the service verifies the credentials. Saved but
+unverified credentials are shown as a warning. Every provider and credential endpoint requires tenant
+scope, so a company-less desktop account sees an explicit refusal naming that requirement. While a test
+or save awaits the service, provider selection and the other command are ignored, and backfill inputs
+are captured before the first await. The wizard and credential management build their editors from the
+vault field schema the service reports with each status row, not from the local provider catalog, whose
+names differ (Tiingo's local field is `Token`, the vault accepts `ApiKey`). A provider the service reports
+without a schema, such as NYSE, shows no editors and cannot be saved from the wizard. A provider whose
+schema has no required fields, such as Interactive Brokers, tests as ready without a verification call. A
+blank save for a provider with required fields succeeds only when the service reports credentials already
+configured. Opening the credential-management editor before the selected connection's schema arrives (or
+after Test All superseded that read) starts a fresh status read and rebuilds the open editor when it
+completes. Credential management also lists owned connections for managed providers the local catalog omits,
+and matches a connection's status to the single row the service reports for it, so a retained alias still
+resolves. The settings shell counts unavailable credential status
+separately from missing credentials, so a refused or failed status read is shown as unknown readiness.
+After a confirmed wizard save, only unchanged submitted secret editors are cleared. Test then Save
+therefore reuses the persisted credentials and rereads provider-wide verification without replacing
+them. Edits during persistence or verification remain in the editor and require another test; refused
+saves retain editor values for retry. External rotation or removal is reflected by the final status read.
+Provider badges and selections join canonical IDs, including retained aliases. Credential management
+retains a selected connection's field schema when a status read finishes during or after verification,
+without replacing the newer verification result with an older status label.
+The setup-wizard state service and the Backfill page still write environment variables and remain
+separate cutover work.
+
+Credential status in the settings shell, settings vault, credential management page and add-provider
+wizard is loaded asynchronously from the shared authenticated API service. Failed reads stay
+unavailable; environment credentials do not establish configured status. View-model refreshes reject
+older responses after a newer load starts. Other settings/setup surfaces and scoped default-runtime
+adoption remain separate cutover work.
+
 Fund Ledger carries its explicitly selected book/account/entity/period context to the shared command-center service. Both the queue and private-capital close headline consume the shared decision; clear local lane inputs cannot establish close readiness. The browser and WPF use the same contributor manifest and blocking rules.
 
 Account, aggregate, strategy-run, and trading position presentations use `MarkFreshnessPresentation` over the shared assessment. Observation date, age, and review reason remain visible in rows and inspectors. An absent mark date is unknown evidence, even when the enclosing position snapshot is recent. Close acceptance exercises recovery using the shared decision and authoritative subject scope.
