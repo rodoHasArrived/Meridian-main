@@ -127,7 +127,8 @@ whole host use?** Facts in the current code shape the answer:
      - provider-wide credentials for any host-wide market-data family (built-in or plugin) can be
        neither read nor written. This is enforced at the credential store boundary itself:
        - the unscoped reads (`ReadForProviderAsync`, `ReadOAuthTokensAsync`) return nothing for
-         those families;
+         those families, and `GetStatusAsync` reports them as not configured, with no key preview,
+         field list, environment or verification metadata;
        - every operation that writes or deletes an unscoped record is refused, including the
          migration imports. That covers `SaveAsync`, `SaveRotatedCredentialsAsync`,
          `SaveOAuthTokenAsync`, `DeleteAsync`, `ImportLegacyAsync` and `ImportOAuthTokensAsync`. A
@@ -167,10 +168,13 @@ whole host use?** Facts in the current code shape the answer:
    in a dedicated host file beside the configuration, not in `AppConfig`. This document calls the
    file's contents the host credential state. Each change is recorded in a journal beside it (point
    8). The host file, the journal and the host lock are named after the configuration file, so two
-   configurations in one directory never share them. The configuration identity used for these
-   names, for journal entries and for the vault bound marks (point 6) is the canonical real path of the
-   configuration file: rooted, with `.` and `..` resolved, symlinks resolved, and case-folded on
-   case-insensitive file systems. Aliases of one file therefore always map to one identity:
+   configurations in one directory never share them. The configuration identity used for journal
+   entries and for the vault bound marks (point 6) is not a path. It is a random identifier
+   generated once and stored in the host state file and in every journal entry. Hosts that reach
+   the same shared configuration through different mount paths, such as `/mnt/meridian` and
+   `Z:\meridian` under `SharedStorage`, therefore share one identity. The vault is identified the
+   same way, by an identifier stored in the vault, not by its path. The sidecar files are located
+   next to whatever path the host opened the configuration through:
    - `<config>.host-provider-credentials.json`;
    - `<config>.host-provider-credentials.journal.jsonl`;
    - `<config>.host-provider-credentials.lock`. No HTTP
@@ -186,9 +190,20 @@ whole host use?** Facts in the current code shape the answer:
      Either way, credential-bearing families refuse to start until `recover`. Clearing bindings is
      an explicit, journalled `clear`, never a deleted file;
    - a malformed or unreadable state file, or one whose digest differs from the journal's last
-     committed digest, makes every credential-bearing host-wide family refuse to start, under both
-     postures;
+     committed digest, makes the host credential state untrusted (below);
    - defaults are never substituted.
+
+   **Untrusted state.** Every integrity failure in this document puts the host credential state in
+   one condition, untrusted. That covers a malformed or missing piece, a digest mismatch, a rollback
+   (point 6), an invalid journal, or an unresolved pending entry. While the state is untrusted,
+   under both postures, until `recover` runs:
+   - every credential-bearing host-wide family refuses to start;
+   - every plugin credential-free entry is ignored, so no listed plugin starts under `FailClosed`;
+   - the configuration writer refuses the guarded changes (a bound connection's disable or delete,
+     and any `DataRoot` change), treating every connection as possibly bound.
+
+   This one rule replaces case-by-case handling, so a new integrity failure cannot leave one of
+   these paths open.
 
 5. **Only the host operator changes bindings, out of band.** Bindings and the plugin credential-free
    list change only through a host CLI command, `--host-credential-binding
@@ -235,12 +250,21 @@ whole host use?** Facts in the current code shape the answer:
    - Marks are derived from the scopes stored in the committed host state, never from configuration,
      and are always written under the vault lock in the safe order. A `set` adds its mark before
      publishing the state file, and a `clear` removes it only after publishing it. A crash between
-     the two can therefore only leave an extra mark, which freezes more, never less. Recovery,
-     startup and every command then reconcile this configuration's marks with the committed state
-     under the vault lock (point 8), touching no other configuration's marks. If the committed state
-     cannot be read, the existing marks are left as they are.
-   - The host state records the vault location it was bound against. At startup, a bound family
-     whose configured `DataRoot` resolves to a different vault refuses to start. While any binding
+     the two can therefore only leave an extra mark, which freezes more, never less.
+   - Each mark carries the state generation that created it, a counter that every committed change
+     increments. Recovery, startup and every command reconcile this configuration's marks with the
+     committed state under the vault lock (point 8), touching no other configuration's marks. They
+     remove a surplus mark only when its generation is not newer than the committed state's. A mark
+     newer than the committed state means the sidecars were rolled back, so the state is untrusted
+     and the mark is kept. If the committed state cannot be read, the existing marks are left as
+     they are.
+   - The store's fallback to its rolling vault backup could restore a generation without a recent
+     mark. So when the store loads from the backup, it treats every bound mark as unknown, and it
+     refuses every scoped save, rotation and delete on that vault until the vault is repaired and
+     each configuration has reconciled its marks.
+   - The host state records the identifier of the vault it was bound against. At startup, a bound
+     family whose configured `DataRoot` resolves to a vault with a different identifier refuses to
+     start. While any binding
      exists, the configuration writer refuses to change `DataRoot` (for example through
      `ConfigEndpoints.UpdateStorage`); moving the vault requires `clear` first.
    - The configuration refuses to disable or delete a connection that is bound.
@@ -292,8 +316,8 @@ whole host use?** Facts in the current code shape the answer:
      beside the state file, `<config>.host-provider-credentials.journal.jsonl`. It is not the shared
      credential audit trail. Two configurations that share a `DataRoot`, and so share a credential vault and its
      audit trail, therefore never see or recover each other's transactions. Each entry also records a
-     stable identity for the host configuration (its canonical real path, see point 4), and an
-     entry for a different identity makes the journal invalid.
+     stable identity for the host configuration (the stored identifier, see point 4), and an entry
+     for a different identity makes the journal invalid.
    - **Parsed strictly.** The journal is parsed strictly. A malformed, truncated or unreadable entry,
      or an unreadable journal, makes credential-bearing families refuse to start and refuses mutation
      until `recover`. No entry is ever skipped.
@@ -332,10 +356,12 @@ whole host use?** Facts in the current code shape the answer:
         they are now. Because the configuration and vault locks are held until step 5, no
         configuration writer can delete, disable or change the connection, and no save or rotation can
         install a new generation, between this check and the commit;
-     3. append a `pending` entry to the journal. It records the actor, the host identity, the kind of
-        change (binding or plugin classification), the subject (provider family or plugin ID), the
-        previous and new values, and canonical digests of the complete host credential state before
-        and after the change;
+     3. append a `pending` entry to the journal and flush it durably (an fsync or equivalent, plus
+        the directory entry when the journal is first created) before anything is published. It
+        records the actor, the host identity, the kind of change (binding or plugin classification),
+        the subject (provider family or plugin ID), the previous and new values, the new state
+        generation, and canonical digests of the complete host credential state before and after the
+        change. Outcome entries are flushed the same way;
      4. for `set`, add this configuration's bound mark to the scoped record; write the state file
         atomically; for `clear`, then remove the mark. All of this runs under the vault lock already
         held;
@@ -366,7 +392,10 @@ whole host use?** Facts in the current code shape the answer:
         aside unchanged, so the evidence is kept. When the file is malformed or missing, it adopts an
         empty state with no bindings and no plugin entries, and writes that file atomically;
      2. it reconciles only this configuration's bound marks with the adopted state, under the vault
-        lock, leaving every other configuration's marks untouched;
+        lock, leaving every other configuration's marks untouched. It takes this configuration's
+        identity from the surviving state file or journal. If both are lost, the operator passes it
+        with `--identity`, reading it from the marks that `list` shows in the vault. Until then,
+        orphaned marks keep freezing their scopes, which fails safe;
      3. it appends an `indeterminate` outcome for any unresolved entry, followed by a `baseline` entry.
         The `baseline` entry records the actor, the adopted state's digest, and the paths of any
         state file or journal it moved aside. That digest becomes the last committed digest.
@@ -552,8 +581,22 @@ The implementation PR must add tests that:
   provider-family or environment mismatch, a disabled connection, or missing, partial, failed or
   post-rotation unverified credentials;
 - refuse a present but malformed `MERIDIAN_HOST_CREDENTIAL_TENANT` at startup;
-- treat a missing binding file as no bindings, and a malformed or unreadable one as refusal for every
-  credential-bearing family, under both postures;
+- treat a missing state file as no bindings only when the journal is also missing and no vault record
+  carries this configuration's mark; treat each other combination as a partial loss, and a malformed
+  or unreadable file as untrusted state, under both postures;
+- while the state is untrusted, refuse credential-bearing families, ignore plugin credential-free
+  entries (including when a digest mismatch comes only from a plugin-list edit), and refuse a
+  bound-connection disable or delete and any `DataRoot` change;
+- restore an older but internally consistent state file and journal while the vault keeps a newer
+  mark, and show the mark is kept and the state treated as untrusted;
+- corrupt the primary vault immediately after a `set` so the store loads the backup, and refuse every
+  scoped mutation until repair;
+- crash after the `pending` append is acknowledged but before it is durable, and show nothing was
+  published;
+- run two hosts that reach one shared configuration through different mount paths, and show they
+  share one identity, journal and vault identifier;
+- report provider-wide market-data records as not configured from `GetStatusAsync`, the
+  `CredentialEndpoints` status routes and `ProviderConnectionLifecycleService.GetConnectionsAsync`;
 - fail the architecture scan when production code outside the selection reads a provider credential
   environment variable or configuration key that is not on the allowlist, or when host-wide
   market-data construction code depends on the credential store or the provider-wide resolver
@@ -629,8 +672,6 @@ The implementation PR must add tests that:
   observed state;
 - after an outcome append is torn, leaving a partial record, follow the invalid-journal path:
   refuse families and mutation until `recover` moves the journal aside and records a baseline;
-- treat aliases of one configuration file (relative, `..`, symlinked, different case on a
-  case-insensitive file system) as one identity for the sidecars, the journal and the bound marks;
 - refuse to treat missing sidecars as a fresh installation while the vault carries a bound mark for
   this configuration;
 - crash during each mark reconciliation path (`set`, `clear`, startup, recovery), and show that a
