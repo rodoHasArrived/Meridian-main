@@ -694,7 +694,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         AccountEvidenceIndex marginEvidence)
     {
         var accountId = Attribute(account, "accountId") ?? statementAccountId ?? string.Empty;
-        var baseCurrency = AttributeAny(account, "baseCurrency", "currency") ?? "USD";
+        var baseCurrency = AttributeAny(account, "baseCurrency", "currency") ?? string.Empty;
         // Both sections come from the index rather than a fresh walk of the statement. Same elements,
         // same document order, same MatchesAccount semantics. The IsMarginEvidenceElement conjunct still
         // applies because the margin index is built from the array that was already filtered by it.
@@ -946,7 +946,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             AcquiredDate: acquiredDate,
             Quantity: quantity.Value,
             CostBasis: costBasis.Value,
-            Currency: Attribute(element, "currency") ?? "USD",
+            Currency: Attribute(element, "currency") ?? string.Empty,
             UnitCost: quantity.Value == 0m ? null : costBasis.Value / quantity.Value,
             MarketValue: DecimalAttribute(element, profile, "value", "marketValue"),
             UnrealizedPnl: DecimalAttribute(element, profile, "fifoPnlUnrealized", "unrealizedPnl"),
@@ -967,7 +967,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             Symbol: symbol,
             Quantity: quantity.Value,
             Status: rate > 0m ? BrokerageBorrowStatus.HardToBorrow : BrokerageBorrowStatus.Unknown,
-            Currency: Attribute(element, "currency") ?? "USD",
+            Currency: Attribute(element, "currency") ?? string.Empty,
             AvailableQuantity: DecimalAttribute(element, profile, "availableQuantity"),
             BorrowRate: rate,
             DailyCost: DecimalAttribute(element, profile, "feeAmount", "dailyCost"),
@@ -1002,7 +1002,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             Category: category,
             Subtype: subtype,
             EffectiveAt: effectiveAt,
-            Currency: Attribute(element, "currency") ?? "USD",
+            Currency: Attribute(element, "currency") ?? string.Empty,
             NetAmount: DecimalAttribute(element, profile, [.. amountNames]) ?? 0m,
             Symbol: Attribute(element, "symbol"),
             Quantity: quantity,

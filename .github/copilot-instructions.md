@@ -140,3 +140,8 @@ Relevant examples:
 - [`docs/ai/tooling/README.md`](../docs/ai/tooling/README.md) — shared AI validator and script index
 - [`agents/code-review-agent.md`](agents/code-review-agent.md) — 7-lens code review framework
 - [`prompts/`](prompts/) — 16 reusable prompt templates
+
+CI/CD validation ownership and administrator rollout are maintained in
+[CI/CD ownership and rollout](../docs/engineering/ci-cd-optimization.md). Meridian CI owns the four canonical
+`scripts/ci.sh` lanes; legacy CI owns Secret Scan and nightly/manual coverage.
+All CI governance changes require human review.

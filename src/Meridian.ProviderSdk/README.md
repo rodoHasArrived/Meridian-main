@@ -47,6 +47,13 @@ copy-only scaffolds even when configuration enables them. `DataSourceRegistry.Re
 can exclude families already owned by an application catalog. Module and attribute registrations
 must run before the service provider is built; attribute registration preserves a module's existing
 factory for each implementation type.
+`IProviderConnectionHealthSource.GetConnectionHealthAsync` reports health for exactly one connection;
+tenant-scoped routing, trust and selection use it so family-wide telemetry shared with other owners
+cannot rank a tenant's connection. Its default delegates to `GetHealthAsync`, so sources that fall back
+to provider-family telemetry must override it.
+`ICapabilityRouter.RouteForTenantAsync` routes using only the authorized tenant's retained connections;
+tenant-bound consumers call it instead of `RouteAsync`. Its default refuses with `NotSupportedException`
+rather than falling back to unscoped routing.
 `IMarketDataClient` inherits `IProviderConnectionDiagnosticsSource`, making a safe connection
 snapshot a contract-level expectation for every streaming provider. The default implementation is
 compatibility-preserving and conservative: enabled adapters report `Configured`, disabled adapters

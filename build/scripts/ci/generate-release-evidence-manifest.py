@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -75,6 +76,9 @@ def build_manifest(args: argparse.Namespace) -> dict[str, object]:
         "generatedAtUtc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "commitSha": args.commit_sha or current_commit_sha(),
         "workflowRunId": args.workflow_run_id,
+        "workflowRunAttempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
+        "workflowRunUrl": (f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{args.workflow_run_id}/attempts/{os.environ.get('GITHUB_RUN_ATTEMPT', '1')}"
+                           if os.environ.get("GITHUB_REPOSITORY") and args.workflow_run_id else ""),
         "project": args.project,
         "runtime": args.runtime,
         "version": args.version,
