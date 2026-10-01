@@ -169,8 +169,12 @@ whole host use?** Facts in the current code shape the answer:
    file's contents the host credential state. Each change is recorded in a journal beside it (point
    8). The host file, the journal and the host lock are named after the configuration file, so two
    configurations in one directory never share them. The configuration identity used for journal
-   entries and for the vault bound marks (point 6) is not a path. It is a random identifier
-   generated once and stored in the host state file and in every journal entry. Hosts that reach
+   entries and for the vault bound marks (point 6) is not a path. It is a random identifier,
+   created only by the first mutating command (which holds the host lock exclusively, so two
+   creations cannot race) and stored in the host state file and in every journal entry. A host
+   with no state yet has no identity and takes no identity lock. Each checkpoint (point 6) also
+   records the configuration paths that hosts of that identity have used, as a hint for detecting
+   lost sidecars. Hosts that reach
    the same shared configuration through different mount paths, such as `/mnt/meridian` and
    `Z:\meridian` under `SharedStorage`, therefore share one identity. The vault is identified the
    same way, by an identifier stored in the vault, not by its path. The sidecar files are located
@@ -181,11 +185,12 @@ whole host use?** Facts in the current code shape the answer:
    endpoint or general configuration writer touches either file, so data-source edits cannot erase a
    binding. Both are loaded strictly:
    - a missing state file and a missing journal together mean a fresh installation with no bindings,
-     but only when no scoped record in the vault carries a bound mark for this configuration (point
-     6). Any other combination is a partial loss:
+     but only when no vault checkpoint records the path the host opened the configuration through
+     (point 6). Any other combination is a partial loss:
      - a missing state file with a journal that records a committed state;
      - a state file with a missing journal;
-     - both sidecars missing while the vault still carries a bound mark for this configuration.
+     - both sidecars missing while a vault checkpoint records this configuration's path. Its marks
+       and checkpoint survive, and `recover --identity` adopts that identity.
 
      Either way, credential-bearing families refuse to start until `recover`. Clearing bindings is
      an explicit, journalled `clear`, never a deleted file;
@@ -207,7 +212,7 @@ whole host use?** Facts in the current code shape the answer:
 
 5. **Only the host operator changes bindings, out of band.** Bindings and the plugin credential-free
    list change only through a host CLI command, `--host-credential-binding
-   list|set|clear|plugin-allow|plugin-revoke|recover`, run on the host by whoever operates the
+   list|set|clear|plugin-allow|plugin-revoke|recover|repair-vault`, run on the host by whoever operates the
    process. The same pattern is used by `--fund-tenant-backfill`. No
    tenant account, role or permission can reach it, so tenant user administration cannot grant it. The
    host credential tenant is a startup setting, `MERIDIAN_HOST_CREDENTIAL_TENANT`:
@@ -254,29 +259,42 @@ whole host use?** Facts in the current code shape the answer:
    - **Checkpoint.** Every committed change, including a plugin-list change, increments the state's
      generation. The vault also keeps one checkpoint per configuration identity, recording the last
      committed generation and digest; it is updated under the vault lock after the state file is
-     published. A state whose generation is older than its checkpoint has been rolled back, so the
-     state is untrusted (point 4). A state one generation ahead of its checkpoint is a commit whose
-     checkpoint update was interrupted, and the checkpoint is repaired. Rollback detection therefore
+     published. The state is untrusted (point 4) when either holds:
+     - its generation is older than its checkpoint's, meaning it was rolled back;
+     - its generation equals the checkpoint's but its digest differs, meaning a divergent copy was
+       restored.
+
+     A state one generation ahead of its checkpoint is a commit whose checkpoint update was
+     interrupted, and the checkpoint is repaired. Rollback detection therefore
      covers every change, not only those that create a mark.
    - **Who removes marks.** Each mark records the generation that added it. Only a mutating command
      or `recover` removes marks, while holding the identity lock (point 8) exclusively.
      - Such a command removes a mark that no committed binding names. When recovery closes a pending
        entry as `aborted (recovered)`, it also removes the mark carrying that entry's generation.
-     - Startup only adds missing marks and never removes one.
+     - The first host to start takes the identity lock exclusively, runs recovery (including any
+       mark cleanup) and validation, then downgrades by releasing it and taking it shared. A host
+       that joins hosts already running takes it shared and only adds missing marks. Nothing can
+       be left to clean up while hosts run, because no command can run then.
      - If the committed state cannot be read, the existing marks are left as they are.
    - **Vault backup.** The store's fallback to its rolling vault backup could restore an older
      generation of marks, checkpoints and verification state. So when the store loads from the
-     backup:
-     - it treats every bound mark, checkpoint and verification status as unknown;
-     - it refuses every scoped save, rotation and delete on that vault;
+     backup, it first writes a durable quarantine marker beside the vault. While the marker exists:
+     - every bound mark, checkpoint and verification status is unknown;
+     - every vault mutation is refused, scoped or unscoped, including verification updates;
      - every bound family refuses to start and every bound resolution is refused.
 
-     This lasts until the vault is repaired and each configuration has reconciled.
+     Only an explicit repair (`--host-credential-binding repair-vault`, run offline) clears the
+     marker. It reconciles every configuration identity recorded in the vault.
+   - **Vault format.** Bound marks, checkpoints and the vault identifier change the vault format. So
+     the vault takes a new envelope version that older binaries reject rather than ignore and
+     rewrite, and the primary and backup are upgraded together. A rolling deployment or downgrade
+     against a shared `DataRoot` therefore cannot silently strip marks.
    - The host state records the identifier of the vault it was bound against. At startup, a bound
      family whose configured `DataRoot` resolves to a vault with a different identifier refuses to
-     start. While any binding
-     exists, the configuration writer refuses to change `DataRoot` (for example through
-     `ConfigEndpoints.UpdateStorage`); moving the vault requires `clear` first.
+     start. While any committed host credential state exists, the configuration writer refuses to
+     change `DataRoot` (for example through `ConfigEndpoints.UpdateStorage`). That covers bindings
+     and plugin entries alike, since the checkpoint lives in the vault. Moving the vault requires
+     clearing the state first.
    - The configuration refuses to disable or delete a connection that is bound.
 
    To rotate a bound credential, the operator:
@@ -350,8 +368,8 @@ whole host use?** Facts in the current code shape the answer:
      appended journal entry.
    - **One journal writer at a time.** Every write to the journal, whether from a mutating command or
      from recovery, is made while holding a second lock exclusively, the journal-writer lock
-     (`<config>.host-provider-credentials.journal.lock`). A starting host first takes the host lock and the identity
-     lock in shared mode, then the journal-writer lock, then runs recovery and validation, then releases the
+     (`<config>.host-provider-credentials.journal.lock`). A starting host first takes the host lock in shared mode, then
+     the identity lock (exclusively if it is the first host, see point 6), then the journal-writer lock, then runs recovery and validation, then releases the
      journal-writer lock. This is the same order every command uses, so a starting host and a command
      can never wait on each other:
      - hosts that start at the same moment therefore recover one at a time;
@@ -380,9 +398,10 @@ whole host use?** Facts in the current code shape the answer:
         the subject (provider family or plugin ID), the previous and new values, the new state
         generation, and canonical digests of the complete host credential state before and after the
         change. Outcome entries are flushed the same way;
-     4. for `set`, add this configuration's bound mark to the scoped record; write the state file
-        atomically; for `clear`, then remove the mark; then update this configuration's checkpoint.
-        All of this runs under the vault lock already held;
+     4. for `set`, add this configuration's bound mark to the new scope; write the state file
+        atomically; then remove the mark from any scope the state no longer names (the cleared
+        scope, or the scope a `set` replaced); then update this configuration's checkpoint. All of
+        this runs under the vault lock and the exclusive identity lock already held;
      5. append the outcome, then release the locks in reverse order.
    - **Outcome from the file, not the exception.** `AtomicFileWriter` can throw after the rename has
      already published the file, for example from the directory sync. So on any write exception the
@@ -611,6 +630,16 @@ The implementation PR must add tests that:
   removed;
 - crash a `set` after its mark is written but before the state file is published, and show recovery
   closes it as aborted and removes that mark;
+- crash a `set` after its mark and a `clear` before removing its mark, and show the first host to
+  start removes the surplus mark under the exclusive identity lock;
+- start two hosts for the first time together and show only a mutating command creates the identity;
+- refuse a `DataRoot` change when only plugin entries are committed;
+- reject the new vault format from an older binary, rather than rewriting it without marks;
+- restore a divergent state at the same generation and show the digest mismatch makes it untrusted;
+- after a backup fallback, refuse every vault mutation, including unscoped and verification writes,
+  across a restart, until `repair-vault`;
+- lose both sidecars after a plugin-only change and show the path hint makes it a partial loss;
+- replace a binding with `set` and show the previous scope's mark is removed;
 - copy a configuration with its sidecars onto the same `DataRoot`, and show the copy cannot remove
   the original's marks while the original runs, becomes untrusted once either side commits, and gets
   a fresh identity from `recover --new-identity`;
