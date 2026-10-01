@@ -6,10 +6,15 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Ui.Shared
+
+Reporting delivery readiness captures heartbeat, failure count, and the initial-start window
+together after resolving deployment dependencies. The scheduling gate uses that same observation,
+so a successful first delivery cycle cannot leave a stale peer blocker. Bootstrap requires valid
+worker options; failed, stopped, or stale workers and unrelated deployment blockers remain refused.
 
 Scoped credential lifecycle requests require exactly one retained connection ID match. Duplicate IDs
 are refused before status, mutation or verification can select an account; discovery also omits them.
