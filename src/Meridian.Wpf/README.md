@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Wpf
@@ -124,6 +124,15 @@ aliases share this gate. A configured company cannot silently become the owner o
 The explicit deployment-boundary setting retains isolated single-company migration/demo access;
 the existing graph guard still refuses multiple configured companies in that posture.
 
+After authentication and the cheap composition preflight, `DesktopTenantStartup` prepares the
+registered ledger, fund-account, and fund-structure databases, including their existing legacy
+imports, then awaits retained-data tenant inspection. Only a successful result activates navigation,
+creates the strategy workspace, constructs `MainWindow`, and shows the shell. Preparation and
+inspection share a five-minute deadline; inspection keeps its own 60-second limit. Refusal,
+unavailable inspection, failed preparation, or shutdown cancellation prevents activation. Subsequent
+host startup reuses the cached result without repeating inspection. Unrelated workers still start
+after shell activation.
+
 **Startup refusals are fatal.** `App.StartHostServicesAsync` deliberately tolerates a hosted service
 that fails to start -- a database-backed projection or worker that cannot reach its store leaves the
 desktop running with reduced processing rather than not running at all. That tolerance does not
@@ -172,7 +181,9 @@ belongs behind the window. Its *static* half is marked, as the separate
 so the descriptor scan answers immediately, and postponing it too left a prohibited production graph
 interactive until hosted-service startup shut it down. Register a new guard against the interface as well as `IHostedService`
 -- mapping one singleton to both -- and the preflight picks it up without this shell being edited;
-if the guard cannot answer cheaply, leave it an ordinary hosted service instead.
+if the guard cannot answer cheaply, do not add it to this synchronous composition preflight.
+The retained-data tenant check instead uses the separately awaited `DesktopTenantStartup` gate
+described above, because serving retained workspaces requires its successful completion.
 
 Application startup now shows `StartupWindow` before the main shell. After authentication, the main shell defaults to `HomeWorkspace`, a source-backed WPF launch checkpoint that groups provider health, data freshness, reconciliation, approvals, accounting/reporting readiness, and recent activity before operators enter deeper task workspaces. The startup view model validates
 credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the

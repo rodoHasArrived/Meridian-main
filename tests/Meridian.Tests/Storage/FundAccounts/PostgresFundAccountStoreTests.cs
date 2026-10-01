@@ -399,6 +399,44 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
     }
 
     [FundAccountDatabaseFact]
+    public async Task AllSentinel_DeploymentBoundaryRetainsAccountVisibilityWhileStrictReadsRefuse()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var fundId = Guid.NewGuid();
+        var alpha = MakeAccount() with { FundId = fundId };
+        var beta = MakeAccount() with { FundId = fundId };
+        var legacy = MakeAccount() with { FundId = fundId };
+        await CreateStore(new FixedTenantAccessor("alpha")).UpsertAccountAsync(alpha, cts.Token);
+        await CreateStore(new FixedTenantAccessor("beta")).UpsertAccountAsync(beta, cts.Token);
+        await CreateStore(new FixedTenantAccessor(null)).UpsertAccountAsync(legacy, cts.Token);
+        var query = new AccountStructureQuery(FundId: fundId);
+
+        foreach (var sentinel in new[] { "all", "  ALL  " })
+        {
+            var maintenance = new PostgresFundAccountStore(_fixture.Options,
+                new FixedTenantAccessor(sentinel), TenantScopeEnforcementOptions.DeploymentBoundary);
+            (await maintenance.QueryAccountsAsync(query, cts.Token)).Select(account => account.AccountId)
+                .Should().BeEquivalentTo(new[] { alpha.AccountId, beta.AccountId, legacy.AccountId },
+                    "the legacy unscoped sentinel must not hide retained tenant-owned accounts during migration");
+            (await maintenance.GetAccountAsync(alpha.AccountId, cts.Token))!.AccountId.Should().Be(alpha.AccountId);
+            (await maintenance.GetAccountAsync(beta.AccountId, cts.Token))!.AccountId.Should().Be(beta.AccountId);
+
+            var strict = new PostgresFundAccountStore(_fixture.Options,
+                new FixedTenantAccessor(sentinel), TenantScopeEnforcementOptions.FailClosed);
+            await FluentActions.Awaiting(() => strict.QueryAccountsAsync(query, cts.Token))
+                .Should().ThrowAsync<TenantScopeRejectedException>();
+            await FluentActions.Awaiting(() => strict.GetAccountAsync(alpha.AccountId, cts.Token))
+                .Should().ThrowAsync<TenantScopeRejectedException>();
+        }
+
+        var owner = new PostgresFundAccountStore(_fixture.Options,
+            new FixedTenantAccessor("alpha"), TenantScopeEnforcementOptions.FailClosed);
+        (await owner.QueryAccountsAsync(query, cts.Token)).Should().ContainSingle()
+            .Which.AccountId.Should().Be(alpha.AccountId);
+        (await owner.GetAccountAsync(beta.AccountId, cts.Token)).Should().BeNull();
+    }
+
+    [FundAccountDatabaseFact]
     public async Task StrictStore_AccountAndChildRecords_RejectMissingOrForeignAuthority()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));

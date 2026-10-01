@@ -49,7 +49,7 @@ public static class TenantReadPredicate
     /// first.
     /// </remarks>
     public static bool ShouldFilter(string? callerTenantId)
-        => !string.IsNullOrWhiteSpace(callerTenantId);
+        => IsResolvedTenant(callerTenantId);
 
     /// <summary>
     /// True when the read must be refused outright rather than served.

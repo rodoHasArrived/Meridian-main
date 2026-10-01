@@ -21,6 +21,8 @@ public sealed class TenantReadPredicateTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("\t")]
+    [InlineData("all")]
+    [InlineData("  ALL  ")]
     public void ShouldFilter_IsFalse_ForTenantlessCaller(string? callerTenantId)
         => TenantReadPredicate.ShouldFilter(callerTenantId).Should()
             .BeFalse("a tenantless caller has no tenant to scope by");
@@ -48,6 +50,8 @@ public sealed class TenantReadPredicateTests
     [Theory]
     [InlineData(null)]
     [InlineData("   ")]
+    [InlineData("all")]
+    [InlineData("  ALL  ")]
     public void ShouldRejectRead_IsFalse_ForATenantlessCallerUnderTheDeploymentBoundary(string? callerTenantId)
         => TenantReadPredicate.ShouldRejectRead(callerTenantId, TenantScopeEnforcementMode.DeploymentBoundary)
             .Should().BeFalse("the single-company deployment and the legacy tenantless admin still read");

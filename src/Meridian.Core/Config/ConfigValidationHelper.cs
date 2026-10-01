@@ -16,7 +16,7 @@ public sealed class AppConfigValidator : AbstractValidator<AppConfig>
             {
                 try
                 {
-                    TenantScopeEnforcementOptions.FromEnvironmentValue(value, TenantScopeEnforcementOptions.FailClosed);
+                    TenantScopeEnforcementOptions.FromConfigurationValue(value);
                     return true;
                 }
                 catch (ArgumentException) { return false; }

@@ -55,7 +55,7 @@ public static class TenantScopeServiceRegistration
             }
         }
 
-        return TenantScopeEnforcementOptions.FromEnvironmentValue(configured, TenantScopeEnforcementOptions.FailClosed);
+        return TenantScopeEnforcementOptions.FromConfigurationValue(configured);
     }
 
     /// <summary>Replaces the worker fallback with the host adapter, preserving explicit registrations.</summary>

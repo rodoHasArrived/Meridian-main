@@ -23,7 +23,7 @@ public sealed partial class PostgresLedgerJournalStore
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
         await EnsureBookWriteAuthorityAsync(connection, transaction, lot.LedgerBookId, ct).ConfigureAwait(false);
         await EnsureBookReferenceAuthorityAsync(connection, transaction, "tax_lots", "tax_lot_record_id",
-            lot.TaxLotRecordId, null, true, ct).ConfigureAwait(false);
+            lot.TaxLotRecordId, lot.LedgerBookId, true, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
@@ -81,8 +81,7 @@ public sealed partial class PostgresLedgerJournalStore
                 @par_basis,
                 @acquisition_terms)
             on conflict (tax_lot_record_id) do update
-            set ledger_book_id = excluded.ledger_book_id,
-                account_name = excluded.account_name,
+            set account_name = excluded.account_name,
                 account_type = excluded.account_type,
                 symbol = excluded.symbol,
                 financial_account_id = excluded.financial_account_id,
@@ -103,6 +102,7 @@ public sealed partial class PostgresLedgerJournalStore
                 version = retained.version + 1,
                 updated_at = excluded.updated_at
             where retained.originating_mutation_batch_id is null
+              and retained.ledger_book_id = excluded.ledger_book_id
               and @expected_version > 0
               and retained.version = @expected_version
               and (not @require_tenant or exists (
@@ -172,7 +172,7 @@ public sealed partial class PostgresLedgerJournalStore
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
         {
             throw new InvalidOperationException(
-                $"Ledger tax lot '{lot.TaxLotRecordId}' was not saved because its version was stale or it is managed by an atomic posting batch.");
+                $"Ledger tax lot '{lot.TaxLotRecordId}' was not saved because its ledger book changed, its version was stale, or it is managed by an atomic posting batch.");
         }
 
         var saved = ReadTaxLot(reader);

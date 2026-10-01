@@ -153,6 +153,50 @@ public sealed class StrictTenantMutationPostgresTests
         (await database.JournalStore.ListWashSaleDeferralsAsync(alpha.LedgerBookId, date, date)).Should().BeEmpty();
     }
 
+    [LedgerDatabaseFact]
+    public async Task TaxLotUpsert_RejectsBookMoveWithinSameTenantAndPreservesRetainedRow()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var registry = new PostgresFundProfileTenancyRegistry(database.Options);
+        await registry.BindAsync("fund-alpha", "tenant-alpha");
+        var now = DateTimeOffset.Parse("2026-05-15T12:00:00Z");
+        var originalBook = await database.JournalStore.SaveLedgerBookAsync(new(Guid.NewGuid(), "fund-alpha", Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund, "Original book", "USD", now, now));
+        var otherBook = await database.JournalStore.SaveLedgerBookAsync(originalBook with
+        {
+            LedgerBookId = Guid.NewGuid(),
+            FundStructureNodeId = Guid.NewGuid(),
+            DisplayName = "Another book owned by the same tenant"
+        });
+        var strict = new PostgresLedgerJournalStore(database.Options, new WorkerAccessor(), TenantScopeEnforcementOptions.FailClosed);
+        using var authority = FundScopeTenantAuthority.Enter("tenant-alpha", "retained lot owner");
+        var retained = await strict.SaveTaxLotAsync(new(Guid.NewGuid(), originalBook.LedgerBookId,
+            new("Investments", LedgerAccountType.Asset), "retained-lot", new(2026, 5, 15), 10m, 10m, 20m, "USD", now, now,
+            EvidenceRef: "original-evidence"));
+        var move = retained with
+        {
+            LedgerBookId = otherBook.LedgerBookId,
+            OpenQuantity = 1m,
+            EvidenceRef = "replacement-evidence",
+            UpdatedAt = now.AddMinutes(1)
+        };
+
+        Func<Task> strictMove = () => strict.SaveTaxLotAsync(move);
+        await strictMove.Should().ThrowAsync<UnauthorizedAccessException>();
+        // The SQL guard also enforces immutable book identity when the compatibility store skips
+        // the authority preflight, including an upsert that encounters an intervening insert.
+        Func<Task> compatibilityMove = () => database.JournalStore.SaveTaxLotAsync(move);
+        await compatibilityMove.Should().ThrowAsync<InvalidOperationException>();
+
+        (await strict.GetTaxLotsByIdsAsync(originalBook.LedgerBookId, [retained.TaxLotRecordId]))
+            .Should().ContainSingle().Which.Should().BeEquivalentTo(retained);
+        (await strict.GetTaxLotsByIdsAsync(otherBook.LedgerBookId, [retained.TaxLotRecordId])).Should().BeEmpty();
+        var updated = await strict.SaveTaxLotAsync(retained with { OpenQuantity = 9m, UpdatedAt = now.AddMinutes(2) });
+        updated.LedgerBookId.Should().Be(originalBook.LedgerBookId);
+        updated.OpenQuantity.Should().Be(9m);
+        updated.Version.Should().Be(retained.Version + 1);
+    }
+
     private static LedgerJournalEntryWrite Write(Guid bookId, Guid periodId, DateTimeOffset now)
     {
         var id = Guid.NewGuid();

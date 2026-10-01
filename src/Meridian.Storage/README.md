@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Storage
@@ -114,10 +114,14 @@ already require explicit tenant identity and are outside the nullable-column cut
 Strict fund-structure mutations insert a new ownership link or assignment with its tenant stamp
 in the same SQL write. Scoped updates require the retained stamp to match and never reassign
 another tenant's edge. This keeps ordinary post-cutover writes ready for the next startup check.
+The additive tenant-aware store overloads refuse a supplied tenant unless the implementation
+explicitly supports the atomic scoped-write contract; they cannot fall back to an unscoped write.
 
 Strict ledger mutations require current caller authority matching the retained period, book,
 and fund ownership. Book and tax-lot policy upserts also check retained ownership in their
 conflict clauses, so a caller cannot acquire a foreign identifier by racing its first insert.
+An existing tax-lot ID retains its original ledger book, including when both books belong to the
+same tenant. The retained-book check and the upsert conflict predicate both enforce that identity.
 Period loads inside strict writes retain the caller predicate. Tax-lot policy and atomic
 posting receipt reads apply the same retained book authority. Explicit deployment-boundary
 maintenance keeps the existing import and attribution seams available.

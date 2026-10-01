@@ -34,6 +34,15 @@ public sealed class TenantCutoverConfigurationTests : IDisposable
         services.AddSingleton(new ConfigStore(path));
         using var provider = services.BuildServiceProvider();
         provider.GetRequiredService<TenantScopeEnforcementOptions>().IsFailClosed.Should().Be(strict);
+
+        var validation = new AppConfigValidator().Validate(new AppConfig(TenantScopeEnforcement: setting));
+        validation.Errors.Should().NotContain(error => error.PropertyName == nameof(AppConfig.TenantScopeEnforcement));
+
+        var configuredServices = new ServiceCollection().AddFundScopeTenantServices();
+        configuredServices.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["TenantScopeEnforcement"] = setting }).Build());
+        using var configuredProvider = configuredServices.BuildServiceProvider();
+        configuredProvider.GetRequiredService<TenantScopeEnforcementOptions>().IsFailClosed.Should().Be(strict);
     }
 
     [Fact]
@@ -47,11 +56,62 @@ public sealed class TenantCutoverConfigurationTests : IDisposable
         provider.GetRequiredService<TenantScopeEnforcementOptions>().IsFailClosed.Should().BeTrue();
     }
 
-    [Fact]
-    public void ConfigValidationRejectsMisspelledSecurityPosture()
+    [Theory]
+    [InlineData("open", false)]
+    [InlineData("boundary", false)]
+    [InlineData("deploymentboundary", false)]
+    [InlineData("closed", true)]
+    [InlineData("strict", true)]
+    [InlineData("failclosed", true)]
+    [InlineData("  OPEN  ", false)]
+    [InlineData("  Strict  ", true)]
+    public void EnvironmentAliasesRemainCompatibleAndOverrideApplicationSetting(string setting, bool strict)
     {
-        var result = new AppConfigValidator().Validate(new AppConfig(TenantScopeEnforcement: "fail_closed"));
+        _environment.Set(TenantScopeEnforcementOptions.EnvironmentVariable, setting);
+        var services = new ServiceCollection().AddFundScopeTenantServices();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?>
+            {
+                ["TenantScopeEnforcement"] = strict ? "deployment-boundary" : "fail-closed"
+            }).Build());
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<TenantScopeEnforcementOptions>().IsFailClosed.Should().Be(strict);
+    }
+
+    [Theory]
+    [InlineData("open")]
+    [InlineData("boundary")]
+    [InlineData("deploymentboundary")]
+    [InlineData("closed")]
+    [InlineData("strict")]
+    [InlineData("failclosed")]
+    [InlineData("fail_closed")]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("FAIL-CLOSED")]
+    [InlineData(" fail-closed ")]
+    [InlineData("DEPLOYMENT-BOUNDARY")]
+    [InlineData(" deployment-boundary ")]
+    public void ApplicationSettingRejectsAliasesAndNoncanonicalValues(string setting)
+    {
+        var result = new AppConfigValidator().Validate(new AppConfig(TenantScopeEnforcement: setting));
         result.Errors.Should().Contain(error => error.PropertyName == nameof(AppConfig.TenantScopeEnforcement));
+
+        var path = Path.Combine(_directory, "appsettings.json");
+        File.WriteAllText(path, JsonSerializer.Serialize(new AppConfig(TenantScopeEnforcement: setting)));
+        var fileServices = new ServiceCollection().AddFundScopeTenantServices();
+        fileServices.AddSingleton(new ConfigStore(path));
+        using var fileProvider = fileServices.BuildServiceProvider();
+        Action resolveFile = () => fileProvider.GetRequiredService<TenantScopeEnforcementOptions>();
+        resolveFile.Should().Throw<ArgumentException>().WithMessage("*TenantScopeEnforcement*");
+
+        var configuredServices = new ServiceCollection().AddFundScopeTenantServices();
+        configuredServices.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["TenantScopeEnforcement"] = setting }).Build());
+        using var configuredProvider = configuredServices.BuildServiceProvider();
+        Action resolveConfiguration = () => configuredProvider.GetRequiredService<TenantScopeEnforcementOptions>();
+        resolveConfiguration.Should().Throw<ArgumentException>().WithMessage("*TenantScopeEnforcement*");
     }
 
     [Theory]

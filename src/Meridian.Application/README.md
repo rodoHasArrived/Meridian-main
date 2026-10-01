@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Application
@@ -160,6 +160,8 @@ refuses every local read and mutation with explicit migration guidance, includin
 and management aliases. Files remain retained; selecting a current company does not attribute
 historical snapshots. Explicit deployment-boundary compatibility keeps reviewed single-company
 migration access available. Production composition still rejects these nonproduction services.
+The migration-required refusal derives from `MeridianException`, preserving shared domain-error
+classification while the HTTP boundary continues to report the specific migration guidance.
 
 The explicit `--fund-tenant-backfill --action preview|apply` command previews retained ownership
 across the graph, ledger books and periods, close workflows, and configured fund accounts, then
@@ -170,9 +172,14 @@ remain unchanged and require a governed repair, preserving their existing audit 
 [The operator runbook](../../docs/operators/fund-structure-tenant-backfill.md) describes attribution,
 quarantine, immutable receipts, and recovery. Core hosts default to strict tenant reads and check
 migration readiness before serving retained data. `TenantScopeEnforcement` is the supported
-configuration setting, with the environment override documented in the runbook. Explicit
+configuration setting. Application settings accept only the exact `fail-closed` and
+`deployment-boundary` values; legacy aliases are confined to the environment override documented
+in the runbook. Explicit
 `deployment-boundary` is a temporary migration posture. Core hosts register retained worker
 authority; HTTP hosts replace only that fallback with their request accessor.
+`TenantCutoverStartupPrerequisites` reuses the registered ledger, fund-account, and fund-structure
+migration/import paths so WPF can finish preparation and tenant inspection before activating its
+workspaces or shell. This preparation does not start unrelated background workers.
 Direct-lending accrual/outbox workers are constructed and started only when the final
 DI-resolved posture permits unattributed process work. Strict hosts log that these workers are
 withheld, including when a host supplies a later instance/factory override. Strict operation still

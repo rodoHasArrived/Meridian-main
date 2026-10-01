@@ -2,7 +2,7 @@
 title: Fund Structure Tenant Backfill
 status: active
 owner: core-team
-reviewed: 2026-09-28
+reviewed: 2026-10-01
 audience: operators
 ---
 
@@ -10,7 +10,10 @@ audience: operators
 
 Strict tenant enforcement is the supported host default. An omitted `TenantScopeEnforcement`
 setting selects `fail-closed`; `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` overrides the JSON setting.
-The value is read once and requires a restart. Invalid explicit values refuse startup.
+The value is read once and requires a restart. Application settings accept only the exact strings
+`fail-closed` and `deployment-boundary`; aliases such as `open`, `boundary`, `strict`, and `closed`
+are invalid there. Legacy aliases remain confined to the environment override. Invalid explicit
+values refuse startup.
 
 This maintenance command prepares legacy fund-structure, ledger-book, period, continuity, and
 configured fund-account rows. It previews the retained attribution plan and applies only the
@@ -42,6 +45,10 @@ initialization and before workers or HTTP service. Missing/unscoped attribution,
 quarantine, dangling ownership, and tenant mismatches refuse startup with table/count diagnostics
 and this remediation path. Unavailable inspection also refuses startup. The check is read-only:
 it does not delete records or silently present retained data as an empty ledger.
+WPF completes its registered database migrations and legacy imports, then awaits the same inspection
+before creating retained workspaces or showing the main window. Preparation and inspection have a
+five-minute overall deadline, with a 60-second inspection limit. A refusal or unavailable check
+prevents shell activation; later host startup reuses the successful inspection result.
 
 The browser and WPF hosts' unpartitioned local fund/account snapshots cannot establish tenant ownership. Strict local
 access to those services is explicitly refused with a migration-required error; the retained files

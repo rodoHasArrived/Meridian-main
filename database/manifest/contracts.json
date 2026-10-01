@@ -3851,7 +3851,7 @@
       ]
     }
   ],
-  "fingerprint": "1c0eaf7f74a6393833c05ede59c99ea9ac5a40ecf6d8ff52b74e9e464a2362cc",
+  "fingerprint": "f6fe4e36728abcaf7d281d5a95f3e8b646e5a4e5493a57322b0291b94bfe4845",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6127,7 +6127,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "ce4cf14a65895ef3f388a620c0c5ac99f59017077d55cee80d0313dd331ca7ee",
+      "fingerprint": "9259ccf1ce6403c9a6a74bdd4400f1c870a20bf8e4e5febe7104a67aac76c137",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Tenancy",
       "object_ids": [
@@ -241745,7 +241745,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "6df517b4703cceb3625f53a7257735bb19bd0cb6d2d94b1a6a5cdcf877fdc504",
+      "fingerprint": "54297ab903d287404ad7202c298bac0ff3ec037f0f75d8c650995efc090bca9a",
       "full_name": "Meridian.Contracts.Tenancy.TenantScopeRejectedException",
       "id": "Meridian.Contracts.Tenancy.TenantScopeRejectedException",
       "kind": "class",
@@ -241762,7 +241762,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 112,
+          "source_line": 127,
           "type": "string"
         }
       ],
@@ -241772,12 +241772,12 @@
       "qualified_name": "Meridian.Contracts.Tenancy.TenantScopeRejectedException",
       "references": [],
       "source": {
-        "line": 103,
+        "line": 118,
         "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
       },
       "sources": [
         {
-          "line": 103,
+          "line": 118,
           "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
         }
       ],

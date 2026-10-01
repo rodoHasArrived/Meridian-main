@@ -51,6 +51,21 @@ public sealed record TenantScopeEnforcementOptions(TenantScopeEnforcementMode Mo
     public bool IsFailClosed => Mode == TenantScopeEnforcementMode.FailClosed;
 
     /// <summary>
+    /// Parses the supported appsettings values exactly. Omission selects strict enforcement;
+    /// compatibility aliases are accepted only by <see cref="FromEnvironmentValue"/>.
+    /// </summary>
+    /// <exception cref="ArgumentException">The value is not a supported appsettings posture.</exception>
+    public static TenantScopeEnforcementOptions FromConfigurationValue(string? value)
+        => value switch
+        {
+            null or "fail-closed" => FailClosed,
+            "deployment-boundary" => DeploymentBoundary,
+            _ => throw new ArgumentException(
+                $"{ConfigurationKey} must be 'fail-closed' or 'deployment-boundary'.",
+                nameof(value)),
+        };
+
+    /// <summary>
     /// Parses the deployment switch. An <b>absent</b> value keeps the current default; a value that
     /// is present but unrecognised is refused.
     /// </summary>
@@ -80,7 +95,7 @@ public sealed record TenantScopeEnforcementOptions(TenantScopeEnforcementMode Mo
             "fail-closed" or "failclosed" or "closed" or "strict" => FailClosed,
             "deployment-boundary" or "deploymentboundary" or "boundary" or "open" => DeploymentBoundary,
             _ => throw new ArgumentException(
-                $"{EnvironmentVariable} / {ConfigurationKey} is set to '{value.Trim()}', which is not a recognised tenant "
+                $"{EnvironmentVariable} is set to '{value.Trim()}', which is not a recognised tenant "
                 + "scope posture. Use 'fail-closed' or 'deployment-boundary'.",
                 nameof(value)),
         };

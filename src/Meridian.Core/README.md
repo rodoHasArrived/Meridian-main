@@ -6,7 +6,7 @@ module_id: SRC-CORE
 path: src/Meridian.Core
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Core
@@ -51,7 +51,8 @@ This layer provides low-level reusable infrastructure. It must stay independent 
 
 `AppConfig.TenantScopeEnforcement` is a supported restart-required security setting. Omission
 selects `fail-closed`; the host permits `deployment-boundary` only as explicit migration
-compatibility. Configuration validation rejects unknown values, and the generated JSON schema
+compatibility. Configuration validation accepts only these exact application-setting values and
+rejects aliases, including `open`, `boundary`, `strict`, and `closed`. The generated JSON schema
 and sample document the default. Host startup verifies retained-data readiness before strict work.
 
 Use this module when a cross-project primitive or runtime helper is required by multiple higher layers.

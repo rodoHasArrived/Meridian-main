@@ -4,6 +4,7 @@ using Meridian.Identity;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Wpf.Services;
 
@@ -16,6 +17,20 @@ public static class DesktopTenantScopeServiceRegistration
         services.TryAddSingleton<IWorkstationTenantContextAccessor>(sp =>
             sp.GetRequiredService<DesktopWorkstationTenantContextAccessor>());
         services.AddFundScopeTenantServices<DesktopFundScopeTenantAccessor>();
+        // Desktop activation must inspect retained stores before resolving workspaces or showing
+        // a shell. Replace only the hosted guard with the same cached pre-shell startup gate.
+        foreach (var descriptor in services.Where(descriptor =>
+            descriptor.ServiceType == typeof(IHostedService) &&
+            descriptor.ImplementationType == typeof(TenantCutoverGuardService)).ToArray())
+            services.Remove(descriptor);
+        services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
+        services.TryAddSingleton<ITenantCutoverStartupPrerequisites, TenantCutoverStartupPrerequisites>();
+        services.TryAddSingleton<TenantCutoverGuardService>();
+        if (!services.Any(descriptor => descriptor.ServiceType == typeof(DesktopTenantStartup)))
+        {
+            services.AddSingleton<DesktopTenantStartup>();
+            services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<DesktopTenantStartup>());
+        }
         services.TryAddSingleton<UserProfileRegistry>(sp => new UserProfileRegistry(
             roleProfileStore: null,
             accountStore: sp.GetRequiredService<IUserAccountStore>(),

@@ -4,6 +4,7 @@ using Meridian.Application.Tenancy;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
+using Meridian.Core.Exceptions;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage;
@@ -68,7 +69,8 @@ public sealed class LocalTenantCapabilityCompositionTests : IDisposable
         Func<Task> write = () => provider.GetRequiredService<IAccountManagementService>()
             .CreateAccountAsync(new(Guid.NewGuid(), AccountTypeDto.Bank, "REFUSED", "Refused account", "USD",
                 DateTimeOffset.UtcNow, "operator"));
-        await accountRead.Should().ThrowAsync<LocalTenantMigrationRequiredException>().WithMessage(LocalTenantMigrationGate.RefusalMessage);
+        var refusal = await accountRead.Should().ThrowAsync<MeridianException>().WithMessage(LocalTenantMigrationGate.RefusalMessage);
+        refusal.Which.Should().BeOfType<LocalTenantMigrationRequiredException>();
         await graphRead.Should().ThrowAsync<LocalTenantMigrationRequiredException>().WithMessage(LocalTenantMigrationGate.RefusalMessage);
         await write.Should().ThrowAsync<LocalTenantMigrationRequiredException>().WithMessage(LocalTenantMigrationGate.RefusalMessage);
     }

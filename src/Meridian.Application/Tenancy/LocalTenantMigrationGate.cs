@@ -1,4 +1,5 @@
 using Meridian.Contracts.Tenancy;
+using Meridian.Core.Exceptions;
 
 namespace Meridian.Application.Tenancy;
 
@@ -21,4 +22,4 @@ public sealed class LocalTenantMigrationGate(TenantScopeEnforcementOptions optio
 }
 
 /// <summary>A retained local capability is unavailable until its tenant migration is reviewed.</summary>
-public sealed class LocalTenantMigrationRequiredException() : Exception(LocalTenantMigrationGate.RefusalMessage);
+public sealed class LocalTenantMigrationRequiredException() : MeridianException(LocalTenantMigrationGate.RefusalMessage);

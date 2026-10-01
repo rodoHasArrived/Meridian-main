@@ -27,7 +27,8 @@ internal sealed class PostgresTenantCutoverReadinessCheck(IServiceProvider servi
 
 /// <summary>
 /// Refuses an unsafe cutover instead of presenting an apparently empty retained database.
-/// This performs bounded database IO and intentionally is not a pre-shell IStartupRefusalGuard.
+/// This performs bounded database IO and is not a cheap IStartupRefusalGuard. Desktop startup
+/// explicitly awaits it after migrations/imports and before exposing its shell.
 /// </summary>
 public sealed class TenantCutoverGuardService(
     TenantScopeEnforcementOptions options,

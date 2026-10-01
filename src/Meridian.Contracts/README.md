@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Contracts
@@ -64,6 +64,11 @@ and the governed ledger boundary rejects mismatches.
 setting; host composition defaults to strict and honors its environment override. Compatibility
 mode is an explicit migration posture. Missing request/session authority cannot be replaced by
 client-supplied tenant IDs or an ambient worker scope.
+The application-setting parser accepts only the documented canonical values; the environment
+parser retains its legacy aliases separately. `TenantReadPredicate` uses the same resolved-tenant
+definition for rejection and filtering: `all` is unresolved. Strict mode refuses it, while explicit
+deployment-boundary compatibility leaves an unresolved caller unfiltered so migration does not
+hide records already attributed to real tenants.
 
 `Coordination/IExecutionLease.cs` defines execution-scoped ownership. A unique run owner can
 execute a side effect only while the coordination store excludes lease transfer. Managers or
