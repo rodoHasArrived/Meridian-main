@@ -160,6 +160,13 @@ whole host use?** Facts in the current code shape the answer:
        allowed, so unrelated configuration saves keep working. Routes that write credentials into
        `AppConfig`, such as `ConfigEndpoints.ConfigAlpaca` and `ProviderEndpoints.ConfigDataSources`,
        therefore cannot install provider-wide credentials either;
+     - configuration reads follow the same key list. Today `ConfigEndpoints`' full-configuration
+       read serializes `cfg.Backfill` directly, so provider tokens such as `TiingoConfig.ApiToken`
+       and `PolygonConfig.ApiKey` reach anyone with view access, while Alpaca's keys are already
+       masked with `SensitiveValueMasker`. Under `FailClosed`, every configuration read surface
+       (the full and effective configuration, data sources and provider settings) returns those keys
+       as absent. Under `DeploymentBoundary` it masks them the way Alpaca's are masked. A test
+       serializes every configuration read response and fails on any unmasked credential value;
      - existing provider-wide records therefore remain stored but unreadable, until the deployment
        returns to `DeploymentBoundary`;
      - a plugin family starts only if the host operator lists it as credential-free (point 5). Plugins
@@ -292,7 +299,7 @@ whole host use?** Facts in the current code shape the answer:
      A state one generation ahead of its checkpoint is repaired forward only when the journal's last
      entry is that generation's unresolved `pending` entry, which proves the checkpoint write was
      interrupted. A `committed` outcome never authorizes it: every path that records `committed`
-     (step 5, the file-checked outcome and recovery's `committed (recovered)`) first writes the
+     (step 5, the file-checked outcome and recovery's `committed`) first writes the
      checkpoint under the vault lock, so a committed generation with a lagging checkpoint can only
      mean a rolled-back vault. Otherwise the vault itself was rolled back, for example restored from an older
      copy that still parses, and the state is untrusted. A missing checkpoint for an identity that
@@ -302,7 +309,7 @@ whole host use?** Facts in the current code shape the answer:
    - **Who removes marks.** Each mark records the generation that added it. Only a mutating command
      or `recover` removes marks, while holding the identity lock (point 8) exclusively.
      - Such a command removes a mark that no committed binding names. When recovery closes a pending
-       entry as `aborted (recovered)`, it also removes the mark carrying that entry's generation.
+       entry as `aborted`, it also removes the mark carrying that entry's generation.
      - The first host to start takes the identity lock exclusively, runs recovery (including any
        mark cleanup) and validation, then moves to shared mode. If the platform cannot downgrade a
        lock atomically, the host takes the shared lock and then repeats validation against the
@@ -423,8 +430,10 @@ whole host use?** Facts in the current code shape the answer:
        gate, run before any provider is built. It resolves `DataRoot` strictly, from the
        configuration and any environment override, and never through the lenient
        `ConfigStore.LoadConfig`. If a configuration file exists but cannot be strictly parsed, the
-       gate cannot know where the vault is, so it refuses to start. It also checks the default root
-       and the last known vault location recorded in the host state, when they differ. It does not
+       gate cannot know where the vault is, so it refuses to start. It also checks the last known
+       vault location recorded in this configuration's host state, when it differs. It checks the
+       default root only when strict resolution actually selects it, so another configuration's
+       vault at the default root never blocks this host. It does not
        trust the marker alone, because a marker can be lost or restored on its own. It reads the format version from the marker and from the
        unencrypted envelope headers of the vault and its backup, takes the highest, and refuses to
        start at all if that is newer than it supports. It also refuses when the marker is missing
@@ -452,16 +461,19 @@ whole host use?** Facts in the current code shape the answer:
      and plugin entries alike, since the checkpoint lives in the vault. Moving the vault therefore
      requires `reset`, an offline command that runs once no bindings or plugin entries remain:
      1. it journals the reset;
-     2. it moves the closed journal aside unchanged, as the permanent audit record;
-     3. it writes a retirement file beside the identity lock file
-        (`provider-credentials.identity-<identifier>.retired`), durably and before anything else
-        changes, recording the actor, the time, the archived journal's path, and the hash of its
-        last entry and the digest of the whole file, so the archive cannot later be truncated or
-        rewritten undetected. Like the lock file,
-        it is never removed, and it is outside the vault, so no vault backup can predate it away;
-     4. it replaces this configuration's checkpoint in the vault with a reset tombstone carrying the
+     2. it writes a retirement file beside the identity lock file
+        (`provider-credentials.identity-<identifier>.retired`), durably, recording the actor, the
+        time, the path the journal will be archived to, and the hash of the journal's last entry and
+        the digest of the whole file, computed in place. Like the lock file, it is never removed, and
+        it is outside the vault, so no vault backup can predate it away. From this point the
+        identity is retired, so a crash in any later step cannot revive it;
+     3. it replaces this configuration's checkpoint in the vault with a reset tombstone carrying the
         same record;
+     4. only then does it move the closed journal aside unchanged, as the permanent audit record;
      5. it removes the state file.
+
+     If it crashes after step 2, rerunning `reset` finishes the remaining steps, checking the
+     journal against the sealed hash and digest wherever it is.
 
      It never removes the identity lock file, because unlinking a held lock would let another
      process lock a new file at the same path. Identity lock files stay permanently. A tombstoned
@@ -542,8 +554,9 @@ whole host use?** Facts in the current code shape the answer:
      also records the hash of the journal entry that produced the current state: its `pending`
      entry, or the `baseline` entry. Those are the entries carrying actor, time, kind, subject and
      values. Entries after it are outcomes, which carry only the pending entry's hash and the
-     outcome, both recomputed from the state file during recovery. Editing the newest entries is
-     therefore detected as well.
+     outcome, both recomputed from the state file during recovery. Whether an outcome was written by
+     recovery cannot be recomputed, so the journal does not record it; the host log does. Editing the
+     newest entries is therefore detected as well.
    - **Offline only.** Every running host holds the host lock (`<config>.host-provider-credentials.lock`)
      in shared mode for its whole lifetime. Several hosts on one configuration, such as `SharedStorage`
      coordination instances or a workstation host beside a collector, can therefore run together.
@@ -624,8 +637,8 @@ whole host use?** Facts in the current code shape the answer:
      journal-writer lock, each
      `pending` entry without an outcome is resolved against the state file:
      - if the digest of the whole file equals the entry's after-digest, recovery writes the
-       checkpoint under the vault lock, then closes it as `committed (recovered)`;
-     - if it equals the entry's before-digest, it is closed as `aborted (recovered)`;
+       checkpoint under the vault lock, then closes it as `committed`;
+     - if it equals the entry's before-digest, it is closed as `aborted`;
      - otherwise the file was changed outside the command, even if only in an unrelated entry.
        Credential-bearing families then refuse to start, as for a malformed file, and mutation is
        refused, until the operator runs `recover`.
@@ -640,8 +653,9 @@ whole host use?** Facts in the current code shape the answer:
         aside unchanged, so the evidence is kept. When the file is malformed or missing, it adopts an
         empty state with no bindings and no plugin entries, and writes that file atomically. That
         state takes the last committed posture the surviving journal records. When no valid journal
-        records one, it takes `FailClosed`, never the environment's value, and the `baseline` entry
-        records that the posture was defaulted. Moving back to `DeploymentBoundary` is then a
+        records one, or a posture change is still unresolved, it takes `FailClosed`, never the
+        environment's value and never the older posture, and the `baseline` entry records that the
+        posture was defaulted. Moving back to `DeploymentBoundary` is then a
         separate, journalled `posture` transaction;
      2. it reconciles only this configuration's bound marks with the adopted state, under the vault
         lock, leaving every other configuration's marks untouched. It takes this configuration's
@@ -653,7 +667,10 @@ whole host use?** Facts in the current code shape the answer:
      3. it appends an `indeterminate` outcome for any unresolved entry, followed by a `baseline` entry.
         It also sets this configuration's checkpoint to the adopted state's generation and digest.
         The `baseline` entry records the actor, the adopted state's digest, and the paths of any
-        state file or journal it moved aside. That digest becomes the last committed digest.
+        state file or journal it moved aside, each with its whole-file digest and, for a journal, the
+        hash of its last entry. Every file any command moves aside as evidence is sealed this way, so
+        it cannot later be truncated, rewritten or replaced undetected. That digest becomes the last
+        committed digest.
 
      If the journal itself is invalid, `recover` first moves it aside unchanged, so the evidence is
      kept, and starts the new journal with the `baseline` entry. The next startup then validates
@@ -927,7 +944,7 @@ The implementation PR must add tests that:
   composes no brokerage gateway, sync adapter or brokerage connection route and reads no
   provider-wide credential until `recover`;
 - crash `posture` after publishing the state file and before the checkpoint update, and show
-  recovery writes the checkpoint before closing it as `committed (recovered)`; restore an older
+  recovery writes the checkpoint before closing it as `committed`; restore an older
   state with the other posture, and show the checkpoint makes it untrusted;
 - fall back to a backup that predates an identity's first checkpoint while a host of that identity
   runs, and show `repair-vault` finds the identity from its lock file and refuses; once the host
@@ -964,7 +981,7 @@ The implementation PR must add tests that:
 - restore the vault and its audit log together to before a recorded verification failure, and show
   the restore runbook's required `repair-vault` leaves the bound family unverified;
 - write the state file and then crash before the checkpoint update, and show recovery writes the
-  checkpoint before closing the entry as `committed (recovered)`; then restore an older vault
+  checkpoint before closing the entry as `committed`; then restore an older vault
   whose checkpoint lags a `committed` entry, and show the state is untrusted rather than repaired
   forward;
 - recover with `--vault-path` when the configuration cannot be loaded and the vault is at a custom
@@ -986,6 +1003,17 @@ The implementation PR must add tests that:
   sidecars, and show the orphan mark blocks a fresh installation until `recover`;
 - interrupt `upgrade` with an unreadable configuration and a custom `DataRoot`, and show
   `upgrade --recover --vault-path` completes;
+- add any field to a tail outcome entry, such as a recovery qualifier, and show validation rejects
+  it, because outcomes carry only recomputable fields;
+- truncate a journal that `recover` moved aside, and show the baseline's seal detects it;
+- crash `reset` after the retirement file and before the journal moves, and show `recover` cannot
+  revive the identity and a rerun of `reset` completes;
+- under `FailClosed` and under `DeploymentBoundary`, read every configuration surface with Tiingo
+  and Polygon keys set, and show the keys are absent or masked;
+- lose the state file while a `DeploymentBoundary` to `FailClosed` posture change is unresolved,
+  and show `recover` adopts `FailClosed`;
+- start a host whose configuration selects a custom root while the default root holds another
+  configuration's newer-protocol vault, and show it starts;
 - run `recover --vault-path` with an unparseable configuration and show it completes; then run it
   with a parseable configuration naming a different root and show it aborts;
 - break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
