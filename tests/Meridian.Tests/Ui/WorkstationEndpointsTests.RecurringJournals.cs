@@ -46,6 +46,9 @@ public sealed partial class WorkstationEndpointsTests
                 services.AddSingleton<IRecurringJournalPeriodAuthority>(new EndpointRecurringPeriodAuthority());
             }, mapLedgerApi: true, currentUserPermissions: UserPermission.ManageLedgerReports);
             var client = app.GetTestClient();
+            var malformed = await client.PostAsync(UiApiRoutes.LedgerJournalAutomationRecurringSchedules,
+                new StringContent("{", System.Text.Encoding.UTF8, "application/json"));
+            malformed.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             var now = DateTimeOffset.UtcNow;
             var template = new JournalTemplate("api-template", "Test template", "Retained source", [
                 new(LedgerAccounts.Cash, JournalTemplateSide.Debit, FixedAmount: 10m),

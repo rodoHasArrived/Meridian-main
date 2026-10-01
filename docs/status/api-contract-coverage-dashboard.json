@@ -2393,7 +2393,7 @@
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/recurring/restore-definitions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:107",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:114",
       "documented": false
     },
     {

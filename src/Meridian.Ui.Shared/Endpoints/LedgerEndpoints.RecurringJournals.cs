@@ -65,7 +65,7 @@ public static partial class LedgerEndpoints
             .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerJournalAutomationRecurringSchedules,
-            async (ConfigureRecurringJournalRequest request, HttpContext context) =>
+            async (HttpContext context) =>
         {
             if (!TryResolveActor(context, out var actor))
                 return EndpointHelpers.Forbidden();
@@ -76,6 +76,11 @@ public static partial class LedgerEndpoints
             var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             try
             {
+                // Round-trip the workstation's string-valued cadence, ledger view and line-side enums.
+                var request = await context.Request.ReadFromJsonAsync<ConfigureRecurringJournalRequest>(
+                    jsonOptions, context.RequestAborted).ConfigureAwait(false);
+                if (request?.Schedule is null || request.Template is null || request.Scope is null || request.Evidence is null)
+                    return Results.BadRequest(new { error = "Schedule, template, scope and source evidence collection are required." });
                 var scope = request.Scope with { TenantId = tenant.TenantId!, CompanyId = tenant.CompanyId! };
                 await periodAuthority.ResolveAsync(scope, request.Schedule.AnchorDate, context.RequestAborted).ConfigureAwait(false);
                 await using var session = await store.OpenSessionAsync(context.RequestAborted).ConfigureAwait(false);
@@ -97,10 +102,12 @@ public static partial class LedgerEndpoints
                     actor, request.ExpectedScheduleVersion, request.ExpectedTemplateVersion, now, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(saved, jsonOptions);
             }
+            catch (JsonException) { return Results.BadRequest(new { error = "The recurring schedule request contains invalid JSON or enum values." }); }
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
             catch (Exception ex) when (ex is IOException or InvalidOperationException)
             { return ApiProblemDetails.Conflict(context, ex.Message); }
-        }).WithName("ConfigureRecurringJournalSchedule").RequirePermission(UserPermission.ManageLedgerReports)
+        }).WithName("ConfigureRecurringJournalSchedule").Accepts<ConfigureRecurringJournalRequest>("application/json")
+            .RequirePermission(UserPermission.ManageLedgerReports)
             .RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope().RequireFundScopedWriteTenant()
             .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
