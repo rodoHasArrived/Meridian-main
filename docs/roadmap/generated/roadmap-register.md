@@ -991,16 +991,16 @@ Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity th
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Workstation Shell and UX |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-31 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-10-01 |
 
 ### Current Summary
 
-Rank 3 of the 2026-07 W10 depth slate and the platform bet the rest of the slate depends on. Both halves of amount-level provenance are already built and neither is connected, so an operator looking at a number cannot reach the evidence behind it. This row makes provenance reachable from any amount through one shared surface rather than a per-screen variant, and is the first concrete slice of W5X-OEG-001 rather than a duplicate of it. Rows 6, 7, 10, and 11 each depend on the same drawer. Known source constraints, including which service and component exist unwired today, are recorded in docs/product/plans/w10-depth-slate-2026-07.md.
+First posted-ledger slice implemented for individual debit and credit amounts in browser Ledger Explorer and WPF Posted Ledger. Both consume one ledger-amount payload through the subject-addressed evidence API with immutable journal and entry identifiers plus exact authenticated tenant, company, fund, book, and period scope. Retained source identity, digest, bytes, and review are verified again when opening proof; absent, stale, ambiguous, or foreign support is review-required or blocked. Text-based evidence inference is removed. Targeted validation passed 48 backend tests, 140 browser tests, and 48 WPF tests including native control interaction; mocked Edge checks passed and full repository CI is pending in docs/testing/w10-amount-provenance.md. The row remains in progress because report generation does not yet emit typed retained amount bindings, legacy typed pointers remain review-required until content verification, and other amount surfaces are not activated.
 
 ### Exit Criteria
 

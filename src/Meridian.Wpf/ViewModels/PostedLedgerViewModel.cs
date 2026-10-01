@@ -18,7 +18,7 @@ namespace Meridian.Wpf.ViewModels;
 /// become one.
 /// </para>
 /// </summary>
-public sealed class PostedLedgerViewModel : BindableBase, IDisposable
+public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
 {
     private readonly ILedgerReportsApiClient? _client;
     private CancellationTokenSource _cts = new();
@@ -56,6 +56,9 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     public PostedLedgerViewModel(ILedgerReportsApiClient? client = null)
     {
         _client = client;
+        ProofDrawer = new LedgerAmountProofDrawerViewModel(client);
+        OpenAmountProofCommand = new AsyncRelayCommand<PostedLedgerAmountSelection>(
+            OpenAmountProofAsync, AsyncRelayCommandOptions.AllowConcurrentExecutions);
         RefreshCommand = new AsyncRelayCommand(
             () => _isDisposed ? Task.CompletedTask : RefreshAsync(_cts.Token),
             () => !IsRefreshing);
@@ -202,7 +205,9 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             }
 
             SelectedBasis = value.Basis;
+            ProofDrawer.Close();
             ProjectTrialBalance();
+            ProjectJournal();
             // The P&L is basis-scoped too, so it re-projects with the grid. Leaving it meant
             // switching to GAAP showed GAAP balances beside the previous basis's net income.
             ProjectPnlMetrics();
@@ -325,6 +330,10 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         }
 
         var previous = _cts;
+        _periodRevision++;
+        _bookRevision++;
+        _loadRevision++;
+        ClearJournalProof();
         _cts = new CancellationTokenSource();
         _hasLoaded = false;
 
@@ -347,6 +356,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         }
 
         _isDisposed = true;
+        ProofDrawer.Close();
         try
         {
             _cts.Cancel();
@@ -361,6 +371,9 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
     public async Task RefreshAsync(CancellationToken ct = default)
     {
         var revision = ++_loadRevision;
+        _periodRevision++;
+        _bookRevision++;
+        ClearJournalProof();
         IsRefreshing = true;
         StatusText = "Loading the posted journal.";
         PeriodsErrorText = string.Empty;
@@ -458,6 +471,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         // was still pending, pass that check, and repopulate A's figures under B's label and base
         // currency -- and stay there indefinitely if B's request then failed or hung.
         _periodRevision++;
+        ClearJournalProof();
 
         Periods.Clear();
         TrialBalance.Clear();
@@ -567,12 +581,14 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             Books.Add(new PostedLedgerBookRow(
                 book.LedgerBookId,
                 string.IsNullOrWhiteSpace(book.DisplayName) ? book.LedgerBookId.ToString() : book.DisplayName,
-                book.BaseCurrency));
+                book.BaseCurrency,
+                book.FundProfileId));
         }
     }
 
     public async Task SelectPeriodAsync(Guid periodId, CancellationToken ct = default)
     {
+        ClearJournalProof();
         SelectedPeriodId = periodId;
         var selectedRow = Periods.FirstOrDefault(row => row.PeriodId == periodId);
         SelectedPeriodLabel = selectedRow?.Label ?? "Selected period";
@@ -622,6 +638,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             // for a superseded selection is dropped exactly as before.
             var trialBalanceTask = _client.GetTrialBalanceAsync(periodId, ct);
             var pnlTask = _client.GetPnlSummaryAsync(periodId, ct);
+            var journalTask = LoadJournalAsync(periodId, revision, ct);
 
             var trialBalance = await trialBalanceTask.ConfigureAwait(true);
             if (revision != _periodRevision)
@@ -638,6 +655,11 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
             }
 
             ApplyPnl(pnl);
+            await journalTask.ConfigureAwait(true);
+            if (revision != _periodRevision)
+            {
+                return;
+            }
             StatusText = $"Posted journal for {SelectedBookLabel} · {SelectedPeriodLabel}.";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -757,6 +779,7 @@ public sealed class PostedLedgerViewModel : BindableBase, IDisposable
         BalanceSummaryText = IsOutOfBalance
             ? $"{basisLabel} · {TrialBalance.Count} accounts · out by {PostedLedgerProjection.FormatAmount(Math.Abs(variance), BaseCurrency)}"
             : $"{basisLabel} · {TrialBalance.Count} accounts · in balance";
+        ProjectJournal();
     }
 
     private void ApplyPnl(ApiResponse<LedgerPeriodPnlSummaryDto> response)
@@ -834,11 +857,12 @@ public sealed class PostedLedgerBookRow : BindableBase
 {
     private bool _isSelected;
 
-    public PostedLedgerBookRow(Guid ledgerBookId, string label, string baseCurrency)
+    public PostedLedgerBookRow(Guid ledgerBookId, string label, string baseCurrency, string fundProfileId = "")
     {
         LedgerBookId = ledgerBookId;
         Label = label;
         BaseCurrency = baseCurrency;
+        FundProfileId = fundProfileId;
     }
 
     public Guid LedgerBookId { get; }
@@ -846,6 +870,8 @@ public sealed class PostedLedgerBookRow : BindableBase
     public string Label { get; }
 
     public string BaseCurrency { get; }
+
+    public string FundProfileId { get; }
 
     public bool IsSelected
     {
