@@ -257,7 +257,9 @@ public sealed class FundStructureTenantScopeTests
         string tenantId,
         string tag)
     {
-        var service = CreateService(store, tenantId);
+        // Owned fixtures model a completed cutover, including stamps on implicit links.
+        // Deployment-boundary creation would require attribution before later strict writes.
+        var service = CreateService(store, tenantId, TenantScopeEnforcementOptions.FailClosed);
         var seeded = new SeededOrganization(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
 
         await service.CreateOrganizationAsync(new CreateOrganizationRequest(
