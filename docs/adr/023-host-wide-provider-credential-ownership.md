@@ -312,14 +312,19 @@ whole host use?** Facts in the current code shape the answer:
      (`provider-credentials.audit.jsonl`, appended after each vault write today) records the
      revision each write produced. When the store loads the vault, it compares the vault's revision
      with the last revision in the audit log:
-     - equal, or the vault exactly one ahead (an interrupted audit append, which the store
-       completes), is consistent;
+     - equal is consistent;
+     - the vault exactly one ahead may be a writer still between its vault write and its audit
+       append, because writers hold `provider-credentials.vault.lock` across both and today's
+       readers take no lock;
      - the vault behind the audit log means a valid older vault was restored; the vault ahead by
        more than one means the audit log was rolled back.
 
-     Either mismatch is handled exactly like a backup fallback: the store writes the durable
-     quarantine marker, and only `repair-vault` clears it. A restore that keeps the checkpoint
-     generation but reverts a verification result is therefore caught too.
+     A reader never acts on a mismatch itself. It takes the vault lock and rechecks, and only the
+     result under the lock counts. Under the lock no writer is mid-write, so one ahead then means an
+     interrupted append, which the store completes once, recording it as recovered. Either other
+     mismatch is handled exactly like a backup fallback: the store writes the durable quarantine
+     marker, and only `repair-vault` clears it. A restore of the vault alone that keeps the
+     checkpoint generation but reverts a verification result is therefore caught too.
    - **Vault format.** Bound marks, checkpoints, the vault revision and the vault identifier change
      the vault format. So
      the vault takes a new envelope version that older binaries reject rather than ignore and
@@ -336,10 +341,15 @@ whole host use?** Facts in the current code shape the answer:
        configuration and environment construction paths never open the vault. No in-band check can
        stop an executable that predates the check.
      - So the gate ships first. The implementation's first release adds a process-level startup
-       gate: a host that finds a format marker newer than it supports refuses to start at all,
-       before any provider is built. The protocol may be enabled with `upgrade` only once every
-       host on the `DataRoot` runs at least that release, and `upgrade` records that minimum in the
-       marker. From then on, every release that can run against the vault refuses a newer one.
+       gate, run before any provider is built. It does not trust the marker alone, because a marker
+       can be lost or restored on its own. It reads the format version from the marker and from the
+       unencrypted envelope headers of the vault and its backup, takes the highest, and refuses to
+       start at all if that is newer than it supports. It also refuses when the marker is missing
+       but either envelope is in the new format, and when the marker and the envelopes disagree.
+       The protocol may be enabled with `upgrade` only once every host on the `DataRoot` runs at
+       least that release, and `upgrade` records that minimum in the marker and in both envelope
+       headers. From then on, every release that can run against the vault refuses a newer one,
+       and losing or rolling back the marker alone changes nothing.
      - Running a binary older than the gate release against an upgraded `DataRoot` cannot be
        prevented in-band. The deployment runbook forbids it: it replaces the executables before
        `upgrade` and pins the minimum version, the same way it forbids running two releases from
@@ -355,9 +365,13 @@ whole host use?** Facts in the current code shape the answer:
      requires `reset`, an offline command that runs once no bindings or plugin entries remain:
      1. it journals the reset;
      2. it moves the closed journal aside unchanged, as the permanent audit record;
-     3. it replaces this configuration's checkpoint in the vault with a reset tombstone, recording
-        the actor, the time and the archived journal's path;
-     4. it removes the state file.
+     3. it writes a retirement file beside the identity lock file
+        (`provider-credentials.identity-<identifier>.retired`), durably and before anything else
+        changes, recording the actor, the time and the archived journal's path. Like the lock file,
+        it is never removed, and it is outside the vault, so no vault backup can predate it away;
+     4. it replaces this configuration's checkpoint in the vault with a reset tombstone carrying the
+        same record;
+     5. it removes the state file.
 
      It never removes the identity lock file, because unlinking a held lock would let another
      process lock a new file at the same path. Identity lock files stay permanently. A tombstoned
@@ -370,7 +384,10 @@ whole host use?** Facts in the current code shape the answer:
      while the other copy reset, is untrusted (point 4), whatever its generation. Its host adds no
      marks and its bound families refuse to start. Only `recover --new-identity` or
      `recover --fresh` brings that configuration back, and neither revives the old bindings. `recover
-     --identity` refuses a tombstoned identity.
+     --identity` refuses a tombstoned identity. An identity counts as tombstoned when either the
+     vault tombstone or the retirement file exists. `repair-vault` recreates any vault tombstone
+     that a backup fallback lost from its retirement file, so a stale backup never brings a retired
+     identity back.
    - The configuration refuses to disable or delete a connection that is bound.
 
    To rotate a bound credential, the operator:
@@ -547,11 +564,13 @@ whole host use?** Facts in the current code shape the answer:
        the vault or the store's audit log, relative to the others, is detected and makes the state
        untrusted or quarantines the vault. That includes a vault change that moves no checkpoint,
        such as a verification result. It is never repaired forward unless an unresolved `pending`
-       entry proves an interrupted write. A coordinated restore of all of them to the same older
-       point leaves no internal evidence, so it is an operator action
-       governed by the restore runbook. After any whole-set restore the operator must run
-       `repair-vault`, which resets every verification to unverified (invariant 4), before any
-       bound family can start. A deployment that needs automatic detection can add a monotonic
+       entry proves an interrupted write. Files restored together to the same older point leave no
+       evidence between themselves. That applies to the whole set, and also to the vault and its
+       audit log restored together, which can revert a verification result without moving any
+       checkpoint. Any restore of files in the vault directory or of the sidecars, alone or
+       together, is therefore an operator action governed by the restore runbook. After any such
+       restore the operator must run `repair-vault`, which resets every verification to unverified
+       (invariant 4), before any bound family can start. A deployment that needs automatic detection can add a monotonic
        anchor outside the restorable set; that is out of scope here.
     3. **No silent fresh start.** Losing host credential state never yields a fresh installation
        while the vault holds evidence of earlier committed state, unless the operator explicitly
@@ -769,7 +788,7 @@ The implementation PR must add tests that:
 - queue a copy's `clear` behind the first host's exclusive identity lock and show the host
   re-validates instead of running on stale validation;
 - run `reset` once no bindings or plugin entries remain, then change `DataRoot`; show the archived
-  journal and the vault tombstone remain, and the identity lock file is kept;
+  journal, the vault tombstone and the retirement file remain, and the identity lock file is kept;
 - copy a configuration with its sidecars, clear and `reset` one copy, then start the other copy;
   show its state is untrusted because the identity is tombstoned, it recreates no mark, its bound
   family refuses to start, and only `recover --new-identity` or `recover --fresh` brings it back;
@@ -795,6 +814,16 @@ The implementation PR must add tests that:
   the bound family refuses to start until `repair-vault` and a new verification;
 - crash between a vault write and its audit append, and show the store completes the append
   instead of quarantining;
+- read the vault while a writer is between its vault write and its audit append, and show the
+  reader neither completes the append nor quarantines, and the audit log gets exactly one entry
+  for that revision;
+- after `upgrade`, delete the format marker, and separately restore it to the gate release's
+  value, and show a gate-release host still refuses to start because the vault envelope is newer;
+- `reset` an identity, then fall back to a vault backup taken before the reset; show
+  `repair-vault` recreates the tombstone from the retirement file and a stale copy's `recover
+  --identity` is refused;
+- restore the vault and its audit log together to before a recorded verification failure, and show
+  the restore runbook's required `repair-vault` leaves the bound family unverified;
 - write the state file and then crash before the checkpoint update, and show recovery writes the
   checkpoint before closing the entry as `committed (recovered)`; then restore an older vault
   whose checkpoint lags a `committed` entry, and show the state is untrusted rather than repaired
