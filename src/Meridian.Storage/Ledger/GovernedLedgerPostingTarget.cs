@@ -83,6 +83,19 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
 
     public void Dispose() => _writeGate.Dispose();
 
+    /// <summary>
+    /// Verifies an already retained entry against the approved write without executing a posting
+    /// target or appending anything. Used to repair interrupted workflow/audit handoffs only.
+    /// </summary>
+    public static void VerifyRetainedEntry(LedgerJournalEntryRecord retained, LedgerJournalEntryWrite write)
+    {
+        ArgumentNullException.ThrowIfNull(retained);
+        ArgumentNullException.ThrowIfNull(write);
+        if (retained.Entry.JournalEntryId != write.Entry.JournalEntryId)
+            throw new LedgerValidationException("The retained journal identity differs from the recovery intent.");
+        EnsureEquivalent(retained, NormalizeWrite(AccountingPostingCommandValidator.NormalizeAndValidate(write)));
+    }
+
     private static GovernedLedgerPostingResult ResolveRetainedCollision(
         IReadOnlyList<LedgerJournalEntryRecord> collisions,
         LedgerJournalEntryWrite requested)
