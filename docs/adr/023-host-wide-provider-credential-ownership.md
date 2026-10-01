@@ -210,8 +210,11 @@ whole host use?** Facts in the current code shape the answer:
      place, still freezing their scopes, because only the operator knows which identity was
      abandoned. The offline `retire --identity` command removes them: it takes that identity's lock
      exclusively without waiting and refuses if any host or command holds it, writes the retirement
-     file and vault tombstone exactly as `reset` does, removes the identity's marks under the vault
-     lock, and records the actor in the audit log. An abandoned identity can therefore always be
+     file and vault tombstone, removes the identity's marks under the vault lock, and records the
+     actor in the audit log. Its sidecars are usually gone, so its retirement record has no journal
+     seal. It records instead the evidence that survives: the identity's checkpoint generation,
+     digest and path hints, and the list of marks it removes. When a journal does survive, it is
+     sealed as `reset` seals one. An abandoned identity can therefore always be
      cleaned up offline. Any other combination is also a partial loss:
      - a missing state file with a journal that records a committed state;
      - a state file with a missing journal.
@@ -381,7 +384,9 @@ whole host use?** Facts in the current code shape the answer:
      result under the lock counts. Under the lock no writer is mid-write. A vault one ahead is then
      repaired forward only when the last audit entry is an unfinished `intent` naming exactly that
      revision and digest, which proves a crash after publishing; the store appends the `done` entry
-     from the intent's own payload, marked as recovered, so the original action and actor survive.
+     from the intent's own payload, so the original action and actor survive. As in the host
+     journal, whether recovery wrote it is not recorded in the log, because it cannot be recomputed;
+     the host log records it.
      An unfinished intent whose revision the vault never reached is closed as aborted. A vault one
      ahead with no matching intent means the audit log lost an entry, and is a mismatch. Every other
      mismatch is handled exactly like a backup fallback: the store writes the durable quarantine
@@ -407,6 +412,11 @@ whole host use?** Facts in the current code shape the answer:
        it, or its truncation, break the chain like any other edit. The
        marker is written only after the baseline is durable, so no host ever loads a converted vault
        without a matching audit entry.
+     - The gate treats the upgrade as finished only when the upgrade journal ends in a valid
+       `committed` entry; the journal is never deleted. If the marker or either envelope is in the
+       new version and that journal is missing, malformed or has no valid `committed` entry, the
+       gate refuses every host and every command except `upgrade --recover`, so no host can change
+       the vault before the files-only completion check runs.
      - While that journal has an unfinished entry, the gate refuses every host and every command
        except `upgrade`, which resumes from the first step whose file is not yet in the target
        version. Only the resuming `upgrade` accepts the mixed versions its own journal entry
@@ -447,10 +457,12 @@ whole host use?** Facts in the current code shape the answer:
        `upgrade` and pins the minimum version, the same way it forbids running two releases from
        different `DataRoot` copies.
    - The host state records the identifier of the vault it was bound against and its last known
-     location. `list`, `recover`, `repair-vault` and `upgrade` (including `upgrade --recover`)
-     accept `--vault-path` to find a vault at a custom location when the configuration cannot be
-     loaded. The gate honours that override for those commands only, and refuses it when a
-     successfully parsed configuration names a different root. Each checks the vault's stored identifier
+     location. Every offline command (`list`, `set`, `clear`, `plugin-allow`, `plugin-revoke`,
+     `posture`, `recover`, `retire`, `repair-vault`, `reset` and `upgrade`, including
+     `upgrade --recover`) accepts `--vault-path` to find a vault at a custom location when the
+     configuration cannot be loaded, so an operator can always reach an empty state and remove an
+     identity. The gate honours that override for offline commands only, never for a host, and
+     refuses it when a successfully parsed configuration names a different root. Each checks the vault's stored identifier
      before using it whenever surviving state records one. With both sidecars lost, `list
      --vault-path` shows that vault's checkpoints, `repair-vault --vault-path` clears a quarantine
      on it, and `recover --vault-path --identity` adopts one of them.
@@ -460,16 +472,21 @@ whole host use?** Facts in the current code shape the answer:
      change `DataRoot` (for example through `ConfigEndpoints.UpdateStorage`). That covers bindings
      and plugin entries alike, since the checkpoint lives in the vault. Moving the vault therefore
      requires `reset`, an offline command that runs once no bindings or plugin entries remain:
-     1. it journals the reset;
+     1. it journals the reset as a `pending` entry. That entry is the journal's last entry for
+        ever: no outcome is ever appended to it;
      2. it writes a retirement file beside the identity lock file
         (`provider-credentials.identity-<identifier>.retired`), durably, recording the actor, the
         time, the path the journal will be archived to, and the hash of the journal's last entry and
         the digest of the whole file, computed in place. Like the lock file, it is never removed, and
         it is outside the vault, so no vault backup can predate it away. From this point the
-        identity is retired, so a crash in any later step cannot revive it;
+        identity is retired, so a crash in any later step cannot revive it. The retirement file is
+        the reset's outcome. Recovery and `list` read a journal that ends in a reset `pending`
+        entry, with a retirement file sealing exactly those bytes, as a committed reset; without
+        such a file, the reset never happened and the entry is closed as aborted;
      3. it replaces this configuration's checkpoint in the vault with a reset tombstone carrying the
         same record;
-     4. only then does it move the closed journal aside unchanged, as the permanent audit record;
+     4. only then does it move the journal aside unchanged, as the permanent audit record, still
+        matching its seal byte for byte;
      5. it removes the state file.
 
      If it crashes after step 2, rerunning `reset` finishes the remaining steps, checking the
@@ -652,10 +669,13 @@ whole host use?** Facts in the current code shape the answer:
      1. it adopts the observed state file if it parses. If the file is malformed, it first moves it
         aside unchanged, so the evidence is kept. When the file is malformed or missing, it adopts an
         empty state with no bindings and no plugin entries, and writes that file atomically. That
-        state takes the last committed posture the surviving journal records. When no valid journal
-        records one, or a posture change is still unresolved, it takes `FailClosed`, never the
-        environment's value and never the older posture, and the `baseline` entry records that the
-        posture was defaulted. Moving back to `DeploymentBoundary` is then a
+        state takes the last committed posture the surviving journal records. The same rule holds
+        for an observed state file that parses: its posture is kept only when the surviving journal
+        authenticates it, that is, when the file's digest matches the last committed digest or one
+        side of the pending entry. In every other case, including no valid journal, an unresolved
+        posture change or a parseable but divergent file, the adopted state takes `FailClosed`, never
+        the environment's value and never the older posture, and the `baseline` entry records that
+        the posture was defaulted. Moving back to `DeploymentBoundary` is then a
         separate, journalled `posture` transaction;
      2. it reconciles only this configuration's bound marks with the adopted state, under the vault
         lock, leaving every other configuration's marks untouched. It takes this configuration's
@@ -1014,6 +1034,18 @@ The implementation PR must add tests that:
   and show `recover` adopts `FailClosed`;
 - start a host whose configuration selects a custom root while the default root holds another
   configuration's newer-protocol vault, and show it starts;
+- run `recover` on a parseable state file whose digest matches neither side of a pending posture
+  change, and show the adopted posture is `FailClosed`;
+- complete an audit append from an intent during recovery, and show the `done` entry carries no
+  recovery qualifier;
+- run `retire --identity` after both sidecars were lost, and show its record carries the checkpoint
+  and removed marks instead of a journal seal;
+- run `clear`, `plugin-revoke`, `reset` and `retire` with `--vault-path` and an unparseable
+  configuration, and show each completes;
+- crash `reset` after the retirement file, and show the archived journal still matches its seal and
+  reads as a committed reset;
+- delete the upgrade journal after the marker is written but before `committed`, and show every
+  host and command except `upgrade --recover` refuses;
 - run `recover --vault-path` with an unparseable configuration and show it completes; then run it
   with a parseable configuration naming a different root and show it aborts;
 - break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
