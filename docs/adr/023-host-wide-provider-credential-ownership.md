@@ -124,16 +124,25 @@ whole host use?** Facts in the current code shape the answer:
      - an unbound credential-bearing, session-backed or unclassified family does not start. For
        OpenFIGI, this means the canonical symbol resolver runs registry-only and `BackfillCoordinator`
        creates no fallback resolver;
-     - provider-wide credential writes and deletes for any host-wide market-data family (built-in
-       or plugin) are refused at the credential store boundary itself. That means the unscoped
-       operations of the credential store (`SaveAsync`, `SaveRotatedCredentialsAsync`,
-       `SaveOAuthTokenAsync`, `DeleteAsync`) and the module credential store's writes and deletes.
-       Every caller inherits the refusal, whichever route or service it came from: the canonical
-       route, the compatibility credential and connection-test routes, the provider-module routes,
-       `ProviderEndpoints.ConfigureProvider`, and any added later. Scoped operations, credentials of
-       non-market-data integrations (such as accounting and financial connectivity), and module
+     - provider-wide credentials for any host-wide market-data family (built-in or plugin) can be
+       neither read nor written. This is enforced at the credential store boundary itself:
+       - the unscoped reads (`ReadForProviderAsync`, `ReadOAuthTokensAsync`) return nothing for
+         those families;
+       - the unscoped writes and deletes (`SaveAsync`, `SaveRotatedCredentialsAsync`,
+         `SaveOAuthTokenAsync`, `DeleteAsync`) are refused;
+       - the module credential store's reads, writes and deletes are refused for those families;
+       - the provider-wide `IProviderCredentialResolver` yields nothing for them.
+
+       Every caller inherits this, whichever route, service or direct dependency it came from: the
+       canonical credential and verification routes (`ProviderConnectionLifecycleService.VerifyAsync`
+       reads the record and sends it to the vendor), the compatibility credential and
+       connection-test routes, the provider-module routes, `ProviderEndpoints.ConfigureProvider`,
+       and any code that injects the store or the provider-wide resolver directly. No unscoped
+       verification or test can transmit a provider-wide credential. Scoped operations, credentials
+       of non-market-data integrations (such as accounting and financial connectivity), and module
        settings that carry no credentials are unaffected;
-     - existing provider-wide records remain stored but unused by host-wide providers;
+     - existing provider-wide records therefore remain stored but unreadable, until the deployment
+       returns to `DeploymentBoundary`;
      - a plugin family starts only if the host operator lists it as credential-free (point 5). Plugins
        cannot be bound until a plugin ownership contract exists.
 
@@ -143,15 +152,22 @@ whole host use?** Facts in the current code shape the answer:
 
 4. **Bindings live in a host-only file, loaded strictly.** Bindings map a canonical provider family ID
    to one retained connection ID. They live, together with the plugin credential-free list (point 5),
-   in a dedicated host file, `host-provider-credentials.json` beside the configuration, not in
-   `AppConfig`. This document calls the file's contents the host credential state. Each change is
-   recorded in a journal beside it, `host-provider-credentials.journal.jsonl` (point 8). No HTTP
+   in a dedicated host file beside the configuration, not in `AppConfig`. This document calls the
+   file's contents the host credential state. Each change is recorded in a journal beside it (point
+   8). The host file, the journal and the host lock are named after the configuration file, so two
+   configurations in one directory never share them:
+   - `<config>.host-provider-credentials.json`;
+   - `<config>.host-provider-credentials.journal.jsonl`;
+   - `<config>.host-provider-credentials.lock`. No HTTP
    endpoint or general configuration writer touches either file, so data-source edits cannot erase a
    binding. Both are loaded strictly:
-   - a missing state file means no bindings only when the journal is also missing or records no
-     committed state. If the journal records a committed state, a missing state file is a lost file:
-     credential-bearing families refuse to start until `recover`. Clearing bindings is an explicit,
-     journalled `clear`, never a deleted file;
+   - a missing state file and a missing journal together mean a fresh installation with no bindings.
+     Any other combination of absences is a partial loss:
+     - a missing state file with a journal that records a committed state;
+     - a state file with a missing journal.
+
+     Either way, credential-bearing families refuse to start until `recover`. Clearing bindings is
+     an explicit, journalled `clear`, never a deleted file;
    - a malformed or unreadable state file, or one whose digest differs from the journal's last
      committed digest, makes every credential-bearing host-wide family refuse to start, under both
      postures;
@@ -201,9 +217,15 @@ whole host use?** Facts in the current code shape the answer:
    includes the sites outside `ProviderFactory`: the OpenFIGI resolvers in
    `SymbolManagementFeatureRegistration` and `BackfillCoordinator`, and `PolygonCorporateActionFetcher`.
 
-   Reviews keep finding new direct reads, so completeness is enforced rather than listed. An
-   architecture test fails when production code outside the selection reads a provider credential
-   environment variable or configuration key. The names come from the credential catalog, adapter
+   Reviews keep finding new direct reads, so completeness is enforced rather than listed:
+   - under `FailClosed`, the store boundary makes provider-wide market-data credentials unreadable
+     (point 3), so a direct dependency on the store or on the provider-wide resolver obtains
+     nothing;
+   - an architecture test also fails when host-wide market-data construction code depends on
+     `IProviderCredentialStore` or the provider-wide `IProviderCredentialResolver` other than
+     through the selection;
+   - an architecture test fails when production code outside the selection reads a provider
+     credential environment variable or configuration key. The names come from the credential catalog, adapter
    `ProviderCredentialFields`, and known aliases such as `MERIDIAN_POLYGON_API_KEY`. Reads that only
    probe presence, or that serve tenant-bound flows, sit on an explicit allowlist, and each entry has
    a stated reason.
@@ -222,17 +244,19 @@ whole host use?** Facts in the current code shape the answer:
    `set`, `clear`, `plugin-allow` and `plugin-revoke` alike, because the plugin credential-free list
    decides, just as a binding does, what may start under `FailClosed`.
    - **Its own journal.** The authoritative audit and recovery record is the append-only journal
-     beside the state file, `host-provider-credentials.journal.jsonl`. It is not the shared credential
-     audit trail. Two configurations that share a `DataRoot`, and so share a credential vault and its
+     beside the state file, `<config>.host-provider-credentials.journal.jsonl`. It is not the shared
+     credential audit trail. Two configurations that share a `DataRoot`, and so share a credential vault and its
      audit trail, therefore never see or recover each other's transactions. Each entry also records a
      stable identity for the host configuration (its configuration path), and an entry for a
      different identity makes the journal invalid.
    - **Parsed strictly.** The journal is parsed strictly. A malformed, truncated or unreadable entry,
      or an unreadable journal, makes credential-bearing families refuse to start and refuses mutation
      until `recover`. No entry is ever skipped.
-   - **Offline only.** A running host holds the host lock (`host-provider-credentials.lock`, opened
-     for exclusive access) for its whole lifetime. Every mutating command needs the same lock, so it
-     fails while a host on this configuration is running. A change takes effect when the host next
+   - **Offline only.** Every running host holds the host lock (`<config>.host-provider-credentials.lock`)
+     in shared mode for its whole lifetime. Several hosts on one configuration, such as `SharedStorage`
+     coordination instances or a workstation host beside a collector, can therefore run together.
+     Every mutating command needs the lock in exclusive mode, so it fails while any host on this
+     configuration is running, and no host can start while a command holds it. A change takes effect when the host next
      starts, so no running provider keeps using state that has since changed. `list` only reads the
      files, which are always written atomically or append-only.
    - **Lock order.** A transaction takes the host lock, then the configuration writer lock (the one
@@ -406,7 +430,8 @@ prove host authority.
 
 ### Neutral
 
-- Existing provider-wide records remain stored under `FailClosed`, unused by host-wide providers.
+- Existing provider-wide market-data records remain stored under `FailClosed` but unreadable, until the
+  deployment returns to `DeploymentBoundary`.
 - Execution credential ownership and per-tenant runtime isolation remain open decisions.
 
 ## Compliance
@@ -417,17 +442,19 @@ prove host authority.
   - the provider-wide resolver, only under `DeploymentBoundary` and only when unbound; or
   - the scope-bound `StoredProviderCredentialResolver` for exactly one validated, verified connection
     scope, with no module overlay and no post-resolver fallback.
-- Only the `--host-credential-binding` command writes `host-provider-credentials.json`, always while
-  holding the host lock, and the file is never loaded through a default-substituting path.
-- Host-wide construction sites obtain credentials only from the per-family host credential selection;
-  an architecture test enforces this with a reviewed allowlist.
+- Only the `--host-credential-binding` command writes `<config>.host-provider-credentials.json`, always
+  while holding the host lock in exclusive mode, and the file is never loaded through a default-substituting path.
+- Host-wide construction sites obtain credentials only from the per-family host credential selection.
+  Architecture tests enforce this for direct store and resolver dependencies and, with a reviewed
+  allowlist, for environment and configuration reads.
 - Under `FailClosed`, provider-wide credential writes and deletes for host-wide market-data families
   are refused at the credential store and module credential store boundary, not in services or
   routes.
 - Under `FailClosed`, the host composes no execution path to an external brokerage account: live
   execution configuration is refused, and no brokerage gateway, sync adapter, or brokerage
   connection service or route is composed from any registration path.
-- A running host holds the host lock for its lifetime. Every credential resolution for a bound family
+- Every running host holds the host lock in shared mode for its lifetime, and mutating commands need
+  it in exclusive mode. Every credential resolution for a bound family
   revalidates the current generation's verification, and a credential mutation on a bound connection
   stops that family in the running host.
 - Every enabled family has exactly one credential classification, and `credential-free` never applies
@@ -449,7 +476,9 @@ The implementation PR must add tests that:
 - treat a missing binding file as no bindings, and a malformed or unreadable one as refusal for every
   credential-bearing family, under both postures;
 - fail the architecture scan when production code outside the selection reads a provider credential
-  environment variable or configuration key that is not on the allowlist;
+  environment variable or configuration key that is not on the allowlist, or when host-wide
+  market-data construction code depends on the credential store or the provider-wide resolver
+  directly;
 - classify every catalog family, keep NYSE credential-bearing and `ibkr` session-backed, and fail
   when a `credential-free` family's catalog entry requires a field or any of its adapters reports
   `RequiresCredentials`;
@@ -460,8 +489,10 @@ The implementation PR must add tests that:
     or brokerage connection service or route, in the real `UiServer` service collection and endpoint
     table, including the hosted Alpaca, IB, Robinhood and StockSharp registrations; refuse startup
     with live execution configured;
-  - refuse unscoped credential-store and module-credential writes and deletes for a market-data
-    family directly at the store, and route by route: the canonical credential route, the
+  - return nothing from unscoped credential-store and module-credential reads, and refuse unscoped
+    writes and deletes, for a market-data family, directly at the store and route by route. This
+    covers the canonical verification route, which must not contact the vendor, the canonical
+    credential route, the
     `CredentialEndpoints` save, delete and test routes, the `ProviderCredentialEndpoints` connection
     test, `ProviderEndpoints.ConfigureProvider` without a `connectionId`, and provider-module create,
     update and delete requests that carry credentials; keep scoped writes and non-market-data
@@ -475,8 +506,12 @@ The implementation PR must add tests that:
   including recovery after a crash between the journal append and the file write;
 - serialize concurrent `set` and `clear` commands so each event's previous connection ID is the state
   it replaced, and fail a command that cannot take the lock without writing;
-- refuse `set`, `clear`, `plugin-allow` and `plugin-revoke` while a host on the same configuration is
-  running;
+- let two hosts on the same configuration run together, refuse `set`, `clear`, `plugin-allow` and
+  `plugin-revoke` while either is running, and refuse to start a host while a command holds the
+  lock;
+- keep two configurations in the same directory on separate host files, journals and locks;
+- refuse credential-bearing families when the state file exists but its journal is missing, until
+  `recover`;
 - audit plugin credential-free changes with the actor, plugin ID, and previous and new classification;
 - serialize a `set` with a concurrent save or rotation, so the rotation waits for the vault lock and
   the committed binding names the generation that was verified; then show that the rotation, once
@@ -504,7 +539,7 @@ The implementation PR must add tests that:
 
 1. This ADR (Proposed), for review.
 2. Host credential state and command: strict loader for bindings and the plugin credential-free
-   list, and their strictly parsed journal; `--host-credential-binding` with the lifetime host lock,
+   list, and their strictly parsed journal; `--host-credential-binding` with the host lock (shared for running hosts, exclusive for commands),
    the host, configuration, vault lock order, recover-first transactions, file-checked outcomes and
    `recover`; the host credential tenant setting.
 3. Classification: a credential classification for every family, with a consistency check against
