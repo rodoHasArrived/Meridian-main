@@ -144,11 +144,17 @@ whole host use?** Facts in the current code shape the answer:
 4. **Bindings live in a host-only file, loaded strictly.** Bindings map a canonical provider family ID
    to one retained connection ID. They live, together with the plugin credential-free list (point 5),
    in a dedicated host file, `host-provider-credentials.json` beside the configuration, not in
-   `AppConfig`. This document calls the file's contents the host credential state. No HTTP endpoint or general configuration writer
-   touches this file, so data-source edits cannot erase a binding. It is loaded strictly:
-   - a missing file means no bindings;
-   - a malformed or unreadable file makes every credential-bearing host-wide family refuse to start,
-     under both postures;
+   `AppConfig`. This document calls the file's contents the host credential state. Each change is
+   recorded in a journal beside it, `host-provider-credentials.journal.jsonl` (point 8). No HTTP
+   endpoint or general configuration writer touches either file, so data-source edits cannot erase a
+   binding. Both are loaded strictly:
+   - a missing state file means no bindings only when the journal is also missing or records no
+     committed state. If the journal records a committed state, a missing state file is a lost file:
+     credential-bearing families refuse to start until `recover`. Clearing bindings is an explicit,
+     journalled `clear`, never a deleted file;
+   - a malformed or unreadable state file, or one whose digest differs from the journal's last
+     committed digest, makes every credential-bearing host-wide family refuse to start, under both
+     postures;
    - defaults are never substituted.
 
 5. **Only the host operator changes bindings, out of band.** Bindings and the plugin credential-free
@@ -212,50 +218,63 @@ whole host use?** Facts in the current code shape the answer:
 
    A partial scoped record refuses to start rather than being completed from elsewhere.
 
-8. **Every change to the host credential state is one offline, audited transaction.** This covers
+8. **Every change to the host credential state is one offline, journalled transaction.** This covers
    `set`, `clear`, `plugin-allow` and `plugin-revoke` alike, because the plugin credential-free list
    decides, just as a binding does, what may start under `FailClosed`.
+   - **Its own journal.** The authoritative audit and recovery record is the append-only journal
+     beside the state file, `host-provider-credentials.journal.jsonl`. It is not the shared credential
+     audit trail. Two configurations that share a `DataRoot`, and so share a credential vault and its
+     audit trail, therefore never see or recover each other's transactions. Each entry also records a
+     stable identity for the host configuration (its configuration path), and an entry for a
+     different identity makes the journal invalid.
+   - **Parsed strictly.** The journal is parsed strictly. A malformed, truncated or unreadable entry,
+     or an unreadable journal, makes credential-bearing families refuse to start and refuses mutation
+     until `recover`. No entry is ever skipped.
    - **Offline only.** A running host holds the host lock (`host-provider-credentials.lock`, opened
      for exclusive access) for its whole lifetime. Every mutating command needs the same lock, so it
      fails while a host on this configuration is running. A change takes effect when the host next
      starts, so no running provider keeps using state that has since changed. `list` only reads the
-     file, which is always written atomically.
-   - **Lock order.** A transaction takes the host lock, then `provider-credentials.vault.lock`.
-     Credential-store writers take only the vault lock, never the host lock, so nothing can deadlock.
-     A command that cannot take either lock within a timeout fails without writing anything.
+     files, which are always written atomically or append-only.
+   - **Lock order.** A transaction takes the host lock, then the configuration writer lock (the one
+     `ConfigStore` takes, `<config>.lock`), then `provider-credentials.vault.lock`. Configuration and
+     credential-store writers never take the host lock, and the implementation must show that no code
+     path takes the configuration and vault locks in the reverse order. A command that cannot take a
+     lock within a timeout fails without writing anything.
    - **Recover first.** Before changing anything, the transaction resolves every earlier `pending`
-     event against the current file (see Recovery below). If any event cannot be resolved, the command
-     refuses to change the state. A later change therefore never overtakes an unresolved one.
-   - **Steps.** Holding both locks, under one correlation ID:
+     entry against the current state file (see Recovery below). If any entry cannot be resolved, the
+     command refuses to change the state. A later change therefore never overtakes an unresolved one.
+   - **Steps.** Holding all three locks, under one correlation ID:
      1. read the current state;
-     2. for `set`, run the point 6 checks against the credential record as it is now. Because the vault
-        lock is held until step 5, no save or rotation can install a new generation between this check
-        and the commit;
-     3. append a `pending` event to the credential audit trail (`provider-credentials.audit.jsonl`)
-        through the credential store's audit writer, under the lock already held. The event records the
-        actor, the kind of change (binding or plugin classification), the subject (provider family or
-        plugin ID), the previous and new values, and canonical digests of the complete host credential
-        state before and after the change;
-     4. write the host file atomically;
-     5. append the outcome, then release the vault lock and the host lock.
+     2. for `set`, run the point 6 checks against the retained connection and the credential record as
+        they are now. Because the configuration and vault locks are held until step 5, no
+        configuration writer can delete, disable or change the connection, and no save or rotation can
+        install a new generation, between this check and the commit;
+     3. append a `pending` entry to the journal. It records the actor, the host identity, the kind of
+        change (binding or plugin classification), the subject (provider family or plugin ID), the
+        previous and new values, and canonical digests of the complete host credential state before
+        and after the change;
+     4. write the state file atomically;
+     5. append the outcome, then release the locks in reverse order.
    - **Outcome from the file, not the exception.** `AtomicFileWriter` can throw after the rename has
      already published the file, for example from the directory sync. So on any write exception the
      command rereads the published file and compares the digest of the whole state:
      - if it matches the after-digest, the outcome is `committed`;
      - if it matches the before-digest, the outcome is `aborted`;
-     - otherwise the event stays `pending`, and the command exits non-zero.
-   - **Recovery.** At startup and at the start of every mutating command, a `pending` event without
-     an outcome is resolved against the file's actual state. Recovery reads and closes events
-     through the same audit writer, so it takes the locks in the declared order, host lock then vault
-     lock, before reading:
-     - if the digest of the whole file equals the event's after-digest, it is closed as
+     - otherwise the entry stays `pending`, and the command exits non-zero.
+   - **Recovery.** At startup and at the start of every mutating command, under the host lock, each
+     `pending` entry without an outcome is resolved against the state file:
+     - if the digest of the whole file equals the entry's after-digest, it is closed as
        `committed (recovered)`;
-     - if it equals the event's before-digest, it is closed as `aborted (recovered)`;
-     - otherwise the file was changed outside the command, even if only in an unrelated entry. Credential-bearing families then refuse to
-       start, as for a malformed file, and mutation is refused, until the operator runs `recover`.
-       `recover` records the observed state as an `indeterminate` outcome with the actor.
+     - if it equals the entry's before-digest, it is closed as `aborted (recovered)`;
+     - otherwise the file was changed outside the command, even if only in an unrelated entry.
+       Credential-bearing families then refuse to start, as for a malformed file, and mutation is
+       refused, until the operator runs `recover`.
 
      A retry therefore never looks like a second change.
+   - **`recover`.** `recover` records the observed state as an `indeterminate` outcome with the actor,
+     for a lost state file, an unresolvable pending entry, or a mismatched last committed digest. If
+     the journal itself is invalid, it first moves it aside unchanged, so the evidence is kept, and
+     starts a new journal whose first entry records the observed state.
 
    The actor is the required `--actor` argument together with the OS identity that ran the command.
 
@@ -295,11 +314,12 @@ implemented yet.
 | Host execution composition | `src/Meridian/UiServer.cs` (`usesPaperGateway`), `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Live execution refused under `FailClosed`; paper execution stays |
 | Polygon corporate-action ingestion | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs`, `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Process-wide hosted fetcher that reads Polygon keys directly; moves to the per-family selection |
 | Retained ownership | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` | `GetCredentialScopeForTenantAsync` resolves the bound scope |
-| Credential audit trail and verification | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Existing append-only audit and per-generation verification state |
+| Credential verification and vault lock | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Per-generation verification state; `provider-credentials.vault.lock`, held through binding validation and commit |
 | Lenient configuration load | `src/Meridian.Application/Http/ConfigStore.cs` | `LoadConfig` substitutes defaults; the binding file must not use it |
 | Account permission overrides | `src/Meridian.Identity/Infrastructure/UserAccountStore.cs` | Why no user permission can carry host authority |
 | Out-of-band host command precedent | `src/Meridian.Application/Commands/FundStructureTenantBackfillCommand.cs` | Pattern for `--host-credential-binding` |
-| Atomic file write | `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Writes the binding file |
+| Atomic file write | `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Writes the host credential state file |
+| Configuration writer lock | `src/Meridian.Application/Http/ConfigStore.cs` | `<config>.lock`, held through binding validation and commit |
 | Tenant posture | `src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs` | Pattern for the startup setting: read once, malformed values refused |
 
 ## Rationale
@@ -378,9 +398,9 @@ prove host authority.
   credentials) and list any credential-free plugins first, or those families will not start.
 - Plugin families cannot be bound, and families without scoped verification cannot be bound, until
   that support exists.
-- Under `FailClosed`, session-backed families such as `ibkr` do not run, no execution surface is
-  composed until the execution-ownership decision exists, and OpenFIGI enrichment stays off until
-  OpenFIGI is bound.
+- Under `FailClosed`, session-backed families such as `ibkr` do not run, live execution and every
+  other path to an external brokerage account stay off until the execution-ownership decision exists
+  (paper execution stays), and OpenFIGI enrichment stays off until OpenFIGI is bound.
 - Binding changes need a host restart, and the CLI refuses them while the host is running.
 - A bound family does not start after a rotation until its new credentials are verified.
 
@@ -452,7 +472,7 @@ The implementation PR must add tests that:
   - start credential-free families with source `none`;
 - under `DeploymentBoundary`, keep unbound families on the provider-wide record;
 - record `pending` and `committed` or `aborted` events with the actor, family and connection IDs,
-  including recovery after a crash between the audit append and the file write;
+  including recovery after a crash between the journal append and the file write;
 - serialize concurrent `set` and `clear` commands so each event's previous connection ID is the state
   it replaced, and fail a command that cannot take the lock without writing;
 - refuse `set`, `clear`, `plugin-allow` and `plugin-revoke` while a host on the same configuration is
@@ -461,6 +481,11 @@ The implementation PR must add tests that:
 - serialize a `set` with a concurrent save or rotation, so the rotation waits for the vault lock and
   the committed binding names the generation that was verified; then show that the rotation, once
   applied, makes the next resolution and the next startup refuse the unverified generation;
+- serialize a `set` with a concurrent configuration write that deletes, disables or changes the
+  connection, so the committed binding matches the connection that was validated;
+- keep two configurations that share a `DataRoot` from recovering each other's transactions;
+- refuse credential-bearing families when the state file is deleted after a committed change, and
+  when the journal is malformed, truncated or unreadable, until `recover`;
 - stop an already-constructed bound provider when its connection's credential is saved, rotated,
   deleted or disabled while the host runs, rather than only refusing later resolutions;
 - treat a pending event as changed outside the command (refusing families and mutation until
@@ -468,8 +493,8 @@ The implementation PR must add tests that:
 - after an outcome append fails, have the next mutating command resolve the pending event first and
   refuse to proceed until it is resolved; when the file matches neither side of the event, refuse
   credential-bearing families and mutation until `recover` records the observed state;
-- audit both a binding change, or a startup or pre-command recovery, and a concurrent scoped
-  credential save, rotation or verification, with no failed append and no deadlock;
+- run a binding change, or a startup or pre-command recovery, alongside concurrent configuration
+  writes and scoped credential saves, rotations or verifications, with no lost write and no deadlock;
 - record `committed` when the write throws after the rename has published the new file;
 - refuse a lazily constructed provider after a post-startup rotation until the new generation is
   verified;
@@ -479,17 +504,17 @@ The implementation PR must add tests that:
 
 1. This ADR (Proposed), for review.
 2. Host credential state and command: strict loader for bindings and the plugin credential-free
-   list; `--host-credential-binding` with the lifetime host lock, the host-then-vault lock order,
-   recover-first transactions, the shared audit writer, file-checked outcomes and `recover`; the host
-   credential tenant setting.
+   list, and their strictly parsed journal; `--host-credential-binding` with the lifetime host lock,
+   the host, configuration, vault lock order, recover-first transactions, file-checked outcomes and
+   `recover`; the host credential tenant setting.
 3. Classification: a credential classification for every family, with a consistency check against
    the credential catalog and adapter metadata (adding the missing NYSE entry).
 4. Construction: validate and verify bindings at startup; the per-family host credential selection
    at every construction site (including OpenFIGI's and the Polygon corporate-action fetcher), with
    module overlays and post-resolver fallbacks removed and the architecture scan in place; `FailClosed`
    refusals (unbound, session-backed and unclassified families, plugins, provider-wide writes at the
-   service seam); no execution surface composed under `FailClosed`; revalidation at every resolution;
-   the tests above.
+   credential store boundary); no path to an external brokerage account under `FailClosed`, with
+   paper execution kept; revalidation at every resolution; the tests above.
 5. Surfacing: source kind in the browser and WPF provider read models; identifiers in the host log and
    CLI only.
 6. Update `PRD-002` evidence in the implementation tracker and the Application README.
