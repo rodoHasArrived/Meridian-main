@@ -293,6 +293,11 @@ whole host use?** Facts in the current code shape the answer:
      marker. It reconciles every configuration identity recorded in the vault, and sets every
      scoped record's verification to unverified, because the backup's `Verified` values may be
      stale. A bound family starts again only after its credential is verified anew.
+     - Because repair touches every identity, not only its own, it is stop-the-world for the
+       `DataRoot`. Before reconciling, it takes the identity lock of every identity recorded in the
+       vault exclusively, without waiting and in identifier order. If any of them is held, by a
+       running host or a command of any configuration, it refuses and changes nothing. It keeps all
+       of them until it finishes, so no host can start against an identity it is changing.
    - **Vault format.** Bound marks, checkpoints and the vault identifier change the vault format. So
      the vault takes a new envelope version that older binaries reject rather than ignore and
      rewrite, and the primary and backup are upgraded together. The upgrade is stop-the-world: an
@@ -320,6 +325,14 @@ whole host use?** Facts in the current code shape the answer:
      process lock a new file at the same path. Identity lock files stay permanently. A tombstoned
      identity does not block a fresh installation, so the configuration is then fresh and
      `DataRoot` can change.
+
+     A tombstone is terminal for its identity. A fresh installation always creates a new random
+     identity, so nothing legitimate claims a tombstoned one again. Any state file or journal that
+     names a tombstoned identity, such as a copied configuration's sidecars that stayed offline
+     while the other copy reset, is untrusted (point 4), whatever its generation. Its host adds no
+     marks and its bound families refuse to start. Only `recover --new-identity` or
+     `recover --fresh` brings that configuration back, and neither revives the old bindings. `recover
+     --identity` refuses a tombstoned identity.
    - The configuration refuses to disable or delete a connection that is bound.
 
    To rotate a bound credential, the operator:
@@ -404,7 +417,9 @@ whole host use?** Facts in the current code shape the answer:
        refuses to start.
    - **Lock order.** A transaction takes the host lock, then the identity lock, then the
      journal-writer lock, then the configuration writer lock (the one
-     `ConfigStore` takes, `<config>.lock`), then `provider-credentials.vault.lock`. Configuration and
+     `ConfigStore` takes, `<config>.lock`), then `provider-credentials.vault.lock`. `repair-vault`
+     takes every recorded identity lock, in identifier order and without waiting, where others take
+     one. Configuration and
      credential-store writers never take the host lock, and the implementation must show that no code
      path takes the configuration and vault locks in the reverse order. A command that cannot take a
      lock within a timeout fails without writing anything.
@@ -710,6 +725,11 @@ The implementation PR must add tests that:
   re-validates instead of running on stale validation;
 - run `reset` once no bindings or plugin entries remain, then change `DataRoot`; show the archived
   journal and the vault tombstone remain, and the identity lock file is kept;
+- copy a configuration with its sidecars, clear and `reset` one copy, then start the other copy;
+  show its state is untrusted because the identity is tombstoned, it recreates no mark, its bound
+  family refuses to start, and only `recover --new-identity` or `recover --fresh` brings it back;
+- run `repair-vault` while a host of another configuration on the same `DataRoot` is running, and
+  show it refuses without changing any mark, checkpoint or verification status;
 - lose both sidecars after a plugin-only change and show `list` enumerates the surviving checkpoint
   identity for `recover --identity`;
 - restore the state file, journal and vault together to an older point, and show `repair-vault`
