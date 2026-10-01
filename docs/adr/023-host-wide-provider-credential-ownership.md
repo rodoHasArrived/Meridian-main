@@ -46,9 +46,12 @@ whole host use?** Facts in the current code shape the answer:
    `PUT` without `connectionId` writes it (`ProviderConnectionEndpoints.ResolveConnectionService`). So
    do the compatibility surfaces: `CredentialEndpoints` (save, delete and test),
    `ProviderCredentialEndpoints` (connection test) and `ProviderModuleEndpoints` (module credentials).
-   They reach the unscoped operations of `ProviderConnectionLifecycleService` or
-   `ProviderModuleSetupService` with `ManageCredentials` or `ManageProviders`, which the built-in
-   tenant roles hold.
+   So does `ProviderEndpoints.ConfigureProvider` without a `connectionId`, through
+   `ProviderSetupService`. Each of these routes reaches the credential store's unscoped operations
+   (`SaveAsync`, `SaveOAuthTokenAsync`, `DeleteAsync`) or the module credential store, through
+   `ProviderConnectionLifecycleService`, `ProviderModuleSetupService`, `ProviderSetupService` and
+   others. They need only `ManageCredentials` or `ManageProviders`, which the built-in tenant roles
+   hold.
 4. **No permission establishes host authority.** A tenant Admin holds `ManageUsers`, and account
    validation (`UserAccountStore.ValidateAccountRequest`) accepts permission-name overrides. A tenant
    Admin could therefore grant any new permission to an account they control.
@@ -76,18 +79,25 @@ whole host use?** Facts in the current code shape the answer:
 
    Execution is out of scope and never uses a host binding. Execution credential ownership, for
    example tenant-bound account connections, is its own decision. Until that decision exists, a
-   `FailClosed` host composes no execution surface at all, whatever the credential source (a
-   provider-wide record, configuration, environment, or an external session such as a TWS or IB
-   Gateway login):
-   - no brokerage gateway, whether from the catalog through `ProviderFactory` or from the host's own
-     registration (`AddHostedBrokerageGateways` in `UiServer`, including optional StockSharp gateways);
-   - no brokerage sync adapter (account catalog, portfolio or activity sync);
-   - no brokerage connection service or route, such as the Alpaca connect and revoke and the Robinhood
-     connect, callback and revoke routes in `BrokerageConnectionEndpoints`.
+   `FailClosed` host composes no execution path to an external brokerage account, whatever the
+   credential source (a provider-wide record, configuration, environment, or an external session
+   such as a TWS or IB Gateway login):
+   - startup refuses live execution configuration (`Execution:Brokerage` with live execution enabled
+     or a non-paper gateway), so the host stays on its paper gateways;
+   - no brokerage gateway is composed, whether from the catalog through `ProviderFactory` or from the
+     host's own registration (`AddHostedBrokerageGateways` in `UiServer`, including optional StockSharp
+     gateways);
+   - no brokerage sync adapter is composed (account catalog, portfolio or activity sync);
+   - no brokerage connection service or route is composed, such as the Alpaca connect and revoke and
+     the Robinhood connect, callback and revoke routes in `BrokerageConnectionEndpoints`.
+
+   Paper execution uses no external account or credential, so it stays: the paper `IOrderGateway`,
+   the order manager and `ExecutionEndpoints`, all routed only to paper gateways.
 
    Reviews kept finding execution registrations outside the catalog, so this is decided at host
-   composition, not per site. A test checks the real `UiServer` service collection and endpoint table
-   for the absence of every execution capability.
+   composition, not per site. A test checks the real `UiServer` service collection and endpoint
+   table: every order and execution gateway is a paper gateway, and no brokerage gateway, sync
+   adapter, or brokerage connection service or route exists.
 
 2. **Every family is explicitly classified; each credential-bearing family has one owner, fixed at
    startup.** Every enabled family, built-in or plugin, carries one credential classification:
@@ -112,11 +122,15 @@ whole host use?** Facts in the current code shape the answer:
      - an unbound credential-bearing, session-backed or unclassified family does not start. For
        OpenFIGI, this means the canonical symbol resolver runs registry-only and `BackfillCoordinator`
        creates no fallback resolver;
-     - provider-wide credential writes and deletes are refused at the service seam, in the unscoped
-       operations of `ProviderConnectionLifecycleService` and in the credential writes of
-       `ProviderModuleSetupService`. Every route inherits the refusal: the canonical route, the
-       compatibility credential and connection-test routes, and the provider-module routes. Module
-       settings that carry no credentials can still change;
+     - provider-wide credential writes and deletes for any host-wide market-data family (built-in
+       or plugin) are refused at the credential store boundary itself. That means the unscoped
+       operations of the credential store (`SaveAsync`, `SaveRotatedCredentialsAsync`,
+       `SaveOAuthTokenAsync`, `DeleteAsync`) and the module credential store's writes and deletes.
+       Every caller inherits the refusal, whichever route or service it came from: the canonical
+       route, the compatibility credential and connection-test routes, the provider-module routes,
+       `ProviderEndpoints.ConfigureProvider`, and any added later. Scoped operations, credentials of
+       non-market-data integrations (such as accounting and financial connectivity), and module
+       settings that carry no credentials are unaffected;
      - existing provider-wide records remain stored but unused by host-wide providers;
      - a plugin family starts only if the host operator lists it as credential-free (point 5). Plugins
        cannot be bound until a plugin ownership contract exists.
@@ -164,6 +178,14 @@ whole host use?** Facts in the current code shape the answer:
    resolution is refused unless the record's current generation is `Verified`. A rotation after
    startup therefore reaches no newly constructed provider until the new generation is verified.
 
+   Providers already constructed may hold a copy of the credential. `AlpacaHistoricalDataProvider`,
+   for example, copies it into fields and HTTP headers. So any credential mutation on a bound
+   connection while the host runs (save, rotation, delete, disable, or a verification failure) stops
+   the family in the running host. Its constructed providers are disposed and unregistered, and
+   further resolutions are refused. The family returns at the next host start, once its current
+   generation is verified. Rotating a bound credential therefore takes that family offline until a
+   restart.
+
 7. **Host-wide credentials come from one per-family selection; bound families use the scoped
    resolver only.** Every host-wide construction site obtains credentials from a single per-family
    host credential selection: the provider-wide resolver (only when unbound under
@@ -210,20 +232,22 @@ whole host use?** Facts in the current code shape the answer:
      3. append a `pending` event to the credential audit trail (`provider-credentials.audit.jsonl`)
         through the credential store's audit writer, under the lock already held. The event records the
         actor, the kind of change (binding or plugin classification), the subject (provider family or
-        plugin ID), and the previous and new values;
+        plugin ID), the previous and new values, and canonical digests of the complete host credential
+        state before and after the change;
      4. write the host file atomically;
      5. append the outcome, then release the vault lock and the host lock.
    - **Outcome from the file, not the exception.** `AtomicFileWriter` can throw after the rename has
      already published the file, for example from the directory sync. So on any write exception the
-     command rereads the published file:
-     - if it holds the new state, the outcome is `committed`;
-     - if it holds the previous state, the outcome is `aborted`;
+     command rereads the published file and compares the digest of the whole state:
+     - if it matches the after-digest, the outcome is `committed`;
+     - if it matches the before-digest, the outcome is `aborted`;
      - otherwise the event stays `pending`, and the command exits non-zero.
    - **Recovery.** At startup and at the start of every mutating command, under the host lock, a
      `pending` event without an outcome is resolved against the file's actual state:
-     - if the file holds the event's new value, it is closed as `committed (recovered)`;
-     - if it holds the event's previous value, it is closed as `aborted (recovered)`;
-     - otherwise the file was changed outside the command. Credential-bearing families then refuse to
+     - if the digest of the whole file equals the event's after-digest, it is closed as
+       `committed (recovered)`;
+     - if it equals the event's before-digest, it is closed as `aborted (recovered)`;
+     - otherwise the file was changed outside the command, even if only in an unrelated entry. Credential-bearing families then refuse to
        start, as for a malformed file, and mutation is refused, until the operator runs `recover`.
        `recover` records the observed state as an `indeterminate` outcome with the actor.
 
@@ -263,7 +287,8 @@ implemented yet.
 | Lazy provider construction | `src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs` | Factories that resolve providers after startup; each resolution revalidates the credential generation |
 | Plugin registration | `src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.Composition.cs` | Registers plugin families outside `ProviderFactory`; gated under `FailClosed` |
 | Provider-wide credential writes | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs`, `CredentialEndpoints.cs`, `ProviderCredentialEndpoints.cs`, `ProviderModuleEndpoints.cs` | Canonical and compatibility routes that reach unscoped credential writes; each inherits the service-seam refusal |
-| Unscoped credential services | `src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs`, `src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs` | Where provider-wide writes and deletes are refused under `FailClosed` |
+| Callers of unscoped credential writes | `src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs`, `src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs`, `src/Meridian.Application/ProviderRouting/ProviderSetupService.cs` | Reach the store's unscoped operations; inherit the store-boundary refusal |
+| Host execution composition | `src/Meridian/UiServer.cs` (`usesPaperGateway`), `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Live execution refused under `FailClosed`; paper execution stays |
 | Polygon corporate-action ingestion | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs`, `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Process-wide hosted fetcher that reads Polygon keys directly; moves to the per-family selection |
 | Retained ownership | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` | `GetCredentialScopeForTenantAsync` resolves the bound scope |
 | Credential audit trail and verification | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Existing append-only audit and per-generation verification state |
@@ -372,12 +397,15 @@ prove host authority.
   holding the host lock, and the file is never loaded through a default-substituting path.
 - Host-wide construction sites obtain credentials only from the per-family host credential selection;
   an architecture test enforces this with a reviewed allowlist.
-- Under `FailClosed`, provider-wide credential writes and deletes are refused inside the unscoped
-  service operations, not in individual routes.
-- Under `FailClosed`, the host composes no execution surface: no brokerage gateway, sync adapter,
-  or brokerage connection service or route, from any registration path.
-- A running host holds the host lock for its lifetime, and every credential resolution for a bound
-  family revalidates the current generation's verification.
+- Under `FailClosed`, provider-wide credential writes and deletes for host-wide market-data families
+  are refused at the credential store and module credential store boundary, not in services or
+  routes.
+- Under `FailClosed`, the host composes no execution path to an external brokerage account: live
+  execution configuration is refused, and no brokerage gateway, sync adapter, or brokerage
+  connection service or route is composed from any registration path.
+- A running host holds the host lock for its lifetime. Every credential resolution for a bound family
+  revalidates the current generation's verification, and a credential mutation on a bound connection
+  stops that family in the running host.
 - Every enabled family has exactly one credential classification, and `credential-free` never applies
   to a family whose credential catalog entry or adapter metadata requires a field.
 
@@ -402,12 +430,16 @@ The implementation PR must add tests that:
 - under `FailClosed`:
   - refuse unbound credential-bearing, session-backed and unclassified families, and unlisted plugin
     families;
-  - find no brokerage gateway, brokerage sync adapter, or brokerage connection service or route in the
-    real `UiServer` service collection and endpoint table, including the hosted Alpaca, IB, Robinhood
-    and StockSharp registrations;
-  - refuse provider-wide credential writes and deletes route by route: the canonical credential
-    route, the `CredentialEndpoints` save, delete and test routes, the `ProviderCredentialEndpoints`
-    connection test, and provider-module create, update and delete requests that carry credentials;
+  - find only paper order and execution gateways, and no brokerage gateway, brokerage sync adapter,
+    or brokerage connection service or route, in the real `UiServer` service collection and endpoint
+    table, including the hosted Alpaca, IB, Robinhood and StockSharp registrations; refuse startup
+    with live execution configured;
+  - refuse unscoped credential-store and module-credential writes and deletes for a market-data
+    family directly at the store, and route by route: the canonical credential route, the
+    `CredentialEndpoints` save, delete and test routes, the `ProviderCredentialEndpoints` connection
+    test, `ProviderEndpoints.ConfigureProvider` without a `connectionId`, and provider-module create,
+    update and delete requests that carry credentials; keep scoped writes and non-market-data
+    integrations working;
   - start no `PolygonCorporateActionFetcher` ingestion on an unscoped key when Polygon is unbound;
   - run the canonical symbol resolver registry-only when OpenFIGI is unbound, without reading the
     configured key, and create no `BackfillCoordinator` fallback resolver;
@@ -420,8 +452,13 @@ The implementation PR must add tests that:
 - refuse `set`, `clear`, `plugin-allow` and `plugin-revoke` while a host on the same configuration is
   running;
 - audit plugin credential-free changes with the actor, plugin ID, and previous and new classification;
-- abort a `set` when a concurrent save or rotation changes the credential generation during the
-  command, so a committed binding always names a verified generation;
+- serialize a `set` with a concurrent save or rotation, so the rotation waits for the vault lock and
+  the committed binding names the generation that was verified; then show that the rotation, once
+  applied, makes the next resolution and the next startup refuse the unverified generation;
+- stop an already-constructed bound provider when its connection's credential is saved, rotated,
+  deleted or disabled while the host runs, rather than only refusing later resolutions;
+- treat a pending event as changed outside the command (refusing families and mutation until
+  `recover`) when only an unrelated entry of the host credential state was changed;
 - after an outcome append fails, have the next mutating command resolve the pending event first and
   refuse to proceed until it is resolved; when the file matches neither side of the event, refuse
   credential-bearing families and mutation until `recover` records the observed state;
