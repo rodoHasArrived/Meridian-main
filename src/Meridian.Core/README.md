@@ -6,7 +6,7 @@ module_id: SRC-CORE
 path: src/Meridian.Core
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Core
@@ -48,6 +48,12 @@ This layer provides low-level reusable infrastructure. It must stay independent 
   shutdown handlers, and Application pipeline components.
 
 ## Important workflows
+
+`AppConfig.TenantScopeEnforcement` is a supported restart-required security setting. Omission
+selects `fail-closed`; the host permits `deployment-boundary` only as explicit migration
+compatibility. Configuration validation accepts only these exact application-setting values and
+rejects aliases, including `open`, `boundary`, `strict`, and `closed`. The generated JSON schema
+and sample document the default. Host startup verifies retained-data readiness before strict work.
 
 Use this module when a cross-project primitive or runtime helper is required by multiple higher layers.
 Runtime feature-capability options live in `Config/FeatureCapabilityOptions.cs` so desktop and host
@@ -100,6 +106,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-CORE -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W7-LIVE-001` | Live-readiness governance |

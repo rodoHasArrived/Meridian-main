@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Ui.Services.Services;
+using Moq;
 
 namespace Meridian.Ui.Tests.Services;
 
@@ -200,19 +201,72 @@ public sealed class FixtureDataServiceTests
     }
 
     [Fact]
-    public async Task SimulateNetworkDelayAsync_CompletesWithinReasonableTime()
+    public async Task SimulateNetworkDelayAsync_UsesConfiguredClockWithinSimulationDelayRange()
     {
-        // Arrange
-        var service = FixtureDataService.Instance;
-        var startTime = DateTimeOffset.UtcNow;
+        var timeProvider = new Mock<TimeProvider>();
+        TimerCallback? fireTimer = null;
+        object? timerState = null;
+        TimeSpan? scheduledDelay = null;
+        TimeSpan? scheduledPeriod = null;
+        timeProvider.Setup(clock => clock.CreateTimer(
+                It.IsAny<TimerCallback>(), It.IsAny<object?>(), It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
+            .Callback<TimerCallback, object?, TimeSpan, TimeSpan>((callback, state, dueTime, period) =>
+            {
+                fireTimer = callback;
+                timerState = state;
+                scheduledDelay = dueTime;
+                scheduledPeriod = period;
+            })
+            .Returns(Mock.Of<ITimer>());
+        var service = new FixtureDataService(timeProvider.Object);
 
-        // Act
-        await service.SimulateNetworkDelayAsync();
-        var elapsed = DateTimeOffset.UtcNow - startTime;
+        var delay = service.SimulateNetworkDelayAsync();
 
-        // Assert
-        elapsed.Should().BeGreaterThan(TimeSpan.FromMilliseconds(40), "should have some delay");
-        elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(700), "should not delay too long even on busy CI runners");
+        scheduledDelay.Should().NotBeNull();
+        scheduledDelay!.Value.Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(50));
+        scheduledDelay.Value.Should().BeLessThan(TimeSpan.FromMilliseconds(150));
+        scheduledPeriod.Should().Be(Timeout.InfiniteTimeSpan);
+        delay.IsCompleted.Should().BeFalse("the simulated delay must await its timer");
+        fireTimer.Should().NotBeNull();
+
+        fireTimer!(timerState);
+        await delay;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SimulateNetworkDelayAsync_HonorsCancellation(bool cancelBeforeStarting)
+    {
+        var timeProvider = new Mock<TimeProvider>();
+        timeProvider.Setup(clock => clock.CreateTimer(
+                It.IsAny<TimerCallback>(), It.IsAny<object?>(), It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
+            .Returns(Mock.Of<ITimer>());
+        var service = new FixtureDataService(timeProvider.Object);
+        using var cancellation = new CancellationTokenSource();
+        if (cancelBeforeStarting)
+        {
+            cancellation.Cancel();
+        }
+
+        var delay = service.SimulateNetworkDelayAsync(cancellation.Token);
+        if (!cancelBeforeStarting)
+        {
+            delay.IsCompleted.Should().BeFalse();
+            cancellation.Cancel();
+        }
+
+        // Bound a broken cancellation path without using wall-clock elapsed time as the
+        // simulation-delay contract. The timer itself remains controlled by this test.
+        var failure = await Record.ExceptionAsync(() => delay.WaitAsync(TimeSpan.FromSeconds(5)));
+        failure.Should().BeAssignableTo<OperationCanceledException>()
+            .Which.CancellationToken.Should().Be(cancellation.Token);
+        if (cancelBeforeStarting)
+        {
+            timeProvider.Verify(clock => clock.CreateTimer(
+                    It.IsAny<TimerCallback>(), It.IsAny<object?>(), It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()),
+                Times.Never);
+        }
     }
 
     [Fact]

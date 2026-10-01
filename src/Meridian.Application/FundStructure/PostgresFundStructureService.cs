@@ -679,7 +679,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
             ClaimNewAssignment(request.AssignmentId, snap);
             if (kind == FundStructureNodeKindDto.Account)
                 await MaterializeLinkedAccountAsync(request.NodeId, snap, ct).ConfigureAwait(false);
-            await _store.UpsertAssignmentAsync(assignment, ct).ConfigureAwait(false);
+            await _store.UpsertAssignmentAsync(assignment, ResolveMutationTenant(), ct).ConfigureAwait(false);
             if (kind == FundStructureNodeKindDto.Account)
                 await _store.UpsertLinkedAccountIdAsync(request.NodeId, ct).ConfigureAwait(false);
 
@@ -1183,6 +1183,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
 
     private async Task PersistChangedAsync(MutableSnapshot snap, CancellationToken ct)
     {
+        var tenant = ResolveMutationTenant();
         foreach (var o in snap.Organizations.Values)
             await _store.UpsertOrganizationAsync(o, ct).ConfigureAwait(false);
         foreach (var b in snap.Businesses.Values)
@@ -1200,9 +1201,9 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         foreach (var p in snap.InvestmentPortfolios.Values)
             await _store.UpsertInvestmentPortfolioAsync(p, ct).ConfigureAwait(false);
         foreach (var l in snap.OwnershipLinks.Values)
-            await _store.UpsertOwnershipLinkAsync(l, ct).ConfigureAwait(false);
+            await _store.UpsertOwnershipLinkAsync(l, tenant, ct).ConfigureAwait(false);
         foreach (var a in snap.Assignments.Values)
-            await _store.UpsertAssignmentAsync(a, ct).ConfigureAwait(false);
+            await _store.UpsertAssignmentAsync(a, tenant, ct).ConfigureAwait(false);
         foreach (var linkedAccountId in snap.LinkedAccountIds)
             await _store.UpsertLinkedAccountIdAsync(linkedAccountId, ct).ConfigureAwait(false);
 

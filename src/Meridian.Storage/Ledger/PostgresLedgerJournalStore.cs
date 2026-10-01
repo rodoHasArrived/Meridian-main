@@ -52,6 +52,7 @@ public sealed partial class PostgresLedgerJournalStore :
 
     public async Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
     {
+        RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
         entry = AccountingPostingCommandValidator.NormalizeAndValidate(
@@ -88,6 +89,7 @@ public sealed partial class PostgresLedgerJournalStore :
         LedgerJournalEntryWrite entry,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(transaction);
         ArgumentNullException.ThrowIfNull(entry);
@@ -112,11 +114,13 @@ public sealed partial class PostgresLedgerJournalStore :
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
 
+        await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", entry.PeriodId, false, ct).ConfigureAwait(false);
         var period = await LoadPeriodAsync(
                 connection,
                 transaction,
                 entry.PeriodId,
                 forUpdate: _options.EnablePeriodLocking,
+                callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
                 ct: ct)
             .ConfigureAwait(false);
         if (period is null)
@@ -269,15 +273,15 @@ public sealed partial class PostgresLedgerJournalStore :
         LedgerPostingIdentity identity,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(identity);
         if (identity.JournalEntryId == Guid.Empty)
             throw new ArgumentException("Journal entry id is required.", nameof(identity));
         if (identity.AggregateId == Guid.Empty)
             throw new ArgumentException("Aggregate id is required.", nameof(identity));
 
-        // Deliberately do not apply the ambient tenant read filter here. Journal-entry and command
-        // ids are database-global write identities, so a cross-tenant collision must fail closed
-        // rather than reaching the unique constraint as an unexplained append failure.
+        // Search global write identities so a foreign collision still fails closed; validate
+        // every retained period before returning any collision contents to a strict caller.
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = CreateJournalEntryReadCommand(connection);
         var predicates = new List<string>
@@ -315,7 +319,10 @@ public sealed partial class PostgresLedgerJournalStore :
 
         command.CommandText += $" where ({string.Join(" or ", predicates)})";
         command.CommandText += " order by je.global_sequence, jl.line_no;";
-        return await ReadJournalEntriesAsync(command, ct).ConfigureAwait(false);
+        var collisions = await ReadJournalEntriesAsync(command, ct).ConfigureAwait(false);
+        foreach (var periodId in collisions.Select(entry => entry.PeriodId).Distinct())
+            await EnsureTenantRowAsync(connection, null, "accounting_periods", "period_id", periodId, false, ct).ConfigureAwait(false);
+        return collisions;
     }
 
     public async Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
@@ -440,6 +447,7 @@ public sealed partial class PostgresLedgerJournalStore :
         bool requireClosedTemporaryAccounts,
         CancellationToken ct)
     {
+        RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(period);
 
         if (period.PeriodId == Guid.Empty)
@@ -466,11 +474,14 @@ public sealed partial class PostgresLedgerJournalStore :
             : IsolationLevel.Serializable;
         await using var transaction = await connection.BeginTransactionAsync(isolationLevel, ct).ConfigureAwait(false);
 
+        await EnsureBookWriteAuthorityAsync(connection, transaction, period.LedgerBookId, ct).ConfigureAwait(false);
+        await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", period.PeriodId, true, ct).ConfigureAwait(false);
         var current = await LoadPeriodAsync(
                 connection,
                 transaction,
                 period.PeriodId,
                 forUpdate: requireClosedTemporaryAccounts || _options.EnablePeriodLocking,
+                callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
                 ct: ct)
             .ConfigureAwait(false);
 
@@ -513,7 +524,8 @@ public sealed partial class PostgresLedgerJournalStore :
             var affected = await UpdatePeriodAsync(connection, transaction, saved, expectedVersion, ct).ConfigureAwait(false);
             if (affected != 1)
             {
-                var actual = await LoadPeriodAsync(connection, transaction, period.PeriodId, forUpdate: false, ct: ct).ConfigureAwait(false);
+                var actual = await LoadPeriodAsync(connection, transaction, period.PeriodId, forUpdate: false,
+                    callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null, ct: ct).ConfigureAwait(false);
                 throw PeriodVersionConflict(period.PeriodId, expectedVersion, actual?.Version ?? 0);
             }
         }
@@ -625,6 +637,7 @@ public sealed partial class PostgresLedgerJournalStore :
 
     public async Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default)
     {
+        RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(book);
 
         if (book.LedgerBookId == Guid.Empty)
@@ -633,7 +646,11 @@ public sealed partial class PostgresLedgerJournalStore :
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        await EnsureFundWriteAuthorityAsync(connection, transaction, book.FundProfileId, ct).ConfigureAwait(false);
+        await EnsureTenantRowAsync(connection, transaction, "ledger_books", "ledger_book_id", book.LedgerBookId, true, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             insert into {Qualified("ledger_books")} (
@@ -686,6 +703,7 @@ public sealed partial class PostgresLedgerJournalStore :
                 -- unbound is stamped on the next save after the fund is claimed (excluded.tenant_id is the
                 -- VALUES subquery above), rather than staying fail-open until a backfill.
                 tenant_id = coalesce(ledger_books.tenant_id, excluded.tenant_id)
+            where not @require_tenant or lower(trim(ledger_books.tenant_id)) = lower(@mutation_tenant)
             returning ledger_book_id,
                       fund_profile_id,
                       fund_structure_node_id,
@@ -711,24 +729,44 @@ public sealed partial class PostgresLedgerJournalStore :
         command.Parameters.AddWithValue("description", (object?)book.Description ?? DBNull.Value);
         command.Parameters.AddWithValue("created_at", book.CreatedAt.UtcDateTime);
         command.Parameters.AddWithValue("updated_at", book.UpdatedAt.UtcDateTime);
+        command.Parameters.AddWithValue("require_tenant", _tenantScope.IsFailClosed);
+        command.Parameters.AddWithValue("mutation_tenant", ResolveCallerTenant()?.Trim() ?? string.Empty);
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
         {
+            if (_tenantScope.IsFailClosed)
+                throw new UnauthorizedAccessException("The retained ledger book does not belong to this tenant.");
             throw new InvalidOperationException($"Ledger book '{book.LedgerBookId}' was not saved.");
         }
 
-        return ReadLedgerBook(reader);
+        var saved = ReadLedgerBook(reader);
+        await reader.DisposeAsync().ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return saved;
     }
 
     public async Task<LedgerAccountTaxLotPolicyRecord> SaveTaxLotPolicyAsync(
         LedgerAccountTaxLotPolicyRecord policy,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         ValidateTaxLotPolicy(policy);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, transaction, policy.LedgerBookId, ct).ConfigureAwait(false);
+        if (_tenantScope.IsFailClosed)
+        {
+            await using var retained = connection.CreateCommand();
+            retained.Transaction = transaction;
+            retained.CommandText = $"select ledger_book_id from {Qualified("tax_lot_policies")} where policy_record_id = @id for update";
+            retained.Parameters.AddWithValue("id", policy.PolicyRecordId);
+            if (await retained.ExecuteScalarAsync(ct).ConfigureAwait(false) is Guid existingBook)
+                await EnsureBookWriteAuthorityAsync(connection, transaction, existingBook, ct).ConfigureAwait(false);
+        }
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             insert into {Qualified("tax_lot_policies")} (
@@ -780,6 +818,13 @@ public sealed partial class PostgresLedgerJournalStore :
                 wash_sale_window_days = excluded.wash_sale_window_days,
                 wash_sale_scope = excluded.wash_sale_scope,
                 wash_sale_effective_date = excluded.wash_sale_effective_date
+            where not @require_tenant or exists (
+                select 1 from {Qualified("ledger_books")} retained_book
+                join {Qualified("fund_profile_tenancy")} retained_fund
+                  on retained_fund.fund_profile_id = lower(trim(retained_book.fund_profile_id))
+                where retained_book.ledger_book_id = tax_lot_policies.ledger_book_id
+                  and lower(trim(retained_book.tenant_id)) = lower(@mutation_tenant)
+                  and lower(trim(retained_fund.tenant_id)) = lower(@mutation_tenant))
             returning policy_record_id,
                       ledger_book_id,
                       account_name,
@@ -807,26 +852,35 @@ public sealed partial class PostgresLedgerJournalStore :
         command.Parameters.AddWithValue("created_at", policy.CreatedAt.UtcDateTime);
         command.Parameters.AddWithValue("updated_at", policy.UpdatedAt.UtcDateTime);
         AddWashSalePolicyParameters(command, policy.EffectiveWashSalePolicy);
+        command.Parameters.AddWithValue("require_tenant", _tenantScope.IsFailClosed);
+        command.Parameters.AddWithValue("mutation_tenant", ResolveCallerTenant()?.Trim() ?? string.Empty);
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
         {
+            if (_tenantScope.IsFailClosed)
+                throw new UnauthorizedAccessException("The retained tax-lot policy does not belong to this tenant.");
             throw new InvalidOperationException($"Ledger tax-lot policy '{policy.PolicyRecordId}' was not saved.");
         }
 
-        return ReadTaxLotPolicy(reader);
+        var saved = ReadTaxLotPolicy(reader);
+        await reader.DisposeAsync().ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return saved;
     }
 
     public async Task<IReadOnlyList<LedgerAccountTaxLotPolicyRecord>> ListTaxLotPoliciesAsync(
         Guid ledgerBookId,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         if (ledgerBookId == Guid.Empty)
         {
             throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, ledgerBookId, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -1205,9 +1259,8 @@ public sealed partial class PostgresLedgerJournalStore :
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        // SEC-005 slice 4c-ii: the tenant filter (when any) must precede the FOR UPDATE clause, which
-        // Postgres requires last. Internal write callers pass callerTenantId = null (no filter); only
-        // the GetPeriodAsync read path scopes by the period's stamped tenant_id, fail-open otherwise.
+        // The tenant filter must precede FOR UPDATE. Strict writes supply their retained caller
+        // authority too; a null caller never relaxes the strict predicate for an internal call.
         command.CommandText =
             $"""
             select period_id,

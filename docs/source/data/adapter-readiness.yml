@@ -1,0 +1,1212 @@
+# Canonical source-owned inventory. Generate the matrix; do not hand-edit emitted output.
+# Capabilities describe implemented catalog contracts, not live entitlement or release acceptance.
+# Evidence references are inspectable source/tests; they are not assertions that a run passed.
+schema:
+  id: meridian.adapter-readiness
+  version: 1.0.0
+adapters:
+- folder: Alpaca
+  provider_id: alpaca
+  aliases:
+  - alpaca-api
+  - alpaca-brokerage
+  - alpaca-corp-actions
+  - alpaca-options
+  - alpaca-symbols
+  state: partial
+  capabilities:
+    streaming: true
+    historical: true
+    symbol_search: true
+    options: true
+    corporate_actions: true
+    brokerage: true
+  adapter_types:
+    streaming: AlpacaMarketDataClient
+    historical: AlpacaHistoricalDataProvider
+    symbol_search: AlpacaSymbolSearchProvider
+    options: AlpacaOptionsChainProvider
+    corporate_actions: AlpacaCorporateActionProvider
+    brokerage: AlpacaBrokerageGateway
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: ALPACA_KEY_ID and ALPACA_SECRET_KEY via the credential resolver; configured account and feed entitlements
+      are required for options, SIP/OPRA and brokerage surfaces.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - The historical default is 200 requests/minute; actual quotas and IEX/SIP or indicative/OPRA access depend on
+    the configured plan.
+  - Unit and fixture evidence does not establish live execution acceptance; brokerage use remains subject to shared
+    execution governance.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Missing credentials prevent credential-gated backfill/search activation. Asset-stream routing fails
+    closed when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement.
+    REST and trade-update errors remain observable. Corporate-action HTTP failures and non-cancellation exceptions
+    are logged and return empty action collections; empty results must not be treated as verified absence of actions.
+    Cancellation propagates.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs
+    symbol: ProviderFactory
+  - path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
+    symbol: AlpacaProviderModule
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaCredentialAndReconnectTests.cs
+    symbol: AlpacaCredentialAndReconnectTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaAssetStreamRoutingTests.cs
+    symbol: AlpacaAssetStreamRoutingTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaHistoricalDataProviderTests.cs
+    symbol: AlpacaHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaSymbolSearchProviderTests.cs
+    symbol: AlpacaSymbolSearchProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaCorporateActionProviderTests.cs
+    symbol: AlpacaCorporateActionProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaBrokerageGatewayTests.cs
+    symbol: AlpacaBrokerageGatewayTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    symbol: AlpacaOptionsChainProvider
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Retain account/feed-specific paper and live evidence and obtain operator acceptance before promoting
+    operational readiness.
+- folder: AlphaVantage
+  provider_id: alphavantage
+  aliases:
+  - alpha-vantage
+  - alpha_vantage
+  - alphavantage-corp-actions
+  - alphavantage-symbols
+  state: partial
+  capabilities:
+    streaming: false
+    historical: true
+    symbol_search: true
+    options: false
+    corporate_actions: true
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: AlphaVantageHistoricalDataProvider
+    symbol_search: AlphaVantageSymbolSearchProvider
+    options: null
+    corporate_actions: AlphaVantageCorporateActionProvider
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: ALPHA_VANTAGE_API_KEY (ALPHAVANTAGE__APIKEY alias); historical and search activation is explicitly
+      opt-in.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Local pacing is 5 requests/minute with a constrained free-tier daily allowance; adjusted data may require paid
+    entitlement.
+  - Provider Note/Information payloads can represent quota exhaustion even when HTTP succeeds.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Absent credentials or absent opt-in skip historical/search construction. Missing direct-call credentials
+    fail; quota responses become RateLimitException. Corporate-action fetches distinguish rate limits from empty/failure
+    results and propagate cancellation. Missing credentials and non-rate-limit fetch failures can return empty action
+    collections; an empty collection is not verified absence of actions.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlphaVantageHistoricalDataProviderTests.cs
+    symbol: AlphaVantageHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlphaVantageSymbolSearchProviderTests.cs
+    symbol: AlphaVantageSymbolSearchProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlphaVantageCorporateActionProviderTests.cs
+    symbol: AlphaVantageCorporateActionProviderTests
+    kind: test
+  owner: Data Confidence and Validation
+  next_action: Retain credentialed evidence for the configured tier and adjusted-daily corporate-action access without
+    consuming quota implicitly.
+- folder: Core
+  provider_id: null
+  aliases: []
+  state: complete
+  capabilities:
+    streaming: false
+    historical: false
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: null
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: No independent provider credentials; shared factories delegate credential resolution to each provider
+      family.
+    optional_sdk: No optional vendor SDK for shared primitives; vendor-specific requirements remain attached to
+      their family.
+  risks:
+  - Shared factory, registry, rate-limit and failover behavior affects every runtime provider.
+  - A successful construction or advertised capability is not live connectivity or entitlement evidence.
+  degradation: Factory construction failures are logged and isolated per provider. Credential policy is resolved
+    centrally; composite history rotates on structured rate-limit signals and retains bounded retry behavior. This
+    folder is shared infrastructure, not an independently routable provider.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    symbol: ProviderServiceExtensions
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/ProviderFactoryCredentialContextTests.cs
+    symbol: ProviderFactoryCredentialContextTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/CompositeProviderStaleDataTests.cs
+    symbol: CompositeProviderStaleDataTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/ProviderRateLimitTrackerTests.cs
+    symbol: ProviderRateLimitTrackerTests
+    kind: test
+  - path: tests/Meridian.Tests/Providers/ProviderCapabilityDescriptorCatalogTests.cs
+    symbol: ProviderCapabilityDescriptorCatalogTests
+    kind: test
+  owner: Data Confidence and Validation
+  next_action: Keep descriptor factories, identity aliases and contract/folder tests aligned when adding adapters.
+- folder: Edgar
+  provider_id: edgar
+  aliases:
+  - edgar-symbols
+  state: partial
+  capabilities:
+    streaming: false
+    historical: false
+    symbol_search: true
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: null
+    symbol_search: EdgarSymbolSearchProvider
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: No API key; SEC requests include an identifying User-Agent. Deployment contact identity and SEC
+      access policy must remain appropriate.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Search paces SEC access at 8 requests/second and caches the company list; availability and refresh depend on
+    SEC endpoints.
+  - Reference documents and Security Master ingestion are separate from the on-demand corporate-action contract.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Availability reports false on fetch failure; discovery uses its cached company list and does not
+    fabricate market data. Reference-data ingestion remains a separately registered workflow; no streaming, history
+    or corporate-action-provider capability is asserted.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs
+    symbol: StorageFeatureRegistration
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/EdgarSymbolSearchProviderTests.cs
+    symbol: EdgarSymbolSearchProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/EdgarReferenceDataProviderTests.cs
+    symbol: EdgarReferenceDataProviderTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+    symbol: EdgarSecurityMasterIngestProvider
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Retain current SEC discovery and ingestion evidence, including source refresh behavior and deployment
+    User-Agent policy.
+- folder: Failover
+  provider_id: null
+  aliases: []
+  state: complete
+  capabilities:
+    streaming: false
+    historical: false
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: null
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: No independent credentials; every configured primary/backup provider must satisfy its own credentials
+      and subscriptions.
+    optional_sdk: None; composes the already registered provider clients.
+  risks:
+  - Recovery depends on usable backup feeds and subscription restoration; candidates must meet recent-latency thresholds.
+  - This orchestration family consumes provider capability contracts without declaring its own independent vendor
+    capability row.
+  degradation: Two-phase handoff commits an active provider only after connection and subscription restoration.
+    Missing runtime handlers, rejected transitions or cancellation retain prior state; failed unsubscriptions are
+    logged and disposal rejects pending handoffs.
+  registration:
+  - path: src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs
+    symbol: CollectorModeRunner
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/FailoverAwareMarketDataClientTests.cs
+    symbol: FailoverAwareMarketDataClientTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/StreamingFailoverServiceTests.cs
+    symbol: StreamingFailoverServiceTests
+    kind: test
+  owner: Data Confidence and Validation
+  next_action: Keep failover and primary-recovery tests synchronized with subscription and latency policy changes.
+- folder: Finnhub
+  provider_id: finnhub
+  aliases:
+  - finnhub-corp-actions
+  - finnhub-symbols
+  state: partial
+  capabilities:
+    streaming: false
+    historical: true
+    symbol_search: true
+    options: false
+    corporate_actions: true
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: FinnhubHistoricalDataProvider
+    symbol_search: FinnhubSymbolSearchProvider
+    options: null
+    corporate_actions: FinnhubCorporateActionProvider
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: FINNHUB_API_KEY (FINNHUB__APIKEY alias); candle and corporate-action access is plan-dependent.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Local historical/search pacing is 60 requests/minute.
+  - Dividend/split and historical endpoints may have entitlement and coverage restrictions independent of symbol
+    discovery.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Credential-gated construction skips missing keys; direct history calls reject missing keys. Rate
+    limits are surfaced by the shared HTTP boundary; unavailable or malformed provider data does not become fabricated
+    bars. Corporate-action HTTP failures and non-cancellation exceptions are logged and return empty action collections;
+    empty results must not be treated as verified absence of actions. Cancellation propagates.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/FinnhubHistoricalDataProviderTests.cs
+    symbol: FinnhubHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/FinnhubSymbolSearchProviderTests.cs
+    symbol: FinnhubSymbolSearchProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/FinnhubCorporateActionProviderTests.cs
+    symbol: FinnhubCorporateActionProviderTests
+    kind: test
+  owner: Data Confidence and Validation
+  next_action: Retain evidence for historical and corporate-action coverage under the deployed API plan.
+- folder: Fred
+  provider_id: fred
+  aliases:
+  - fred-symbols
+  state: partial
+  capabilities:
+    streaming: false
+    historical: true
+    symbol_search: true
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: FredHistoricalDataProvider
+    symbol_search: FredSymbolSearchProvider
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: FRED_API_KEY (FRED__APIKEY alias); explicitly enable the FRED backfill family.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Local historical/search pacing is 120 requests/minute.
+  - Economic series are not exchange-traded price bars; release timing, revisions and missing observations require
+    downstream interpretation.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Absent opt-in or credentials prevents factory activation; direct history calls reject missing keys.
+    HTTP 429 is a structured rate limit; invalid JSON fails rather than becoming usable data. Search returns economic
+    series IDs.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/FredHistoricalDataProviderTests.cs
+    symbol: FredHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/FredSymbolSearchProviderTests.cs
+    symbol: FredSymbolSearchProviderTests
+    kind: test
+  owner: Data Confidence and Validation
+  next_action: Retain configured-series evidence including observation gaps and revision interpretation before operational
+    use.
+- folder: InteractiveBrokers
+  provider_id: ibkr
+  aliases:
+  - ib
+  - interactive-brokers
+  - interactive_brokers
+  - interactivebrokers
+  state: partial
+  capabilities:
+    streaming: true
+    historical: true
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: true
+  adapter_types:
+    streaming: IBMarketDataClient
+    historical: IBHistoricalDataProvider
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: IBBrokerageGateway
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: Authenticated TWS or IB Gateway session, configured host/port/client ID, account access and relevant
+      market-data subscriptions; Flex reconciliation has separate credentials and identity.
+    optional_sdk: Official IBApi DLL/project for real TWS/Gateway connectivity with EnableIbApiVendor=true; EnableIbApiSmoke=true
+      is compile-only verification, not the vendor runtime.
+  risks:
+  - Historical pacing is 60 requests/10 minutes with 15-second minimum spacing in the guidance surface.
+  - Vendor version, local socket reachability, account permissions and live/frozen/delayed entitlements determine
+    usable runtime behavior.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Without the official SDK, streaming uses explicit simulation and history is unavailable/empty with
+    guidance. Smoke or guidance builds cannot advertise live execution. Unknown requested accounts and unscoped
+    durable callbacks fail closed; richer IBDataServices option/scanner APIs are not shared options/search providers.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/IBMarketDataClientContractTests.cs
+    symbol: IBMarketDataClientContractTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/IBHistoricalProviderContractTests.cs
+    symbol: IBHistoricalProviderContractTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/IBBrokerageGatewayTests.cs
+    symbol: IBBrokerageGatewayTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/IBApiVersionValidatorTests.cs
+    symbol: IBApiVersionValidatorTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/IBDataServicesTests.cs
+    symbol: IBDataServicesTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBuildGuidance.cs
+    symbol: IBBuildGuidance
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Retain official-vendor build and paper-socket evidence with account-scoped callback and entitlement
+    provenance before live acceptance.
+- folder: NasdaqDataLink
+  provider_id: nasdaq
+  aliases:
+  - nasdaq-corp-actions
+  - nasdaq-data-link
+  - nasdaq-symbols
+  - nasdaq_data_link
+  - nasdaqdatalink
+  state: partial
+  capabilities:
+    streaming: false
+    historical: true
+    symbol_search: true
+    options: false
+    corporate_actions: true
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: NasdaqDataLinkHistoricalDataProvider
+    symbol_search: NasdaqDataLinkSymbolSearchProvider
+    options: null
+    corporate_actions: NasdaqDataLinkCorporateActionProvider
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: NASDAQ_DATA_LINK_API_KEY (NASDAQ__APIKEY alias) is optional for limited free history but required
+      for the credential-gated dataset-search path; selected datasets may require subscriptions.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Local historical/search pacing is a conservative 50 requests/day.
+  - The default WIKI dataset is legacy; exact DATABASE/DATASET identity, freshness and licensing must be validated
+    for the selected database.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Limited history can be constructed without a key; search is skipped without credentials. Search preserves
+    exact dataset codes to avoid ticker ambiguity. Dataset dividend/split extraction does not imply coverage beyond
+    the selected dataset. Corporate-action HTTP failures and non-cancellation exceptions are logged and return empty
+    action collections; empty results must not be treated as verified absence of actions. Cancellation propagates.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/NasdaqDataLinkHistoricalDataProviderTests.cs
+    symbol: NasdaqDataLinkHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/NasdaqDataLinkSymbolSearchProviderTests.cs
+    symbol: NasdaqDataLinkSymbolSearchProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/NasdaqDataLinkCorporateActionProviderTests.cs
+    symbol: NasdaqDataLinkCorporateActionProviderTests
+    kind: test
+  owner: Data Confidence and Validation
+  next_action: Select and verify a current entitled dataset and retain freshness/coverage evidence before operational
+    acceptance.
+- folder: NYSE
+  provider_id: nyse
+  aliases:
+  - nyse-streaming
+  state: partial
+  capabilities:
+    streaming: true
+    historical: false
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: NyseMarketDataClient
+    historical: null
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: NYSEDataSource
+  requirements:
+    credentials: NYSE_API_KEY and NYSE_API_SECRET; optional NYSE_CLIENT_ID/configured ClientId for OAuth client-credentials
+      authentication and an entitled NYSE feed.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Direct feed contracts, endpoints and feed-tier subscriptions must be validated against the configured NYSE service.
+  - Subscription ceiling defaults to 500; Level 2 and integrated-feed entitlement are separate external dependencies.
+  - NYSEDataSource advertises local limits of 100 requests/minute, 5000/hour and 50000/day; these are code metadata,
+    not a guarantee of vendor allowance.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Missing credentials prevent OAuth acquisition; HTTP 429 is a structured rate limit. Streaming diagnostics
+    preserve actual lifecycle evidence. Compatibility history is exposed only through NYSEDataSource/IHistoricalDataSource;
+    internal NyseHistoricalDataProvider is not an IHistoricalDataProvider.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs
+    symbol: NYSEServiceExtensions
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/NYSECredentialAndRateLimitTests.cs
+    symbol: NYSECredentialAndRateLimitTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/NyseMarketDataClientContractTests.cs
+    symbol: NyseMarketDataClientContractTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/NyseSharedLifecycleTests.cs
+    symbol: NyseSharedLifecycleTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/NyseNationalTradesCsvParserTests.cs
+    symbol: NyseNationalTradesCsvParserTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs
+    symbol: NYSEServiceExtensions
+    kind: source
+  - path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    symbol: NYSEDataSource
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Retain credentialed endpoint/feed-tier evidence for streaming and the compatibility historical path.
+- folder: OpenFigi
+  provider_id: openfigi
+  aliases:
+  - open-figi
+  - openfigi-api
+  state: partial
+  capabilities:
+    streaming: false
+    historical: false
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: null
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: OpenFigiSymbolResolver
+    compatibility_data_source: null
+  requirements:
+    credentials: OPENFIGI_API_KEY is optional; the client supports unauthenticated identifier mapping.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Client pacing is 25 requests/minute without a key or 250 with one, with conservative 100-identifier batches.
+  - Ambiguous ticker mappings and upstream candidate ordering require exchange-aware selection.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Availability reports false on request failure; exchange-scoped candidates are preferred when available,
+    otherwise upstream ordering is retained. ISymbolResolver provides identifier mapping and enrichment, not ISymbolSearchProvider
+    or market-data delivery.
+  registration:
+  - path: src/Meridian.Application/Composition/Features/SymbolManagementFeatureRegistration.cs
+    symbol: SymbolManagementFeatureRegistration
+  evidence:
+  - path: tests/Meridian.Tests/SymbolSearch/OpenFigiClientTests.cs
+    symbol: OpenFigiClientTests
+    kind: test
+  - path: tests/Meridian.Tests/SymbolSearch/OpenFigiClientAmbiguityTests.cs
+    symbol: OpenFigiClientAmbiguityTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs
+    symbol: OpenFigiSymbolResolver
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Retain representative exchange-scoped ambiguity and identifier-resolution evidence for the deployed
+    universe.
+- folder: Plaid
+  provider_id: plaid
+  aliases:
+  - plaid-api
+  state: partial
+  capabilities:
+    streaming: false
+    historical: false
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: null
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: PLAID_CLIENT_ID and PLAID_SECRET plus selected environment; linked-item access tokens are retained
+      through the encrypted credential store.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Institution/product availability, item consent, webhook verification and environment quotas are external dependencies.
+  - Transfers require explicit enablement; financial connectivity and investment snapshots do not implement IBrokerageGateway
+    or market-data capability contracts.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Transport rejects unsuccessful HTTP responses and empty response bodies. Workstation services resolve
+    required credentials and keep access tokens out of connection metadata; transfers remain governed by environment
+    and enablement checks.
+  registration:
+  - path: src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs
+    symbol: WorkstationServiceCollectionExtensions
+  evidence:
+  - path: tests/Meridian.Tests/Ui/PlaidWorkstationServiceTests.cs
+    symbol: PlaidWorkstationServiceTests
+    kind: test
+  - path: tests/Meridian.Tests/Ui/PlaidWebhookVerifierTests.cs
+    symbol: PlaidWebhookVerifierTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/Plaid/PlaidHttpClient.cs
+    symbol: PlaidHttpClient
+    kind: source
+  - path: src/Meridian.Infrastructure/Adapters/Plaid/FilePlaidConnectionRepository.cs
+    symbol: FilePlaidConnectionRepository
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Retain institution/product-specific sandbox and deployment evidence; continue explicit live-transfer
+    gating.
+- folder: Polygon
+  provider_id: polygon
+  aliases:
+  - polygon-io
+  - polygon-options
+  - polygon-symbols
+  - polygonio
+  state: partial
+  capabilities:
+    streaming: true
+    historical: true
+    symbol_search: true
+    options: true
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: PolygonMarketDataClient
+    historical: PolygonHistoricalDataProvider
+    symbol_search: PolygonSymbolSearchProvider
+    options: PolygonOptionsChainProvider
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: POLYGON_API_KEY (POLYGON__APIKEY alias); stream, history and options access depends on the subscription
+      plan.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Historical local pacing defaults to 5 requests/minute; real-time/options availability is entitlement-dependent.
+  - Streaming supports equities/options; broader historical Forex/Crypto/Index coverage does not imply stream support.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Missing keys prevent credential-gated factory activation and direct history calls fail. Authentication/rate-limit
+    errors and reconnect state remain visible; duplicate or decreasing per-ticker session sequences are rejected.
+    Corporate-action ingestion uses a hosted Security Master fetcher, not ICorporateActionProvider.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs
+    symbol: ProviderFactory
+  - path: src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs
+    symbol: StorageFeatureRegistration
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/PolygonMarketDataClientTests.cs
+    symbol: PolygonMarketDataClientTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/PolygonProviderContractTests.cs
+    symbol: PolygonHistoricalProviderContractTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs
+    symbol: PolygonRecordedSessionReplayTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/PolygonSequenceIntegrityTests.cs
+    symbol: PolygonSequenceIntegrityTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/PolygonCorporateActionFetcherTests.cs
+    symbol: PolygonCorporateActionFetcherTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs
+    symbol: PolygonOptionsChainProvider
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Retain configured-plan live feed and options evidence alongside recorded-session and corporate-action
+    ingestion checks.
+- folder: Robinhood
+  provider_id: robinhood
+  aliases:
+  - robinhood-brokerage
+  - robinhood-live
+  - robinhood-options
+  - robinhood-symbols
+  state: experimental
+  capabilities:
+    streaming: true
+    historical: true
+    symbol_search: true
+    options: true
+    corporate_actions: false
+    brokerage: true
+  adapter_types:
+    streaming: RobinhoodMarketDataClient
+    historical: RobinhoodHistoricalDataProvider
+    symbol_search: RobinhoodSymbolSearchProvider
+    options: RobinhoodOptionsChainProvider
+    corporate_actions: null
+    brokerage: RobinhoodBrokerageGateway
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: ROBINHOOD_ACCESS_TOKEN for unofficial endpoints; historical/options activation requires explicit
+      backfill enablement. Read-only brokerage sync has separate ROBINHOOD_BROKERAGE_ACCESS_TOKEN and configured
+      account/portfolio/activity endpoints.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Unofficial endpoints and personal-token authentication may change without compatibility guarantees.
+  - The live market-data client polls quotes; historical pacing is 100 requests/hour and search uses a separate
+    conservative limiter.
+  - Order modification is cancel/resubmit, so live execution needs explicit governance and reconciliation evidence.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Missing access token makes authenticated surfaces unavailable and polling connect fails. Options
+    registration is credential/opt-in gated. Polling diagnostics report actual state with no WebSocket claim; read-only
+    sync does not place orders.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs
+    symbol: ProviderFactory
+  - path: src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs
+    symbol: HostedBrokerageGatewayServiceCollectionExtensions
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/RobinhoodMarketDataClientTests.cs
+    symbol: RobinhoodMarketDataClientTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/RobinhoodHistoricalDataProviderTests.cs
+    symbol: RobinhoodHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/RobinhoodSymbolSearchProviderTests.cs
+    symbol: RobinhoodSymbolSearchProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/RobinhoodBrokerageGatewayTests.cs
+    symbol: RobinhoodBrokerageGatewayTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/RobinhoodReadOnlyBrokerageSyncAdapterTests.cs
+    symbol: RobinhoodReadOnlyBrokerageSyncAdapterTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    symbol: RobinhoodOptionsChainProvider
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Keep experimental opt-in posture and retain token/endpoint, options and brokerage reconciliation
+    evidence before any promotion.
+- folder: Stooq
+  provider_id: stooq
+  aliases: []
+  state: partial
+  capabilities:
+    streaming: false
+    historical: true
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: StooqHistoricalDataProvider
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: No credentials; accesses the public EOD CSV endpoint.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - No documented service-level quota is encoded; shared conservative delay and HTTP resilience apply.
+  - Public CSV format, symbol suffixes and EOD freshness remain external dependencies.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Missing/no-data responses return an empty result; malformed CSV rows are skipped rather than assigned
+    invented prices. Shared HTTP handling surfaces structured rate limits. The family declares daily history only.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/StooqHistoricalDataProviderTests.cs
+    symbol: StooqHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/FreeHistoricalProviderParsingTests.cs
+    symbol: StooqParsingTests
+    kind: test
+  owner: Data Confidence and Validation
+  next_action: Retain current endpoint, symbol-normalization and EOD freshness evidence for the intended universe.
+- folder: Synthetic
+  provider_id: synthetic
+  aliases:
+  - synthetic-options
+  state: complete
+  capabilities:
+    streaming: true
+    historical: true
+    symbol_search: true
+    options: true
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: SyntheticMarketDataClient
+    historical: SyntheticHistoricalDataProvider
+    symbol_search: SyntheticMarketDataClient
+    options: SyntheticOptionsChainProvider
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: No external credentials; synthetic backfill/search is opt-in and uses the configured deterministic
+      universe.
+    optional_sdk: None; no external vendor transport or SDK is needed.
+  risks:
+  - Generated observations and option chains are development/test evidence, never vendor market or brokerage evidence.
+  - Synthetic streaming/search equity coverage is narrower than its option-chain universe.
+  degradation: Runs deterministically offline and retains synthetic provenance. Historical corporate-action evidence
+    uses ICorporateActionSource rather than ICorporateActionProvider; no brokerage adapter exists. Complete means
+    the bounded offline surface, not live readiness.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/SyntheticMarketDataProviderTests.cs
+    symbol: SyntheticMarketDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/SyntheticHistoricalProviderContractTests.cs
+    symbol: SyntheticHistoricalProviderContractTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/SyntheticOptionsChainProviderTests.cs
+    symbol: SyntheticOptionsChainProviderTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticReferenceDataCatalog.cs
+    symbol: SyntheticReferenceDataCatalog
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Maintain deterministic fixtures and explicit synthetic provenance as the offline universe changes.
+- folder: Templates
+  provider_id: templates
+  aliases:
+  - template-brokerage
+  state: template-only
+  capabilities:
+    streaming: false
+    historical: false
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: null
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: No production credentials; copied adapters must define their own resolver and credential requirements.
+    optional_sdk: None for the scaffold; a copied implementation must document its own SDK requirements.
+  risks:
+  - Scaffold lifecycle and in-memory order state are demonstration behavior, not broker connectivity.
+  - Copy-target metadata must never become an operational provider registration without implementation and evidence.
+  degradation: Obsolete copy-only scaffolds provide configurable readiness and in-memory account/order behavior
+    for tests. The runtime catalog explicitly excludes them; implemented scaffold interfaces do not confer production
+    capability claims.
+  registration: []
+  evidence:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+    kind: source
+  - path: tests/Meridian.Tests/Infrastructure/Providers/TemplateBrokerageGatewayTests.cs
+    symbol: TemplateBrokerageGatewayTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
+    symbol: TemplateBrokerageGateway
+    kind: source
+  - path: src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs
+    symbol: BrokerAdapterTemplate
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: When creating a provider, replace template seams, define a new canonical identity and add registration
+    plus targeted transport/governance evidence.
+- folder: Tiingo
+  provider_id: tiingo
+  aliases:
+  - tiingo-corp-actions
+  - tiingo-symbols
+  state: partial
+  capabilities:
+    streaming: false
+    historical: true
+    symbol_search: true
+    options: false
+    corporate_actions: true
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: TiingoHistoricalDataProvider
+    symbol_search: TiingoSymbolSearchProvider
+    options: null
+    corporate_actions: TiingoCorporateActionProvider
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: TIINGO_API_TOKEN (TIINGO__TOKEN alias); adjusted EOD and discovery access depend on the configured
+      plan.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Historical/search local pacing is 50 requests/hour.
+  - Adjusted-EOD dividend/split coverage and endpoint availability are vendor-dependent.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Missing tokens skip credential-gated construction and direct history calls reject missing tokens.
+    Search skips malformed or inactive rows, filters client-side, and preserves shared error/rate-limit handling.
+    Corporate-action HTTP failures and non-cancellation exceptions are logged and return empty action collections;
+    empty results must not be treated as verified absence of actions. Cancellation propagates.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/TiingoHistoricalDataProviderTests.cs
+    symbol: TiingoHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/TiingoSymbolSearchProviderTests.cs
+    symbol: TiingoSymbolSearchProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/TiingoCorporateActionProviderTests.cs
+    symbol: TiingoCorporateActionProviderTests
+    kind: test
+  owner: Data Confidence and Validation
+  next_action: Retain deployed-plan evidence for adjusted-EOD actions, historical coverage and active-symbol filtering.
+- folder: TradeStation
+  provider_id: tradestation
+  aliases: []
+  state: experimental
+  capabilities:
+    streaming: false
+    historical: false
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: null
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: None for the current pure payload mappers; transport credentials are not implemented in this direct
+      family.
+    optional_sdk: No SDK used by the pure mappers; runtime integration requirements remain to be designed.
+  risks:
+  - Only normalization assets exist here; no concrete shared-contract runtime adapter is registered.
+  - Mapper fixture coverage cannot establish token handling, rate-limit behavior or broker connectivity.
+  degradation: Required identity fields are validated by payload mappers. There is no transport or execution fallback
+    to activate; the descriptor catalog explicitly excludes this mapper-only family.
+  registration: []
+  evidence:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+    kind: source
+  - path: tests/Meridian.Tests/Infrastructure/Providers/TradeStationPayloadMappersTests.cs
+    symbol: TradeStationPayloadMappersTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/TradeStation/TradeStationPayloadMappers.cs
+    symbol: TradeStationPayloadMappers
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Implement governed transport, canonical runtime contracts and credential/negative-path evidence before
+    registering runtime capabilities.
+- folder: Tradier
+  provider_id: tradier
+  aliases: []
+  state: experimental
+  capabilities:
+    streaming: false
+    historical: false
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: null
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: None for the current pure canonical mappers; transport credentials are not implemented in this
+      direct family.
+    optional_sdk: No SDK used by the pure mappers; runtime integration requirements remain to be designed.
+  risks:
+  - Equity/options/fill normalization is mapper-only; no concrete shared-contract runtime adapter is registered.
+  - Execution reconciliation fixtures do not prove broker transport, rate limits or live orders.
+  degradation: Mappers normalize supplied payloads and validate required data; they cannot connect or execute orders.
+    The descriptor catalog excludes the family from runtime provider capabilities.
+  registration: []
+  evidence:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+    kind: source
+  - path: tests/Meridian.Tests/Infrastructure/Adapters/TradierCanonicalMappersTests.cs
+    symbol: TradierCanonicalMappersTests
+    kind: test
+  - path: tests/Meridian.Tests/Execution/TradierExecutionReconciliationTests.cs
+    symbol: TradierExecutionReconciliationTests
+    kind: test
+  - path: src/Meridian.Infrastructure/Adapters/Tradier/TradierCanonicalMappers.cs
+    symbol: TradierCanonicalMappers
+    kind: source
+  owner: Data Confidence and Validation
+  next_action: Implement governed provider transport and shared-contract adapters with credential, quota and refusal
+    tests before runtime registration.
+- folder: TwelveData
+  provider_id: twelvedata
+  aliases:
+  - twelve-data
+  - twelve_data
+  - twelvedata-api
+  - twelvedata-corp-actions
+  - twelvedata-symbols
+  state: partial
+  capabilities:
+    streaming: false
+    historical: true
+    symbol_search: true
+    options: false
+    corporate_actions: true
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: TwelveDataHistoricalDataProvider
+    symbol_search: TwelveDataSymbolSearchProvider
+    options: null
+    corporate_actions: TwelveDataCorporateActionProvider
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: TWELVEDATA_API_KEY (TWELVEDATA__APIKEY alias); dividends/splits require paid-plan fundamentals
+      access.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Historical/search local pacing is 8 requests/minute.
+  - Corporate-action entitlement is separate from basic history/search; symbol filters are applied client-side.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Missing credentials skip history/search construction. Vendor status/error payloads are handled explicitly;
+    paid endpoint refusal cannot establish absence of corporate actions. Corporate-action failures remain logged
+    and cancellation propagates. Corporate-action HTTP failures and non-cancellation exceptions are logged and return
+    empty action collections; empty results must not be treated as verified absence of actions. Cancellation propagates.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/TwelveDataHistoricalDataProviderTests.cs
+    symbol: TwelveDataHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/TwelveDataSymbolSearchProviderTests.cs
+    symbol: TwelveDataSymbolSearchProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/TwelveDataCorporateActionProviderTests.cs
+    symbol: TwelveDataCorporateActionProviderTests
+    kind: test
+  owner: Data Confidence and Validation
+  next_action: Retain paid-plan fundamentals evidence and verify credential/entitlement refusal paths for the deployed
+    key.
+- folder: YahooFinance
+  provider_id: yahoo
+  aliases:
+  - yahoo-finance
+  - yahoofinance
+  state: partial
+  capabilities:
+    streaming: false
+    historical: true
+    symbol_search: false
+    options: false
+    corporate_actions: false
+    brokerage: false
+  adapter_types:
+    streaming: null
+    historical: YahooFinanceHistoricalDataProvider
+    symbol_search: null
+    options: null
+    corporate_actions: null
+    brokerage: null
+  other_types:
+    symbol_resolver: null
+    compatibility_data_source: null
+  requirements:
+    credentials: No API key; public Yahoo Finance chart endpoints.
+    optional_sdk: None; implemented using the repository HTTP/WebSocket and shared .NET contracts.
+  risks:
+  - Local pacing is 2000 requests/hour; public endpoint throttling, retention and format can change.
+  - Intraday interval/date-range restrictions and adjusted-price semantics require explicit coverage evidence.
+  - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
+    before operation.
+  degradation: Shared HTTP boundaries preserve rate-limit signals and missing data returns empty results; invalid
+    provider payloads do not become fabricated observations. No streaming, search, options or on-demand corporate-action
+    provider is advertised.
+  registration:
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
+    symbol: ProviderCapabilityDescriptorCatalog
+  - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    symbol: ProviderFactory
+  evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/YahooFinanceHistoricalDataProviderTests.cs
+    symbol: YahooFinanceHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Application/Backfill/YahooFinanceIntradayContractTests.cs
+    symbol: YahooFinanceIntradayContractTests
+    kind: test
+  - path: tests/Meridian.Tests/Providers/ProviderCapabilityDescriptorCatalogTests.cs
+    symbol: ProviderCapabilityDescriptorCatalogTests
+    kind: test
+  owner: Data Confidence and Validation
+  next_action: Retain current endpoint and interval-window coverage evidence and monitor for throttling or payload
+    drift.
