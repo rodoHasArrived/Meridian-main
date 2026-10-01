@@ -203,12 +203,22 @@ whole host use?** Facts in the current code shape the answer:
    startup therefore reaches no newly constructed provider until the new generation is verified.
 
    Providers already constructed may hold a copy of the credential. `AlpacaHistoricalDataProvider`,
-   for example, copies it into fields and HTTP headers. So any credential mutation on a bound
-   connection while the host runs (save, rotation, delete, disable, or a verification failure) stops
-   the family in the running host. Its constructed providers are disposed and unregistered, and
-   further resolutions are refused. The family returns at the next host start, once its current
-   generation is verified. Rotating a bound credential therefore takes that family offline until a
-   restart.
+   for example, copies it into fields and HTTP headers, and several hosts may be running on one
+   configuration (point 8). So **a bound connection's credential is frozen while it is bound**: there
+   is never a change to propagate to providers already running in any host.
+   - The store boundary refuses to save, rotate or delete the credential of a scope named by a
+     binding in this configuration's host credential state.
+   - The configuration refuses to disable or delete a connection that is bound.
+
+   To rotate a bound credential, the operator:
+   1. stops the hosts and runs `clear`;
+   2. starts a host and rotates and verifies the credential through the ordinary scoped routes,
+      with the family unbound;
+   3. stops the hosts and runs `set`.
+
+   During step 2 the family follows the unbound rules of point 3. A verification failure on a bound
+   credential does not change the secret, so nothing is frozen against it: it is reported in
+   diagnostics, and the next startup refuses the family.
 
 7. **Host-wide credentials come from one per-family selection; bound families use the scoped
    resolver only.** Every host-wide construction site obtains credentials from a single per-family
@@ -256,10 +266,20 @@ whole host use?** Facts in the current code shape the answer:
      in shared mode for its whole lifetime. Several hosts on one configuration, such as `SharedStorage`
      coordination instances or a workstation host beside a collector, can therefore run together.
      Every mutating command needs the lock in exclusive mode, so it fails while any host on this
-     configuration is running, and no host can start while a command holds it. A change takes effect when the host next
-     starts, so no running provider keeps using state that has since changed. `list` only reads the
-     files, which are always written atomically or append-only.
-   - **Lock order.** A transaction takes the host lock, then the configuration writer lock (the one
+     configuration is running, and no host can start while a command holds it. A change takes effect
+     when the hosts next start, so no running provider keeps using state that has since changed.
+     `list` only reads the files, which are always written atomically or append-only.
+   - **One journal writer at a time.** Every write to the journal, whether from a mutating command or
+     from recovery, is made while holding a second lock exclusively, the journal-writer lock
+     (`<config>.host-provider-credentials.journal.lock`). A starting host takes it before joining in
+     shared mode, then runs recovery and validation, then releases it:
+     - hosts that start at the same moment therefore recover one at a time;
+     - a host that joins hosts already running finds nothing pending, since every pending entry was
+       resolved before they started and no command can run while they do;
+     - if it does find an unresolved entry, the journal was changed outside the command, and it
+       refuses to start.
+   - **Lock order.** A transaction takes the host lock, then the journal-writer lock, then the
+     configuration writer lock (the one
      `ConfigStore` takes, `<config>.lock`), then `provider-credentials.vault.lock`. Configuration and
      credential-store writers never take the host lock, and the implementation must show that no code
      path takes the configuration and vault locks in the reverse order. A command that cannot take a
@@ -285,7 +305,8 @@ whole host use?** Facts in the current code shape the answer:
      - if it matches the after-digest, the outcome is `committed`;
      - if it matches the before-digest, the outcome is `aborted`;
      - otherwise the entry stays `pending`, and the command exits non-zero.
-   - **Recovery.** At startup and at the start of every mutating command, under the host lock, each
+   - **Recovery.** At startup and at the start of every mutating command, under the host lock and the
+     journal-writer lock, each
      `pending` entry without an outcome is resolved against the state file:
      - if the digest of the whole file equals the entry's after-digest, it is closed as
        `committed (recovered)`;
@@ -425,7 +446,10 @@ prove host authority.
 - Under `FailClosed`, session-backed families such as `ibkr` do not run, live execution and every
   other path to an external brokerage account stay off until the execution-ownership decision exists
   (paper execution stays), and OpenFIGI enrichment stays off until OpenFIGI is bound.
-- Binding changes need a host restart, and the CLI refuses them while the host is running.
+- Binding changes need a restart of every host on the configuration, and the CLI refuses them while
+  any is running.
+- Rotating a bound credential takes two offline steps, `clear` and then `set`, with the family unbound
+  in between.
 - A bound family does not start after a rotation until its new credentials are verified.
 
 ### Neutral
@@ -454,9 +478,9 @@ prove host authority.
   execution configuration is refused, and no brokerage gateway, sync adapter, or brokerage
   connection service or route is composed from any registration path.
 - Every running host holds the host lock in shared mode for its lifetime, and mutating commands need
-  it in exclusive mode. Every credential resolution for a bound family
-  revalidates the current generation's verification, and a credential mutation on a bound connection
-  stops that family in the running host.
+  it in exclusive mode. Every journal write holds the journal-writer lock. Every credential resolution
+  for a bound family revalidates the current generation's verification, and a bound connection's
+  credential and connection record cannot be changed or removed while it is bound.
 - Every enabled family has exactly one credential classification, and `credential-free` never applies
   to a family whose credential catalog entry requires a field or whose adapter metadata reports
   `RequiresCredentials`.
@@ -521,8 +545,11 @@ The implementation PR must add tests that:
 - keep two configurations that share a `DataRoot` from recovering each other's transactions;
 - refuse credential-bearing families when the state file is deleted after a committed change, and
   when the journal is malformed, truncated or unreadable, until `recover`;
-- stop an already-constructed bound provider when its connection's credential is saved, rotated,
-  deleted or disabled while the host runs, rather than only refusing later resolutions;
+- refuse to save, rotate or delete a bound connection's credential, and to disable or delete a bound
+  connection, from any running host; then rotate it through `clear`, rotation and verification, and
+  `set`;
+- start two hosts simultaneously after a crash left a `pending` entry, and show that exactly one
+  outcome is recorded and both hosts start;
 - treat a pending event as changed outside the command (refusing families and mutation until
   `recover`) when only an unrelated entry of the host credential state was changed;
 - after an outcome append fails, have the next mutating command resolve the pending event first and
