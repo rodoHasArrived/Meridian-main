@@ -1330,6 +1330,7 @@ Meridian-main
 │   │   ├── 020-lifecycle-control-plane.md
 │   │   ├── 021-verified-operation-outcomes-and-case-history.md
 │   │   ├── 022-canonical-asset-class-homes.md
+│   │   ├── 023-host-wide-provider-credential-ownership.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -7532,6 +7533,7 @@ Meridian-main
 │   │   │   ├── ReportingCertifiedArtifactProducer.cs
 │   │   │   ├── ReportingDeliveryDispatcher.cs
 │   │   │   ├── ReportingDeliveryReadModelSecurity.cs
+│   │   │   ├── ReportingDeliveryWorkerReadinessState.cs
 │   │   │   ├── ReportingDeploymentReadinessService.cs
 │   │   │   ├── ReportingGovernanceApiProjector.cs
 │   │   │   ├── ReportingGovernanceCoordinatorService.ArtifactAccess.cs
@@ -10453,6 +10455,7 @@ Meridian-main
 │   │   │   ├── ReferenceDataEndpointAuthorizationTests.cs
 │   │   │   ├── RegistryFundProfileTenantGuardTests.cs
 │   │   │   ├── ReportingArtifactVaultServiceTests.cs
+│   │   │   ├── ReportingDeliveryReadinessRaceTests.cs
 │   │   │   ├── ReportingDeliveryReleaseGateTests.cs
 │   │   │   ├── ReportingDeploymentReadinessPostgresIntegrationTests.cs
 │   │   │   ├── ReportingDeploymentReadinessServiceTests.cs
