@@ -203,7 +203,13 @@ whole host use?** Facts in the current code shape the answer:
      only when the vault holds no checkpoint and no bound mark that some configuration has left
      unclaimed. A mark counts on its own, because a `set` can publish its mark and state and crash
      before its first checkpoint. A path match is not required, because shared configurations are
-     opened through different mount paths. If the vault holds any unclaimed checkpoint or mark, the
+     opened through different mount paths. The vault checked is not only the one `DataRoot` now
+     selects: the first command of an identity also records the identity and its vault location in
+     the configuration itself, through `ConfigStore` under the configuration lock it already holds,
+     and that hint survives losing both sidecars. A host whose configuration carries a hint but has
+     no sidecars is a partial loss, whatever `DataRoot` now says, and the hinted vault is checked too.
+     Removing the hint by hand is an explicit declaration of a new deployment, governed by the
+     runbook like a restore. If the vault holds any unclaimed checkpoint or mark, the
      host refuses credential-bearing families
      until the operator either adopts an identity with `recover --identity` or confirms a fresh start
      with `recover --fresh`. A fresh start leaves the abandoned identity's checkpoint and marks in
@@ -415,13 +421,16 @@ whole host use?** Facts in the current code shape the answer:
      - The upgrade changes three files, so it is journalled like every other change. Before
        touching anything, `upgrade` durably appends a `pending` entry to
        `provider-credentials.upgrade.jsonl` beside the vault, recording the from and to versions and
-       the digests of the vault and backup before conversion. It then converts the backup, appends a
-       `baseline` entry to the store's audit log, converts the primary with its anchor pointing at
-       that baseline, and writes the marker, each atomically and each idempotent, and finally appends
-       `committed`. The baseline can come before the primary because conversion is deterministic and
-       the vault digest excludes the anchor field: `upgrade` computes the converted primary's revision
-       and digest first, and the baseline records them, so no anchor ever names an entry that has not
-       been written.
+       the digests of the vault and backup before conversion. It first computes the complete,
+       canonical `baseline` entry, including its actor and time and the converted primary's revision
+       and digest, which it can compute in advance because conversion is deterministic and the vault
+       digest excludes the anchor field. It then converts the backup, which carries that exact entry
+       in its anchor field; appends exactly those bytes to the store's audit log; converts the
+       primary with the same anchor; and writes the marker, each atomically and each idempotent, and
+       finally appends `committed`. The baseline is therefore authenticated by the converted backup
+       before it is even appended: recovery appends the backup's copy if it is missing, and a
+       baseline in the log that differs from that copy, in its actor, time or anything else, is an
+       integrity failure.
      - Today's audit entries carry no vault revision or digest. The `baseline` entry starts the
        revision record and the hash chain (below) with the converted primary's revision and digest.
        Every earlier entry stays in place, unchanged, as legacy history before the baseline, and the
@@ -440,7 +449,8 @@ whole host use?** Facts in the current code shape the answer:
        explains; any other mix of marker and envelope versions still makes the gate refuse.
      - If the upgrade journal itself is missing, malformed or truncated, `upgrade --recover` moves it
        aside unchanged and works from the files alone. It accepts only the shapes a forward upgrade
-       produces, in order: backup converted; then audit baseline written; then primary converted;
+       produces, in order: backup converted, carrying the planned baseline; then audit baseline
+       written, matching the backup's copy; then primary converted;
        then marker written. It requires every converted file to decrypt and parse at the version its
        header states, and the baseline to match the primary's conversion, recomputed if the primary is
        not yet converted. It then starts a new upgrade journal at that point, whose first entry seals
@@ -491,25 +501,29 @@ whole host use?** Facts in the current code shape the answer:
      change `DataRoot` (for example through `ConfigEndpoints.UpdateStorage`). That covers bindings
      and plugin entries alike, since the checkpoint lives in the vault. Moving the vault therefore
      requires `reset`, an offline command that runs once no bindings or plugin entries remain:
-     1. it journals the reset as a `pending` entry. That entry is the journal's last entry for
-        ever: no outcome is ever appended to it;
-     2. it writes a retirement file beside the identity lock file
-        (`provider-credentials.identity-<identifier>.retired`), durably, recording the actor, the
-        time, the path the journal will be archived to, and the hash of the journal's last entry and
-        the digest of the whole file, computed in place. Like the lock file, it is never removed, and
-        it is outside the vault, so no vault backup can predate it away. From this point the
-        identity is retired, so a crash in any later step cannot revive it. The retirement file is
-        the reset's outcome. Recovery and `list` read a journal that ends in a reset `pending`
-        entry, with a retirement file sealing exactly those bytes, as a committed reset; without
-        such a file, the reset never happened and the entry is closed as aborted;
-     3. it replaces this configuration's checkpoint in the vault with a reset tombstone carrying the
-        same record;
+     1. it journals the reset as a `pending` entry, and moves the checkpoint's anchor to it under
+        the vault lock. That entry is the journal's last entry for ever: no outcome is ever appended
+        to it;
+     2. it replaces this configuration's checkpoint in the vault with a reset tombstone. The
+        tombstone is the commit point: a vault write, authenticated by the audit log like every
+        other, recording the actor, the time, the path the journal will be archived to, and the hash
+        of the journal's last entry and the digest of the whole file, computed in place. Recovery and
+        `list` read a journal that ends in a reset `pending` entry as a committed reset only when a
+        tombstone seals exactly those bytes; otherwise the reset never happened and the entry is
+        closed as aborted, with the anchor update every abort makes. Deleting or editing anything
+        outside the vault cannot change that;
+     3. it writes the retirement file beside the identity lock file
+        (`provider-credentials.identity-<identifier>.retired`), durably, as a copy of the tombstone
+        record. Like the lock file, it is never removed, and it is outside the vault, so a later
+        backup fallback cannot lose the retirement. It is checked against the tombstone, or, after
+        such a fallback, against the archived journal its seal names, and any mismatch is an
+        integrity failure;
      4. only then does it move the journal aside unchanged, as the permanent audit record, still
         matching its seal byte for byte;
      5. it removes the state file.
 
-     If it crashes after step 2, rerunning `reset` finishes the remaining steps, checking the
-     journal against the sealed hash and digest wherever it is.
+     If it crashes after step 2, rerunning `reset` finishes the remaining steps from the tombstone,
+     checking the journal against its seal wherever it is.
 
      It never removes the identity lock file, because unlinking a held lock would let another
      process lock a new file at the same path. Identity lock files stay permanently. A tombstoned
@@ -672,14 +686,16 @@ whole host use?** Facts in the current code shape the answer:
      already published the file, for example from the directory sync. So on any write exception the
      command rereads the published file and compares the digest of the whole state:
      - if it matches the after-digest, the command writes the checkpoint, then records `committed`;
-     - if it matches the before-digest, the outcome is `aborted`;
+     - if it matches the before-digest, the command moves the checkpoint's anchor to the aborted
+       `pending` entry under the vault lock, then records `aborted`;
      - otherwise the entry stays `pending`, and the command exits non-zero.
    - **Recovery.** At startup and at the start of every mutating command, under the host lock and the
      journal-writer lock, each
      `pending` entry without an outcome is resolved against the state file:
      - if the digest of the whole file equals the entry's after-digest, recovery writes the
        checkpoint under the vault lock, then closes it as `committed`;
-     - if it equals the entry's before-digest, it is closed as `aborted`;
+     - if it equals the entry's before-digest, recovery moves the checkpoint's anchor to that
+       `pending` entry under the vault lock, then closes it as `aborted`;
      - otherwise the file was changed outside the command, even if only in an unrelated entry.
        Credential-bearing families then refuse to start, as for a malformed file, and mutation is
        refused, until the operator runs `recover`.
@@ -712,7 +728,8 @@ whole host use?** Facts in the current code shape the answer:
         It also sets this configuration's checkpoint to the adopted state's generation and digest.
         The `baseline` entry records the actor, the adopted state's digest, and the paths of any
         state file or journal it moved aside, each with its whole-file digest and, for a journal, the
-        hash of its last entry. Every file any command moves aside as evidence is sealed this way, so
+        hash of its last readable entry when there is one; a torn or malformed tail leaves only the
+        whole-file digest, which is always recorded. Every file any command moves aside as evidence is sealed this way, so
         it cannot later be truncated, rewritten or replaced undetected. That digest becomes the last
         committed digest.
 
@@ -1086,6 +1103,17 @@ The implementation PR must add tests that:
   the replacement journal's seal detects it;
 - crash `upgrade` after the audit baseline and before the primary is converted, and show recovery
   converts the primary to the baseline's recorded digest;
+- crash `reset` after the tombstone and before the retirement file, delete or edit the retirement
+  file, and show the tombstone still decides the outcome and the file is rewritten from it;
+- lose both sidecars, point `DataRoot` at an empty vault, and show the configuration's hint makes
+  it a partial loss and the hinted vault's checkpoint blocks a fresh start;
+- crash `upgrade` after the backup and before the baseline append, edit nothing, and show recovery
+  appends the backup's copy; then edit an appended baseline's actor and show the mismatch with the
+  backup's copy is detected;
+- abort a command, and separately let recovery close an entry as aborted, and show the checkpoint's
+  anchor moved to that `pending` entry before the outcome was written;
+- tear the last line of a journal, run `recover`, and show the baseline seals it with the whole-file
+  digest and no tail hash;
 - run `recover --vault-path` with an unparseable configuration and show it completes; then run it
   with a parseable configuration naming a different root and show it aborts;
 - break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
