@@ -29,12 +29,18 @@ Use this page when you need to map configuration sections to high-impact operati
 | `DataSource` / `DataSources` | Chooses live/offline provider routing and failover posture. | `MDC_DATASOURCE` |
 | `Backfill` | Controls historical import behavior, retry policy, and scheduling. | `MDC_BACKFILL_*` |
 | `Storage` | Controls retention, partitioning, and storage pressure behavior. | `MDC_STORAGE_*` |
+| `TenantScopeEnforcement` | Defaults to `fail-closed`; retained-data readiness must pass before serving scoped work. Explicit `deployment-boundary` is temporary single-company migration compatibility. Requires restart. | `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` |
 | `IB`, `IBClientPortal` | Controls broker connectivity and execution-adjacent account surfaces. | `MDC_IB_*` |
 | `Alpaca`, provider blocks under `Backfill:Providers` | Provider-specific data/credential posture. | `MDC_ALPACA_*`, provider-specific keys |
 | `SecurityMasterWorkbench` | Controls governed-write conflict-authority source precedence for Security Master passport edits. | n/a |
 | `Serilog` | Logging signal/noise and sensitive-output posture. | `MDC_DEBUG`, `MDC_LOG_LEVEL` |
 
 ## Security and Mutation Guardrails
+
+Before upgrading existing installations, follow the [tenant cutover and backfill runbook](../operators/fund-structure-tenant-backfill.md).
+Unattributed records cause an explicit startup refusal with remediation, rather than an apparently
+empty ledger. A configured posture in the host configuration takes precedence over the fallback
+ConfigStore file; the Meridian environment override takes precedence over both.
 
 - Keep secrets out of `appsettings.json`; use environment-variable or secret-store injection.
 - Treat auth/rate-limit runtime variables (`MDC_API_KEY`, `MDC_AUTH_MODE`, `MDC_DISABLE_RATE_LIMIT`) as production control-plane settings.

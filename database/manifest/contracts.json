@@ -3851,7 +3851,7 @@
       ]
     }
   ],
-  "fingerprint": "b46d10e34f638c00fdfd9151bb0a11438afc02969f927c9d47cae38e3602b6a5",
+  "fingerprint": "f6fe4e36728abcaf7d281d5a95f3e8b646e5a4e5493a57322b0291b94bfe4845",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6127,7 +6127,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "c4e4171355460e31a0da42566654bee1efd81fdb98ba441d7d43ac325f947f1a",
+      "fingerprint": "9259ccf1ce6403c9a6a74bdd4400f1c870a20bf8e4e5febe7104a67aac76c137",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Tenancy",
       "object_ids": [
@@ -241071,23 +241071,23 @@
         {
           "explicit_value": false,
           "name": "Allow",
-          "source_line": 18,
+          "source_line": 15,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "WarnAndAllow",
-          "source_line": 21,
+          "source_line": 18,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Deny",
-          "source_line": 24,
+          "source_line": 21,
           "value": null
         }
       ],
-      "fingerprint": "e2cdfea49709c5158e43ceee85a9a21e031e62ed52b44175006d6abb4be6a20c",
+      "fingerprint": "8f546d4d2b9b64eedf7f68d324bf4ef17e678518e3041c698a175a01574b81a1",
       "full_name": "Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision",
       "id": "Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision",
       "kind": "enum",
@@ -241099,12 +241099,12 @@
       "qualified_name": "Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision",
       "references": [],
       "source": {
-        "line": 15,
+        "line": 12,
         "path": "src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs"
       },
       "sources": [
         {
-          "line": 15,
+          "line": 12,
           "path": "src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs"
         }
       ],
@@ -241120,7 +241120,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "2e84c1a7140d352f3502f447fc793862107471694638676633d71f9d1f5f8e71",
+      "fingerprint": "c4a21aa369e17f71c866c0c058a2a46010fdbe02ddc8499f26d0227a86c0afed",
       "full_name": "Meridian.Contracts.Tenancy.FundScopedWriteTenantGate",
       "id": "Meridian.Contracts.Tenancy.FundScopedWriteTenantGate",
       "kind": "class",
@@ -241132,12 +241132,12 @@
       "qualified_name": "Meridian.Contracts.Tenancy.FundScopedWriteTenantGate",
       "references": [],
       "source": {
-        "line": 28,
+        "line": 25,
         "path": "src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs"
       },
       "sources": [
         {
-          "line": 28,
+          "line": 25,
           "path": "src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs"
         }
       ],
@@ -241650,17 +241650,17 @@
         {
           "explicit_value": true,
           "name": "DeploymentBoundary",
-          "source_line": 18,
+          "source_line": 17,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "FailClosed",
-          "source_line": 25,
+          "source_line": 24,
           "value": "1"
         }
       ],
-      "fingerprint": "61401e88d8ab40d95bba1c12ae35c344d1b53ea31f95f21698d99ccaf33908ae",
+      "fingerprint": "c2e26e33e0687bf47d3f02fc0d680dfe8a6e9fc6d7518c61d8db3920d959f0ae",
       "full_name": "Meridian.Contracts.Tenancy.TenantScopeEnforcementMode",
       "id": "Meridian.Contracts.Tenancy.TenantScopeEnforcementMode",
       "kind": "enum",
@@ -241693,7 +241693,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "85bef1eabac38ec21d321adb81ad550a465d7bc4d0be287402aa063093927253",
+      "fingerprint": "6bb3429b0549ea00bd78bba1abb8fef54af318c59bccd4abe4ddb84462cedaff",
       "full_name": "Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions",
       "id": "Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions",
       "kind": "record",
@@ -241710,7 +241710,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "TenantScopeEnforcementMode",
-          "source_line": 38,
+          "source_line": 37,
           "type": "TenantScopeEnforcementMode"
         }
       ],
@@ -241722,12 +241722,12 @@
         "Meridian.Contracts.Tenancy.TenantScopeEnforcementMode"
       ],
       "source": {
-        "line": 38,
+        "line": 37,
         "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
       },
       "sources": [
         {
-          "line": 38,
+          "line": 37,
           "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
         }
       ],
@@ -241745,7 +241745,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "12f0759dd069a4ff2ee11a9352753f29684ebd124adbe74fba5dc07965a75ac1",
+      "fingerprint": "54297ab903d287404ad7202c298bac0ff3ec037f0f75d8c650995efc090bca9a",
       "full_name": "Meridian.Contracts.Tenancy.TenantScopeRejectedException",
       "id": "Meridian.Contracts.Tenancy.TenantScopeRejectedException",
       "kind": "class",
@@ -241762,7 +241762,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 110,
+          "source_line": 127,
           "type": "string"
         }
       ],
@@ -241772,12 +241772,12 @@
       "qualified_name": "Meridian.Contracts.Tenancy.TenantScopeRejectedException",
       "references": [],
       "source": {
-        "line": 101,
+        "line": 118,
         "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
       },
       "sources": [
         {
-          "line": 101,
+          "line": 118,
           "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
         }
       ],

@@ -15,6 +15,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         WashSaleReplacementQuery query,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(query);
         if (query.LedgerBookId == Guid.Empty)
         {
@@ -38,6 +39,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         query.Policy.EnsureValid();
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, query.LedgerBookId, ct).ConfigureAwait(false);
         var replacements = await LoadReplacementAcquisitionsAsync(connection, query, ct).ConfigureAwait(false);
         var priorDeferrals = await LoadPriorDeferralAdjustmentsAsync(connection, query, ct).ConfigureAwait(false);
         return new WashSaleReplacementLookup(replacements, priorDeferrals);
@@ -165,6 +167,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         IReadOnlyList<WashSaleDeferralRecord> deferrals,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(deferrals);
         if (deferrals.Count == 0)
         {
@@ -176,6 +179,11 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         foreach (var deferral in deferrals)
         {
             ValidateWashSaleDeferral(deferral);
+            await EnsureBookWriteAuthorityAsync(connection, transaction, deferral.LedgerBookId, ct).ConfigureAwait(false);
+            await EnsureBookReferenceAuthorityAsync(connection, transaction, "tax_lots", "tax_lot_record_id",
+                deferral.ReplacementTaxLotRecordId, deferral.LedgerBookId, false, ct).ConfigureAwait(false);
+            await EnsureBookReferenceAuthorityAsync(connection, transaction, "atomic_tax_lot_posting_batches", "mutation_batch_id",
+                deferral.DisposalMutationBatchId, deferral.LedgerBookId, false, ct).ConfigureAwait(false);
             await InsertWashSaleDeferralAsync(connection, transaction, deferral, ct).ConfigureAwait(false);
         }
 
@@ -258,6 +266,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         DateOnly toSaleDate,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         if (ledgerBookId == Guid.Empty)
         {
             throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
@@ -271,6 +280,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, ledgerBookId, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""

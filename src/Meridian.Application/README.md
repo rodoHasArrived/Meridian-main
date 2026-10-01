@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Application
@@ -154,12 +154,33 @@ service attribution when no operator initiated the call.
 
 ### Reviewed tenant maintenance and strict hosts
 
+Core/browser and desktop hosts share `TenantGuardedLocalFundStructureService` and
+`TenantGuardedLocalFundAccountService` for unpartitioned JSON-backed fallbacks. Strict enforcement
+refuses every local read and mutation with explicit migration guidance, including account query
+and management aliases. Files remain retained; selecting a current company does not attribute
+historical snapshots. Explicit deployment-boundary compatibility keeps reviewed single-company
+migration access available. Production composition still rejects these nonproduction services.
+The migration-required refusal derives from `MeridianException`, preserving shared domain-error
+classification while the HTTP boundary continues to report the specific migration guidance.
+
 The explicit `--fund-tenant-backfill --action preview|apply` command previews retained ownership
-and applies only the reviewed fingerprint; it performs no automatic migration or cutover.
+across the graph, ledger books and periods, close workflows, and configured fund accounts, then
+applies only the reviewed fingerprint. `preview-resolution|resolve` separately reviews and releases
+previously quarantined rows only when their current retained evidence derives one owner. Every
+remaining exception stays in the retained queue and blocks strict startup. Audited legacy periods
+remain unchanged and require a governed repair, preserving their existing audit evidence.
 [The operator runbook](../../docs/operators/fund-structure-tenant-backfill.md) describes attribution,
-quarantine, immutable receipts, and recovery. Core hosts now register the configured tenant read
-posture and retained worker authority; HTTP hosts replace only that fallback with their request
-accessor. Direct-lending accrual/outbox workers are constructed and started only when the final
+quarantine, immutable receipts, and recovery. Core hosts default to strict tenant reads and check
+migration readiness before serving retained data. `TenantScopeEnforcement` is the supported
+configuration setting. Application settings accept only the exact `fail-closed` and
+`deployment-boundary` values; legacy aliases are confined to the environment override documented
+in the runbook. Explicit
+`deployment-boundary` is a temporary migration posture. Core hosts register retained worker
+authority; HTTP hosts replace only that fallback with their request accessor.
+`TenantCutoverStartupPrerequisites` reuses the registered ledger, fund-account, and fund-structure
+migration/import paths so WPF can finish preparation and tenant inspection before activating its
+workspaces or shell. This preparation does not start unrelated background workers.
+Direct-lending accrual/outbox workers are constructed and started only when the final
 DI-resolved posture permits unattributed process work. Strict hosts log that these workers are
 withheld, including when a host supplies a later instance/factory override. Strict operation still
 requires per-loan tenant authority before those workers can be enabled.
