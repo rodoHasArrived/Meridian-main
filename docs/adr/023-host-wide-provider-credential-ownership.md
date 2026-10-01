@@ -294,7 +294,12 @@ whole host use?** Facts in the current code shape the answer:
    - **Checkpoint.** Every committed change, including a plugin-list change, increments the state's
      generation. The vault also keeps one checkpoint per configuration identity, recording the last
      committed generation and digest; it is updated under the vault lock after the state file is
-     published. The state is untrusted (point 4) when either holds:
+     published. The first mutating command of a new identity, whatever its kind (`posture`, a plugin
+     change or `set`), first writes that identity's checkpoint at generation 0 under the vault lock,
+     before it publishes any state file. That claim counts as an unclaimed checkpoint for the
+     fresh-installation check, so a crash before the first real checkpoint, followed by losing both
+     sidecars, still blocks a fresh start. Only a proven abort of that first command removes the
+     claim. The state is untrusted (point 4) when either holds:
      - its generation is older than its checkpoint's, meaning it was rolled back;
      - its generation equals the checkpoint's but its digest differs, meaning a divergent copy was
        restored.
@@ -340,8 +345,9 @@ whole host use?** Facts in the current code shape the answer:
      clears the flag. When the quarantine came from the audit log itself (a missing entry, or a
      broken hash chain), appending to the damaged log would keep failing. So repair moves the audit
      log aside unchanged, as evidence, and starts a new one with a `baseline` entry. That entry
-     records the repaired vault's revision and digest, the actor, and the archived log's path, and it
-     starts a new hash chain.
+     records the repaired vault's revision and digest, the actor, and the archived log's path, its
+     whole-file digest and, when its tail is readable, its last entry's hash, and it starts a new
+     hash chain. The archive therefore cannot later be truncated, rewritten or deleted unnoticed.
      - Because repair touches every identity, not only its own, it is stop-the-world for the
        `DataRoot`. It first takes the `DataRoot` lock exclusively (point 8), which no running host
        of any configuration, with or without an identity, can be holding. A backup can also predate
@@ -390,7 +396,11 @@ whole host use?** Facts in the current code shape the answer:
      An unfinished intent whose revision the vault never reached is closed as aborted, and closing
      it is itself an anchor-only vault write: the `aborted` entry carries a new revision and digest,
      and the vault is republished with that revision and its anchor pointing at the `aborted` entry,
-     with no other change. A trailing aborted attempt therefore cannot be deleted unnoticed either. A vault one
+     with no other change. A trailing aborted attempt therefore cannot be deleted unnoticed either.
+     If a crash falls between appending that `aborted` entry and republishing the vault, the loader,
+     under the vault lock, finds a vault exactly one revision behind a trailing `aborted` entry that
+     names that next revision and the unchanged contents' digest, and finishes the republication
+     instead of quarantining. A vault one
      ahead with no matching intent means the audit log lost an entry, and is a mismatch. Every other
      mismatch is handled exactly like a backup fallback: the store writes the durable quarantine
      marker, and only `repair-vault` clears it. A restore of the vault alone that keeps the
@@ -405,16 +415,20 @@ whole host use?** Facts in the current code shape the answer:
      - The upgrade changes three files, so it is journalled like every other change. Before
        touching anything, `upgrade` durably appends a `pending` entry to
        `provider-credentials.upgrade.jsonl` beside the vault, recording the from and to versions and
-       the digests of the vault and backup before conversion. It then converts the backup, converts
-       the primary, appends a `baseline` entry to the store's audit log, and writes the marker,
-       each atomically and each idempotent, and finally appends `committed`.
+       the digests of the vault and backup before conversion. It then converts the backup, appends a
+       `baseline` entry to the store's audit log, converts the primary with its anchor pointing at
+       that baseline, and writes the marker, each atomically and each idempotent, and finally appends
+       `committed`. The baseline can come before the primary because conversion is deterministic and
+       the vault digest excludes the anchor field: `upgrade` computes the converted primary's revision
+       and digest first, and the baseline records them, so no anchor ever names an entry that has not
+       been written.
      - Today's audit entries carry no vault revision or digest. The `baseline` entry starts the
        revision record and the hash chain (below) with the converted primary's revision and digest.
        Every earlier entry stays in place, unchanged, as legacy history before the baseline, and the
        baseline records the byte length and digest of that exact legacy prefix, so later edits to
        it, or its truncation, break the chain like any other edit. The
-       marker is written only after the baseline is durable, so no host ever loads a converted vault
-       without a matching audit entry.
+       primary is converted, and the marker written, only after the baseline is durable, so no host
+       ever loads a converted vault without a matching audit entry.
      - The gate treats the upgrade as finished only when the upgrade journal ends in a valid
        `committed` entry; the journal is never deleted. If the marker or either envelope is in the
        new version and that journal is missing, malformed or has no valid `committed` entry, the
@@ -426,10 +440,12 @@ whole host use?** Facts in the current code shape the answer:
        explains; any other mix of marker and envelope versions still makes the gate refuse.
      - If the upgrade journal itself is missing, malformed or truncated, `upgrade --recover` moves it
        aside unchanged and works from the files alone. It accepts only the shapes a forward upgrade
-       produces, in order: backup converted; then primary converted; then audit baseline written;
+       produces, in order: backup converted; then audit baseline written; then primary converted;
        then marker written. It requires every converted file to decrypt and parse at the version its
-       header states, and a baseline to match the converted primary. It then starts a new upgrade
-       journal at that point and completes the remaining steps. Any other shape, such as a converted
+       header states, and the baseline to match the primary's conversion, recomputed if the primary is
+       not yet converted. It then starts a new upgrade journal at that point, whose first entry seals
+       the archived journal's exact bytes with their whole-file digest and, when its tail is
+       readable, its last entry's hash, and completes the remaining steps. Any other shape, such as a converted
        primary with an unconverted backup, is refused and left to the restore runbook.
      - An older binary cannot write protocol state. Today's store already refuses a vault whose
        format version is newer than it supports (`FileProviderCredentialStore.LoadVaultFromFileAsync`
@@ -1060,6 +1076,16 @@ The implementation PR must add tests that:
   detects it;
 - run `recover` on a kept journal with an unresolvable entry, then delete or rewrite an entry before
   the new `baseline`, and show the unbroken chain detects it;
+- crash after appending an abort-anchor `aborted` entry and before republishing the vault, and
+  show the loader finishes the republication instead of quarantining;
+- repair a broken audit chain, then truncate the archived log, and show the baseline's seal detects
+  it;
+- crash the first `posture FailClosed` of a new identity after publishing its state and before its
+  first checkpoint, lose both sidecars, and show the generation-0 claim blocks a fresh start;
+- run `upgrade --recover` on a damaged upgrade journal, then alter the archived journal, and show
+  the replacement journal's seal detects it;
+- crash `upgrade` after the audit baseline and before the primary is converted, and show recovery
+  converts the primary to the baseline's recorded digest;
 - run `recover --vault-path` with an unparseable configuration and show it completes; then run it
   with a parseable configuration naming a different root and show it aborts;
 - break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
@@ -1067,7 +1093,7 @@ The implementation PR must add tests that:
 - record a verification failure for a bound record between a lazy resolution's read and its
   provider being exposed, and show the resolver disposes of that provider and refuses the
   resolution;
-- crash `upgrade` after each publication boundary (backup, primary, audit baseline, marker), and
+- crash `upgrade` after each publication boundary (backup, audit baseline, primary, marker), and
   show every host and other command refuses while `upgrade` resumes and completes from its journal;
 - at each of those boundaries, also delete or truncate the upgrade journal, and show
   `upgrade --recover` completes from a forward shape and refuses any other;
