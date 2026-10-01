@@ -6,6 +6,63 @@ namespace Meridian.Tests.Ui;
 
 public sealed partial class AccountingConfigurationServiceTests
 {
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task ManualAuditRecovery_CrossScopeSaveRetry_PreservesOriginalIdentity(bool browserFirst, bool afterWrite)
+    {
+        using var fixture = await ManualRecoveryFixture.CreateAsync();
+        var options = new ManualJournalMutationRecoveryOptions { MaxCompletedCount = 0 };
+        var request = new SaveManualJournalEntryDraftRequest(
+            BalancedManualJournalEntry() with { TenantId = "tenant-alpha", CompanyId = "company-alpha" },
+            "operator", "save-attempt", TenantId: browserFirst ? "tenant-alpha" : null,
+            CompanyId: browserFirst ? "company-alpha" : null);
+        await Assert.ThrowsAsync<IOException>(() => fixture.Service(retention: options,
+            drafts: new RecoveryFailingDraftStore(fixture.Drafts(), afterWrite)).SaveDraftAsync(request));
+        var originalKey = Path.GetFileNameWithoutExtension(fixture.PendingFiles().Single());
+        var retry = request with { TenantId = browserFirst ? null : "tenant-alpha", CompanyId = browserFirst ? null : "company-alpha" };
+        var repaired = await fixture.Service(retention: options).SaveDraftAsync(retry);
+        repaired.Version.Should().Be(1);
+        (await fixture.Service(retention: options).SaveDraftAsync(request)).Should().BeEquivalentTo(repaired);
+        (await fixture.Service(retention: options).SaveDraftAsync(retry)).Should().BeEquivalentTo(repaired);
+        Directory.GetFiles(Path.Combine(fixture.RecoveryDirectory, "archive"), "*.json.gz", SearchOption.AllDirectories)
+            .Should().ContainSingle().Which.Should().EndWith(originalKey + ".json.gz");
+        (await fixture.Audit().ListAsync()).Should().ContainSingle();
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public async Task ManualAuditRecovery_CrossScopeEvidenceRetry_ReplaysOriginalResult(bool browserFirst, bool archive)
+    {
+        using var fixture = await ManualRecoveryFixture.CreateAsync();
+        var options = new ManualJournalMutationRecoveryOptions { MaxCompletedCount = archive ? 0 : 1000 };
+        var saved = await fixture.Service(retention: options).SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            BalancedManualJournalEntry() with { TenantId = "tenant-alpha", CompanyId = "company-alpha" },
+            "operator", "save-scoped", TenantId: "tenant-alpha", CompanyId: "company-alpha"));
+        var request = new AttachManualJournalEntryEvidenceRequest(saved.JournalEntryId, saved.FundProfileId,
+            "operator", saved.Version, new ManualJournalEntryEvidenceAttachmentDto("receipt", "Receipt",
+                "SourceDocument", "/evidence/receipt", "WPF", saved.UpdatedAtUtc, "operator"),
+            "attach-attempt", LedgerBookId: saved.LedgerBookId,
+            TenantId: browserFirst ? saved.TenantId : null, CompanyId: browserFirst ? saved.CompanyId : null);
+        await Assert.ThrowsAsync<IOException>(() => fixture.Service(retention: options,
+            audit: new RecoveryFailingAudit(fixture.Audit(), "manual-je.attach-evidence")).AttachEvidenceAsync(request));
+        var expected = (await fixture.Drafts().GetAsync(saved.FundProfileId, saved.JournalEntryId))!;
+        var retry = request with { TenantId = browserFirst ? null : saved.TenantId, CompanyId = browserFirst ? null : saved.CompanyId };
+        var repaired = await fixture.Service(retention: options).AttachEvidenceAsync(retry);
+        repaired.Should().BeEquivalentTo(expected);
+        (await fixture.Service(retention: options).AttachEvidenceAsync(retry)).Should().BeEquivalentTo(expected);
+        (await fixture.Service(retention: options).AttachEvidenceAsync(request)).Should().BeEquivalentTo(expected);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service(retention: options)
+            .AttachEvidenceAsync(retry with { Actor = "another-actor" }));
+        (await fixture.Audit().ListAsync()).Should().ContainSingle(audit => audit.Action == "manual-je.attach-evidence");
+        fixture.PendingFiles().Should().BeEmpty();
+    }
+
     [Fact]
     public async Task ManualAuditRecovery_DesktopRetry_RepairsScopedBrowserSubmission()
     {

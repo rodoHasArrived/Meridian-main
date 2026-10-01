@@ -21,6 +21,8 @@ The Accounting feature registers the same durable manual-journal mutation recove
 the browser host. Draft, posting and correction commands keep their original actor and audit
 identities across restart; an unresolved handoff remains blocked in the shared service. The
 `.mutations` directory beside the draft snapshot must be retained with accounting backups.
+The editor retains new-draft IDs and client timestamps across failed saves, so retrying the same
+edit reaches its original intent. Later edits still carry the advanced draft version.
 
 Credential management saves, removal and verification use the shared authenticated service. Secret
 editors start blank; this page no longer reads or writes environment secrets or a separate local vault.

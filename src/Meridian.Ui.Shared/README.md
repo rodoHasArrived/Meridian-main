@@ -139,6 +139,9 @@ that lease. Current drafts and pending before/after images, including generated 
 participate in resolution. Ambiguous identities are rejected before recovery; explicit tenant or
 company fields never match another scope. The resolved identity is used for both recovery and the
 subsequent operation, while the original command key remains compatible with retained retries.
+Equivalent scoped/unscoped retries probe a bounded set of original-format keys, including archived
+keys, so evidence attachments replay their retained result instead of failing on the advanced version.
+Automated intake repairs pending receipts before reporting an existing deterministic draft as a duplicate.
 Governed close/reopen retries use the original ledger period version retained in their intent,
 so reopening the period cannot change the recovery identity of an interrupted reversal draft.
 
@@ -157,7 +160,9 @@ shared lease is held. Archive publication verifies an atomic compressed copy bef
 active copy. Identical duplicate copies converge after interruption; conflicting or corrupt copies
 block recovery and must be preserved for investigation. Fix storage/access failures and retry;
 never clear pending receipts or delete an archive to make a command succeed. Retention maintenance
-runs under the shared lease at session opening and after completion. Tests in
+runs under the shared lease at session opening and after completion. The session verifies active
+receipt bytes once and incrementally accounts for its own completions and archives while the lease
+excludes other writers, avoiding a second full-store read/parse on each autosave. Tests in
 `ManualJournalMutationRecoveryStoreTests` and `AccountingConfigurationServiceTests.ManualRecoveryArchive.cs`
 cover retention limits, interruption, archived audit repair, and restoration of a copied data root.
 The Operations Continuity compatibility close command delegates to the Accounting Close period-lock

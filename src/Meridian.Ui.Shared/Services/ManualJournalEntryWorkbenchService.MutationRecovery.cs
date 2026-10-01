@@ -29,7 +29,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
             NormalizeFundProfileId(fund).ToUpperInvariant(),
             NormalizeOptional(tenant)?.ToUpperInvariant(),
             NormalizeOptional(company)?.ToUpperInvariant()
-        });
+        }, ManualJournalMutationJsonContext.Default.StringArray);
 
     private async Task<T> ExecuteMutationAsync<TRequest, T>(
         string operation, TRequest request, string fund, Guid journalEntryId, int version,
@@ -53,9 +53,23 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var resolvedScope = RecoveryScope(fund, resolved.Tenant, resolved.Company);
         var command = new MutationCommand(key, requestHash, scope, journalEntryId, operation.StartsWith("lifecycle-", StringComparison.Ordinal));
 
-        var retained = await session.GetAsync(key, ct).ConfigureAwait(false);
-        if (retained is not null && !string.Equals(retained.RequestHash, requestHash, StringComparison.Ordinal))
-            throw new InvalidOperationException("The manual journal command identity was reused with different input or actor.");
+        // Keep the original key algorithm, but also look up the same request with only its
+        // top-level scope omitted/supplied. These bounded aliases work for legacy archives too.
+        ManualJournalMutationIntent? retained = null;
+        foreach (var candidate in ScopeCompatibleCommands(request, command, operation, fund, version,
+                     correlationId, resolved.Tenant, resolved.Company, fingerprintSalt))
+        {
+            var receipt = await session.GetAsync(candidate.Key, ct).ConfigureAwait(false);
+            if (receipt is null || !PendingMatchesScope(receipt, resolvedScope, journalEntryId))
+                continue;
+            if (!string.Equals(receipt.RequestHash, candidate.RequestHash, StringComparison.Ordinal))
+                throw new InvalidOperationException("The manual journal command identity was reused with different input or actor.");
+            if (retained is not null && retained.CommandKey != receipt.CommandKey)
+                throw new InvalidOperationException("Multiple retained manual journal commands match this retry; preserve their receipts for investigation.");
+            retained = receipt;
+            command = candidate;
+        }
+        key = command.Key;
 
         foreach (var pending in pendingIntents)
         {
@@ -108,6 +122,42 @@ public sealed partial class ManualJournalEntryWorkbenchService
             _mutationCommand = null;
             _mutationSession = null;
         }
+    }
+
+    private static IEnumerable<MutationCommand> ScopeCompatibleCommands<TRequest>(TRequest request,
+        MutationCommand original, string operation, string fund, int version, string? correlationId,
+        string? tenant, string? company, string? salt)
+    {
+        yield return original;
+        var seen = new HashSet<string>(StringComparer.Ordinal) { original.Key };
+        foreach (var candidateTenant in new[] { tenant, null }.Distinct())
+            foreach (var candidateCompany in new[] { company, null }.Distinct())
+            {
+                var json = JsonSerializer.SerializeToNode(request, typeof(TRequest), ManualJournalMutationJsonContext.Default)!;
+                json["TenantId"] = candidateTenant;
+                json["CompanyId"] = candidateCompany;
+                var candidateScope = RecoveryScope(fund,
+                    candidateTenant ?? json["Draft"]?["TenantId"]?.GetValue<string>(),
+                    candidateCompany ?? json["Draft"]?["CompanyId"]?.GetValue<string>());
+                using var document = JsonDocument.Parse(json.ToJsonString());
+                var hash = FingerprintRequest(document.RootElement, salt);
+                var correlation = NormalizeOptional(correlationId)?.ToUpperInvariant() ?? "NO-CORRELATION";
+                var key = Sha256Digest.ComputeUtf8($"{candidateScope}|{original.JournalEntryId:D}|{operation}|{correlation}|version:{version}|request:{hash}");
+                if (seen.Add(key))
+                    yield return original with { Key = key, RequestHash = hash, ScopeKey = candidateScope };
+            }
+    }
+
+    internal async Task RecoverPendingJournalAsync(string fund, Guid journalEntryId,
+        string? tenant, string? company, CancellationToken ct)
+    {
+        await using var session = await _mutationRecovery.OpenSessionAsync(ct).ConfigureAwait(false);
+        var pending = await session.ListPendingAsync(ct).ConfigureAwait(false);
+        var resolved = await ResolveMutationScopeAsync(fund, journalEntryId, tenant, company, pending, ct).ConfigureAwait(false);
+        foreach (var intent in pending.Where(intent => PendingMatchesScope(intent,
+                     RecoveryScope(fund, resolved.Tenant, resolved.Company), journalEntryId)))
+            if (!await RecoverMutationAsync(intent, session, ct).ConfigureAwait(false))
+                throw new InvalidOperationException("An earlier manual journal command requires its original retry before duplicate intake can succeed.");
     }
 
     private static void EnsureConsistentMutationScope(string? requested, string? draft, string field)

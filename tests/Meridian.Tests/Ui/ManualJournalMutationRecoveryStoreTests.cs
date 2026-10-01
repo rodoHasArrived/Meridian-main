@@ -32,6 +32,19 @@ public sealed class ManualJournalMutationRecoveryStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Completion_ReusesVerifiedActiveReceiptsUnderItsLease()
+    {
+        var first = await CompleteAsync(1);
+        await using var session = await Store().OpenSessionAsync();
+        // A second completion must not reopen every previously verified active receipt.
+        using var held = new FileStream(Completed(first.CommandKey), FileMode.Open, FileAccess.Read, FileShare.None);
+        var next = first with { CommandKey = new string('b', 64) };
+        await session.RetainAsync(next, CancellationToken.None);
+        await session.CompleteAsync(next, CancellationToken.None);
+        (await session.GetAsync(next.CommandKey, CancellationToken.None))!.Completed.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task AgeBoundary_ArchivesOnlyAfterThirtyDays_AndReplaysAfterRestart()
     {
         var intent = await CompleteAsync(1);

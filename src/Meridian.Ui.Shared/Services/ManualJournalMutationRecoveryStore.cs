@@ -112,13 +112,24 @@ public sealed class FileManualJournalMutationRecoveryStore : IManualJournalMutat
             return Path.Combine(directory, completed ? "completed" : "pending", key + ".json");
         }
 
-        public async Task<ManualJournalMutationIntent?> GetAsync(string commandKey, CancellationToken ct)
+        private sealed record CompletedCopy(string Path, ManualJournalMutationIntent Intent, byte[] Bytes)
+        {
+            public long Size => Bytes.LongLength;
+            public DateTimeOffset CompletedAt => Intent.CompletedAtUtc ?? Intent.AuditEvents
+                .Select(audit => audit.RecordedAtUtc).DefaultIfEmpty(DateTimeOffset.MinValue).Max();
+        }
+        private Dictionary<string, CompletedCopy>? _completed;
+
+        public Task<ManualJournalMutationIntent?> GetAsync(string commandKey, CancellationToken ct)
+            => GetCopiesAsync(commandKey, null, ct);
+
+        private async Task<ManualJournalMutationIntent?> GetCopiesAsync(string commandKey, CompletedCopy? verified, CancellationToken ct)
         {
             var pending = await ReadAsync(PathFor(commandKey, false), ct).ConfigureAwait(false);
-            var completed = await ReadAsync(PathFor(commandKey, true), ct).ConfigureAwait(false);
+            var completed = verified?.Intent ?? await ReadAsync(PathFor(commandKey, true), ct).ConfigureAwait(false);
             var archived = await ReadArchiveAsync(commandKey, ct).ConfigureAwait(false);
             if (completed is not null && archived is not null)
-                RequireSameBytes(await File.ReadAllBytesAsync(PathFor(commandKey, true), ct).ConfigureAwait(false), archived.Value.Bytes);
+                RequireSameBytes(verified?.Bytes ?? await File.ReadAllBytesAsync(PathFor(commandKey, true), ct).ConfigureAwait(false), archived.Value.Bytes);
             var retained = completed ?? archived?.Intent;
             if (pending is not null && retained is not null &&
                 JsonSerializer.Serialize(pending with { Completed = false, CompletedAtUtc = null }, ManualJournalMutationJsonContext.Default.ManualJournalMutationIntent) !=
@@ -156,7 +167,12 @@ public sealed class FileManualJournalMutationRecoveryStore : IManualJournalMutat
             var existing = await ReadAsync(PathFor(intent.CommandKey, true), ct).ConfigureAwait(false)
                 ?? (await ReadArchiveAsync(intent.CommandKey, ct).ConfigureAwait(false))?.Intent;
             if (existing is null)
-                await WriteAsync(PathFor(intent.CommandKey, true), intent with { Completed = true, CompletedAtUtc = clock.GetUtcNow() }, ct).ConfigureAwait(false);
+            {
+                var path = PathFor(intent.CommandKey, true);
+                await WriteAsync(path, intent with { Completed = true, CompletedAtUtc = clock.GetUtcNow() }, ct).ConfigureAwait(false);
+                if (_completed is not null)
+                    _completed[intent.CommandKey] = await ReadCompletedCopyAsync(path, ct).ConfigureAwait(false);
+            }
             File.Delete(PathFor(intent.CommandKey, false));
             await MaintainAsync(ct).ConfigureAwait(false);
         }
@@ -175,20 +191,24 @@ public sealed class FileManualJournalMutationRecoveryStore : IManualJournalMutat
 
         private async Task MaintainCoreAsync(CancellationToken ct)
         {
-            var candidates = new List<(string Path, ManualJournalMutationIntent Intent, long Size, DateTimeOffset CompletedAt)>();
-            foreach (var path in Directory.EnumerateFiles(Path.Combine(directory, "completed"), "*.json"))
+            // The lease excludes other writers. Verify the active set once at session opening,
+            // then account only for receipts completed/archived by this session.
+            if (_completed is null)
             {
-                ct.ThrowIfCancellationRequested();
-                var intent = await ReadAsync(path, ct).ConfigureAwait(false)
-                    ?? throw new InvalidOperationException("A completed manual journal receipt disappeared during retention.");
-                _ = await GetAsync(intent.CommandKey, ct).ConfigureAwait(false);
-                var completedAt = intent.CompletedAtUtc ?? intent.AuditEvents.Select(audit => audit.RecordedAtUtc).DefaultIfEmpty(DateTimeOffset.MinValue).Max();
-                candidates.Add((path, intent, new FileInfo(path).Length, completedAt));
+                var verified = new Dictionary<string, CompletedCopy>(StringComparer.Ordinal);
+                foreach (var path in Directory.EnumerateFiles(Path.Combine(directory, "completed"), "*.json"))
+                {
+                    ct.ThrowIfCancellationRequested();
+                    var copy = await ReadCompletedCopyAsync(path, ct).ConfigureAwait(false);
+                    _ = await GetCopiesAsync(copy.Intent.CommandKey, copy, ct).ConfigureAwait(false);
+                    verified.Add(copy.Intent.CommandKey, copy);
+                }
+                _completed = verified;
             }
-            var count = candidates.Count;
-            var bytes = candidates.Sum(item => item.Size);
+            var count = _completed.Count;
+            var bytes = _completed.Values.Sum(item => item.Size);
             var now = clock.GetUtcNow();
-            foreach (var item in candidates.OrderBy(item => item.CompletedAt).ThenBy(item => item.Intent.CommandKey, StringComparer.Ordinal))
+            foreach (var item in _completed.Values.OrderBy(item => item.CompletedAt).ThenBy(item => item.Intent.CommandKey, StringComparer.Ordinal).ToArray())
             {
                 ct.ThrowIfCancellationRequested();
                 // A verified completed copy can move while an identical pending handoff remains.
@@ -197,7 +217,7 @@ public sealed class FileManualJournalMutationRecoveryStore : IManualJournalMutat
                 if (archived is null && now - item.CompletedAt <= options.MaxCompletedAge &&
                     count <= options.MaxCompletedCount && bytes <= options.MaxCompletedBytes)
                     continue;
-                var original = await File.ReadAllBytesAsync(item.Path, ct).ConfigureAwait(false);
+                var original = item.Bytes;
                 if (archived is null)
                 {
                     using var buffer = new MemoryStream();
@@ -211,9 +231,17 @@ public sealed class FileManualJournalMutationRecoveryStore : IManualJournalMutat
                 RequireSameBytes(original, archived.Value.Bytes);
                 ct.ThrowIfCancellationRequested();
                 File.Delete(item.Path);
+                _completed.Remove(item.Intent.CommandKey);
                 count--;
                 bytes -= item.Size;
             }
+        }
+
+        private static async Task<CompletedCopy> ReadCompletedCopyAsync(string path, CancellationToken ct)
+        {
+            var bytes = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
+            return new CompletedCopy(path,
+                ReadPayload(Encoding.UTF8.GetString(bytes), Path.GetFileNameWithoutExtension(path), completedLocation: true), bytes);
         }
 
         private static void RequireSameBytes(byte[] first, byte[] second)
@@ -319,6 +347,7 @@ public sealed class InMemoryManualJournalMutationRecoveryStore : IManualJournalM
 }
 
 [JsonSerializable(typeof(ManualJournalMutationIntent))]
+[JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(FileManualJournalMutationRecoveryStore.Payload))]
 [JsonSerializable(typeof(SaveManualJournalEntryDraftRequest))]
 [JsonSerializable(typeof(SubmitManualJournalEntryApprovalRequest))]
