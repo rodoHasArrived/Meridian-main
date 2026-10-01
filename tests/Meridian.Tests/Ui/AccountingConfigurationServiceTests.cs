@@ -5799,6 +5799,7 @@ public sealed partial class AccountingConfigurationServiceTests
             Notes: "Post source before atomic correction test.",
             EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)],
             LedgerBookId: approved.JournalEntry.LedgerBookId));
+        var batchAttemptsBeforeCorrection = draftStore.BatchSaveAttempts;
         draftStore.FailNextBatch = true;
         var reversalEvidence =
             $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{posted.JournalEntry.LedgerBookId:D}/{posted.JournalEntry.PeriodId}";
@@ -5822,7 +5823,7 @@ public sealed partial class AccountingConfigurationServiceTests
             draft.Version == posted.JournalEntry.Version);
         retained.Should().NotContain(draft =>
             draft.ReversalOfJournalEntryId == posted.JournalEntry.JournalEntryId);
-        draftStore.BatchSaveAttempts.Should().Be(1);
+        draftStore.BatchSaveAttempts.Should().Be(batchAttemptsBeforeCorrection + 1);
     }
 
     [Fact]

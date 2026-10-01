@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-05
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Wpf
@@ -22,6 +22,56 @@ the browser host. Draft, posting and correction commands keep their original act
 identities across restart; an unresolved handoff remains blocked in the shared service. The
 `.mutations` directory beside the draft snapshot must be retained with accounting backups.
 
+Credential management saves, removal and verification use the shared authenticated service. Secret
+editors start blank; this page no longer reads or writes environment secrets or a separate local vault.
+Legacy environment values are not automatically erased or migrated. Server verification capabilities
+still bound the assurance available from these operations. Credential rows represent explicit owned
+connections with account and environment labels. Status, save, removal and verification carry that
+connection ID; incomplete or ambiguous ownership cannot become an editable row. A save the service
+records as partial closes the editor and warns that required fields are still missing instead of
+reporting a failed save.
+Credential commands expose asynchronous completion. Desktop regression tests exercise late status
+responses, selected-account saves, blank secret editors and loss of editable rows after refused discovery.
+Conflicting credential commands are disabled during persistence or verification. Refused saves restore
+command availability and retain the current editor values for an explicit retry. Saves submit only the
+fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret
+keeps the other retained fields.
+
+The add-provider wizard saves and tests credentials through the same authenticated service, writing the
+provider-wide vault record, and reads provider-wide status for its badges and blank-save check, so
+credentials held only on the tenant's own connections never make a provider-wide save look complete. It no longer reads or writes Windows user environment variables, its editors
+start blank, and a test reports success only when the service verifies the credentials. Saved but
+unverified credentials are shown as a warning. Every provider and credential endpoint requires tenant
+scope, so a company-less desktop account sees an explicit refusal naming that requirement. While a test
+or save awaits the service, provider selection and the other command are ignored, and backfill inputs
+are captured before the first await. The wizard and credential management build their editors from the
+vault field schema the service reports with each status row, not from the local provider catalog, whose
+names differ (Tiingo's local field is `Token`, the vault accepts `ApiKey`). A provider the service reports
+without a schema, such as NYSE, shows no editors and cannot be saved from the wizard. A provider whose
+schema has no required fields, such as Interactive Brokers, tests as ready without a verification call. A
+blank save for a provider with required fields succeeds only when the service reports credentials already
+configured. Opening the credential-management editor before the selected connection's schema arrives (or
+after Test All superseded that read) starts a fresh status read and rebuilds the open editor when it
+completes. Credential management also lists owned connections for managed providers the local catalog omits,
+and matches a connection's status to the single row the service reports for it, so a retained alias still
+resolves. The settings shell counts unavailable credential status
+separately from missing credentials, so a refused or failed status read is shown as unknown readiness.
+After a confirmed wizard save, only unchanged submitted secret editors are cleared. Test then Save
+therefore reuses the persisted credentials and rereads provider-wide verification without replacing
+them. Edits during persistence or verification remain in the editor and require another test; refused
+saves retain editor values for retry. External rotation or removal is reflected by the final status read.
+Provider badges and selections join canonical IDs, including retained aliases. Credential management
+retains a selected connection's field schema when a status read finishes during or after verification,
+without replacing the newer verification result with an older status label.
+The setup-wizard state service and the Backfill page still write environment variables and remain
+separate cutover work.
+
+Credential status in the settings shell, settings vault, credential management page and add-provider
+wizard is loaded asynchronously from the shared authenticated API service. Failed reads stay
+unavailable; environment credentials do not establish configured status. View-model refreshes reject
+older responses after a newer load starts. Other settings/setup surfaces and scoped default-runtime
+adoption remain separate cutover work.
+
 Fund Ledger carries its explicitly selected book/account/entity/period context to the shared command-center service. Both the queue and private-capital close headline consume the shared decision; clear local lane inputs cannot establish close readiness. The browser and WPF use the same contributor manifest and blocking rules.
 
 Account, aggregate, strategy-run, and trading position presentations use `MarkFreshnessPresentation` over the shared assessment. Observation date, age, and review reason remain visible in rows and inspectors. An absent mark date is unknown evidence, even when the enclosing position snapshot is recent. Close acceptance exercises recovery using the shared decision and authoritative subject scope.
@@ -36,12 +86,16 @@ recovery scenarios in `AccountingCloseHttpRecoveryTests` retain the selected wor
 evidence refusal and refresh after repair. Close-readiness acceptance remains in progress
 pending the required hosted integration checks.
 
+The Accounting feature registers the same retained report-package authority as the browser.
+Close publication revalidates scoped report support through the shared guard; a client readiness
+flag cannot stand in for the retained package. Windows execution remains a separate acceptance gate.
+
 ## Purpose
 
 WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside
 the browser workstation. It projects the seven canonical workspaces over shared contracts and read
 models; its current lane focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`, see
-`docs/development/wpf-web-ui-alignment-plan.md`) without forking product state.
+`docs/engineering/plans/wpf-web-ui-alignment-plan.md`) without forking product state.
 
 ## Layer responsibility
 
@@ -125,6 +179,8 @@ returns to the startup login screen with a fresh startup view model.
 Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden by default, exposes
 an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
 together when a flow resets the input.
+
+Reusable value-adjacent confidence badges use `DataConfidenceIndicator` and `DataConfidenceIndicatorModel` so Portfolio, Accounting, Reporting, and Data screens can display the same Current, Stale, Partial, Reconciled, Unreconciled, Estimated, and Provider Degraded labels with source/provider metadata, freshness, reconciliation status, fallback notes, and click-through explanations sourced from shared evidence or provider read models where available.
 
 Desktop configuration is preflighted before the generic host parses `appsettings.json`. Invalid
 configuration is moved to a timestamped retained backup, a valid last-known-good copy is restored
@@ -313,6 +369,11 @@ Runtime desktop capability toggles are declared by feature modules and surfaced 
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
+Security Master create, edit, deactivate, and file-import commands require an active desktop actor
+with `ModifySecurityMaster`; trading-parameter backfill requires `TriggerBackfill`. WPF resolves
+actor and permission together again at the in-process application-service boundary, and configured
+anonymous roles use the shared `RolePermissions` mapping rather than inheriting unrestricted
+local-development access.
 
 The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
 The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer
@@ -336,6 +397,11 @@ posture used by shared workstation continuity endpoints.
 The drill-in uses compact action-strip chrome, shared dense cash-ladder and cash-flow event tables,
 and right-side inspectors for the selected event, ladder bucket, continuity posture, and run actions;
 Security Master remains disabled until a symbol-linked cash-flow event is selected.
+Shared dense workstation grids centralize keyboard behavior in `DenseGridKeyboardCommands` and
+`DenseDataGridControl` rather than per-page key handlers. Grids and table-inspector compositions
+now expose reusable command hooks for Ctrl+F filter focus, Enter selected-row details, Escape detail
+closure, Ctrl+C selected-row copy, Ctrl+Shift+F filter clearing, and Ctrl+J related-record
+navigation; row traversal remains the virtualized list's native Up/Down/Page/Home/End behavior.
 Desktop backtest services register the Backtesting-owned `IBacktestPreflightService` implementation
 and attach it to the singleton `BacktestService`, so WPF strategy runs use the same date-range,
 replay-coverage, execution-model, and optional Security Master preflight checks as shared

@@ -1737,6 +1737,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            entry = AccountingPostingCommandValidator.NormalizeAndValidate(entry);
             if (!entry.Entry.IsBalanced)
             {
                 throw new LedgerValidationException("Journal entry must be balanced.");

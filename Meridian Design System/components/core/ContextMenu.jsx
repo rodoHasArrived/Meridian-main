@@ -10,23 +10,23 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.cm-menu{position:fixed;z-index:9999;background:var(--bg-light,#fff);
-  border:1px solid var(--border,#D7DCE2);
+.cm-menu{position:fixed;z-index:9999;background:var(--bg-light,#FBFAF8);
+  border:1px solid var(--border,#E4E3DE);
   min-width:180px;padding:4px 0;font-family:var(--font-body);
   font-size:13px;overflow:hidden;}
 .cm-item{display:flex;align-items:center;gap:8px;padding:8px 12px;
-  cursor:pointer;color:var(--text-primary,#22272E);white-space:nowrap;
+  cursor:pointer;color:var(--text-primary,#22252A);white-space:nowrap;
   border:none;background:transparent;width:100%;text-align:left;}
-.cm-item:hover{background:var(--bg-hover,#F1F4F7);}
-.cm-item:active{background:var(--bg-active,#E6EEF5);}
-.cm-item:focus-visible{outline:var(--focus-ring);outline-offset:-2px;background:var(--bg-hover,#F1F4F7);}
-.cm-item--disabled{cursor:not-allowed;background:transparent;color:var(--text-disabled,#889099);}
+.cm-item:hover{background:var(--bg-hover,#F0EEE9);}
+.cm-item:active{background:var(--bg-active,#F2E3DB);}
+.cm-item:focus-visible{outline:var(--focus-ring);outline-offset:-2px;background:var(--bg-hover,#F0EEE9);}
+.cm-item--disabled{cursor:not-allowed;background:transparent;color:var(--text-disabled,#94999F);}
 .cm-item--disabled:hover{background:transparent;}
-.cm-item--danger{color:var(--red,#BA3F55);}
-.cm-item--danger:hover{background:var(--red-a10,rgba(186,63,85,0.10));}
-.cm-icon{flex:0 0 auto;font-size:14px;color:var(--text-muted,#59636F);}
+.cm-item--danger{color:var(--red,#A8443C);}
+.cm-item--danger:hover{background:var(--red-a10,rgba(168,68,60,0.10));}
+.cm-icon{flex:0 0 auto;font-size:14px;color:var(--text-muted,#5E666F);}
 .cm-label{flex:1;overflow:hidden;text-overflow:ellipsis;}
-.cm-divider{height:1px;background:var(--border,#D7DCE2);margin:4px 0;}
+.cm-divider{height:1px;background:var(--border,#E4E3DE);margin:4px 0;}
 .cm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9998;cursor:default;}
 `;
   const el = document.createElement("style");

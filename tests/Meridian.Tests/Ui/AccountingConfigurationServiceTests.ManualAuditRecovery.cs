@@ -55,7 +55,7 @@ public sealed partial class AccountingConfigurationServiceTests
             BalancedManualJournalEntry(), "ops-user", correlationId));
 
         var second = await fixture.Service().SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
-            first with { Memo = "Second close adjustment" }, "ops-user", correlationId));
+            first with { Memo = "Second close adjustment" }, "ops-user", correlationId, LedgerBookId: first.LedgerBookId));
 
         second.Version.Should().Be(first.Version + 1);
         second.Memo.Should().Be("Second close adjustment");
@@ -150,6 +150,42 @@ public sealed partial class AccountingConfigurationServiceTests
         fixture.Ledger.Appended.Should().BeEmpty();
         fixture.PendingFiles().Should().ContainSingle();
         (await fixture.Drafts().GetAsync(approved.FundProfileId, approved.JournalEntryId))!.Status.Should().Be(ManualJournalEntryStatusDto.Rejected);
+    }
+
+    [Fact]
+    public async Task ManualAuditRecovery_UnappliedIntent_RechecksConfigurationBeforePosting()
+    {
+        using var fixture = await ManualRecoveryFixture.CreateAsync();
+        var approved = await fixture.ApprovedAsync();
+        var request = RecoveryPostRequest(approved);
+        using var target = new RecoveryFailingPostingTarget(fixture.Ledger, failAfterCommit: false);
+        await Assert.ThrowsAsync<IOException>(() => fixture.Service(posting: target).ApplyLifecycleActionAsync(request));
+        await fixture.Configuration.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha", new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset", IsArchived: true), "controller"));
+        var retry = () => fixture.Service().ApplyLifecycleActionAsync(request);
+        await retry.Should().ThrowAsync<InvalidOperationException>().WithMessage("*critical validation issues*");
+        fixture.Ledger.Appended.Should().BeEmpty();
+        (await fixture.Drafts().GetAsync(approved.FundProfileId, approved.JournalEntryId)).Should().BeEquivalentTo(approved);
+        (await fixture.Audit().ListAsync()).Should().NotContain(x => x.Action == "manual-je.post");
+    }
+
+    [Fact]
+    public async Task ManualAuditRecovery_UnappliedIntent_RequiresOriginalRetryAndRejectsChangedVersion()
+    {
+        using var fixture = await ManualRecoveryFixture.CreateAsync();
+        var approved = await fixture.ApprovedAsync();
+        var request = RecoveryPostRequest(approved);
+        using var target = new RecoveryFailingPostingTarget(fixture.Ledger, failAfterCommit: false);
+        await Assert.ThrowsAsync<IOException>(() => fixture.Service(posting: target).ApplyLifecycleActionAsync(request));
+        var different = () => fixture.Service().ApplyLifecycleActionAsync(request with { CorrelationId = "different-attempt" });
+        await different.Should().ThrowAsync<InvalidOperationException>().WithMessage("*original retry*");
+        var advanced = approved with { Version = approved.Version + 1 };
+        await fixture.Drafts().SaveAsync(advanced);
+        var retry = () => fixture.Service().ApplyLifecycleActionAsync(request);
+        await retry.Should().ThrowAsync<InvalidOperationException>().WithMessage("*conflicts with retained draft*");
+        fixture.Ledger.Appended.Should().BeEmpty();
+        (await fixture.Drafts().GetAsync(approved.FundProfileId, approved.JournalEntryId)).Should().BeEquivalentTo(advanced);
+        fixture.PendingFiles().Should().ContainSingle();
     }
 
     [Theory]
@@ -264,6 +300,8 @@ public sealed partial class AccountingConfigurationServiceTests
     {
         private readonly string _directory = Path.Combine(Path.GetTempPath(), "meridian-manual-recovery-" + Guid.NewGuid().ToString("N"));
         private readonly AccountingConfigurationService _configuration = CreateService();
+        public string RootDirectory => _directory;
+        public AccountingConfigurationService Configuration => _configuration;
         public WritableManualJournalLedgerJournalStore Ledger { get; } = WritableManualJournalLedgerJournalStore.Default();
         public string RecoveryDirectory => Path.Combine(_directory, "manual.json.mutations");
         public FileManualJournalEntryDraftStore Drafts() => new(Path.Combine(_directory, "manual.json"));
@@ -275,14 +313,16 @@ public sealed partial class AccountingConfigurationServiceTests
             var fixture = new ManualRecoveryFixture();
             Directory.CreateDirectory(fixture._directory);
             await SeedBalancedConfigurationAsync(fixture._configuration);
+            await SeedManualJournalTenantConfigurationAsync(fixture._configuration, "tenant-alpha", "company-alpha");
             return fixture;
         }
 
         public ManualJournalEntryWorkbenchService Service(IManualJournalEntryDraftStore? drafts = null,
-            IAccountingActionAuditStore? audit = null, IGovernedLedgerPostingTarget? posting = null, ILedgerJournalStore? ledger = null)
+            IAccountingActionAuditStore? audit = null, IGovernedLedgerPostingTarget? posting = null, ILedgerJournalStore? ledger = null,
+            ManualJournalMutationRecoveryOptions? retention = null, TimeProvider? clock = null)
             => new(drafts ?? Drafts(), _configuration, audit ?? Audit(), new DailyValuationSecurityMasterQueryService(),
                 ledger ?? Ledger, postingTarget: posting,
-                mutationRecovery: new FileManualJournalMutationRecoveryStore(RecoveryDirectory));
+                mutationRecovery: new FileManualJournalMutationRecoveryStore(RecoveryDirectory, retention, clock));
 
         public async Task<ManualJournalEntryDraftDto> ApprovedAsync()
         {
@@ -306,7 +346,8 @@ public sealed partial class AccountingConfigurationServiceTests
         public async Task<GovernedLedgerPostingResult> PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default)
         {
             Calls++;
-            if (failAfterCommit) await _inner.PostAsync(write, ct);
+            if (failAfterCommit)
+                await _inner.PostAsync(write, ct);
             throw new IOException("Injected posting handoff interruption.");
         }
         public void Dispose() => _inner.Dispose();
@@ -332,7 +373,8 @@ public sealed partial class AccountingConfigurationServiceTests
         public Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) => SaveBatchAsync([draft], ct);
         public async Task SaveBatchAsync(IReadOnlyList<ManualJournalEntryDraftDto> drafts, CancellationToken ct = default)
         {
-            if (afterWrite) await inner.SaveBatchAsync(drafts, ct);
+            if (afterWrite)
+                await inner.SaveBatchAsync(drafts, ct);
             throw new IOException("Injected draft handoff interruption.");
         }
     }

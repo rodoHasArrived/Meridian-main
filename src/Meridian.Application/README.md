@@ -6,10 +6,17 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-08-30
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.Application
+
+Governed statement reconciliation carries its resolved fund, primary ledger book, and exact period
+through the retained population provider into journal queries. The journal source validates that
+authority before reading, excludes journals from other periods, and denominates legacy cash legs
+in the retained book currency. Scope-free legacy callers retain their existing account/window
+behavior. Focused coverage lives in `LedgerJournalInternalTransactionSourceTests` and
+`RetainedInternalReconciliationPopulationProviderTests`.
 
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
@@ -32,13 +39,138 @@ legacy new-run behavior and must not be treated as safe automatic retries.
 
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
 
+## Credential source ownership
+
+`ProviderConnectionService.GetConnectionsForTenantAsync` lists connections only when retained
+tenant ownership matches the authorized tenant. Unassigned legacy connections require explicit
+ownership establishment and are not implicitly claimed by discovery.
+Duplicate connection IDs, including case variants, cannot establish credential ownership. Discovery
+omits ambiguous records; scoped setup, scope resolution and connection mutations refuse them.
+Connection upsert and deletion use `ConfigStore.LoadRequired` so missing, corrupt or JSON-null
+configuration cannot be replaced by an empty default ownership model. Failed reads preserve the file.
+Connection and binding upsert/deletion and preset application use `ConfigStore.UpdateRequiredAsync` to hold a shared sidecar file
+lock across the required read, ownership validation and atomic write. Separate store instances cannot
+lose each other's connection additions or deletions. Waiting operations honor cancellation and re-read
+ownership after acquiring the lock. Whole-configuration saves and capability override writes take the
+same lock; callers that prepare whole-configuration snapshots before acquisition still need conversion
+to transactional updates to prevent stale snapshot replacement. External editors do not honor this lock.
+Certification persistence re-reads configuration inside the transaction after the runner completes.
+Deleted, ambiguous or changed connections and results naming another connection are refused without
+writing certification state. Unrelated concurrent connection changes are retained. This compares the
+current connection record with the checked record; it does not provide a durable revision fence for
+changes that are subsequently reverted or certify the provenance of every runner implementation.
+Provider setup performs this strict read before credential persistence and returns a fixed failure
+without creating a vault when required configuration is unreadable. Its later source/connection/binding
+update re-reads configuration under the shared transaction, preserving concurrent ownership changes
+and assigning source IDs from current state. Credential and configuration commits remain separate;
+this does not resolve cross-store commit ambiguity or make legacy setup tenant-owned.
+
+Tenant-aware route preview filters connections and bindings before ranking, health queries and
+failover expansion. It reads fresh configuration and does not add tenant results to unscoped route
+history or result telemetry. Unscoped latency/quality metrics are excluded with explicit neutral-score
+reasons; default runtime routing and tenant-aware operational history remain separate work.
+The routing snapshot excludes duplicate or case-variant connection IDs instead of failing every route,
+and a binding that references one is skipped with an explicit ambiguity reason. Trust scoring treats a
+connection with duplicate certification rows as uncertified. `ProviderSetupService.ConfigureForConnectionAsync`
+compares canonical provider IDs, so a connection retained under an alias still accepts setup.
+A tenant route only fails over to connections whose own scope matches the requested route; a fallback
+scoped to another account or fund is skipped with an explicit reason instead of inheriting the primary's
+scope match. A tenant fallback ranks by its own scope match, capped at its primary's rank. Tenant
+routing, trust and provider selection read connection-scoped health. Runtime metrics lack ownership
+provenance, so the default metrics source reports neutral unknown health for scoped connections even
+when a connection ID matches a provider-family or runtime metric ID. An ownership-aware health source
+is required to attribute runtime telemetry to a retained connection.
+
+`ProviderConnectionService.UpsertForTenantAsync` retains a server-authorized tenant and credential
+environment with the external account. Scope resolution uses that retained ownership, returns no scope
+to another tenant, and refuses incomplete records. Owned connections cannot be reassigned or modified
+through legacy mutation methods; legacy connections require an explicit ownership migration. An update
+that names an existing connection with different casing keeps the retained connection ID, so credentials
+stored under its case-sensitive scope key stay reachable. New connections retain the provider's canonical
+credential environment (for example QuickBooks `live` is kept as `production`). Existing environments
+remain exact ownership identities: an update that would change a retained alias is refused until an
+explicit configuration-and-vault migration can preserve any OAuth tokens stored under that scope. Shared
+configuration and API DTOs preserve the fields on reload. Default runtime ownership propagation and
+remaining whole-configuration snapshot callers still require integration; external editors do not honor the sidecar transaction.
+
+`StoredProviderCredentialResolver` uses the credential store as the complete authority for catalog-managed
+providers, including the store's permitted environment fallback. Missing records remain unconfigured;
+partial or deliberately removed fields cannot be filled from legacy configuration or another credential
+source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
+
+The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScopedProviderCredentialStore`
+and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and
+environment, rejects unmanaged and non-catalog provider types, and never falls back to provider-wide
+records or config.
+The scoped store registration aliases the existing vault instance. Default host construction and the
+legacy setup route still use provider-wide resolution until authorized scope is propagated by callers;
+this constructor alone does not establish end-to-end tenant isolation.
+
+`OAuthTokenRefreshService` also accepts trusted `ownershipScope`. Scoped instances load and persist
+only that owner's OAuth tokens, including refresh responses and cache recovery after audit failure,
+and leave unassigned legacy sidecars alone. Initialization is asynchronous in both ownership modes;
+completed remote rotations commit independently of lifecycle cancellation while preserving scope.
+Default host registration still needs connection ownership propagation before scoped services replace
+the provider-wide OAuth runtime.
 ## Provider setup attribution
+
+`ConfigureForConnectionAsync` configures credentials for an already-owned connection. It validates
+the retained tenant, provider and environment before saving scoped secrets, preserves its external
+account, and does not recreate routing or bindings. Its result reports the canonical provider ID and
+the connection ID as separate identities, and it fails unless the resulting scoped status is usable
+(Configured, Verified, or NotRequired for a provider without credentials). Credential verification
+remains a separate step.
+
+`ProviderFeatureRegistration` uses the shared `AddProviderServices` composition path. The
+Infrastructure descriptor catalog supplies built-in factories for streaming, historical backfill,
+symbol search, corporate actions, options, and brokerage. Registration and explicitly supplied
+plugin module discovery complete before the container is built; the final configuration and
+credential resolver are consumed when factories run. Stored credentials therefore participate
+in optional provider selection without mutating the service collection after build. Bootstrap
+configuration defers registry-backed self-healing until the provider graph exists.
+The ProviderSdk `ProviderIdentity` map resolves configured aliases, including
+`interactive-brokers` to `ibkr`, before family enablement and factory lookup. Discovered modules
+cannot override descriptor-owned built-in families; plugin modules own their additional factories.
+`ProviderCompositionTests` loads configured aliases through Configuration, Collector, and Provider
+features, resolves every descriptor capability, and rejects template-only and mapper-only families.
+`ProviderModuleCompositionTests` proves that explicit discovery invokes configured plugin factories
+before build; `ProviderCatalogCompositionTests` checks the resulting canonical inventory and
+preservation of entitlement metadata.
+
+The shared provider capability matrix uses per-instrument streaming coverage independently of
+historical and options coverage. Runtime Polygon factories retain the configured feed and resolved
+API key; NYSE factories consume the registered options used by its compatibility data source, so
+both supported configuration sections reach the same authentication path.
+Normal host composition registers the NYSE compatibility source and its realtime/historical aliases
+from that same configuration. Symbol-search coverage is projected independently, so synthetic
+option-chain cells remain visible without advertising unavailable option-symbol searches.
+The catalog also retains OpenFIGI's symbol-resolution contract; the matrix projects only families
+with at least one of its six displayed capabilities, preserving the complete inventory without
+adding empty reference-only rows.
 
 Provider setup accepts the initiating actor from its HTTP boundary and retains it in credential
 vault audit records. Operator endpoints reject missing identity; internal callers retain an explicit
 service attribution when no operator initiated the call.
 
+### Reviewed tenant maintenance and strict hosts
+
+The explicit `--fund-tenant-backfill --action preview|apply` command previews retained ownership
+and applies only the reviewed fingerprint; it performs no automatic migration or cutover.
+[The operator runbook](../../docs/operators/fund-structure-tenant-backfill.md) describes attribution,
+quarantine, immutable receipts, and recovery. Core hosts now register the configured tenant read
+posture and retained worker authority; HTTP hosts replace only that fallback with their request
+accessor. Direct-lending accrual/outbox workers are constructed and started only when the final
+DI-resolved posture permits unattributed process work. Strict hosts log that these workers are
+withheld, including when a host supplies a later instance/factory override. Strict operation still
+requires per-loan tenant authority before those workers can be enabled.
+
 ## Purpose
+
+Provider-integration REST composition uses `ProviderIntegrationHttpClientTransport.CreateHttpClient`
+to validate DNS at connection time and connect only to the checked numeric addresses. It disables
+automatic redirects and system proxy routing; the transport checks every redirect against the
+approved HTTPS origin. See [the threat model](../../docs/security/threat-model-current-state.md)
+for the boundary and remaining certification requirements.
 
 `DirectLendingOutboxDispatcher` treats rejected projection and reconciliation command results as
 failed deliveries. The durable message is marked failed for retry and is acknowledged only after
@@ -52,6 +184,13 @@ Meridian application layer contains use cases, orchestration services, commands,
 coordination.
 
 ## Layer responsibility
+
+Security Master swap mapping preserves per-leg economics accepted by the shared cash-flow reader,
+including case-insensitive aliases and numeric/boolean strings. It rejects malformed supplied
+terms instead of silently discarding them, while retaining compatibility with the original
+four-field legs. Day-count aliases prefer `dayCountConvention`, then `dayCount`, then
+`dayCountBasis`. This persistence change does not add opening principal exchanges or alter
+cash-flow posting gates.
 
 This module owns application workflows that coordinate providers, storage, execution, ledger,
 reporting, and UI-facing services through contracts. Keep transport, persistence implementation,
@@ -86,9 +225,17 @@ Core workstation host. Do not introduce a second listener or independent monitor
   refresh-loop and token-persistence logs record the exception type without exception details.
   Malformed token JSON can include secrets in exception paths. Provider response bodies, reason phrases,
   and exception messages can contain secrets and must not enter failure events or returned errors.
-  Refresh failure retains the prior token so a later retry can recover. The optional logger permits
-  isolated verification of this boundary. Plaintext OAuth token persistence remains an unresolved
-  credential-vault migration requirement; these error controls do not certify PRD-002.
+  Transport failure retains the prior token; completed rotations commit replacements independently
+  of lifecycle cancellation. The optional logger permits
+  isolated verification of this boundary. OAuth tokens now persist through the Data Integration-owned
+  encrypted vault. Await `InitializeAsync` before synchronous token inspection; asynchronous mutations
+  initialize automatically and construction never blocks a desktop synchronization context. Initialization
+  imports legacy JSON through Data Integration's cross-process migration lease without replacing retained tokens.
+  Both encrypted generations retain the import before the source is renamed and erased; interrupted cleanup
+  resumes without parsing erased bytes. Failed initialization can be retried on the same service instance,
+  and a failed refresh-loop start can be stopped and restarted. Unreadable evidence fails closed. After an audit failure the cache
+  reloads the committed token or evicts it if recovery is unavailable. Disposal never rewrites a cached
+  token snapshot. Non-Windows key protection and credential scoping remain open PRD-002 requirements.
   Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one
@@ -196,6 +343,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   entries: version 2 confirms sink durability and suppresses WAL replay, while legacy version-1
   entries only suppress live ingress and are replayed (then upgraded) during recovery, keeping
   crash semantics at-least-once — a replayed duplicate is possible, silent loss is not.
+  Explicit flush waits for completed consumption, which already includes rejected events.
+  Rejected batches cannot be counted twice to acknowledge a later valid event before its
+  storage append finishes; gated regression cases cover that ordering across separate batches.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`
@@ -652,6 +802,18 @@ node that could apply the change, so without that exit the row would be permanen
 Verify this lane with `SecurityMasterServiceSnapshotTests` and
 `SecurityAssetTermsSchemaRoundTripTests`.
 
+The file-based Security Master bulk ingest (`--security-master-ingest <file.csv|file.json>`) is
+fail-closed on caller identity: the import runs only when a registered
+`ISecurityMasterCliImportAuthority` resolves a validated operator or workload actor for the
+`importedBy` stamp, and otherwise refuses with `AuthenticationFailed` before the file is read.
+Command-line text and the ambient OS username are not authentication evidence — the former
+`--imported-by`/OS-username/`"meridian-cli"` fallback chain no longer exists — and no default
+authority implementation is registered, so in stock compositions the CLI file path is disabled and
+bulk imports go through the authenticated workstation/API import instead. Provider-workload
+ingests (`--provider polygon`, `--provider edgar`, `--provider corporate-actions`) dispatch before
+this guard and keep their existing provider attribution. Verify this lane with
+`SecurityMasterCommandsEdgarTests`.
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase
@@ -690,6 +852,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"
 ```
 
 ## Change rules
@@ -702,3 +865,22 @@ infrastructure details when an abstraction already exists.
 - `docs/architecture/module-map.md`
 - `docs/developer/build-test-run.md`
 - `docs/source/generated/source-module-index.md`
+
+### Cash-flow and price readiness
+
+Security Master calculated cash flows resolve class-specific canonical rates and repo dates,
+distinguish contractual zero from missing terms, and propagate economic blockers to both ledger
+bridges. Without actual principal/notional, per-100 analytical schedules remain explicitly
+nonpostable. Unresolved leg fixings, step coupons and inflation terms require supported economics
+or an authoritative provider schedule. Provider-only asset classes do not advertise default
+calculated capability.
+
+Golden-copy pricing consults retained source hierarchy and observation history at the supplied
+economic and knowledge cutoffs. It never invents par, straight-line accretion, or stable NAV from
+an asset-class name. Explicit quote units accompany every selected price and comparison.
+
+Each successful golden-copy evaluation persists an immutable selection receipt before returning it.
+Receipt replay returns its exact selected quote, comparisons, hierarchy and cutoff metadata under
+the original security/account scope, without consulting live prices. Timestamp-only re-evaluation
+can legitimately change after an earlier-started transaction commits; timestamps are eligibility
+filters, while `SelectionReceiptId` is the durable replay identity.

@@ -34,7 +34,7 @@ export function monthGrid(month: Date): Date[] {
 }
 
 const dayButtonClass =
-  "flex h-8 w-8 items-center justify-center rounded-[2px] border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[#EAEEF3] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]";
+  "flex h-8 w-8 items-center justify-center rounded-[2px] border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]";
 
 /**
  * Single-date input with a flat calendar popover. Concrete: hairline field, menu shadow on the
@@ -79,8 +79,8 @@ export function DatePicker({ value, onChange, label, placeholder = "Select date‚
         value={display}
         onClick={() => !disabled && setOpen((current) => !current)}
         className={cn(
-          "h-9 w-full cursor-pointer rounded-[2px] border border-border bg-[#F3F6F9] px-2.5 font-mono text-sm text-foreground",
-          "hover:border-[#ADB8C4] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          "h-9 w-full cursor-pointer rounded-[2px] border border-border bg-[var(--ws-surface-raised)] px-2.5 font-mono text-sm text-foreground",
+          "hover:border-[var(--ws-border-hover)] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
           disabled && "cursor-not-allowed opacity-55"
         )}
       />
@@ -91,7 +91,7 @@ export function DatePicker({ value, onChange, label, placeholder = "Select date‚
               type="button"
               aria-label="Previous month"
               onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1))}
-              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[#EAEEF3]"
+              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
             >
               ‚Üê
             </button>
@@ -100,7 +100,7 @@ export function DatePicker({ value, onChange, label, placeholder = "Select date‚
               type="button"
               aria-label="Next month"
               onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1))}
-              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[#EAEEF3]"
+              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
             >
               ‚Üí
             </button>

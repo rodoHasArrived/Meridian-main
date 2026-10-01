@@ -33,7 +33,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
 
     private async Task<T> ExecuteMutationAsync<TRequest, T>(
         string operation, TRequest request, string fund, Guid journalEntryId, int version,
-        string? tenant, string? company, string? correlationId, Func<Task<T>> execute,
+        string? tenant, string? company, string? correlationId, Func<string?, string?, Task<T>> execute,
         CancellationToken ct, bool replayThroughValidation = false, string? fingerprintSalt = null) where T : class
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -48,16 +48,18 @@ public sealed partial class ManualJournalEntryWorkbenchService
         identity = $"{identity}|version:{version}|request:{requestHash}";
         var key = Sha256Digest.ComputeUtf8($"{scope}|{journalEntryId:D}|{operation}|{identity}");
         await using var session = await _mutationRecovery.OpenSessionAsync(ct).ConfigureAwait(false);
+        var pendingIntents = await session.ListPendingAsync(ct).ConfigureAwait(false);
+        var resolved = await ResolveMutationScopeAsync(fund, journalEntryId, tenant, company, pendingIntents, ct).ConfigureAwait(false);
+        var resolvedScope = RecoveryScope(fund, resolved.Tenant, resolved.Company);
         var command = new MutationCommand(key, requestHash, scope, journalEntryId, operation.StartsWith("lifecycle-", StringComparison.Ordinal));
 
         var retained = await session.GetAsync(key, ct).ConfigureAwait(false);
         if (retained is not null && !string.Equals(retained.RequestHash, requestHash, StringComparison.Ordinal))
             throw new InvalidOperationException("The manual journal command identity was reused with different input or actor.");
 
-        foreach (var pending in await session.ListPendingAsync(ct).ConfigureAwait(false))
+        foreach (var pending in pendingIntents)
         {
-            if (!PendingMatchesScope(pending, scope, journalEntryId) ||
-                (pending.JournalEntryId != journalEntryId && !pending.After.Any(x => x.JournalEntryId == journalEntryId)))
+            if (!PendingMatchesScope(pending, resolvedScope, journalEntryId))
                 continue;
             var applied = await RecoverMutationAsync(pending, session, ct).ConfigureAwait(false);
             if (!applied)
@@ -95,7 +97,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
         _mutationSession = session;
         try
         {
-            var result = await execute().ConfigureAwait(false);
+            var result = await execute(resolved.Tenant, resolved.Company).ConfigureAwait(false);
             var unresolved = await session.GetAsync(key, ct).ConfigureAwait(false);
             if (unresolved is { Completed: false })
                 throw new InvalidOperationException("Manual journal mutation audit recovery remains unresolved.");
@@ -108,21 +110,38 @@ public sealed partial class ManualJournalEntryWorkbenchService
         }
     }
 
-    private static bool PendingMatchesScope(ManualJournalMutationIntent pending, string requestedScope, Guid journalEntryId)
+    private static void EnsureConsistentMutationScope(string? requested, string? draft, string field)
     {
-        if (string.Equals(pending.ScopeKey, requestedScope, StringComparison.Ordinal))
-            return true;
-
-        // Older WPF lifecycle requests did not carry tenant/company even though the retained
-        // draft did. Trust the before/after images retained under the command lease, not the
-        // incomplete request scope, when a browser retry supplies the authenticated scope.
-        return pending.After
-            .Where(draft => draft.JournalEntryId == journalEntryId || pending.JournalEntryId == journalEntryId)
-            .Any(draft => string.Equals(
-                RecoveryScope(draft.FundProfileId, draft.TenantId, draft.CompanyId),
-                requestedScope,
-                StringComparison.Ordinal));
+        if (NormalizeOptional(requested) is { } explicitScope && NormalizeOptional(draft) is { } draftScope &&
+            !string.Equals(explicitScope, draftScope, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"The manual journal request and draft specify different {field} identities.");
     }
+
+    private async Task<(string? Tenant, string? Company)> ResolveMutationScopeAsync(
+        string fund, Guid journalEntryId, string? tenant, string? company,
+        IReadOnlyList<ManualJournalMutationIntent> pending, CancellationToken ct)
+    {
+        var current = await _draftStore.ListAsync(NormalizeFundProfileId(fund), ct: ct, tenantId: NormalizeOptional(tenant), companyId: NormalizeOptional(company)).ConfigureAwait(false);
+        var candidates = current.Concat(pending.SelectMany(intent => intent.After.Concat(intent.Before.OfType<ManualJournalEntryDraftDto>())))
+            .Where(draft => draft.JournalEntryId == journalEntryId &&
+                string.Equals(NormalizeFundProfileId(draft.FundProfileId), NormalizeFundProfileId(fund), StringComparison.OrdinalIgnoreCase) &&
+                (NormalizeOptional(tenant) is null || string.Equals(NormalizeOptional(draft.TenantId), NormalizeOptional(tenant), StringComparison.OrdinalIgnoreCase)) &&
+                (NormalizeOptional(company) is null || string.Equals(NormalizeOptional(draft.CompanyId), NormalizeOptional(company), StringComparison.OrdinalIgnoreCase)))
+            .GroupBy(draft => RecoveryScope(draft.FundProfileId, draft.TenantId, draft.CompanyId), StringComparer.Ordinal)
+            .Select(group => group.First())
+            .Take(2)
+            .ToArray();
+        if (candidates.Length > 1)
+            throw new InvalidOperationException("The manual journal scope is ambiguous; supply its tenant and company before retrying.");
+        return candidates.Length == 0
+            ? (NormalizeOptional(tenant), NormalizeOptional(company))
+            : (NormalizeOptional(candidates[0].TenantId), NormalizeOptional(candidates[0].CompanyId));
+    }
+
+    private static bool PendingMatchesScope(ManualJournalMutationIntent pending, string requestedScope, Guid journalEntryId)
+        => pending.After.Concat(pending.Before.OfType<ManualJournalEntryDraftDto>())
+            .Any(draft => draft.JournalEntryId == journalEntryId && string.Equals(
+                RecoveryScope(draft.FundProfileId, draft.TenantId, draft.CompanyId), requestedScope, StringComparison.Ordinal));
 
     private async Task PersistMutationAsync<T>(
         IReadOnlyList<ManualJournalEntryDraftDto> drafts, IReadOnlyList<string> actions,
@@ -181,7 +200,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
             allAfter &= DraftMatches(actual, expected);
         }
         var posted = await VerifyCommittedPostingAsync(intent, requirePresent: false, ct).ConfigureAwait(false);
-        if (allBefore && !posted) return false;
+        if (allBefore && !posted)
+            return false;
         if (allBefore && posted)
         {
             // Financial facts already exist. Do not execute the posting target, reconsider the
@@ -204,12 +224,14 @@ public sealed partial class ManualJournalEntryWorkbenchService
 
     private async Task<bool> VerifyCommittedPostingAsync(ManualJournalMutationIntent intent, bool requirePresent, CancellationToken ct)
     {
-        if (intent.Posting is not { } write) return false;
+        if (intent.Posting is not { } write)
+            return false;
         var store = _journalStore ?? throw new InvalidOperationException("The journal store is required for manual posting recovery.");
         var collisions = await store.FindPostingIdentityCollisionsAsync(LedgerPostingIdentity.FromWrite(write), ct).ConfigureAwait(false);
         if (collisions.Count == 0)
         {
-            if (requirePresent) throw new InvalidOperationException("The manual journal command has no retained journal entry.");
+            if (requirePresent)
+                throw new InvalidOperationException("The manual journal command has no retained journal entry.");
             return false;
         }
         foreach (var entry in collisions)
@@ -243,7 +265,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 break;
             case JsonValueKind.Array:
                 writer.WriteStartArray();
-                foreach (var item in value.EnumerateArray()) WriteCanonical(item, writer, null);
+                foreach (var item in value.EnumerateArray())
+                    WriteCanonical(item, writer, null);
                 writer.WriteEndArray();
                 break;
             case JsonValueKind.String when property is "FundProfileId" or "TenantId" or "CompanyId" or "Actor" or "CorrelationId":

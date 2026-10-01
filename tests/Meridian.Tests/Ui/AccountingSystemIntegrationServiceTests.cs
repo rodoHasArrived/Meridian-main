@@ -32,7 +32,7 @@ using Xunit;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class AccountingSystemIntegrationServiceTests
+public sealed partial class AccountingSystemIntegrationServiceTests
 {
     private static readonly Guid ExternalGlLedgerBookId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
 

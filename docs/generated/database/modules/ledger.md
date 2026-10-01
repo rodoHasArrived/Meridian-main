@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 31
-- Functions/procedures: 15
-- Triggers: 21
+- Relations: 34
+- Functions/procedures: 16
+- Triggers: 22
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -255,6 +255,34 @@ erDiagram
         text accounting_policy_version
         text tenant_id
     }
+    ledger_ledger_event_audit_events {
+        bigint chain_sequence PK
+        text subject_kind
+        uuid subject_id
+        bigint subject_version
+        text action
+        text actor
+        timestamp_with_time_zone recorded_at_utc
+        text fact_snapshot
+        uuid close_event_id
+        text close_event_snapshot
+        text payload_hash
+        text previous_hash
+        text entry_hash
+    }
+    ledger_ledger_event_audit_genesis {
+        text subject_kind PK
+        uuid subject_id PK
+        bigint subject_version
+    }
+    ledger_ledger_event_audit_head {
+        smallint chain_id PK
+        integer schema_version
+        bigint next_sequence
+        text last_hash
+        text genesis_hash
+        timestamp_with_time_zone genesis_at_utc
+    }
     ledger_ledger_journal_schema_migrations {
         text filename PK
         text checksum
@@ -422,6 +450,7 @@ erDiagram
         numeric_38_12_ booked_factor
         numeric_38_12_ par_basis
         jsonb acquisition_terms
+        jsonb basis_adjustment
     }
     ledger_wash_sale_deferrals {
         uuid deferral_id PK
@@ -502,6 +531,9 @@ erDiagram
 | `journal_leg_currency_backfill_status` | view | 8 | - | 0 | 0 | - |
 | `journal_legs` | table | 30 | `entry_id` | 1 | 9 | - |
 | `ledger_books` | table | 13 | `ledger_book_id` | 0 | 6 | - |
+| `ledger_event_audit_events` | table | 13 | `chain_sequence` | 0 | 3 | Ledger facts and actor attribution, hash chained in the same transaction as journal and period mutations. Null actor explicitly means unattributed; it is never synthesized from an approver. Verification checks covered facts as well as links. Coherent rollback of the head, suffix and corresponding facts requires an external retained checkpoint to detect. |
+| `ledger_event_audit_genesis` | table | 3 | `subject_kind`, `subject_id` | 0 | 1 | - |
+| `ledger_event_audit_head` | table | 6 | `chain_id` | 0 | 1 | - |
 | `ledger_journal_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
 | `open_lot_backfill_evidence` | table | 11 | `evidence_record_id` | 2 | 1 | - |
 | `open_lot_backfill_exceptions` | table | 9 | `tax_lot_record_id` | 3 | 2 | - |
@@ -512,5 +544,5 @@ erDiagram
 | `period_close_events` | table | 8 | `event_id` | 1 | 2 | - |
 | `tax_lot_mutations` | table | 25 | `mutation_record_id` | 4 | 5 | - |
 | `tax_lot_policies` | table | 16 | `policy_record_id` | 1 | 3 | - |
-| `tax_lots` | table | 25 | `tax_lot_record_id` | 4 | 8 | - |
+| `tax_lots` | table | 26 | `tax_lot_record_id` | 4 | 8 | - |
 | `wash_sale_deferrals` | table | 18 | `deferral_id` | 3 | 4 | - |

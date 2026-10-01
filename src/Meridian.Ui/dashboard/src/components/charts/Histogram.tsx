@@ -30,14 +30,14 @@ export interface HistogramProps {
   xTicks?: number;
 }
 
-const PLOT = "var(--chart-plot, #FFFFFF)";
-const GRID = "var(--chart-grid, #CBD3DC)";
-const AXIS = "var(--chart-axis, #59636F)";
-const BORDER = "var(--chart-border, #99A5B2)";
-const CROSSHAIR = "var(--chart-crosshair, #2F6F8F)";
-const UP = "var(--chart-equity, #16885F)";
-const DOWN = "var(--chart-drawdown, #BA3F55)";
-const PRIMARY = "var(--chart-primary, #2F6F8F)";
+const PLOT = "var(--chart-plot, #FBFAF8)";
+const GRID = "var(--chart-grid, #E4E3DE)";
+const AXIS = "var(--chart-axis, #5E666F)";
+const BORDER = "var(--chart-border, #AFABA1)";
+const CROSSHAIR = "var(--chart-crosshair, #6B655C)";
+const UP = "var(--chart-equity, #3A7A56)";
+const DOWN = "var(--chart-drawdown, #A8443C)";
+const PRIMARY = "var(--chart-primary, #A85436)";
 
 function buildBins(values: number[], binCount: number): HistogramBin[] {
   const min = Math.min(...values);

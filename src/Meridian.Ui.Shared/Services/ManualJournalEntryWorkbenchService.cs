@@ -263,11 +263,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Draft);
+        EnsureConsistentMutationScope(request.TenantId, request.Draft.TenantId, "tenant");
+        EnsureConsistentMutationScope(request.CompanyId, request.Draft.CompanyId, "company");
         return ExecuteMutationAsync(trustedAutomatedIntake ? "automated-save" : "save", request,
             request.Draft.FundProfileId, request.Draft.JournalEntryId, request.Draft.Version,
             NormalizeOptional(request.TenantId) ?? request.Draft.TenantId,
             NormalizeOptional(request.CompanyId) ?? request.Draft.CompanyId, request.CorrelationId,
-            () => SaveDraftCoreAsync(request, trustedAutomatedIntake, ct), ct);
+            (tenant, company) => SaveDraftCoreAsync(request with { TenantId = tenant, CompanyId = company }, trustedAutomatedIntake, ct), ct);
     }
 
     private async Task<ManualJournalEntryDraftDto> SaveDraftCoreAsync(
@@ -403,7 +405,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
     {
         ArgumentNullException.ThrowIfNull(request);
         return ExecuteMutationAsync("submit", request, request.FundProfileId, request.JournalEntryId, request.Version,
-            request.TenantId, request.CompanyId, request.CorrelationId, () => SubmitApprovalCoreAsync(request, ct), ct);
+            request.TenantId, request.CompanyId, request.CorrelationId, (tenant, company) => SubmitApprovalCoreAsync(request with { TenantId = tenant, CompanyId = company }, ct), ct);
     }
 
     private async Task<ManualJournalEntryDraftDto> SubmitApprovalCoreAsync(
@@ -477,7 +479,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
     {
         ArgumentNullException.ThrowIfNull(request);
         return ExecuteMutationAsync("attach", request, request.FundProfileId, request.JournalEntryId, request.Version,
-            request.TenantId, request.CompanyId, request.CorrelationId, () => AttachEvidenceCoreAsync(request, ct), ct);
+            request.TenantId, request.CompanyId, request.CorrelationId, (tenant, company) => AttachEvidenceCoreAsync(request with { TenantId = tenant, CompanyId = company }, ct), ct);
     }
 
     private async Task<ManualJournalEntryDraftDto> AttachEvidenceCoreAsync(
@@ -550,7 +552,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ArgumentNullException.ThrowIfNull(request);
         return ExecuteMutationAsync("lifecycle-" + request.Action, request, request.FundProfileId, request.JournalEntryId,
             request.Version, request.TenantId, request.CompanyId, request.CorrelationId,
-            () => ApplyLifecycleActionCoreAsync(request, ct), ct,
+            (tenant, company) => ApplyLifecycleActionCoreAsync(request with { TenantId = tenant, CompanyId = company }, ct), ct,
             replayThroughValidation: request.Action == JournalEntryLifecycleActionDto.LockAfterClose);
     }
 

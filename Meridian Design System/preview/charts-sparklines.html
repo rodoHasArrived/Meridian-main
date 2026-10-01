@@ -8,17 +8,17 @@
 <link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
-  .card { background: #0B1520; border: 1px solid #477089; border-radius: 8px; padding: 16px; }
-  .head { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #A8B5C4; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #477089; }
+  .card { background: #201D19; border: 1px solid #736B60; border-radius: 8px; padding: 16px; }
+  .head { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #B5AEA4; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #736B60; }
   .head b { color: #FFF; margin-right: 10px; }
-  .rows { display: grid; gap: 1px; background: #477089; border: 1px solid #477089; border-radius: 4px; overflow: hidden; }
-  .row { display: grid; grid-template-columns: 80px 1fr 100px 90px 60px; align-items: center; gap: 14px; padding: 10px 14px; background: #0B1520; font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .rows { display: grid; gap: 1px; background: #736B60; border: 1px solid #736B60; border-radius: 4px; overflow: hidden; }
+  .row { display: grid; grid-template-columns: 80px 1fr 100px 90px 60px; align-items: center; gap: 14px; padding: 10px 14px; background: #201D19; font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
   .row .sym { color: #FFF; font-weight: 500; }
   .row svg { height: 28px; width: 100%; display: block; }
   .row .val { text-align: right; color: #FFF; }
-  .row .pct.up { text-align: right; color: #26BF86; }
-  .row .pct.dn { text-align: right; color: #DE5878; }
-  .row .wt { text-align: right; color: #A8B5C4; font-size: 10px; }
+  .row .pct.up { text-align: right; color: #5FA37C; }
+  .row .pct.dn { text-align: right; color: #CE7068; }
+  .row .wt { text-align: right; color: #B5AEA4; font-size: 10px; }
 </style>
 </head>
 <body class="bg-app">
@@ -42,8 +42,8 @@
   rows.forEach(([sym, data, val, pct, wt, dir]) => {
     const max = Math.max(...data), min = Math.min(...data), range = Math.max(1, max-min);
     const pts = data.map((v,i) => `${(i/(data.length-1))*100},${28 - ((v-min)/range)*24 - 2}`).join(' ');
-    const color = dir === 'up' ? '#26BF86' : '#DE5878';
-    const fill = dir === 'up' ? '#26BF86' : '#DE5878';
+    const color = dir === 'up' ? '#5FA37C' : '#CE7068';
+    const fill = dir === 'up' ? '#5FA37C' : '#CE7068';
     const area = `0,28 ${pts} 100,28`;
     const row = document.createElement('div');
     row.className = 'row';

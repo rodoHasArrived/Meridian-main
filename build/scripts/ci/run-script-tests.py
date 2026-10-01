@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+from datetime import date
 import sys
 import unittest
 from pathlib import Path
@@ -30,7 +32,19 @@ def load_quarantine(path: Path) -> dict[str, str]:
     modules = payload.get("quarantined_modules", {})
     if not isinstance(modules, dict):
         raise ValueError(f"'quarantined_modules' in {path} must be an object of module -> reason.")
-    return {str(name): str(reason) for name, reason in modules.items()}
+    result = {}
+    for name, entry in modules.items():
+        if not isinstance(entry, dict) or any(not entry.get(k) for k in ("reason", "owner", "reviewBy", "tracking")):
+            raise ValueError(f"Untracked quarantine {name}: reason, owner, reviewBy and tracking are required.")
+        if date.fromisoformat(entry["reviewBy"]) < date.today():
+            raise ValueError(f"Quarantine review overdue: {name} ({entry['reviewBy']})")
+        if not (DEFAULT_START_DIR / f"{name}.py").is_file():
+            raise ValueError(f"Quarantine names a missing test module: {name}")
+        tracking_file = REPO_ROOT / entry["tracking"].split("#", 1)[0]
+        if not tracking_file.is_file():
+            raise ValueError(f"Quarantine tracking document is missing: {name}")
+        result[name] = f"{entry['reason']} Owner: {entry['owner']}; review by {entry['reviewBy']}; {entry['tracking']}"
+    return result
 
 
 def resolve_module_name(test: unittest.TestCase) -> str:
@@ -77,11 +91,12 @@ def main() -> int:
 
     for module_name in sorted(excluded):
         print(f"QUARANTINED (skipped): {module_name} — {quarantined[module_name]}")
-    for module_name in sorted(set(quarantined) - excluded):
-        print(
-            f"NOTE: quarantine entry '{module_name}' matched no discovered module; "
-            "remove it if the suite was fixed or deleted."
-        )
+    unmatched = set(quarantined) - excluded
+    if unmatched or not suite.countTestCases():
+        raise ValueError(f"Invalid discovery: unmatched quarantine={sorted(unmatched)}, selected={suite.countTestCases()}")
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+            summary.write("\n### Script quarantine\n\n" + "\n".join(f"- {name}: {quarantined[name]}" for name in sorted(excluded)) + "\n")
 
     runner = unittest.TextTestRunner(verbosity=args.verbosity, buffer=True)
     result = runner.run(suite)

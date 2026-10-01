@@ -99,7 +99,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
         ArgumentNullException.ThrowIfNull(request);
         return ExecuteMutationAsync("governed-reopen", request, request.FundProfileId, request.JournalEntryId,
             request.Version, request.TenantId, request.CompanyId, request.CorrelationId,
-            () => ReverseCloseLockedClosingEntryForGovernedReopenCoreAsync(request, ledgerPeriodId, ledgerPeriodVersion, reopenCommandHash, ct),
+            (tenant, company) => ReverseCloseLockedClosingEntryForGovernedReopenCoreAsync(request with { TenantId = tenant, CompanyId = company }, ledgerPeriodId, ledgerPeriodVersion, reopenCommandHash, ct),
             ct, replayThroughValidation: true, fingerprintSalt: $"|{ledgerPeriodId:D}|{ledgerPeriodVersion}|{reopenCommandHash}");
     }
 

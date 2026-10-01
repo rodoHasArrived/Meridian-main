@@ -31,11 +31,11 @@ function Button({ variant = "primary", size = "md", icon, children, style = {}, 
   const fs = size === "sm" ? 11 : 12;
   const rad = 6;
   const variants = {
-    primary:     { background: "#2AB2D4", color: "#05101B", border: "1px solid transparent" },
-    secondary:   { background: "#162334", color: "hsl(var(--foreground))", border: "1px solid #1F344C" },
-    outline:     { background: "transparent", color: "hsl(var(--foreground))", border: "1px solid #1F344C" },
+    primary:     { background: "#D98A64", color: "#100E0C", border: "1px solid transparent" },
+    secondary:   { background: "#292520", color: "hsl(var(--foreground))", border: "1px solid #4A443C" },
+    outline:     { background: "transparent", color: "hsl(var(--foreground))", border: "1px solid #4A443C" },
     ghost:       { background: "transparent", color: "hsl(var(--muted-foreground))", border: "1px solid transparent" },
-    destructive: { background: "rgba(222,88,120,0.08)", color: "#DE5878", border: "1px solid rgba(222,88,120,0.30)" },
+    destructive: { background: "rgba(206,112,104,0.08)", color: "#CE7068", border: "1px solid rgba(206,112,104,0.30)" },
   };
   return (
     <button style={{
@@ -52,12 +52,12 @@ function Button({ variant = "primary", size = "md", icon, children, style = {}, 
 function Badge({ tone = "outline", children, dot = false, style = {} }) {
   const tones = {
     outline: { bg: "transparent", fg: "hsl(var(--muted-foreground))", bd: "hsl(var(--border))" },
-    live:    { bg: "rgba(42,178,212,.12)",  fg: "#2AB2D4", bd: "rgba(42,178,212,.35)" },
-    paper:   { bg: "rgba(96,165,250,.12)",  fg: "#60A5FA", bd: "rgba(96,165,250,.35)" },
-    research:{ bg: "rgba(128,162,200,.12)", fg: "#93B4DA", bd: "rgba(128,162,200,.35)" },
-    success: { bg: "rgba(38,191,134,.10)",  fg: "#26BF86", bd: "rgba(38,191,134,.30)" },
-    warning: { bg: "rgba(214,158,56,.10)",  fg: "#D69E38", bd: "rgba(214,158,56,.30)" },
-    danger:  { bg: "rgba(222,88,120,.10)",  fg: "#DE5878", bd: "rgba(222,88,120,.30)" },
+    live:    { bg: "rgba(217,138,100,.12)",  fg: "#D98A64", bd: "rgba(217,138,100,.35)" },
+    paper:   { bg: "rgba(227,154,119,.12)",  fg: "#E39A77", bd: "rgba(227,154,119,.35)" },
+    research:{ bg: "rgba(167,158,146,.12)", fg: "#B5AEA4", bd: "rgba(167,158,146,.35)" },
+    success: { bg: "rgba(95,163,124,.10)",  fg: "#5FA37C", bd: "rgba(95,163,124,.30)" },
+    warning: { bg: "rgba(194,154,74,.10)",  fg: "#C29A4A", bd: "rgba(194,154,74,.30)" },
+    danger:  { bg: "rgba(206,112,104,.10)",  fg: "#CE7068", bd: "rgba(206,112,104,.30)" },
   }[tone] || {};
   return (
     <span style={{
@@ -73,10 +73,10 @@ function Badge({ tone = "outline", children, dot = false, style = {} }) {
 }
 
 function MetricCard({ label, value, delta, tone = "muted" }) {
-  const valColor = { success: "#26BF86", danger: "#DE5878", primary: "#2AB2D4", muted: "hsl(var(--foreground))" }[tone];
+  const valColor = { success: "#5FA37C", danger: "#CE7068", primary: "#D98A64", muted: "hsl(var(--foreground))" }[tone];
   return (
     <div style={{
-      background: "hsl(var(--card))", border: "1px solid #1F344C",
+      background: "hsl(var(--card))", border: "1px solid #4A443C",
       borderRadius: 8, padding: "12px 14px 14px", display: "flex", flexDirection: "column",
       gap: 10, boxShadow: "0 1px 0 rgba(255,255,255,0.02) inset, 0 1px 1px rgba(0,0,0,.25)"
     }}>
@@ -110,9 +110,9 @@ function Input({ label, style = {}, ...rest }) {
 
 function StatusBanner({ tone = "success", title, detail }) {
   const c = {
-    success: { bg: "rgba(38,191,134,.05)",  bd: "rgba(38,191,134,.30)",  fg: "#26BF86" },
-    warning: { bg: "rgba(214,158,56,.05)",  bd: "rgba(214,158,56,.30)",  fg: "#D69E38" },
-    danger:  { bg: "rgba(222,88,120,.05)",  bd: "rgba(222,88,120,.30)",  fg: "#DE5878" },
+    success: { bg: "rgba(95,163,124,.05)",  bd: "rgba(95,163,124,.30)",  fg: "#5FA37C" },
+    warning: { bg: "rgba(194,154,74,.05)",  bd: "rgba(194,154,74,.30)",  fg: "#C29A4A" },
+    danger:  { bg: "rgba(206,112,104,.05)",  bd: "rgba(206,112,104,.30)",  fg: "#CE7068" },
   }[tone];
   return (
     <div style={{
@@ -131,8 +131,8 @@ function NavItem({ icon, label, status, active = false }) {
   return (
     <div style={{
       display: "flex", gap: 10, padding: "10px 12px", borderRadius: 14,
-      border: `1px solid ${active ? "rgba(42,178,212,.30)" : "transparent"}`,
-      background: active ? "rgba(42,178,212,.10)" : "transparent",
+      border: `1px solid ${active ? "rgba(217,138,100,.30)" : "transparent"}`,
+      background: active ? "rgba(217,138,100,.10)" : "transparent",
       color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
       fontSize: 13, alignItems: "flex-start"
     }}>
@@ -189,7 +189,7 @@ function WorkstationShell({ brand = "Meridian", subtitle = "Workstation", brandM
       <div style={{
         display: "grid", gridTemplateColumns: "minmax(220px,280px) minmax(240px,1fr) auto",
         alignItems: "center", gap: 16, padding: "0 18px",
-        background: "#05101B", borderBottom: "1px solid var(--border-color)",
+        background: "#100E0C", borderBottom: "1px solid var(--border-color)",
         boxShadow: "var(--shadow-panel)"
       }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
@@ -202,7 +202,7 @@ function WorkstationShell({ brand = "Meridian", subtitle = "Workstation", brandM
         <div style={{
           height: 30, maxWidth: 680, display: "flex", alignItems: "center", gap: 10,
           padding: "0 12px", border: "1px solid var(--border-color)", borderRadius: 4,
-          background: "#0B1520", color: "var(--fg-muted)", fontFamily: "var(--font-mono)", fontSize: 11
+          background: "#201D19", color: "var(--fg-muted)", fontFamily: "var(--font-mono)", fontSize: 11
         }}>
           <span>⌕</span><span>{search}</span>
         </div>
@@ -211,14 +211,14 @@ function WorkstationShell({ brand = "Meridian", subtitle = "Workstation", brandM
         </div>
       </div>
       <div style={{ minHeight: 0, display: "grid", gridTemplateColumns: "248px minmax(0,1fr)" }}>
-        <nav style={{ minHeight: 0, overflow: "auto", padding: "12px 10px", background: "#08131F", borderRight: "1px solid var(--border-color)" }}>
+        <nav style={{ minHeight: 0, overflow: "auto", padding: "12px 10px", background: "#1A1712", borderRight: "1px solid var(--border-color)" }}>
           {nav.map((item) => {
             const active = activeNav ? item.label === activeNav : item.active;
             return (
               <div key={item.label} style={{
                 display: "grid", gridTemplateColumns: "16px 1fr auto", gap: 9, alignItems: "center",
-                minHeight: 32, padding: "6px 10px", border: `1px solid ${active ? "rgba(42,178,212,.28)" : "transparent"}`,
-                borderRadius: 4, background: active ? "rgba(42,178,212,.10)" : "transparent",
+                minHeight: 32, padding: "6px 10px", border: `1px solid ${active ? "rgba(217,138,100,.28)" : "transparent"}`,
+                borderRadius: 4, background: active ? "rgba(217,138,100,.10)" : "transparent",
                 boxShadow: active ? "inset 3px 0 0 var(--cyan-primary)" : "none",
                 color: active ? "#FFF" : "var(--fg-muted)", fontSize: 12
               }}>
@@ -239,14 +239,14 @@ function ToolbarStrip({ items = [], right }) {
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 8, minWidth: 0, padding: "0 18px",
-      height: 44, background: "#0B1520", borderBottom: "1px solid var(--border-color)",
+      height: 44, background: "#201D19", borderBottom: "1px solid var(--border-color)",
       fontFamily: "var(--font-mono)", fontSize: 11
     }}>
       {items.map((item) => (
         <span key={item.label || item} style={{
           display: "inline-flex", alignItems: "center", gap: 6, height: 26, padding: "0 10px",
-          border: `1px solid ${item.active ? "rgba(42,178,212,.42)" : "var(--border-color)"}`,
-          borderRadius: 4, background: item.active ? "rgba(42,178,212,.10)" : "#08101A",
+          border: `1px solid ${item.active ? "rgba(217,138,100,.42)" : "var(--border-color)"}`,
+          borderRadius: 4, background: item.active ? "rgba(217,138,100,.10)" : "#14120F",
           color: item.active ? "var(--cyan-primary)" : "var(--fg)", whiteSpace: "nowrap"
         }}>{item.label || item}</span>
       ))}
@@ -266,7 +266,7 @@ function DenseDataTable({ columns, rows, selectedIndex = -1 }) {
         <thead><tr>{columns.map((col, i) => (
           <th key={i} style={{
             position: "sticky", top: 0, zIndex: 1, padding: "8px 10px",
-            borderBottom: "1px solid var(--border-color)", background: "#08101A",
+            borderBottom: "1px solid var(--border-color)", background: "#14120F",
             color: "var(--fg-muted)", fontSize: 9.5, fontWeight: 500, letterSpacing: ".12em",
             textAlign: col.align === "right" ? "right" : "left", textTransform: "uppercase"
           }}>{col.label || col}</th>
@@ -276,8 +276,8 @@ function DenseDataTable({ columns, rows, selectedIndex = -1 }) {
             const col = columns[ci] || {};
             return (
               <td key={ci} style={{
-                padding: "7px 10px", borderBottom: "1px solid #142036", whiteSpace: "nowrap",
-                background: ri === selectedIndex ? "rgba(42,178,212,.14)" : (ri % 2 === 1 ? "rgba(255,255,255,.018)" : "transparent"),
+                padding: "7px 10px", borderBottom: "1px solid #292520", whiteSpace: "nowrap",
+                background: ri === selectedIndex ? "rgba(217,138,100,.14)" : (ri % 2 === 1 ? "rgba(255,255,255,.018)" : "transparent"),
                 color: (cell && cell.color) || (ri === selectedIndex ? "#FFF" : "var(--fg)"),
                 textAlign: col.align === "right" ? "right" : "left"
               }}>{cell && cell.value !== undefined ? cell.value : cell}</td>
@@ -295,8 +295,8 @@ function EntitySummary({ fields = [] }) {
       {fields.map((field, i) => (
         <div key={field.label} style={{
           minWidth: 0, padding: "11px 14px",
-          borderRight: i % 2 === 0 ? "1px solid #142036" : 0,
-          borderBottom: "1px solid #142036"
+          borderRight: i % 2 === 0 ? "1px solid #292520" : 0,
+          borderBottom: "1px solid #292520"
         }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--fg-muted)" }}>{field.label}</div>
           <div style={{ marginTop: 5, fontFamily: "var(--font-mono)", fontSize: 12, color: "#FFF", wordBreak: "break-word" }}>{field.value}</div>

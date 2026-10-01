@@ -18,7 +18,22 @@ import type {
   ReconciliationCaseworkAction,
 } from "../types";
 
+export interface ReconciliationBreakLineage {
+  lineageId: string;
+  comparisonScopeId: string;
+  occurrenceId: string;
+  occurrenceNumber: number;
+  observationState: "New" | "Aging" | "Recurring" | "Cleared";
+  firstObservedAt: string;
+  occurrenceFirstObservedAt: string;
+  lastObservedAt: string;
+  lastObservedRunId: string;
+  clearedAt?: string | null;
+  clearedByRunId?: string | null;
+}
+
 export interface ReconciliationBreakQueueItem {
+  lineage?: ReconciliationBreakLineage | null;
   breakId: string;
   runId: string;
   strategyName: string;

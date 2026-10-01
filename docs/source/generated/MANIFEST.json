@@ -5,6 +5,10 @@
   },
   "inputs": [
     {
+      "path": "docs/source/data/adapter-readiness.yml",
+      "sha256": "7975828dec09fa757e384a81509d13d9439521cc7c52f7c0963f933ca4701936"
+    },
+    {
       "path": "docs/source/data/diagram-index.yml",
       "sha256": "94ce292eaabc99717939e36546e339644b461c3227ac9124b905b7c9168c1855"
     },
@@ -28,15 +32,15 @@
   "outputs": [
     {
       "path": "docs/source/generated/source-module-index.md",
-      "sha256": "b114e0db99f4ec6e25b3df4109313f0c7cdc174b346b386f3462eecc65857049"
+      "sha256": "54ae40db9977e6c722bf257b2c1237a252c6b6e4c0f44e88600fb3b0227a1ff7"
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "sha256": "34882f7351eb8b0e222dc0100d5bcc7d4f03f9386891eb1a36844390a4e20e69"
+      "sha256": "0963c71c0c69380ff76a79a37c72cca9889cc8ca561069cfc82a615f3a60d75c"
     },
     {
       "path": "docs/source/generated/source-todo-checklist.md",
-      "sha256": "6ecff1eaab99f6f18968aeb636e0e62020107d2e3c1cb110618c77f167499649"
+      "sha256": "c180813e8c04e3078205516e4f193369fa58f26965d274ecb3bc446ae1315708"
     }
   ],
   "schema": {

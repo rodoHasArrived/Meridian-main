@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-24
+**Reviewed:** 2026-09-28
 
 Use this page for the fastest safe orientation in a fresh Meridian checkout. Run commands from the
 repository root unless a command says otherwise.
@@ -81,7 +81,11 @@ Key properties:
   durable only when PostgreSQL is configured — set
   `MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian` before seeding for a
   fully database-backed demo.
-- **Idempotent.** Re-running `--seed-demo` never duplicates casework or runs.
+- **Idempotent.** Re-running `--seed-demo` never duplicates casework or runs, and re-seeding
+  converges the seeded market history back on its documented session window rather than
+  stacking sessions onto the previous seed. Seeded market history is written in the same
+  `{SYMBOL}/{eventType}/{date}.jsonl` layout a live capture produces, so the Data desk reads
+  it through its ordinary discovery rules; every seeded print carries the `SAMPLE` source.
 - **Reversible and safe.** `--reset-demo` deletes only the demo workspace; a teardown guard refuses to
   touch any directory that is not the dedicated, sentinel-marked demo root.
 
@@ -187,46 +191,7 @@ persisting the password in WPF config files.
 
 ## First Validation Paths
 
-Use the narrowest command that covers the surface you touched:
-
-For completed PR-ready work, use the canonical repository gate:
-
-```powershell
-bash scripts/ci.sh
-```
-
-GitHub Actions `Meridian CI / quality-gate` remains the authoritative merge result after the branch
-is pushed and the pull request is opened.
-
-For local .NET tests, use the contention-aware runner when another agent, desktop shell, or test
-lane may be active:
-
-```powershell
-python build/python/cli/buildctl.py validation-status --summary
-python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~<TestClassOrMethod>" --queue
-```
-
-After a timed-out generation, build, or test attempt, run `python build/python/cli/buildctl.py
-validation-status --summary`, then `dotnet build-server shutdown`. Stop only abandoned repo-owned
-`dotnet`, `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines
-point at this checkout.
-
-If local machine limits make the relevant proof lane unreliable, push the branch and use the
-manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts. Select a
-whitelisted `mode`; `mode=dotnet-filtered` requires a repo-relative test project under `tests/`
-plus `dotnet_filter` so it runs the failing slice instead of a whole test project. Use a positive
-class, method, trait, or fully qualified name selector rather than a negative-only or broad CI
-filter:
-
-```powershell
-gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
-```
-
-The validated dispatcher wrapper builds the same hosted command and can wait for the run:
-
-```powershell
-python build/scripts/ci/dispatch-targeted-test.py --ref <branch> --mode dotnet-filtered --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj --dotnet-filter "FullyQualifiedName~<TestClassOrMethod>" --wait
-```
+Use the narrowest command that covers the surface you touched. These are safe first checks:
 
 ```powershell
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
@@ -234,12 +199,23 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
 python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --queue
 npm --prefix src/Meridian.Ui/dashboard run test
 python build/scripts/docs/check-ai-inventory.py --summary
-python build/scripts/docs/check-ai-handoff.py --output docs/ai/generated/ai-handoff-checklist-report.md
-python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
-python build/scripts/docs/run-docs-automation.py --scripts check-ai-handoff-strict
-``` 
+```
 
-Broaden to full solution, WPF, UI-service, MCP, integration, or performance lanes only when the changed layer requires it.
+For completed PR-ready work, run the canonical repository gate, `bash scripts/ci.sh`; GitHub Actions
+`Meridian CI / quality-gate` remains the authoritative merge result.
+
+If local machine limits make a lane unreliable, dispatch the GitHub-hosted `Targeted Test` workflow
+for just the failing slice instead of retrying broad local scripts:
+
+```powershell
+gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+```
+
+The full validation guide lives in [Engineering → Build/Test/Run](../engineering/README.md#buildtestrun):
+the contention-aware local test runner, recovery after a timed-out build or test, the
+GitHub-hosted `Targeted Test` workflow for when local limits make a lane unreliable, and the
+per-surface lanes (browser, WPF, schema control). Broaden to full solution, WPF, UI-service, MCP,
+integration, or performance lanes only when the changed layer requires it.
 
 ## Choose Your Next Path
 
@@ -255,8 +231,13 @@ Broaden to full solution, WPF, UI-service, MCP, integration, or performance lane
 
 The older pages below remain source material during migration. Prefer this page and the canonical lanes above for new links.
 
-- [Getting Started](../../archive/docs/getting-started/README.md)
-- [Developer Setup](../../archive/docs/developer/setup.md)
-- [Build, Test, Run](../../archive/docs/developer/build-test-run.md)
-- [Pilot Operator Quickstart](../../archive/docs/getting-started/pilot-operator-quickstart.md)
+- [Getting Started](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/getting-started/README.md)
+- [Developer Setup](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/setup.md)
+- [Build, Test, Run](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/build-test-run.md)
+- [Pilot Operator Quickstart](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/getting-started/pilot-operator-quickstart.md)
 - [HELP](../HELP.md)
+
+CI/CD validation ownership and administrator rollout are maintained in
+[CI/CD ownership and rollout](../engineering/ci-cd-optimization.md). Meridian CI owns the four canonical
+`scripts/ci.sh` lanes; legacy CI owns Secret Scan and nightly/manual coverage.
+All CI governance changes require human review.

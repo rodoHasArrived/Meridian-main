@@ -10,38 +10,38 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.tbl-wrap{overflow-x:auto;border:1px solid var(--border,#D7DCE2);
-  border-radius:var(--radius-chip,2px);background:var(--bg-light,#fff);}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border,#E4E3DE);
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FBFAF8);}
 .tbl{width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
 .tbl thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
-  background:var(--bg-medium,#F5F7FA);z-index:1;
+  background:var(--bg-medium,#EDEAE4);z-index:1;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#59636F);
-  border-bottom:1px solid var(--border-strong,#AAB4BF);border-right:1px solid var(--border-divider,#DDE3EA);}
+  letter-spacing:.03em;color:var(--text-muted,#5E666F);
+  border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#DAD8D3);}
 .tbl thead th:last-child{border-right:none;}
 .tbl th.tbl--r,.tbl td.tbl--r{text-align:right;}
-.tbl td{padding:9px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
-  border-top:1px solid var(--border,#D7DCE2);border-right:1px solid var(--border-divider,#DDE3EA);
+.tbl td{padding:9px 12px;white-space:nowrap;color:var(--text-primary,#22252A);
+  border-top:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border-divider,#DAD8D3);
   vertical-align:baseline;}
 .tbl td:last-child{border-right:none;}
-.tbl tbody tr:hover td{background:var(--bg-hover,#F1F4F7);}
+.tbl tbody tr:hover td{background:var(--bg-hover,#F0EEE9);}
 .tbl tbody tr.tbl__sec:hover td,.tbl tbody tr.tbl__sub:hover td{background:inherit;}
 .tbl tbody tr.tbl__row--click{cursor:pointer;}
-.tbl tbody tr.tbl__row--on td{background:var(--bg-active,#E6EEF5);}
-.tbl tbody tr.tbl__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#2F6F8F);}
-.tbl__sec td{background:var(--bg-medium,#F5F7FA)!important;font-family:var(--font-body);
+.tbl tbody tr.tbl__row--on td{background:var(--bg-active,#F2E3DB);}
+.tbl tbody tr.tbl__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#A85436);}
+.tbl__sec td{background:var(--bg-medium,#EDEAE4)!important;font-family:var(--font-body);
   font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
-  color:var(--text-secondary,#4D5967);padding:6px 12px;}
-.tbl__sub td{background:var(--bg-light,#fff)!important;font-family:var(--font-body);
-  font-size:11px;color:var(--text-muted,#59636F);border-top:1px solid var(--border-divider,#DDE3EA);}
-.tbl__code{color:var(--text-muted,#59636F);}
-.tbl__acct{font-family:var(--font-body);color:var(--text-primary,#22272E);}
-.tbl tfoot td{padding:9px 12px;background:var(--bg-medium,#F5F7FA);font-weight:600;
-  border-top:2px solid var(--border-strong,#AAB4BF);color:var(--text-primary,#22272E);}
+  color:var(--text-secondary,#4E5258);padding:6px 12px;}
+.tbl__sub td{background:var(--bg-light,#FBFAF8)!important;font-family:var(--font-body);
+  font-size:11px;color:var(--text-muted,#5E666F);border-top:1px solid var(--border-divider,#DAD8D3);}
+.tbl__code{color:var(--text-muted,#5E666F);}
+.tbl__acct{font-family:var(--font-body);color:var(--text-primary,#22252A);}
+.tbl tfoot td{padding:9px 12px;background:var(--bg-medium,#EDEAE4);font-weight:600;
+  border-top:2px solid var(--border-strong,#AFABA1);color:var(--text-primary,#22252A);}
 .tbl__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#4D5967);}
-.tbl__foot-note{font-weight:400;color:var(--text-muted,#59636F);margin-left:8px;font-family:var(--font-body);font-size:11px;}
+  font-size:11px;color:var(--text-secondary,#4E5258);}
+.tbl__foot-note{font-weight:400;color:var(--text-muted,#5E666F);margin-left:8px;font-family:var(--font-body);font-size:11px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "trialbalance");
@@ -148,7 +148,7 @@ export function TrialBalance({
             <td className="tbl__foot-label" colSpan={cols - 2}>
               Totals
               {!balanced && (
-                <span className="tbl__foot-note" style={{ color: "var(--red-dim,#8C2F40)" }}>
+                <span className="tbl__foot-note" style={{ color: "var(--red-dim,#7E332D)" }}>
                   out of balance by {""}
                 </span>
               )}
