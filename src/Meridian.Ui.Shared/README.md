@@ -137,6 +137,8 @@ that lease. Current drafts and pending before/after images, including generated 
 participate in resolution. Ambiguous identities are rejected before recovery; explicit tenant or
 company fields never match another scope. The resolved identity is used for both recovery and the
 subsequent operation, while the original command key remains compatible with retained retries.
+Governed close/reopen retries use the original ledger period version retained in their intent,
+so reopening the period cannot change the recovery identity of an interrupted reversal draft.
 
 Completed receipts use `ManualJournalMutationRecoveryOptions`: the active store defaults to 30 days,
 1,000 receipts, and 64 MiB. Oldest receipts move to `archive/<key-prefix>/<key-prefix>/<key>.json.gz`

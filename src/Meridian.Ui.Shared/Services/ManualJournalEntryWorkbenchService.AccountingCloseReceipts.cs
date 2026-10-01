@@ -15,7 +15,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
 {
     private readonly SemaphoreSlim _closeReopenReceiptGate = new(1, 1);
 
-    internal async Task<CloseReopenReceiptRetention> RetainCloseReopenReceiptAsync(
+    internal async Task<(CloseReopenReceiptRetention State, long LedgerPeriodVersion)> RetainCloseReopenReceiptAsync(
         string fundProfileId,
         Guid ledgerBookId,
         Guid ledgerPeriodId,
@@ -44,21 +44,28 @@ public sealed partial class ManualJournalEntryWorkbenchService
             var relevantReceipts = allowCreate
                 ? periodReceipts.Where(item => string.Equals(item.Action, action, StringComparison.Ordinal)).ToArray()
                 : periodReceipts.Take(1).ToArray();
-            if (relevantReceipts.Any(item =>
-                    string.Equals(item.CorrelationId, correlationId, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(item.AfterHash, commandHash, StringComparison.OrdinalIgnoreCase)))
+            var exact = relevantReceipts.FirstOrDefault(item =>
+                string.Equals(item.CorrelationId, correlationId, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(item.AfterHash, commandHash, StringComparison.OrdinalIgnoreCase));
+            if (exact is not null)
             {
-                return CloseReopenReceiptRetention.ExistingExact;
+                var versionPrefix = $"{actionPrefix}from-version:";
+                if (!exact.Action.StartsWith(versionPrefix, StringComparison.Ordinal) ||
+                    !long.TryParse(exact.Action.AsSpan(versionPrefix.Length),
+                        System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture,
+                        out var retainedVersion))
+                    throw new InvalidOperationException("The retained governed reopen intent has an invalid original ledger period version.");
+                return (CloseReopenReceiptRetention.ExistingExact, retainedVersion);
             }
 
             if (relevantReceipts.Length > 0)
             {
-                return CloseReopenReceiptRetention.Conflict;
+                return (CloseReopenReceiptRetention.Conflict, ledgerPeriodVersion);
             }
 
             if (!allowCreate)
             {
-                return CloseReopenReceiptRetention.Missing;
+                return (CloseReopenReceiptRetention.Missing, ledgerPeriodVersion);
             }
 
             var receiptIdBytes = Sha256Digest.ComputeBytesUtf8($"{action}|{commandHash}");
@@ -79,7 +86,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
                         TenantId: tenantId),
                     ct)
                 .ConfigureAwait(false);
-            return CloseReopenReceiptRetention.Created;
+            return (CloseReopenReceiptRetention.Created, ledgerPeriodVersion);
         }
         finally
         {
@@ -133,7 +140,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 allowCreate: false,
                 ct)
             .ConfigureAwait(false);
-        if (receipt != CloseReopenReceiptRetention.ExistingExact)
+        if (receipt.State != CloseReopenReceiptRetention.ExistingExact)
         {
             throw new InvalidOperationException(
                 "A close-locked closing entry can only be reversed after an exact governed reopen intent is retained for the same period, actor, correlation, reason, approval, and evidence.");
