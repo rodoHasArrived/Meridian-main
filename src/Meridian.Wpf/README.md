@@ -17,6 +17,13 @@ Menu product.
 
 ## Shared close and lot convergence
 
+The Accounting feature registers the same durable manual-journal mutation recovery store as
+the browser host. Draft, posting and correction commands keep their original actor and audit
+identities across restart; an unresolved handoff remains blocked in the shared service. The
+`.mutations` directory beside the draft snapshot must be retained with accounting backups.
+The editor retains new-draft IDs and client timestamps across failed saves, so retrying the same
+edit reaches its original intent. Later edits still carry the advanced draft version.
+
 Credential management saves, removal and verification use the shared authenticated service. Secret
 editors start blank; this page no longer reads or writes environment secrets or a separate local vault.
 Legacy environment values are not automatically erased or migrated. Server verification capabilities
@@ -27,6 +34,8 @@ records as partial closes the editor and warns that required fields are still mi
 reporting a failed save.
 Credential commands expose asynchronous completion. Desktop regression tests exercise late status
 responses, selected-account saves, blank secret editors and loss of editable rows after refused discovery.
+Credential view-model fixtures use independent notification instances so production deduplication
+and rate limiting do not inherit another test's notification history.
 Conflicting credential commands are disabled during persistence or verification. Refused saves restore
 command availability and retain the current editor values for an explicit retry. Saves submit only the
 fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret

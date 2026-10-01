@@ -217,6 +217,14 @@ public sealed class AutomatedJournalDraftIntakeService
                 .ConfigureAwait(false);
             if (existing is not null)
             {
+                if (_workbench is ManualJournalEntryWorkbenchService recoveryWorkbench)
+                {
+                    await recoveryWorkbench.RecoverPendingJournalAsync(request.FundProfileId, journalEntryId,
+                        request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
+                    existing = await _draftStore.GetAsync(request.FundProfileId, journalEntryId, ct,
+                        request.TenantId, request.CompanyId).ConfigureAwait(false)
+                        ?? throw new InvalidOperationException("The recovered automated journal draft is missing.");
+                }
                 var incomingAssessment = request.EvidenceAssessments is not null &&
                                          request.EvidenceAssessments.TryGetValue(idempotencyKey, out var candidateAssessment)
                     ? candidateAssessment
