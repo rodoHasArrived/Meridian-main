@@ -256,6 +256,7 @@ modules:
       - W4-RPT-001
       - W5-ACCT-001
       - W9-ASSET-010
+      - W10-JRNL-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -275,7 +276,7 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-09-28
+    last_reviewed: 2026-10-01
 
   - id: SRC-EXECUTION
     path: src/Meridian.Execution

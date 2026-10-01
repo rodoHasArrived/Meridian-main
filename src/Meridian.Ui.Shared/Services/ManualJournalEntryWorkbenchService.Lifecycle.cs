@@ -504,6 +504,17 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var lines = new List<ManualJournalEntryLineDto>(draft.Lines.Count);
+        if (draft.RequiresRecurringJournalEvidence || draft.RecurringJournalEvidenceJson is not null ||
+            RecurringJournalEvidenceGuard.IsRecurring(draft.TreasuryContext?.IdempotencyKey))
+        {
+            var recurringReason = RecurringJournalEvidenceGuard.Validate(draft);
+            if (_journalStore is null || !Guid.TryParse(draft.PeriodId, out _))
+                recurringReason ??= "Authoritative durable period state is unavailable for this recurring draft.";
+            if (recurringReason is not null)
+                issues.Add(Issue("manual-je.recurring-source-required",
+                    AccountingConfigurationValidationSeverityDto.Critical, recurringReason, "recurringJournalEvidence",
+                    "Restore the retained source evidence and accounting scope before human approval."));
+        }
         if (draft.RequiresValuationMarkEvidence || ValuationMarkEvidenceGuard.IsValuation(draft.TreasuryContext?.IdempotencyKey) ||
             draft.ValuationMarkEvidenceJson is not null)
         {

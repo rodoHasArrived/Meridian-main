@@ -6,10 +6,18 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Ledger
+
+`RecurringJournalSchedule` remains a pure calendar and template projection. Durable claims live in
+Financial Operations, while `RecurringJournalEvidence` retains the exact schedule/template
+versions, full definitions, accounting scope, period version and source references on each generated
+approval draft. `RecurringJournalEvidenceGuard` rejects missing or changed provenance and removed
+source evidence at workbench validation and lifecycle boundaries. `RecurringTemplate` identifies
+the generated event without granting submission, approval or posting authority. See
+[Recurring Journal](../../docs/domain/recurring-journal.md) for the retention and recovery contract.
 
 ## Shared close and lot convergence
 

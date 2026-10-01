@@ -6,10 +6,23 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Ui.Shared
+
+`RecurringJournalRunner` joins `AutomatedJournalScheduledWorker` and the existing journal-intake
+path to create one retained human-review draft per recurring occurrence. It holds the durable
+claim lease through intake recovery, preserves exact definitions and evidence, and projects both
+workstation queues from `IRecurringJournalQueueSource`. `RecurringJournalPeriodAuthority` resolves
+the existing PostgreSQL ledger's book/period and fund ownership; `RecurringJournalSubjectAuthority`
+verifies active entity/account membership against retained PostgreSQL fund structure. Unavailable
+authority blocks generation. The recurring endpoints provide explicit initialization, versioned configuration and
+audited restoration of exact prior definitions. Workbench resaves cannot replace retained recurring
+provenance, and its source evidence is required through approval and posting. Submission and lifecycle
+commands hold the recurring registry lease, reject unavailable state or definition drift, and validate
+the retained ancestry of governed correction drafts. See
+[Recurring Journal](../../docs/domain/recurring-journal.md) for deployment and recovery boundaries.
 
 Scoped credential lifecycle requests require exactly one retained connection ID match. Duplicate IDs
 are refused before status, mutation or verification can select an account; discovery also omits them.
