@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
@@ -104,7 +105,7 @@ public sealed class RecurringJournalRunner(
                     results.Add(ready);
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-                catch (Exception ex) when (ex is InvalidOperationException or IOException or ArgumentException)
+                catch (Exception ex) when (ex is InvalidOperationException or IOException or ArgumentException or DbException)
                 {
                     claim = await session.SetOutcomeAsync(key, RecurringOccurrenceState.Blocked,
                         ex.Message, claim.PeriodId, claim.LockOwner, claim.ReopenPath, now, ct).ConfigureAwait(false);

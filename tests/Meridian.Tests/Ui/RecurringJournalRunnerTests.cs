@@ -7,6 +7,7 @@ using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 using Moq;
+using Npgsql;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -177,11 +178,16 @@ public sealed class RecurringJournalRunnerTests : IDisposable
         occurrence.History.Should().Contain(transition => transition.LockOwner == "close-controller");
     }
 
-    [Fact]
-    public async Task RunDue_UnavailablePeriodAuthority_BlocksAndDoesNotAssumeOpen()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RunDue_UnavailablePeriodAuthority_BlocksAndRecoversSameRetainedOccurrence(bool providerFailure)
     {
         await SeedAsync();
-        var fixture = await CreateFixtureAsync(authority: new UnavailablePeriodAuthority());
+        Exception failure = providerFailure
+            ? new NpgsqlException("Durable period authority is unavailable.", new IOException("Connection interrupted."))
+            : new InvalidOperationException("Durable period authority is unavailable.");
+        var fixture = await CreateFixtureAsync(authority: new UnavailablePeriodAuthority(failure));
 
         await fixture.Runner.RunDueAsync(Now);
 
@@ -189,6 +195,30 @@ public sealed class RecurringJournalRunnerTests : IDisposable
         var item = (await QueueAsync(fixture)).Occurrences.Should().ContainSingle().Subject;
         item.State.Should().Be(nameof(RecurringOccurrenceState.Blocked));
         item.Blockers.Should().Contain(reason => reason.Contains("unavailable", StringComparison.OrdinalIgnoreCase));
+        item.JournalEntryId.Should().BeNull();
+        Guid retainedDraftId;
+        await using (var session = await new FileRecurringJournalStore(StateDirectory).OpenSessionAsync())
+        {
+            var occurrence = session.Occurrences.Should().ContainSingle().Subject;
+            occurrence.State.Should().Be(RecurringOccurrenceState.Blocked);
+            retainedDraftId = occurrence.DraftId;
+        }
+
+        var recovered = await CreateFixtureAsync();
+        await recovered.Runner.RunDueAsync(Now.AddMinutes(1));
+        await recovered.Runner.RunDueAsync(Now.AddMinutes(2));
+
+        var draft = (await recovered.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
+        draft.JournalEntryId.Should().Be(retainedDraftId);
+        draft.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
+        var recoveredItem = (await QueueAsync(recovered)).Occurrences.Should().ContainSingle().Subject;
+        recoveredItem.OccurrenceId.Should().Be(item.OccurrenceId);
+        recoveredItem.JournalEntryId.Should().Be(retainedDraftId);
+        recoveredItem.State.Should().Be(nameof(RecurringOccurrenceState.Drafted));
+        recoveredItem.Blockers.Should().BeEmpty();
+        await using var retained = await new FileRecurringJournalStore(StateDirectory).OpenSessionAsync();
+        retained.Occurrences.Should().ContainSingle().Subject.History.Should().Contain(transition =>
+            transition.State == RecurringOccurrenceState.Blocked && transition.Reason == failure.Message);
     }
 
     [Fact]
@@ -476,10 +506,10 @@ public sealed class RecurringJournalRunnerTests : IDisposable
             => Task.FromResult(state);
     }
 
-    private sealed class UnavailablePeriodAuthority : IRecurringJournalPeriodAuthority
+    private sealed class UnavailablePeriodAuthority(Exception failure) : IRecurringJournalPeriodAuthority
     {
         public Task<RecurringJournalPeriodState> ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct)
-            => Task.FromException<RecurringJournalPeriodState>(new InvalidOperationException("Durable period authority is unavailable."));
+            => Task.FromException<RecurringJournalPeriodState>(failure);
     }
 
     private sealed class FailDraftCompletionStore(IRecurringJournalStore inner) : IRecurringJournalStore
