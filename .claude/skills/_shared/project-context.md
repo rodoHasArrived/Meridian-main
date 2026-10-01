@@ -245,4 +245,8 @@ CI/CD ownership: Meridian CI runs the four canonical `scripts/ci.sh` lanes; lega
 runs Secret Scan and nightly/manual coverage. See `docs/engineering/ci-cd-optimization.md`
 for measurement gates, human governance review, and the separate administrator rollout.
 
+The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
+`Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
+Production Certification, including pull requests and merge groups.
+
 <!-- shared-context:end -->
