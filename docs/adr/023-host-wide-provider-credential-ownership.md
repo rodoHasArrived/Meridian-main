@@ -266,8 +266,11 @@ whole host use?** Facts in the current code shape the answer:
        restored.
 
      A state one generation ahead of its checkpoint is repaired forward only when the journal's last
-     entry is that generation's `pending` or `committed` entry, which proves the checkpoint write
-     was interrupted. Otherwise the vault itself was rolled back, for example restored from an older
+     entry is that generation's unresolved `pending` entry, which proves the checkpoint write was
+     interrupted. A `committed` outcome never authorizes it: every path that records `committed`
+     (step 5, the file-checked outcome and recovery's `committed (recovered)`) first writes the
+     checkpoint under the vault lock, so a committed generation with a lagging checkpoint can only
+     mean a rolled-back vault. Otherwise the vault itself was rolled back, for example restored from an older
      copy that still parses, and the state is untrusted. A missing checkpoint for an identity that
      has committed state counts as generation 0, so a vault that predates the identity is caught by
      the same rule. Rollback detection therefore covers every change, and covers the vault as well
@@ -303,14 +306,44 @@ whole host use?** Facts in the current code shape the answer:
        exclusively, without waiting and in identifier order. If any of them is held, by a
        running host or a command of any configuration, it refuses and changes nothing. It keeps all
        of them until it finishes, so no host can start against an identity it is changing.
-   - **Vault format.** Bound marks, checkpoints and the vault identifier change the vault format. So
+   - **Vault revision.** Checkpoints only move when host state commits, but the vault also changes
+     on its own, for example when `RecordScopedVerificationAsync` records a verification failure. So
+     the vault carries a revision that every write increments, and the store's audit log
+     (`provider-credentials.audit.jsonl`, appended after each vault write today) records the
+     revision each write produced. When the store loads the vault, it compares the vault's revision
+     with the last revision in the audit log:
+     - equal, or the vault exactly one ahead (an interrupted audit append, which the store
+       completes), is consistent;
+     - the vault behind the audit log means a valid older vault was restored; the vault ahead by
+       more than one means the audit log was rolled back.
+
+     Either mismatch is handled exactly like a backup fallback: the store writes the durable
+     quarantine marker, and only `repair-vault` clears it. A restore that keeps the checkpoint
+     generation but reverts a verification result is therefore caught too.
+   - **Vault format.** Bound marks, checkpoints, the vault revision and the vault identifier change
+     the vault format. So
      the vault takes a new envelope version that older binaries reject rather than ignore and
      rewrite, and the primary and backup are upgraded together. The upgrade is stop-the-world: an
      offline `upgrade` command, run with every host on the `DataRoot` stopped, converts the vault
      and writes a format marker beside it. Hosts and commands of this version refuse to create host
-     state until the marker exists. Older binaries cannot start against an upgraded vault, because
-     they reject its format. Mixed-version hosts therefore never run together under this protocol,
-     and the deployment runbook requires stopping all hosts for the upgrade.
+     state until the marker exists.
+     - An older binary cannot write protocol state. Today's store already refuses a vault whose
+       format version is newer than it supports (`FileProviderCredentialStore.LoadVaultFromFileAsync`
+       throws `NotSupportedException`, which is not treated as corruption, so it never falls back to
+       the backup or rewrites the vault), and older binaries never touch the sidecars.
+     - An older binary can still run, though. `ProviderFactory.CreateProviders` catches
+       provider-construction failures and continues, and credential-free providers and the
+       configuration and environment construction paths never open the vault. No in-band check can
+       stop an executable that predates the check.
+     - So the gate ships first. The implementation's first release adds a process-level startup
+       gate: a host that finds a format marker newer than it supports refuses to start at all,
+       before any provider is built. The protocol may be enabled with `upgrade` only once every
+       host on the `DataRoot` runs at least that release, and `upgrade` records that minimum in the
+       marker. From then on, every release that can run against the vault refuses a newer one.
+     - Running a binary older than the gate release against an upgraded `DataRoot` cannot be
+       prevented in-band. The deployment runbook forbids it: it replaces the executables before
+       `upgrade` and pins the minimum version, the same way it forbids running two releases from
+       different `DataRoot` copies.
    - The host state records the identifier of the vault it was bound against and its last known
      location. `recover` accepts `--vault-path` to find a vault at a custom location when the
      configuration cannot be loaded, and checks the vault's stored identifier before using it.
@@ -451,14 +484,14 @@ whole host use?** Facts in the current code shape the answer:
    - **Outcome from the file, not the exception.** `AtomicFileWriter` can throw after the rename has
      already published the file, for example from the directory sync. So on any write exception the
      command rereads the published file and compares the digest of the whole state:
-     - if it matches the after-digest, the outcome is `committed`;
+     - if it matches the after-digest, the command writes the checkpoint, then records `committed`;
      - if it matches the before-digest, the outcome is `aborted`;
      - otherwise the entry stays `pending`, and the command exits non-zero.
    - **Recovery.** At startup and at the start of every mutating command, under the host lock and the
      journal-writer lock, each
      `pending` entry without an outcome is resolved against the state file:
-     - if the digest of the whole file equals the entry's after-digest, it is closed as
-       `committed (recovered)`;
+     - if the digest of the whole file equals the entry's after-digest, recovery writes the
+       checkpoint under the vault lock, then closes it as `committed (recovered)`;
      - if it equals the entry's before-digest, it is closed as `aborted (recovered)`;
      - otherwise the file was changed outside the command, even if only in an unrelated entry.
        Credential-bearing families then refuse to start, as for a malformed file, and mutation is
@@ -510,10 +543,12 @@ whole host use?** Facts in the current code shape the answer:
     wins.
     1. **No unfrozen bound credential.** While any host, of any configuration or version, may hold a
        bound credential, that credential's record cannot be saved, rotated or deleted.
-    2. **No silent rollback.** Any rollback or divergent restore of the state file, the journal or
-       the vault, relative to the others, is detected and makes the state untrusted. It is never
-       repaired forward unless the journal proves an interrupted commit. A coordinated restore of
-       all three to the same older point leaves no internal evidence, so it is an operator action
+    2. **No silent rollback.** Any rollback or divergent restore of the state file, the journal,
+       the vault or the store's audit log, relative to the others, is detected and makes the state
+       untrusted or quarantines the vault. That includes a vault change that moves no checkpoint,
+       such as a verification result. It is never repaired forward unless an unresolved `pending`
+       entry proves an interrupted write. A coordinated restore of all of them to the same older
+       point leaves no internal evidence, so it is an operator action
        governed by the restore runbook. After any whole-set restore the operator must run
        `repair-vault`, which resets every verification to unverified (invariant 4), before any
        bound family can start. A deployment that needs automatic detection can add a monotonic
@@ -527,8 +562,10 @@ whole host use?** Facts in the current code shape the answer:
        could have invalidated between the check and the start.
     6. **Every state is reachable and removable offline.** The operator can recover from any
        integrity failure and remove all host credential state without deleting files by hand.
-    7. **One version at a time.** Hosts of different protocol versions never run against the same
-       vault at once.
+    7. **One version at a time.** A binary of a different protocol version never writes the vault
+       or the sidecars, and every release from the gate release on refuses to start against a
+       newer protocol. Running a binary older than the gate release is excluded by the deployment
+       runbook, not in-band.
 
     A review finding about the mechanism is resolved by showing which invariant it violates, and
     the implementation PR must add a test for that case.
@@ -646,7 +683,9 @@ prove host authority.
   other path to an external brokerage account stay off until the execution-ownership decision exists
   (paper execution stays), and OpenFIGI enrichment stays off until OpenFIGI is bound.
 - Upgrading to this protocol is stop-the-world: every host on a `DataRoot` stops while `upgrade`
-  converts the vault.
+  converts the vault. It takes two releases: the startup gate ships first, and `upgrade` runs only
+  once every host runs at least that release. Binaries older than the gate release are kept off
+  the `DataRoot` by the deployment runbook, because nothing in-band can stop them.
 - Binding changes need a restart of every host on the configuration, and the CLI refuses them while
   any is running.
 - Rotating a bound credential takes two offline steps, `clear` and then `set`, with the family unbound
@@ -744,7 +783,22 @@ The implementation PR must add tests that:
   identity for `recover --identity`;
 - restore the state file, journal and vault together to an older point, and show `repair-vault`
   is required and leaves every bound family unverified until verified anew;
-- refuse to create host state before `upgrade`, and refuse an older binary against an upgraded vault;
+- refuse to create host state before `upgrade`, and show an older binary refuses to open or rewrite an
+  upgraded vault;
+- start a gate-release host against a `DataRoot` whose format marker is newer than it supports,
+  and show the process refuses to start before any provider, including credential-free ones, is
+  built;
+- refuse `upgrade` until the marker can record a gate-release minimum, and show a host below that
+  minimum refuses to start afterwards;
+- restore a valid older primary vault after a recorded verification failure, with the checkpoint
+  generation unchanged, and show the vault revision behind the audit log quarantines the vault and
+  the bound family refuses to start until `repair-vault` and a new verification;
+- crash between a vault write and its audit append, and show the store completes the append
+  instead of quarantining;
+- write the state file and then crash before the checkpoint update, and show recovery writes the
+  checkpoint before closing the entry as `committed (recovered)`; then restore an older vault
+  whose checkpoint lags a `committed` entry, and show the state is untrusted rather than repaired
+  forward;
 - recover with `--vault-path` when the configuration cannot be loaded and the vault is at a custom
   location;
 - copy a configuration with its sidecars onto the same `DataRoot`, and show the copy cannot remove
@@ -856,21 +910,23 @@ The implementation PR must add tests that:
 ## Implementation Plan
 
 1. This ADR (Proposed), for review.
-2. Host credential state and command: strict loader for bindings and the plugin credential-free
+2. Startup gate, shipped on its own first: a host that finds a protocol format marker newer than it
+   supports refuses to start, before any provider is built.
+3. Host credential state and command: strict loader for bindings and the plugin credential-free
    list, and their strictly parsed journal; `--host-credential-binding` with the host lock (shared for running hosts, exclusive for commands),
    the host, configuration, vault lock order, recover-first transactions, file-checked outcomes and
    `recover`; the host credential tenant setting.
-3. Classification: a credential classification for every family, with a consistency check against
+4. Classification: a credential classification for every family, with a consistency check against
    the credential catalog and adapter metadata (adding the missing NYSE entry).
-4. Construction: validate and verify bindings at startup; the per-family host credential selection
+5. Construction: validate and verify bindings at startup; the per-family host credential selection
    at every construction site (including OpenFIGI's and the Polygon corporate-action fetcher), with
    module overlays and post-resolver fallbacks removed and the architecture scan in place; `FailClosed`
    refusals (unbound, session-backed and unclassified families, plugins, provider-wide writes at the
    credential store boundary); no path to an external brokerage account under `FailClosed`, with
    paper execution kept; revalidation at every resolution; the tests above.
-5. Surfacing: source kind in the browser and WPF provider read models; identifiers in the host log and
+6. Surfacing: source kind in the browser and WPF provider read models; identifiers in the host log and
    CLI only.
-6. Update `PRD-002` evidence in the implementation tracker and the Application README.
+7. Update `PRD-002` evidence in the implementation tracker and the Application README.
 
 ## References
 
