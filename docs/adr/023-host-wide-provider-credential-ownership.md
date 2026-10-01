@@ -360,6 +360,16 @@ whole host use?** Facts in the current code shape the answer:
      offline `upgrade` command, run with every host on the `DataRoot` stopped, converts the vault
      and writes a format marker beside it. Hosts and commands of this version refuse to create host
      state until the marker exists.
+     - The upgrade changes three files, so it is journalled like every other change. Before
+       touching anything, `upgrade` durably appends a `pending` entry to
+       `provider-credentials.upgrade.jsonl` beside the vault, recording the from and to versions and
+       the digests of the vault and backup before conversion. It then converts the backup, converts
+       the primary and writes the marker, each atomically and each idempotent, and finally appends
+       `committed`.
+     - While that journal has an unfinished entry, the gate refuses every host and every command
+       except `upgrade`, which resumes from the first step whose file is not yet in the target
+       version. Only the resuming `upgrade` accepts the mixed versions its own journal entry
+       explains; any other mix of marker and envelope versions still makes the gate refuse.
      - An older binary cannot write protocol state. Today's store already refuses a vault whose
        format version is newer than it supports (`FileProviderCredentialStore.LoadVaultFromFileAsync`
        throws `NotSupportedException`, which is not treated as corruption, so it never falls back to
@@ -387,10 +397,11 @@ whole host use?** Facts in the current code shape the answer:
        `upgrade` and pins the minimum version, the same way it forbids running two releases from
        different `DataRoot` copies.
    - The host state records the identifier of the vault it was bound against and its last known
-     location. `list` and `recover` accept `--vault-path` to find a vault at a custom location when
-     the configuration cannot be loaded. `recover` checks the vault's stored identifier before using
-     it whenever surviving state records one. With both sidecars lost, `list --vault-path` shows that
-     vault's checkpoints, and `recover --vault-path --identity` adopts one of them.
+     location. `list`, `recover` and `repair-vault` accept `--vault-path` to find a vault at a custom
+     location when the configuration cannot be loaded. Each checks the vault's stored identifier
+     before using it whenever surviving state records one. With both sidecars lost, `list
+     --vault-path` shows that vault's checkpoints, `repair-vault --vault-path` clears a quarantine
+     on it, and `recover --vault-path --identity` adopts one of them.
    - The host state records the identifier of the vault it was bound against. At startup, a bound
      family whose configured `DataRoot` resolves to a vault with a different identifier refuses to
      start. While any committed host credential state exists, the configuration writer refuses to
@@ -517,7 +528,10 @@ whole host use?** Facts in the current code shape the answer:
      takes every recorded identity lock, in identifier order and without waiting, where others take
      one. Configuration and
      credential-store writers never take the host lock, and the implementation must show that no code
-     path takes the configuration and vault locks in the reverse order. A command that cannot take a
+     path takes the configuration and vault locks in the reverse order. Because the `DataRoot` lock is
+     chosen before the configuration lock is held, a command rereads `DataRoot` strictly once it holds
+     the configuration lock. If it no longer resolves to the root whose locks it holds, the command
+     writes nothing, releases every lock and starts again from the new root. A command that cannot take a
      lock within a timeout fails without writing anything.
    - **Recover first.** Before changing anything, the transaction resolves every earlier `pending`
      entry against the current state file (see Recovery below). If any entry cannot be resolved, the
@@ -564,7 +578,11 @@ whole host use?** Facts in the current code shape the answer:
      last committed digest. It establishes a new authoritative baseline:
      1. it adopts the observed state file if it parses. If the file is malformed, it first moves it
         aside unchanged, so the evidence is kept. When the file is malformed or missing, it adopts an
-        empty state with no bindings and no plugin entries, and writes that file atomically;
+        empty state with no bindings and no plugin entries, and writes that file atomically. That
+        state takes the last committed posture the surviving journal records. When no valid journal
+        records one, it takes `FailClosed`, never the environment's value, and the `baseline` entry
+        records that the posture was defaulted. Moving back to `DeploymentBoundary` is then a
+        separate, journalled `posture` transaction;
      2. it reconciles only this configuration's bound marks with the adopted state, under the vault
         lock, leaving every other configuration's marks untouched. It takes this configuration's
         identity from the surviving state file or journal. If both are lost, the operator passes it
@@ -871,8 +889,10 @@ The implementation PR must add tests that:
   the bound family refuses to start until `repair-vault` and a new verification;
 - crash between a vault write and its audit append, and show the store completes the append from
   the intent, keeping the original action and actor, instead of quarantining;
-- remove exactly one complete entry from the end of the audit log offline, and show the vault one
-  ahead with no matching intent is quarantined rather than repaired forward;
+- remove the latest revision's `intent` and `done` entries from the end of the audit log offline,
+  and show the vault one ahead with no matching intent is quarantined rather than repaired forward;
+- remove only the latest `done` entry offline, and show the store completes it from the matching
+  unfinished intent, as for a crash after publishing;
 - read the vault while a writer is between its vault write and its audit append, and show the
   reader neither completes the append nor quarantines, and the audit log gets exactly one entry
   for that revision;
@@ -889,6 +909,15 @@ The implementation PR must add tests that:
   forward;
 - recover with `--vault-path` when the configuration cannot be loaded and the vault is at a custom
   location;
+- quarantine a custom-location vault while the configuration is unreadable and both sidecars are
+  lost, and show `repair-vault --vault-path` clears it after checking the vault's identifier;
+- crash `upgrade` after each publication boundary (backup, primary, marker), and show every host and
+  other command refuses while `upgrade` resumes and completes from its journal;
+- change `DataRoot` while a first `set`, `posture` or plugin command waits for the configuration
+  lock, and show the command writes nothing against the old root and restarts against the new one;
+- lose both sidecars after a committed `FailClosed` posture, run `recover --fresh` with the
+  environment set to `DeploymentBoundary`, and show the baseline takes `FailClosed` and records the
+  default;
 - lose both sidecars with an unreadable configuration and a custom `DataRoot`, and show
   `list --vault-path` enumerates the checkpoints and `recover --vault-path --identity` adopts one;
 - start a gate-release host whose configuration file cannot be strictly parsed and whose `DataRoot`
