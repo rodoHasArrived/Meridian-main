@@ -194,7 +194,32 @@ public sealed class PostedLedgerAmountProvenanceTests
         (await app.GetTestClient().GetAsync(source.Route)).StatusCode.Should().Be(HttpStatusCode.OK);
         await using var reportingApp = await fixture.CreateAppAsync(UserPermission.ViewReporting);
         (await reportingApp.GetTestClient().GetAsync(fixture.PacketRoute)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await reportingApp.GetTestClient().GetAsync(fixture.PacketRoute.Replace("/packet?", "/graph?", StringComparison.Ordinal)))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
         (await reportingApp.GetTestClient().GetAsync(source.Route)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task LedgerOnlyCannotReadReportingPacketGraphOrRetainedManifests()
+    {
+        using var fixture = new Fixture();
+        var report = await fixture.Artifacts.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            "report-pack", "current", "upload", "report.txt", Convert.ToBase64String("report evidence"u8.ToArray()))
+        {
+            TenantId = fixture.Scope.TenantId,
+            Scope = fixture.Scope.CompanyId,
+            Actor = "preparer"
+        });
+        await using var app = await fixture.CreateAppAsync(UserPermission.ViewLedgerReports);
+        var client = app.GetTestClient();
+
+        (await client.GetAsync("/api/workstation/evidence/subjects/report-pack/current/packet"))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.GetAsync("/api/workstation/evidence/subjects/report-pack/current/graph"))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.GetAsync(report.VaultIdentity.ManifestRoute)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.GetAsync($"/workstation/evidence/vault/{report.VaultIdentity.VaultId}"))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Theory]

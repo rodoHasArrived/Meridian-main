@@ -1,6 +1,6 @@
 # W10-PROV-001 first posted amount workflow
 
-**Status:** implementation validation in progress  
+**Status:** posted-line slice implemented; full validation tracked in PR #3041
 **Reviewed:** 2026-10-01
 
 Browser Accounting Ledger Explorer and WPF Posted Ledger now select an individual posted debit or
@@ -38,14 +38,14 @@ Targeted validation completed on 2026-10-01. All commands ran against this imple
 
 | Check | Result | Coverage and limits |
 | --- | --- | --- |
-| Backend provenance filter | **48 passed, 0 failed, 0 skipped** | Includes 28 posted-amount cases with real file-backed intake, retained review, journal references, HTTP packets, and guarded manifest opening; also compatibility service and authorization tests. |
+| Backend provenance filter | **50 passed, 0 failed, 0 skipped** | Includes 29 posted-amount cases with real file-backed intake, retained review, journal references, HTTP packets, and guarded manifest opening; also compatibility service and authorization tests. |
 | Browser provenance filter | **140 passed across 6 suites** | Selection, exact scope, cross-fund/name/symbol collisions, missing/stale/foreign/ambiguous support, late responses, malformed guarded links/artifacts, and removal of text inference. Final run used one Vitest worker. |
 | WPF provenance and Posted Ledger filter | **48 passed, 0 failed, 0 skipped** | 28 new cases and 20 existing cases; includes actual Page/AutomationPeer amount, manifest, and close interactions with a controlled API client. Full WPF source, XAML, and test assembly compiled. |
 | Browser TypeScript and production build | **Passed** | `npm run build` runs `tsc --noEmit` and Vite; regenerated the tracked workstation bundle. |
 | Targeted ESLint | **0 errors** | Four existing Financial Record Explorer hook-dependency warnings. |
 | Edge rendering and interaction | **Passed with mocked HTTP** | Actual `/workstation/accounting/ledger` page; amount selection, guarded source-link opening, Escape dismissal, missing support, and foreign-fund rejection; zero console errors or framework overlays and no horizontal clipping at 1440 pixels. |
 | Roadmap registry | **0 errors, 0 warnings** | Canonical registry validated and generated roadmap outputs refreshed. |
-| Full `bash scripts/ci.sh` | **Running** | Targeted results do not replace the full repository gate or required GitHub Actions checks. |
+| Full `bash scripts/ci.sh` and GitHub Actions | [PR #3041 validation record](https://github.com/rodoHasArrived/Meridian-main/pull/3041) | The PR records the latest full-gate outcome and required hosted checks. Targeted results do not replace those checks. |
 
 The browser smoke uses explicit bootstrap, ledger, evidence-packet, and guarded-manifest HTTP
 fixtures with real GUID formats, SHA-256-shaped digests, and canonical scoped artifact references.
@@ -57,7 +57,7 @@ controls. No single live-host browser-to-storage or desktop-to-storage smoke is 
 Run the backend and WPF filters from the repository root:
 
 ```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter 'FullyQualifiedName~LedgerAmountProvenanceServiceTests|FullyQualifiedName~LedgerAmountProvenanceEndpointTests|FullyQualifiedName~PostedLedgerAmountProvenanceTests' --no-restore --disable-build-servers -m:1 -p:CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true -p:CreateHardLinksForCopyLocalIfPossible=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter 'FullyQualifiedName~LedgerAmountProvenanceServiceTests|FullyQualifiedName~LedgerAmountProvenanceEndpointTests|FullyQualifiedName~PostedLedgerAmountProvenanceTests|FullyQualifiedName~EvidenceEndpoints_DeclareSubjectAwarePermissionsAndTenantCompanyScope' --no-restore --disable-build-servers -m:1 -p:CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true -p:CreateHardLinksForCopyLocalIfPossible=true
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --no-restore --filter 'FullyQualifiedName~LedgerAmountProofInteractionTests|FullyQualifiedName~PostedLedgerViewModelTests' -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true -p:NodeReuse=false -p:CreateHardLinksForCopyLocalIfPossible=true -p:CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true -m:1 --disable-build-servers --logger 'console;verbosity=minimal'
 ```
 
@@ -72,13 +72,21 @@ An earlier parallel browser rerun hit an existing asynchronous timing assertion 
 view-model suite during concurrent compilation. The final six-suite run passed unchanged with one
 worker. Initial .NET/WPF attempts exhausted local disk; task-owned generated output compression
 and standard MSBuild hardlink options allowed both final targeted runs to complete without disabling
-or changing tests. Existing unrelated compiler warnings remain.
+or changing tests. Existing unrelated compiler warnings remain. The initial full gate exposed an outdated assertion that every evidence read route required reporting-only metadata. The corrected assertion verifies the exact subject-aware permission set for the four shared routes and preserves single-permission checks elsewhere; a new HTTP regression also denies ledger-only access to reporting packets, graphs, and manifests. The expanded 50-test filter passed before the full-gate restart.
+
+The first hosted schema-control and documentation runs identified derived-output drift. The
+contract/dependency manifests, data-object catalog, API coverage, roadmap diagram, examples,
+and WPF screen inventory were regenerated from this implementation. Schema tooling tests passed
+67/67; inventory validation reported 10 modules, 117 files, and zero errors. The schema candidate
+reported no migration or policy errors and no physical schema drift. Hosted verification of the
+refreshed outputs is recorded on the PR; local PostgreSQL verification is not claimed.
 
 | Test source | Validated behavior |
 | --- | --- |
 | `tests/Meridian.Tests/Ui/PostedLedgerAmountProvenanceTests.cs` | Real retained file intake and human review through an amount packet and manifest; sibling and cross-fund collisions; exact five-dimensional scope; missing, stale, duplicate, or altered evidence; permissions; guarded manifest revalidation after packet load. |
 | `tests/Meridian.Tests/Ui/LedgerAmountProvenanceServiceTests.cs` | Stable legacy amount bindings, exact reconciliation identities, foreign scopes, preserved blocking severity, and review-required unverified source content. |
 | `tests/Meridian.Tests/Ui/LedgerAmountProvenanceEndpointTests.cs` | Compatibility endpoint permission and scope behavior, including rejection of historical label lookup. |
+| `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | The targeted subject-aware metadata fact verifies exact route permissions and retained tenant/company scope. |
 | `tests/Meridian.Wpf.Tests/ViewModels/LedgerAmountProofInteractionTests.cs` | Shared packet consumption, selection and scope changes, late-response suppression, missing/foreign/ambiguous evidence, and guarded manifest subject/digest checks. |
 
 ## Operator acceptance path
