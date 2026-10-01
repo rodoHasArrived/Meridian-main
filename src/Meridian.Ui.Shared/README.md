@@ -64,7 +64,9 @@ recreation. A stale test cannot verify or attach an old error to the replacement
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
 session resolution recheck the account scope after runtime account changes. Unpartitioned
-fund-structure stores continue to refuse multiple companies under either posture.
+fund-structure stores refuse multiple companies in migration compatibility mode. Under strict
+enforcement, shared migration wrappers refuse every unpartitioned local read and mutation with an
+explicit retained-data migration message, while leaving server-backed capabilities available.
 
 The provider setup compatibility store passes a complete legacy sidecar snapshot to the
 Data Integration vault's atomic importer. It validates all entries before publication,
@@ -173,6 +175,10 @@ posting outside Operations invalidates prior review. Journal creation times newe
 require rebuilding support; the journal fingerprint also detects changes that retain an older
 timestamp. Missing report or scoped-journal authority blocks publication. Refreshing report posture
 retains the new revision and requires renewed affected approvals.
+The guard also requires a live browser or desktop tenant/company session when a workstation
+identity accessor is registered. Supplied close subject IDs and inherited worker authority cannot
+replace a missing session. Internal callers without a workstation accessor must declare retained
+worker tenant authority, and any supplied tenant must match it before evidence is read.
 
 The tenant-guarded Financial Operations command-center endpoint now exposes the server-owned close projection to the browser. Its dependency graph includes ledger-book and close-plan authorities. Fund-wide workspace queries cannot attest period close readiness because they lack the complete declared close scope. Focused proof: `WorkstationEndpointsTests.CloseReadiness`.
 
@@ -2460,6 +2466,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI-SHARED -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |

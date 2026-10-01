@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
@@ -46,8 +47,16 @@ public sealed class WorkstationCloseTenantContextCompositionTests
                 current.CompanyId.Should().Be($"company-{tenant}");
                 current.Actor.Should().Be($"operator-{tenant}");
                 current.Permissions.Should().Be(UserPermission.ManageLedgerReports);
-                (await guard.ValidateAsync(Guid.NewGuid(), 1, scope, "foreign-tenant", "foreign-company"))
-                    .Should().ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_MISMATCH");
+                foreach (var (subjectTenant, subjectCompany) in new[]
+                {
+                    ("foreign-tenant", current.CompanyId),
+                    (current.TenantId, "foreign-company"),
+                    ("foreign-tenant", "foreign-company")
+                })
+                {
+                    (await guard.ValidateAsync(Guid.NewGuid(), 1, scope, subjectTenant, subjectCompany))
+                        .Should().ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_MISMATCH");
+                }
             }
             finally
             {
@@ -61,7 +70,10 @@ public sealed class WorkstationCloseTenantContextCompositionTests
         http.HttpContext.Should().BeNull();
         accessor.TryGetCurrent(out var absent).Should().BeFalse();
         absent.HasTenantScope.Should().BeFalse();
-        (await guard.ValidateAsync(Guid.NewGuid(), 1, scope)).Should()
-            .ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_REQUIRED");
+        using (FundScopeTenantAuthority.Enter("tenant-alpha", "unrelated background worker"))
+        {
+            (await guard.ValidateAsync(Guid.NewGuid(), 1, scope, "tenant-alpha", "company-tenant-alpha")).Should()
+                .ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_REQUIRED");
+        }
     }
 }
