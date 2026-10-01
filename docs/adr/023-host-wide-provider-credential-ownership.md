@@ -159,20 +159,27 @@ whole host use?** Facts in the current code shape the answer:
    that they will not start.
 
 4. **Bindings live in a host-only file, loaded strictly.** Bindings map a canonical provider family ID
-   to one retained connection ID. They live, together with the plugin credential-free list (point 5),
+   to one retained connection ID. Each binding also stores the complete scope it was validated
+   against: tenant, connection, external account and credential environment. Claims (point 6) can
+   therefore always be rebuilt from the host state alone, without loading configuration. They live, together with the plugin credential-free list (point 5),
    in a dedicated host file beside the configuration, not in `AppConfig`. This document calls the
    file's contents the host credential state. Each change is recorded in a journal beside it (point
    8). The host file, the journal and the host lock are named after the configuration file, so two
-   configurations in one directory never share them:
+   configurations in one directory never share them. The configuration identity used for these
+   names, for journal entries and for the vault claim is the canonical real path of the
+   configuration file: rooted, with `.` and `..` resolved, symlinks resolved, and case-folded on
+   case-insensitive file systems. Aliases of one file therefore always map to one identity:
    - `<config>.host-provider-credentials.json`;
    - `<config>.host-provider-credentials.journal.jsonl`;
    - `<config>.host-provider-credentials.lock`. No HTTP
    endpoint or general configuration writer touches either file, so data-source edits cannot erase a
    binding. Both are loaded strictly:
-   - a missing state file and a missing journal together mean a fresh installation with no bindings.
-     Any other combination of absences is a partial loss:
+   - a missing state file and a missing journal together mean a fresh installation with no bindings,
+     but only when this configuration's vault claim file (point 6) is also absent or empty. Any other
+     combination is a partial loss:
      - a missing state file with a journal that records a committed state;
-     - a state file with a missing journal.
+     - a state file with a missing journal;
+     - both sidecars missing while the vault still holds a non-empty claim for this configuration.
 
      Either way, credential-bearing families refuse to start until `recover`. Clearing bindings is
      an explicit, journalled `clear`, never a deleted file;
@@ -221,11 +228,17 @@ whole host use?** Facts in the current code shape the answer:
      only its own claim file. The store refuses a mutation of any scope that any claim file names,
      so a configuration that holds the same connection unbound cannot change a scope that another
      configuration has bound.
-   - The claim file is derived from the committed host state and is written in the safe order: a
-     `set` writes the new claim before publishing the state file, and a `clear` removes the claim
-     only after publishing it. A crash between the two can therefore only leave an extra claim,
-     which freezes more, never less. Recovery, startup and every command then rewrite the claim
-     file from the committed state under the vault lock (point 8).
+   - The claim file is derived from the scopes stored in the committed host state, never from
+     configuration. It is always written atomically, and in the safe order: a `set` writes the new
+     claim before publishing the state file, and a `clear` removes the claim only after publishing
+     it. A crash between the two can therefore only leave an extra claim, which freezes more, never
+     less. Recovery, startup and every command then rewrite the claim file from the committed state
+     under the vault lock (point 8). If the committed state cannot be read, the existing claim file
+     is left as it is.
+   - Claim files are parsed strictly. If any claim file in the directory is malformed, truncated or
+     unreadable, the store cannot know which scopes it covers, so it refuses every scoped save,
+     rotation and delete on that vault. The refusal lasts until the owning configuration's
+     `recover` rewrites the file.
    - The host state records the vault location it was bound against. At startup, a bound family
      whose configured `DataRoot` resolves to a different vault refuses to start. While any binding
      exists, the configuration writer refuses to change `DataRoot` (for example through
@@ -279,8 +292,8 @@ whole host use?** Facts in the current code shape the answer:
      beside the state file, `<config>.host-provider-credentials.journal.jsonl`. It is not the shared
      credential audit trail. Two configurations that share a `DataRoot`, and so share a credential vault and its
      audit trail, therefore never see or recover each other's transactions. Each entry also records a
-     stable identity for the host configuration (its configuration path), and an entry for a
-     different identity makes the journal invalid.
+     stable identity for the host configuration (its canonical real path, see point 4), and an
+     entry for a different identity makes the journal invalid.
    - **Parsed strictly.** The journal is parsed strictly. A malformed, truncated or unreadable entry,
      or an unreadable journal, makes credential-bearing families refuse to start and refuses mutation
      until `recover`. No entry is ever skipped.
@@ -346,12 +359,14 @@ whole host use?** Facts in the current code shape the answer:
      like a second change.
    - **`recover`.** `recover` handles a lost state file, an unresolvable pending entry, or a mismatched
      last committed digest. It establishes a new authoritative baseline:
-     1. it adopts the observed state file if it parses. Otherwise, and when the file is missing, it
-        adopts an empty state with no bindings and no plugin entries, and writes that file atomically;
-     2. it rewrites only this configuration's claim file to match the adopted state, leaving every
-        other configuration's claims untouched;
-     3. it appends an `indeterminate` outcome for any unresolved entry, followed by a `baseline` entry
-        with the actor and the adopted state's digest. That digest becomes the last committed digest.
+     1. it adopts the observed state file if it parses. If the file is malformed, it first moves it
+        aside unchanged, so the evidence is kept. When the file is malformed or missing, it adopts an
+        empty state with no bindings and no plugin entries, and writes that file atomically;
+     2. it rewrites only this configuration's claim file, atomically, to match the adopted state,
+        leaving every other configuration's claims untouched;
+     3. it appends an `indeterminate` outcome for any unresolved entry, followed by a `baseline` entry.
+        The `baseline` entry records the actor, the adopted state's digest, and the paths of any
+        state file or journal it moved aside. That digest becomes the last committed digest.
 
      If the journal itself is invalid, `recover` first moves it aside unchanged, so the evidence is
      kept, and starts the new journal with the `baseline` entry. The next startup then validates
@@ -596,16 +611,31 @@ The implementation PR must add tests that:
 - refuse to save, rotate or delete a bound connection's credential, and to disable or delete a bound
   connection, from any running host and from another configuration that shares the `DataRoot`; then
   rotate it through `clear`, rotation and verification, and `set`;
-- start a host and a mutating command at the same time without either waiting on the other;
+- start a host and a mutating command at the same time, and show that they serialize without
+  deadlock: whichever takes the host lock first proceeds, and the other waits within its timeout
+  and then either proceeds or is refused cleanly, never both holding it;
 - start a host successfully after `recover`, for a lost state file, a malformed state file, a mismatched
   digest and an invalid journal;
 - start two hosts simultaneously after a crash left a `pending` entry, and show that exactly one
   outcome is recorded and both hosts start;
 - treat a pending event as changed outside the command (refusing families and mutation until
   `recover`) when only an unrelated entry of the host credential state was changed;
-- after an outcome append fails, have the next mutating command resolve the pending event first and
-  refuse to proceed until it is resolved; when the file matches neither side of the event, refuse
-  credential-bearing families and mutation until `recover` records the observed state;
+- after an outcome append fails without writing any bytes, have the next mutating command resolve
+  the pending event first and refuse to proceed until it is resolved; when the file matches neither
+  side of the event, refuse credential-bearing families and mutation until `recover` records the
+  observed state;
+- after an outcome append is torn, leaving a partial record, follow the invalid-journal path:
+  refuse families and mutation until `recover` moves the journal aside and records a baseline;
+- treat aliases of one configuration file (relative, `..`, symlinked, different case on a
+  case-insensitive file system) as one identity for the sidecars, the journal and the claim;
+- refuse to treat missing sidecars as a fresh installation while this configuration's vault claim is
+  non-empty;
+- refuse every scoped mutation on a vault while any claim file is malformed, truncated or unreadable,
+  and crash during each claim rewrite path (`set`, `clear`, startup, recovery);
+- rebuild claims from the stored scopes when the configuration cannot be loaded, and keep the existing
+  claim when the committed state cannot be read;
+- move a malformed state file aside before `recover` adopts an empty state, and record it in the
+  baseline;
 - run a binding change, or a startup or pre-command recovery, alongside concurrent configuration
   writes and scoped credential saves, rotations or verifications, with no lost write and no deadlock;
 - record `committed` when the write throws after the rename has published the new file;
