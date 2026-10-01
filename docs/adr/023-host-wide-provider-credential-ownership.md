@@ -144,11 +144,13 @@ whole host use?** Facts in the current code shape the answer:
        verification or test can transmit a provider-wide credential. Scoped operations, credentials
        of non-market-data integrations (such as accounting and financial connectivity), and module
        settings that carry no credentials are unaffected;
-     - the configuration writer boundary (`ConfigStore`) refuses to persist a value into any
-       provider credential configuration key, using the same key list as the architecture scan in
-       point 7. Routes that write credentials into `AppConfig`, such as `ConfigEndpoints.ConfigAlpaca`
-       and `ProviderEndpoints.ConfigDataSources`, therefore cannot install provider-wide
-       credentials either;
+     - the configuration writer boundary (`ConfigStore`) compares the current and proposed
+       documents and refuses any provider credential configuration key whose value is newly set or
+       changed to a nonblank value. It uses the same key list as the architecture scan in point 7.
+       Unchanged values left over from before the move to `FailClosed`, and their removal, are
+       allowed, so unrelated configuration saves keep working. Routes that write credentials into
+       `AppConfig`, such as `ConfigEndpoints.ConfigAlpaca` and `ProviderEndpoints.ConfigDataSources`,
+       therefore cannot install provider-wide credentials either;
      - existing provider-wide records therefore remain stored but unreadable, until the deployment
        returns to `DeploymentBoundary`;
      - a plugin family starts only if the host operator lists it as credential-free (point 5). Plugins
@@ -166,7 +168,7 @@ whole host use?** Facts in the current code shape the answer:
    file's contents the host credential state. Each change is recorded in a journal beside it (point
    8). The host file, the journal and the host lock are named after the configuration file, so two
    configurations in one directory never share them. The configuration identity used for these
-   names, for journal entries and for the vault claim is the canonical real path of the
+   names, for journal entries and for the vault bound marks (point 6) is the canonical real path of the
    configuration file: rooted, with `.` and `..` resolved, symlinks resolved, and case-folded on
    case-insensitive file systems. Aliases of one file therefore always map to one identity:
    - `<config>.host-provider-credentials.json`;
@@ -175,11 +177,11 @@ whole host use?** Facts in the current code shape the answer:
    endpoint or general configuration writer touches either file, so data-source edits cannot erase a
    binding. Both are loaded strictly:
    - a missing state file and a missing journal together mean a fresh installation with no bindings,
-     but only when this configuration's vault claim file (point 6) is also absent or empty. Any other
-     combination is a partial loss:
+     but only when no scoped record in the vault carries a bound mark for this configuration (point
+     6). Any other combination is a partial loss:
      - a missing state file with a journal that records a committed state;
      - a state file with a missing journal;
-     - both sidecars missing while the vault still holds a non-empty claim for this configuration.
+     - both sidecars missing while the vault still carries a bound mark for this configuration.
 
      Either way, credential-bearing families refuse to start until `recover`. Clearing bindings is
      an explicit, journalled `clear`, never a deleted file;
@@ -222,23 +224,21 @@ whole host use?** Facts in the current code shape the answer:
    configuration (point 8). So **a bound connection's credential is frozen while it is bound**: there
    is never a change to propagate to providers already running in any host.
    - The store boundary refuses to save, rotate or delete the credential of any bound scope.
-   - Several configurations can share one `DataRoot`, and so one vault. So bound scopes are claimed at
-     the vault itself, in one claim file per configuration, in a directory beside the vault
-     (`provider-credentials.bound-scopes/<configuration identity>.json`). Each configuration writes
-     only its own claim file. The store refuses a mutation of any scope that any claim file names,
-     so a configuration that holds the same connection unbound cannot change a scope that another
-     configuration has bound.
-   - The claim file is derived from the scopes stored in the committed host state, never from
-     configuration. It is always written atomically, and in the safe order: a `set` writes the new
-     claim before publishing the state file, and a `clear` removes the claim only after publishing
-     it. A crash between the two can therefore only leave an extra claim, which freezes more, never
-     less. Recovery, startup and every command then rewrite the claim file from the committed state
-     under the vault lock (point 8). If the committed state cannot be read, the existing claim file
-     is left as it is.
-   - Claim files are parsed strictly. If any claim file in the directory is malformed, truncated or
-     unreadable, the store cannot know which scopes it covers, so it refuses every scoped save,
-     rotation and delete on that vault. The refusal lasts until the owning configuration's
-     `recover` rewrites the file.
+   - Several configurations can share one `DataRoot`, and so one vault. So the freeze is recorded on
+     the scoped credential record itself, inside the vault: each record carries a set of bound marks,
+     one per configuration that has bound it, keyed by that configuration's identity. The store
+     refuses to mutate a record while its set is non-empty, so a configuration that holds the same
+     connection unbound cannot change a scope that another configuration has bound. Because the
+     mark lives in the same atomically written vault file as the secret, it cannot be deleted, lost
+     or misnamed on its own: removing it means removing the record, and the vault's own integrity
+     rules already cover a damaged vault.
+   - Marks are derived from the scopes stored in the committed host state, never from configuration,
+     and are always written under the vault lock in the safe order. A `set` adds its mark before
+     publishing the state file, and a `clear` removes it only after publishing it. A crash between
+     the two can therefore only leave an extra mark, which freezes more, never less. Recovery,
+     startup and every command then reconcile this configuration's marks with the committed state
+     under the vault lock (point 8), touching no other configuration's marks. If the committed state
+     cannot be read, the existing marks are left as they are.
    - The host state records the vault location it was bound against. At startup, a bound family
      whose configured `DataRoot` resolves to a different vault refuses to start. While any binding
      exists, the configuration writer refuses to change `DataRoot` (for example through
@@ -303,7 +303,9 @@ whole host use?** Facts in the current code shape the answer:
      Every mutating command needs the lock in exclusive mode, so it fails while any host on this
      configuration is running, and no host can start while a command holds it. A change takes effect
      when the hosts next start, so no running provider keeps using state that has since changed.
-     `list` only reads the files, which are always written atomically or append-only.
+     `list` takes the host lock in shared mode and the journal-writer lock, in the documented order,
+     for the moment it reads the state file and the journal. It therefore never sees a partly
+     appended journal entry.
    - **One journal writer at a time.** Every write to the journal, whether from a mutating command or
      from recovery, is made while holding a second lock exclusively, the journal-writer lock
      (`<config>.host-provider-credentials.journal.lock`). A starting host first takes the host lock in
@@ -334,8 +336,9 @@ whole host use?** Facts in the current code shape the answer:
         change (binding or plugin classification), the subject (provider family or plugin ID), the
         previous and new values, and canonical digests of the complete host credential state before
         and after the change;
-     4. for `set`, write the new claim file; write the state file atomically; for `clear`, then
-        remove the claim. All of this runs under the vault lock already held;
+     4. for `set`, add this configuration's bound mark to the scoped record; write the state file
+        atomically; for `clear`, then remove the mark. All of this runs under the vault lock already
+        held;
      5. append the outcome, then release the locks in reverse order.
    - **Outcome from the file, not the exception.** `AtomicFileWriter` can throw after the rename has
      already published the file, for example from the directory sync. So on any write exception the
@@ -353,17 +356,17 @@ whole host use?** Facts in the current code shape the answer:
        Credential-bearing families then refuse to start, as for a malformed file, and mutation is
        refused, until the operator runs `recover`.
 
-     After the entries are closed, recovery takes the vault lock and rewrites this configuration's
-     claim file from the committed state, so a crash between the claim and the state file is
-     repaired before any provider starts or any outcome is relied on. A retry therefore never looks
+     After the entries are closed, recovery takes the vault lock and reconciles this configuration's
+     bound marks with the committed state. A crash between the mark and the state file is
+     therefore repaired before any provider starts or any outcome is relied on. A retry therefore never looks
      like a second change.
    - **`recover`.** `recover` handles a lost state file, an unresolvable pending entry, or a mismatched
      last committed digest. It establishes a new authoritative baseline:
      1. it adopts the observed state file if it parses. If the file is malformed, it first moves it
         aside unchanged, so the evidence is kept. When the file is malformed or missing, it adopts an
         empty state with no bindings and no plugin entries, and writes that file atomically;
-     2. it rewrites only this configuration's claim file, atomically, to match the adopted state,
-        leaving every other configuration's claims untouched;
+     2. it reconciles only this configuration's bound marks with the adopted state, under the vault
+        lock, leaving every other configuration's marks untouched;
      3. it appends an `indeterminate` outcome for any unresolved entry, followed by a `baseline` entry.
         The `baseline` entry records the actor, the adopted state's digest, and the paths of any
         state file or journal it moved aside. That digest becomes the last committed digest.
@@ -410,7 +413,7 @@ implemented yet.
 | Host execution composition | `src/Meridian/UiServer.cs` (`usesPaperGateway`), `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Live execution refused under `FailClosed`; paper execution stays |
 | Polygon corporate-action ingestion | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs`, `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Process-wide hosted fetcher that reads Polygon keys directly; moves to the per-family selection |
 | Retained ownership | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` | `GetCredentialScopeForTenantAsync` resolves the bound scope |
-| Credential verification and vault lock | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Per-generation verification state; `provider-credentials.vault.lock`, held through binding validation and commit; checks every configuration's claim file before any scoped write; `ImportLegacyAsync` and `ImportOAuthTokensAsync` guarded |
+| Credential verification and vault lock | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Per-generation verification state; `provider-credentials.vault.lock`, held through binding validation and commit; stores each record's bound marks and refuses a scoped write while any are present; `ImportLegacyAsync` and `ImportOAuthTokensAsync` guarded |
 | Configuration credential and storage writers | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs` (`ConfigAlpaca`, `UpdateStorage`), `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs` (`ConfigDataSources`) | Refused at the `ConfigStore` boundary for credential keys under `FailClosed`, and for `DataRoot` while bindings exist |
 | Lenient configuration load | `src/Meridian.Application/Http/ConfigStore.cs` | `LoadConfig` substitutes defaults; the binding file must not use it |
 | Account permission overrides | `src/Meridian.Identity/Infrastructure/UserAccountStore.cs` | Why no user permission can carry host authority |
@@ -588,11 +591,11 @@ The implementation PR must add tests that:
 - keep two configurations in the same directory on separate host files, journals and locks;
 - refuse credential-bearing families when the state file exists but its journal is missing, until
   `recover`;
-- leave another configuration's claims intact when one configuration runs `recover` on a shared
+- leave another configuration's bound marks intact when one configuration runs `recover` on a shared
   `DataRoot`;
-- crash between the claim file and the state file in both directions (`set` and `clear`), and show
+- crash between the bound mark and the state file in both directions (`set` and `clear`), and show
   that the scope is never left unfrozen while a committed binding names it, and that startup
-  repairs the claim;
+  repairs the mark;
 - refuse a `DataRoot` change while bindings exist, and refuse bound families when the configured
   vault differs from the one recorded at binding time;
 - refuse writes of provider credential configuration keys through `ConfigStore`, including
@@ -627,13 +630,17 @@ The implementation PR must add tests that:
 - after an outcome append is torn, leaving a partial record, follow the invalid-journal path:
   refuse families and mutation until `recover` moves the journal aside and records a baseline;
 - treat aliases of one configuration file (relative, `..`, symlinked, different case on a
-  case-insensitive file system) as one identity for the sidecars, the journal and the claim;
-- refuse to treat missing sidecars as a fresh installation while this configuration's vault claim is
-  non-empty;
-- refuse every scoped mutation on a vault while any claim file is malformed, truncated or unreadable,
-  and crash during each claim rewrite path (`set`, `clear`, startup, recovery);
-- rebuild claims from the stored scopes when the configuration cannot be loaded, and keep the existing
-  claim when the committed state cannot be read;
+  case-insensitive file system) as one identity for the sidecars, the journal and the bound marks;
+- refuse to treat missing sidecars as a fresh installation while the vault carries a bound mark for
+  this configuration;
+- crash during each mark reconciliation path (`set`, `clear`, startup, recovery), and show that a
+  bound record is never left without its mark while a committed binding names it;
+- reconcile marks from the stored scopes when the configuration cannot be loaded, and keep the
+  existing marks when the committed state cannot be read;
+- read with `list` while an append is deliberately paused, and show it waits rather than reporting a
+  malformed journal;
+- save an unrelated configuration change on a `FailClosed` host that still has legacy credential
+  values in `AppConfig`, and refuse a newly set or changed credential value;
 - move a malformed state file aside before `recover` adopts an empty state, and record it in the
   baseline;
 - run a binding change, or a startup or pre-command recovery, alongside concurrent configuration
