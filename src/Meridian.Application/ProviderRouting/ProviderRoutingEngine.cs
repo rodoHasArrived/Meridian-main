@@ -34,12 +34,26 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         _kernelObservability = kernelObservability ?? new KernelObservabilityService();
     }
 
-    public async ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
+    public ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
+        => RouteCoreAsync(context, null, ct);
+
+    /// <summary>Routes using only connections retained for the authorized tenant.</summary>
+    public ValueTask<ProviderRouteResult> RouteForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        return RouteCoreAsync(context, tenantId.Trim(), ct);
+    }
+
+    private async ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct)
     {
         var executionScope = _kernelObservability.BeginExecution(context);
-        var snapshot = GetSnapshot();
-        var connections = snapshot.ConnectionsById;
+        var snapshot = tenantId is null ? GetSnapshot() :
+            ProviderRoutingSnapshot.Build(_store.Load(), ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath));
+        var connections = tenantId is null ? snapshot.ConnectionsById : snapshot.ConnectionsById
+            .Where(pair => pair.Value.TenantId == tenantId).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         var bindings = snapshot.GetBindings(context.Capability);
+        if (tenantId is not null)
+            bindings = bindings.Where(binding => connections.ContainsKey(binding.ConnectionId)).ToArray();
         var policy = snapshot.GetPolicy(context.Capability);
 
         var candidates = new List<ProviderRouteDecision>();
@@ -52,9 +66,10 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             if (healthCache.TryGetValue(connection.ConnectionId, out var cachedHealth))
                 return cachedHealth;
 
-            var health = await _healthSource
-                .GetHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct)
-                .ConfigureAwait(false);
+            // Tenant routes never rank by another owner's family-wide health telemetry.
+            var health = tenantId is null
+                ? await _healthSource.GetHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct).ConfigureAwait(false)
+                : await _healthSource.GetConnectionHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct).ConfigureAwait(false);
 
             healthCache[connection.ConnectionId] = health;
             return health;
@@ -78,7 +93,9 @@ public sealed class ProviderRoutingService : ICapabilityRouter
 
             if (!connections.TryGetValue(binding.ConnectionId, out var connection))
             {
-                skipped.Add($"Binding '{binding.BindingId}' references missing connection '{binding.ConnectionId}'.");
+                skipped.Add(snapshot.AmbiguousConnectionIds.Contains(binding.ConnectionId)
+                    ? $"Binding '{binding.BindingId}' references ambiguous connection '{binding.ConnectionId}' that is configured more than once."
+                    : $"Binding '{binding.BindingId}' references missing connection '{binding.ConnectionId}'.");
                 continue;
             }
 
@@ -111,6 +128,25 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             };
 
             var fallbackConnectionIds = ResolveFallbacks(binding, connection, connections, effectivePolicy);
+            var fallbackScopeRanks = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (tenantId is not null)
+            {
+                // A tenant's fallback must match the requested route by its own scope; the primary's
+                // scope match never vouches for another account's or fund's connection.
+                fallbackConnectionIds = fallbackConnectionIds.Where(id =>
+                {
+                    if (!connections.TryGetValue(id, out var fallback))
+                        return false;
+                    var fallbackScopeRank = (fallback.Scope ?? new ProviderConnectionScope()).GetMatchScore(context);
+                    if (fallbackScopeRank >= 0)
+                    {
+                        fallbackScopeRanks[id] = fallbackScopeRank;
+                        return true;
+                    }
+                    skipped.Add($"Fallback connection '{fallback.ConnectionId}' scope does not match the requested route.");
+                    return false;
+                }).ToArray();
+            }
             var policyGate = DeterminePolicyGate(context, connection, binding, effectivePolicy);
 
             candidates.Add(new ProviderRouteDecision(
@@ -146,7 +182,10 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                     ProviderFamilyId: fallbackConnection.ProviderFamilyId,
                     Capability: context.Capability,
                     SafetyMode: effectivePolicy.Mode,
-                    ScopeRank: Math.Max(scopeRank, connectionScopeRank),
+                    // A tenant fallback ranks by its own scope match, never above the primary it backs up.
+                    ScopeRank: fallbackScopeRanks.TryGetValue(fallbackConnectionId, out var ownScopeRank)
+                        ? Math.Max(scopeRank, Math.Min(connectionScopeRank, ownScopeRank))
+                        : Math.Max(scopeRank, connectionScopeRank),
                     Priority: binding.Priority + 1,
                     IsHealthy: fallbackHealth.IsHealthy,
                     ReasonCodes:
@@ -230,12 +269,13 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             RequiresManualApproval: requiresManualApproval,
             PolicyGate: resultGate);
 
-        _history.Enqueue(result);
-        while (_history.Count > 50 && _history.TryDequeue(out _))
+        if (tenantId is null)
         {
+            _history.Enqueue(result);
+            while (_history.Count > 50 && _history.TryDequeue(out _))
+            { }
+            _kernelObservability.RecordResult(context, result, healthCache, executionScope);
         }
-
-        _kernelObservability.RecordResult(context, result, healthCache, executionScope);
 
         return result;
     }
@@ -390,11 +430,13 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         private ProviderRoutingSnapshot(
             ProviderRoutingSnapshotStamp stamp,
             IReadOnlyDictionary<string, ProviderConnectionConfig> connectionsById,
+            IReadOnlySet<string> ambiguousConnectionIds,
             IReadOnlyDictionary<ProviderCapabilityKind, ProviderBindingConfig[]> bindingsByCapability,
             IReadOnlyDictionary<ProviderCapabilityKind, ProviderSafetyPolicy> policiesByCapability)
         {
             Stamp = stamp;
             ConnectionsById = connectionsById;
+            AmbiguousConnectionIds = ambiguousConnectionIds;
             _bindingsByCapability = bindingsByCapability;
             _policiesByCapability = policiesByCapability;
         }
@@ -402,6 +444,9 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         public ProviderRoutingSnapshotStamp Stamp { get; }
 
         public IReadOnlyDictionary<string, ProviderConnectionConfig> ConnectionsById { get; }
+
+        /// <summary>Connection IDs that appear more than once and are therefore never routable.</summary>
+        public IReadOnlySet<string> AmbiguousConnectionIds { get; }
 
         public ProviderBindingConfig[] GetBindings(ProviderCapabilityKind capability)
             => _bindingsByCapability.TryGetValue(capability, out var bindings)
@@ -415,9 +460,19 @@ public sealed class ProviderRoutingService : ICapabilityRouter
 
         public static ProviderRoutingSnapshot Build(AppConfig cfg, ProviderRoutingSnapshotStamp stamp)
         {
-            var connectionsById = ProviderRoutingConfigExtensions
+            // Duplicate or case-variant connection IDs cannot identify one owner, so they are
+            // excluded instead of letting the case-insensitive dictionary throw for every route.
+            var connectionGroups = ProviderRoutingConfigExtensions
                 .GetEffectiveConnections(cfg)
-                .ToDictionary(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase);
+                .GroupBy(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var connectionsById = connectionGroups
+                .Where(group => group.Count() == 1)
+                .ToDictionary(group => group.Key, group => group.Single(), StringComparer.OrdinalIgnoreCase);
+            var ambiguousConnectionIds = connectionGroups
+                .Where(group => group.Count() > 1)
+                .Select(group => group.Key)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             var bindingsByCapability = ProviderRoutingConfigExtensions
                 .GetEffectiveBindings(cfg)
@@ -436,6 +491,7 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             return new ProviderRoutingSnapshot(
                 stamp,
                 connectionsById,
+                ambiguousConnectionIds,
                 bindingsByCapability,
                 policiesByCapability);
         }
@@ -682,6 +738,19 @@ internal sealed class DefaultProviderConnectionHealthSource : IProviderConnectio
         string connectionId,
         string providerFamilyId,
         CancellationToken ct = default)
+        => GetCoreAsync(connectionId, providerFamilyId);
+
+    /// <summary>
+    /// Runtime metrics do not carry connection ownership provenance. Even an exact ID match cannot
+    /// establish ownership, so scoped health remains neutral unknown until an ownership-aware source is available.
+    /// </summary>
+    public ValueTask<ProviderConnectionHealthSnapshot> GetConnectionHealthAsync(
+        string connectionId,
+        string providerFamilyId,
+        CancellationToken ct = default)
+        => UnknownHealth(connectionId, providerFamilyId);
+
+    private ValueTask<ProviderConnectionHealthSnapshot> GetCoreAsync(string connectionId, string providerFamilyId)
     {
         var metrics = _store.TryLoadProviderMetrics();
         var match = metrics?.Providers.FirstOrDefault(p =>
@@ -690,13 +759,7 @@ internal sealed class DefaultProviderConnectionHealthSource : IProviderConnectio
 
         if (match is null)
         {
-            return ValueTask.FromResult(new ProviderConnectionHealthSnapshot(
-                ConnectionId: connectionId,
-                ProviderFamilyId: providerFamilyId,
-                IsHealthy: true,
-                Status: "unknown",
-                Score: 100,
-                CheckedAt: DateTimeOffset.UtcNow));
+            return UnknownHealth(connectionId, providerFamilyId);
         }
 
         return ValueTask.FromResult(new ProviderConnectionHealthSnapshot(
@@ -707,6 +770,15 @@ internal sealed class DefaultProviderConnectionHealthSource : IProviderConnectio
             Score: Math.Clamp(match.DataQualityScore, 0, 100),
             CheckedAt: match.Timestamp));
     }
+
+    private static ValueTask<ProviderConnectionHealthSnapshot> UnknownHealth(string connectionId, string providerFamilyId)
+        => ValueTask.FromResult(new ProviderConnectionHealthSnapshot(
+            ConnectionId: connectionId,
+            ProviderFamilyId: providerFamilyId,
+            IsHealthy: true,
+            Status: "unknown",
+            Score: 100,
+            CheckedAt: DateTimeOffset.UtcNow));
 }
 
 internal sealed class DefaultProviderCertificationRunner : IProviderCertificationRunner

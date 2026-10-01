@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-05
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Wpf
@@ -16,6 +16,56 @@ on demand from the browser workstation. It is not a separate end-user package or
 Menu product.
 
 ## Shared close and lot convergence
+
+Credential management saves, removal and verification use the shared authenticated service. Secret
+editors start blank; this page no longer reads or writes environment secrets or a separate local vault.
+Legacy environment values are not automatically erased or migrated. Server verification capabilities
+still bound the assurance available from these operations. Credential rows represent explicit owned
+connections with account and environment labels. Status, save, removal and verification carry that
+connection ID; incomplete or ambiguous ownership cannot become an editable row. A save the service
+records as partial closes the editor and warns that required fields are still missing instead of
+reporting a failed save.
+Credential commands expose asynchronous completion. Desktop regression tests exercise late status
+responses, selected-account saves, blank secret editors and loss of editable rows after refused discovery.
+Conflicting credential commands are disabled during persistence or verification. Refused saves restore
+command availability and retain the current editor values for an explicit retry. Saves submit only the
+fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret
+keeps the other retained fields.
+
+The add-provider wizard saves and tests credentials through the same authenticated service, writing the
+provider-wide vault record, and reads provider-wide status for its badges and blank-save check, so
+credentials held only on the tenant's own connections never make a provider-wide save look complete. It no longer reads or writes Windows user environment variables, its editors
+start blank, and a test reports success only when the service verifies the credentials. Saved but
+unverified credentials are shown as a warning. Every provider and credential endpoint requires tenant
+scope, so a company-less desktop account sees an explicit refusal naming that requirement. While a test
+or save awaits the service, provider selection and the other command are ignored, and backfill inputs
+are captured before the first await. The wizard and credential management build their editors from the
+vault field schema the service reports with each status row, not from the local provider catalog, whose
+names differ (Tiingo's local field is `Token`, the vault accepts `ApiKey`). A provider the service reports
+without a schema, such as NYSE, shows no editors and cannot be saved from the wizard. A provider whose
+schema has no required fields, such as Interactive Brokers, tests as ready without a verification call. A
+blank save for a provider with required fields succeeds only when the service reports credentials already
+configured. Opening the credential-management editor before the selected connection's schema arrives (or
+after Test All superseded that read) starts a fresh status read and rebuilds the open editor when it
+completes. Credential management also lists owned connections for managed providers the local catalog omits,
+and matches a connection's status to the single row the service reports for it, so a retained alias still
+resolves. The settings shell counts unavailable credential status
+separately from missing credentials, so a refused or failed status read is shown as unknown readiness.
+After a confirmed wizard save, only unchanged submitted secret editors are cleared. Test then Save
+therefore reuses the persisted credentials and rereads provider-wide verification without replacing
+them. Edits during persistence or verification remain in the editor and require another test; refused
+saves retain editor values for retry. External rotation or removal is reflected by the final status read.
+Provider badges and selections join canonical IDs, including retained aliases. Credential management
+retains a selected connection's field schema when a status read finishes during or after verification,
+without replacing the newer verification result with an older status label.
+The setup-wizard state service and the Backfill page still write environment variables and remain
+separate cutover work.
+
+Credential status in the settings shell, settings vault, credential management page and add-provider
+wizard is loaded asynchronously from the shared authenticated API service. Failed reads stay
+unavailable; environment credentials do not establish configured status. View-model refreshes reject
+older responses after a newer load starts. Other settings/setup surfaces and scoped default-runtime
+adoption remain separate cutover work.
 
 Fund Ledger carries its explicitly selected book/account/entity/period context to the shared command-center service. Both the queue and private-capital close headline consume the shared decision; clear local lane inputs cannot establish close readiness. The browser and WPF use the same contributor manifest and blocking rules.
 
@@ -62,6 +112,26 @@ scope fails before any provider rows are read.
 - `Shell/` and `Services/` - navigation, route, launch, and desktop service seams.
 
 ## Important workflows
+
+The desktop's independent host registers the shared tenant-enforcement setting through
+`AddDesktopTenantScopeServices`. An omitted setting selects strict enforcement, and the identity
+registry receives that same posture. Direct tenant-scoped reads resolve authority from the live
+authenticated desktop session; missing company scope or sign-out cannot borrow background-worker
+authority. The local fund-account and entity-setup services have no retained tenant attribution:
+strict enforcement refuses their reads and writes with a migration-required message while keeping
+the existing JSON files and the server-backed shell available. All account query and mutation
+aliases share this gate. A configured company cannot silently become the owner of old snapshots.
+The explicit deployment-boundary setting retains isolated single-company migration/demo access;
+the existing graph guard still refuses multiple configured companies in that posture.
+
+After authentication and the cheap composition preflight, `DesktopTenantStartup` prepares the
+registered ledger, fund-account, and fund-structure databases, including their existing legacy
+imports, then awaits retained-data tenant inspection. Only a successful result activates navigation,
+creates the strategy workspace, constructs `MainWindow`, and shows the shell. Preparation and
+inspection share a five-minute deadline; inspection keeps its own 60-second limit. Refusal,
+unavailable inspection, failed preparation, or shutdown cancellation prevents activation. Subsequent
+host startup reuses the cached result without repeating inspection. Unrelated workers still start
+after shell activation.
 
 **Startup refusals are fatal.** `App.StartHostServicesAsync` deliberately tolerates a hosted service
 that fails to start -- a database-backed projection or worker that cannot reach its store leaves the
@@ -111,7 +181,9 @@ belongs behind the window. Its *static* half is marked, as the separate
 so the descriptor scan answers immediately, and postponing it too left a prohibited production graph
 interactive until hosted-service startup shut it down. Register a new guard against the interface as well as `IHostedService`
 -- mapping one singleton to both -- and the preflight picks it up without this shell being edited;
-if the guard cannot answer cheaply, leave it an ordinary hosted service instead.
+if the guard cannot answer cheaply, do not add it to this synchronous composition preflight.
+The retained-data tenant check instead uses the separately awaited `DesktopTenantStartup` gate
+described above, because serving retained workspaces requires its successful completion.
 
 Application startup now shows `StartupWindow` before the main shell. After authentication, the main shell defaults to `HomeWorkspace`, a source-backed WPF launch checkpoint that groups provider health, data freshness, reconciliation, approvals, accounting/reporting readiness, and recent activity before operators enter deeper task workspaces. The startup view model validates
 credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the
@@ -793,6 +865,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-WPF -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |

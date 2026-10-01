@@ -6,7 +6,7 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-10
+last_reviewed: 2026-09-30
 ---
 
 # src/Meridian.Ledger
@@ -27,6 +27,8 @@ This layer should model ledger behavior and accounting evidence without owning U
 
 ## Key folders and files
 
+- `CurrencyCodeCatalog` preserves the Ledger API while delegating to Core's shared catalog, so
+  statement intake and accounting use the same recognized codes and current-payment restrictions.
 - `Meridian.Ledger.csproj` - ledger project boundary.
 - Ledger models, accounting services, and reconciliation support files.
 

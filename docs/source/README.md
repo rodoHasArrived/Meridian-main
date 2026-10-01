@@ -13,11 +13,38 @@ roadmap traceability, TODOs, diagrams, and validation commands.
 - `data/source-todos.yml` lists registry-backed implementation follow-ups.
 - `data/diagram-index.yml` links diagrams to modules and roadmap items.
 - `data/source-readme-coverage.yml` tracks README coverage.
+- [data/adapter-readiness.yml](data/adapter-readiness.yml) owns the implementation readiness inventory
+  for every direct `src/Meridian.Infrastructure/Adapters/` family, including canonical IDs and aliases,
+  capability claims, dependencies, risks, degradation behavior, registration, evidence, owner, and next action.
+
+The adapter registry's `registration` list identifies runtime registration paths. Use
+`registration: []` for an explicitly excluded family with no runtime registration, retaining its
+exclusion source and targeted tests in `evidence`. Catalogued runtime providers require a non-empty
+registration list.
 
 ## Generated outputs
 
 `build/scripts/docs/render-source-docs.py` writes deterministic views under
 `docs/source/generated/` and updates only marked generated blocks in source READMEs.
+
+The [adapter readiness matrix](generated/adapter-readiness-matrix.md) is generated from
+`data/adapter-readiness.yml`. Regenerate and validate it from the repository root:
+
+```sh
+python build/scripts/docs/render-adapter-readiness.py
+python build/scripts/docs/render-source-docs.py --summary
+python build/scripts/docs/validate-adapter-readiness.py --summary
+```
+
+Run the source-docs renderer after the adapter renderer because
+`docs/source/generated/MANIFEST.json` hashes every source registry, including
+`data/adapter-readiness.yml`. A registry edit must refresh both the matrix and that shared manifest.
+
+The validator checks the registry against `ProviderCapabilityDescriptorCatalog`, known adapter
+types, direct adapter folders, readiness states, and targeted test references. Edit registry inputs
+and regenerate the matrix; do not hand-edit its output. This inventory describes source readiness
+and does not confer live-provider certification or replace the
+[operator validation gates](../reference/provider-validation-matrix.md).
 
 ## AI workflow
 

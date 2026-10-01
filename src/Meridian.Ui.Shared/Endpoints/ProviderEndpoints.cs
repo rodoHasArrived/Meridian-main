@@ -22,6 +22,36 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class ProviderEndpoints
 {
+    /// <summary>
+    /// Route previews embedded in provider diagnostics use only the authenticated tenant's retained
+    /// connections. Without tenant scope no connection is disclosed: the preview is returned empty and
+    /// not routable, matching the dedicated route-preview endpoint's refusal of unscoped callers.
+    /// </summary>
+    internal static async Task<RoutePreviewResponse> PreviewRouteForRequestAsync(
+        ProviderRouteExplainabilityService explainabilityService,
+        HttpContext context,
+        RoutePreviewRequest request,
+        CancellationToken ct)
+    {
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        if (tenant.HasTenantScope)
+            return await explainabilityService.PreviewForTenantAsync(request, tenant.TenantId!, ct).ConfigureAwait(false);
+        const string reason = "Route preview requires an authenticated tenant scope.";
+        return new RoutePreviewResponse(
+            Capability: request.Capability,
+            IsRoutable: false,
+            SelectedConnectionId: null,
+            SelectedProviderFamilyId: null,
+            SafetyMode: string.Empty,
+            RequiresManualApproval: false,
+            ReasonCodes: [reason],
+            SkippedCandidates: [],
+            FallbackConnectionIds: [],
+            PolicyGate: reason,
+            Candidates: [],
+            RankedAlternatives: []);
+    }
+
     private static DataSourceConfig RedactSecrets(DataSourceConfig source)
     {
         return source with
@@ -274,7 +304,25 @@ public static class ProviderEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await setupService.ConfigureAsync(req, context.RequestAborted, actor).ConfigureAwait(false);
+            ProviderSetupResult result;
+            if (context.Request.Query.TryGetValue("connectionId", out var connectionIds))
+            {
+                var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (connectionIds.Count != 1 || string.IsNullOrWhiteSpace(connectionIds[0]) || !tenant.HasTenantScope)
+                    return EndpointHelpers.Forbidden();
+                try
+                {
+                    result = await setupService.ConfigureForConnectionAsync(req, connectionIds[0]!, tenant.TenantId!, actor, context.RequestAborted).ConfigureAwait(false);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+            }
+            else
+            {
+                result = await setupService.ConfigureAsync(req, context.RequestAborted, actor).ConfigureAwait(false);
+            }
             return result.Success
                 ? Results.Json(result, jsonOptions)
                 : Results.BadRequest(result);
@@ -287,11 +335,13 @@ public static class ProviderEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Provider comparison view
-        group.MapGet(UiApiRoutes.ProviderComparison, async ([FromServices] ConfigStore store, [FromServices] ProviderRouteExplainabilityService explainabilityService, CancellationToken ct) =>
+        group.MapGet(UiApiRoutes.ProviderComparison, async (HttpContext context, [FromServices] ConfigStore store, [FromServices] ProviderRouteExplainabilityService explainabilityService, CancellationToken ct) =>
         {
             var metricsStatus = store.TryLoadProviderMetrics();
             var cfg = store.Load();
-            var selection = await explainabilityService.PreviewAsync(
+            var selection = await PreviewRouteForRequestAsync(
+                explainabilityService,
+                context,
                 new RoutePreviewRequest(
                     Capability: "RealtimeMarketData",
                     Symbol: cfg.Symbols?.FirstOrDefault()?.Symbol),

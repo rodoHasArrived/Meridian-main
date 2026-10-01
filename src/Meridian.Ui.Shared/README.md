@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Ui.Shared
@@ -15,6 +15,40 @@ Reporting delivery readiness captures heartbeat, failure count, and the initial-
 together after resolving deployment dependencies. The scheduling gate uses that same observation,
 so a successful first delivery cycle cannot leave a stale peer blocker. Bootstrap requires valid
 worker options; failed, stopped, or stale workers and unrelated deployment blockers remain refused.
+
+Scoped credential lifecycle requests require exactly one retained connection ID match. Duplicate IDs
+are refused before status, mutation or verification can select an account; discovery also omits them.
+Providers without an available live verifier return NotVerified/Blocked even when credential fields
+are complete. Presence checks no longer create verified timestamps or successful-verification records.
+
+Provider-routing connection discovery, bindings and trust summaries filter by retained ownership
+using the authenticated workstation tenant. Binding failover IDs are limited to the same visible
+connection set. Each service applies ownership against its captured configuration before returning
+bindings or evaluating trust; foreign connections do not trigger health queries. Request headers and
+query parameters cannot select another tenant. Route preview uses the same authenticated tenant
+before candidate selection and failover expansion. Default setup ownership and remaining whole-configuration
+snapshot callers still require integration.
+
+The workstation Data payload (`/api/workstation/data` and `/api/workstation/data-operations`) reads
+routing connections, bindings and trust snapshots through the same tenant-scoped service methods, so
+routing summaries never include another tenant's or an unassigned connection. A request without tenant
+scope receives no routing rows. Duplicate or case-variant connection IDs are excluded from route
+preview candidates, and duplicate certification rows leave a connection uncertified, instead of failing
+the read.
+
+`GET /api/providers/connections` without a connection ID returns provider-level readiness for the
+authenticated tenant: a provider whose provider-wide row is not ready takes the better credential state
+among that tenant's own retained connections (every owned connection is evaluated, and a ready
+provider-wide row is never replaced), so a scoped save is reflected in Settings. Other tenants' and
+unassigned connections never contribute. `?scope=provider` returns provider-wide rows only, for flows
+such as the add-provider wizard that read and write the provider-wide record. Ownership checks compare canonical provider IDs,
+so a connection retained under an alias such as `alpha-vantage` or `qbo` still resolves.
+The workstation Data and data-operations payloads use the same tenant readiness for their provider rows.
+A scoped status read for an owned connection whose provider has no credential catalog entry answers 404,
+as the credential mutation routes do. Provider comparison and failover route previews use only the
+authenticated tenant's connections and return an empty, non-routable preview without tenant scope.
+A tenant-authorized provider-ledger reconciliation routes its capability checks with
+`ICapabilityRouter.RouteForTenantAsync`, so another tenant's connection cannot satisfy them.
 
 Provider readiness resolves configuration, credential and telemetry aliases through the shared
 ProviderSdk family identity map before joining evidence. Accepted names such as `ib` and
@@ -28,12 +62,16 @@ provider-neutral credential setup and connection verification expose them to
 both workstation lanes. Transport and export-control policy stay in Data Integration.
 Connection verification records the provider's expected credential generation once
 with the requesting actor. Concurrent replacements reject stale results and return
-a blocked verification response without changing the replacement's status.
+a blocked verification response without changing the replacement's status. Alpaca applies the same
+generation check to both successful and failed tests, including scoped connections, deletion and
+recreation. A stale test cannot verify or attach an old error to the replacement credentials.
 
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and
 session resolution recheck the account scope after runtime account changes. Unpartitioned
-fund-structure stores continue to refuse multiple companies under either posture.
+fund-structure stores refuse multiple companies in migration compatibility mode. Under strict
+enforcement, shared migration wrappers refuse every unpartitioned local read and mutation with an
+explicit retained-data migration message, while leaving server-backed capabilities available.
 
 The provider setup compatibility store passes a complete legacy sidecar snapshot to the
 Data Integration vault's atomic importer. It validates all entries before publication,
@@ -99,6 +137,10 @@ posting outside Operations invalidates prior review. Journal creation times newe
 require rebuilding support; the journal fingerprint also detects changes that retain an older
 timestamp. Missing report or scoped-journal authority blocks publication. Refreshing report posture
 retains the new revision and requires renewed affected approvals.
+The guard also requires a live browser or desktop tenant/company session when a workstation
+identity accessor is registered. Supplied close subject IDs and inherited worker authority cannot
+replace a missing session. Internal callers without a workstation accessor must declare retained
+worker tenant authority, and any supplied tenant must match it before evidence is read.
 
 The tenant-guarded Financial Operations command-center endpoint now exposes the server-owned close projection to the browser. Its dependency graph includes ledger-book and close-plan authorities. Fund-wide workspace queries cannot attest period close readiness because they lack the complete declared close scope. Focused proof: `WorkstationEndpointsTests.CloseReadiness`.
 
@@ -106,7 +148,23 @@ The ledger open-lot maintenance routes expose survey, exception queue, retained 
 
 Journal automation exposes a read-only valuation freshness preview and retains dated mark evidence through journal review. The same policy decisions feed browser and desktop position read models; absent observation history stays review required. Close subject ownership is resolved from authoritative book, account, and entity records through `CloseReadinessSubjectSource`.
 
+## Credential migration recovery
+
+The provider-module compatibility adapter requires atomic legacy-import support from the credential vault. It removes the plaintext sidecar only after the complete import and audit succeed; retries preserve credentials already retained in the vault.
 ## Credential audit identity
+
+Canonical credential save, verify and delete routes accept `connectionId` as a query parameter.
+Provider configure accepts the query for an existing owned connection as well; it uses the server
+tenant and actor, refuses environment reassignment, and preserves the retained routing configuration.
+The connection-list GET accepts the same query and returns only that connection's status, using
+retained account/environment metadata and scoped credentials. Provider-wide metrics never supply
+health or fallback evidence for that scoped result, including after its credentials are deleted.
+The shared lifecycle resolves its retained tenant, provider, external account and environment against
+the server session before accessing scoped credentials. Missing, ambiguous, unowned or mismatched
+connections are refused. Scoped Alpaca verification requires the returned account to match retained
+ownership. Other scoped providers remain unverified until a connection-bound live verifier exists;
+provider-wide accounting verifiers are not invoked for scoped requests. Omitting the query retains
+the legacy path during the unfinished workstation/default-runtime cutover.
 
 Canonical and compatibility credential routes require an authenticated actor in addition to tenant
 scope and credential-management permission. Saves replace caller-supplied `RequestedBy` with that
@@ -2370,6 +2428,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI-SHARED -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |

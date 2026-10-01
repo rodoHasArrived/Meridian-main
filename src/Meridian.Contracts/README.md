@@ -6,10 +6,15 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.Contracts
+
+Provider connection API and configuration DTOs retain optional `TenantId` and `CredentialEnvironment`
+alongside connection and external-account identity. These additive fields preserve server-owned
+credential scope across both workstation lanes. They are not accepted as tenant authority in the
+connection creation request; absent fields remain unassigned legacy ownership.
 
 External GL import summaries optionally retain `TrialBalanceBasis`: the provider's
 income-statement year start, income account codes and retained-earnings identity.
@@ -54,6 +59,16 @@ and the governed ledger boundary rejects mismatches.
 `OpenLotBackfillDtos` adds retained acquisition-source packets, independent review, a durable exception queue, and versioned application receipts. Apply accepts a retained source identity rather than replacement acquisition facts. `MarkFreshnessDtos` carries one server decision per position, including observation date, age, policy version, and blocking reason; absent assessments remain review required. Close plan transports retain workflow, account, and evidence-version stamps for declared-scope validation.
 
 ## Purpose
+
+`TenantScopeEnforcementOptions.ConfigurationKey` names the supported `TenantScopeEnforcement`
+setting; host composition defaults to strict and honors its environment override. Compatibility
+mode is an explicit migration posture. Missing request/session authority cannot be replaced by
+client-supplied tenant IDs or an ambient worker scope.
+The application-setting parser accepts only the documented canonical values; the environment
+parser retains its legacy aliases separately. `TenantReadPredicate` uses the same resolved-tenant
+definition for rejection and filtering: `all` is unresolved. Strict mode refuses it, while explicit
+deployment-boundary compatibility leaves an unresolved caller unfiltered so migration does not
+hide records already attributed to real tenants.
 
 `Coordination/IExecutionLease.cs` defines execution-scoped ownership. A unique run owner can
 execute a side effect only while the coordination store excludes lease transfer. Managers or
@@ -1457,6 +1472,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-CONTRACTS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W3-CONT-001` | Research to paper continuity |

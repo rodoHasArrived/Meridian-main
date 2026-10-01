@@ -877,7 +877,7 @@ def extract_shared_context(text: str) -> str | None:
 
 
 def check_shared_project_context(root: Path) -> list[Finding]:
-    """Report host copies of the shared project context whose shared section drifts from the canonical copy."""
+    """Report missing host copies or shared sections that drift from the canonical copy."""
     canonical_path = root / SHARED_CONTEXT_CANONICAL
     if not canonical_path.is_file():
         return []
@@ -893,6 +893,20 @@ def check_shared_project_context(root: Path) -> list[Finding]:
     for rel_path in SHARED_CONTEXT_MIRRORS:
         path = root / rel_path
         if not path.is_file():
+            findings.append(
+                Finding(
+                    severity="drift",
+                    surface="agent-skills-compatible-hosts",
+                    kind="shared-project-context",
+                    name=path.name,
+                    path=rel_path,
+                    expected_doc=SHARED_CONTEXT_CANONICAL,
+                    message=(
+                        f"{rel_path} is missing; restore the required mirror with the shared section "
+                        f"from {SHARED_CONTEXT_CANONICAL}."
+                    ),
+                )
+            )
             continue
         mirror = extract_shared_context(path.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n"))
         if mirror == canonical:

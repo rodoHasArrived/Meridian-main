@@ -1,11 +1,494 @@
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services.Services;
+using Meridian.Ui.Services;
+using System.Net;
+using System.Text;
 
 namespace Meridian.Ui.Tests.Services;
 
 public sealed class SettingsConfigurationServiceTests
 {
+    [Fact]
+    public async Task OwnedConnections_KeepDistinctAccountsAndExcludeIncompleteOrAmbiguousOwnership()
+    {
+        const string body = """
+            [
+              {"connectionId":"paper-a","providerFamilyId":"alpaca","tenantId":"tenant-a","externalAccountId":"account-a","credentialEnvironment":"paper"},
+              {"connectionId":"live-b","providerFamilyId":"alpaca","tenantId":"tenant-a","externalAccountId":"account-b","credentialEnvironment":"live"},
+              {"connectionId":"legacy","providerFamilyId":"alpaca","externalAccountId":"account-c","credentialEnvironment":"paper"},
+              {"connectionId":"missing-account","providerFamilyId":"alpaca","tenantId":"tenant-a","credentialEnvironment":"paper"},
+              {"connectionId":"duplicate","providerFamilyId":"alpaca","tenantId":"tenant-a","externalAccountId":"account-d","credentialEnvironment":"paper"},
+              {"connectionId":"DUPLICATE","providerFamilyId":"alpaca","tenantId":"tenant-a","externalAccountId":"account-e","credentialEnvironment":"live"}
+            ]
+            """;
+        using var handler = new StatusHandler(HttpStatusCode.OK, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var rows = await new SettingsConfigurationService(api).GetOwnedCredentialConnectionsAsync();
+        rows.Select(row => row.ConnectionId).Should().Equal("paper-a", "live-b");
+        rows.Select(row => row.ExternalAccountId).Should().Equal("account-a", "account-b");
+        rows.Select(row => row.CredentialEnvironment).Should().Equal("paper", "live");
+        handler.Path.Should().Be(UiApiRoutes.ProviderRoutingConnections);
+    }
+
+    [Theory]
+    [InlineData(403, "[]")]
+    [InlineData(200, "null")]
+    public async Task OwnedConnections_FailedDiscoveryDoesNotReturnEditableRows(int status, string body)
+    {
+        using var handler = new StatusHandler((HttpStatusCode)status, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        Func<Task> action = async () => await new SettingsConfigurationService(api).GetOwnedCredentialConnectionsAsync();
+        await action.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task CredentialStatus_UsesExplicitConnectionSelection()
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, "[{\"providerId\":\"alpaca\",\"credentialState\":1}]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var rows = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync(connectionId: "paper / A");
+        rows.Single(row => row.ProviderId == "alpaca").State.Should().Be(CredentialState.Missing);
+        handler.Path.Should().Be(UiApiRoutes.ProviderConnections);
+        handler.Query.Should().Be("?connectionId=paper%20%2F%20A");
+    }
+
+    [Theory]
+    [InlineData(200, "alpaca", true, 2, true, true)]
+    [InlineData(403, "alpaca", true, 2, true, false)]
+    [InlineData(200, "polygon", true, 2, true, false)]
+    [InlineData(200, "alpaca", false, 2, true, false)]
+    [InlineData(200, "alpaca", true, 1, true, false)]
+    [InlineData(200, "alpaca", true, 2, false, false)]
+    [InlineData(200, "alpaca", true, 0, false, true)]
+    [InlineData(200, "alpaca", false, 0, false, false)]
+    [InlineData(200, "polygon", true, 0, false, false)]
+    public async Task CredentialVerification_RequiresMatchingServerEvidence(int status, string provider, bool success, int state, bool dated, bool expected)
+    {
+        var timestamp = dated ? "\"2026-09-06T12:00:00Z\"" : "null";
+        var body = $"{{\"providerId\":\"{provider}\",\"success\":{success.ToString().ToLowerInvariant()},\"verificationState\":{state},\"lastVerifiedAt\":{timestamp}}}";
+        using var handler = new StatusHandler((HttpStatusCode)status, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var verified = await new SettingsConfigurationService(api).VerifyProviderCredentialsAsync("alpaca", "connection A");
+        verified.Should().Be(expected);
+        handler.Method.Should().Be("POST");
+        handler.Path.Should().Be("/api/providers/alpaca/verify");
+        handler.Query.Should().Be("?connectionId=connection%20A");
+    }
+
+    [Theory]
+    [InlineData(false, 3, "PUT")]
+    [InlineData(true, 1, "DELETE")]
+    public async Task CredentialMutation_UsesAuthenticatedCanonicalRoute(bool remove, int state, string method)
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, $"{{\"providerId\":\"alpaca\",\"credentialState\":{state}}}");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+        if (remove)
+            await service.RemoveProviderCredentialsAsync("alpaca", "account / A");
+        else
+            await service.SaveProviderCredentialsAsync("alpaca", new Dictionary<string, string?> { ["KeyId"] = "test-key", ["SecretKey"] = "test-secret" }, "account / A");
+        handler.Path.Should().Be("/api/providers/alpaca/credentials");
+        handler.Method.Should().Be(method);
+        handler.Query.Should().Be("?connectionId=account%20%2F%20A");
+        if (!remove)
+        {
+            handler.RequestBody.Should().Contain("KeyId").And.Contain("SecretKey");
+            handler.RequestBody.Should().NotContain("ALPACA_KEY_ID");
+        }
+    }
+
+    public static IEnumerable<object?[]> CredentialAliasOperations()
+    {
+        (string RequestId, string ResponseId, string CanonicalId)[] identities =
+        [
+            (" nasdaqdatalink ", "NASDAQ", "nasdaq"),
+            ("nasdaq", "nasdaq-data-link", "nasdaq"),
+            (" qBo ", "quickbooks", "quickbooks"),
+            ("quickbooks", "QBO", "quickbooks"),
+            ("alpha-vantage", "alphavantage", "alphavantage"),
+            ("twelve_data", "twelvedata", "twelvedata"),
+            ("IB", "ibkr", "ibkr"),
+            ("ibflex", "ib-flex", "ib-flex"),
+            (" plugin-options ", "PLUGIN-OPTIONS", "plugin-options")
+        ];
+        foreach (var identity in identities)
+            foreach (var connectionId in new string?[] { null, "account / A" })
+                foreach (var operation in new[] { "save", "remove", "verify" })
+                    yield return [identity.RequestId, identity.ResponseId, identity.CanonicalId, connectionId, operation];
+    }
+
+    [Theory]
+    [MemberData(nameof(CredentialAliasOperations))]
+    public async Task CredentialOperations_NormalizeRequestAndAcknowledgementIdentities(
+        string requestedId, string responseId, string canonicalId, string? connectionId, string operation)
+    {
+        var state = operation == "remove" ? 1 : 3;
+        var body = $$"""
+            {"providerId":"{{responseId}}","credentialState":{{state}},"success":true,
+             "verificationState":2,"lastVerifiedAt":"2026-09-28T12:00:00Z"}
+            """;
+        using var handler = new StatusHandler(HttpStatusCode.OK, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+
+        switch (operation)
+        {
+            case "save":
+                await service.SaveProviderCredentialsAsync(requestedId,
+                    new Dictionary<string, string?> { ["ApiKey"] = "alias-test-key" }, connectionId);
+                handler.Method.Should().Be("PUT");
+                break;
+            case "remove":
+                await service.RemoveProviderCredentialsAsync(requestedId, connectionId);
+                handler.Method.Should().Be("DELETE");
+                break;
+            default:
+                (await service.VerifyProviderCredentialsAsync(requestedId, connectionId)).Should().BeTrue();
+                handler.Method.Should().Be("POST");
+                break;
+        }
+
+        handler.Path.Should().Be($"/api/providers/{canonicalId}/{(operation == "verify" ? "verify" : "credentials")}");
+        handler.Query.Should().Be(connectionId is null ? string.Empty : "?connectionId=account%20%2F%20A");
+    }
+
+    [Theory]
+    [InlineData("qbo", "plaid", null)]
+    [InlineData("qbo", "plaid", "owned")]
+    [InlineData("ibflex", "ibkr", null)]
+    [InlineData("ibflex", "ibkr", "owned")]
+    [InlineData("plugin-options", "plugin", null)]
+    [InlineData("plugin-options", "plugin", "owned")]
+    [InlineData("qbo", "", "owned")]
+    public async Task CredentialOperations_RejectDifferentOrMissingProviderIdentity(
+        string requestedId, string responseId, string? connectionId)
+    {
+        foreach (var operation in new[] { "save", "remove", "verify" })
+        {
+            var state = operation == "remove" ? 1 : 3;
+            var body = $$"""
+                {"providerId":"{{responseId}}","credentialState":{{state}},"success":true,
+                 "verificationState":2,"lastVerifiedAt":"2026-09-28T12:00:00Z"}
+                """;
+            using var handler = new StatusHandler(HttpStatusCode.OK, body);
+            using var api = new ApiClientService(new StatusClientFactory(handler));
+            var service = new SettingsConfigurationService(api);
+            if (operation == "verify")
+                (await service.VerifyProviderCredentialsAsync(requestedId, connectionId)).Should().BeFalse();
+            else
+            {
+                Func<Task> mutation = () => operation == "remove"
+                    ? service.RemoveProviderCredentialsAsync(requestedId, connectionId)
+                    : service.SaveProviderCredentialsAsync(requestedId,
+                        new Dictionary<string, string?> { ["ApiKey"] = "private-alias-test-value" }, connectionId);
+                var error = await mutation.Should().ThrowAsync<InvalidOperationException>();
+                error.Which.Message.Should().Contain("not confirmed").And.NotContain("private-alias-test-value");
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("yahoo", null)]
+    [InlineData("yahoo-finance", "owned")]
+    [InlineData("ibkr", "owned")]
+    public async Task CredentialRemoval_AcceptsNotRequiredAsTheConfirmedTerminalState(string providerId, string? connectionId)
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK,
+            $"{{\"providerId\":\"{providerId}\",\"credentialState\":0,\"credentialSource\":4}}");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+
+        Func<Task> remove = () => service.RemoveProviderCredentialsAsync(providerId, connectionId);
+
+        await remove.Should().NotThrowAsync("a provider that needs no credentials has nothing left to remove");
+        handler.Method.Should().Be("DELETE");
+    }
+
+    [Theory]
+    [InlineData("alpaca", "alpaca", null)]
+    [InlineData(" ALPACA-API ", "alpaca", "owned")]
+    [InlineData("yahoo", "yahoo", null)]
+    [InlineData("yahoo-finance", "yahoo", "owned")]
+    public async Task CredentialRemoval_RejectsDefaultOrUnconfirmedNotRequiredAcknowledgements(
+        string requestedId, string responseId, string? connectionId)
+    {
+        // NotRequired is enum zero: an omitted state must not turn a malformed response into success.
+        foreach (var fields in new[]
+        {
+            string.Empty,
+            ",\"credentialState\":0",
+            ",\"credentialSource\":0",
+            ",\"credentialState\":0,\"credentialSource\":0",
+            ",\"credentialState\":0,\"credentialSource\":1",
+            ",\"credentialState\":0,\"credentialSource\":2",
+            ",\"credentialState\":0,\"credentialSource\":3"
+        })
+        {
+            using var handler = new StatusHandler(HttpStatusCode.OK, $"{{\"providerId\":\"{responseId}\"{fields}}}");
+            using var api = new ApiClientService(new StatusClientFactory(handler));
+            var service = new SettingsConfigurationService(api);
+
+            Func<Task> remove = () => service.RemoveProviderCredentialsAsync(requestedId, connectionId);
+
+            var error = await remove.Should().ThrowAsync<InvalidOperationException>();
+            error.Which.Message.Should().Be("Credential removal was not confirmed by the authenticated service.");
+        }
+    }
+
+    [Theory]
+    [InlineData(false, 403, "{}")]
+    [InlineData(true, 403, "{}")]
+    [InlineData(false, 200, "null")]
+    [InlineData(true, 200, "null")]
+    [InlineData(false, 200, "{\"providerId\":\"polygon\",\"credentialState\":3}")]
+    [InlineData(true, 200, "{\"providerId\":\"polygon\",\"credentialState\":1}")]
+    [InlineData(false, 200, "{\"providerId\":\"alpaca\",\"credentialState\":5}")]
+    [InlineData(false, 200, "{\"providerId\":\"alpaca\",\"credentialState\":0}")]
+    [InlineData(true, 200, "{\"providerId\":\"alpaca\",\"credentialState\":3}")]
+    public async Task CredentialMutation_RequiresAcknowledgedMatchingResult(bool remove, int status, string body)
+    {
+        using var handler = new StatusHandler((HttpStatusCode)status, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+        Func<Task> action = () => remove ? service.RemoveProviderCredentialsAsync("alpaca") :
+            service.SaveProviderCredentialsAsync("alpaca", new Dictionary<string, string?> { ["SecretKey"] = "private-test-value" });
+        var error = await action.Should().ThrowAsync<InvalidOperationException>();
+        error.Which.Message.Should().NotContain("private-test-value").And.Contain("not confirmed");
+    }
+
+    [Theory]
+    [InlineData(3, ProviderCredentialStateDto.Configured)]
+    [InlineData(4, ProviderCredentialStateDto.Verified)]
+    [InlineData(2, ProviderCredentialStateDto.Partial)]
+    public async Task CredentialSave_ReturnsThePersistedStateIncludingAnIncompletePartialRecord(int state, ProviderCredentialStateDto expected)
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, $"{{\"providerId\":\"alpaca\",\"credentialState\":{state}}}");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+
+        var persisted = await service.SaveProviderCredentialsAsync("alpaca", new Dictionary<string, string?> { ["KeyId"] = "only-the-key" });
+
+        persisted.Should().Be(expected, "a partial record was durably saved and must not be reported as a failed save");
+    }
+
+    [Theory]
+    [InlineData(false, 401)]
+    [InlineData(false, 403)]
+    [InlineData(true, 403)]
+    public async Task CredentialMutation_RefusedSessionExplainsTenantRequirement(bool remove, int status)
+    {
+        using var handler = new StatusHandler((HttpStatusCode)status, "{}");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+        Func<Task> action = () => remove ? service.RemoveProviderCredentialsAsync("alpaca") :
+            service.SaveProviderCredentialsAsync("alpaca", new Dictionary<string, string?> { ["SecretKey"] = "private-test-value" });
+
+        var error = await action.Should().ThrowAsync<CredentialServiceRefusedException>();
+        error.Which.Message.Should().Contain("not confirmed").And.Contain("tenant").And.NotContain("private-test-value");
+    }
+
+    [Fact]
+    public async Task ServerCredentialStatus_CarriesTheVaultFieldSchemaOnlyWhenReported()
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK,
+            "[{\"providerId\":\"tiingo\",\"credentialState\":1,\"credentialFields\":[{\"name\":\"ApiKey\",\"label\":\"API key\",\"required\":true,\"inputKind\":1}]}," +
+            "{\"providerId\":\"alpaca\",\"credentialState\":1}]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync();
+
+        var tiingo = statuses.Single(s => s.ProviderId == "tiingo");
+        tiingo.HasServiceFieldSchema.Should().BeTrue();
+        tiingo.CredentialFields!.Should().ContainSingle().Which.Name.Should().Be("ApiKey");
+        statuses.Single(s => s.ProviderId == "alpaca").HasServiceFieldSchema.Should().BeFalse();
+        statuses.Where(s => s.ProviderId is not ("tiingo" or "alpaca")).Should().OnlyContain(s => !s.HasServiceFieldSchema,
+            "providers the service did not report have no vault schema");
+    }
+
+    [Fact]
+    public async Task ProviderWideStatus_UsesTheProviderScopeQueryAndCannotCombineWithAConnection()
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, "[]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+
+        await service.GetProviderCredentialStatusesAsync(providerWideOnly: true);
+
+        handler.Path.Should().Be(UiApiRoutes.ProviderConnections);
+        handler.Query.Should().Be("?scope=provider");
+        var combined = () => service.GetProviderCredentialStatusesAsync(connectionId: "owned", providerWideOnly: true);
+        await combined.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task ServerCredentialStatus_IncludesManagedProvidersAbsentFromTheLocalCatalog()
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK,
+            "[{\"providerId\":\"quickbooks\",\"displayName\":\"QuickBooks Online\",\"credentialState\":1,\"credentialFields\":[]}]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+
+        var statuses = await service.GetProviderCredentialStatusesAsync();
+
+        service.GetProviderCatalog().Should().NotContain(provider => provider.Id == "quickbooks");
+        var quickBooks = statuses.Should().ContainSingle(status => status.ProviderId == "quickbooks").Subject;
+        quickBooks.DisplayName.Should().Be("QuickBooks Online");
+        quickBooks.State.Should().Be(CredentialState.Missing);
+    }
+
+    [Theory]
+    [InlineData("nasdaq", "nasdaq", null)]
+    [InlineData(" nasdaqdatalink ", "nasdaq", "owned")]
+    [InlineData("ibkr", "ibkr", null)]
+    [InlineData(" IB ", "ibkr", "owned")]
+    [InlineData(" QBO ", "quickbooks", null)]
+    [InlineData("quickbooks-online", "quickbooks", "owned")]
+    public async Task ServerCredentialStatus_JoinsAliasesOnceAndRetainsServiceSchemaAndVerification(
+        string serverId, string canonicalId, string? connectionId)
+    {
+        var body = $$"""
+            [{"providerId":"{{serverId}}","credentialState":4,"verificationState":2,
+              "lastVerifiedAt":"2026-09-28T12:00:00Z",
+              "credentialFields":[{"name":"ServiceField","label":"Service field","required":true,"inputKind":1}]}]
+            """;
+        using var handler = new StatusHandler(HttpStatusCode.OK, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+
+        var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync(connectionId: connectionId);
+
+        var status = statuses.Should().ContainSingle(row => row.ProviderId == canonicalId).Subject;
+        status.State.Should().Be(CredentialState.Configured);
+        status.CredentialFields.Should().ContainSingle().Which.Name.Should().Be("ServiceField");
+        status.VerificationState.Should().Be(ProviderVerificationStateDto.Verified);
+        status.LastVerifiedAt.Should().Be(new DateTimeOffset(2026, 9, 28, 12, 0, 0, TimeSpan.Zero));
+        statuses.Should().NotContain(row => row.ProviderId == "nasdaqdatalink" || row.ProviderId == "ib" ||
+            row.ProviderId == "qbo" || row.ProviderId == "quickbooks-online");
+        statuses.Should().OnlyHaveUniqueItems(row => row.ProviderId);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("owned")]
+    public async Task ServerCredentialStatus_DuplicateAliasRowsCannotAuthorizeCredentialState(string? connectionId)
+    {
+        const string body = """
+            [
+              {"providerId":"nasdaq","credentialState":4,"verificationState":2,"credentialFields":[]},
+              {"providerId":" NASDAQDATALINK ","credentialState":1,"credentialFields":[]},
+              {"providerId":"quickbooks","credentialState":4,"credentialFields":[]},
+              {"providerId":"qbo","credentialState":4,"credentialFields":[]},
+              {"providerId":" ","credentialState":4,"credentialFields":[]}
+            ]
+            """;
+        using var handler = new StatusHandler(HttpStatusCode.OK, body);
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+
+        var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync(connectionId: connectionId);
+
+        var nasdaq = statuses.Should().ContainSingle(row => row.ProviderId == "nasdaq").Subject;
+        nasdaq.State.Should().Be(CredentialState.Unavailable);
+        nasdaq.HasServiceFieldSchema.Should().BeFalse();
+        nasdaq.VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+        nasdaq.LastVerifiedAt.Should().BeNull();
+        statuses.Should().NotContain(row => row.ProviderId == "quickbooks" || row.ProviderId == "qbo" ||
+            row.ProviderId == "nasdaqdatalink");
+    }
+
+    [Fact]
+    public async Task ServerCredentialStatus_CatalogAliasesProduceOneCanonicalRow()
+    {
+        var entries = new[] { "nasdaqdatalink", "nasdaq" }.Select(id => new Meridian.Contracts.Api.ProviderCatalogEntry
+        {
+            ProviderId = id,
+            DisplayName = "Nasdaq Data Link",
+            ProviderType = ProviderTypeKind.Backfill,
+            CredentialFields = []
+        }).ToArray();
+        try
+        {
+            ProviderCatalog.InitializeFromRegistry(() => entries, id => entries.FirstOrDefault(entry => entry.Id == id));
+            using var handler = new StatusHandler(HttpStatusCode.OK,
+                "[{\"providerId\":\"nasdaq\",\"credentialState\":3,\"credentialFields\":[]}]");
+            using var api = new ApiClientService(new StatusClientFactory(handler));
+
+            var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync();
+
+            var status = statuses.Should().ContainSingle().Subject;
+            status.ProviderId.Should().Be("nasdaq");
+            status.State.Should().Be(CredentialState.Configured);
+            status.HasServiceFieldSchema.Should().BeTrue();
+        }
+        finally
+        {
+            ProviderCatalog.RuntimeCatalogProvider = null;
+            ProviderCatalog.RuntimeCatalogEntryProvider = null;
+        }
+    }
+
+    [Theory]
+    [InlineData(3, CredentialState.Configured)]
+    [InlineData(4, CredentialState.Configured)]
+    [InlineData(2, CredentialState.Partial)]
+    [InlineData(1, CredentialState.Missing)]
+    [InlineData(5, CredentialState.Missing)]
+    public async Task ServerCredentialStatus_UsesReturnedState(int serverState, CredentialState expected)
+    {
+        using var handler = new StatusHandler(HttpStatusCode.OK, $"[{{\"providerId\":\"alpaca\",\"credentialState\":{serverState}}}]");
+        using var api = new ApiClientService(new StatusClientFactory(handler));
+        var service = new SettingsConfigurationService(api);
+        var statuses = await service.GetProviderCredentialStatusesAsync();
+        statuses.Single(s => s.ProviderId == "alpaca").State.Should().Be(expected);
+        handler.Path.Should().Be("/api/providers/connections");
+    }
+
+    [Theory]
+    [InlineData(403, "[]")]
+    [InlineData(200, "[]")]
+    [InlineData(200, "[{\"providerId\":\"alpaca\",\"credentialState\":3},{\"providerId\":\"alpaca\",\"credentialState\":3}]")]
+    public async Task ServerCredentialStatus_UnavailableOrAmbiguousNeverFallsBackToEnvironment(int status, string body)
+    {
+        var oldKey = Environment.GetEnvironmentVariable("ALPACA_KEY_ID");
+        var oldSecret = Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY");
+        try
+        {
+            Environment.SetEnvironmentVariable("ALPACA_KEY_ID", "other-account-key");
+            Environment.SetEnvironmentVariable("ALPACA_SECRET_KEY", "other-account-secret");
+            using var handler = new StatusHandler((HttpStatusCode)status, body);
+            using var api = new ApiClientService(new StatusClientFactory(handler));
+            var statuses = await new SettingsConfigurationService(api).GetProviderCredentialStatusesAsync();
+            var alpaca = statuses.Single(s => s.ProviderId == "alpaca");
+            alpaca.State.Should().Be(CredentialState.Unavailable);
+            alpaca.StatusMessage.Should().Contain("unavailable");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ALPACA_KEY_ID", oldKey);
+            Environment.SetEnvironmentVariable("ALPACA_SECRET_KEY", oldSecret);
+        }
+    }
+
+    private sealed class StatusClientFactory(HttpMessageHandler handler) : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
+    }
+
+    private sealed class StatusHandler(HttpStatusCode status, string body) : HttpMessageHandler
+    {
+        public string? Path { get; private set; }
+        public string? Query { get; private set; }
+        public string? Method { get; private set; }
+        public string? RequestBody { get; private set; }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Path = request.RequestUri!.AbsolutePath;
+            Query = request.RequestUri.Query;
+            Method = request.Method.Method;
+            RequestBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(ct);
+            return new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+        }
+    }
+
     [Fact]
     public void GetProfiles_UsesCanonicalStrategyLabelForRetainedResearchProfile()
     {
