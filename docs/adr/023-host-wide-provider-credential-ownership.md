@@ -118,6 +118,14 @@ whole host use?** Facts in the current code shape the answer:
    example from the only, first or most recent connection.
 
 3. **Where each posture gets its credentials.**
+   - **One posture per configuration.** Hosts sharing a configuration share its output, so they must
+     agree on the posture. The committed host state records the posture, which only the offline
+     `posture DeploymentBoundary|FailClosed` command changes. A host whose
+     `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` differs from the committed posture refuses to start at all,
+     before any provider is built. A `FailClosed` host also refuses to start until committed host
+     state exists, so moving to `FailClosed` always begins with `posture FailClosed`, which creates
+     the identity if needed. A `DeploymentBoundary` host with no committed state is unconstrained,
+     as today.
    - **`DeploymentBoundary`:** the deployment is one company, so an unbound credential-bearing family
      keeps using the provider-wide record, as today. Bindings are optional.
    - **`FailClosed`:**
@@ -213,7 +221,7 @@ whole host use?** Facts in the current code shape the answer:
 
 5. **Only the host operator changes bindings, out of band.** Bindings and the plugin credential-free
    list change only through a host CLI command, `--host-credential-binding
-   list|set|clear|plugin-allow|plugin-revoke|recover|repair-vault|reset|upgrade`, run on the host by whoever operates the
+   list|set|clear|plugin-allow|plugin-revoke|posture|recover|repair-vault|reset|upgrade`, run on the host by whoever operates the
    process. The same pattern is used by `--fund-tenant-backfill`. No
    tenant account, role or permission can reach it, so tenant user administration cannot grant it. The
    host credential tenant is a startup setting, `MERIDIAN_HOST_CREDENTIAL_TENANT`:
@@ -292,12 +300,18 @@ whole host use?** Facts in the current code shape the answer:
      backup, it first writes a durable quarantine marker beside the vault. While the marker exists:
      - every bound mark, checkpoint and verification status is unknown;
      - every vault mutation is refused, scoped or unscoped, including verification updates;
-     - every bound family refuses to start and every bound resolution is refused.
+     - every vault read of a credential is refused, scoped or unscoped, so no family, bound or
+       unbound and under either posture, starts on a vault credential, and every resolution is
+       refused. Only a provider-wide credential supplied directly by the environment or the
+       configuration, outside the vault, is unaffected under `DeploymentBoundary`.
 
      Only an explicit repair (`--host-credential-binding repair-vault`, run offline) clears the
      marker. It reconciles every configuration identity recorded in the vault, and sets every
      scoped record's verification to unverified, because the backup's `Verified` values may be
-     stale. A bound family starts again only after its credential is verified anew.
+     stale. A bound family starts again only after its credential is verified anew. It also flags
+     every provider-wide record as restored, because the backup may hold a secret that was since
+     rotated. A flagged record is not used until the operator saves it again or verifies it, which
+     clears the flag.
      - Because repair touches every identity, not only its own, it is stop-the-world for the
        `DataRoot`. A backup can predate an identity, so the vault alone does not list every identity
        in use. Repair therefore enumerates identities from both the vault and the identity lock files
@@ -310,9 +324,11 @@ whole host use?** Facts in the current code shape the answer:
      on its own, for example when `RecordScopedVerificationAsync` records a verification failure. So
      the vault carries a revision that every write increments, and the store's audit log
      (`provider-credentials.audit.jsonl`, appended after each vault write today) records the
-     revision each write produced. When the store loads the vault, it compares the vault's revision
-     with the last revision in the audit log:
-     - equal is consistent;
+     revision each write produced and a digest of the vault contents it wrote. When the store loads
+     the vault, it compares the vault's revision and digest with the last audit entry:
+     - equal revision and equal digest is consistent;
+     - equal revision with a different digest means a divergent copy of the vault was restored, and
+       is a mismatch like the ones below;
      - the vault exactly one ahead may be a writer still between its vault write and its audit
        append, because writers hold `provider-credentials.vault.lock` across both and today's
        readers take no lock;
@@ -341,8 +357,12 @@ whole host use?** Facts in the current code shape the answer:
        configuration and environment construction paths never open the vault. No in-band check can
        stop an executable that predates the check.
      - So the gate ships first. The implementation's first release adds a process-level startup
-       gate, run before any provider is built. It does not trust the marker alone, because a marker
-       can be lost or restored on its own. It reads the format version from the marker and from the
+       gate, run before any provider is built. It resolves `DataRoot` strictly, from the
+       configuration and any environment override, and never through the lenient
+       `ConfigStore.LoadConfig`. If a configuration file exists but cannot be strictly parsed, the
+       gate cannot know where the vault is, so it refuses to start. It also checks the default root
+       and the last known vault location recorded in the host state, when they differ. It does not
+       trust the marker alone, because a marker can be lost or restored on its own. It reads the format version from the marker and from the
        unencrypted envelope headers of the vault and its backup, takes the highest, and refuses to
        start at all if that is newer than it supports. It also refuses when the marker is missing
        but either envelope is in the new format, and when the marker and the envelopes disagree.
@@ -355,8 +375,10 @@ whole host use?** Facts in the current code shape the answer:
        `upgrade` and pins the minimum version, the same way it forbids running two releases from
        different `DataRoot` copies.
    - The host state records the identifier of the vault it was bound against and its last known
-     location. `recover` accepts `--vault-path` to find a vault at a custom location when the
-     configuration cannot be loaded, and checks the vault's stored identifier before using it.
+     location. `list` and `recover` accept `--vault-path` to find a vault at a custom location when
+     the configuration cannot be loaded. `recover` checks the vault's stored identifier before using
+     it whenever surviving state records one. With both sidecars lost, `list --vault-path` shows that
+     vault's checkpoints, and `recover --vault-path --identity` adopts one of them.
    - The host state records the identifier of the vault it was bound against. At startup, a bound
      family whose configured `DataRoot` resolves to a vault with a different identifier refuses to
      start. While any committed host credential state exists, the configuration writer refuses to
@@ -694,8 +716,14 @@ prove host authority.
 ### Negative
 
 - A new host file, CLI command and startup setting to support.
-- A deployment moving to `FailClosed` must bind every bindable credential-bearing family (with verified
-  credentials) and list any credential-free plugins first, or those families will not start.
+- A deployment moving to `FailClosed` must run `posture FailClosed`, bind every bindable
+  credential-bearing family (with verified credentials) and list any credential-free plugins first,
+  or those families will not start. Every host of the configuration must then start with the same
+  posture.
+- From the gate release on, a host whose configuration file exists but cannot be strictly parsed
+  refuses to start, instead of falling back to defaults.
+- After a vault fallback, restored provider-wide records must be saved again or verified before use,
+  under both postures.
 - Plugin families cannot be bound, and families without scoped verification cannot be bound, until
   that support exists.
 - Under `FailClosed`, session-backed families such as `ibkr` do not run, live execution and every
@@ -830,6 +858,18 @@ The implementation PR must add tests that:
   forward;
 - recover with `--vault-path` when the configuration cannot be loaded and the vault is at a custom
   location;
+- lose both sidecars with an unreadable configuration and a custom `DataRoot`, and show
+  `list --vault-path` enumerates the checkpoints and `recover --vault-path --identity` adopts one;
+- start a gate-release host whose configuration file cannot be strictly parsed and whose `DataRoot`
+  is custom, and show it refuses to start rather than checking the default root only;
+- restore a divergent copy of the vault at the same revision, and show the digest mismatch with the
+  last audit entry quarantines it;
+- start one host of a configuration under `DeploymentBoundary` while its committed posture is
+  `FailClosed`, and the reverse, and show each refuses to start before any provider is built; show
+  a `FailClosed` host with no committed state refuses to start until `posture FailClosed`;
+- under `DeploymentBoundary`, fall back to a backup after an unscoped rotation; show no family reads
+  a vault credential during quarantine, and after `repair-vault` the restored provider-wide record is
+  not used until it is saved again or verified;
 - copy a configuration with its sidecars onto the same `DataRoot`, and show the copy cannot remove
   the original's marks while the original runs, becomes untrusted once either side commits, and gets
   a fresh identity from `recover --new-identity`;
