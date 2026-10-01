@@ -199,15 +199,20 @@ whole host use?** Facts in the current code shape the answer:
 
    Providers can also be constructed lazily after startup, for example from `ProviderRegistry`
    factories. So the credential checks run again at every resolution, not only at startup. A
-   resolution is refused unless the record's current generation is `Verified`. A rotation after
-   startup therefore reaches no newly constructed provider until the new generation is verified.
+   resolution is refused unless the record's current generation is `Verified`. A verification failure
+   recorded after startup therefore reaches no newly constructed provider.
 
    Providers already constructed may hold a copy of the credential. `AlpacaHistoricalDataProvider`,
    for example, copies it into fields and HTTP headers, and several hosts may be running on one
    configuration (point 8). So **a bound connection's credential is frozen while it is bound**: there
    is never a change to propagate to providers already running in any host.
-   - The store boundary refuses to save, rotate or delete the credential of a scope named by a
-     binding in this configuration's host credential state.
+   - The store boundary refuses to save, rotate or delete the credential of any bound scope. Several
+     configurations can share one `DataRoot`, and so one vault, so the bound scopes are recorded at
+     the vault itself, not only in each configuration's host state. The binding command adds a scope
+     to a bound-scopes registry beside the vault (`provider-credentials.bound-scopes.json`, written
+     atomically under the vault lock in the same transaction) and removes it on `clear`. The store
+     checks that registry, so a configuration that holds the same connection unbound cannot change
+     a scope that another configuration has bound.
    - The configuration refuses to disable or delete a connection that is bound.
 
    To rotate a bound credential, the operator:
@@ -271,8 +276,10 @@ whole host use?** Facts in the current code shape the answer:
      `list` only reads the files, which are always written atomically or append-only.
    - **One journal writer at a time.** Every write to the journal, whether from a mutating command or
      from recovery, is made while holding a second lock exclusively, the journal-writer lock
-     (`<config>.host-provider-credentials.journal.lock`). A starting host takes it before joining in
-     shared mode, then runs recovery and validation, then releases it:
+     (`<config>.host-provider-credentials.journal.lock`). A starting host first takes the host lock in
+     shared mode, then the journal-writer lock, then runs recovery and validation, then releases the
+     journal-writer lock. This is the same order every command uses, so a starting host and a command
+     can never wait on each other:
      - hosts that start at the same moment therefore recover one at a time;
      - a host that joins hosts already running finds nothing pending, since every pending entry was
        resolved before they started and no command can run while they do;
@@ -297,7 +304,8 @@ whole host use?** Facts in the current code shape the answer:
         change (binding or plugin classification), the subject (provider family or plugin ID), the
         previous and new values, and canonical digests of the complete host credential state before
         and after the change;
-     4. write the state file atomically;
+     4. write the state file atomically, and for `set` and `clear` update the vault's bound-scopes
+        registry under the vault lock already held;
      5. append the outcome, then release the locks in reverse order.
    - **Outcome from the file, not the exception.** `AtomicFileWriter` can throw after the rename has
      already published the file, for example from the directory sync. So on any write exception the
@@ -316,10 +324,17 @@ whole host use?** Facts in the current code shape the answer:
        refused, until the operator runs `recover`.
 
      A retry therefore never looks like a second change.
-   - **`recover`.** `recover` records the observed state as an `indeterminate` outcome with the actor,
-     for a lost state file, an unresolvable pending entry, or a mismatched last committed digest. If
-     the journal itself is invalid, it first moves it aside unchanged, so the evidence is kept, and
-     starts a new journal whose first entry records the observed state.
+   - **`recover`.** `recover` handles a lost state file, an unresolvable pending entry, or a mismatched
+     last committed digest. It establishes a new authoritative baseline:
+     1. it adopts the observed state file if it parses. Otherwise, and when the file is missing, it
+        adopts an empty state with no bindings and no plugin entries, and writes that file atomically;
+     2. it rewrites the vault's bound-scopes registry to match the adopted state;
+     3. it appends an `indeterminate` outcome for any unresolved entry, followed by a `baseline` entry
+        with the actor and the adopted state's digest. That digest becomes the last committed digest.
+
+     If the journal itself is invalid, `recover` first moves it aside unchanged, so the evidence is
+     kept, and starts the new journal with the `baseline` entry. The next startup then validates
+     against that baseline, and the adopted bindings still go through point 6.
 
    The actor is the required `--actor` argument together with the OS identity that ran the command.
 
@@ -359,7 +374,7 @@ implemented yet.
 | Host execution composition | `src/Meridian/UiServer.cs` (`usesPaperGateway`), `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Live execution refused under `FailClosed`; paper execution stays |
 | Polygon corporate-action ingestion | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs`, `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Process-wide hosted fetcher that reads Polygon keys directly; moves to the per-family selection |
 | Retained ownership | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` | `GetCredentialScopeForTenantAsync` resolves the bound scope |
-| Credential verification and vault lock | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Per-generation verification state; `provider-credentials.vault.lock`, held through binding validation and commit |
+| Credential verification and vault lock | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Per-generation verification state; `provider-credentials.vault.lock`, held through binding validation and commit; checks the bound-scopes registry before any scoped write |
 | Lenient configuration load | `src/Meridian.Application/Http/ConfigStore.cs` | `LoadConfig` substitutes defaults; the binding file must not use it |
 | Account permission overrides | `src/Meridian.Identity/Infrastructure/UserAccountStore.cs` | Why no user permission can carry host authority |
 | Out-of-band host command precedent | `src/Meridian.Application/Commands/FundStructureTenantBackfillCommand.cs` | Pattern for `--host-credential-binding` |
@@ -537,17 +552,20 @@ The implementation PR must add tests that:
 - refuse credential-bearing families when the state file exists but its journal is missing, until
   `recover`;
 - audit plugin credential-free changes with the actor, plugin ID, and previous and new classification;
-- serialize a `set` with a concurrent save or rotation, so the rotation waits for the vault lock and
-  the committed binding names the generation that was verified; then show that the rotation, once
-  applied, makes the next resolution and the next startup refuse the unverified generation;
+- serialize a `set` with a concurrent save or rotation of the same scope: if `set` takes the vault lock
+  first, the rotation waiting behind it is then refused because the scope is bound; if the rotation
+  takes it first, `set` sees the new, unverified generation and refuses to commit;
 - serialize a `set` with a concurrent configuration write that deletes, disables or changes the
   connection, so the committed binding matches the connection that was validated;
 - keep two configurations that share a `DataRoot` from recovering each other's transactions;
 - refuse credential-bearing families when the state file is deleted after a committed change, and
   when the journal is malformed, truncated or unreadable, until `recover`;
 - refuse to save, rotate or delete a bound connection's credential, and to disable or delete a bound
-  connection, from any running host; then rotate it through `clear`, rotation and verification, and
-  `set`;
+  connection, from any running host and from another configuration that shares the `DataRoot`; then
+  rotate it through `clear`, rotation and verification, and `set`;
+- start a host and a mutating command at the same time without either waiting on the other;
+- start a host successfully after `recover`, for a lost state file, a malformed state file, a mismatched
+  digest and an invalid journal;
 - start two hosts simultaneously after a crash left a `pending` entry, and show that exactly one
   outcome is recorded and both hosts start;
 - treat a pending event as changed outside the command (refusing families and mutation until
@@ -558,8 +576,8 @@ The implementation PR must add tests that:
 - run a binding change, or a startup or pre-command recovery, alongside concurrent configuration
   writes and scoped credential saves, rotations or verifications, with no lost write and no deadlock;
 - record `committed` when the write throws after the rename has published the new file;
-- refuse a lazily constructed provider after a post-startup rotation until the new generation is
-  verified;
+- refuse a lazily constructed provider when a verification failure was recorded for its bound record
+  after startup;
 - show only the source kind in tenant-visible read models, never the connection ID or tenant.
 
 ## Implementation Plan
