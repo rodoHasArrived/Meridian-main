@@ -257,8 +257,8 @@ whole host use?** Facts in the current code shape the answer:
    under both postures, until `recover` runs:
    - every credential-bearing host-wide family refuses to start;
    - every plugin credential-free entry is ignored, so no listed plugin starts under `FailClosed`;
-   - the configuration writer refuses the guarded changes (a bound connection's disable or delete,
-     and any `DataRoot` change), treating every connection as possibly bound;
+   - the configuration writer refuses the guarded changes (any change to a bound connection's
+     record, and any `DataRoot` change), treating every connection as possibly bound;
    - the committed posture is unknown, so the host applies the full `FailClosed` composition
      whatever the host's effective posture says: no live execution, no brokerage gateway,
      sync adapter or brokerage connection route (point 1), and no provider-wide credential. The same
@@ -381,7 +381,10 @@ whole host use?** Facts in the current code shape the answer:
      log aside unchanged, as evidence, and starts a new one with a `baseline` entry. That entry
      records the repaired vault's revision and digest, the actor, and the archived log's path, its
      whole-file digest and, when its tail is readable, its last entry's hash, and it starts a new
-     hash chain. The archive therefore cannot later be truncated, rewritten or deleted unnoticed.
+     hash chain. As in `upgrade`, the repaired vault is written first and carries those exact
+     baseline bytes in its anchor field, so the seal exists before the log moves, and a retry
+     after a crash appends the vault's copy. The archive therefore cannot later be truncated,
+     rewritten or deleted unnoticed.
      - Because repair touches every identity, not only its own, it is stop-the-world for the
        `DataRoot`. It first takes the `DataRoot` lock exclusively (point 8), which no running host
        of any configuration, with or without an identity, can be holding. A backup can also predate
@@ -480,16 +483,27 @@ whole host use?** Facts in the current code shape the answer:
        except `upgrade`, which resumes from the first step whose file is not yet in the target
        version. Only the resuming `upgrade` accepts the mixed versions its own journal entry
        explains; any other mix of marker and envelope versions still makes the gate refuse.
-     - If the upgrade journal itself is missing, malformed or truncated, `upgrade --recover` moves it
-       aside unchanged and works from the files alone. It accepts only the shapes a forward upgrade
+     - If the upgrade journal itself is missing, malformed or truncated, `upgrade --recover` works
+       from the files alone. It accepts only the shapes a forward upgrade
        produces, in order: backup converted, carrying the planned baseline; then audit baseline
        written, matching the backup's copy; then primary converted;
        then marker written. It requires every converted file to decrypt and parse at the version its
        header states, and the baseline to match the primary's conversion, recomputed if the primary is
-       not yet converted. It then starts a new upgrade journal at that point, whose first entry seals
-       the archived journal's exact bytes with their whole-file digest and, when its tail is
-       readable, its last entry's hash, and completes the remaining steps. Any other shape, such as a converted
-       primary with an unconverted backup, is refused and left to the restore runbook.
+       not yet converted. Any other shape, such as a converted primary with an unconverted backup, is
+       refused and left to the restore runbook. For an accepted shape, it seals the damaged journal
+       before moving it:
+       1. it durably writes a replacement journal at a fixed path beside it, whose first entry
+          seals the damaged journal's exact bytes in place, with their whole-file digest and, when
+          its tail is readable, its last entry's hash. While the audit baseline is not yet fixed by
+          a converted backup, the planned baseline carries the same seal, so the converted backup
+          authenticates it too;
+       2. only then does it move the damaged journal aside unchanged and rename the replacement
+          into place;
+       3. it completes the remaining steps from that journal.
+
+       A rerun that finds a replacement journal checks the damaged journal, wherever it now is,
+       against that seal and finishes the move. A mismatch is refused and left to the restore
+       runbook; the archive is never sealed again.
      - An older binary cannot write protocol state. Today's store already refuses a vault whose
        format version is newer than it supports (`FileProviderCredentialStore.LoadVaultFromFileAsync`
        throws `NotSupportedException`, which is not treated as corruption, so it never falls back to
@@ -502,8 +516,13 @@ whole host use?** Facts in the current code shape the answer:
        gate, run before any provider is built. It resolves `DataRoot` strictly, from the
        configuration and any environment override, and never through the lenient
        `ConfigStore.LoadConfig`. If a configuration file exists but cannot be strictly parsed, the
-       gate cannot know where the vault is, so it refuses to start. It also checks the last known
-       vault location recorded in this configuration's host state, when it differs. It checks the
+       gate cannot know where the vault is, so it refuses to start. It also checks the vault location
+       in the configuration's identity hint (point 4) and the last known location recorded in this
+       configuration's host state, whichever differ from the resolved root. The gate release
+       already defines and parses the hint, although only later releases write it, so losing both
+       sidecars and pointing `DataRoot` at an empty root cannot hide a newer vault from it. A
+       present hint that is malformed, or that names a vault the gate can't read, makes it refuse
+       to start. It checks the
        default root only when strict resolution actually selects it, so another configuration's
        vault at the default root never blocks this host. It does not
        trust the marker alone, because a marker can be lost or restored on its own. It reads the format version from the marker and from the
@@ -571,11 +590,22 @@ whole host use?** Facts in the current code shape the answer:
      while the other copy reset, is untrusted (point 4), whatever its generation. Its host adds no
      marks and its bound families refuse to start. Only `recover --new-identity` or
      `recover --fresh` brings that configuration back, and neither revives the old bindings. `recover
-     --identity` refuses a tombstoned identity. An identity counts as tombstoned when either the
-     vault tombstone or the retirement file exists. `repair-vault` recreates any vault tombstone
-     that a backup fallback lost from its retirement file, so a stale backup never brings a retired
-     identity back.
-   - The configuration refuses to disable or delete a connection that is bound.
+     --identity` refuses a tombstoned identity. An identity counts as tombstoned when the vault
+     tombstone exists, or when its retirement file matches a tombstone write that the audit log
+     authenticates. The tombstone write's `intent` entry records the hash of the tombstone record,
+     which the retirement file copies, so the audit log authenticates the file even after a backup
+     fallback loses the tombstone. That includes an archived log sealed by a repair baseline.
+     - A retirement file that matches neither is ignored and reported, never trusted, so a stale
+       or forged file cannot end an active identity.
+     - `repair-vault` recreates a vault tombstone that a backup fallback lost only from a
+       retirement file the audit log authenticates, so a stale backup never brings a retired
+       identity back.
+     - When no audit evidence survives, the operator retires the identity again with `retire
+       --identity`.
+   - The configuration writer refuses every change to a bound connection's record, not only its
+     disable or delete: its tenant, provider family, external account, credential environment
+     and enabled state are all frozen while it is bound, because startup validated them and the
+     running provider depends on them. Only `clear` releases the connection.
 
    To rotate a bound credential, the operator:
    1. stops the hosts and runs `clear`;
@@ -779,12 +809,14 @@ whole host use?** Facts in the current code shape the answer:
 
      If the journal itself is invalid, `recover` first records, in this configuration's checkpoint
      under the vault lock, both the journal's seal (whole-file digest and, when readable, last
-     entry's hash) and the hash of the exact `baseline` entry it is about to write, so the baseline
-     is authenticated before it exists. It then moves the journal aside unchanged, so the evidence is kept, and starts the new journal with the
+     entry's hash) and the complete canonical bytes of the `baseline` entry it is about to write,
+     actor and time included, so the baseline is authenticated before it exists and a retry can
+     always write it. It then moves the journal aside unchanged, so the evidence is kept, and starts the new journal with the
      `baseline` entry carrying the same seal. A crash between the move and the baseline therefore
-     leaves the archive authenticated by the checkpoint, and a baseline that does not match the
-     planned hash is an integrity failure rather than something a retry adopts. The same applies to a
-     `baseline` appended to a kept journal: its hash is recorded in the checkpoint first. The same rule holds for every file any
+     leaves the archive authenticated by the checkpoint. A retry after such a crash appends the
+     checkpoint's copy of the baseline, never a newly built one. A baseline that differs from that
+     copy is an integrity failure rather than something a retry adopts. The same applies to a
+     `baseline` appended to a kept journal: its bytes are recorded in the checkpoint first. The same rule holds for every file any
      command moves aside: its seal is published in an already authenticated place before the move. The next startup then validates
      against that baseline, and the adopted bindings still go through point 6.
 
@@ -1090,8 +1122,13 @@ The implementation PR must add tests that:
 - after `upgrade`, delete the format marker, and separately restore it to the gate release's
   value, and show a gate-release host still refuses to start because the vault envelope is newer;
 - `reset` an identity, then fall back to a vault backup taken before the reset; show
-  `repair-vault` recreates the tombstone from the retirement file and a stale copy's `recover
-  --identity` is refused;
+  `repair-vault` recreates the tombstone from the retirement file the audit log authenticates and
+  a stale copy's `recover --identity` is refused;
+- write a retirement file for an active identity with no matching tombstone or audit entry, and
+  show it is ignored and reported, the identity stays active, and `repair-vault` creates no
+  tombstone from it;
+- change a bound connection's tenant, provider family, external account or credential environment
+  through the configuration writer while hosts run, and show each change is refused;
 - restore the vault and its audit log together to before a recorded verification failure, and show
   the restore runbook's required `repair-vault` leaves the bound family unverified;
 - write the state file and then crash before the checkpoint update, and show recovery writes the
@@ -1185,7 +1222,13 @@ The implementation PR must add tests that:
 - change `DataRoot` while a host is starting, and show the host restarts against the new root and
   composes providers only from its single resolved snapshot;
 - crash `recover` after appending a baseline and before the checkpoint finalizes, edit the
-  baseline, and show the planned hash in the checkpoint detects it;
+  baseline, and show the checkpoint's copy detects it; crash it after the checkpoint update and
+  before the append, and show a retry appends the checkpoint's copy and the next startup accepts
+  it;
+- crash `upgrade --recover` after writing the replacement journal and before moving the damaged
+  one, alter the damaged journal, and show the rerun refuses rather than sealing it again;
+- start a gate-release host with both sidecars lost, `DataRoot` pointed at an empty root and the
+  configuration hint naming a newer-format vault, and show it refuses to start;
 - run `recover --vault-path` with an unparseable configuration and show it completes; then run it
   with a parseable configuration naming a different root and show it aborts;
 - break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
