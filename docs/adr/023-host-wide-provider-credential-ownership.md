@@ -387,7 +387,10 @@ whole host use?** Facts in the current code shape the answer:
      from the intent's own payload, so the original action and actor survive. As in the host
      journal, whether recovery wrote it is not recorded in the log, because it cannot be recomputed;
      the host log records it.
-     An unfinished intent whose revision the vault never reached is closed as aborted. A vault one
+     An unfinished intent whose revision the vault never reached is closed as aborted, and closing
+     it is itself an anchor-only vault write: the `aborted` entry carries a new revision and digest,
+     and the vault is republished with that revision and its anchor pointing at the `aborted` entry,
+     with no other change. A trailing aborted attempt therefore cannot be deleted unnoticed either. A vault one
      ahead with no matching intent means the audit log lost an entry, and is a mismatch. Every other
      mismatch is handled exactly like a backup fallback: the store writes the durable quarantine
      marker, and only `repair-vault` clears it. A restore of the vault alone that keeps the
@@ -562,14 +565,19 @@ whole host use?** Facts in the current code shape the answer:
      or an unreadable journal, makes credential-bearing families refuse to start and refuses mutation
      until `recover`. No entry is ever skipped.
    - **Hash-chained.** Every journal entry carries the hash of the previous entry, covering its actor,
-     time, kind, subject and values, starting from the first entry or the latest `baseline`. Startup
+     time, kind, subject and values, starting from the first entry of the current file. A `baseline`
+     that `recover` appends to a journal it keeps carries the previous entry's hash like any other
+     entry, so it never restarts the chain; the chain restarts only in a new file, after the old
+     one is moved aside and sealed. Startup
      and every command validate the whole chain, so deleting or editing an earlier transaction is
      detected even when the last entry still matches the state file and the checkpoint. A broken
      chain makes the state untrusted. `recover` moves the journal aside unchanged and starts a new
      chain at its `baseline` entry.
    - **Anchored tail.** A chain leaves its newest entry unauthenticated, so the vault checkpoint
-     also records the hash of the journal entry that produced the current state: its `pending`
-     entry, or the `baseline` entry. Those are the entries carrying actor, time, kind, subject and
+     also records the hash of the newest `pending` or `baseline` entry, whether that transaction
+     committed or aborted. An aborted command, and recovery closing an entry as aborted, update the
+     anchor under the vault lock just as a commit does, so a trailing aborted attempt cannot be
+     deleted unnoticed. Those are the entries carrying actor, time, kind, subject and
      values. Entries after it are outcomes, which carry only the pending entry's hash and the
      outcome, both recomputed from the state file during recovery. Whether an outcome was written by
      recovery cannot be recomputed, so the journal does not record it; the host log does. Editing the
@@ -1046,6 +1054,12 @@ The implementation PR must add tests that:
   reads as a committed reset;
 - delete the upgrade journal after the marker is written but before `committed`, and show every
   host and command except `upgrade --recover` refuses;
+- abort a host-journal command, delete its trailing `pending` and outcome entries, and show the
+  checkpoint's anchor detects it;
+- close a vault-audit intent as aborted, delete the trailing entries, and show the vault's anchor
+  detects it;
+- run `recover` on a kept journal with an unresolvable entry, then delete or rewrite an entry before
+  the new `baseline`, and show the unbroken chain detects it;
 - run `recover --vault-path` with an unparseable configuration and show it completes; then run it
   with a parseable configuration naming a different root and show it aborts;
 - break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
