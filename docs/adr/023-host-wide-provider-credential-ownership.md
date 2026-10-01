@@ -128,8 +128,11 @@ whole host use?** Facts in the current code shape the answer:
        neither read nor written. This is enforced at the credential store boundary itself:
        - the unscoped reads (`ReadForProviderAsync`, `ReadOAuthTokensAsync`) return nothing for
          those families;
-       - the unscoped writes and deletes (`SaveAsync`, `SaveRotatedCredentialsAsync`,
-         `SaveOAuthTokenAsync`, `DeleteAsync`) are refused;
+       - every operation that writes or deletes an unscoped record is refused, including the
+         migration imports. That covers `SaveAsync`, `SaveRotatedCredentialsAsync`,
+         `SaveOAuthTokenAsync`, `DeleteAsync`, `ImportLegacyAsync` and `ImportOAuthTokensAsync`. A
+         reflection test fails if any unscoped write method of the store interfaces lacks the
+         guard, so a new one cannot slip past it;
        - the module credential store's reads, writes and deletes are refused for those families;
        - the provider-wide `IProviderCredentialResolver` yields nothing for them.
 
@@ -141,6 +144,11 @@ whole host use?** Facts in the current code shape the answer:
        verification or test can transmit a provider-wide credential. Scoped operations, credentials
        of non-market-data integrations (such as accounting and financial connectivity), and module
        settings that carry no credentials are unaffected;
+     - the configuration writer boundary (`ConfigStore`) refuses to persist a value into any
+       provider credential configuration key, using the same key list as the architecture scan in
+       point 7. Routes that write credentials into `AppConfig`, such as `ConfigEndpoints.ConfigAlpaca`
+       and `ProviderEndpoints.ConfigDataSources`, therefore cannot install provider-wide
+       credentials either;
      - existing provider-wide records therefore remain stored but unreadable, until the deployment
        returns to `DeploymentBoundary`;
      - a plugin family starts only if the host operator lists it as credential-free (point 5). Plugins
@@ -206,13 +214,22 @@ whole host use?** Facts in the current code shape the answer:
    for example, copies it into fields and HTTP headers, and several hosts may be running on one
    configuration (point 8). So **a bound connection's credential is frozen while it is bound**: there
    is never a change to propagate to providers already running in any host.
-   - The store boundary refuses to save, rotate or delete the credential of any bound scope. Several
-     configurations can share one `DataRoot`, and so one vault, so the bound scopes are recorded at
-     the vault itself, not only in each configuration's host state. The binding command adds a scope
-     to a bound-scopes registry beside the vault (`provider-credentials.bound-scopes.json`, written
-     atomically under the vault lock in the same transaction) and removes it on `clear`. The store
-     checks that registry, so a configuration that holds the same connection unbound cannot change
-     a scope that another configuration has bound.
+   - The store boundary refuses to save, rotate or delete the credential of any bound scope.
+   - Several configurations can share one `DataRoot`, and so one vault. So bound scopes are claimed at
+     the vault itself, in one claim file per configuration, in a directory beside the vault
+     (`provider-credentials.bound-scopes/<configuration identity>.json`). Each configuration writes
+     only its own claim file. The store refuses a mutation of any scope that any claim file names,
+     so a configuration that holds the same connection unbound cannot change a scope that another
+     configuration has bound.
+   - The claim file is derived from the committed host state and is written in the safe order: a
+     `set` writes the new claim before publishing the state file, and a `clear` removes the claim
+     only after publishing it. A crash between the two can therefore only leave an extra claim,
+     which freezes more, never less. Recovery, startup and every command then rewrite the claim
+     file from the committed state under the vault lock (point 8).
+   - The host state records the vault location it was bound against. At startup, a bound family
+     whose configured `DataRoot` resolves to a different vault refuses to start. While any binding
+     exists, the configuration writer refuses to change `DataRoot` (for example through
+     `ConfigEndpoints.UpdateStorage`); moving the vault requires `clear` first.
    - The configuration refuses to disable or delete a connection that is bound.
 
    To rotate a bound credential, the operator:
@@ -304,8 +321,8 @@ whole host use?** Facts in the current code shape the answer:
         change (binding or plugin classification), the subject (provider family or plugin ID), the
         previous and new values, and canonical digests of the complete host credential state before
         and after the change;
-     4. write the state file atomically, and for `set` and `clear` update the vault's bound-scopes
-        registry under the vault lock already held;
+     4. for `set`, write the new claim file; write the state file atomically; for `clear`, then
+        remove the claim. All of this runs under the vault lock already held;
      5. append the outcome, then release the locks in reverse order.
    - **Outcome from the file, not the exception.** `AtomicFileWriter` can throw after the rename has
      already published the file, for example from the directory sync. So on any write exception the
@@ -323,12 +340,16 @@ whole host use?** Facts in the current code shape the answer:
        Credential-bearing families then refuse to start, as for a malformed file, and mutation is
        refused, until the operator runs `recover`.
 
-     A retry therefore never looks like a second change.
+     After the entries are closed, recovery takes the vault lock and rewrites this configuration's
+     claim file from the committed state, so a crash between the claim and the state file is
+     repaired before any provider starts or any outcome is relied on. A retry therefore never looks
+     like a second change.
    - **`recover`.** `recover` handles a lost state file, an unresolvable pending entry, or a mismatched
      last committed digest. It establishes a new authoritative baseline:
      1. it adopts the observed state file if it parses. Otherwise, and when the file is missing, it
         adopts an empty state with no bindings and no plugin entries, and writes that file atomically;
-     2. it rewrites the vault's bound-scopes registry to match the adopted state;
+     2. it rewrites only this configuration's claim file to match the adopted state, leaving every
+        other configuration's claims untouched;
      3. it appends an `indeterminate` outcome for any unresolved entry, followed by a `baseline` entry
         with the actor and the adopted state's digest. That digest becomes the last committed digest.
 
@@ -374,7 +395,8 @@ implemented yet.
 | Host execution composition | `src/Meridian/UiServer.cs` (`usesPaperGateway`), `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Live execution refused under `FailClosed`; paper execution stays |
 | Polygon corporate-action ingestion | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs`, `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Process-wide hosted fetcher that reads Polygon keys directly; moves to the per-family selection |
 | Retained ownership | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` | `GetCredentialScopeForTenantAsync` resolves the bound scope |
-| Credential verification and vault lock | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Per-generation verification state; `provider-credentials.vault.lock`, held through binding validation and commit; checks the bound-scopes registry before any scoped write |
+| Credential verification and vault lock | `src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs` | Per-generation verification state; `provider-credentials.vault.lock`, held through binding validation and commit; checks every configuration's claim file before any scoped write; `ImportLegacyAsync` and `ImportOAuthTokensAsync` guarded |
+| Configuration credential and storage writers | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs` (`ConfigAlpaca`, `UpdateStorage`), `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs` (`ConfigDataSources`) | Refused at the `ConfigStore` boundary for credential keys under `FailClosed`, and for `DataRoot` while bindings exist |
 | Lenient configuration load | `src/Meridian.Application/Http/ConfigStore.cs` | `LoadConfig` substitutes defaults; the binding file must not use it |
 | Account permission overrides | `src/Meridian.Identity/Infrastructure/UserAccountStore.cs` | Why no user permission can carry host authority |
 | Out-of-band host command precedent | `src/Meridian.Application/Commands/FundStructureTenantBackfillCommand.cs` | Pattern for `--host-credential-binding` |
@@ -551,6 +573,17 @@ The implementation PR must add tests that:
 - keep two configurations in the same directory on separate host files, journals and locks;
 - refuse credential-bearing families when the state file exists but its journal is missing, until
   `recover`;
+- leave another configuration's claims intact when one configuration runs `recover` on a shared
+  `DataRoot`;
+- crash between the claim file and the state file in both directions (`set` and `clear`), and show
+  that the scope is never left unfrozen while a committed binding names it, and that startup
+  repairs the claim;
+- refuse a `DataRoot` change while bindings exist, and refuse bound families when the configured
+  vault differs from the one recorded at binding time;
+- refuse writes of provider credential configuration keys through `ConfigStore`, including
+  `ConfigEndpoints.ConfigAlpaca` and `ProviderEndpoints.ConfigDataSources`, and refuse
+  `ImportLegacyAsync` and `ImportOAuthTokensAsync` for market-data families; the reflection test
+  covers every unscoped write method;
 - audit plugin credential-free changes with the actor, plugin ID, and previous and new classification;
 - serialize a `set` with a concurrent save or rotation of the same scope: if `set` takes the vault lock
   first, the rotation waiting behind it is then refused because the scope is bound; if the rotation
