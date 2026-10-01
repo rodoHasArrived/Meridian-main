@@ -1150,6 +1150,7 @@ Meridian-main
 │       │   │   ├── test_run_docs_automation_pilot_optin.py
 │       │   │   ├── test_scan_todos.py
 │       │   │   └── test_validate_docs_structure.py
+│       │   ├── adapter_readiness.py
 │       │   ├── add-todos.py
 │       │   ├── ai-docs-maintenance.py
 │       │   ├── ai-handoff-host-targets.json
@@ -1188,6 +1189,7 @@ Meridian-main
 │       │   ├── mark-stale-docs.py
 │       │   ├── prompt-route-linter.py
 │       │   ├── README.md
+│       │   ├── render-adapter-readiness.py
 │       │   ├── render-make-help.py
 │       │   ├── render-roadmap-diagrams.py
 │       │   ├── render-roadmap-docs.py
@@ -1203,6 +1205,7 @@ Meridian-main
 │       │   ├── sync-source-readmes.py
 │       │   ├── test-scripts.py
 │       │   ├── update-claude-md.py
+│       │   ├── validate-adapter-readiness.py
 │       │   ├── validate-agent-definitions.py
 │       │   ├── validate-api-docs.py
 │       │   ├── validate-design-document-adaptation.py
@@ -2236,12 +2239,14 @@ Meridian-main
 │   │   └── threat-model-current-state.md
 │   ├── source
 │   │   ├── data
+│   │   │   ├── adapter-readiness.yml
 │   │   │   ├── diagram-index.yml
 │   │   │   ├── source-modules.yml
 │   │   │   ├── source-readme-coverage.yml
 │   │   │   ├── source-readme-ignore.yml
 │   │   │   └── source-todos.yml
 │   │   ├── generated
+│   │   │   ├── adapter-readiness-matrix.md
 │   │   │   ├── MANIFEST.json
 │   │   │   ├── source-hash-manifest.json
 │   │   │   ├── source-module-index.md
@@ -10869,6 +10874,7 @@ Meridian-main
 │   │   │       └── unordered-mixed-unicode.yaml
 │   │   ├── README.md
 │   │   ├── setup-verification.sh
+│   │   ├── test_adapter_readiness.py
 │   │   ├── test_ai_setup_dotnet_channel.py
 │   │   ├── test_api_contract_coverage_dashboard.py
 │   │   ├── test_archive_code_tombstones.py
@@ -10933,6 +10939,7 @@ Meridian-main
 │   │   ├── test_release_evidence_manifest.py
 │   │   ├── test_release_evidence_workflows.py
 │   │   ├── test_release_promotion.py
+│   │   ├── test_render_adapter_readiness.py
 │   │   ├── test_render_roadmap_diagrams.py
 │   │   ├── test_resolve_generated_merge_conflicts.py
 │   │   ├── test_roadmap_source_docs.py

@@ -28,11 +28,11 @@ Snapshot date: 2026-09-26
 | Priority | critical |
 | Owner lane | Data Confidence and Validation |
 | Evidence posture | complete |
-| Last reviewed | 2026-05-20 |
+| Last reviewed | 2026-09-28 |
 
 ### Current Summary
 
-Provider validation packets and DK1 operator sign-off are the baseline evidence for trusted data operations.
+Provider validation packets and DK1 operator sign-off are the baseline evidence for trusted data operations. The source-owned adapter-readiness registry and generated matrix inventory implementation capabilities, dependencies, risks, registration, and targeted evidence across direct adapter families; source readiness does not confer live-provider certification or replace operator sign-off.
 
 ### Exit Criteria
 
@@ -45,6 +45,7 @@ Provider validation packets and DK1 operator sign-off are the baseline evidence 
 - `SRC-HOST`
 - `SRC-APP`
 - `SRC-CONTRACTS`
+- `SRC-INFRASTRUCTURE`
 
 ## W2-PROMO-001 - Paper promotion evidence and operator acceptance
 | Field | Value |
