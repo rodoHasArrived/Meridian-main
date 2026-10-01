@@ -908,6 +908,7 @@ Meridian-main
 │   │   ├── roadmap-tools-manual.yml
 │   │   ├── robinhood-options-smoke.yml
 │   │   ├── schema-control.yml
+│   │   ├── service-backed-integrations.yml
 │   │   ├── targeted-test.yml
 │   │   ├── web-screenshot-capture.yml
 │   │   ├── windows-desktop-build.yml
@@ -11008,6 +11009,7 @@ Meridian-main
 │   │   ├── test_schema_control_workflow.py
 │   │   ├── test_screenshot_diff_report.py
 │   │   ├── test_screenshot_workflow_plan.py
+│   │   ├── test_service_backed_integrations_workflow.py
 │   │   ├── test_shared_build_retention.py
 │   │   ├── test_shared_checkpoint.py
 │   │   ├── test_summarize_desktop_workflow_bundle.py

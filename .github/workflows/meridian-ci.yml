@@ -282,3 +282,31 @@ jobs:
           fi
 
           echo "All Meridian CI lanes passed."
+
+  service-backed-integrations:
+    name: service-backed-integrations
+    uses: ./.github/workflows/service-backed-integrations.yml
+    with:
+      artifact-name: meridian-ci-integrations
+
+  integration-gate:
+    name: integration-gate
+    runs-on: ubuntu-latest
+    needs: service-backed-integrations
+    if: always()
+    timeout-minutes: 5
+    steps:
+      - name: Evaluate service-backed integration evidence
+        env:
+          INTEGRATION_RESULT: ${{ needs.service-backed-integrations.result }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### Meridian CI integration gate"
+            echo ""
+            echo "Service-backed integrations: ${INTEGRATION_RESULT}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$INTEGRATION_RESULT" != "success" ]]; then
+            echo "Service-backed integrations did not pass. Inspect the integration job and evidence."
+            exit 1
+          fi
