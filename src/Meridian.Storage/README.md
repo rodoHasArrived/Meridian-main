@@ -11,6 +11,15 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Storage
 
+`DurableLedgerPostingTarget.VerifyRetainedEntry` checks an existing journal against the exact
+retained recovery write without posting or appending. It shares the posting target's command
+normalization and strict content comparison, and requires the original journal identity. Manual
+workbench recovery uses this read-only boundary after an interrupted committed posting.
+
+Posting actor metadata comes from the typed command's `Actor`, with the version marker
+`postingActorAttribution=command-v1`. Reserved actor tags on an actorless command are rejected;
+unversioned legacy metadata does not establish actor attribution. Normal posting and retained-entry
+verification use the same normalization rules.
 Parquet conversion derives session dates from paths beneath the configured storage root and from
 archive filenames. Dates in the root or its parent directories do not suppress completed-day
 conversion. Undated archives retain the existing file-modification-time fallback.

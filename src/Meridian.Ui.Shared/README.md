@@ -122,6 +122,54 @@ checklist reflects finished work rather than page visits.
 
 ## Shared close and lot convergence
 
+Manual-journal commands retain a durable intent before changing drafts or appending a journal.
+The receipt includes the original actor, before/after drafts, exact posting write, deterministic
+audit identifiers, and the command result. A retry repairs the audit before returning success.
+Reversal and rebook retain both draft outcomes and both audit events in one command receipt.
+If posting already committed, recovery verifies that exact immutable entry and completes only
+the draft/audit handoff. If nothing committed, recovery re-enters current validation, approval,
+version, and period gates before a new write. Conflicting state remains blocked.
+
+Browser and WPF composition use `FileManualJournalMutationRecoveryStore` beside
+`manual-journal-drafts.json`. Its exclusive operating-system file lease covers the entire
+read/validate/write/audit cycle across service instances and processes. Every writer sharing
+that draft snapshot must use the same `.mutations` directory; direct snapshot edits and
+uncoordinated legacy writers are outside this protocol. Completed receipts are durable replay
+evidence and must be backed up with the draft and audit stores. Old lifecycle rows without a
+receipt are not retroactively assigned a posting actor. Focused crash/restart evidence lives in
+`AccountingConfigurationServiceTests.ManualAuditRecovery.cs`.
+
+Unscoped desktop commands resolve one retained fund/journal/tenant/company identity while holding
+that lease. Current drafts and pending before/after images, including generated correction drafts,
+participate in resolution. Ambiguous identities are rejected before recovery; explicit tenant or
+company fields never match another scope. The resolved identity is used for both recovery and the
+subsequent operation, while the original command key remains compatible with retained retries.
+Equivalent scoped/unscoped retries probe a bounded set of original-format keys, including archived
+keys, so evidence attachments replay their retained result instead of failing on the advanced version.
+Automated intake repairs pending receipts before reporting an existing deterministic draft as a duplicate.
+Governed close/reopen retries use the original ledger period version retained in their intent,
+so reopening the period cannot change the recovery identity of an interrupted reversal draft.
+
+Completed receipts use `ManualJournalMutationRecoveryOptions`: the active store defaults to 30 days,
+1,000 receipts, and 64 MiB. Oldest receipts move to `archive/<key-prefix>/<key-prefix>/<key>.json.gz`
+when any limit requires it. Archives preserve the full original envelope and integrity digest;
+exact retries find them directly by command key and perform the same audit/posting checks. The
+archive grows indefinitely and must be included in storage planning. Pending receipts, including
+interrupted completion handoffs, are never pruned to satisfy a limit.
+
+Upgrade all browser hosts, WPF installations, and other shared draft writers together before the
+first archival run. Do not resume an older writer after archival: it cannot read archived receipts.
+Back up and restore the draft snapshot, accounting audit store, and the entire `.mutations` root
+(`pending`, `completed`, and `archive`) as one consistent data set while writers are stopped or the
+shared lease is held. Archive publication verifies an atomic compressed copy before deleting the
+active copy. Identical duplicate copies converge after interruption; conflicting or corrupt copies
+block recovery and must be preserved for investigation. Fix storage/access failures and retry;
+never clear pending receipts or delete an archive to make a command succeed. Retention maintenance
+runs under the shared lease at session opening and after completion. The session verifies active
+receipt bytes once and incrementally accounts for its own completions and archives while the lease
+excludes other writers, avoiding a second full-store read/parse on each autosave. Tests in
+`ManualJournalMutationRecoveryStoreTests` and `AccountingConfigurationServiceTests.ManualRecoveryArchive.cs`
+cover retention limits, interruption, archived audit repair, and restoration of a copied data root.
 The Operations Continuity compatibility close command delegates to the Accounting Close period-lock
 executor. Both HTTP entry points enforce Controller authority, exact tenant/company/book ownership,
 closing-entry review, reconciliation sealing, and retained reporting handoff. Operations mutation
