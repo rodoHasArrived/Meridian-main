@@ -309,9 +309,17 @@ whole host use?** Facts in the current code shape the answer:
      start. While any committed host credential state exists, the configuration writer refuses to
      change `DataRoot` (for example through `ConfigEndpoints.UpdateStorage`). That covers bindings
      and plugin entries alike, since the checkpoint lives in the vault. Moving the vault therefore
-     requires `reset`: an offline command that, once no bindings or plugin entries remain, removes
-     the state file, journal, identity lock and checkpoint for this configuration, journalling the
-     reset first. After that the configuration is a fresh installation and `DataRoot` can change.
+     requires `reset`, an offline command that runs once no bindings or plugin entries remain:
+     1. it journals the reset;
+     2. it moves the closed journal aside unchanged, as the permanent audit record;
+     3. it replaces this configuration's checkpoint in the vault with a reset tombstone, recording
+        the actor, the time and the archived journal's path;
+     4. it removes the state file.
+
+     It never removes the identity lock file, because unlinking a held lock would let another
+     process lock a new file at the same path. Identity lock files stay permanently. A tombstoned
+     identity does not block a fresh installation, so the configuration is then fresh and
+     `DataRoot` can change.
    - The configuration refuses to disable or delete a connection that is bound.
 
    To rotate a bound credential, the operator:
@@ -448,7 +456,9 @@ whole host use?** Facts in the current code shape the answer:
      2. it reconciles only this configuration's bound marks with the adopted state, under the vault
         lock, leaving every other configuration's marks untouched. It takes this configuration's
         identity from the surviving state file or journal. If both are lost, the operator passes it
-        with `--identity`, reading it from the marks that `list` shows in the vault. Until then,
+        with `--identity`, choosing from the checkpoints that `list` enumerates. For every
+        identity, `list` shows its checkpoint generation, its path hints, and any bound marks,
+        including identities that have a checkpoint but no mark. Until then,
         orphaned marks keep freezing their scopes, which fails safe;
      3. it appends an `indeterminate` outcome for any unresolved entry, followed by a `baseline` entry.
         It also sets this configuration's checkpoint to the adopted state's generation and digest.
@@ -481,8 +491,13 @@ whole host use?** Facts in the current code shape the answer:
     1. **No unfrozen bound credential.** While any host, of any configuration or version, may hold a
        bound credential, that credential's record cannot be saved, rotated or deleted.
     2. **No silent rollback.** Any rollback or divergent restore of the state file, the journal or
-       the vault is detected and makes the state untrusted. It is never repaired forward unless
-       the journal proves an interrupted commit.
+       the vault, relative to the others, is detected and makes the state untrusted. It is never
+       repaired forward unless the journal proves an interrupted commit. A coordinated restore of
+       all three to the same older point leaves no internal evidence, so it is an operator action
+       governed by the restore runbook. After any whole-set restore the operator must run
+       `repair-vault`, which resets every verification to unverified (invariant 4), before any
+       bound family can start. A deployment that needs automatic detection can add a monotonic
+       anchor outside the restorable set; that is out of scope here.
     3. **No silent fresh start.** Losing host credential state never yields a fresh installation
        while the vault holds evidence of earlier committed state, unless the operator explicitly
        confirms it.
@@ -693,7 +708,12 @@ The implementation PR must add tests that:
 - after `repair-vault`, refuse a bound family until its credential is verified again;
 - queue a copy's `clear` behind the first host's exclusive identity lock and show the host
   re-validates instead of running on stale validation;
-- run `reset` once no bindings or plugin entries remain, then change `DataRoot`;
+- run `reset` once no bindings or plugin entries remain, then change `DataRoot`; show the archived
+  journal and the vault tombstone remain, and the identity lock file is kept;
+- lose both sidecars after a plugin-only change and show `list` enumerates the surviving checkpoint
+  identity for `recover --identity`;
+- restore the state file, journal and vault together to an older point, and show `repair-vault`
+  is required and leaves every bound family unverified until verified anew;
 - refuse to create host state before `upgrade`, and refuse an older binary against an upgraded vault;
 - recover with `--vault-path` when the configuration cannot be loaded and the vault is at a custom
   location;
