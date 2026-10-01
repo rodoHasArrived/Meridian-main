@@ -193,9 +193,11 @@ whole host use?** Facts in the current code shape the answer:
    endpoint or general configuration writer touches either file, so data-source edits cannot erase a
    binding. Both are loaded strictly:
    - a missing state file and a missing journal together mean a fresh installation with no bindings
-     only when the vault holds no checkpoint that some configuration has left unclaimed. A path
-     match is not required, because shared configurations are opened through different mount paths.
-     If the vault holds any unclaimed checkpoint, the host refuses credential-bearing families
+     only when the vault holds no checkpoint and no bound mark that some configuration has left
+     unclaimed. A mark counts on its own, because a `set` can publish its mark and state and crash
+     before its first checkpoint. A path match is not required, because shared configurations are
+     opened through different mount paths. If the vault holds any unclaimed checkpoint or mark, the
+     host refuses credential-bearing families
      until the operator either adopts an identity with `recover --identity` or confirms a fresh start
      with `recover --fresh`. A fresh start leaves the abandoned identity's checkpoint and marks in
      place, still freezing their scopes, because only the operator knows which identity was
@@ -350,7 +352,9 @@ whole host use?** Facts in the current code shape the answer:
      the last entry still matches; a broken chain is a mismatch like the ones below. A chain alone
      leaves its newest entry unauthenticated, because nothing follows it. So the newest entries are
      anchored too. The vault records the hash of the `intent` (or `baseline`) entry behind its current
-     revision, which covers that entry's action, actor and time. A `done` entry carries nothing of its
+     revision, which covers that entry's action, actor and time. That anchor field is excluded from
+     the vault digest, which covers every other part of the vault, so the intent can name the
+     digest and the vault can name the intent without either depending on the other. A `done` entry carries nothing of its
      own beyond that intent's hash, the revision and the digest, all of which the store recomputes
      from the vault. Editing the newest entries is therefore detected as well. Each write is
      bracketed in the log, like the host journal: before publishing the vault, the writer durably
@@ -391,7 +395,9 @@ whole host use?** Facts in the current code shape the answer:
        each atomically and each idempotent, and finally appends `committed`.
      - Today's audit entries carry no vault revision or digest. The `baseline` entry starts the
        revision record and the hash chain (below) with the converted primary's revision and digest.
-       Every earlier entry stays in place, unchanged, as legacy history before the baseline. The
+       Every earlier entry stays in place, unchanged, as legacy history before the baseline, and the
+       baseline records the byte length and digest of that exact legacy prefix, so later edits to
+       it, or its truncation, break the chain like any other edit. The
        marker is written only after the baseline is durable, so no host ever loads a converted vault
        without a matching audit entry.
      - While that journal has an unfinished entry, the gate refuses every host and every command
@@ -432,8 +438,10 @@ whole host use?** Facts in the current code shape the answer:
        `upgrade` and pins the minimum version, the same way it forbids running two releases from
        different `DataRoot` copies.
    - The host state records the identifier of the vault it was bound against and its last known
-     location. `list`, `recover` and `repair-vault` accept `--vault-path` to find a vault at a custom
-     location when the configuration cannot be loaded. Each checks the vault's stored identifier
+     location. `list`, `recover`, `repair-vault` and `upgrade` (including `upgrade --recover`)
+     accept `--vault-path` to find a vault at a custom location when the configuration cannot be
+     loaded. The gate honours that override for those commands only, and refuses it when a
+     successfully parsed configuration names a different root. Each checks the vault's stored identifier
      before using it whenever surviving state records one. With both sidecars lost, `list
      --vault-path` shows that vault's checkpoints, `repair-vault --vault-path` clears a quarantine
      on it, and `recover --vault-path --identity` adopts one of them.
@@ -447,7 +455,9 @@ whole host use?** Facts in the current code shape the answer:
      2. it moves the closed journal aside unchanged, as the permanent audit record;
      3. it writes a retirement file beside the identity lock file
         (`provider-credentials.identity-<identifier>.retired`), durably and before anything else
-        changes, recording the actor, the time and the archived journal's path. Like the lock file,
+        changes, recording the actor, the time, the archived journal's path, and the hash of its
+        last entry and the digest of the whole file, so the archive cannot later be truncated or
+        rewritten undetected. Like the lock file,
         it is never removed, and it is outside the vault, so no vault backup can predate it away;
      4. it replaces this configuration's checkpoint in the vault with a reset tombstone carrying the
         same record;
@@ -968,6 +978,14 @@ The implementation PR must add tests that:
   and show the checkpoint's anchor or the recomputed outcome detects it;
 - edit the action, actor or time of the newest vault-audit `intent` entry, and separately its `done`
   entry, and show the vault's anchor or the recomputed fields detect it;
+- write a vault and its intent, and show the digest excludes the anchor field so validation passes;
+- after `upgrade`, edit or truncate the legacy audit prefix, and show the baseline detects it;
+- after `reset`, truncate or rewrite the archived journal, and show the retirement file's hash and
+  digest detect it;
+- crash a `set` after its mark and state are published and before its first checkpoint, lose both
+  sidecars, and show the orphan mark blocks a fresh installation until `recover`;
+- interrupt `upgrade` with an unreadable configuration and a custom `DataRoot`, and show
+  `upgrade --recover --vault-path` completes;
 - run `recover --vault-path` with an unparseable configuration and show it completes; then run it
   with a parseable configuration naming a different root and show it aborts;
 - break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
