@@ -184,13 +184,14 @@ whole host use?** Facts in the current code shape the answer:
    - `<config>.host-provider-credentials.lock`. No HTTP
    endpoint or general configuration writer touches either file, so data-source edits cannot erase a
    binding. Both are loaded strictly:
-   - a missing state file and a missing journal together mean a fresh installation with no bindings,
-     but only when no vault checkpoint records the path the host opened the configuration through
-     (point 6). Any other combination is a partial loss:
+   - a missing state file and a missing journal together mean a fresh installation with no bindings
+     only when the vault holds no checkpoint that some configuration has left unclaimed. A path
+     match is not required, because shared configurations are opened through different mount paths.
+     If the vault holds any unclaimed checkpoint, the host refuses credential-bearing families
+     until the operator either adopts an identity with `recover --identity` or confirms a fresh start
+     with `recover --fresh`. Any other combination is also a partial loss:
      - a missing state file with a journal that records a committed state;
-     - a state file with a missing journal;
-     - both sidecars missing while a vault checkpoint records this configuration's path. Its marks
-       and checkpoint survive, and `recover --identity` adopts that identity.
+     - a state file with a missing journal.
 
      Either way, credential-bearing families refuse to start until `recover`. Clearing bindings is
      an explicit, journalled `clear`, never a deleted file;
@@ -212,7 +213,7 @@ whole host use?** Facts in the current code shape the answer:
 
 5. **Only the host operator changes bindings, out of band.** Bindings and the plugin credential-free
    list change only through a host CLI command, `--host-credential-binding
-   list|set|clear|plugin-allow|plugin-revoke|recover|repair-vault`, run on the host by whoever operates the
+   list|set|clear|plugin-allow|plugin-revoke|recover|repair-vault|reset|upgrade`, run on the host by whoever operates the
    process. The same pattern is used by `--fund-tenant-backfill`. No
    tenant account, role or permission can reach it, so tenant user administration cannot grant it. The
    host credential tenant is a startup setting, `MERIDIAN_HOST_CREDENTIAL_TENANT`:
@@ -264,15 +265,20 @@ whole host use?** Facts in the current code shape the answer:
      - its generation equals the checkpoint's but its digest differs, meaning a divergent copy was
        restored.
 
-     A state one generation ahead of its checkpoint is a commit whose checkpoint update was
-     interrupted, and the checkpoint is repaired. Rollback detection therefore
-     covers every change, not only those that create a mark.
+     A state one generation ahead of its checkpoint is repaired forward only when the journal's last
+     entry is that generation's `pending` or `committed` entry, which proves the checkpoint write
+     was interrupted. Otherwise the vault itself was rolled back, for example restored from an older
+     copy that still parses, and the state is untrusted. Rollback detection therefore covers every
+     change, and covers the vault as well as the sidecars.
    - **Who removes marks.** Each mark records the generation that added it. Only a mutating command
      or `recover` removes marks, while holding the identity lock (point 8) exclusively.
      - Such a command removes a mark that no committed binding names. When recovery closes a pending
        entry as `aborted (recovered)`, it also removes the mark carrying that entry's generation.
      - The first host to start takes the identity lock exclusively, runs recovery (including any
-       mark cleanup) and validation, then downgrades by releasing it and taking it shared. A host
+       mark cleanup) and validation, then moves to shared mode. If the platform cannot downgrade a
+       lock atomically, the host takes the shared lock and then repeats validation against the
+       checkpoint. If anything changed in the gap, it starts again from recovery, so a command
+       queued in between can never leave it running on stale validation. A host
        that joins hosts already running takes it shared and only adds missing marks. Nothing can
        be left to clean up while hosts run, because no command can run then.
      - If the committed state cannot be read, the existing marks are left as they are.
@@ -284,17 +290,28 @@ whole host use?** Facts in the current code shape the answer:
      - every bound family refuses to start and every bound resolution is refused.
 
      Only an explicit repair (`--host-credential-binding repair-vault`, run offline) clears the
-     marker. It reconciles every configuration identity recorded in the vault.
+     marker. It reconciles every configuration identity recorded in the vault, and sets every
+     scoped record's verification to unverified, because the backup's `Verified` values may be
+     stale. A bound family starts again only after its credential is verified anew.
    - **Vault format.** Bound marks, checkpoints and the vault identifier change the vault format. So
      the vault takes a new envelope version that older binaries reject rather than ignore and
-     rewrite, and the primary and backup are upgraded together. A rolling deployment or downgrade
-     against a shared `DataRoot` therefore cannot silently strip marks.
+     rewrite, and the primary and backup are upgraded together. The upgrade is stop-the-world: an
+     offline `upgrade` command, run with every host on the `DataRoot` stopped, converts the vault
+     and writes a format marker beside it. Hosts and commands of this version refuse to create host
+     state until the marker exists. Older binaries cannot start against an upgraded vault, because
+     they reject its format. Mixed-version hosts therefore never run together under this protocol,
+     and the deployment runbook requires stopping all hosts for the upgrade.
+   - The host state records the identifier of the vault it was bound against and its last known
+     location. `recover` accepts `--vault-path` to find a vault at a custom location when the
+     configuration cannot be loaded, and checks the vault's stored identifier before using it.
    - The host state records the identifier of the vault it was bound against. At startup, a bound
      family whose configured `DataRoot` resolves to a vault with a different identifier refuses to
      start. While any committed host credential state exists, the configuration writer refuses to
      change `DataRoot` (for example through `ConfigEndpoints.UpdateStorage`). That covers bindings
-     and plugin entries alike, since the checkpoint lives in the vault. Moving the vault requires
-     clearing the state first.
+     and plugin entries alike, since the checkpoint lives in the vault. Moving the vault therefore
+     requires `reset`: an offline command that, once no bindings or plugin entries remain, removes
+     the state file, journal, identity lock and checkpoint for this configuration, journalling the
+     reset first. After that the configuration is a fresh installation and `DataRoot` can change.
    - The configuration refuses to disable or delete a connection that is bound.
 
    To rotate a bound credential, the operator:
@@ -456,6 +473,31 @@ whole host use?** Facts in the current code shape the answer:
       `list` output.
     - Secret values appear nowhere.
 
+11. **Integrity invariants are normative; the mechanism above is a reference design.** Points 4, 6
+    and 8 describe one mechanism: files, locks, marks, checkpoints and a journal. The decision is the
+    following invariants, which the implementation must satisfy and prove with the tests below. It
+    may refine the mechanism, and wherever the mechanism and an invariant disagree, the invariant
+    wins.
+    1. **No unfrozen bound credential.** While any host, of any configuration or version, may hold a
+       bound credential, that credential's record cannot be saved, rotated or deleted.
+    2. **No silent rollback.** Any rollback or divergent restore of the state file, the journal or
+       the vault is detected and makes the state untrusted. It is never repaired forward unless
+       the journal proves an interrupted commit.
+    3. **No silent fresh start.** Losing host credential state never yields a fresh installation
+       while the vault holds evidence of earlier committed state, unless the operator explicitly
+       confirms it.
+    4. **No stale verification.** After any vault repair or fallback, a bound family starts only
+       once its credential has been verified anew.
+    5. **No gap between validation and running.** A host never runs on validation that a command
+       could have invalidated between the check and the start.
+    6. **Every state is reachable and removable offline.** The operator can recover from any
+       integrity failure and remove all host credential state without deleting files by hand.
+    7. **One version at a time.** Hosts of different protocol versions never run against the same
+       vault at once.
+
+    A review finding about the mechanism is resolved by showing which invariant it violates, and
+    the implementation PR must add a test for that case.
+
 ## Implementation Links
 
 These are the current seams the implementation will change or reuse. Nothing in this ADR is
@@ -568,6 +610,8 @@ prove host authority.
 - Under `FailClosed`, session-backed families such as `ibkr` do not run, live execution and every
   other path to an external brokerage account stay off until the execution-ownership decision exists
   (paper execution stays), and OpenFIGI enrichment stays off until OpenFIGI is bound.
+- Upgrading to this protocol is stop-the-world: every host on a `DataRoot` stops while `upgrade`
+  converts the vault.
 - Binding changes need a restart of every host on the configuration, and the CLI refuses them while
   any is running.
 - Rotating a bound credential takes two offline steps, `clear` and then `set`, with the family unbound
@@ -584,6 +628,8 @@ prove host authority.
 
 ### Code Contracts
 
+- The integrity invariants in decision point 11 bind the implementation. Each has at least one
+  failing-first test below.
 - A credential-bearing host-wide market-data family's credential context is either:
   - the provider-wide resolver, only under `DeploymentBoundary` and only when unbound; or
   - the scope-bound `StoredProviderCredentialResolver` for exactly one validated, verified connection
@@ -640,6 +686,17 @@ The implementation PR must add tests that:
   across a restart, until `repair-vault`;
 - lose both sidecars after a plugin-only change and show the path hint makes it a partial loss;
 - replace a binding with `set` and show the previous scope's mark is removed;
+- lose both sidecars and open the configuration through a different mount path, and show the
+  unclaimed checkpoint blocks a fresh start until `recover --identity` or `recover --fresh`;
+- restore an older vault that still parses while the state is one generation ahead with no matching
+  journal entry, and show the state is untrusted rather than repaired forward;
+- after `repair-vault`, refuse a bound family until its credential is verified again;
+- queue a copy's `clear` behind the first host's exclusive identity lock and show the host
+  re-validates instead of running on stale validation;
+- run `reset` once no bindings or plugin entries remain, then change `DataRoot`;
+- refuse to create host state before `upgrade`, and refuse an older binary against an upgraded vault;
+- recover with `--vault-path` when the configuration cannot be loaded and the vault is at a custom
+  location;
 - copy a configuration with its sidecars onto the same `DataRoot`, and show the copy cannot remove
   the original's marks while the original runs, becomes untrusted once either side commits, and gets
   a fresh identity from `recover --new-identity`;
