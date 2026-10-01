@@ -197,7 +197,13 @@ whole host use?** Facts in the current code shape the answer:
      match is not required, because shared configurations are opened through different mount paths.
      If the vault holds any unclaimed checkpoint, the host refuses credential-bearing families
      until the operator either adopts an identity with `recover --identity` or confirms a fresh start
-     with `recover --fresh`. Any other combination is also a partial loss:
+     with `recover --fresh`. A fresh start leaves the abandoned identity's checkpoint and marks in
+     place, still freezing their scopes, because only the operator knows which identity was
+     abandoned. The offline `retire --identity` command removes them: it takes that identity's lock
+     exclusively without waiting and refuses if any host or command holds it, writes the retirement
+     file and vault tombstone exactly as `reset` does, removes the identity's marks under the vault
+     lock, and records the actor in the audit log. An abandoned identity can therefore always be
+     cleaned up offline. Any other combination is also a partial loss:
      - a missing state file with a journal that records a committed state;
      - a state file with a missing journal.
 
@@ -225,7 +231,7 @@ whole host use?** Facts in the current code shape the answer:
 
 5. **Only the host operator changes bindings, out of band.** Bindings and the plugin credential-free
    list change only through a host CLI command, `--host-credential-binding
-   list|set|clear|plugin-allow|plugin-revoke|posture|recover|repair-vault|reset|upgrade`, run on the host by whoever operates the
+   list|set|clear|plugin-allow|plugin-revoke|posture|recover|retire|repair-vault|reset|upgrade`, run on the host by whoever operates the
    process. The same pattern is used by `--fund-tenant-backfill`. No
    tenant account, role or permission can reach it, so tenant user administration cannot grant it. The
    host credential tenant is a startup setting, `MERIDIAN_HOST_CREDENTIAL_TENANT`:
@@ -329,7 +335,11 @@ whole host use?** Facts in the current code shape the answer:
      on its own, for example when `RecordScopedVerificationAsync` records a verification failure. So
      the vault carries a revision that every write increments, and the store's audit log
      (`provider-credentials.audit.jsonl`, appended after each vault write today) records the
-     revision each write produced and a digest of the vault contents it wrote. Each write is
+     revision each write produced and a digest of the vault contents it wrote. From the upgrade's
+     `baseline` entry on, every audit entry also carries the hash of the previous entry, including its
+     action, actor and time, so the log is a hash chain. The store validates the whole chain from the
+     baseline when it loads the vault, so deleting or editing an earlier entry is detected even when
+     the last entry still matches; a broken chain is a mismatch like the ones below. Each write is
      bracketed in the log, like the host journal: before publishing the vault, the writer durably
      appends an `intent` entry carrying the action, the actor, the new revision and the new digest,
      and after publishing it appends the matching `done` entry. When the store loads the vault, it
@@ -364,12 +374,24 @@ whole host use?** Facts in the current code shape the answer:
        touching anything, `upgrade` durably appends a `pending` entry to
        `provider-credentials.upgrade.jsonl` beside the vault, recording the from and to versions and
        the digests of the vault and backup before conversion. It then converts the backup, converts
-       the primary and writes the marker, each atomically and each idempotent, and finally appends
-       `committed`.
+       the primary, appends a `baseline` entry to the store's audit log, and writes the marker,
+       each atomically and each idempotent, and finally appends `committed`.
+     - Today's audit entries carry no vault revision or digest. The `baseline` entry starts the
+       revision record and the hash chain (below) with the converted primary's revision and digest.
+       Every earlier entry stays in place, unchanged, as legacy history before the baseline. The
+       marker is written only after the baseline is durable, so no host ever loads a converted vault
+       without a matching audit entry.
      - While that journal has an unfinished entry, the gate refuses every host and every command
        except `upgrade`, which resumes from the first step whose file is not yet in the target
        version. Only the resuming `upgrade` accepts the mixed versions its own journal entry
        explains; any other mix of marker and envelope versions still makes the gate refuse.
+     - If the upgrade journal itself is missing, malformed or truncated, `upgrade --recover` moves it
+       aside unchanged and works from the files alone. It accepts only the shapes a forward upgrade
+       produces, in order: backup converted; then primary converted; then audit baseline written;
+       then marker written. It requires every converted file to decrypt and parse at the version its
+       header states, and a baseline to match the converted primary. It then starts a new upgrade
+       journal at that point and completes the remaining steps. Any other shape, such as a converted
+       primary with an unconverted backup, is refused and left to the restore runbook.
      - An older binary cannot write protocol state. Today's store already refuses a vault whose
        format version is newer than it supports (`FileProviderCredentialStore.LoadVaultFromFileAsync`
        throws `NotSupportedException`, which is not treated as corruption, so it never falls back to
@@ -911,8 +933,17 @@ The implementation PR must add tests that:
   location;
 - quarantine a custom-location vault while the configuration is unreadable and both sidecars are
   lost, and show `repair-vault --vault-path` clears it after checking the vault's identifier;
-- crash `upgrade` after each publication boundary (backup, primary, marker), and show every host and
-  other command refuses while `upgrade` resumes and completes from its journal;
+- crash `upgrade` after each publication boundary (backup, primary, audit baseline, marker), and
+  show every host and other command refuses while `upgrade` resumes and completes from its journal;
+- at each of those boundaries, also delete or truncate the upgrade journal, and show
+  `upgrade --recover` completes from a forward shape and refuses any other;
+- upgrade an installation with existing audit history, and show the legacy entries survive, the
+  baseline matches the converted vault, and the first host load accepts it;
+- delete, and separately edit the actor of, an interior `intent`/`done` pair while the last entry
+  still matches the vault, and show the broken hash chain quarantines the vault;
+- lose both sidecars for an identity with bound marks, run `recover --fresh`, then `retire
+  --identity` on the abandoned identity, and show its marks are removed, its tombstone and
+  retirement file written, and `retire` refused while that identity's lock is held;
 - change `DataRoot` while a first `set`, `posture` or plugin command waits for the configuration
   lock, and show the command writes nothing against the old root and restarts against the new one;
 - lose both sidecars after a committed `FailClosed` posture, run `recover --fresh` with the
