@@ -219,9 +219,12 @@ whole host use?** Facts in the current code shape the answer:
      with `recover --fresh`. A fresh start leaves the abandoned identity's checkpoint and marks in
      place, still freezing their scopes, because only the operator knows which identity was
      abandoned. The offline `retire --identity` command removes them: it takes that identity's lock
-     exclusively without waiting and refuses if any host or command holds it, writes the retirement
-     file and vault tombstone, removes the identity's marks under the vault lock, and records the
-     actor in the audit log. Its sidecars are usually gone, so its retirement record has no journal
+     exclusively without waiting and refuses if any host or command holds it, then follows the
+     `reset` order: it writes the vault tombstone first, as the authenticated commit point, removes
+     the identity's marks in the same vault write, and records the actor in the audit log; only then
+     does it write the retirement file as a copy of the tombstone record. A retirement file without
+     a matching tombstone is ignored and rewritten from the tombstone, never the reverse, so
+     deleting or editing it before recovery changes nothing. Its sidecars are usually gone, so its retirement record has no journal
      seal. It records instead the evidence that survives: the identity's checkpoint generation,
      digest and path hints, and the list of marks it removes. When a journal does survive, it is
      sealed as `reset` seals one. An abandoned identity can therefore always be
@@ -537,9 +540,11 @@ whole host use?** Facts in the current code shape the answer:
         integrity failure;
      4. only then does it move the journal aside unchanged, as the permanent audit record, still
         matching its seal byte for byte;
-     5. it removes the state file.
+     5. it removes the state file;
+     6. it clears the configuration's identity hint through `ConfigStore`, which allows this one
+        change because the tombstone has committed.
 
-     If it crashes after step 2, rerunning `reset` finishes the remaining steps from the tombstone,
+     The configuration is then genuinely fresh. If it crashes after step 2, rerunning `reset` finishes the remaining steps from the tombstone,
      checking the journal against its seal wherever it is.
 
      It never removes the identity lock file, because unlinking a held lock would let another
@@ -664,6 +669,13 @@ whole host use?** Facts in the current code shape the answer:
      `upgrade` take it exclusively, without waiting, and refuse if any host or command holds it, so
      both are stop-the-world for the whole `DataRoot` and not just for the identities they can find.
      Like the identity lock files, it is never removed.
+     A host resolves `DataRoot` once, under the configuration lock, and composes every provider and
+     store from that single resolved configuration snapshot. Composition code that reloads the
+     configuration on its own today, such as `ProviderFeatureRegistration.Register` calling
+     `new ConfigStore(options.ConfigPath).Load()`, takes the snapshot instead. Just before
+     composing, the host takes the configuration lock again and re-resolves `DataRoot`; if it moved
+     since the host took the `DataRoot` lock, the host releases everything and starts again against
+     the new root, as commands do.
    - **Lock order.** A transaction takes the `DataRoot` lock, then the host lock, then the identity lock, then the
      journal-writer lock, then the configuration writer lock (the one
      `ConfigStore` takes, `<config>.lock`), then `provider-credentials.vault.lock`. `repair-vault`
@@ -752,11 +764,14 @@ whole host use?** Facts in the current code shape the answer:
         it cannot later be truncated, rewritten or replaced undetected. That digest becomes the last
         committed digest.
 
-     If the journal itself is invalid, `recover` first records its seal (whole-file digest and,
-     when readable, last entry's hash) in this configuration's checkpoint under the vault lock,
-     then moves it aside unchanged, so the evidence is kept, and starts the new journal with the
+     If the journal itself is invalid, `recover` first records, in this configuration's checkpoint
+     under the vault lock, both the journal's seal (whole-file digest and, when readable, last
+     entry's hash) and the hash of the exact `baseline` entry it is about to write, so the baseline
+     is authenticated before it exists. It then moves the journal aside unchanged, so the evidence is kept, and starts the new journal with the
      `baseline` entry carrying the same seal. A crash between the move and the baseline therefore
-     leaves the archive authenticated by the checkpoint. The same rule holds for every file any
+     leaves the archive authenticated by the checkpoint, and a baseline that does not match the
+     planned hash is an integrity failure rather than something a retry adopts. The same applies to a
+     `baseline` appended to a kept journal: its hash is recorded in the checkpoint first. The same rule holds for every file any
      command moves aside: its seal is published in an already authenticated place before the move. The next startup then validates
      against that baseline, and the adopted bindings still go through point 6.
 
@@ -1148,6 +1163,14 @@ The implementation PR must add tests that:
   vault-confirmed hint or `--identity`;
 - crash `recover` after moving an invalid journal aside and before the baseline, alter the archive,
   and show the checkpoint's seal detects it;
+- crash `retire` after the tombstone and before the retirement file, delete the file, and show the
+  tombstone decides and the file is rewritten from it;
+- run `reset`, then change `DataRoot`, and show the cleared hint lets the configuration start fresh;
+  crash before the hint is cleared and show a rerun of `reset` clears it;
+- change `DataRoot` while a host is starting, and show the host restarts against the new root and
+  composes providers only from its single resolved snapshot;
+- crash `recover` after appending a baseline and before the checkpoint finalizes, edit the
+  baseline, and show the planned hash in the checkpoint detects it;
 - run `recover --vault-path` with an unparseable configuration and show it completes; then run it
   with a parseable configuration naming a different root and show it aborts;
 - break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
