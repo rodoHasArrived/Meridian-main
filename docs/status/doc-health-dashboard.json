@@ -1,6 +1,6 @@
 {
   "total_files": 677,
-  "total_lines": 147572,
+  "total_lines": 147582,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1043,7 +1043,7 @@
     },
     {
       "path": "docs/adr/023-host-wide-provider-credential-ownership.md",
-      "line_count": 870,
+      "line_count": 880,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

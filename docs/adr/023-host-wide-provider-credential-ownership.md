@@ -268,8 +268,10 @@ whole host use?** Facts in the current code shape the answer:
      A state one generation ahead of its checkpoint is repaired forward only when the journal's last
      entry is that generation's `pending` or `committed` entry, which proves the checkpoint write
      was interrupted. Otherwise the vault itself was rolled back, for example restored from an older
-     copy that still parses, and the state is untrusted. Rollback detection therefore covers every
-     change, and covers the vault as well as the sidecars.
+     copy that still parses, and the state is untrusted. A missing checkpoint for an identity that
+     has committed state counts as generation 0, so a vault that predates the identity is caught by
+     the same rule. Rollback detection therefore covers every change, and covers the vault as well
+     as the sidecars.
    - **Who removes marks.** Each mark records the generation that added it. Only a mutating command
      or `recover` removes marks, while holding the identity lock (point 8) exclusively.
      - Such a command removes a mark that no committed binding names. When recovery closes a pending
@@ -294,8 +296,11 @@ whole host use?** Facts in the current code shape the answer:
      scoped record's verification to unverified, because the backup's `Verified` values may be
      stale. A bound family starts again only after its credential is verified anew.
      - Because repair touches every identity, not only its own, it is stop-the-world for the
-       `DataRoot`. Before reconciling, it takes the identity lock of every identity recorded in the
-       vault exclusively, without waiting and in identifier order. If any of them is held, by a
+       `DataRoot`. A backup can predate an identity, so the vault alone does not list every identity
+       in use. Repair therefore enumerates identities from both the vault and the identity lock files
+       beside it, which are never removed and which every running host holds. If that directory
+       cannot be listed, it refuses. Before reconciling, it takes every one of those identity locks
+       exclusively, without waiting and in identifier order. If any of them is held, by a
        running host or a command of any configuration, it refuses and changes nothing. It keeps all
        of them until it finishes, so no host can start against an identity it is changing.
    - **Vault format.** Bound marks, checkpoints and the vault identifier change the vault format. So
@@ -695,9 +700,10 @@ The implementation PR must add tests that:
   provider-family or environment mismatch, a disabled connection, or missing, partial, failed or
   post-rotation unverified credentials;
 - refuse a present but malformed `MERIDIAN_HOST_CREDENTIAL_TENANT` at startup;
-- treat a missing state file as no bindings only when the journal is also missing and no vault record
-  carries this configuration's mark; treat each other combination as a partial loss, and a malformed
-  or unreadable file as untrusted state, under both postures;
+- treat a missing state file as no bindings only when the journal is also missing and the vault holds
+  no unclaimed checkpoint, including one with no bound mark left after a plugin-only change or the
+  last `clear`; treat each other combination as a partial loss, and a malformed or unreadable file
+  as untrusted state, under both postures;
 - while the state is untrusted, refuse credential-bearing families, ignore plugin credential-free
   entries (including when a digest mismatch comes only from a plugin-list edit), and refuse a
   bound-connection disable or delete and any `DataRoot` change;
@@ -730,6 +736,10 @@ The implementation PR must add tests that:
   family refuses to start, and only `recover --new-identity` or `recover --fresh` brings it back;
 - run `repair-vault` while a host of another configuration on the same `DataRoot` is running, and
   show it refuses without changing any mark, checkpoint or verification status;
+- fall back to a backup that predates an identity's first checkpoint while a host of that identity
+  runs, and show `repair-vault` finds the identity from its lock file and refuses; once the host
+  stops and repair completes, show that identity's state is untrusted because its checkpoint is
+  missing;
 - lose both sidecars after a plugin-only change and show `list` enumerates the surviving checkpoint
   identity for `recover --identity`;
 - restore the state file, journal and vault together to an older point, and show `repair-vault`
