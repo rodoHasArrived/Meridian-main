@@ -208,8 +208,12 @@ whole host use?** Facts in the current code shape the answer:
      the configuration itself, through `ConfigStore` under the configuration lock it already holds,
      and that hint survives losing both sidecars. A host whose configuration carries a hint but has
      no sidecars is a partial loss, whatever `DataRoot` now says, and the hinted vault is checked too.
-     Removing the hint by hand is an explicit declaration of a new deployment, governed by the
-     runbook like a restore. If the vault holds any unclaimed checkpoint or mark, the
+     `ConfigStore` protects the hint like `DataRoot`: on every save it carries the current hint
+     forward and refuses to change or drop it, so whole-document writers such as the wizard's
+     `ReviewConfigurationStep` and `SaveConfigurationStep`, which rebuild `AppConfig` from scratch,
+     cannot clear it. Only the offline commands that own it (the first command, `reset`, `retire`
+     and `recover`) change it. Removing it by hand is an explicit declaration of a new deployment,
+     governed by the runbook like a restore. If the vault holds any unclaimed checkpoint or mark, the
      host refuses credential-bearing families
      until the operator either adopts an identity with `recover --identity` or confirms a fresh start
      with `recover --fresh`. A fresh start leaves the abandoned identity's checkpoint and marks in
@@ -284,7 +288,13 @@ whole host use?** Facts in the current code shape the answer:
    for example, copies it into fields and HTTP headers, and several hosts may be running on one
    configuration (point 8). So **a bound connection's credential is frozen while it is bound**: there
    is never a change to propagate to providers already running in any host.
-   - The store boundary refuses to save, rotate or delete the credential of any bound scope.
+   - The store boundary refuses to save, rotate or delete the credential of any bound scope. That
+     includes the scoped OAuth token records, which have their own mutator,
+     `IScopedOAuthTokenVault.SaveScopedOAuthTokenAsync`, used by `OAuthTokenRefreshService`: the
+     bound marks freeze them too, so an automatic refresh cannot change a bound connection's
+     effective credential. A family whose credential depends on a refreshable OAuth token therefore
+     cannot be bound until a refresh-propagation contract exists, just like plugin families; under
+     `FailClosed` it does not start.
    - Several configurations can share one `DataRoot`, and so one vault. So the freeze is recorded on
      the scoped credential record itself, inside the vault: each record carries a set of bound marks,
      one per configuration that has bound it, keyed by that configuration's identity. The store
@@ -304,8 +314,10 @@ whole host use?** Facts in the current code shape the answer:
      change or `set`), first writes that identity's checkpoint at generation 0 under the vault lock,
      before it publishes any state file. That claim counts as an unclaimed checkpoint for the
      fresh-installation check, so a crash before the first real checkpoint, followed by losing both
-     sidecars, still blocks a fresh start. Only a proven abort of that first command removes the
-     claim. The state is untrusted (point 4) when either holds:
+     sidecars, still blocks a fresh start. The claim is never removed silently: if that first
+     command aborts, the claim stays and its anchor points at the aborted `pending` entry like any
+     other abort, so the attempt stays authenticated. The identity then has history and is never
+     treated as fresh; `retire` or `reset` cleans it up. The state is untrusted (point 4) when either holds:
      - its generation is older than its checkpoint's, meaning it was rolled back;
      - its generation equals the checkpoint's but its digest differs, meaning a divergent copy was
        restored.
@@ -421,7 +433,12 @@ whole host use?** Facts in the current code shape the answer:
      - The upgrade changes three files, so it is journalled like every other change. Before
        touching anything, `upgrade` durably appends a `pending` entry to
        `provider-credentials.upgrade.jsonl` beside the vault, recording the from and to versions and
-       the digests of the vault and backup before conversion. It first computes the complete,
+       the digests of the vault and backup before conversion, recording `absent` for either one that
+       does not exist. Today's store writes the backup only once a primary exists, so a vault with a
+       single write has no backup, and an unused root has neither. `upgrade` synthesizes the missing
+       generations rather than skipping them: a missing backup is written in the new format with the
+       converted primary's planned content, and an unused root gets an empty new-format primary and
+       backup. Both generations therefore always exist in the new format afterwards. It first computes the complete,
        canonical `baseline` entry, including its actor and time and the converted primary's revision
        and digest, which it can compute in advance because conversion is deterministic and the vault
        digest excludes the anchor field. It then converts the backup, which carries that exact entry
@@ -719,8 +736,10 @@ whole host use?** Facts in the current code shape the answer:
         separate, journalled `posture` transaction;
      2. it reconciles only this configuration's bound marks with the adopted state, under the vault
         lock, leaving every other configuration's marks untouched. It takes this configuration's
-        identity from the surviving state file or journal. If both are lost, the operator passes it
-        with `--identity`, choosing from the checkpoints that `list` enumerates. For every
+        identity from the surviving state file or journal when they yield one matching identity.
+        Otherwise, whether both are lost or both are unusable (a malformed state file with an
+        invalid journal, or two that disagree), it uses the configuration's identity hint once the
+        vault confirms it, or the operator passes it with `--identity`, choosing from the checkpoints that `list` enumerates. For every
         identity, `list` shows its checkpoint generation, its path hints, and any bound marks,
         including identities that have a checkpoint but no mark. Until then,
         orphaned marks keep freezing their scopes, which fails safe;
@@ -733,8 +752,12 @@ whole host use?** Facts in the current code shape the answer:
         it cannot later be truncated, rewritten or replaced undetected. That digest becomes the last
         committed digest.
 
-     If the journal itself is invalid, `recover` first moves it aside unchanged, so the evidence is
-     kept, and starts the new journal with the `baseline` entry. The next startup then validates
+     If the journal itself is invalid, `recover` first records its seal (whole-file digest and,
+     when readable, last entry's hash) in this configuration's checkpoint under the vault lock,
+     then moves it aside unchanged, so the evidence is kept, and starts the new journal with the
+     `baseline` entry carrying the same seal. A crash between the move and the baseline therefore
+     leaves the archive authenticated by the checkpoint. The same rule holds for every file any
+     command moves aside: its seal is published in an already authenticated place before the move. The next startup then validates
      against that baseline, and the adopted bindings still go through point 6.
 
    The actor is the required `--actor` argument together with the OS identity that ran the command.
@@ -1114,6 +1137,17 @@ The implementation PR must add tests that:
   anchor moved to that `pending` entry before the outcome was written;
 - tear the last line of a journal, run `recover`, and show the baseline seals it with the whole-file
   digest and no tail hash;
+- abort a new identity's first command before it publishes state, and show the claim remains,
+  anchors the aborted entry, and blocks a fresh start until `retire`;
+- upgrade a root with no backup, and a root with neither generation, and show both end with new-format
+  primary and backup and recover from a crash at each boundary;
+- save a whole new configuration through the wizard on a configuration that carries a hint, and show
+  `ConfigStore` keeps the hint;
+- try to refresh a bound connection's scoped OAuth token, and show the store refuses it;
+- corrupt the state file and the journal together, and show `recover` takes the identity from the
+  vault-confirmed hint or `--identity`;
+- crash `recover` after moving an invalid journal aside and before the baseline, alter the archive,
+  and show the checkpoint's seal detects it;
 - run `recover --vault-path` with an unparseable configuration and show it completes; then run it
   with a parseable configuration naming a different root and show it aborts;
 - break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
