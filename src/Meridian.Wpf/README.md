@@ -34,6 +34,8 @@ records as partial closes the editor and warns that required fields are still mi
 reporting a failed save.
 Credential commands expose asynchronous completion. Desktop regression tests exercise late status
 responses, selected-account saves, blank secret editors and loss of editable rows after refused discovery.
+Credential view-model fixtures use independent notification instances so production deduplication
+and rate limiting do not inherit another test's notification history.
 Conflicting credential commands are disabled during persistence or verification. Refused saves restore
 command availability and retain the current editor values for an explicit retry. Saves submit only the
 fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret
