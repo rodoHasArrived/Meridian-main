@@ -214,7 +214,11 @@ whole host use?** Facts in the current code shape the answer:
    - every credential-bearing host-wide family refuses to start;
    - every plugin credential-free entry is ignored, so no listed plugin starts under `FailClosed`;
    - the configuration writer refuses the guarded changes (a bound connection's disable or delete,
-     and any `DataRoot` change), treating every connection as possibly bound.
+     and any `DataRoot` change), treating every connection as possibly bound;
+   - the committed posture is unknown, so the host applies the full `FailClosed` composition
+     whatever `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` says: no live execution, no brokerage gateway,
+     sync adapter or brokerage connection route (point 1), and no provider-wide credential. The same
+     applies to a partial loss, which also hides the committed posture.
 
    This one rule replaces case-by-case handling, so a new integrity failure cannot leave one of
    these paths open.
@@ -313,8 +317,9 @@ whole host use?** Facts in the current code shape the answer:
      rotated. A flagged record is not used until the operator saves it again or verifies it, which
      clears the flag.
      - Because repair touches every identity, not only its own, it is stop-the-world for the
-       `DataRoot`. A backup can predate an identity, so the vault alone does not list every identity
-       in use. Repair therefore enumerates identities from both the vault and the identity lock files
+       `DataRoot`. It first takes the `DataRoot` lock exclusively (point 8), which no running host
+       of any configuration, with or without an identity, can be holding. A backup can also predate
+       an identity, so the vault alone does not list every identity in use. Repair therefore enumerates identities from both the vault and the identity lock files
        beside it, which are never removed and which every running host holds. If that directory
        cannot be listed, it refuses. Before reconciling, it takes every one of those identity locks
        exclusively, without waiting and in identifier order. If any of them is held, by a
@@ -324,8 +329,11 @@ whole host use?** Facts in the current code shape the answer:
      on its own, for example when `RecordScopedVerificationAsync` records a verification failure. So
      the vault carries a revision that every write increments, and the store's audit log
      (`provider-credentials.audit.jsonl`, appended after each vault write today) records the
-     revision each write produced and a digest of the vault contents it wrote. When the store loads
-     the vault, it compares the vault's revision and digest with the last audit entry:
+     revision each write produced and a digest of the vault contents it wrote. Each write is
+     bracketed in the log, like the host journal: before publishing the vault, the writer durably
+     appends an `intent` entry carrying the action, the actor, the new revision and the new digest,
+     and after publishing it appends the matching `done` entry. When the store loads the vault, it
+     compares the vault's revision and digest with the last audit entry:
      - equal revision and equal digest is consistent;
      - equal revision with a different digest means a divergent copy of the vault was restored, and
        is a mismatch like the ones below;
@@ -336,8 +344,12 @@ whole host use?** Facts in the current code shape the answer:
        more than one means the audit log was rolled back.
 
      A reader never acts on a mismatch itself. It takes the vault lock and rechecks, and only the
-     result under the lock counts. Under the lock no writer is mid-write, so one ahead then means an
-     interrupted append, which the store completes once, recording it as recovered. Either other
+     result under the lock counts. Under the lock no writer is mid-write. A vault one ahead is then
+     repaired forward only when the last audit entry is an unfinished `intent` naming exactly that
+     revision and digest, which proves a crash after publishing; the store appends the `done` entry
+     from the intent's own payload, marked as recovered, so the original action and actor survive.
+     An unfinished intent whose revision the vault never reached is closed as aborted. A vault one
+     ahead with no matching intent means the audit log lost an entry, and is a mismatch. Every other
      mismatch is handled exactly like a backup fallback: the store writes the durable quarantine
      marker, and only `repair-vault` clears it. A restore of the vault alone that keeps the
      checkpoint generation but reverts a verification result is therefore caught too.
@@ -492,7 +504,14 @@ whole host use?** Facts in the current code shape the answer:
        resolved before they started and no command can run while they do;
      - if it does find an unresolved entry, the journal was changed outside the command, and it
        refuses to start.
-   - **Lock order.** A transaction takes the host lock, then the identity lock, then the
+   - **`DataRoot` lock.** Every host process, from the gate release on, takes
+     `provider-credentials.hosts.lock` beside the vault in shared mode before anything else,
+     including the startup gate, and holds it for its lifetime. That includes a host with no
+     committed state and no identity. Every command takes it shared too. `repair-vault` and
+     `upgrade` take it exclusively, without waiting, and refuse if any host or command holds it, so
+     both are stop-the-world for the whole `DataRoot` and not just for the identities they can find.
+     Like the identity lock files, it is never removed.
+   - **Lock order.** A transaction takes the `DataRoot` lock, then the host lock, then the identity lock, then the
      journal-writer lock, then the configuration writer lock (the one
      `ConfigStore` takes, `<config>.lock`), then `provider-credentials.vault.lock`. `repair-vault`
      takes every recorded identity lock, in identifier order and without waiting, where others take
@@ -511,8 +530,9 @@ whole host use?** Facts in the current code shape the answer:
         install a new generation, between this check and the commit;
      3. append a `pending` entry to the journal and flush it durably (an fsync or equivalent, plus
         the directory entry when the journal is first created) before anything is published. It
-        records the actor, the host identity, the kind of change (binding or plugin classification),
-        the subject (provider family or plugin ID), the previous and new values, the new state
+        records the actor, the host identity, the kind of change (binding, plugin classification or posture),
+        the subject (provider family, plugin ID, or the configuration for a posture change), the previous
+        and new values, the new state
         generation, and canonical digests of the complete host credential state before and after the
         change. Outcome entries are flushed the same way;
      4. for `set`, add this configuration's bound mark to the new scope; write the state file
@@ -822,6 +842,15 @@ The implementation PR must add tests that:
   family refuses to start, and only `recover --new-identity` or `recover --fresh` brings it back;
 - run `repair-vault` while a host of another configuration on the same `DataRoot` is running, and
   show it refuses without changing any mark, checkpoint or verification status;
+- run `repair-vault` and `upgrade` while a `DeploymentBoundary` host with no committed state and
+  no identity runs on the same `DataRoot`, and show both refuse because of the `DataRoot` lock;
+- corrupt the state file after `posture FailClosed`, start a host with
+  `MERIDIAN_TENANT_SCOPE_ENFORCEMENT=DeploymentBoundary` and live execution configured, and show it
+  composes no brokerage gateway, sync adapter or brokerage connection route and reads no
+  provider-wide credential until `recover`;
+- crash `posture` after publishing the state file and before the checkpoint update, and show
+  recovery writes the checkpoint before closing it as `committed (recovered)`; restore an older
+  state with the other posture, and show the checkpoint makes it untrusted;
 - fall back to a backup that predates an identity's first checkpoint while a host of that identity
   runs, and show `repair-vault` finds the identity from its lock file and refuses; once the host
   stops and repair completes, show that identity's state is untrusted because its checkpoint is
@@ -840,8 +869,10 @@ The implementation PR must add tests that:
 - restore a valid older primary vault after a recorded verification failure, with the checkpoint
   generation unchanged, and show the vault revision behind the audit log quarantines the vault and
   the bound family refuses to start until `repair-vault` and a new verification;
-- crash between a vault write and its audit append, and show the store completes the append
-  instead of quarantining;
+- crash between a vault write and its audit append, and show the store completes the append from
+  the intent, keeping the original action and actor, instead of quarantining;
+- remove exactly one complete entry from the end of the audit log offline, and show the vault one
+  ahead with no matching intent is quarantined rather than repaired forward;
 - read the vault while a writer is between its vault write and its audit append, and show the
   reader neither completes the append nor quarantines, and the audit log gets exactly one entry
   for that revision;
