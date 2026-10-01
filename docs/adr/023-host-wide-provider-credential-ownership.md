@@ -251,17 +251,27 @@ whole host use?** Facts in the current code shape the answer:
      and are always written under the vault lock in the safe order. A `set` adds its mark before
      publishing the state file, and a `clear` removes it only after publishing it. A crash between
      the two can therefore only leave an extra mark, which freezes more, never less.
-   - Each mark carries the state generation that created it, a counter that every committed change
-     increments. Recovery, startup and every command reconcile this configuration's marks with the
-     committed state under the vault lock (point 8), touching no other configuration's marks. They
-     remove a surplus mark only when its generation is not newer than the committed state's. A mark
-     newer than the committed state means the sidecars were rolled back, so the state is untrusted
-     and the mark is kept. If the committed state cannot be read, the existing marks are left as
-     they are.
-   - The store's fallback to its rolling vault backup could restore a generation without a recent
-     mark. So when the store loads from the backup, it treats every bound mark as unknown, and it
-     refuses every scoped save, rotation and delete on that vault until the vault is repaired and
-     each configuration has reconciled its marks.
+   - **Checkpoint.** Every committed change, including a plugin-list change, increments the state's
+     generation. The vault also keeps one checkpoint per configuration identity, recording the last
+     committed generation and digest; it is updated under the vault lock after the state file is
+     published. A state whose generation is older than its checkpoint has been rolled back, so the
+     state is untrusted (point 4). A state one generation ahead of its checkpoint is a commit whose
+     checkpoint update was interrupted, and the checkpoint is repaired. Rollback detection therefore
+     covers every change, not only those that create a mark.
+   - **Who removes marks.** Each mark records the generation that added it. Only a mutating command
+     or `recover` removes marks, while holding the identity lock (point 8) exclusively.
+     - Such a command removes a mark that no committed binding names. When recovery closes a pending
+       entry as `aborted (recovered)`, it also removes the mark carrying that entry's generation.
+     - Startup only adds missing marks and never removes one.
+     - If the committed state cannot be read, the existing marks are left as they are.
+   - **Vault backup.** The store's fallback to its rolling vault backup could restore an older
+     generation of marks, checkpoints and verification state. So when the store loads from the
+     backup:
+     - it treats every bound mark, checkpoint and verification status as unknown;
+     - it refuses every scoped save, rotation and delete on that vault;
+     - every bound family refuses to start and every bound resolution is refused.
+
+     This lasts until the vault is repaired and each configuration has reconciled.
    - The host state records the identifier of the vault it was bound against. At startup, a bound
      family whose configured `DataRoot` resolves to a vault with a different identifier refuses to
      start. While any binding
@@ -327,13 +337,21 @@ whole host use?** Facts in the current code shape the answer:
      Every mutating command needs the lock in exclusive mode, so it fails while any host on this
      configuration is running, and no host can start while a command holds it. A change takes effect
      when the hosts next start, so no running provider keeps using state that has since changed.
+     The vault holds a second lock for each configuration identity, beside the vault
+     (`provider-credentials.identity-<identifier>.lock`, a filesystem-safe random identifier). Every
+     running host of that identity holds it in shared mode, and mutating commands and `recover` need
+     it exclusively, after the host lock. A copied configuration, which keeps the original's
+     identity, therefore cannot change or remove marks while any host of the original runs. Its
+     state also falls behind the shared checkpoint as soon as either side commits, which makes it
+     untrusted. To make an intentional copy, run `recover --new-identity` on it. That gives the copy
+     a fresh identity with empty state and touches none of the original's marks.
      `list` takes the host lock in shared mode and the journal-writer lock, in the documented order,
      for the moment it reads the state file and the journal. It therefore never sees a partly
      appended journal entry.
    - **One journal writer at a time.** Every write to the journal, whether from a mutating command or
      from recovery, is made while holding a second lock exclusively, the journal-writer lock
-     (`<config>.host-provider-credentials.journal.lock`). A starting host first takes the host lock in
-     shared mode, then the journal-writer lock, then runs recovery and validation, then releases the
+     (`<config>.host-provider-credentials.journal.lock`). A starting host first takes the host lock and the identity
+     lock in shared mode, then the journal-writer lock, then runs recovery and validation, then releases the
      journal-writer lock. This is the same order every command uses, so a starting host and a command
      can never wait on each other:
      - hosts that start at the same moment therefore recover one at a time;
@@ -341,8 +359,8 @@ whole host use?** Facts in the current code shape the answer:
        resolved before they started and no command can run while they do;
      - if it does find an unresolved entry, the journal was changed outside the command, and it
        refuses to start.
-   - **Lock order.** A transaction takes the host lock, then the journal-writer lock, then the
-     configuration writer lock (the one
+   - **Lock order.** A transaction takes the host lock, then the identity lock, then the
+     journal-writer lock, then the configuration writer lock (the one
      `ConfigStore` takes, `<config>.lock`), then `provider-credentials.vault.lock`. Configuration and
      credential-store writers never take the host lock, and the implementation must show that no code
      path takes the configuration and vault locks in the reverse order. A command that cannot take a
@@ -363,8 +381,8 @@ whole host use?** Facts in the current code shape the answer:
         generation, and canonical digests of the complete host credential state before and after the
         change. Outcome entries are flushed the same way;
      4. for `set`, add this configuration's bound mark to the scoped record; write the state file
-        atomically; for `clear`, then remove the mark. All of this runs under the vault lock already
-        held;
+        atomically; for `clear`, then remove the mark; then update this configuration's checkpoint.
+        All of this runs under the vault lock already held;
      5. append the outcome, then release the locks in reverse order.
    - **Outcome from the file, not the exception.** `AtomicFileWriter` can throw after the rename has
      already published the file, for example from the directory sync. So on any write exception the
@@ -397,6 +415,7 @@ whole host use?** Facts in the current code shape the answer:
         with `--identity`, reading it from the marks that `list` shows in the vault. Until then,
         orphaned marks keep freezing their scopes, which fails safe;
      3. it appends an `indeterminate` outcome for any unresolved entry, followed by a `baseline` entry.
+        It also sets this configuration's checkpoint to the adopted state's generation and digest.
         The `baseline` entry records the actor, the adopted state's digest, and the paths of any
         state file or journal it moved aside. That digest becomes the last committed digest.
 
@@ -587,10 +606,17 @@ The implementation PR must add tests that:
 - while the state is untrusted, refuse credential-bearing families, ignore plugin credential-free
   entries (including when a digest mismatch comes only from a plugin-list edit), and refuse a
   bound-connection disable or delete and any `DataRoot` change;
-- restore an older but internally consistent state file and journal while the vault keeps a newer
-  mark, and show the mark is kept and the state treated as untrusted;
-- corrupt the primary vault immediately after a `set` so the store loads the backup, and refuse every
-  scoped mutation until repair;
+- restore an older but internally consistent state file and journal, after a binding change and
+  after a plugin-only change, and show the checkpoint marks the state as untrusted and no mark is
+  removed;
+- crash a `set` after its mark is written but before the state file is published, and show recovery
+  closes it as aborted and removes that mark;
+- copy a configuration with its sidecars onto the same `DataRoot`, and show the copy cannot remove
+  the original's marks while the original runs, becomes untrusted once either side commits, and gets
+  a fresh identity from `recover --new-identity`;
+- corrupt the primary vault immediately after a `set`, and after a recorded verification failure, so
+  the store loads the backup; refuse every scoped mutation and every bound startup and resolution
+  until repair;
 - crash after the `pending` append is acknowledged but before it is durable, and show nothing was
   published;
 - run two hosts that reach one shared configuration through different mount paths, and show they
