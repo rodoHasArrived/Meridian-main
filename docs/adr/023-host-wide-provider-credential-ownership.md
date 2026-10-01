@@ -41,7 +41,11 @@ whole host use?** Facts in the current code shape the answer:
    the host consumes data fetched under A's entitlements, billing, rate limits and licence terms.
 2. **Hosts declare a tenant posture.** `TenantScopeEnforcementMode` is either `DeploymentBoundary` (one
    company per deployment is the actual control) or `FailClosed` (a shared deployment where
-   cross-tenant reads are refused).
+   cross-tenant reads are refused). `AddFundScopeTenantServices` resolves it once per host: the
+   `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` environment override when set, otherwise the configuration's
+   `TenantScopeEnforcement` key, otherwise `FailClosed`. `FailClosed` is therefore the default, and
+   `DeploymentBoundary` is an explicit, temporary migration-compatibility choice. The key is an
+   ordinary `AppConfig` property, so `ConfigStore` saves carry and can write it.
 3. **The provider-wide record is writable by tenant roles, through several routes.** A credential
    `PUT` without `connectionId` writes it (`ProviderConnectionEndpoints.ResolveConnectionService`). So
    do the compatibility surfaces: `CredentialEndpoints` (save, delete and test),
@@ -120,12 +124,21 @@ whole host use?** Facts in the current code shape the answer:
 3. **Where each posture gets its credentials.**
    - **One posture per configuration.** Hosts sharing a configuration share its output, so they must
      agree on the posture. The committed host state records the posture, which only the offline
-     `posture DeploymentBoundary|FailClosed` command changes. A host whose
-     `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` differs from the committed posture refuses to start at all,
-     before any provider is built. A `FailClosed` host also refuses to start until committed host
-     state exists, so moving to `FailClosed` always begins with `posture FailClosed`, which creates
-     the identity if needed. A `DeploymentBoundary` host with no committed state is unconstrained,
-     as today.
+     `posture DeploymentBoundary|FailClosed` command changes. A host whose effective posture (the
+     environment override, the configuration key or the default, resolved as today) differs from
+     the committed posture refuses to start at all, before any provider is built.
+     - A `DeploymentBoundary` host refuses to start until committed host state records
+       `DeploymentBoundary`, so choosing the compatibility posture always begins with `posture
+       DeploymentBoundary`, which creates the identity if needed.
+     - A `FailClosed` host with no committed state and no identity hint starts as an empty
+       committed `FailClosed` state would: no bindings and no listed plugins. It is never less
+       restrictive than any committed `FailClosed` state. A configuration identity hint with no
+       readable state is a partial loss (point 6), which is untrusted state, not an empty one.
+     - Before any state is committed, every host that starts is therefore `FailClosed`, so hosts of
+       one configuration can't run under different postures.
+     - `ConfigStore` carries the `TenantScopeEnforcement` key forward unchanged on every save, and
+       refuses a save that sets, changes or removes it. Only an offline edit of the file changes the
+       key, and a host whose key then disagrees with the committed posture refuses to start.
    - **`DeploymentBoundary`:** the deployment is one company, so an unbound credential-bearing family
      keeps using the provider-wide record, as today. Bindings are optional.
    - **`FailClosed`:**
@@ -247,7 +260,7 @@ whole host use?** Facts in the current code shape the answer:
    - the configuration writer refuses the guarded changes (a bound connection's disable or delete,
      and any `DataRoot` change), treating every connection as possibly bound;
    - the committed posture is unknown, so the host applies the full `FailClosed` composition
-     whatever `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` says: no live execution, no brokerage gateway,
+     whatever the host's effective posture says: no live execution, no brokerage gateway,
      sync adapter or brokerage connection route (point 1), and no provider-wide credential. The same
      applies to a partial loss, which also hides the committed posture.
 
@@ -260,7 +273,7 @@ whole host use?** Facts in the current code shape the answer:
    process. The same pattern is used by `--fund-tenant-backfill`. No
    tenant account, role or permission can reach it, so tenant user administration cannot grant it. The
    host credential tenant is a startup setting, `MERIDIAN_HOST_CREDENTIAL_TENANT`:
-   - it is read once, like `MERIDIAN_TENANT_SCOPE_ENFORCEMENT`;
+   - it is read once, like the tenant posture;
    - it is refused at startup when present but malformed;
    - it is required whenever any binding exists.
 
@@ -743,7 +756,7 @@ whole host use?** Facts in the current code shape the answer:
         authenticates it, that is, when the file's digest matches the last committed digest or one
         side of the pending entry. In every other case, including no valid journal, an unresolved
         posture change or a parseable but divergent file, the adopted state takes `FailClosed`, never
-        the environment's value and never the older posture, and the `baseline` entry records that
+        the host's effective posture and never the older posture, and the `baseline` entry records that
         the posture was defaulted. Moving back to `DeploymentBoundary` is then a
         separate, journalled `posture` transaction;
      2. it reconciles only this configuration's bound marks with the adopted state, under the vault
@@ -930,10 +943,12 @@ prove host authority.
 ### Negative
 
 - A new host file, CLI command and startup setting to support.
-- A deployment moving to `FailClosed` must run `posture FailClosed`, bind every bindable
-  credential-bearing family (with verified credentials) and list any credential-free plugins first,
-  or those families will not start. Every host of the configuration must then start with the same
-  posture.
+- A `FailClosed` deployment, now the default, must bind every bindable credential-bearing family
+  (with verified credentials) and list any credential-free plugins, or those families will not
+  start.
+- A deployment that keeps `DeploymentBoundary` must run `posture DeploymentBoundary` once, after
+  `upgrade` and before its first start on the implementing release; until then its hosts refuse to
+  start. Every host of the configuration must then start with the same posture.
 - From the gate release on, a host whose configuration file exists but cannot be strictly parsed
   refuses to start, instead of falling back to defaults.
 - After a vault fallback, restored provider-wide records must be saved again or verified before use,
@@ -1036,7 +1051,7 @@ The implementation PR must add tests that:
   family refuses to start, and only `recover --new-identity` or `recover --fresh` brings it back;
 - run `repair-vault` while a host of another configuration on the same `DataRoot` is running, and
   show it refuses without changing any mark, checkpoint or verification status;
-- run `repair-vault` and `upgrade` while a `DeploymentBoundary` host with no committed state and
+- run `repair-vault` and `upgrade` while a `FailClosed` host with no committed state and
   no identity runs on the same `DataRoot`, and show both refuse because of the `DataRoot` lock;
 - corrupt the state file after `posture FailClosed`, start a host with
   `MERIDIAN_TENANT_SCOPE_ENFORCEMENT=DeploymentBoundary` and live execution configured, and show it
@@ -1202,7 +1217,12 @@ The implementation PR must add tests that:
   last audit entry quarantines it;
 - start one host of a configuration under `DeploymentBoundary` while its committed posture is
   `FailClosed`, and the reverse, and show each refuses to start before any provider is built; show
-  a `FailClosed` host with no committed state refuses to start until `posture FailClosed`;
+  a `DeploymentBoundary` host with no committed state, whether chosen by the environment override or
+  the configuration key, refuses to start until `posture DeploymentBoundary`, and a `FailClosed`
+  host with no committed state and no identity hint starts with no credential-bearing family and
+  no plugin, and reads no provider-wide credential;
+- save a configuration through `ConfigStore` that sets, changes or removes `TenantScopeEnforcement`,
+  and show the save is refused and the key is unchanged, while an unrelated save carries it forward;
 - under `DeploymentBoundary`, fall back to a backup after an unscoped rotation; show no family reads
   a vault credential during quarantine, and after `repair-vault` the restored provider-wide record is
   not used until it is saved again or verified;
