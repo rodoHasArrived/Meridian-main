@@ -59,6 +59,10 @@ Validate `docs/source/data/adapter-readiness.yml` against the canonical provider
 registration symbols, and targeted test/source evidence. The registry records implementation
 readiness; operator validation and release sign-off retain their existing owners.
 
+For intentionally unregistered excluded families, `registration: []` records the absence of runtime
+registration; exclusion sources and targeted tests remain in `evidence`. Catalogued providers must
+retain registration references.
+
 ```bash
 python3 build/scripts/docs/validate-adapter-readiness.py --summary
 python3 build/scripts/docs/render-adapter-readiness.py

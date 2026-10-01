@@ -114,7 +114,8 @@ def render_matrix(data: dict) -> str:
                 implementations.append(f"- {label}: `{row['other_types'][key]}` (separate contract)")
         lines.extend(implementations or ["- No catalogued provider implementation is listed; see the scoped evidence below."])
         lines.extend(["", "**Registration path:**", ""])
-        lines.extend(f"- {reference(item)}" for item in row["registration"])
+        registrations = [f"- {reference(item)}" for item in row["registration"]]
+        lines.extend(registrations or ["- No runtime registration."])
         lines.extend(["", "**Targeted evidence:**", ""])
         lines.extend(f"- {item['kind'].capitalize()}: {reference(item)}" for item in row["evidence"])
     lines.extend([

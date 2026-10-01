@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1027 |
-| Valid | 587 |
+| Total code blocks | 1028 |
+| Valid | 588 |
 | Invalid | 0 |
 | Skipped | 440 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 113 | 0 | 0 | 113 |
-| `bash` | 165 | 165 | 0 | 0 |
+| `bash` | 166 | 166 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 325 | 325 | 0 | 0 |
@@ -129,6 +129,7 @@ No invalid code examples found.
 | `docs/integrations/language-strategy.md` | 4 |
 | `docs/integrations/lean-integration.md` | 17 |
 | `docs/operators/provider-backfill-operations.md` | 1 |
+| `docs/operators/statement-reconciliation-report-operations.md` | 1 |
 | `docs/product/adversarial-program-review-2026-08-25.md` | 3 |
 | `docs/product/functionality-deepening-brainstorm-2026-07.md` | 1 |
 | `docs/product/plans/product-roadmap-priorities-2026-07.md` | 1 |

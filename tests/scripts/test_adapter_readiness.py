@@ -29,7 +29,7 @@ def row(folder: str, provider_id: str | None, types: dict | None = None) -> dict
         "requirements": {"credentials": "SAMPLE_API_KEY", "optional_sdk": "None."},
         "risks": ["External endpoint may throttle requests."],
         "degradation": "Returns unavailable when credentials are missing.",
-        "registration": [{"path": readiness.CATALOG_PATH, "symbol": "ProviderCapabilityDescriptorCatalog"}],
+        "registration": [{"path": readiness.CATALOG_PATH, "symbol": "ProviderCapabilityDescriptorCatalog"}] if provider_id else [],
         "evidence": [{"path": "tests/SampleTests.cs", "symbol": "RejectsMissingCredentials", "kind": "test"}],
         "owner": "core-team",
         "next_action": "Validate with live credentials.",
@@ -179,13 +179,176 @@ public class SampleTests {
         self.assertFalse(readiness.implements(types, "SampleClient", "IOptionsChainProvider"))
 
     def test_generic_qualified_base_can_inherit_real_contract(self):
-        self.write(f"{readiness.ADAPTER_ROOT}/Core/BaseClient.cs", "public abstract class BaseClient<T> : IMarketDataClient {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Core/BaseClient.cs", "namespace Example; public abstract class BaseClient<T> : IMarketDataClient {}")
         self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "public sealed class SampleClient : Example.BaseClient<string>, ISymbolSearchProvider {}")
         self.assertEqual([], readiness.validate_registry(self.root, self.data))
 
     def test_new_known_adapter_capability_requires_catalog_update(self):
         self.write(f"{readiness.ADAPTER_ROOT}/Sample/NewOptions.cs", "public sealed class NewOptions : IOptionsChainProvider {}")
         self.assert_rejected("missing known adapter capability implemented by NewOptions")
+
+    def test_same_simple_name_in_different_namespaces_cannot_union_capabilities(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "namespace One; public class SampleClient : IMarketDataClient {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Other.cs", "namespace Two; public class SampleClient : ISymbolSearchProvider {}")
+        self.assert_rejected("ambiguous source adapter type SampleClient")
+
+    def test_partial_declarations_must_share_qualified_identity(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "namespace One; public partial class SampleClient : IMarketDataClient {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Other.cs", "namespace Two; public partial class SampleClient : ISymbolSearchProvider {}")
+        self.assert_rejected("ambiguous source adapter type SampleClient")
+
+    def test_same_qualified_partial_type_can_union_its_interfaces(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "namespace One; public sealed partial class SampleClient : IMarketDataClient {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Other.cs", "namespace One { public sealed partial class SampleClient : ISymbolSearchProvider {} }")
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_partial_fragment_can_omit_explicit_public_modifier(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "namespace One; public sealed partial class SampleClient : IMarketDataClient {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Other.cs", "namespace One; partial class SampleClient : ISymbolSearchProvider {}")
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_abstract_partial_modifier_applies_to_the_whole_type(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "namespace One; public partial class SampleClient : IMarketDataClient, ISymbolSearchProvider {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Other.cs", "namespace One; abstract partial class SampleClient {}")
+        self.assert_rejected("unknown concrete adapter type SampleClient")
+
+    def test_abstract_partial_helpers_do_not_add_runtime_capabilities(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Helper.cs", "public abstract partial class Helper : IOptionsChainProvider {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Helper.Other.cs", "public partial class Helper {}")
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_partial_records_accept_equivalent_record_class_notation(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "namespace One; public partial record SampleClient : IMarketDataClient;")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Other.cs", "namespace One; partial record class SampleClient : ISymbolSearchProvider;")
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_partial_types_with_different_generic_arities_cannot_merge(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "namespace One; public partial class SampleClient<T> : IMarketDataClient {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Other.cs", "namespace One; public partial class SampleClient<T, U> : ISymbolSearchProvider {}")
+        self.assert_rejected("ambiguous source adapter type SampleClient")
+
+    def test_same_qualified_nonpartial_duplicates_are_rejected(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "namespace One; public class SampleClient : IMarketDataClient {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/Other.cs", "namespace One; public class SampleClient : ISymbolSearchProvider {}")
+        self.assert_rejected("ambiguous source adapter type SampleClient")
+
+    def test_same_file_duplicates_are_not_assumed_to_be_conditional(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", '''
+namespace One;
+public class SampleClient : IMarketDataClient {}
+public class SampleClient : ISymbolSearchProvider {}
+''')
+        self.assert_rejected("ambiguous source adapter type SampleClient")
+
+    def test_comments_cannot_forge_mutually_exclusive_declarations(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", '''
+namespace One;
+/*
+#if SDK
+*/
+public class SampleClient : IMarketDataClient {}
+/*
+#else
+*/
+public class SampleClient : ISymbolSearchProvider {}
+''')
+        self.assert_rejected("ambiguous source adapter type SampleClient")
+
+    def test_same_file_mutually_exclusive_sdk_declarations_remain_supported(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", '''
+#if SDK
+namespace One;
+public class SampleClient : IMarketDataClient, ISymbolSearchProvider {}
+#else
+namespace One;
+public class SampleClient : IMarketDataClient, ISymbolSearchProvider {}
+#endif
+''')
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_conditional_variants_cannot_hide_a_concrete_runtime_adapter(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/NewOptions.cs", '''
+#if SDK
+public abstract class NewOptions : IOptionsChainProvider {}
+#else
+public class NewOptions : IOptionsChainProvider {}
+#endif
+''')
+        self.assert_rejected("incompatible conditional adapter declarations NewOptions")
+
+    def test_nested_public_helpers_are_not_runtime_adapter_candidates(self):
+        for container in ("internal class", "public class", "public record", "public struct", "public interface"):
+            with self.subTest(container=container):
+                self.write(f"{readiness.ADAPTER_ROOT}/Sample/Helpers.cs", f"{container} Container {{ public class NestedOptions : IOptionsChainProvider {{}} }}")
+                self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_catalog_cannot_reference_nested_public_implementation(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "public class Container { public class SampleClient : IMarketDataClient, ISymbolSearchProvider {} }")
+        self.assert_rejected("unknown concrete adapter type SampleClient")
+
+    def test_scoped_aliases_resolve_capability_interfaces(self):
+        self.write("src/Meridian.ProviderSdk/IMarketDataClient.cs", "namespace Meridian.Infrastructure; public interface IMarketDataClient {}")
+        for declaration in (
+            "using Stream = global::Meridian.Infrastructure.IMarketDataClient; namespace One; public class SampleClient : Stream, ISymbolSearchProvider {}",
+            "namespace One { using Infra = Meridian.Infrastructure; public class SampleClient : Infra.IMarketDataClient, ISymbolSearchProvider {} }",
+            "using Infra = global::Meridian.Infrastructure; namespace One; public class SampleClient : Infra::IMarketDataClient, ISymbolSearchProvider {}",
+        ):
+            with self.subTest(declaration=declaration):
+                self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", declaration)
+                self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_aliased_capability_missing_from_catalog_is_rejected(self):
+        self.write("src/Meridian.ProviderSdk/IOptionsChainProvider.cs", "namespace Contracts; public interface IOptionsChainProvider {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/NewOptions.cs", "using Options = Contracts.IOptionsChainProvider; public class NewOptions : Options {}")
+        self.assert_rejected("missing known adapter capability implemented by NewOptions")
+
+    def test_aliases_do_not_leak_between_sibling_namespace_scopes(self):
+        self.write("src/Meridian.ProviderSdk/IMarketDataClient.cs", "namespace Contracts; public interface IMarketDataClient {}")
+        self.write("src/Meridian.ProviderSdk/IOptionsChainProvider.cs", "namespace Contracts; public interface IOptionsChainProvider {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", '''
+namespace One { using Contract = Contracts.IOptionsChainProvider; public abstract class Helper : Contract {} }
+namespace Two { using Contract = Contracts.IMarketDataClient; public class SampleClient : Contract, ISymbolSearchProvider {} }
+''')
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_unsupported_alias_target_in_base_list_fails_closed(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "using Stream = (int Left, int Right); public class SampleClient : Stream, ISymbolSearchProvider {}")
+        self.assert_rejected("unsupported base alias")
+
+    def test_unrelated_qualified_contract_suffix_is_not_a_capability(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "public class SampleClient : Unrelated.IMarketDataClient, ISymbolSearchProvider {}")
+        self.assert_rejected("SampleClient does not implement IMarketDataClient")
+
+    def test_alias_target_must_resolve_exact_qualified_type(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "using Stream = Unrelated.IMarketDataClient; public class SampleClient : Stream, ISymbolSearchProvider {}")
+        self.assert_rejected("unresolved base alias Stream")
+
+    def test_unused_unsupported_aliases_do_not_affect_adapter_detection(self):
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", "using Pair = (int Left, int Right); using Number = int; public class SampleClient : IMarketDataClient, ISymbolSearchProvider {}")
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_conflicting_conditional_aliases_cannot_hide_a_capability(self):
+        self.write("src/Meridian.ProviderSdk/Contracts.cs", "namespace Contracts; public interface IOptionsChainProvider {} public interface Marker {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/NewOptions.cs", '''
+#if SDK
+using Optional = Contracts.IOptionsChainProvider;
+#else
+using Optional = Contracts.Marker;
+#endif
+public class NewOptions : Optional {}
+''')
+        self.assert_rejected("conflicting scoped base alias Optional")
+
+    def test_namespace_alias_can_shadow_outer_alias(self):
+        self.write("src/Meridian.ProviderSdk/Contracts.cs", "namespace Contracts; public interface IMarketDataClient {} public interface IOptionsChainProvider {}")
+        self.write(f"{readiness.ADAPTER_ROOT}/Sample/SampleClient.cs", '''
+using Contract = Contracts.IOptionsChainProvider;
+namespace One {
+    using Contract = Contracts.IMarketDataClient;
+    public class SampleClient : Contract, ISymbolSearchProvider {}
+}
+''')
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
 
     def test_record_capabilities_missing_from_catalog_are_rejected(self):
         for declaration in (
@@ -296,6 +459,22 @@ public abstract record class AbstractOptions : IOptionsChainProvider;
         self.data["adapters"][1]["registration"] = [{"path": "src/Registration.cs", "symbol": "Registration"}]
         self.data["adapters"][1]["evidence"].append({"path": "tests/SampleTests.cs", "symbol": "SampleTests", "kind": "source"})
         self.assertEqual([], readiness.validate_registry(self.root, self.data))
+
+    def test_excluded_family_allows_empty_registration_but_still_requires_list(self):
+        self.data["adapters"][0]["registration"] = []
+        self.assertEqual([], readiness.validate_registry(self.root, self.data))
+        self.data["adapters"][0]["registration"] = None
+        self.assert_rejected("registration must be a reference list")
+
+    def test_catalogued_family_requires_nonempty_registration(self):
+        self.data["adapters"][1]["registration"] = []
+        self.assert_rejected("registration must be a non-empty reference list")
+
+    def test_exclusion_catalog_is_not_a_runtime_registration(self):
+        for path in (readiness.CATALOG_PATH, readiness.CATALOG_PATH.replace("/Core/", "/Core//")):
+            with self.subTest(path=path):
+                self.data["adapters"][0]["registration"] = [{"path": path, "symbol": "ProviderCapabilityDescriptorCatalog"}]
+                self.assert_rejected("catalog exclusion is not a runtime registration")
 
     def test_absolute_traversal_and_windows_paths_are_rejected(self):
         evidence = self.data["adapters"][1]["evidence"][0]

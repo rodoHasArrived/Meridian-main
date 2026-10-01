@@ -1,11 +1,11 @@
 {
   "total_files": 677,
-  "total_lines": 147507,
+  "total_lines": 147651,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 273,
-  "average_lines": 217.9,
+  "todo_count": 274,
+  "average_lines": 218.1,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -971,7 +971,7 @@
     },
     {
       "path": "build/scripts/docs/README.md",
-      "line_count": 846,
+      "line_count": 850,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2739,7 +2739,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 11085,
+      "line_count": 11091,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3003,7 +3003,7 @@
     },
     {
       "path": "docs/operators/statement-reconciliation-report-operations.md",
-      "line_count": 252,
+      "line_count": 280,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3787,7 +3787,7 @@
     },
     {
       "path": "docs/source/generated/adapter-readiness-matrix.md",
-      "line_count": 872,
+      "line_count": 875,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3827,7 +3827,7 @@
     },
     {
       "path": "docs/source/README.md",
-      "line_count": 53,
+      "line_count": 58,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5291,7 +5291,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 879,
+      "line_count": 886,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5331,9 +5331,9 @@
     },
     {
       "path": "src/Meridian.Core/README.md",
-      "line_count": 125,
+      "line_count": 131,
       "has_heading": true,
-      "todo_count": 1,
+      "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -5387,7 +5387,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 792,
+      "line_count": 849,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5443,7 +5443,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 328,
+      "line_count": 354,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5467,7 +5467,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 282,
+      "line_count": 284,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

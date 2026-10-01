@@ -135,6 +135,7 @@ class AdapterReadinessRenderTests(unittest.TestCase):
         self.assertIn("does not grant runtime entitlements", rendered)
         self.assertIn("their presence does not claim a passing live run", rendered)
         self.assertNotIn("No catalogued provider implementation is listed", rendered)
+        self.assertNotIn("No runtime registration.", rendered)
 
     def test_separate_contracts_do_not_advertise_shared_capabilities(self):
         row = adapter("Core", None)
@@ -169,6 +170,27 @@ class AdapterReadinessRenderTests(unittest.TestCase):
                 for item in row["evidence"]:
                     self.assertIn(renderer.reference(item), rendered)
                 self.assertEqual(before, row)
+
+    def test_unregistered_families_keep_exclusions_as_evidence_not_registration(self):
+        rows = {row["folder"]: row for row in renderer.load_registry(ROOT)["adapters"]}
+        exclusion_source = {
+            "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs",
+            "symbol": "ProviderCapabilityDescriptorCatalog",
+            "kind": "source",
+        }
+        for folder in ("Templates", "TradeStation", "Tradier"):
+            with self.subTest(folder=folder):
+                row = rows[folder]
+                self.assertEqual([], row["registration"])
+                self.assertIn(exclusion_source, row["evidence"])
+                self.assertTrue(any(item["kind"] == "test" for item in row["evidence"]))
+                rendered = renderer.render_matrix(registry(row))
+                registration_section, evidence_section = rendered.split("**Registration path:**", 1)[1].split(
+                    "**Targeted evidence:**", 1
+                )
+                self.assertIn("- No runtime registration.", registration_section)
+                self.assertNotIn(renderer.reference(exclusion_source), registration_section)
+                self.assertIn("Source: " + renderer.reference(exclusion_source), evidence_section)
 
     def test_reference_labels_escape_table_delimiters_and_newlines(self):
         rendered = renderer.reference({"symbol": "Alpha|Beta\nGamma", "path": "tests/AlphaTests.cs"})

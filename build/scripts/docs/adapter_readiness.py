@@ -82,13 +82,14 @@ def _lex(source: str):
             yield token, match.start(), match.end()
 
 
-def code_only(source: str) -> str:
+def code_only(source: str, *, keep_directives: bool = False) -> str:
     """Preserve positions/newlines while masking comments and C# string literals."""
     result = ["\n" if ch == "\n" else " " for ch in source]
     for token, start, end in _lex(source):
         if not token.startswith(('"', "'", '@"', '$"', '$@"', '@$"')) and not re.match(r'\$+"', token):
             result[start:end] = token
-    return re.sub(r"(?m)^\s*#[^\n]*", "", "".join(result))
+    masked = "".join(result)
+    return masked if keep_directives else re.sub(r"(?m)^[ \t]*#[^\n]*", lambda match: " " * len(match[0]), masked)
 
 
 def _tokens(source: str) -> list[str]:
@@ -259,6 +260,7 @@ class AdapterType:
     folder: str | None
     bases: set[str]
     concrete_public: bool
+    qualified_name: str
 
 
 def _base_names(tail: str) -> set[str]:
@@ -281,50 +283,196 @@ def _base_names(tail: str) -> set[str]:
             index = 3
         if index >= len(base) or not re.fullmatch(IDENTIFIER, base[index]):
             raise SourceError(f"unsupported adapter base declaration: {' '.join(base)}")
-        name = base[index]
+        name = "global::" if index == 3 else ""
+        name += base[index]
         index += 1
-        while base[index:index + 1] == ["."]:
-            if index + 1 >= len(base) or not re.fullmatch(IDENTIFIER, base[index + 1]):
+        while base[index:index + 1] == ["."] or base[index:index + 2] == [":", ":"]:
+            separator = "::" if base[index] == ":" else "."
+            index += len(separator)
+            if index >= len(base) or not re.fullmatch(IDENTIFIER, base[index]):
                 raise SourceError("unsupported qualified adapter base declaration")
-            name = base[index + 1]
-            index += 2
+            name += separator + base[index]
+            index += 1
         if index < len(base) and base[index] not in {"<", "("}:
             raise SourceError(f"unsupported adapter base declaration: {' '.join(base)}")
         names.add(name)
     return names
 
 
+def _conditional_branches(source: str, offset: int) -> dict[int, int]:
+    """Identify mutually exclusive #if arms without evaluating build symbols."""
+    stack: list[tuple[int, int]] = []
+    for match in re.finditer(r"(?m)^[ \t]*#(if|elif|else|endif)\b", source[:offset]):
+        if match[1] == "if":
+            stack.append((match.start(), 0))
+        elif match[1] in {"elif", "else"} and stack:
+            start, arm = stack.pop()
+            stack.append((start, arm + 1))
+        elif match[1] == "endif" and stack:
+            stack.pop()
+    return dict(stack)
+
+
+def _type_declarations(source: str):
+    """Walk namespace scopes only; a type body is opaque, so nested types never escape."""
+    lexed = list(_lex(code_only(source)))
+    conditional_source = code_only(source, keep_directives=True)
+    tokens = [item[0] for item in lexed]
+    modifiers_set = {"public", "internal", "private", "protected", "abstract", "sealed", "static", "partial", "readonly", "new", "unsafe", "ref", "file"}
+
+    def scope(start: int, stop: int, namespace: str, inherited_aliases: dict):
+        aliases = dict(inherited_aliases)
+        local_aliases: set[str] = set()
+        modifiers: set[str] = set()
+        index = start
+        while index < stop:
+            token = tokens[index]
+            if token in modifiers_set:
+                modifiers.add(token)
+                index += 1
+                continue
+            if token == "namespace":
+                end = index + 1
+                while end < stop and tokens[end] not in {"{", ";"}:
+                    end += 1
+                name = "".join(tokens[index + 1:end])
+                if not re.fullmatch(rf"{IDENTIFIER}(?:\.{IDENTIFIER})*", name) or end == stop:
+                    raise SourceError("unsupported source namespace declaration")
+                if tokens[end] == ";":
+                    namespace = name  # Repeated file namespaces may occur in #if/#else arms.
+                    local_aliases.clear()
+                    index = end + 1
+                else:
+                    _, after = _balanced(tokens, end)
+                    yield from scope(end + 1, after - 1, ".".join(filter(None, (namespace, name))), aliases)
+                    index = after
+                modifiers.clear()
+                continue
+            if token == "using" or tokens[index:index + 2] == ["global", "using"]:
+                end = tokens.index(";", index)
+                begin = index + (2 if token == "global" else 1)
+                statement = tokens[begin:end]
+                if "=" in statement:
+                    if token == "global":
+                        raise SourceError("global using aliases are not supported in the scoped adapter reader")
+                    equals = statement.index("=")
+                    if equals not in {1, 2} or (equals == 2 and statement[0] != "unsafe"):
+                        raise SourceError("unsupported using alias declaration")
+                    alias, target = statement[equals - 1], statement[equals + 1:]
+                    aliases[alias] = None if alias in local_aliases and aliases[alias] != target else target
+                    local_aliases.add(alias)
+                index = end + 1
+                modifiers.clear()
+                continue
+            if token in {"class", "interface", "record", "struct", "enum"}:
+                kind, begin = token, index
+                index += 1
+                if kind == "record" and tokens[index] in {"class", "struct"}:
+                    kind = "record struct" if tokens[index] == "struct" else "record"
+                    index += 1
+                name = tokens[index]
+                if not re.fullmatch(IDENTIFIER, name):
+                    raise SourceError("unsupported source type declaration")
+                index += 1
+                header_start = index
+                while index < stop and tokens[index] not in {"{", ";"}:
+                    if tokens[index] in {"(", "["}:
+                        _, index = _balanced(tokens, index)
+                    else:
+                        index += 1
+                if index == stop:
+                    raise SourceError(f"unterminated source type declaration {name}")
+                header = tokens[header_start:index]
+                arity = 0
+                if header[:1] == ["<"]:
+                    close = header.index(">")
+                    arity = len(_arguments(header[1:close]))
+                qualified = ".".join(filter(None, (namespace, name))) + (f"`{arity}" if arity else "")
+                yield name, qualified, kind, set(modifiers), _base_names(" ".join(header)), dict(aliases), _conditional_branches(conditional_source, lexed[begin][1])
+                if tokens[index] == "{":
+                    _, index = _balanced(tokens, index)
+                else:
+                    index += 1
+                modifiers.clear()
+                continue
+            if token in {"[", "(", "{"}:
+                _, index = _balanced(tokens, index)
+            else:
+                index += 1
+                if token == ";":
+                    modifiers.clear()
+
+    yield from scope(0, len(tokens), "", {})
+
+
+def _resolve_base(name: str, aliases: dict, types: dict[str, AdapterType]) -> str:
+    original = name
+    alias_used = False
+    seen = set()
+    while not name.startswith("global::"):
+        first = re.split(r"\.|::", name)[0]
+        if first not in aliases:
+            break
+        if first in seen:
+            raise SourceError(f"cyclic base alias {original}")
+        seen.add(first)
+        alias_used = True
+        target = aliases[first]
+        if target is None:
+            raise SourceError(f"conflicting scoped base alias {first}")
+        if not re.fullmatch(rf"(?:global::)?{IDENTIFIER}(?:(?:\.|::){IDENTIFIER})*", "".join(target)):
+            raise SourceError(f"unsupported base alias {first}")
+        suffix = name[len(first):]
+        name = "".join(target) + ("." + suffix[2:] if suffix.startswith("::") else suffix)
+    name = name.removeprefix("global::")
+    if "::" in name:
+        raise SourceError(f"unresolved base alias {original}")
+    if "." in name:
+        candidates = [t.name for t in types.values() if t.qualified_name.split("`")[0] == name]
+        if candidates:
+            return candidates[0]
+        if alias_used:
+            raise SourceError(f"unresolved base alias {original}: {name}")
+        return name  # An unrelated qualified suffix is not a known capability.
+    if alias_used and name not in types:
+        raise SourceError(f"unresolved base alias {original}: {name}")
+    return name
+
+
 def read_adapter_types(root: Path) -> dict[str, AdapterType]:
     types: dict[str, AdapterType] = {}
     roots = [root / ADAPTER_ROOT, root / "src/Meridian.ProviderSdk", root / "src/Meridian.Infrastructure/DataSources"]
-    declaration = re.compile(r"\b(?P<modifiers>(?:(?:public|internal|private|protected|abstract|sealed|static|partial|readonly)\s+)*)"
-                             r"(?P<kind>class|interface|record(?:\s+(?:class|struct))?)\s+(?P<name>" + IDENTIFIER + r")(?P<tail>[^;{}]*)[;{]")
-    for source_root in roots:
-        for path in sorted(source_root.rglob("*.cs")):
-            if any(part in {"obj", "bin"} for part in path.relative_to(source_root).parts):
+    paths = [path for source_root in roots for path in source_root.rglob("*.cs") if not {"obj", "bin"} & set(path.parts)]
+    brokerage_contract = root / "src/Meridian.Execution.Sdk/IBrokerageGateway.cs"
+    if brokerage_contract.exists():
+        paths.append(brokerage_contract)
+    declarations: dict[str, list] = {}
+    pending_bases: list[tuple[str, set[str], dict]] = []
+    for path in sorted(paths):
+        source = path.read_text(encoding="utf-8")
+        folder = path.relative_to(root / ADAPTER_ROOT).parts[0] if path.is_relative_to(root / ADAPTER_ROOT) else None
+        for name, qualified, kind, modifiers, bases, aliases, branches in _type_declarations(source):
+            if kind in {"struct", "record struct", "enum"} or (kind != "interface" and not modifiers & {"public", "partial"}):
                 continue
-            text = code_only(path.read_text(encoding="utf-8"))
-            folder = path.relative_to(root / ADAPTER_ROOT).parts[0] if path.is_relative_to(root / ADAPTER_ROOT) else None
-            for match in declaration.finditer(text):
-                kind = " ".join(match["kind"].split())
-                modifiers = set(match["modifiers"].split())
-                if kind == "record struct" or (kind != "interface" and "public" not in modifiers):
-                    continue
-                name = match["name"]
-                tail = match["tail"]
-                bases = _base_names(tail)
-                # Unrelated data records can share names across namespaces. A record
-                # needs an explicit base/interface to participate in this graph.
-                if kind.startswith("record") and not bases:
-                    continue
-                concrete = kind != "interface" and "public" in modifiers and not modifiers & {"abstract", "static"}
-                if name in types:
-                    if types[name].folder != folder:
-                        raise SourceError(f"ambiguous source adapter type {name}")
-                    types[name].bases.update(bases)  # partial declarations and #if SDK branches
-                    types[name].concrete_public |= concrete
-                else:
-                    types[name] = AdapterType(name, folder, bases, concrete)
+            if kind.startswith("record") and not bases and "partial" not in modifiers:
+                continue
+            concrete = kind != "interface" and "public" in modifiers and not modifiers & {"abstract", "static"}
+            for old_path, old_qualified, old_kind, old_modifiers, old_branches in declarations.get(name, []):
+                partial = "partial" in modifiers & old_modifiers
+                exclusive = path == old_path and any(branches[key] != old_branches[key] for key in branches.keys() & old_branches.keys())
+                if qualified != old_qualified or kind != old_kind or types[name].folder != folder or not (partial or exclusive):
+                    raise SourceError(f"ambiguous source adapter type {name}: {old_qualified} and {qualified}")
+                if exclusive and modifiers & {"public", "abstract", "static"} != old_modifiers & {"public", "abstract", "static"}:
+                    raise SourceError(f"incompatible conditional adapter declarations {name}")
+            declarations.setdefault(name, []).append((path, qualified, kind, modifiers, branches))
+            if name in types:
+                combined = set().union(*(item[3] for item in declarations[name]))
+                types[name].concrete_public = kind != "interface" and "public" in combined and not combined & {"abstract", "static"}
+            else:
+                types[name] = AdapterType(name, folder, set(), concrete, qualified)
+            pending_bases.append((name, bases, aliases))
+    for name, bases, aliases in pending_bases:
+        types[name].bases.update(_resolve_base(base, aliases, types) for base in bases)
     return types
 
 
@@ -450,8 +598,9 @@ def validate_registry(root: Path, data: Any) -> list[str]:
             errors.append(f"{label}: risks must be a non-empty list of text")
         for field in ("registration", "evidence"):
             refs = row.get(field)
-            if not isinstance(refs, list) or not refs:
-                errors.append(f"{label}: {field} must be a non-empty reference list")
+            allow_empty = field == "registration" and folder in excluded
+            if not isinstance(refs, list) or (not refs and not allow_empty):
+                errors.append(f"{label}: {field} must be a {'reference list' if allow_empty else 'non-empty reference list'}")
                 continue
             has_test = False
             for ref in refs:
@@ -469,6 +618,8 @@ def validate_registry(root: Path, data: Any) -> list[str]:
                         raise SourceError(f"reference must target C# source: {ref['path']}")
                     if field == "registration" and not ref["path"].startswith("src/"):
                         raise SourceError("registration references must be under src/")
+                    if field == "registration" and folder in excluded and path == (root / CATALOG_PATH).resolve():
+                        raise SourceError("catalog exclusion is not a runtime registration")
                     if field == "evidence":
                         if not isinstance(ref["kind"], str) or ref["kind"] not in {"test", "source"}:
                             raise SourceError(f"invalid evidence kind: {ref['kind']}")

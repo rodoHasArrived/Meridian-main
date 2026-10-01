@@ -677,10 +677,11 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Registration path:**
 
-- [ProviderCapabilityDescriptorCatalog](../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs) (`src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs`)
+- No runtime registration.
 
 **Targeted evidence:**
 
+- Source: [ProviderCapabilityDescriptorCatalog](../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs) (`src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs`)
 - Test: [TemplateBrokerageGatewayTests](../../../tests/Meridian.Tests/Infrastructure/Providers/TemplateBrokerageGatewayTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/TemplateBrokerageGatewayTests.cs`)
 - Source: [TemplateBrokerageGateway](../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs) (`src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs`)
 - Source: [BrokerAdapterTemplate](../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs) (`src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs`)
@@ -747,10 +748,11 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Registration path:**
 
-- [ProviderCapabilityDescriptorCatalog](../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs) (`src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs`)
+- No runtime registration.
 
 **Targeted evidence:**
 
+- Source: [ProviderCapabilityDescriptorCatalog](../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs) (`src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs`)
 - Test: [TradeStationPayloadMappersTests](../../../tests/Meridian.Tests/Infrastructure/Providers/TradeStationPayloadMappersTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/TradeStationPayloadMappersTests.cs`)
 - Source: [TradeStationPayloadMappers](../../../src/Meridian.Infrastructure/Adapters/TradeStation/TradeStationPayloadMappers.cs) (`src/Meridian.Infrastructure/Adapters/TradeStation/TradeStationPayloadMappers.cs`)
 
@@ -779,10 +781,11 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Registration path:**
 
-- [ProviderCapabilityDescriptorCatalog](../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs) (`src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs`)
+- No runtime registration.
 
 **Targeted evidence:**
 
+- Source: [ProviderCapabilityDescriptorCatalog](../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs) (`src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs`)
 - Test: [TradierCanonicalMappersTests](../../../tests/Meridian.Tests/Infrastructure/Adapters/TradierCanonicalMappersTests.cs) (`tests/Meridian.Tests/Infrastructure/Adapters/TradierCanonicalMappersTests.cs`)
 - Test: [TradierExecutionReconciliationTests](../../../tests/Meridian.Tests/Execution/TradierExecutionReconciliationTests.cs) (`tests/Meridian.Tests/Execution/TradierExecutionReconciliationTests.cs`)
 - Source: [TradierCanonicalMappers](../../../src/Meridian.Infrastructure/Adapters/Tradier/TradierCanonicalMappers.cs) (`src/Meridian.Infrastructure/Adapters/Tradier/TradierCanonicalMappers.cs`)

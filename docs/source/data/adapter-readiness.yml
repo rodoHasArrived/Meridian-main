@@ -940,10 +940,11 @@ adapters:
   degradation: Obsolete copy-only scaffolds provide configurable readiness and in-memory account/order behavior
     for tests. The runtime catalog explicitly excludes them; implemented scaffold interfaces do not confer production
     capability claims.
-  registration:
+  registration: []
+  evidence:
   - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
     symbol: ProviderCapabilityDescriptorCatalog
-  evidence:
+    kind: source
   - path: tests/Meridian.Tests/Infrastructure/Providers/TemplateBrokerageGatewayTests.cs
     symbol: TemplateBrokerageGatewayTests
     kind: test
@@ -1039,10 +1040,11 @@ adapters:
   - Mapper fixture coverage cannot establish token handling, rate-limit behavior or broker connectivity.
   degradation: Required identity fields are validated by payload mappers. There is no transport or execution fallback
     to activate; the descriptor catalog explicitly excludes this mapper-only family.
-  registration:
+  registration: []
+  evidence:
   - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
     symbol: ProviderCapabilityDescriptorCatalog
-  evidence:
+    kind: source
   - path: tests/Meridian.Tests/Infrastructure/Providers/TradeStationPayloadMappersTests.cs
     symbol: TradeStationPayloadMappersTests
     kind: test
@@ -1082,10 +1084,11 @@ adapters:
   - Execution reconciliation fixtures do not prove broker transport, rate limits or live orders.
   degradation: Mappers normalize supplied payloads and validate required data; they cannot connect or execute orders.
     The descriptor catalog excludes the family from runtime provider capabilities.
-  registration:
+  registration: []
+  evidence:
   - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
     symbol: ProviderCapabilityDescriptorCatalog
-  evidence:
+    kind: source
   - path: tests/Meridian.Tests/Infrastructure/Adapters/TradierCanonicalMappersTests.cs
     symbol: TradierCanonicalMappersTests
     kind: test

@@ -17,6 +17,11 @@ roadmap traceability, TODOs, diagrams, and validation commands.
   for every direct `src/Meridian.Infrastructure/Adapters/` family, including canonical IDs and aliases,
   capability claims, dependencies, risks, degradation behavior, registration, evidence, owner, and next action.
 
+The adapter registry's `registration` list identifies runtime registration paths. Use
+`registration: []` for an explicitly excluded family with no runtime registration, retaining its
+exclusion source and targeted tests in `evidence`. Catalogued runtime providers require a non-empty
+registration list.
+
 ## Generated outputs
 
 `build/scripts/docs/render-source-docs.py` writes deterministic views under
