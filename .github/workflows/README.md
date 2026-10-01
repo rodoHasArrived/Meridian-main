@@ -5,6 +5,14 @@ CI quality controls and administrator rollout are maintained in
 workflow lane runs actionlint and enforces full-SHA external action references. The manual
 `ci-concurrency-benchmark.yml` collects five comparable pairs; it never promotes concurrency.
 
+Meridian CI also calls `service-backed-integrations.yml` on pull requests (including forks),
+merge groups, main pushes and manual/reusable runs. Its always-reported `integration-gate`
+companion requires a successful PostgreSQL run; the four canonical `scripts/ci.sh` lanes and
+their `quality-gate` remain unchanged. Production Certification calls the same implementation.
+Both projects restore and execute independently, then TRX validation always rejects failed,
+skipped, missing or zero-discovery results. Each run uses a disposable `postgres:17` service
+with the certification connection settings, a read-only token and no production secrets.
+
 `Secret Scan` supports merge groups and release tags through the same pinned Gitleaks scanner
 used by ordinary CI. These events scan the exact checkout and reachable history directly because
 the upstream action rejects merge groups and can skip empty tag-push payloads. SARIF evidence
@@ -87,7 +95,8 @@ hosted job and shard timings separately from runner queue delays before claiming
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
-| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports one stable `quality-gate` aggregator result. `quality-gate` is the required status check for protected `main` merges after repository rulesets are enabled. | Lane summaries, build logs, TRX summaries, docs outputs, and workflow-hygiene evidence |
+| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
+| Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs both deterministic integration projects independently against disposable PostgreSQL, validates every TRX and both required prefixes, and retains coverage plus schema evidence. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
 | CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | Runs Secret Scan on PRs, main pushes and merge groups. Nightly/manual `main` runs retain full coverage and scenario evidence; canonical Meridian CI owns .NET/browser/docs checks. | Secret scan SARIF/evidence and nightly coverage artifacts |
 | CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | CodeQL security alerts surfaced in the repository Security tab |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop, WPF route, and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |

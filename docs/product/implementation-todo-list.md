@@ -48,7 +48,10 @@ failed the fixture network-delay wall-clock assertion (995.864 ms against a 700 
 the other .NET groups and browser, documentation, and workflow lanes passed. That newer commit
 is not a fully green replacement for the recorded baseline.
 The `65dc0107` evidence set below is historical; it does not certify this commit or a later
-release. Ordinary CI excludes the PostgreSQL integration lane and cannot replace it.
+release. The four-lane `quality-gate` does not include PostgreSQL evidence. Its separate
+`integration-gate` now requires the shared service-backed PostgreSQL tests described in
+[CI/CD validation ownership](../engineering/ci-cd-optimization.md). These CI gates do not
+replace the remaining release-certification evidence.
 
 | Current concern | Source-backed disposition | Evidence and remaining boundary |
 | --- | --- | --- |
