@@ -255,8 +255,12 @@ whole host use?** Facts in the current code shape the answer:
 
    Providers can also be constructed lazily after startup, for example from `ProviderRegistry`
    factories. So the credential checks run again at every resolution, not only at startup. A
-   resolution is refused unless the record's current generation is `Verified`. A verification failure
-   recorded after startup therefore reaches no newly constructed provider.
+   resolution is refused unless the record's current generation is `Verified`. A verification update
+   can land between that read and the provider being handed out, so the resolver checks again at the
+   end: after constructing the provider and before exposing it, it rereads the record's vault revision,
+   generation and verification under the vault lock. If any of them changed, it disposes of the
+   provider and resolves again from the new state. A verification failure recorded after startup
+   therefore reaches every provider constructed after it is recorded.
 
    Providers already constructed may hold a copy of the credential. `AlpacaHistoricalDataProvider`,
    for example, copies it into fields and HTTP headers, and several hosts may be running on one
@@ -321,7 +325,11 @@ whole host use?** Facts in the current code shape the answer:
      stale. A bound family starts again only after its credential is verified anew. It also flags
      every provider-wide record as restored, because the backup may hold a secret that was since
      rotated. A flagged record is not used until the operator saves it again or verifies it, which
-     clears the flag.
+     clears the flag. When the quarantine came from the audit log itself (a missing entry, or a
+     broken hash chain), appending to the damaged log would keep failing. So repair moves the audit
+     log aside unchanged, as evidence, and starts a new one with a `baseline` entry. That entry
+     records the repaired vault's revision and digest, the actor, and the archived log's path, and it
+     starts a new hash chain.
      - Because repair touches every identity, not only its own, it is stop-the-world for the
        `DataRoot`. It first takes the `DataRoot` lock exclusively (point 8), which no running host
        of any configuration, with or without an identity, can be holding. A backup can also predate
@@ -509,6 +517,12 @@ whole host use?** Facts in the current code shape the answer:
    - **Parsed strictly.** The journal is parsed strictly. A malformed, truncated or unreadable entry,
      or an unreadable journal, makes credential-bearing families refuse to start and refuses mutation
      until `recover`. No entry is ever skipped.
+   - **Hash-chained.** Every journal entry carries the hash of the previous entry, covering its actor,
+     time, kind, subject and values, starting from the first entry or the latest `baseline`. Startup
+     and every command validate the whole chain, so deleting or editing an earlier transaction is
+     detected even when the last entry still matches the state file and the checkpoint. A broken
+     chain makes the state untrusted. `recover` moves the journal aside unchanged and starts a new
+     chain at its `baseline` entry.
    - **Offline only.** Every running host holds the host lock (`<config>.host-provider-credentials.lock`)
      in shared mode for its whole lifetime. Several hosts on one configuration, such as `SharedStorage`
      coordination instances or a workstation host beside a collector, can therefore run together.
@@ -933,6 +947,14 @@ The implementation PR must add tests that:
   location;
 - quarantine a custom-location vault while the configuration is unreadable and both sidecars are
   lost, and show `repair-vault --vault-path` clears it after checking the vault's identifier;
+- delete, and separately edit the actor of, an interior `pending`/outcome pair in the host journal
+  while the last entry still matches the state file and checkpoint, and show the broken chain makes
+  the state untrusted until `recover`;
+- break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
+  aside, a new log starts with a baseline matching the repaired vault, and the next load accepts it;
+- record a verification failure for a bound record between a lazy resolution's read and its
+  provider being exposed, and show the resolver disposes of that provider and refuses the
+  resolution;
 - crash `upgrade` after each publication boundary (backup, primary, audit baseline, marker), and
   show every host and other command refuses while `upgrade` resumes and completes from its journal;
 - at each of those boundaries, also delete or truncate the upgrade journal, and show
