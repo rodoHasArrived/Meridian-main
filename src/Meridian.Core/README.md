@@ -27,6 +27,12 @@ This layer provides low-level reusable infrastructure. It must stay independent 
 
 ## Key folders and files
 
+- `ReferenceData/CurrencyCodeCatalog.cs` - the shared recognized-currency catalog for statement
+  intake and accounting. Historical statement currencies remain recognized; the separate current
+  transaction list controls new payments. The Ledger compatibility surface delegates to this catalog.
+  Current currency, fund, and bond-market units match [SIX ISO 4217 List One](https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-one.xml)
+  published 2026-09-17, including USN, CHE/CHW, BOV, COU, MXV, UYW, XAD, and XBA–XBD.
+  The no-currency and testing sentinels XXX and XTS remain excluded from monetary evidence.
 - `Config/` - shared configuration models, JSON serializer options, JSON Schema generation,
   FluentValidation rules, validation pipeline stages, credential placeholder detection, default
   config-path resolution, environment overrides, configuration templates, config file hot-reload

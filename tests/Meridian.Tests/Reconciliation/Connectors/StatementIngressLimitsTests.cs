@@ -361,11 +361,11 @@ public sealed class StatementIngressLimitsTests : IDisposable
         var connector = new CsvStatementConnector(
             Catalog(),
             TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 3, MaxLineBytes = 4096 });
-        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,not-a-date\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,also-bad\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,still-bad\n";
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01,USD\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,not-a-date,USD\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,also-bad,USD\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,still-bad,USD\n";
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("mixed.csv", Encoding.UTF8.GetBytes(csv)));
@@ -386,13 +386,13 @@ public sealed class StatementIngressLimitsTests : IDisposable
         var connector = new CsvStatementConnector(
             Catalog(),
             TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1, MaxLineBytes = 4096 });
-        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,not-a-date\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,also-bad\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,still-bad\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,bad-again\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,worse-yet\n";
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01,USD\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,not-a-date,USD\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,also-bad,USD\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,still-bad,USD\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,bad-again,USD\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,worse-yet,USD\n";
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("mixed-tight.csv", Encoding.UTF8.GetBytes(csv)));
@@ -409,13 +409,13 @@ public sealed class StatementIngressLimitsTests : IDisposable
         // MaxDocumentLines physical lines produced MaxDocumentLines + 1 segments and was refused - while
         // the identical file without the terminal newline was accepted. Acceptance must not turn on
         // newline convention. Both forms are asserted here because only the pair proves it.
-        var header = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n";
+        var header = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n";
         var rows = string.Join(
             "\n",
-            Enumerable.Range(0, 3).Select(static row => $"ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-0{row + 1}"));
+            Enumerable.Range(0, 3).Select(static row => $"ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-0{row + 1},USD"));
         var connector = new CsvStatementConnector(
             Catalog(),
-            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 100, MaxDocumentLines = 4 });
+            TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 100, MaxDocumentLines = 4, MaxLineBytes = 128 });
 
         var withNewline = await connector.ParseAsync(
             new StatementSourceDocument("trailing.csv", Encoding.UTF8.GetBytes(header + rows + "\n")));
@@ -441,10 +441,11 @@ public sealed class StatementIngressLimitsTests : IDisposable
             {
                 MaxDocumentBytes = 1024 * 1024,
                 MaxRecords = 100,
-                MaxDocumentLines = int.MaxValue
+                MaxDocumentLines = int.MaxValue,
+                MaxLineBytes = 128
             });
-        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01\n";
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01,USD\n";
 
         var act = async () => await connector.ParseAsync(
             new StatementSourceDocument("unbounded.csv", Encoding.UTF8.GetBytes(csv)));
@@ -1732,9 +1733,9 @@ public sealed class StatementIngressLimitsTests : IDisposable
         var connector = new CsvStatementConnector(
             Catalog(),
             TightLimits with { MaxDocumentBytes = 64, MaxRecords = 1000, MaxLineBytes = 4096 });
-        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01\n"
-            + "ACC-1,AAPL,5,101.00,-505.00,trade,2026-05-02\n";
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01,USD\n"
+            + "ACC-1,AAPL,5,101.00,-505.00,trade,2026-05-02,USD\n";
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("big.csv", Encoding.UTF8.GetBytes(csv)));
@@ -1755,9 +1756,9 @@ public sealed class StatementIngressLimitsTests : IDisposable
         var connector = new CsvStatementConnector(
             Catalog(),
             TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1000, MaxLineBytes = 4096 });
-        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n"
-            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01\n"
-            + "ACC-1,AAPL,5,101.00,-505.00,trade,2026-05-02\n";
+        var csv = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\n"
+            + "ACC-1,AAPL,10,100.00,-1000.00,trade,2026-05-01,USD\n"
+            + "ACC-1,AAPL,5,101.00,-505.00,trade,2026-05-02,USD\n";
 
         var result = await connector.ParseAsync(
             new StatementSourceDocument("ok.csv", Encoding.UTF8.GetBytes(csv)));
