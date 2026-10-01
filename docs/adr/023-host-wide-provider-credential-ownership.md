@@ -102,13 +102,15 @@ whole host use?** Facts in the current code shape the answer:
 2. **Every family is explicitly classified; each credential-bearing family has one owner, fixed at
    startup.** Every enabled family, built-in or plugin, carries one credential classification:
    - **credential-bearing:** its `ProviderCredentialCatalog` entry requires fields, or any of its
-     adapters declares a required `ProviderCredentialFields` entry (for example NYSE);
-   - **session-backed:** the account is set by an external session the host cannot attribute or
-     verify (for example `ibkr` through TWS or IB Gateway). It is treated as credential-bearing but
-     cannot be bound;
-   - **credential-free:** explicitly listed (for example Synthetic, Yahoo, Stooq and Edgar search), and
-     no adapter in the family declares a required credential field. It runs with credential source
-     `none` and is never refused for being unbound.
+     adapters reports `IProviderMetadata.RequiresCredentials`. That property is true whenever the
+     adapter declares any `ProviderCredentialFields` entry, required or not (for example NYSE);
+   - **session-backed:** an explicit override for a family whose account is set by an external
+     session the host cannot attribute or verify (for example `ibkr` through TWS or IB Gateway, whose
+     declared fields are connection settings). It is treated as credential-bearing but cannot be
+     bound;
+   - **credential-free:** explicitly listed (for example Synthetic, Yahoo, Stooq and Edgar search). Its
+     catalog entry requires no field, and no adapter in the family reports `RequiresCredentials`. It
+     runs with credential source `none` and is never refused for being unbound.
 
    A family with no classification is treated as unbound credential-bearing. A credential-bearing
    family has exactly one credential owner for all of its host-wide market-data capabilities. That
@@ -242,8 +244,10 @@ whole host use?** Facts in the current code shape the answer:
      - if it matches the after-digest, the outcome is `committed`;
      - if it matches the before-digest, the outcome is `aborted`;
      - otherwise the event stays `pending`, and the command exits non-zero.
-   - **Recovery.** At startup and at the start of every mutating command, under the host lock, a
-     `pending` event without an outcome is resolved against the file's actual state:
+   - **Recovery.** At startup and at the start of every mutating command, a `pending` event without
+     an outcome is resolved against the file's actual state. Recovery reads and closes events
+     through the same audit writer, so it takes the locks in the declared order, host lock then vault
+     lock, before reading:
      - if the digest of the whole file equals the event's after-digest, it is closed as
        `committed (recovered)`;
      - if it equals the event's before-digest, it is closed as `aborted (recovered)`;
@@ -279,7 +283,7 @@ implemented yet.
 | Runtime provider construction | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs` | One provider per catalog registration; Alpaca's post-resolver fallback lives here |
 | Capability catalog | `src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs` | The built-in families that need a credential classification |
 | Credential catalog | `src/Meridian.DataIntegration/Credentials/ProviderCredentialCatalog.cs` | Required fields per family; has no NYSE entry and no required `ibkr` fields |
-| Adapter credential metadata | `src/Meridian.ProviderSdk/IProviderMetadata.cs` | `ProviderCredentialFields`, checked against each classification (NYSE declares required fields) |
+| Adapter credential metadata | `src/Meridian.ProviderSdk/IProviderMetadata.cs` | `RequiresCredentials` (true whenever `ProviderCredentialFields` is non-empty), checked against each classification |
 | OpenFIGI resolution outside the factory | `src/Meridian.Application/Composition/Features/SymbolManagementFeatureRegistration.cs`, `src/Meridian.Application/Backfill/BackfillCoordinator.cs` | Build `OpenFigiSymbolResolver` from configuration; move to the per-family selection |
 | Module credential overlay and catalog brokerage gateways | `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs` | `WithModuleCredentials` / `ModuleCredentialContext`, skipped for bound families; `CreateIbBrokerageGateway` and the other catalog gateways, not composed under `FailClosed` |
 | Hosted execution composition | `src/Meridian/UiServer.cs`, `src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs` | `AddHostedBrokerageGateways` registers gateways and sync adapters outside the catalog; not composed under `FailClosed` |
@@ -407,7 +411,8 @@ prove host authority.
   revalidates the current generation's verification, and a credential mutation on a bound connection
   stops that family in the running host.
 - Every enabled family has exactly one credential classification, and `credential-free` never applies
-  to a family whose credential catalog entry or adapter metadata requires a field.
+  to a family whose credential catalog entry requires a field or whose adapter metadata reports
+  `RequiresCredentials`.
 
 ### Runtime Verification
 
@@ -426,7 +431,8 @@ The implementation PR must add tests that:
 - fail the architecture scan when production code outside the selection reads a provider credential
   environment variable or configuration key that is not on the allowlist;
 - classify every catalog family, keep NYSE credential-bearing and `ibkr` session-backed, and fail
-  when a `credential-free` family's catalog entry or adapter metadata requires a field;
+  when a `credential-free` family's catalog entry requires a field or any of its adapters reports
+  `RequiresCredentials`;
 - under `FailClosed`:
   - refuse unbound credential-bearing, session-backed and unclassified families, and unlisted plugin
     families;
@@ -462,8 +468,8 @@ The implementation PR must add tests that:
 - after an outcome append fails, have the next mutating command resolve the pending event first and
   refuse to proceed until it is resolved; when the file matches neither side of the event, refuse
   credential-bearing families and mutation until `recover` records the observed state;
-- audit both a binding change and a concurrent scoped credential save, rotation or verification,
-  with no failed append and no deadlock;
+- audit both a binding change, or a startup or pre-command recovery, and a concurrent scoped
+  credential save, rotation or verification, with no failed append and no deadlock;
 - record `committed` when the write throws after the rename has published the new file;
 - refuse a lazily constructed provider after a post-startup rotation until the new generation is
   verified;
