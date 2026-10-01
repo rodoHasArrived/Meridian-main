@@ -22,6 +22,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     private readonly ConcurrentDictionary<string, OAuthProviderConfig> _providerConfigs = new();
     private readonly string _tokenPersistencePath;
     private readonly IOAuthTokenVault _vault;
+    private readonly ProviderCredentialScope? _ownershipScope;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private readonly object _initializationSync = new();
     private readonly object _lifecycleSync = new();
@@ -41,10 +42,14 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         CredentialExpirationConfig? config = null,
         HttpClient? httpClient = null,
         ILogger? logger = null,
-        IOAuthTokenVault? vault = null)
+        IOAuthTokenVault? vault = null,
+        ProviderCredentialScope? ownershipScope = null)
     {
         _log = logger ?? LoggingSetup.ForContext<OAuthTokenRefreshService>();
         _vault = vault ?? new FileProviderCredentialStore(dataRoot);
+        _ownershipScope = ownershipScope;
+        if (_ownershipScope is not null && _vault is not IScopedOAuthTokenVault)
+            throw new InvalidOperationException("Configured OAuth vault does not support scoped ownership.");
         _config = config ?? new CredentialExpirationConfig();
         _httpClient = httpClient ?? CreateDefaultHttpClient();
         _tokenPersistencePath = Path.Combine(dataRoot, ".mdc", "oauth_tokens.json");
@@ -227,14 +232,14 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         {
             try
             {
-                await _vault.SaveOAuthTokenAsync(providerName, token, ct).ConfigureAwait(false);
+                await WriteOwnedTokenAsync(providerName, token, ct).ConfigureAwait(false);
             }
             catch
             {
                 // Audit can fail after the encrypted mutation commits. Match the durable
                 // record before propagating failure, and evict if recovery cannot be read.
                 _tokens.TryRemove(providerName, out _);
-                var retained = await _vault.ReadOAuthTokensAsync(CancellationToken.None).ConfigureAwait(false);
+                var retained = await ReadOwnedTokensAsync(CancellationToken.None).ConfigureAwait(false);
                 if (retained.TryGetValue(providerName, out var persisted))
                     _tokens[providerName] = persisted;
                 throw;
@@ -404,7 +409,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
             // The provider may already have invalidated the old refresh token. Retain the new
             // token in memory even if durable storage fails, but never acknowledge that failure as success.
             _tokens[providerName] = newToken;
-            await _vault.SaveOAuthTokenAsync(providerName, newToken, CancellationToken.None).ConfigureAwait(false);
+            await WriteOwnedTokenAsync(providerName, newToken, CancellationToken.None).ConfigureAwait(false);
 
             OnTokenRefreshed?.Invoke(providerName, newToken);
             _log.Information("Successfully refreshed OAuth token for {Provider}, new expiration: {ExpiresAt}",
@@ -440,17 +445,31 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         return TokenStatus.Valid;
     }
 
+    private Task WriteOwnedTokenAsync(string providerName, OAuthToken? token, CancellationToken ct)
+        => _ownershipScope is null
+            ? _vault.SaveOAuthTokenAsync(providerName, token, ct)
+            : ((IScopedOAuthTokenVault)_vault).SaveScopedOAuthTokenAsync(providerName, token, _ownershipScope, ct);
+
+    private Task<IReadOnlyDictionary<string, OAuthToken>> ReadOwnedTokensAsync(CancellationToken ct)
+        => _ownershipScope is null
+            ? _vault.ReadOAuthTokensAsync(ct)
+            : ((IScopedOAuthTokenVault)_vault).ReadScopedOAuthTokensAsync(_ownershipScope, ct);
+
     private async Task LoadPersistedTokensAsync()
     {
         try
         {
-            await LegacyCredentialFileMigration.MigrateAsync(_tokenPersistencePath, async (json, ct) =>
+            if (_ownershipScope is null)
             {
-                var tokens = JsonSerializer.Deserialize<Dictionary<string, OAuthToken>>(json)
-                    ?? throw new InvalidOperationException("Legacy OAuth token snapshot is invalid.");
-                await _vault.ImportOAuthTokensAsync(tokens, ct).ConfigureAwait(false);
-            }).ConfigureAwait(false);
-            var retained = await _vault.ReadOAuthTokensAsync().ConfigureAwait(false);
+                // Only unscoped services may migrate tokens with no ownership evidence.
+                await LegacyCredentialFileMigration.MigrateAsync(_tokenPersistencePath, async (json, ct) =>
+                {
+                    var tokens = JsonSerializer.Deserialize<Dictionary<string, OAuthToken>>(json)
+                        ?? throw new InvalidOperationException("Legacy OAuth token snapshot is invalid.");
+                    await _vault.ImportOAuthTokensAsync(tokens, ct).ConfigureAwait(false);
+                }).ConfigureAwait(false);
+            }
+            var retained = await ReadOwnedTokensAsync(CancellationToken.None).ConfigureAwait(false);
             _tokens.Clear();
             foreach (var pair in retained)
                 _tokens[pair.Key] = pair.Value;

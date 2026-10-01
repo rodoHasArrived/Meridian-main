@@ -163,6 +163,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     private AccountingConfigurationWorkspaceDto? _configuration;
     private ManualJournalEntryDraftDto? _selectedDraft;
+    private Guid _newManualJournalDraftId = Guid.NewGuid();
+    private DateTimeOffset _newManualJournalDraftTimestamp = DateTimeOffset.UtcNow;
     private LedgerPeriodDto? _selectedManualJournalPeriod;
     private FundProfileDetail? _activeFundProfile;
     private bool _isLoading;
@@ -2741,6 +2743,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         _configuration = null;
         _selectedDraft = null;
+        _newManualJournalDraftId = Guid.NewGuid();
+        _newManualJournalDraftTimestamp = DateTimeOffset.UtcNow;
         ActiveFundText = "No fund selected";
         ConfigurationStatusText = "Locked";
         ConfigurationDetailText = "Select a fund-linked context before configuring chart accounts, templates, rules, or manual journal entries.";
@@ -4427,12 +4431,14 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     private ManualJournalEntryDraftDto BuildManualJournalDraft()
     {
-        var now = DateTimeOffset.UtcNow;
+        // Save retries must rebuild identical input. The service supplies the committed update
+        // time; client-generated timestamps and a new draft ID stay fixed until a save succeeds.
+        var now = _selectedDraft?.UpdatedAtUtc ?? _newManualJournalDraftTimestamp;
         var fundProfileId = _activeFundProfile?.FundProfileId ?? "default-fund";
         var currency = string.IsNullOrWhiteSpace(DraftCurrency) ? "USD" : DraftCurrency.Trim().ToUpperInvariant();
         var ledgerBookId = _configuration?.LedgerBookId ?? _configuration?.LedgerBooks.FirstOrDefault()?.LedgerBookId;
-        var journalEntryId = _selectedDraft?.JournalEntryId ?? Guid.NewGuid();
-        var accountingDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var journalEntryId = _selectedDraft?.JournalEntryId ?? _newManualJournalDraftId;
+        var accountingDate = _selectedDraft?.AccountingDate ?? DateOnly.FromDateTime(now.UtcDateTime);
         var periodId = _selectedDraft?.PeriodId
             ?? _selectedManualJournalPeriod?.PeriodId.ToString("D", CultureInfo.InvariantCulture)
             ?? CreateStableGuid(

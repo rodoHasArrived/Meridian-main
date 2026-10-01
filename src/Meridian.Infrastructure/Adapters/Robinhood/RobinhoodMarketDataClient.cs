@@ -72,7 +72,7 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
 
     // ── IProviderMetadata ─────────────────────────────────────────────────
 
-    string IProviderMetadata.ProviderId => "robinhood-live";
+    string IProviderMetadata.ProviderId => "robinhood";
     string IProviderMetadata.ProviderDisplayName => "Robinhood Live Quotes";
     string IProviderMetadata.ProviderDescription => "Polling-based BBO quotes via Robinhood unofficial API";
     int IProviderMetadata.ProviderPriority => 35;
@@ -161,7 +161,7 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
         var lastActivity = LastMessageReceivedAt ?? LastSuccessfulApiCallAt ?? ConnectedAt;
 
         return new RobinhoodMarketDataDiagnostics(
-            ProviderId: "robinhood-live",
+            ProviderId: "robinhood",
             LifecycleState: LifecycleState,
             IsConnected: Connected,
             ActiveSubscriptionCount: _subscriptions.Count,
@@ -285,7 +285,7 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
                     StreamId: "ROBINHOOD",
                     Source: MarketDataSources.Robinhood);
 
-                var issues = ProviderDataQualityValidator.ValidateQuote("robinhood-live", update);
+                var issues = ProviderDataQualityValidator.ValidateQuote("robinhood", update);
                 if (issues.Any(issue => issue.Severity == ProviderDataQualitySeverity.Error))
                 {
                     Interlocked.Increment(ref _dataQualityRejections);

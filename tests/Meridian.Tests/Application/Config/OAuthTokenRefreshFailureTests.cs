@@ -41,9 +41,11 @@ public sealed class OAuthTokenRefreshFailureTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RefreshFailure_DoesNotExposeProviderSecrets_AndCanRetry(bool transportFailure)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task RefreshFailure_DoesNotExposeProviderSecrets_AndCanRetry(bool transportFailure, bool scoped)
     {
         const string secret = "provider-echoed-bearer-secret";
         var root = Path.Combine(Path.GetTempPath(), "meridian-oauth-errors", Guid.NewGuid().ToString("N"));
@@ -53,7 +55,11 @@ public sealed class OAuthTokenRefreshFailureTests
         using var client = new HttpClient(handler);
         try
         {
-            await using var service = new OAuthTokenRefreshService(root, httpClient: client, logger: logger);
+            var scope = scoped ? new ProviderCredentialScope("tenant", "connection", "account-a", "paper") : null;
+            var otherScope = new ProviderCredentialScope("tenant", "connection", "account-b", "paper");
+            var vault = new FileProviderCredentialStore(root);
+            await vault.SaveScopedOAuthTokenAsync("alpaca", new OAuthToken("other-access", "Bearer", DateTimeOffset.UtcNow.AddHours(1)), otherScope);
+            await using var service = new OAuthTokenRefreshService(root, httpClient: client, logger: logger, ownershipScope: scope);
             service.RegisterProvider(new OAuthProviderConfig("alpaca", "client",
                 ClientSecret: secret, TokenEndpoint: "https://provider.example/token"));
             var original = new OAuthToken("original-access", "Bearer", DateTimeOffset.UtcNow.AddHours(1),
@@ -79,6 +85,9 @@ public sealed class OAuthTokenRefreshFailureTests
             recovered.Token.RefreshToken.Should().Be("replacement-refresh");
             handler.Calls.Should().Be(2);
             failures.Should().ContainSingle();
+            var persisted = scoped ? await vault.ReadScopedOAuthTokensAsync(scope!) : await vault.ReadOAuthTokensAsync();
+            persisted["alpaca"].RefreshToken.Should().Be("replacement-refresh");
+            (await vault.ReadScopedOAuthTokensAsync(otherScope))["alpaca"].AccessToken.Should().Be("other-access");
         }
         finally
         {
@@ -128,8 +137,10 @@ public sealed class OAuthTokenRefreshFailureTests
         }
     }
 
-    [Fact]
-    public async Task CompletedRemoteRotation_CommitsReplacementDespiteCallerCancellation()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompletedRemoteRotation_CommitsReplacementDespiteCallerCancellation(bool scoped)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-oauth-errors", Guid.NewGuid().ToString("N"));
         using var cancellation = new CancellationTokenSource();
@@ -138,7 +149,8 @@ public sealed class OAuthTokenRefreshFailureTests
         try
         {
             var vault = new CancelOnRotationVault(new FileProviderCredentialStore(root), cancellation);
-            await using var service = new OAuthTokenRefreshService(root, httpClient: client, vault: vault);
+            var scope = scoped ? new ProviderCredentialScope("tenant", "connection", "account", "paper") : null;
+            await using var service = new OAuthTokenRefreshService(root, httpClient: client, vault: vault, ownershipScope: scope);
             service.RegisterProvider(new OAuthProviderConfig("provider", "client", TokenEndpoint: "https://provider.example/token"));
             await service.StoreTokenAsync("provider", new OAuthToken("original-access", "Bearer",
                 DateTimeOffset.UtcNow.AddHours(1), "original-refresh"));
@@ -149,7 +161,8 @@ public sealed class OAuthTokenRefreshFailureTests
             cancellation.IsCancellationRequested.Should().BeTrue();
             vault.RotationCommitWasCancelable.Should().BeFalse();
             refreshed.Success.Should().BeTrue();
-            (await vault.ReadOAuthTokensAsync())["provider"].RefreshToken.Should().Be("replacement-refresh");
+            var persisted = scoped ? await vault.ReadScopedOAuthTokensAsync(scope!) : await vault.ReadOAuthTokensAsync();
+            persisted["provider"].RefreshToken.Should().Be("replacement-refresh");
         }
         finally
         {
@@ -199,21 +212,32 @@ public sealed class OAuthTokenRefreshFailureTests
             => Task.CompletedTask;
     }
 
-    private sealed class CancelOnRotationVault(IOAuthTokenVault inner, CancellationTokenSource cancellation) : IOAuthTokenVault
+    private sealed class CancelOnRotationVault(IOAuthTokenVault inner, CancellationTokenSource cancellation) : IOAuthTokenVault, IScopedOAuthTokenVault
     {
         public bool RotationCommitWasCancelable { get; private set; }
         public Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
             => inner.ReadOAuthTokensAsync(ct);
         public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
             => inner.ImportOAuthTokensAsync(tokens, ct);
+        public Task<IReadOnlyDictionary<string, OAuthToken>> ReadScopedOAuthTokensAsync(ProviderCredentialScope scope, CancellationToken ct = default)
+            => ((IScopedOAuthTokenVault)inner).ReadScopedOAuthTokensAsync(scope, ct);
+        public Task SaveScopedOAuthTokenAsync(string providerName, OAuthToken? token, ProviderCredentialScope scope, CancellationToken ct = default)
+        {
+            CancelAfterRotation(token, ct);
+            return ((IScopedOAuthTokenVault)inner).SaveScopedOAuthTokenAsync(providerName, token, scope, ct);
+        }
         public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
+        {
+            CancelAfterRotation(token, ct);
+            return inner.SaveOAuthTokenAsync(providerName, token, ct);
+        }
+        private void CancelAfterRotation(OAuthToken? token, CancellationToken ct)
         {
             if (token?.RefreshToken == "replacement-refresh")
             {
                 RotationCommitWasCancelable = ct.CanBeCanceled;
                 cancellation.Cancel();
             }
-            return inner.SaveOAuthTokenAsync(providerName, token, ct);
         }
     }
 

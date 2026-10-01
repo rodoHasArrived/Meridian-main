@@ -168,6 +168,11 @@ public sealed class AlpacaStreamedFillLoopTests
                 qty: "10", filledQty: "4", price: "101", timestamp: "2026-08-07T14:30:01Z", fillQty: "4"));
             (await ReadFillIncrementsAsync(oms, orderId, count: 1)).Single().FilledQuantity.Should().Be(4m);
             await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 1, "the partial reaches accounting before the host stops");
+            // Publisher acceptance precedes the durable inbox acknowledgement. This scenario
+            // starts after the partial is fully acknowledged; stopping earlier can replay
+            // both events and exercise a different crash boundary nondeterministically.
+            await WaitUntilAsync(() => store.LoadState().PendingEnvelopes.Count == 0,
+                "the partial is durably acknowledged before the first host stops");
         }
 
         // The completion lands in the durable inbox while no OMS is consuming it, then the host

@@ -14,6 +14,7 @@ public sealed partial class PostgresLedgerJournalStore
         Guid mutationBatchId,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         if (mutationBatchId == Guid.Empty)
         {
             throw new ArgumentException("Tax-lot mutation batch id is required.", nameof(mutationBatchId));
@@ -31,6 +32,7 @@ public sealed partial class PostgresLedgerJournalStore
             return null;
         }
 
+        await EnsureBookWriteAuthorityAsync(connection, transaction, retained.LedgerBookId, ct).ConfigureAwait(false);
         var result = await LoadAtomicTaxLotResultAsync(
                 connection,
                 transaction,
@@ -46,12 +48,17 @@ public sealed partial class PostgresLedgerJournalStore
         AtomicTaxLotJournalCommand command,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         command = NormalizeAndValidateAtomicTaxLotCommand(command);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection
             .BeginTransactionAsync(IsolationLevel.Serializable, ct)
             .ConfigureAwait(false);
+
+        await EnsureBookWriteAuthorityAsync(connection, transaction, command.LedgerBookId, ct).ConfigureAwait(false);
+        await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id",
+            command.Journal.PeriodId, false, ct).ConfigureAwait(false);
 
         await AcquireAtomicTaxLotIdentityLocksAsync(connection, transaction, command, ct)
             .ConfigureAwait(false);
@@ -87,6 +94,7 @@ public sealed partial class PostgresLedgerJournalStore
                 transaction,
                 command.Journal.PeriodId,
                 forUpdate: true,
+                callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
                 ct: ct)
             .ConfigureAwait(false);
         if (period is null)

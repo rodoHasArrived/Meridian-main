@@ -1,3 +1,4 @@
+using Meridian.Application.Tenancy;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -58,20 +59,28 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // badge until this lane is migrated to the governed HTTP surface (there is no
         // workstation API client for fund accounts yet). Reconciliation posture no longer
         // reads from this lane — see ReconciliationReadService.
-        services.AddSingleton(sp => new InMemoryFundAccountService(
-            Path.Combine(
+        // No current company or session can assign ownership to these retained snapshots. Strict
+        // hosts keep the files and refuse only this local capability, leaving server-backed
+        // workspaces usable. Every account alias passes through the same gate.
+        services.TryAddSingleton(sp => new LocalTenantMigrationGate(
+            sp.GetService<TenantScopeEnforcementOptions>() ?? TenantScopeEnforcementOptions.FailClosed));
+        services.AddSingleton(sp => new TenantGuardedLocalFundAccountService(
+            new InMemoryFundAccountService(Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Meridian",
-                "fund-accounts.json")));
-        services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
-        services.AddSingleton<IFundStructureService>(sp => new InMemoryFundStructureService(
-            sp.GetRequiredService<IFundAccountService>(),
-            sharedDataAccessService: null,
-            securityMasterQueryService: sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
-            persistencePath: Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Meridian",
-                "fund-structure.json")));
+                "Meridian", "fund-accounts.json")),
+            sp.GetRequiredService<LocalTenantMigrationGate>()));
+        services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<TenantGuardedLocalFundAccountService>());
+        services.AddSingleton<IAccountManagementService>(sp => sp.GetRequiredService<TenantGuardedLocalFundAccountService>());
+        services.AddSingleton<IAccountQueryService>(sp => sp.GetRequiredService<TenantGuardedLocalFundAccountService>());
+        services.AddSingleton<IFundStructureService>(sp => new TenantGuardedLocalFundStructureService(
+            new InMemoryFundStructureService(
+                sp.GetRequiredService<IFundAccountService>(),
+                sharedDataAccessService: null,
+                securityMasterQueryService: sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                persistencePath: Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Meridian", "fund-structure.json")),
+            sp.GetRequiredService<LocalTenantMigrationGate>()));
         services.AddSingleton<FundStructureSetupWorkflowService>();
         services.AddSingleton<FundAccountReadService>();
         services.AddSingleton<FundLedgerReadService>();
@@ -119,6 +128,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "manual-journal-drafts.json")));
+        services.TryAddSingleton<IManualJournalMutationRecoveryStore>(sp =>
+            new FileManualJournalMutationRecoveryStore(
+                Path.Combine(ResolveAccountingDataDirectory(sp), "manual-journal-drafts.json.mutations")));
         services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
             new FileDailyValuationPortfolioSource(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "daily-valuation-schedules.json")));

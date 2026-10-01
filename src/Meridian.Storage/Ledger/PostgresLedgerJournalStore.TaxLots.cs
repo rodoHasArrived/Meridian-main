@@ -16,10 +16,16 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerTaxLotRecord lot,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         ValidateTaxLot(lot);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, transaction, lot.LedgerBookId, ct).ConfigureAwait(false);
+        await EnsureBookReferenceAuthorityAsync(connection, transaction, "tax_lots", "tax_lot_record_id",
+            lot.TaxLotRecordId, lot.LedgerBookId, true, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             insert into {Qualified("tax_lots")} as retained (
@@ -75,8 +81,7 @@ public sealed partial class PostgresLedgerJournalStore
                 @par_basis,
                 @acquisition_terms)
             on conflict (tax_lot_record_id) do update
-            set ledger_book_id = excluded.ledger_book_id,
-                account_name = excluded.account_name,
+            set account_name = excluded.account_name,
                 account_type = excluded.account_type,
                 symbol = excluded.symbol,
                 financial_account_id = excluded.financial_account_id,
@@ -97,8 +102,16 @@ public sealed partial class PostgresLedgerJournalStore
                 version = retained.version + 1,
                 updated_at = excluded.updated_at
             where retained.originating_mutation_batch_id is null
+              and retained.ledger_book_id = excluded.ledger_book_id
               and @expected_version > 0
               and retained.version = @expected_version
+              and (not @require_tenant or exists (
+                  select 1 from {Qualified("ledger_books")} retained_book
+                  join {Qualified("fund_profile_tenancy")} retained_fund
+                    on retained_fund.fund_profile_id = lower(trim(retained_book.fund_profile_id))
+                  where retained_book.ledger_book_id = retained.ledger_book_id
+                    and lower(trim(retained_book.tenant_id)) = lower(@mutation_tenant)
+                    and lower(trim(retained_fund.tenant_id)) = lower(@mutation_tenant)))
             returning tax_lot_record_id,
                       ledger_book_id,
                       account_name,
@@ -139,6 +152,8 @@ public sealed partial class PostgresLedgerJournalStore
         command.Parameters.AddWithValue("evidence_ref", (object?)NormalizeOptional(lot.EvidenceRef) ?? DBNull.Value);
         command.Parameters.AddWithValue("version", lot.Version <= 0 ? 1 : lot.Version);
         command.Parameters.AddWithValue("expected_version", Math.Max(0, lot.Version));
+        command.Parameters.AddWithValue("require_tenant", _tenantScope.IsFailClosed);
+        command.Parameters.AddWithValue("mutation_tenant", ResolveCallerTenant()?.Trim() ?? string.Empty);
         command.Parameters.AddWithValue("created_at", lot.CreatedAt.UtcDateTime);
         command.Parameters.AddWithValue("updated_at", lot.UpdatedAt.UtcDateTime);
         command.Parameters.AddWithValue(
@@ -157,10 +172,13 @@ public sealed partial class PostgresLedgerJournalStore
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
         {
             throw new InvalidOperationException(
-                $"Ledger tax lot '{lot.TaxLotRecordId}' was not saved because its version was stale or it is managed by an atomic posting batch.");
+                $"Ledger tax lot '{lot.TaxLotRecordId}' was not saved because its ledger book changed, its version was stale, or it is managed by an atomic posting batch.");
         }
 
-        return ReadTaxLot(reader);
+        var saved = ReadTaxLot(reader);
+        await reader.DisposeAsync().ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return saved;
     }
 
     public async Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsAsync(
@@ -168,6 +186,7 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerAccount account,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         if (ledgerBookId == Guid.Empty)
         {
             throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
@@ -176,6 +195,7 @@ public sealed partial class PostgresLedgerJournalStore
         ArgumentNullException.ThrowIfNull(account);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, ledgerBookId, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -232,6 +252,7 @@ public sealed partial class PostgresLedgerJournalStore
         IReadOnlyList<Guid> taxLotRecordIds,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         if (ledgerBookId == Guid.Empty)
         {
             throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
@@ -247,6 +268,7 @@ public sealed partial class PostgresLedgerJournalStore
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, ledgerBookId, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""

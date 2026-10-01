@@ -32,7 +32,8 @@ public sealed class DemoTenantProvisioner(
     IFundAccountService? fundAccounts = null,
     IPositionSnapshotStore? positionSnapshots = null,
     IManualJournalEntryDraftStore? journalDrafts = null,
-    IGovernanceReportPackRepository? reportPacks = null)
+    IGovernanceReportPackRepository? reportPacks = null,
+    IManualJournalMutationRecoveryStore? mutationRecovery = null)
 {
     public async Task<DemoTenantProvisioningReport> ProvisionAsync(CancellationToken ct = default)
     {
@@ -261,6 +262,15 @@ public sealed class DemoTenantProvisioner(
             ct.ThrowIfCancellationRequested();
             try
             {
+                // Sample seeding is the other direct writer of this shared draft snapshot.
+                // Serialize its read/create with real commands, and leave pending recovery to
+                // the original accounting command instead of treating it as a completed seed.
+                await using var session = await (mutationRecovery ??
+                    ManualJournalEntryWorkbenchService.DefaultMutationRecoveryFor(journalDrafts))
+                    .OpenSessionAsync(ct).ConfigureAwait(false);
+                if ((await session.ListPendingAsync(ct).ConfigureAwait(false)).Any(intent =>
+                    intent.JournalEntryId == draft.JournalEntryId || intent.After.Any(after => after.JournalEntryId == draft.JournalEntryId)))
+                    throw new InvalidOperationException("The sample journal draft has an unresolved accounting mutation.");
                 var existing = await journalDrafts
                     .GetAsync(DemoTenantBlueprint.FundProfileId, draft.JournalEntryId, ct)
                     .ConfigureAwait(false);
