@@ -347,7 +347,12 @@ whole host use?** Facts in the current code shape the answer:
      `baseline` entry on, every audit entry also carries the hash of the previous entry, including its
      action, actor and time, so the log is a hash chain. The store validates the whole chain from the
      baseline when it loads the vault, so deleting or editing an earlier entry is detected even when
-     the last entry still matches; a broken chain is a mismatch like the ones below. Each write is
+     the last entry still matches; a broken chain is a mismatch like the ones below. A chain alone
+     leaves its newest entry unauthenticated, because nothing follows it. So the newest entries are
+     anchored too. The vault records the hash of the `intent` (or `baseline`) entry behind its current
+     revision, which covers that entry's action, actor and time. A `done` entry carries nothing of its
+     own beyond that intent's hash, the revision and the digest, all of which the store recomputes
+     from the vault. Editing the newest entries is therefore detected as well. Each write is
      bracketed in the log, like the host journal: before publishing the vault, the writer durably
      appends an `intent` entry carrying the action, the actor, the new revision and the new digest,
      and after publishing it appends the matching `done` entry. When the store loads the vault, it
@@ -523,6 +528,12 @@ whole host use?** Facts in the current code shape the answer:
      detected even when the last entry still matches the state file and the checkpoint. A broken
      chain makes the state untrusted. `recover` moves the journal aside unchanged and starts a new
      chain at its `baseline` entry.
+   - **Anchored tail.** A chain leaves its newest entry unauthenticated, so the vault checkpoint
+     also records the hash of the journal entry that produced the current state: its `pending`
+     entry, or the `baseline` entry. Those are the entries carrying actor, time, kind, subject and
+     values. Entries after it are outcomes, which carry only the pending entry's hash and the
+     outcome, both recomputed from the state file during recovery. Editing the newest entries is
+     therefore detected as well.
    - **Offline only.** Every running host holds the host lock (`<config>.host-provider-credentials.lock`)
      in shared mode for its whole lifetime. Several hosts on one configuration, such as `SharedStorage`
      coordination instances or a workstation host beside a collector, can therefore run together.
@@ -567,7 +578,10 @@ whole host use?** Facts in the current code shape the answer:
      path takes the configuration and vault locks in the reverse order. Because the `DataRoot` lock is
      chosen before the configuration lock is held, a command rereads `DataRoot` strictly once it holds
      the configuration lock. If it no longer resolves to the root whose locks it holds, the command
-     writes nothing, releases every lock and starts again from the new root. A command that cannot take a
+     writes nothing, releases every lock and starts again from the new root. A command run with a
+     verified `--vault-path` is the one exception: when the configuration cannot be strictly parsed,
+     the override, already checked against the vault's stored identifier, is authoritative. If strict
+     resolution does succeed and names a different root, the command still aborts. A command that cannot take a
      lock within a timeout fails without writing anything.
    - **Recover first.** Before changing anything, the transaction resolves every earlier `pending`
      entry against the current state file (see Recovery below). If any entry cannot be resolved, the
@@ -950,6 +964,12 @@ The implementation PR must add tests that:
 - delete, and separately edit the actor of, an interior `pending`/outcome pair in the host journal
   while the last entry still matches the state file and checkpoint, and show the broken chain makes
   the state untrusted until `recover`;
+- edit the actor or time of the newest host-journal `pending` entry, and separately of its outcome,
+  and show the checkpoint's anchor or the recomputed outcome detects it;
+- edit the action, actor or time of the newest vault-audit `intent` entry, and separately its `done`
+  entry, and show the vault's anchor or the recomputed fields detect it;
+- run `recover --vault-path` with an unparseable configuration and show it completes; then run it
+  with a parseable configuration naming a different root and show it aborts;
 - break the vault audit chain in its interior, run `repair-vault`, and show the damaged log is kept
   aside, a new log starts with a baseline matching the repaired vault, and the next load accepts it;
 - record a verification failure for a bound record between a lazy resolution's read and its
