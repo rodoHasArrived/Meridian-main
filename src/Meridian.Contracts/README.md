@@ -13,6 +13,9 @@ last_reviewed: 2026-10-02
 
 Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed.
 
+`Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
+persistence port without referencing the Storage implementation.
+
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence
 references, authoritative draft approval status, blockers, lock owner and governed reopen path.

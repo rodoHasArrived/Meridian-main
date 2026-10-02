@@ -4606,6 +4606,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Etl.IEtlStagingStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Etl.IPartnerFileParser"
     },
     {
@@ -47455,7 +47461,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0dcd09cbe9b14caa75ce04cd7c1848cdb548d487e4678caf0b0c3fa74a80d7e1",
+  "fingerprint": "0036f964f0b9d509836b48ed5955a7ef47b3a2e6220dc774579a98dff94a74d3",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -52109,6 +52115,12 @@
       "id": "contract:Meridian.Contracts.Etl.IEtlSourceReader",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Etl.IEtlSourceReader"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Etl.IEtlStagingStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Etl.IEtlStagingStore"
     },
     {
       "classification": "service_contract",
@@ -69568,10 +69580,10 @@
   ],
   "summary": {
     "contract_references": 3114,
-    "contract_set_memberships": 3695,
-    "edges": 7884,
+    "contract_set_memberships": 3696,
+    "edges": 7885,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3832
+    "nodes": 3833
   }
 }

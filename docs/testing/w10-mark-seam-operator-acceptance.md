@@ -6,6 +6,12 @@
 
 **Reviewed:** 2026-10-02
 
+**Current candidate boundary:** The branch now includes PR #3044's infrastructure-boundary
+changes to storage interfaces and host composition. The archived `w10-615abde9` packet remains
+historical supporting evidence and does not certify the current PR application head. A live
+session must pin the current candidate and rerun affected support tests and operator cases.
+Preserve the original candidate's failed hosted checks and pending operator decisions below.
+
 This packet binds the remaining `W10-SEAM-001` and `W10-MARK-001` acceptance preparation to
 candidate **`615abde90001ab33bd6e58e545edc7fce635e254`**, tree
 `9372fc96135e0203c0eb25fc105ed67b1d90f231`, on
