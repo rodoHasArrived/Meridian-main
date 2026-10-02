@@ -548,11 +548,15 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
         BackfillRequestAttemptToken attemptToken,
         CancellationToken ct)
     {
+        // The worker can be started while a startup/request activity is current. Each
+        // queued attempt restores only its own producer context, including no parent.
+        Activity.Current = null;
         using var activity = MarketDataTracing.StartBackfillActivity(
             request.AssignedProvider ?? "unknown",
             request.Symbol,
             request.FromDate.ToString("yyyy-MM-dd"),
-            request.ToDate.ToString("yyyy-MM-dd"));
+            request.ToDate.ToString("yyyy-MM-dd"),
+            request.ParentContext);
 
         activity?.SetTag("backfill.job_id", request.JobId);
         activity?.SetTag("backfill.request_id", request.RequestId);
@@ -599,11 +603,22 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                         request.Symbol, request.FromDate, request.ToDate, providerName, retryAttempt + 1);
 
                     // Fetch data from provider
-                    using var fetchActivity = MarketDataTracing.StartBackfillFetchActivity(
-                        providerName,
-                        request.Symbol);
-                    var bars = await FetchBarsAsync(request, ct).ConfigureAwait(false);
-                    MarketDataTracing.RecordEventCount(fetchActivity, bars.Count);
+                    IReadOnlyList<HistoricalBar> bars;
+                    using (var fetchActivity = MarketDataTracing.StartBackfillFetchActivity(
+                               providerName,
+                               request.Symbol))
+                    {
+                        try
+                        {
+                            bars = await FetchBarsAsync(request, ct).ConfigureAwait(false);
+                            MarketDataTracing.RecordEventCount(fetchActivity, bars.Count);
+                        }
+                        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+                        {
+                            MarketDataTracing.RecordError(fetchActivity, ex);
+                            throw;
+                        }
+                    }
 
                     bars = BackfillBarValidation.RemoveFutureDatedBars(bars, out var futureDropped);
                     if (futureDropped > 0)
@@ -624,7 +639,15 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                     {
                         // Write to storage
                         using var storageActivity = MarketDataTracing.StartBackfillStorageActivity(request.Symbol, bars.Count);
-                        await WriteBarsToStorageAsync(request, bars, ct).ConfigureAwait(false);
+                        try
+                        {
+                            await WriteBarsToStorageAsync(request, bars, ct).ConfigureAwait(false);
+                        }
+                        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+                        {
+                            MarketDataTracing.RecordError(storageActivity, ex);
+                            throw;
+                        }
                         MarketDataTracing.RecordEventCount(storageActivity, bars.Count);
                         request.BarsRetrieved = bars.Count;
 
@@ -713,6 +736,11 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                 attemptToken,
                 cancellationReason,
                 scopedLog).ConfigureAwait(false);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            MarketDataTracing.RecordError(activity, ex);
             throw;
         }
         finally

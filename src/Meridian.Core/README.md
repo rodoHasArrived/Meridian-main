@@ -6,7 +6,7 @@ module_id: SRC-CORE
 path: src/Meridian.Core
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Core
@@ -51,6 +51,12 @@ This layer provides low-level reusable infrastructure. It must stay independent 
   shutdown handlers, and Application pipeline components.
 
 ## Important workflows
+
+`Config/TracingConfig.cs` defines the restart-required `AppConfig.Tracing` JSON section. Tracing and
+both exporters default off; the host's Platform integration validates explicit destinations, root
+sampling ratio, and flush timeout before creating the provider. Core owns configuration shape and
+serialization without referencing OpenTelemetry. See the
+[`Tracing` configuration contract](../../docs/reference/appsettings-schema.md#tracing).
 
 `AppConfig.TenantScopeEnforcement` is a supported restart-required security setting. Omission
 selects `fail-closed`; the host permits `deployment-boundary` only as explicit migration
@@ -125,6 +131,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet build src/Meridian.Core/Meridian.Core.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConfigEnvironmentOverrideTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~Core.Config|FullyQualifiedName~ConfigurationUnificationTests|FullyQualifiedName~ConfigValidatorCliTests|FullyQualifiedName~ConfigurationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"

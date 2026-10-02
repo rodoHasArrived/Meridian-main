@@ -127,10 +127,24 @@ ledger account level so accounting statements can follow front-office lot-relief
 `LedgerTaxLotReliefProjector` applies those account-level relief methods to open tax lots and
 prepares balanced cash, security cost-basis, and realized gain/loss lines before durable posting.
 For `AverageCost` it pools every open lot into a single average unit cost while still depleting lots
-oldest-first for deterministic lot closing. When a `WashSalePolicy` and replacement acquisitions are
-supplied, it defers the proportional disallowed loss on a realizing sale (US IRC §1091), recognizing
-only the allowed portion and capitalizing the deferred amount into the replacement lot's basis
-(`WashSaleOutcome`), so the entry still balances and no premature loss is booked.
+oldest-first for deterministic lot closing. Pooled proceeds preserve the sign of the pooled result
+so independent cent residuals cannot manufacture a loss inside a gain-producing pool.
+When a `WashSalePolicy` and replacement acquisitions are
+supplied, it evaluates each negative-result relief parcel even when the disposal has an aggregate
+gain or zero result. Loss parcels consume one shared replacement-quantity pool in relief order;
+replacements are ordered by acquisition date and lot/account identity. Inclusive policy windows,
+security matching, account scope and relieved-lot exclusions remain in force. Duplicate candidate
+identities count once (conflicting facts are rejected). Each source loss is rounded once, with the
+residual assigned to its final replacement, so quantities and basis adjustments conserve exactly.
+`WashSaleOutcome` reports total disallowed loss and the remaining individual loss-lot losses before
+offsetting gains. Each `WashSaleBasisIncrease` retains its source selections, matched quantities,
+amounts, holding-period carry and applied policy, including the configured `PolicyId` revision when
+available. An ad-hoc unversioned policy retains a null revision rather than inventing one. Export rows
+use this source evidence, and the journal recognizes economic result plus deferral, including when
+that turns an aggregate loss into a gain. Recalculation is pure; replacement capacity is consumed
+only within that projection. Cross-disposal reservation and durable persistence remain owned by
+the resolver/posting workflow. Zero-cent matches remain in the projection as quantity evidence;
+the existing durable deferral store accepts only positive amounts.
 `LedgerTaxLot` carries an optional `SecurityId` so cost-basis lots link to Security Master
 reference data. `LedgerTaxLotBasisAdjuster` (fed via `LedgerTaxLotReliefInput.BasisAdjustments`)
 restates open lots by reference-data-derived `LedgerTaxLotBasisAdjustment`s — corporate-action

@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1379 / 9226** items documented (**14.9%**) &mdash; Grade: **F**
+**1380 / 9243** items documented (**14.9%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 14.9%
@@ -15,15 +15,15 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1290 | 8754 | 14.7% | F |
+| Public Classes / Interfaces | 1291 | 8761 | 14.7% | F |
 | API Endpoints | 88 | 328 | 26.8% | F |
-| Configuration Options | 1 | 133 | 0.8% | F |
+| Configuration Options | 1 | 143 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 0 | 11 | 0.0% | F |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7464 undocumented)
+### Public Classes / Interfaces (7470 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7414 more | |
+| ... and 7420 more | |
 
 ### API Endpoints (240 undocumented)
 
@@ -135,13 +135,23 @@
 | `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:547` |
 | ... and 190 more | |
 
-### Configuration Options (132 undocumented)
+### Configuration Options (142 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
 | `$schema` | `config/appsettings.sample.json` |
 | `TenantScopeEnforcement` | `config/appsettings.sample.json` |
 | `DataRoot` | `config/appsettings.sample.json` |
+| `Tracing` | `config/appsettings.sample.json` |
+| `Tracing.Enabled` | `config/appsettings.sample.json` |
+| `Tracing.EnableConsoleExporter` | `config/appsettings.sample.json` |
+| `Tracing.EnableOtlpExporter` | `config/appsettings.sample.json` |
+| `Tracing.OtlpEndpoint` | `config/appsettings.sample.json` |
+| `Tracing.SamplingRatio` | `config/appsettings.sample.json` |
+| `Tracing.ServiceName` | `config/appsettings.sample.json` |
+| `Tracing.ServiceVersion` | `config/appsettings.sample.json` |
+| `Tracing.Environment` | `config/appsettings.sample.json` |
+| `Tracing.FlushTimeoutMilliseconds` | `config/appsettings.sample.json` |
 | `ApiHost` | `config/appsettings.sample.json` |
 | `ApiHost.DeploymentMode` | `config/appsettings.sample.json` |
 | `ApiHost.Urls` | `config/appsettings.sample.json` |
@@ -179,17 +189,7 @@
 | `Synthetic.DefaultHistoryEnd` | `config/appsettings.sample.json` |
 | `Backfill` | `config/appsettings.sample.json` |
 | `Backfill.Enabled` | `config/appsettings.sample.json` |
-| `Backfill.Provider` | `config/appsettings.sample.json` |
-| `Backfill.Symbols` | `config/appsettings.sample.json` |
-| `Backfill.From` | `config/appsettings.sample.json` |
-| `Backfill.To` | `config/appsettings.sample.json` |
-| `Backfill.Granularity` | `config/appsettings.sample.json` |
-| `Backfill.EnableFallback` | `config/appsettings.sample.json` |
-| `Backfill.PreferAdjustedPrices` | `config/appsettings.sample.json` |
-| `Backfill.EnableSymbolResolution` | `config/appsettings.sample.json` |
-| `Backfill.SymbolResolutionMode` | `config/appsettings.sample.json` |
-| `Backfill.ProviderPriority` | `config/appsettings.sample.json` |
-| ... and 82 more | |
+| ... and 92 more | |
 
 ### ADR Implementations (11 undocumented)
 
@@ -209,9 +209,9 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7464 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+1. **Public Classes / Interfaces**: 7470 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
 2. **API Endpoints**: 240 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
-3. **Configuration Options**: 132 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
+3. **Configuration Options**: 142 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 4. **ADR Implementations**: Referenced ADR(s) ADR-001, ADR-007, ADR-010, ADR-006, ADR-015, ADR-013, ADR-004, ADR-005, ADR-014, ADR-002, ADR-016 have no corresponding file in `docs/adr/`. Create the missing ADR document(s) using `docs/adr/_template.md`.
 
 ---
