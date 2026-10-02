@@ -35,7 +35,7 @@ public sealed class StrictTenantMutationPostgresTests
         {
             await strict.SaveTaxLotAsync(new LedgerTaxLotRecord(
                 Guid.NewGuid(), book.LedgerBookId, lotAccount, "same-lot", saleDate,
-                100m, 100m, 100m, "USD", now, now, SecurityId: securityId), ct);
+                100m, 100m, 100m, "USD", now, now, SecurityId: securityId, BookPositionId: Guid.NewGuid()), ct);
         }
 
         var query = new WashSaleReplacementQuery(book.LedgerBookId, account, securityId,
