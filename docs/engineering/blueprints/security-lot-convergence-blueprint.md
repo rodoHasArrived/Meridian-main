@@ -364,3 +364,9 @@ Reporting current-basis certification, tamper refusal, fractional cents and face
 This is partial delivery only: `W10-LOT-002` stays `in_progress`. Amortization convergence remains
 coordinated with #3048; corporate-action successor mutations, advance refunding and shadow-operation
 acceptance remain outside this bounded slice.
+
+Implementation proof at `a4c4b5ff0`: the focused Ledger/Storage/event-spine/acquisition suite passed
+138 tests with zero failures and zero skips, including nine new current-basis PostgreSQL cases.
+PostgreSQL 16.15 schema snapshot and independent empty-database verification passed with zero
+errors and unchanged 242 policy warnings. Canonical repository CI and hosted checks remain separate
+validation gates; this evidence does not accept the broader row or certify PR #3048.
