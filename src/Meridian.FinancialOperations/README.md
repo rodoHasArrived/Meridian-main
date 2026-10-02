@@ -6,10 +6,18 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.FinancialOperations
+
+`CanonicalLotAmortizationService` prepares read-only canonical face-lot projections from authoritative lot/reference records. `AccountingPostingCandidatePostService` carries an `Amortize` instruction through the existing event-spine and independent approval rail to atomic journal/basis posting; the service itself cannot approve or post.
+
+The governed event-spine path retains its existing requirement that the Security Master currency
+equal the event's functional currency. The atomic lot boundary preserves acquisition currency and
+FX, but this delivery does not extend the event spine's cross-currency workflow. A later discrete
+disposal of a restated lot continues to fail closed when acquisition unit cost differs from its
+canonical basis; relief of an amortized basis remains a separate lot-convergence slice.
 
 `FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
 recurring schedules and templates, exact source evidence, one claim per schedule/effective date,

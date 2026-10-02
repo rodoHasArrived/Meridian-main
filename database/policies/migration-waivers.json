@@ -59,6 +59,12 @@
       "rule_id": "migration-drop-table-member",
       "reason": "Constraint widening, not data loss: ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, and ck_tax_lot_mutations_cost are dropped and immediately re-created in the same transaction as strict supersets that admit the governed AverageCost BasisRedistribution mutation kind and pooled relief basis. Every existing row still satisfies the re-created checks, and no column or data is removed.",
       "review_after": "2027-03-01"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_039__canonical_lot_amortization.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Requires human schema/storage review. Replaces only four check constraints transactionally with strict supersets admitting basis-only Amortization. Existing acquisition, disposal and average-cost rules remain intact; every previously valid row stays valid. No table, column, row or acquisition fact is removed. The migration runner rolls back the constraint replacement on failure. Validate fresh and upgrade databases before release.",
+      "review_after": "2027-04-02"
     }
   ],
   "removed_migrations": [

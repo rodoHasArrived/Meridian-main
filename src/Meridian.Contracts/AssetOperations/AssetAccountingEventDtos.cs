@@ -258,7 +258,8 @@ public enum AssetLotMutationIntentDto
 {
     None = 0,
     Acquire = 1,
-    Dispose = 2
+    Dispose = 2,
+    Amortize = 3
 }
 
 public sealed record AssetAcquisitionLotDto(
@@ -320,7 +321,9 @@ public sealed record AssetLotMutationInstructionDto(
     Guid? CorrectsMutationBatchId = null,
     Guid? CorrectsJournalEntryId = null,
     LedgerAdjustmentApprovalMetadataDto? CorrectionApproval = null,
-    string? AssetAccountId = null)
+    string? AssetAccountId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization = null)
 {
     public IReadOnlyList<AssetDisposalLotSelectionDto> DisposalSelections { get; init; } =
         DisposalSelections ?? [];
@@ -481,7 +484,10 @@ public static class AssetAccountingEventSpineValidator
             foreach (var evidence in spine.RetainedEvidence)
             {
                 issues.AddRange(RetainedEvidenceIdentityValidator.Validate(evidence));
-                if (evidence.EffectiveDate != spine.EffectiveDate)
+                if (!AssetAccountingEvidenceSubjects.MatchesEventEvidenceDate(
+                    spine.EventKind, spine.EffectiveDate, spine.Scope.SecurityId, spine.Scope.ExpectedSecurityVersion,
+                    evidence, spine.DraftedLotMutation?.Amortization,
+                    requireInstruction: spine.Stages.Any(static stage => stage.Stage == AssetAccountingLifecycleStageDto.Drafted)))
                     issues.Add("Retained evidence effective date must match the asset accounting event.");
             }
 
@@ -891,11 +897,34 @@ public static class AssetLotMutationInstructionValidator
                 }
             }
         }
+        else if (eventKind == AssetAccountingEventKindDto.DepreciationAmortization && instruction is not null)
+        {
+            if (instruction is not { Intent: AssetLotMutationIntentDto.Amortize, Amortization: { } amortization }
+                || instruction.Acquisition is not null || instruction.DisposalSelections.Count != 0
+                || instruction.ReliefMethod is not null || instruction.PolicyRevision is not null
+                || string.IsNullOrWhiteSpace(instruction.AssetAccountId))
+                return ["Lot amortization requires one complete Amortize instruction and exact asset account."];
+            try
+            {
+                var projection = Meridian.Contracts.Accounting.Lots.OpenLotAmortization.Project(amortization);
+                if (amortization.AsOfDate != effectiveDate || Math.Abs(projection.FunctionalMovement) != eventAmount || eventAmount <= 0m)
+                    issues.Add("Amortization effective date and event amount must equal the projected carrying-value movement.");
+                if (!retainedEvidence.Contains(amortization.SecurityEvidence)
+                    || amortization.ExpectedLot.Acquisition.Evidence.Any(evidence => !retainedEvidence.Contains(evidence)))
+                    issues.Add("Amortization must retain the complete Security Master and acquisition evidence identities.");
+            }
+            catch (ArgumentException exception)
+            {
+                issues.Add(exception.Message);
+            }
+        }
         else if (instruction is not null)
         {
             issues.Add($"{eventKind} events cannot carry acquisition or disposal lot mutations.");
         }
 
+        if (instruction is { Amortization: not null, Intent: not AssetLotMutationIntentDto.Amortize })
+            issues.Add("Only amortization instructions may carry amortization inputs.");
         var correctionFields = new object?[]
         {
             instruction?.CorrectsMutationBatchId,

@@ -2332,6 +2332,7 @@ Meridian-main
 │   ├── testing
 │   │   ├── accounting-trust-corrections.md
 │   │   ├── README.md
+│   │   ├── w10-mark-seam-operator-acceptance.md
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
 │   │   ├── WAVE2_ACCEPTANCE_GATE_CHECKLIST.md
 │   │   └── WAVE2_ACCEPTANCE_TESTS.md
@@ -3821,6 +3822,7 @@ Meridian-main
 │   ├── Meridian.Contracts
 │   │   ├── Accounting
 │   │   │   └── Lots
+│   │   │       ├── OpenLotAmortization.cs
 │   │   │       ├── OpenLotBackfillDtos.cs
 │   │   │       ├── OpenLotDto.cs
 │   │   │       └── OpenLotValidation.cs
@@ -4609,6 +4611,7 @@ Meridian-main
 │   │   │   ├── AccountingPostingCandidateService.cs
 │   │   │   ├── AssetAccountingCandidateCanonicalizer.cs
 │   │   │   ├── AssetAccountingEventSpineService.cs
+│   │   │   ├── CanonicalLotAmortizationService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
 │   │   │   └── SpineAcquisitionLotFacts.cs
 │   │   ├── MiddleOffice
@@ -5570,7 +5573,8 @@ Meridian-main
 │   │   │   ├── PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs
 │   │   │   ├── PostgresAssetOperationsProjectionStore.cs
 │   │   │   ├── PostgresAssetOperationsProjectionStore.InstrumentPositions.cs
-│   │   │   └── PostgresAssetOperationsProjectionStore.Locks.cs
+│   │   │   ├── PostgresAssetOperationsProjectionStore.Locks.cs
+│   │   │   └── PostgresAssetOperationsProjectionStore.LotPostingAuthority.cs
 │   │   ├── Backfill
 │   │   │   ├── BackfillStatusStore.cs
 │   │   │   └── BackfillStatusStoreJsonContext.cs
@@ -5707,7 +5711,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_035__open_lot_backfill.sql
 │   │   │   │   ├── V_ledger_036__ledger_event_audit_chain.sql
 │   │   │   │   ├── V_ledger_037__open_lot_basis_adjustment.sql
-│   │   │   │   └── V_ledger_038__audit_safe_tenant_attribution.sql
+│   │   │   │   ├── V_ledger_038__audit_safe_tenant_attribution.sql
+│   │   │   │   └── V_ledger_039__canonical_lot_amortization.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5732,6 +5737,7 @@ Meridian-main
 │   │   │   ├── PostgresFundProfileTenancyRegistry.cs
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   ├── PostgresLedgerCurrencyBackfill.cs
+│   │   │   ├── PostgresLedgerJournalStore.Amortization.cs
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
@@ -5911,6 +5917,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterStore.Aliases.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.IdentifierCandidates.cs
+│   │   │   ├── PostgresSecurityMasterStore.PostingAuthority.cs
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
 │   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
@@ -7386,6 +7393,7 @@ Meridian-main
 │   │   │   ├── EvidenceWorkflowServiceCollectionExtensions.cs
 │   │   │   ├── FileEvidenceArtifactStore.cs
 │   │   │   ├── FileEvidenceArtifactStore.DocumentReview.cs
+│   │   │   ├── FileEvidenceArtifactStore.Export.cs
 │   │   │   ├── FileEvidenceArtifactStore.Models.cs
 │   │   │   ├── FileEvidenceArtifactStore.VaultAccess.cs
 │   │   │   ├── FileStatementReconciliationReportAuthorityStore.cs
@@ -9414,9 +9422,12 @@ Meridian-main
 │   │   │   ├── LayerBoundaryTests.cs
 │   │   │   └── LedgerNetBalanceCentralizationTests.cs
 │   │   ├── AssetOperations
+│   │   │   ├── AmortizationHistoricalEvidenceTests.cs
+│   │   │   ├── AmortizationLotInstructionContractTests.cs
 │   │   │   ├── AssetAccountingEventSpineContractTests.cs
 │   │   │   ├── AssetAccountingEvidenceSubjectContractTests.cs
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.cs
+│   │   │   ├── AssetAmortizationPostgresRoundTripTests.cs
 │   │   │   ├── AssetObligationProjectionServiceTests.cs
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
@@ -9428,6 +9439,7 @@ Meridian-main
 │   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.cs
 │   │   │   ├── InMemoryInstrumentPositionProjectionStoreSlice3Tests.cs
 │   │   │   ├── InstrumentPositionProjectionStoreTests.cs
+│   │   │   ├── OpenLotAmortizationPrecisionTests.cs
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   ├── PortfolioCashLadderReadServiceTests.cs
 │   │   │   └── RetainedEvidenceIdentityValidatorTests.cs
@@ -10204,6 +10216,7 @@ Meridian-main
 │   │   │   ├── AssetAccountingPostingEvidenceValidatorTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.Amortization.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
@@ -10373,6 +10386,7 @@ Meridian-main
 │   │   │   ├── Evidence
 │   │   │   │   ├── EvidenceDocumentExtractionTests.cs
 │   │   │   │   ├── EvidenceProofChainBuilderTests.cs
+│   │   │   │   ├── FileEvidenceArtifactStoreExportTests.cs
 │   │   │   │   ├── JournalEntryEvidenceTests.cs
 │   │   │   │   ├── ReconciliationEvidenceContributorTests.cs
 │   │   │   │   └── SecurityMasterAndVaultEvidenceContributorTests.cs
@@ -10946,6 +10960,7 @@ Meridian-main
 │   │   ├── test_artifact_retention_module.py
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
+│   │   ├── test_canonical_roadmap_yaml.py
 │   │   ├── test_central_package_versions.py
 │   │   ├── test_check_action_origin_derivation.py
 │   │   ├── test_check_apiclient_callers.py

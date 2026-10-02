@@ -41,6 +41,7 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
+        services.TryAddSingleton<CanonicalLotAmortizationService>();
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateAuthorityBuilder>(sp =>
             sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>() as IAccountingPostingCandidateAuthorityBuilder

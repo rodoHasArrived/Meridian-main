@@ -655,3 +655,13 @@ Classification key: already implemented; partially implemented; missing; impleme
   Evidence: the Collaboration boundary in `docs/product/deferred-expansion-boundaries.md` defines these records plus permission boundaries; broad collaboration remains deferred beyond existing domain-local queue primitives.
 - [x] Mobile: keep native iOS/Android, MAUI, React Native, Flutter, and mobile-first workflows closed unless roadmap explicitly reopens the lane.
   Evidence: `docs/product/deferred-expansion-boundaries.md`, `docs/roadmap/data/program-state.yml` (`mobile_lane: closed`), and the repository operating policy keep native/mobile-first product work closed while allowing responsive browser validation.
+
+### Partial PRD-105 export retention - 2026-10-02
+
+Evidence Vault export copying now streams through a bounded 64 KiB read buffer with incremental
+SHA-256 and enforces the existing 100 MiB limit against actual bytes. One private staging attempt
+owns artifacts and metadata; publication moves without overwrite and publishes the scoped index
+last. Failed attempts remove only their owned paths and retain previously published evidence.
+Tenant quotas, aggregate package reservations, retention policy and broader document-runtime
+ownership remain open PRD-105 work. Focused regression results are retained with the change; this
+receipt does not close the parent item.

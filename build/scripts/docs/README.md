@@ -21,7 +21,11 @@ tooling remain visible, so running schema validation does not change the publish
 
 Shared helper module for documentation automation. It provides repo-root resolution,
 stable path normalization, Markdown table rendering, generated headers, manifest
-writing, safe file writes, lightweight YAML loading, and finding output helpers.
+writing, safe file writes, standard YAML loading, and finding output helpers.
+YAML inputs require PyYAML; install the pinned dependency with
+`python3 -m pip install --requirement build/scripts/docs/requirements.txt`.
+Missing dependencies and malformed input fail with the input path and available
+line/column details. Validation and rendering never recover through a subset parser.
 
 ### validate-roadmap-registry.py
 
@@ -735,7 +739,7 @@ if __name__ == '__main__':
 - Type hints on functions
 - `--output` for file output
 - `--summary` for CI summary
-- Only stdlib dependencies
+- Prefer stdlib dependencies; registry parsing uses the pinned PyYAML dependency
 - Return 0 on success, 1 on error
 
 **Recommended:**

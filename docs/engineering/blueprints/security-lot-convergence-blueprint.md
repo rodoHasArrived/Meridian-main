@@ -25,8 +25,9 @@ identity, quantity-basis, or acquisition-FX facts remain visible exceptions with
 The durable disposal transaction now selects through the canonical decimal relief contract, and
 authoritative Reporting validates retained disposal snapshots and includes canonical acquisition
 evidence in its signed pack. This increment does not certify the entire convergence roadmap:
-acquisition writer migration, atomic AverageCost basis redistribution, amortization, corporate-action
-successors, advance refunding, and shadow-operation acceptance remain open. Simulated Backtesting
+The later acquisition, AverageCost and bounded amortization increments are recorded below.
+Corporate-action successors, advance refunding, remaining consumer parity and shadow-operation
+acceptance remain open. Simulated Backtesting
 lots retain their declared simulation boundary rather than receiving invented evidence.
 
 **In scope:** one open-lot contract for unit- and face-denominated instruments; acquisition
@@ -144,7 +145,10 @@ states its acquisition-time par conventions or states nothing; legacy rows are n
 synthetic defaults. `LedgerTaxLotFaceValueTerms` (`src/Meridian.Storage/Ledger/`) is the seam that
 writes those terms from, and restates them back into, the canonical `FaceValueLot` aggregate, and
 `AccountingPostingCandidateService` now derives factor-paydown held face from the lots of record
-through it. `amortization_method` and `effective_yield` remain proposed.
+through it. Migration `V_ledger_034` retains `AmortizationMethod` and `EffectiveYield` in
+the immutable `acquisition_terms` JSON alongside acquisition currencies, FX and both bases;
+these facts are implemented, rather than proposed standalone columns. Effective yield uses an
+annual decimal convention (0.05 means 5%).
 
 `security_id` and `book_position_id` become non-null only after the legacy-row exception queue is
 empty. Mutation rows retain before/after snapshots and the Security Master version used.
@@ -332,3 +336,43 @@ adjustment, so `ToOpenLot` fails closed on an as-of quantity above the restated 
 reporting an unrestated basis; that read is for held quantity only, never disposal selection. The
 replay now resolves each retained journal's ledger book through its accounting period. Remaining
 phases: amortization, corporate-action successors, advance refunding, and shadow operation.
+
+## Partial amortization implementation - 2026-10-02
+
+`CanonicalLotAmortizationService` reads the authoritative lot, Security Master projection and book
+position for a read-only preview. `OpenLotAmortization` uses retained acquisition terms and FX,
+versioned, hash-bound reference evidence, and the existing `FaceValueLot` straight-line and
+constant-yield kernels. Supported inputs are positive open face lots with fixed or zero coupons,
+unadjusted bullet principal, explicit supported day-count terms, and level constant-yield periods.
+Constant yield consumes the retained annual decimal yield and verifies it against acquisition price.
+Missing terms, structured principal/factors, floating or step coupons, callable instruments,
+unsupported day-count context and other methods block this slice.
+
+An `Amortize` instruction travels through the existing Asset Accounting Event Spine candidate and
+independent human approval workflow. `PostgresLedgerJournalStore` locks the period, Security Master,
+book position and reviewed lot in one serializable PostgreSQL transaction. It appends the governed
+balanced journal, updates only the open-basis adjustment with expected-version CAS, and retains one
+basis-only append-only mutation and the exact reviewed evidence. Immutable acquisition economics
+and FX survive unchanged. The asset debit or credit must exactly equal the functional carrying-basis
+change; cumulative targets are rounded once at the existing 12-place journal/storage boundary.
+If a fractional holding produces a basis movement that cannot be represented exactly at that
+boundary, posting is refused rather than retaining a lot basis that differs from its journal.
+
+The governed event spine retains its existing same-currency requirement for Security Master and
+the event's functional currency; this partial delivery does not add a cross-currency event workflow.
+The atomic boundary preserves the acquisition currencies and FX for supported store commands.
+A later discrete disposal whose acquisition unit cost differs from its restated canonical basis
+continues to fail closed through `CanonicalOpenLotDisposalGuard`; extending relief of an amortized
+basis remains separate lot-convergence work.
+
+Migration `V_ledger_039` widens existing mutation constraints without replacing acquisition facts or
+backfilling legacy rows. Exact command retries return the retained journal and mutation before
+current period/version checks, including after restart and later period close. A different command
+at the same identity, stale lot/reference state, unproved historical partial holdings, earlier
+amortization date or another basis treatment is refused. PostgreSQL Security Master and position
+stores must share the ledger database so reference locks remain held through commit.
+
+This is a partial W10-LOT-002 delivery. Corporate-action successors, advance refunding, active
+wash-sale correction, cross-consumer parity and live shadow-operation acceptance remain separate.
+Automated evidence is recorded with the implementation test results; no operator acceptance or
+production certification is implied by this receipt.

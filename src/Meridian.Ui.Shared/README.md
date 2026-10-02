@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Ui.Shared
@@ -1388,6 +1388,19 @@ review path across retained source records, normalized activity, reconciliation 
 evidence, approvals, document attachments, export manifests, and report-pack/restatement lineage.
 Browser and WPF command surfaces should consume that shared workflow instead of creating separate
 accounting-record launch lists.
+
+Evidence Vault packet exports stream retained local artifacts through a bounded 64 KiB read
+window into private staging while the canonical SHA-256 primitive hashes the same bytes. The
+100 MiB per-artifact limit applies to bytes actually read, including growth after the initial
+file-size check. Source hash mismatches, read failures, and cancellation abort the package.
+Artifacts, manifest, and index are staged before publication; no-overwrite moves publish the
+scoped index last, which is the visibility boundary used by vault readers. Failure cleanup removes
+only the attempt's private stage and paths it successfully moved, preserving existing packages.
+The shared `AtomicFileWriter` continues to own file flushing and directory durability. This is a
+bounded PRD-105 export-retention slice; tenant storage quotas and retention policies remain open.
+Focused evidence is in `FileEvidenceArtifactStoreExportTests`, including restart reads, streamed
+size checks, cancellation, hash mismatch, later-artifact failure, and publication collisions.
+
 `WorkstationOperationsJsonContext` includes the accounting-record summary, evidence-category, and
 private-capital shadow NAV tie-out DTOs so shared workstation endpoints can serialize the same
 Financial Operations payloads that desktop clients round-trip from `Meridian.Contracts.Workstation`.

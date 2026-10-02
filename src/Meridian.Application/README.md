@@ -11,6 +11,8 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Application
 
+Ledger composition registers the read-only `CanonicalLotAmortizationService` alongside existing governed candidate services. Amortization posting remains on the shared Asset Accounting Event Spine approval and atomic ledger path.
+
 Governed statement reconciliation carries its resolved fund, primary ledger book, and exact period
 through the retained population provider into journal queries. The journal source validates that
 authority before reading, excludes journals from other periods, and denominates legacy cash legs
