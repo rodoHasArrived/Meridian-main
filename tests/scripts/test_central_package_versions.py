@@ -45,6 +45,7 @@ class CentralPackageVersionTests(unittest.TestCase):
         for package in packages:
             with self.subTest(package=package):
                 expected = "10.0.12" if package in {
+                    "Microsoft.Extensions.Caching.Memory",
                     "Microsoft.Extensions.Configuration",
                     "Microsoft.Extensions.DependencyInjection.Abstractions",
                     "Microsoft.Extensions.Logging.Abstractions",
