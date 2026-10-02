@@ -1,6 +1,6 @@
 {
   "total_files": 682,
-  "total_lines": 150468,
+  "total_lines": 150470,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2227,7 +2227,7 @@
     },
     {
       "path": "docs/engineering/blueprints/security-lot-convergence-blueprint.md",
-      "line_count": 378,
+      "line_count": 380,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
