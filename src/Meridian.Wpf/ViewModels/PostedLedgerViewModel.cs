@@ -48,6 +48,7 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
     // The period's posted lines as returned, retained so switching basis re-projects without a
     // refetch. All bases arrive together; they are different projections of the same accounts.
     private IReadOnlyList<LedgerPeriodTrialBalanceLineDto> _postedLines = [];
+    private bool _hasTrialBalance;
     // Retained so a basis change can re-project the P&L, exactly as it re-projects the grid.
     private LedgerPeriodPnlSummaryDto? _postedPnl;
     private AccountingBasisKindDto _selectedBasis = AccountingBasisKindDto.Primary;
@@ -205,7 +206,7 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
             }
 
             SelectedBasis = value.Basis;
-            ProofDrawer.Close();
+            SyncSelectedBasisRow();
             ProjectTrialBalance();
             ProjectJournal();
             // The P&L is basis-scoped too, so it re-projects with the grid. Leaving it meant
@@ -480,8 +481,9 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
         // picker stayed interactive over the outgoing book's cached lines while the incoming book
         // was still loading, and choosing a basis re-ran ProjectTrialBalance to put book A's
         // balances back on screen under book B's label and currency.
-        Bases.Clear();
+        ResetBasisSelection();
         _postedLines = [];
+        _hasTrialBalance = false;
         _postedPnl = null;
         SelectedPeriodId = null;
         SelectedPeriodLabel = "No period selected";
@@ -612,8 +614,9 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
         // they are presented as the new period for the whole load, and forever if it hangs.
         TrialBalance.Clear();
         PnlMetrics.Clear();
-        Bases.Clear();
+        ResetBasisSelection();
         _postedLines = [];
+        _hasTrialBalance = false;
         _postedPnl = null;
         BalanceSummaryText = "Trial balance not loaded.";
         IsOutOfBalance = false;
@@ -696,7 +699,7 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
     {
         TrialBalance.Clear();
         _postedLines = [];
-        Bases.Clear();
+        _hasTrialBalance = false;
 
         if (!response.Success || response.Data is null)
         {
@@ -711,25 +714,52 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
                     : response.ErrorMessage;
             }
 
-            BalanceSummaryText = "Trial balance not loaded.";
-            IsOutOfBalance = false;
+            ReconcileBasisProjection();
             return;
         }
 
         _postedLines = response.Data;
-        ApplyBases(response.Data);
-        SelectedBasis = PostedLedgerProjection.ResolveDefaultBasis(response.Data);
-        SyncSelectedBasisRow();
-        ProjectTrialBalance();
+        _hasTrialBalance = true;
+        ReconcileBasisProjection();
     }
 
-    private void ApplyBases(IReadOnlyList<LedgerPeriodTrialBalanceLineDto> lines)
+    private void ResetBasisSelection()
     {
         Bases.Clear();
-        foreach (var basis in PostedLedgerProjection.AvailableBases(lines))
+        SelectedBasis = AccountingBasisKindDto.Primary;
+        SyncSelectedBasisRow();
+    }
+
+    private void ReconcileBasisProjection()
+    {
+        // Open periods may have posted journals before a closed-period summary exists. Either
+        // response can arrive first, so neither response owns the available accounting bases.
+        var available = _postedLines.Select(line => line.AccountingBasis)
+            .Concat(_journalEntries.Select(entry => entry.AccountingBasis))
+            .Distinct()
+            .OrderBy(basis => basis)
+            .ToArray();
+        if (!Bases.Select(row => row.Basis).SequenceEqual(available))
         {
-            Bases.Add(new PostedLedgerBasisRow(basis, PostedLedgerProjection.DescribeBasis(basis)));
+            Bases.Clear();
+            foreach (var basis in available)
+            {
+                Bases.Add(new PostedLedgerBasisRow(basis, PostedLedgerProjection.DescribeBasis(basis)));
+            }
         }
+
+        // Keep the operator's basis while either retained response still contains it. Only an
+        // unavailable selection falls back; a later summary must not replace a journal choice.
+        if (!available.Contains(SelectedBasis))
+        {
+            SelectedBasis = available.Contains(AccountingBasisKindDto.Primary)
+                ? AccountingBasisKindDto.Primary
+                : available.FirstOrDefault();
+        }
+        SyncSelectedBasisRow();
+        ProjectTrialBalance();
+        ProjectJournal();
+        ProjectPnlMetrics();
     }
 
     private void SyncSelectedBasisRow()
@@ -755,9 +785,15 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
     /// </summary>
     private void ProjectTrialBalance()
     {
-        var lines = PostedLedgerProjection.FilterByBasis(_postedLines, SelectedBasis);
-
         TrialBalance.Clear();
+        if (!_hasTrialBalance)
+        {
+            BalanceSummaryText = "Trial balance not loaded.";
+            IsOutOfBalance = false;
+            return;
+        }
+
+        var lines = PostedLedgerProjection.FilterByBasis(_postedLines, SelectedBasis);
         foreach (var line in lines)
         {
             // The account id and dimensional scope come with the line for a reason: the service
@@ -779,7 +815,6 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
         BalanceSummaryText = IsOutOfBalance
             ? $"{basisLabel} · {TrialBalance.Count} accounts · out by {PostedLedgerProjection.FormatAmount(Math.Abs(variance), BaseCurrency)}"
             : $"{basisLabel} · {TrialBalance.Count} accounts · in balance";
-        ProjectJournal();
     }
 
     private void ApplyPnl(ApiResponse<LedgerPeriodPnlSummaryDto> response)

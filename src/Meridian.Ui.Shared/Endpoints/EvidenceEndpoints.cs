@@ -25,12 +25,22 @@ public static class EvidenceEndpoints
         {
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
             var trustedScope = ResolveRequiredDocumentScope(context);
+            // Match storage's trimmed path segments before deciding which subject permission applies.
+            // Canonicalizing the vault alias also keeps case-insensitive filesystem aliases portable.
+            subjectKind = subjectKind.Trim();
+            // Windows can resolve a trailing dot to a different directory name. Refuse it before
+            // storage path normalization can change the subject used for authorization.
+            if (subjectKind.EndsWith('.'))
+                return Results.NotFound(Error("evidence-manifest-not-found", "The retained evidence manifest was not found."));
             var retainedKind = subjectKind;
-            if (string.Equals(subjectKind, "_vault", StringComparison.Ordinal))
+            if (string.Equals(subjectKind, "_vault", StringComparison.OrdinalIgnoreCase))
             {
+                subjectKind = "_vault";
                 var identity = await store.TryGetVaultIdentityAsync(subjectId, trustedScope.TenantId,
                     trustedScope.CompanyId, context.RequestAborted).ConfigureAwait(false);
-                retainedKind = identity?.SubjectKind ?? subjectKind;
+                if (identity is null)
+                    return Results.NotFound(Error("evidence-manifest-not-found", "The retained evidence manifest was not found."));
+                retainedKind = identity.SubjectKind;
             }
             if (!CanReadSubject(retainedKind, context))
                 return Results.StatusCode(StatusCodes.Status403Forbidden);

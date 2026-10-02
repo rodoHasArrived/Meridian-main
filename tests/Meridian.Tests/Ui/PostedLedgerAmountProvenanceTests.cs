@@ -223,6 +223,59 @@ public sealed class PostedLedgerAmountProvenanceTests
     }
 
     [Theory]
+    [InlineData("_vault")]
+    [InlineData("_vault ")]
+    [InlineData(" _vault")]
+    [InlineData("_VAULT")]
+    [InlineData("_VaUlT")]
+    [InlineData(" _VaUlT ")]
+    public async Task LegacyVaultAliasesAuthorizeTheRetainedSubjectBeforeOpeningItsManifest(string alias)
+    {
+        using var fixture = new Fixture();
+        var reference = await fixture.RetainAsync(fixture.SubjectId, "selected-source");
+        var identity = await fixture.Artifacts.TryGetVaultIdentityAsync(
+            reference.Uri["vault:".Length..], fixture.Scope.TenantId, fixture.Scope.CompanyId);
+        var route = identity!.ManifestRoute.Replace("/evidence/_vault/",
+            $"/evidence/{Uri.EscapeDataString(alias)}/", StringComparison.Ordinal);
+        await using var reportingApp = await fixture.CreateAppAsync(UserPermission.ViewReporting);
+
+        var denied = await reportingApp.GetTestClient().GetAsync(route);
+
+        denied.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await denied.Content.ReadAsStringAsync()).Should().NotContain("selected-source");
+        await using var ledgerApp = await fixture.CreateAppAsync(UserPermission.ViewLedgerReports);
+        var allowed = await ledgerApp.GetTestClient().GetAsync(route);
+        allowed.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await allowed.Content.ReadAsStringAsync()).Should().Contain("selected-source")
+            .And.Contain(reference.SubjectId);
+    }
+
+    [Theory]
+    [InlineData("_vault.", "")]
+    [InlineData("_vault. .", "")]
+    [InlineData("_vault", ".")]
+    [InlineData("_vault", ". ")]
+    [InlineData(" _VAULT ", " .")]
+    public async Task LegacyVaultPathAliasesCannotOpenAFileWithoutItsRetainedIdentity(string alias, string vaultSuffix)
+    {
+        using var fixture = new Fixture();
+        var reference = await fixture.RetainAsync(fixture.SubjectId, "selected-source");
+        var vaultId = reference.Uri["vault:".Length..];
+        var identity = await fixture.Artifacts.TryGetVaultIdentityAsync(vaultId, fixture.Scope.TenantId, fixture.Scope.CompanyId);
+        var route = identity!.ManifestRoute.Replace($"/evidence/_vault/{vaultId}/",
+            $"/evidence/{Uri.EscapeDataString(alias)}/{Uri.EscapeDataString(vaultId + vaultSuffix)}/", StringComparison.Ordinal);
+
+        foreach (var permission in new[] { UserPermission.ViewReporting, UserPermission.ViewLedgerReports })
+        {
+            await using var app = await fixture.CreateAppAsync(permission);
+            var response = await app.GetTestClient().GetAsync(route);
+
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            (await response.Content.ReadAsStringAsync()).Should().NotContain("selected-source");
+        }
+    }
+
+    [Theory]
     [InlineData("changed-source")]
     [InlineData("deleted-source")]
     [InlineData("changed-review")]

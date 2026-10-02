@@ -54,15 +54,14 @@ public sealed partial class PostedLedgerViewModel
 
             // A response from an older server may ignore scope. Never display its foreign lines
             // or manufacture a subject from an account name, symbol, or row position.
-            _journalEntries = response.Data
+            var entries = response.Data
                 .Where(entry => entry.LedgerBookId == SelectedBookId && entry.PeriodId == periodId)
                 .ToArray();
-            ProjectJournal();
-            if (_journalEntries.Count != response.Data.Count)
+            _journalEntries = entries.Length == response.Data.Count ? entries : [];
+            ReconcileBasisProjection();
+            if (entries.Length != response.Data.Count)
             {
                 JournalStatusText = "Blocked: the journal response contained entries outside the selected book or period.";
-                _journalEntries = [];
-                JournalLines.Clear();
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -80,6 +79,9 @@ public sealed partial class PostedLedgerViewModel
 
     private void ProjectJournal()
     {
+        // Every projection replaces the amount-selection instances. Invalidate their proof
+        // first, including pending reads, before a late summary or basis change removes a row.
+        ProofDrawer.Close();
         JournalLines.Clear();
         var fundId = SelectedBookRow?.FundProfileId ?? string.Empty;
         foreach (var journal in _journalEntries.Where(entry => entry.AccountingBasis == SelectedBasis))

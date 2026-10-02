@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-09-26
+Snapshot date: 2026-10-02
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -1000,7 +1000,7 @@ Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity th
 
 ### Current Summary
 
-First posted-ledger slice implemented for individual debit and credit amounts in browser Ledger Explorer and WPF Posted Ledger. Both consume one ledger-amount payload through the subject-addressed evidence API with immutable journal and entry identifiers plus exact authenticated tenant, company, fund, book, and period scope. Retained source identity, digest, bytes, and review are verified again when opening proof; absent, stale, ambiguous, or foreign support is review-required or blocked. Text-based evidence inference is removed. Targeted validation passed 50 backend tests, 140 browser tests, and 62 WPF tests including native control interaction; mocked Edge checks passed. WPF parity was revalidated on 2026-10-02 with 14 additional node/artifact ambiguity, identity, kind, retention, and missing-reference regressions; rejected proof cannot issue a manifest request. Full repository and hosted validation are tracked in PR 3041 and docs/testing/w10-amount-provenance.md. The row remains in progress because report generation does not yet emit typed retained amount bindings, legacy typed pointers remain review-required until content verification, and other amount surfaces are not activated.
+First posted-ledger slice implemented for individual debit and credit amounts in browser Ledger Explorer and WPF Posted Ledger. Both consume one ledger-amount payload through the subject-addressed evidence API with immutable journal and entry identifiers plus exact authenticated tenant, company, fund, book, and period scope. Retained source identity, digest, bytes, and review are verified again when opening proof; absent, stale, ambiguous, or foreign support is review-required or blocked. Text-based evidence inference is removed. Review fixes normalize vault aliases before authorization, reject dotted path aliases, clear browser selections on navigation, and invalidate WPF proof before journal reprojection; journal and summary responses jointly supply available bases, including open GAAP-only periods. Targeted validation passed 61 backend tests, 144 browser tests, and 70 WPF tests including native control interaction; mocked Edge checks passed. WPF parity was revalidated on 2026-10-02 with 14 additional node/artifact ambiguity, identity, kind, retention, and missing-reference regressions; rejected proof cannot issue a manifest request. Full repository and hosted validation are tracked in PR 3041 and docs/testing/w10-amount-provenance.md. The row remains in progress because report generation does not yet emit typed retained amount bindings, legacy typed pointers remain review-required until content verification, and other amount surfaces are not activated.
 
 ### Exit Criteria
 

@@ -2544,6 +2544,12 @@ domain-specific endpoint edits to the matching partial file.
 
 ### W10 posted amount proof
 
+Legacy `_vault` manifest routes normalize surrounding whitespace and alias casing before resolving
+the retained subject and its read permission. Reporting-only access cannot read ledger-amount
+manifests through a filesystem alias; the same canonical vault path applies on Windows and Linux.
+`PostedLedgerAmountProvenanceTests` covers allowed ledger reads and denied reporting reads for
+canonical, whitespace, uppercase, and mixed-case aliases.
+
 `PostedLedgerAmountProvenanceService` serves `ledger-amount` subjects through the existing evidence
 packet, graph, validation, and export routes. A subject is `{journalEntryId}:{entryId}:debit|credit`;
 requests must carry `fundProfileId`, `ledgerBookId`, and `periodId`. The host obtains tenant/company

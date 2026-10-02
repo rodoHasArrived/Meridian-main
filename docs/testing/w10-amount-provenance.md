@@ -32,16 +32,25 @@ and current review state and verifies the opened manifest's subject and digest. 
 after the drawer loads, the guarded request returns `409 ledger-amount-proof-stale` rather than
 presenting the changed evidence as the previously verified proof.
 
+The review corrections normalize legacy `_vault` route whitespace and casing before checking the
+retained subject's permission. Trailing-dot subject aliases are rejected, and vault requests without
+a resolvable scoped identity cannot fall back to reporting access. The browser discards invalid
+amount selections, so returning to a tab, book, or period cannot reopen an earlier proof. WPF
+closes proof before replacing journal rows, including pending reads, and derives available bases
+from both journal and trial-balance responses. A GAAP-only open-period journal remains available
+when the trial balance returns 404; either response order preserves an available basis selection.
+
 ## Validation evidence
 
-Initial targeted validation completed on 2026-10-01; WPF parity validation was rerun on
-2026-10-02 with the additional node and artifact regressions. All commands ran against this implementation.
+Initial targeted validation completed on 2026-10-01. All three targeted filters were rerun on
+2026-10-02 after the authorization, browser selection, and WPF basis-arrival review corrections.
+The totals below include the earlier WPF node and artifact regressions.
 
 | Check | Result | Coverage and limits |
 | --- | --- | --- |
-| Backend provenance filter | **50 passed, 0 failed, 0 skipped** | Includes 29 posted-amount cases with real file-backed intake, retained review, journal references, HTTP packets, and guarded manifest opening; also compatibility service and authorization tests. |
-| Browser provenance filter | **140 passed across 6 suites** | Selection, exact scope, cross-fund/name/symbol collisions, missing/stale/foreign/ambiguous support, late responses, malformed guarded links/artifacts, and removal of text inference. Final run used one Vitest worker. |
-| WPF provenance and Posted Ledger filter | **62 passed, 0 failed, 0 skipped** | 42 amount-proof cases and 20 existing cases; includes node/artifact ambiguity, exact identity/kind/retention checks, and actual Page/AutomationPeer amount, manifest, and close interactions with a controlled API client. Full WPF source, XAML, and test assembly compiled. |
+| Backend provenance filter | **61 passed, 0 failed, 0 skipped** | Includes 40 posted-amount cases with real file-backed intake, retained review, journal references, HTTP packets, and guarded manifest opening; also compatibility service and authorization tests. |
+| Browser provenance filter | **144 passed across 6 suites** | Selection, exact scope, cross-fund/name/symbol collisions, missing/stale/foreign/ambiguous support, late responses, malformed guarded links/artifacts, and removal of text inference. Final run used one Vitest worker. |
+| WPF provenance and Posted Ledger filter | **70 passed, 0 failed, 0 skipped** | 42 amount-proof cases, 20 existing cases, and 8 basis-arrival cases; includes node/artifact ambiguity, exact identity/kind/retention checks, and actual Page/AutomationPeer amount, manifest, and close interactions with a controlled API client. Full WPF source, XAML, and test assembly compiled. |
 | Browser TypeScript and production build | **Passed** | `npm run build` runs `tsc --noEmit` and Vite; regenerated the tracked workstation bundle. |
 | Targeted ESLint | **0 errors** | Four existing Financial Record Explorer hook-dependency warnings. |
 | Edge rendering and interaction | **Passed with mocked HTTP** | Actual `/workstation/accounting/ledger` page; amount selection, guarded source-link opening, Escape dismissal, missing support, and foreign-fund rejection; zero console errors or framework overlays and no horizontal clipping at 1440 pixels. |
@@ -62,11 +71,18 @@ and missing nodes or artifacts. The desktop now establishes uniqueness before ch
 content, matching the browser's validation order. Every rejected case withholds all proof and
 disables the manifest command without issuing a manifest request.
 
+The subsequent review regressions cover six allowed vault aliases and five rejected Windows path
+aliases, four browser selection round trips/late-response cases, and eight WPF response-arrival,
+missing-summary, scope-reset, and proof-invalidation cases. Browser round trips were also exercised
+in Edge at 1440 by 1050 with mocked HTTP in the same mounted document. The modal's outgoing
+navigation used history/popstate, and the visible Ledger tab handled return navigation; a document
+marker ruled out a full reload. These checks establish client state behavior, not a live storage flow.
+
 Run the backend and WPF filters from the repository root:
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter 'FullyQualifiedName~LedgerAmountProvenanceServiceTests|FullyQualifiedName~LedgerAmountProvenanceEndpointTests|FullyQualifiedName~PostedLedgerAmountProvenanceTests|FullyQualifiedName~EvidenceEndpoints_DeclareSubjectAwarePermissionsAndTenantCompanyScope' --no-restore --disable-build-servers -m:1 -p:CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true -p:CreateHardLinksForCopyLocalIfPossible=true
-dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --no-restore --filter 'FullyQualifiedName~LedgerAmountProofInteractionTests|FullyQualifiedName~PostedLedgerViewModelTests' -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true -p:NodeReuse=false -p:CreateHardLinksForCopyLocalIfPossible=true -p:CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true -m:1 --disable-build-servers --logger 'console;verbosity=minimal'
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --no-restore --filter 'FullyQualifiedName~LedgerAmountProofInteractionTests|FullyQualifiedName~PostedLedgerViewModelTests|FullyQualifiedName~PostedLedgerBasisArrivalTests' -p:EnableWindowsTargeting=true -p:EnableFullWpfBuild=true -p:NodeReuse=false -p:CreateHardLinksForCopyLocalIfPossible=true -p:CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true -m:1 --disable-build-servers --logger 'console;verbosity=minimal'
 ```
 
 Run the browser checks from `src/Meridian.Ui/dashboard/`:
@@ -96,6 +112,7 @@ refreshed outputs is recorded on the PR; local PostgreSQL verification is not cl
 | `tests/Meridian.Tests/Ui/LedgerAmountProvenanceEndpointTests.cs` | Compatibility endpoint permission and scope behavior, including rejection of historical label lookup. |
 | `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | The targeted subject-aware metadata fact verifies exact route permissions and retained tenant/company scope. |
 | `tests/Meridian.Wpf.Tests/ViewModels/LedgerAmountProofInteractionTests.cs` | Shared packet consumption, selection and scope changes, late-response suppression, missing/foreign/ambiguous evidence, and guarded manifest subject/digest checks. |
+| `tests/Meridian.Wpf.Tests/ViewModels/PostedLedgerBasisArrivalTests.cs` | Journal/summary arrival orders, GAAP-only open periods without a summary, basis union and selection preservation, scope resets, and invalidation of loaded or pending proof before row replacement. |
 
 ## Operator acceptance path
 

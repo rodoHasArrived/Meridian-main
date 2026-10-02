@@ -445,7 +445,7 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
           posted-ledger hook duplicated every request TrialBalanceScreen already makes on the other
           tab; unmounted instead, it lost the operator's chosen book and period every time they
           looked at the trial balance and came back. `active` pauses the requests and keeps the
-          selection.
+          book and period selection. Amount proof is cleared when the tab becomes inactive.
         */}
         <PostedLedgerJournalTab active={view === "ledger"} />
       </TabPanel>
@@ -489,6 +489,11 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
     selectedAmount.fundProfileId === selectedFundId && journalLines.some((entry) => entry.postedLines?.some((line) =>
       selectedAmount.subjectId === `${entry.journalEntryId}:${line.entryId}:debit` ||
       selectedAmount.subjectId === `${entry.journalEntryId}:${line.entryId}:credit`)) ? selectedAmount : null;
+  // Discard invalid selections as well as hiding their drawer. This tab stays mounted while
+  // inactive, and retaining the selection would reopen its proof when the old scope loads again.
+  if (selectedAmount && !currentAmount) {
+    setSelectedAmount(null);
+  }
 
   // The trial balance on the sibling tab is labelled in the book's base currency; these are the
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
