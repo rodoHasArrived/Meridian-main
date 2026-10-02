@@ -11,6 +11,9 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Contracts
 
+`Etl/IEtlStagingStore.cs` lets source adapters retain imported streams through an injected
+persistence port without referencing the Storage implementation.
+
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence
 references, authoritative draft approval status, blockers, lock owner and governed reopen path.

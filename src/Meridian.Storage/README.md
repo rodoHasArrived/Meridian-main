@@ -11,12 +11,18 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Storage
 
+`Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
+implement lower-level persistence ports consumed by Infrastructure. Application/host composition
+owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.
+
 `LedgerAccountTaxLotPolicyRecord.EffectiveWashSalePolicy` carries the existing `PolicyId` revision
 into wash-sale projection evidence together with the configured window, scope and activation date.
 This adds no persisted policy field or schema migration.
 
 The durable replacement resolver excludes relieved lot IDs only within the disposing account's
-complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts.
+complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral
+basis adjustments use that same full account identity (name, type, symbol and financial account ID),
+so a sibling account's same-ID lot cannot change the disposing lot's basis or holding-period start.
 
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period

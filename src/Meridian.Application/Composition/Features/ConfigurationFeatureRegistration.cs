@@ -35,7 +35,7 @@ internal sealed class ConfigurationFeatureRegistration : IServiceFeatureRegistra
                     OtlpHeaders = tracing.OtlpHeaders,
                     SamplingRatio = tracing.SamplingRatio,
                     FlushTimeoutMilliseconds = tracing.FlushTimeoutMilliseconds
-                });
+                }, enablePipelineMetrics: options.EnableOpenTelemetry);
         }
 
         // ConfigurationService - consolidated configuration operations

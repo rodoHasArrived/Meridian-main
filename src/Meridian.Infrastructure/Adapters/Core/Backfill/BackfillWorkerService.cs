@@ -1,22 +1,15 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using Meridian.Core.Config;
 using Meridian.Core.Exceptions;
 using Meridian.Core.IO;
 using Meridian.Core.Logging;
 using Meridian.Core.Resilience;
-using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Services;
-using Meridian.Domain.Events;
-using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
-using Meridian.Storage;
-using Meridian.Storage.Archival;
-using Meridian.Storage.Policies;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
@@ -33,7 +26,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
     private readonly ProviderRateLimitTracker _rateLimitTracker;
     private readonly BackfillJobsConfig _config;
     private readonly AppConfig _appConfig;
-    private readonly string _dataRoot;
+    private readonly IBackfillBarWriter _barWriter;
     private readonly ILogger _log;
     private readonly IConnectivityProbeService? _connectivityProbe;
     private readonly CancellationTokenSource _cts = new();
@@ -99,7 +92,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
         ProviderRateLimitTracker rateLimitTracker,
         BackfillJobsConfig config,
         AppConfig appConfig,
-        string dataRoot,
+        IBackfillBarWriter barWriter,
         IConnectivityProbeService? connectivityProbe = null,
         ILogger? log = null)
     {
@@ -126,7 +119,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
         _rateLimitTracker = rateLimitTracker;
         _config = config;
         _appConfig = appConfig;
-        _dataRoot = dataRoot;
+        _barWriter = barWriter ?? throw new ArgumentNullException(nameof(barWriter));
         _connectivityProbe = connectivityProbe;
         _log = log ?? LoggingSetup.ForContext<BackfillWorkerService>();
         _concurrencySemaphore = new SemaphoreSlim(config.MaxConcurrentRequests);
@@ -620,7 +613,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                             bars = await FetchBarsAsync(request, ct).ConfigureAwait(false);
                             MarketDataTracing.RecordEventCount(fetchActivity, bars.Count);
                         }
-                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
                         {
                             MarketDataTracing.RecordError(fetchActivity, ex);
                             throw;
@@ -650,7 +643,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                         {
                             await WriteBarsToStorageAsync(request, bars, ct).ConfigureAwait(false);
                         }
-                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
                         {
                             MarketDataTracing.RecordError(storageActivity, ex);
                             throw;
@@ -1069,31 +1062,9 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
         {
             ct.ThrowIfCancellationRequested();
 
-            var date = dateGroup.Key;
             var dateBars = dateGroup.ToList();
-
-            // Route historical writes through the shared storage policy and atomic writer
-            // so backfill data lands in the same durable, predictable structure as the
-            // rest of the JSONL storage stack.
-            // Partition the storage path by the provider that actually served the bars
-            // (each bar carries its own Source stamp); the top-level provider name is only
-            // a fallback and may be "composite" on the failover path.
-            var exemplarSource = string.IsNullOrWhiteSpace(dateBars[0].Source) ||
-                                 string.Equals(dateBars[0].Source, "composite", StringComparison.OrdinalIgnoreCase)
-                ? _provider.Name
-                : dateBars[0].Source;
-            var exemplarEvent = MarketEvent.HistoricalBar(
-                dateBars[0].ToTimestampUtc(),
-                dateBars[0].Symbol,
-                dateBars[0],
-                exemplarSource,
-                dateBars[0].SequenceNumber);
-            var filePath = BuildFilePath(request.Granularity, exemplarEvent);
-
-            var lines = dateBars.Select(b => JsonSerializer.Serialize(
-                b,
-                MarketDataJsonContext.Default.HistoricalBar));
-            await AtomicFileWriter.AppendLinesAsync(filePath, lines, ct).ConfigureAwait(false);
+            var filePath = await _barWriter.WriteAsync(
+                request.Granularity, dateBars, _provider.Name, ct).ConfigureAwait(false);
 
             foreach (var bar in dateBars)
             {
@@ -1101,33 +1072,6 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
             }
         }
 
-    }
-
-    /// <summary>
-    /// Build the file path for storing bars.
-    /// </summary>
-    private string BuildFilePath(DataGranularity granularity, MarketEvent evt)
-    {
-        var granularityName = granularity switch
-        {
-            DataGranularity.Daily => "daily",
-            DataGranularity.Hour1 => "hourly",
-            DataGranularity.Minute1 => "1min",
-            DataGranularity.Minute5 => "5min",
-            DataGranularity.Minute15 => "15min",
-            DataGranularity.Minute30 => "30min",
-            _ => "daily"
-        };
-
-        var policy = new JsonlStoragePolicy(new StorageOptions
-        {
-            RootPath = _dataRoot,
-            NamingConvention = FileNamingConvention.BySymbol,
-            DatePartition = DatePartition.Daily,
-            FilePrefix = $"bar_{granularityName}"
-        });
-
-        return policy.GetPath(evt);
     }
 
     /// <summary>
@@ -1295,8 +1239,17 @@ public sealed class BackfillServiceFactory
     private readonly ILogger _log;
     private readonly ISymbolResolver? _symbolResolver;
 
-    public BackfillServiceFactory(ILogger? log = null, ISymbolResolver? symbolResolver = null)
+    private readonly IAtomicFileWriter _atomicFileWriter;
+    private readonly Func<string, IBackfillBarWriter> _barWriterFactory;
+
+    public BackfillServiceFactory(
+        IAtomicFileWriter atomicFileWriter,
+        Func<string, IBackfillBarWriter> barWriterFactory,
+        ILogger? log = null,
+        ISymbolResolver? symbolResolver = null)
     {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
+        _barWriterFactory = barWriterFactory ?? throw new ArgumentNullException(nameof(barWriterFactory));
         _log = log ?? LoggingSetup.ForContext<BackfillServiceFactory>();
         _symbolResolver = symbolResolver;
     }
@@ -1345,7 +1298,7 @@ public sealed class BackfillServiceFactory
         };
 
         // Create job manager
-        var jobManager = new BackfillJobManager(gapAnalyzer, requestQueue, jobsDirectory, _log);
+        var jobManager = new BackfillJobManager(gapAnalyzer, requestQueue, jobsDirectory, _atomicFileWriter, _log);
 
         // Create worker service with offline-first support
         var worker = new BackfillWorkerService(
@@ -1355,7 +1308,7 @@ public sealed class BackfillServiceFactory
             rateLimitTracker,
             jobsConfig,
             appConfig,
-            dataRoot,
+            _barWriterFactory(dataRoot),
             connectivityProbe,
             _log);
 

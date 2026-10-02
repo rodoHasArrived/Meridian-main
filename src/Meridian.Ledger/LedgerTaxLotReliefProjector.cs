@@ -8,6 +8,18 @@ namespace Meridian.Ledger;
 public static class LedgerTaxLotReliefProjector
 {
     public static LedgerTaxLotReliefProjection Project(LedgerTaxLotReliefInput input)
+        => Project(input, retainedLegacyProceeds: false);
+
+    /// <summary>
+    /// Replays the unversioned retained-disposal convention. Durable history does not retain a
+    /// proceeds-allocation version, so its discrete parcel amounts must keep the original final-
+    /// residual allocator even when today's sign-preserving allocator would also succeed.
+    /// This compatibility entry point is only for history; new projections use <see cref="Project(LedgerTaxLotReliefInput)"/>.
+    /// </summary>
+    internal static LedgerTaxLotReliefProjection ReconstructRetainedDisposal(LedgerTaxLotReliefInput input)
+        => Project(input, retainedLegacyProceeds: true);
+
+    private static LedgerTaxLotReliefProjection Project(LedgerTaxLotReliefInput input, bool retainedLegacyProceeds)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -23,7 +35,7 @@ public static class LedgerTaxLotReliefProjector
         var parcels = SelectLots(input.QuantitySold, orderedLots, averageUnitCost);
         var proceeds = RoundCurrency(input.QuantitySold * input.SalePrice);
         var selections = BuildSelections(parcels, input.SalePrice, proceeds, input.SaleDate,
-            pooled: input.ReliefMethod == LedgerTaxLotReliefMethod.AverageCost);
+            pooled: input.ReliefMethod == LedgerTaxLotReliefMethod.AverageCost, retainedLegacyProceeds);
         var costBasis = selections.Sum(static selection => selection.CostBasis);
         var realizedGainOrLoss = proceeds - costBasis;
         var washSale = ComputeWashSale(input, selections);
@@ -175,12 +187,15 @@ public static class LedgerTaxLotReliefProjector
         decimal salePrice,
         decimal totalProceeds,
         DateOnly saleDate,
-        bool pooled = false)
+        bool pooled,
+        bool retainedLegacyProceeds)
     {
         var selections = new List<LedgerTaxLotReliefSelection>(parcels.Count);
         var allocatedProceeds = pooled
             ? AllocatePooledProceeds(parcels, totalProceeds)
-            : AllocateDiscreteProceeds(parcels, salePrice, totalProceeds);
+            : retainedLegacyProceeds
+                ? AllocateLegacyDiscreteProceeds(parcels, salePrice, totalProceeds)
+                : AllocateDiscreteProceeds(parcels, salePrice, totalProceeds);
 
         for (var index = 0; index < parcels.Count; index++)
         {
@@ -203,6 +218,24 @@ public static class LedgerTaxLotReliefProjector
         }
 
         return selections;
+    }
+
+    private static decimal[] AllocateLegacyDiscreteProceeds(
+        IReadOnlyList<ReliefParcel> parcels, decimal salePrice, decimal totalProceeds)
+    {
+        // Frozen unversioned history convention: independently round each parcel, cap it at
+        // remaining proceeds, and put the final residual on the last parcel. Do not apply the
+        // new sign bounds retroactively or silently move results between historical tax lots.
+        var proceeds = new decimal[parcels.Count];
+        var remaining = totalProceeds;
+        for (var index = 0; index < parcels.Count; index++)
+        {
+            proceeds[index] = index == parcels.Count - 1
+                ? remaining
+                : Math.Min(remaining, RoundCurrency(parcels[index].Quantity * salePrice));
+            remaining -= proceeds[index];
+        }
+        return proceeds;
     }
 
     private static decimal[] AllocateDiscreteProceeds(

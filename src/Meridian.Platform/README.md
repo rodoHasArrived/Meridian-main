@@ -97,6 +97,12 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 ## Important workflows
 
+The `EnableOpenTelemetry` composition compatibility option collects `Meridian.Pipeline` metrics
+through a DI-owned meter provider, alongside the tracing provider. Console and OTLP metrics export
+use the same explicit exporter flags, resource identity, validated destination, headers, and request
+timeout as tracing. Both providers flush during shutdown and remain alive through final disposal.
+`Tracing.Enabled` alone continues to register only the tracing provider.
+
 Use this module when changing cross-domain runtime cutover controls, shadow-write behavior,
 persisted-projection read switching, hosted projection-reconciliation plumbing, or shared
 command/startup result semantics. Application composition may register these services and consume

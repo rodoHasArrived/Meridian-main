@@ -233,8 +233,8 @@ Total items: **239**
 | `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs` | 438 | `NOTE` | ❌ | // Note: Status derives as ApprovalPending once all four gates are clean, which is expected |
 | `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 2056 | `NOTE` | ❌ | Note: "Delivered after restatement.", |
 | `tests/Meridian.Tests/Ui/SecurityMasterWorkbenchEndpointsTests.cs` | 274 | `NOTE` | ❌ | Note: "ready", |
-| `tests/Meridian.Tests/Ui/StatementReconciliationCaseworkHandoffTests.cs` | 611 | `NOTE` | ❌ | Note: "Corrected statement row retained.", |
-| `tests/Meridian.Tests/Ui/StatementReconciliationCaseworkHandoffTests.cs` | 1059 | `NOTE` | ❌ | Note: "Statement variance reviewed.", |
+| `tests/Meridian.Tests/Ui/StatementReconciliationCaseworkHandoffTests.cs` | 612 | `NOTE` | ❌ | Note: "Corrected statement row retained.", |
+| `tests/Meridian.Tests/Ui/StatementReconciliationCaseworkHandoffTests.cs` | 1060 | `NOTE` | ❌ | Note: "Statement variance reviewed.", |
 | `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs` | 447 | `NOTE` | ❌ | Note: "Board pack delivered with retained evidence graph.", |
 | `tests/Meridian.Tests/Ui/WorkstationStatementCaseworkAuthorityEndpointTests.cs` | 130 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `tests/Meridian.Ui.Tests/Services/DiagnosticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: The service methods require a running backend (ApiClientService), |

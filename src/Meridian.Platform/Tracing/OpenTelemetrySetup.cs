@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Meridian.Core.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -22,11 +23,12 @@ public static class OpenTelemetrySetup
 
     /// <summary>
     /// Registers one DI-owned tracing provider. Calling this method is an explicit opt-in;
-    /// exporters remain disabled by default. Metrics retain their existing Prometheus path.
+    /// exporters remain disabled by default. The compatibility opt-in can also collect pipeline metrics.
     /// </summary>
     public static IServiceCollection AddOpenTelemetryTracing(
         this IServiceCollection services,
-        OpenTelemetryConfiguration config)
+        OpenTelemetryConfiguration config,
+        bool enablePipelineMetrics = false)
     {
         ArgumentNullException.ThrowIfNull(config);
         var endpoint = ValidateConfiguration(config);
@@ -34,16 +36,16 @@ public static class OpenTelemetrySetup
             return services;
 
         services.AddSingleton(config);
-        services.AddOpenTelemetry().WithTracing(tracing =>
+        var telemetry = services.AddOpenTelemetry().ConfigureResource(resource => resource
+            .AddService(config.ServiceName, serviceVersion: config.ServiceVersion,
+                serviceInstanceId: Environment.MachineName)
+            .AddAttributes(new Dictionary<string, object>
+            {
+                ["deployment.environment"] = config.Environment
+            }));
+        telemetry.WithTracing(tracing =>
         {
             tracing
-                .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                    .AddService(config.ServiceName, serviceVersion: config.ServiceVersion,
-                        serviceInstanceId: Environment.MachineName)
-                    .AddAttributes(new Dictionary<string, object>
-                    {
-                        ["deployment.environment"] = config.Environment
-                    }))
                 // Platform pipeline and Infrastructure backfill use this existing source name.
                 .AddSource(ActivitySource.Name)
                 .SetSampler(new ParentBasedSampler(new TraceIdRatioBasedSampler(config.SamplingRatio)))
@@ -64,6 +66,22 @@ public static class OpenTelemetrySetup
                     options.TimeoutMilliseconds = config.FlushTimeoutMilliseconds;
                 });
         });
+
+        if (enablePipelineMetrics)
+            telemetry.WithMetrics(metrics =>
+            {
+                metrics.AddMeter("Meridian.Pipeline");
+                if (config.EnableConsoleExporter)
+                    metrics.AddConsoleExporter();
+                if (config.EnableOtlpExporter)
+                    metrics.AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = endpoint!;
+                        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+                        options.Headers = config.OtlpHeaders ?? string.Empty;
+                        options.TimeoutMilliseconds = config.FlushTimeoutMilliseconds;
+                    });
+            });
 
         services.AddSingleton<TracingLifetimeService>();
         services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(
@@ -104,11 +122,14 @@ public static class OpenTelemetrySetup
     {
         private readonly TracerProvider _provider;
         private readonly OpenTelemetryConfiguration _config;
+        private readonly MeterProvider? _meterProvider;
 
-        public TracingLifetimeService(TracerProvider provider, OpenTelemetryConfiguration config)
+        public TracingLifetimeService(TracerProvider provider, OpenTelemetryConfiguration config,
+            MeterProvider? meterProvider = null)
         {
             _provider = provider;
             _config = config;
+            _meterProvider = meterProvider;
         }
 
         public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
@@ -117,6 +138,8 @@ public static class OpenTelemetrySetup
         {
             if (!_provider.ForceFlush(_config.FlushTimeoutMilliseconds))
                 LoggingSetup.ForContext("OpenTelemetrySetup").Warning("Tracing shutdown flush timed out or failed");
+            if (_meterProvider is not null && !_meterProvider.ForceFlush(_config.FlushTimeoutMilliseconds))
+                LoggingSetup.ForContext("OpenTelemetrySetup").Warning("Pipeline metrics shutdown flush timed out or failed");
             return Task.CompletedTask;
         }
     }

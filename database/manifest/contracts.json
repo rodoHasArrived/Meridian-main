@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "30d318bcb634b1cb206c34c6b86f756e9512df089f2397b147caf0975a914a05",
+      "fingerprint": "0703b4f0b47cfb2591079ce9d1b0b0117e3e6d5131f690ee5c4c3a787046538b",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -775,6 +775,7 @@
         "Meridian.Contracts.Etl.EtlTransferMode",
         "Meridian.Contracts.Etl.IEtlJobDefinitionStore",
         "Meridian.Contracts.Etl.IEtlSourceReader",
+        "Meridian.Contracts.Etl.IEtlStagingStore",
         "Meridian.Contracts.Etl.IPartnerFileParser",
         "Meridian.Contracts.Etl.IPartnerSchemaRegistry",
         "Meridian.Contracts.Etl.ISftpFilePublisher",
@@ -3854,7 +3855,7 @@
       ]
     }
   ],
-  "fingerprint": "f81b3fcefec08ebb1ab19c2398b2bee3c60e6c97e9152cb556a3640c8578a520",
+  "fingerprint": "0e40315315fd8ac5aa6b338bfdac808d71be967d3904fe61a6c031b78020f61a",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4868,7 +4869,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "2986fb42c815f88620701fb1c28ab036d911f4c2c0097900e565dddce2810e22",
+      "fingerprint": "b5c6917664b470e4d45a25e7acde638834587c5b40d568f4cf9065b9b93c6dd9",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Etl",
       "object_ids": [
@@ -4895,6 +4896,7 @@
         "Meridian.Contracts.Etl.EtlTransferMode",
         "Meridian.Contracts.Etl.IEtlJobDefinitionStore",
         "Meridian.Contracts.Etl.IEtlSourceReader",
+        "Meridian.Contracts.Etl.IEtlStagingStore",
         "Meridian.Contracts.Etl.IPartnerFileParser",
         "Meridian.Contracts.Etl.IPartnerSchemaRegistry",
         "Meridian.Contracts.Etl.ISftpFilePublisher",
@@ -109494,6 +109496,39 @@
         {
           "line": 342,
           "path": "src/Meridian.Contracts/Etl/EtlModels.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "fd6618c3ab7d974fcbab48b44d9cdb736de0be48149f502fecf07d8c9f252337",
+      "full_name": "Meridian.Contracts.Etl.IEtlStagingStore",
+      "id": "Meridian.Contracts.Etl.IEtlStagingStore",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IEtlStagingStore",
+      "namespace": "Meridian.Contracts.Etl",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Etl.IEtlStagingStore",
+      "references": [],
+      "source": {
+        "line": 7,
+        "path": "src/Meridian.Contracts/Etl/IEtlStagingStore.cs"
+      },
+      "sources": [
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/Etl/IEtlStagingStore.cs"
         }
       ],
       "type_parameters": []

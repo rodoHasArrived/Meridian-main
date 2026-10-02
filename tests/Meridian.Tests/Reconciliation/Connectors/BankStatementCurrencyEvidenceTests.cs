@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Text;
 using FluentAssertions;
 using Meridian.FinancialOperations.Reconciliation;
@@ -99,7 +100,7 @@ public sealed class BankStatementCurrencyEvidenceTests : IDisposable
     {
         var store = new JsonCanonicalStatementStore(_root);
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(store,
-            new JsonReconciliationCaseStore(_root), new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()), new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(store), new StatementReconciliationContextAdapter(new StatementReconciliationService()));
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
         return (new StatementImportService(new StatementConnectorRegistry([connector]), catalog, workflow, _root), workflow);

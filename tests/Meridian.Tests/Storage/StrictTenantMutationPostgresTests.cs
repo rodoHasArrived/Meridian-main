@@ -5,6 +5,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Npgsql;
 
 namespace Meridian.Tests.Storage;
 
@@ -56,6 +57,106 @@ public sealed class StrictTenantMutationPostgresTests
             Policy = query.Policy with { Scope = WashSaleReplacementScope.DisposingAccount }
         }, ct);
         accountLookup.Replacements.Should().BeEmpty();
+    }
+
+    [LedgerDatabaseFact]
+    public async Task WashSaleResolver_PriorDeferralsWithSameLotId_ApplyOnlyToCompleteDisposingAccount()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var ct = timeout.Token;
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        var registry = new PostgresFundProfileTenancyRegistry(database.Options);
+        await registry.BindAsync("fund-alpha", "tenant-alpha", ct: ct);
+        var now = DateTimeOffset.Parse("2026-05-15T12:00:00Z");
+        var saleDate = new DateOnly(2026, 5, 15);
+        var securityId = Guid.NewGuid();
+        var book = new LedgerBookRecord(Guid.NewGuid(), "fund-alpha", Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund, "Alpha", "USD", now, now);
+        var strict = new PostgresLedgerJournalStore(database.Options, new WorkerAccessor(), TenantScopeEnforcementOptions.FailClosed);
+        using var authority = FundScopeTenantAuthority.Enter("tenant-alpha", "wash-sale prior-deferral account regression");
+        await strict.SaveLedgerBookAsync(book, ct);
+        var period = await strict.SavePeriodAsync(new(Guid.NewGuid(), book.LedgerBookId, 2026, 5, "2026-05",
+            new(2026, 5, 1), new(2026, 5, 31), "Open", now, null, 0), 0, ct: ct);
+        var priorJournal = Write(book.LedgerBookId, period.PeriodId, now.AddDays(-5));
+        await strict.AppendAsync(priorJournal, ct);
+        var priorBatchId = Guid.NewGuid();
+
+        // Freeze a retained prior-disposal batch for the lookup fixture; this test exercises real
+        // persisted deferrals and account resolution, not current disposal production.
+        await using (var connection = new NpgsqlConnection(database.Options.ConnectionString))
+        {
+            await connection.OpenAsync(ct);
+            await using var command = connection.CreateCommand();
+            command.CommandText = $$"""
+                insert into "{{database.Options.SchemaName}}".atomic_tax_lot_posting_batches (
+                    mutation_batch_id, ledger_book_id, period_id, journal_entry_id, source_event_id,
+                    idempotency_key, canonical_fingerprint, expected_period_version, mutation_kind,
+                    retained_evidence, created_at, security_id, book_position_id)
+                values (@batch_id, @book_id, @period_id, @journal_id, @source_event_id,
+                    'prior-wash-sale-disposal', @fingerprint, @period_version, 'Disposal',
+                    '[{"fixture":"retained-prior-disposal"}]'::jsonb, @recorded_at, @security_id, @position_id);
+                """;
+            command.Parameters.AddWithValue("batch_id", priorBatchId);
+            command.Parameters.AddWithValue("book_id", book.LedgerBookId);
+            command.Parameters.AddWithValue("period_id", period.PeriodId);
+            command.Parameters.AddWithValue("journal_id", priorJournal.Entry.JournalEntryId);
+            command.Parameters.AddWithValue("source_event_id", Guid.NewGuid());
+            command.Parameters.AddWithValue("fingerprint", $"sha256:{new string('a', 64)}");
+            command.Parameters.AddWithValue("period_version", period.Version);
+            command.Parameters.AddWithValue("recorded_at", now.UtcDateTime);
+            command.Parameters.AddWithValue("security_id", securityId);
+            command.Parameters.AddWithValue("position_id", Guid.NewGuid());
+            await command.ExecuteNonQueryAsync(ct);
+        }
+
+        var account = LedgerAccounts.Securities("AAPL", "broker-1");
+        LedgerAccount[] accounts =
+        [
+            account,
+            account with { FinancialAccountId = "broker-2" },
+            account with { Name = "Other investments" },
+            account with { AccountType = LedgerAccountType.Liability },
+            account with { Symbol = "OTHER" },
+            account with { Symbol = null },
+            account with { FinancialAccountId = null }
+        ];
+        var deferrals = new List<WashSaleDeferralRecord>();
+        for (var i = 0; i < accounts.Length; i++)
+        {
+            var lot = await strict.SaveTaxLotAsync(new LedgerTaxLotRecord(
+                Guid.NewGuid(), book.LedgerBookId, accounts[i], "same-lot", saleDate.AddDays(-4),
+                100m, 100m, 100m, "USD", now, now, SecurityId: securityId, BookPositionId: Guid.NewGuid()), ct);
+            deferrals.Add(new WashSaleDeferralRecord(
+                Guid.NewGuid(), book.LedgerBookId, priorBatchId, securityId, saleDate.AddDays(-5),
+                account, lot.TaxLotRecordId, lot.LotId, 10m + i, 100m, new DateOnly(2024, 1, 1).AddDays(i),
+                "prior-policy", 30, WashSaleReplacementScope.LedgerBook, now));
+        }
+        await strict.SaveWashSaleDeferralsAsync(deferrals, ct);
+
+        foreach (var scope in new[] { WashSaleReplacementScope.LedgerBook, WashSaleReplacementScope.DisposingAccount })
+        {
+            for (var i = 0; i < accounts.Length; i++)
+            {
+                // Financial-account casing is an alias under LedgerAccount equality; null remains
+                // a distinct identity, while name, type, and symbol retain their exact semantics.
+                var disposingAccount = accounts[i] with
+                {
+                    FinancialAccountId = accounts[i].FinancialAccountId?.ToUpperInvariant()
+                };
+                var lookup = await strict.ResolveAsync(new WashSaleReplacementQuery(
+                    book.LedgerBookId, disposingAccount, securityId, saleDate,
+                    WashSalePolicy.UnitedStates with { Scope = scope }, ["SAME-LOT"]), ct);
+                var adjustment = lookup.PriorDeferrals.Should().ContainSingle(
+                    "basis belongs to the replacement account even when replacement discovery is book-wide").Which;
+                adjustment.Value.Should().Be(deferrals[i].DisallowedAmount);
+                adjustment.HoldingPeriodCarryDate.Should().Be(deferrals[i].HoldingPeriodCarryDate);
+                adjustment.Reference.Should().Be($"wash-sale-deferral:{deferrals[i].DeferralId:D}");
+                lookup.Replacements.Should().NotContain(replacement => replacement.Account == disposingAccount);
+                lookup.Replacements.Should().HaveCount(scope == WashSaleReplacementScope.LedgerBook
+                    ? accounts.Length - 1
+                    : 0);
+            }
+        }
     }
 
     [LedgerDatabaseFact]

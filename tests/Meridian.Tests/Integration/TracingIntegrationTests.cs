@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Pipeline;
+using Meridian.Contracts.Monitoring;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Config;
@@ -18,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 using EnvironmentVariableScope = Meridian.Tests.Identity.EnvironmentVariableScope;
 
 namespace Meridian.Tests.Integration;
@@ -27,6 +29,31 @@ namespace Meridian.Tests.Integration;
 [Collection("Sequential")]
 public sealed class TracingIntegrationTests
 {
+    [Fact]
+    public async Task CompatibilityOptIn_CollectsAndFlushesPipelineMetricsWithTracingDisabledInConfig()
+    {
+        using var environment = UseLocalEnvironment();
+        using var artifacts = TestArtifactDirectory.Create(nameof(TracingIntegrationTests));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var metricExporter = new RecordingMetricExporter();
+        await using var host = await CreateHostAsync(artifacts.RootPath, false, null, timeout.Token,
+            enableOpenTelemetry: true, metricExporter: metricExporter);
+        var metrics = host.GetRequiredService<IEventMetrics>();
+        metrics.Should().BeOfType<TracedEventMetrics>();
+        host.ServiceProvider.GetServices<MeterProvider>().Should().ContainSingle();
+
+        metrics.IncPublished();
+        metrics.IncTrades();
+        metrics.RecordLatency(Stopwatch.GetTimestamp());
+        metricExporter.Values.Should().BeEmpty("the periodic reader is buffered until shutdown");
+        await host.DisposeAsync();
+
+        metricExporter.Values.Should().Contain(item => item.Name == "mdc.pipeline.events.published" && item.Value == 1);
+        metricExporter.Values.Should().Contain(item => item.Name == "mdc.pipeline.events.trades" && item.Value == 1);
+        metricExporter.Values.Should().Contain(item => item.Name == "mdc.pipeline.latency" && item.Value == 1);
+        metricExporter.DisposeCount.Should().Be(1);
+    }
+
     [Fact]
     public async Task EnabledHost_ExportsConnectedPipelineAndQueuedBackfillTraceOnShutdown()
     {
@@ -197,7 +224,9 @@ public sealed class TracingIntegrationTests
         RecordingExporter? exporter,
         CancellationToken ct,
         bool failBackfill = false,
-        Func<IStorageSink, IStorageSink>? decorateSink = null)
+        Func<IStorageSink, IStorageSink>? decorateSink = null,
+        bool enableOpenTelemetry = false,
+        RecordingMetricExporter? metricExporter = null)
     {
         var config = new AppConfig(
             DataRoot: dataRoot,
@@ -215,11 +244,15 @@ public sealed class TracingIntegrationTests
             {
                 ConfigPath = configPath,
                 EnablePipelineServices = true,
-                EnableBackfillServices = true
+                EnableBackfillServices = true,
+                EnableOpenTelemetry = enableOpenTelemetry
             },
             enableProcessWideHostedServices: false,
             services =>
             {
+                if (metricExporter is not null)
+                    services.ConfigureOpenTelemetryMeterProvider((_, builder) => builder.AddReader(
+                        new PeriodicExportingMetricReader(metricExporter, exportIntervalMilliseconds: 600_000)));
                 if (exporter is not null)
                 {
                     services.ConfigureOpenTelemetryTracerProvider((_, builder) => builder.AddProcessor(
@@ -278,6 +311,28 @@ public sealed class TracingIntegrationTests
 
     private static string ReadStoredEvents(string dataRoot) => string.Join("\n",
         Directory.EnumerateFiles(dataRoot, "*.jsonl", SearchOption.AllDirectories).Select(File.ReadAllText));
+
+    private sealed class RecordingMetricExporter : BaseExporter<Metric>
+    {
+        public List<(string Name, long Value)> Values { get; } = [];
+        public int DisposeCount { get; private set; }
+
+        public override ExportResult Export(in Batch<Metric> batch)
+        {
+            foreach (var metric in batch)
+                foreach (ref readonly var point in metric.GetMetricPoints())
+                    Values.Add((metric.Name, metric.MetricType == MetricType.LongSum
+                        ? point.GetSumLong() : point.GetHistogramCount()));
+            return ExportResult.Success;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+                DisposeCount++;
+            base.Dispose(disposing);
+        }
+    }
 
     private sealed class BackfillHostService(BackfillServices services) : IHostedService
     {

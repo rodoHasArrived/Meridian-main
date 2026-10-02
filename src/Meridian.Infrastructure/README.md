@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Infrastructure
 
+Persistence is supplied through `Core.IO.IAtomicFileWriter`, `Contracts.Etl.IEtlStagingStore`, and
+ProviderSdk `IBackfillBarWriter`. Infrastructure has no project-reference path to Storage;
+application/host composition supplies Storage implementations. See the PRD-108 inventory in
+[`layer-boundaries.md`](../../docs/architecture/layer-boundaries.md).
+
 Immutable statement match artifacts retain source-comparison completeness, represented population kinds,
 and the executed matcher/tolerance-policy fingerprint. Legacy artifacts omit these fields and cannot
 establish clearing. The optional fields preserve legacy artifact hashes when absent.
@@ -34,7 +39,9 @@ This layer owns external integration details while depending on lower contracts 
 
 Backfill request admission captures the current activity context; queued worker execution restores
 that parent explicitly rather than inheriting the worker's ambient context. Provider fetch and bar
-storage spans are children of the backfill attempt and retain error/exception evidence on failures.
+storage spans are children of the backfill attempt and retain error/exception evidence on failures,
+including internal timeout cancellations while the worker token is still active. Expected worker
+cancellation leaves those spans without error status.
 The request-only context preserves flags and trace state for in-process retries; it is not serialized
 with jobs, so recovery after restart captures a new admission context or starts a new root trace.
 The adapter-local `Meridian` activity source is subscribed by the common host-owned tracing provider
