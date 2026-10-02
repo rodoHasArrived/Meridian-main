@@ -46,6 +46,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | A firing alert | [Operator Runbook](./operator-runbook.md) | per-alert response, diagnostics bundle, incident procedure and ownership |
+| Inspect a connected pipeline or backfill trace | [Distributed Tracing](./distributed-tracing.md) | opt-in exporters, collector configuration, sampling, and shutdown delivery |
 | Objectives, thresholds, RTO/RPO | [Service Level Objectives](./service-level-objectives.md) | SLIs, targets, error budgets, and recovery objectives |
 | Troubleshooting and support evidence | [Operator Preflight Checklist](./preflight-checklist.md) | readiness gate and rollback posture |
 
@@ -54,6 +55,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 - [Browser Workstation Installer](./browser-workstation-installer.md)
 - [Lifecycle Control Plane Reference](../reference/lifecycle-control-plane.md)
 - [Deployment and Packaging](./deployment-packaging.md)
+- [Distributed Tracing](./distributed-tracing.md)
 - [Failover and Recovery](./failover-and-recovery.md)
 - [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)
 - [Governed Reporting Operations](./governed-reporting-operations.md)

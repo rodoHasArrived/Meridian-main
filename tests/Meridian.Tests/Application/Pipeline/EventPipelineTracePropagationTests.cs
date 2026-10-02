@@ -51,6 +51,55 @@ public sealed class EventPipelineTracePropagationTests
         sink.EventParentSpanIds.Should().ContainSingle(id => string.IsNullOrWhiteSpace(id));
     }
 
+    [Fact]
+    public async Task PublishAsync_WithoutParent_DoesNotInheritPipelineConstructionActivity()
+    {
+        using var listener = CreateListener();
+        using var startup = new Activity("host.startup").Start();
+        await using var sink = new TraceCapturingSink();
+        await using var pipeline = new EventPipeline(sink, capacity: 32, enablePeriodicFlush: false);
+        startup.Stop();
+
+        await pipeline.PublishAsync(CreateTradeEvent("UNPARENTED"));
+        await sink.WaitForEventsAsync(1);
+
+        sink.TraceIds.Should().ContainSingle(id => !string.IsNullOrWhiteSpace(id));
+        sink.TraceIds[0].Should().NotBe(startup.TraceId.ToString());
+        sink.EventTraceIds.Should().ContainSingle(id => string.IsNullOrWhiteSpace(id));
+    }
+
+    [Fact]
+    public async Task PublishAsync_MixedBatch_KeepsIndependentAndAbsentProducerContexts()
+    {
+        using var listener = CreateListener();
+        var releaseFirstAppend = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var sink = new TraceCapturingSink(releaseFirstAppend.Task);
+        await using var pipeline = new EventPipeline(sink, capacity: 32, enablePeriodicFlush: false);
+
+        await pipeline.PublishAsync(CreateTradeEvent("BLOCKER"));
+        await sink.WaitForEventsAsync(1);
+
+        using var first = new Activity("provider.first").Start();
+        await pipeline.PublishAsync(CreateTradeEvent("FIRST"));
+        first.Stop();
+
+        using var second = new Activity("provider.second").Start();
+        await pipeline.PublishAsync(CreateTradeEvent("SECOND"));
+        second.Stop();
+        await pipeline.PublishAsync(CreateTradeEvent("UNPARENTED"));
+        releaseFirstAppend.TrySetResult(true);
+        await sink.WaitForEventsAsync(4);
+
+        sink.TraceIds[1].Should().Be(first.TraceId.ToString());
+        sink.TraceIds[2].Should().Be(second.TraceId.ToString());
+        sink.TraceIds[3].Should().NotBeNullOrWhiteSpace()
+            .And.NotBe(first.TraceId.ToString())
+            .And.NotBe(second.TraceId.ToString());
+        sink.EventParentSpanIds[1].Should().Be(first.SpanId.ToString());
+        sink.EventParentSpanIds[2].Should().Be(second.SpanId.ToString());
+        sink.EventTraceIds[3].Should().BeNullOrEmpty();
+    }
+
     private static ActivityListener CreateListener()
     {
         var listener = new ActivityListener
@@ -86,7 +135,13 @@ public sealed class EventPipelineTracePropagationTests
         private readonly List<string?> _operationNames = new();
         private readonly List<string?> _eventTraceIds = new();
         private readonly List<string?> _eventParentSpanIds = new();
-        private readonly TaskCompletionSource<bool> _received = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly SemaphoreSlim _received = new(0);
+        private readonly Task? _firstAppendGate;
+
+        public TraceCapturingSink(Task? firstAppendGate = null)
+        {
+            _firstAppendGate = firstAppendGate;
+        }
 
         public IReadOnlyList<string?> TraceIds => _traceIds;
 
@@ -98,27 +153,32 @@ public sealed class EventPipelineTracePropagationTests
 
         public IReadOnlyList<string?> EventParentSpanIds => _eventParentSpanIds;
 
-        public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
+        public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
         {
             _traceIds.Add(Activity.Current?.TraceId.ToString());
             _parentSpanIds.Add(Activity.Current?.ParentSpanId.ToString());
             _operationNames.Add(Activity.Current?.OperationName);
             _eventTraceIds.Add(evt.TraceId);
             _eventParentSpanIds.Add(evt.ParentSpanId);
-            _received.TrySetResult(true);
-            return ValueTask.CompletedTask;
+            _received.Release();
+            if (_traceIds.Count == 1 && _firstAppendGate is not null)
+                await _firstAppendGate.WaitAsync(ct);
         }
 
         public Task FlushAsync(CancellationToken ct = default) => Task.CompletedTask;
 
-        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        public ValueTask DisposeAsync()
+        {
+            _received.Dispose();
+            return ValueTask.CompletedTask;
+        }
 
         public async Task WaitForEventsAsync(int expectedCount)
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             while (_traceIds.Count < expectedCount)
             {
-                await _received.Task.WaitAsync(timeout.Token);
+                await _received.WaitAsync(timeout.Token);
             }
         }
     }

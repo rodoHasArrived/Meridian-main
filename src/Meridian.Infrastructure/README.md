@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Infrastructure
@@ -31,6 +31,15 @@ This layer owns external integration details while depending on lower contracts 
   SFTP publisher adapter for the Contracts-owned ETL publisher port.
 
 ## Important workflows
+
+Backfill request admission captures the current activity context; queued worker execution restores
+that parent explicitly rather than inheriting the worker's ambient context. Provider fetch and bar
+storage spans are children of the backfill attempt and retain error/exception evidence on failures.
+The request-only context preserves flags and trace state for in-process retries; it is not serialized
+with jobs, so recovery after restart captures a new admission context or starts a new root trace.
+The adapter-local `Meridian` activity source is subscribed by the common host-owned tracing provider
+without an Infrastructure-to-Application dependency. See
+[Distributed Tracing Operations](../../docs/operators/distributed-tracing.md).
 
 Alpaca Trading API portfolio snapshots explicitly bind `us_equity` and `us_option` position
 values to USD only when the authenticated account response explicitly supplies USD. The
@@ -340,6 +349,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"
 ```
 

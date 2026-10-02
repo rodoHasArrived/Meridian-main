@@ -1,11 +1,8 @@
 using System.Diagnostics;
 using Meridian.Core.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using OpenTelemetry;
-using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Serilog;
 
 namespace Meridian.Platform.Tracing;
 
@@ -23,162 +20,107 @@ public static class OpenTelemetrySetup
     /// </summary>
     public static readonly ActivitySource ActivitySource = new("Meridian", "1.0.0");
 
-    private static readonly ILogger Log = LoggingSetup.ForContext("OpenTelemetrySetup");
-    private static TracerProvider? _tracerProvider;
-    private static MeterProvider? _meterProvider;
-
     /// <summary>
-    /// Initialize OpenTelemetry tracing with the specified configuration.
-    /// </summary>
-    public static void Initialize(OpenTelemetryConfiguration config)
-    {
-        if (_tracerProvider != null)
-            return;
-
-        Log.Information("Initializing OpenTelemetry with service name: {ServiceName}", config.ServiceName);
-
-        var resourceBuilder = ResourceBuilder.CreateDefault()
-            .AddService(
-                serviceName: config.ServiceName,
-                serviceVersion: config.ServiceVersion,
-                serviceInstanceId: Environment.MachineName)
-            .AddAttributes(new Dictionary<string, object>
-            {
-                ["deployment.environment"] = config.Environment,
-                ["host.name"] = Environment.MachineName
-            });
-
-        // Configure tracing
-        var tracerBuilder = Sdk.CreateTracerProviderBuilder()
-            .SetResourceBuilder(resourceBuilder)
-            .AddSource(ActivitySource.Name)
-            .AddHttpClientInstrumentation(options =>
-            {
-                options.RecordException = true;
-            });
-
-        // Add exporters based on configuration
-        if (config.EnableConsoleExporter)
-        {
-            tracerBuilder.AddConsoleExporter();
-            Log.Debug("Console trace exporter enabled");
-        }
-
-        if (config.EnableOtlpExporter && !string.IsNullOrEmpty(config.OtlpEndpoint))
-        {
-            tracerBuilder.AddOtlpExporter(options =>
-            {
-                options.Endpoint = new Uri(config.OtlpEndpoint);
-                if (!string.IsNullOrEmpty(config.OtlpHeaders))
-                {
-                    options.Headers = config.OtlpHeaders;
-                }
-            });
-            Log.Information("OTLP trace exporter enabled: {Endpoint}", config.OtlpEndpoint);
-        }
-
-        // Configure sampling
-        if (config.SamplingRatio < 1.0)
-        {
-            tracerBuilder.SetSampler(new TraceIdRatioBasedSampler(config.SamplingRatio));
-            Log.Debug("Trace sampling configured at {Ratio:P0}", config.SamplingRatio);
-        }
-
-        _tracerProvider = tracerBuilder.Build();
-
-        // Configure metrics (includes pipeline meter from TracedEventMetrics)
-        var meterBuilder = Sdk.CreateMeterProviderBuilder()
-            .SetResourceBuilder(resourceBuilder)
-            .AddMeter("Meridian.Metrics")
-            .AddMeter("Meridian.Pipeline");
-
-        if (config.EnableConsoleExporter)
-        {
-            meterBuilder.AddConsoleExporter();
-        }
-
-        if (config.EnableOtlpExporter && !string.IsNullOrEmpty(config.OtlpEndpoint))
-        {
-            meterBuilder.AddOtlpExporter(options =>
-            {
-                options.Endpoint = new Uri(config.OtlpEndpoint);
-            });
-        }
-
-        _meterProvider = meterBuilder.Build();
-
-        Log.Information("OpenTelemetry initialized successfully");
-    }
-
-    /// <summary>
-    /// Add OpenTelemetry services to the DI container.
+    /// Registers one DI-owned tracing provider. Calling this method is an explicit opt-in;
+    /// exporters remain disabled by default. Metrics retain their existing Prometheus path.
     /// </summary>
     public static IServiceCollection AddOpenTelemetryTracing(
         this IServiceCollection services,
         OpenTelemetryConfiguration config)
     {
+        ArgumentNullException.ThrowIfNull(config);
+        var endpoint = ValidateConfiguration(config);
+        if (services.Any(descriptor => descriptor.ServiceType == typeof(TracingLifetimeService)))
+            return services;
+
         services.AddSingleton(config);
-
-        services.AddOpenTelemetry()
-            .ConfigureResource(resource => resource
-                .AddService(
-                    serviceName: config.ServiceName,
-                    serviceVersion: config.ServiceVersion))
-            .WithTracing(tracing =>
-            {
-                tracing
-                    .AddSource(ActivitySource.Name)
-                    .AddHttpClientInstrumentation()
-                    .AddAspNetCoreInstrumentation();
-
-                if (config.EnableConsoleExporter)
-                    tracing.AddConsoleExporter();
-
-                if (config.EnableOtlpExporter && !string.IsNullOrEmpty(config.OtlpEndpoint))
-                {
-                    tracing.AddOtlpExporter(options =>
+        services.AddOpenTelemetry().WithTracing(tracing =>
+        {
+            tracing
+                .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                    .AddService(config.ServiceName, serviceVersion: config.ServiceVersion,
+                        serviceInstanceId: Environment.MachineName)
+                    .AddAttributes(new Dictionary<string, object>
                     {
-                        options.Endpoint = new Uri(config.OtlpEndpoint);
-                    });
-                }
-            })
-            .WithMetrics(metrics =>
-            {
-                metrics
-                    .AddMeter("Meridian.Metrics")
-                    .AddMeter("Meridian.Pipeline")
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation();
+                        ["deployment.environment"] = config.Environment
+                    }))
+                // Platform pipeline and Infrastructure backfill use this existing source name.
+                .AddSource(ActivitySource.Name)
+                .SetSampler(new ParentBasedSampler(new TraceIdRatioBasedSampler(config.SamplingRatio)))
+                .AddHttpClientInstrumentation(options => options.RecordException = true)
+                .AddAspNetCoreInstrumentation(options => options.RecordException = true);
 
-                if (config.EnableConsoleExporter)
-                    metrics.AddConsoleExporter();
+            if (config.EnableConsoleExporter)
+                tracing.AddConsoleExporter();
 
-                if (config.EnableOtlpExporter && !string.IsNullOrEmpty(config.OtlpEndpoint))
+            if (config.EnableOtlpExporter)
+                tracing.AddOtlpExporter(options =>
                 {
-                    metrics.AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri(config.OtlpEndpoint);
-                    });
-                }
-            });
+                    // Explicit values override ambient OTEL exporter defaults. Merely setting
+                    // OTEL_* environment variables must never opt a host into network export.
+                    options.Endpoint = endpoint!;
+                    options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+                    options.Headers = config.OtlpHeaders ?? string.Empty;
+                    options.TimeoutMilliseconds = config.FlushTimeoutMilliseconds;
+                });
+        });
 
+        services.AddSingleton<TracingLifetimeService>();
+        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(
+            sp => sp.GetRequiredService<TracingLifetimeService>());
         return services;
     }
 
-    /// <summary>
-    /// Shutdown OpenTelemetry providers gracefully.
-    /// </summary>
-    public static void Shutdown()
+    private static Uri? ValidateConfiguration(OpenTelemetryConfiguration config)
     {
-        Log.Information("Shutting down OpenTelemetry...");
-        _tracerProvider?.Dispose();
-        _meterProvider?.Dispose();
-        _tracerProvider = null;
-        _meterProvider = null;
-        Log.Information("OpenTelemetry shutdown complete");
+        if (string.IsNullOrWhiteSpace(config.ServiceName))
+            throw new ArgumentException("Tracing.ServiceName must not be blank.", nameof(config));
+        if (!double.IsFinite(config.SamplingRatio) || config.SamplingRatio is < 0 or > 1)
+            throw new ArgumentException("Tracing.SamplingRatio must be between 0 and 1.", nameof(config));
+        if (config.FlushTimeoutMilliseconds <= 0)
+            throw new ArgumentException("Tracing.FlushTimeoutMilliseconds must be positive.", nameof(config));
+
+        Uri? endpoint = null;
+        if (config.OtlpEndpoint is not null || config.EnableOtlpExporter)
+        {
+            if (!Uri.TryCreate(config.OtlpEndpoint, UriKind.Absolute, out endpoint)
+                || (endpoint.Scheme != Uri.UriSchemeHttp && endpoint.Scheme != Uri.UriSchemeHttps)
+                || string.IsNullOrWhiteSpace(endpoint.Host)
+                || endpoint.UserInfo.Length != 0 || endpoint.Query.Length != 0 || endpoint.Fragment.Length != 0)
+                throw new ArgumentException(
+                    "Tracing.OtlpEndpoint must be an absolute HTTP(S) collector URL without credentials, query, or fragment.",
+                    nameof(config));
+        }
+
+        return endpoint;
+    }
+
+    /// <summary>
+    /// Resolve the provider while hosted services are constructed, before any worker or startup
+    /// guard creates instrumented services. Stop flushes completed spans; the provider remains
+    /// alive until DI disposal, which also exports spans produced by final pipeline draining.
+    /// </summary>
+    private sealed class TracingLifetimeService : Microsoft.Extensions.Hosting.IHostedService
+    {
+        private readonly TracerProvider _provider;
+        private readonly OpenTelemetryConfiguration _config;
+
+        public TracingLifetimeService(TracerProvider provider, OpenTelemetryConfiguration config)
+        {
+            _provider = provider;
+            _config = config;
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            if (!_provider.ForceFlush(_config.FlushTimeoutMilliseconds))
+                LoggingSetup.ForContext("OpenTelemetrySetup").Warning("Tracing shutdown flush timed out or failed");
+            return Task.CompletedTask;
+        }
     }
 }
-
 /// <summary>
 /// Tracing utilities for market data operations.
 /// </summary>
@@ -335,6 +277,17 @@ public static class MarketDataTracing
         return activity;
     }
 
+    /// <summary>Start a queued batch under its producer, linking other producers in the batch.</summary>
+    public static Activity? StartBatchConsumeActivity(
+        int batchSize, ActivityContext parentContext, IEnumerable<ActivityLink>? links = null)
+    {
+        var activity = Source.StartActivity(
+            "Pipeline.ConsumeBatch", ActivityKind.Internal, parentContext, links: links);
+        activity?.SetTag("pipeline.batch_size", batchSize);
+        activity?.SetTag("operation.type", "consume_batch");
+        return activity;
+    }
+
     /// <summary>
     /// Start a trace for a backfill operation.
     /// </summary>
@@ -429,6 +382,9 @@ public sealed class OpenTelemetryConfiguration
     /// Sampling ratio (0.0 to 1.0). 1.0 = sample all traces.
     /// </summary>
     public double SamplingRatio { get; init; } = 1.0;
+
+    /// <summary>Bounded shutdown flush and OTLP request timeout.</summary>
+    public int FlushTimeoutMilliseconds { get; init; } = 5000;
 
     /// <summary>
     /// Enable tracing for WebSocket operations.
