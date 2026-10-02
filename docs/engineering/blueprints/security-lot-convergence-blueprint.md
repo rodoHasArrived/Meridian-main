@@ -342,8 +342,10 @@ method and policy revision. `ExpectedUnitCost` remains an immutable acquisition 
 while `ExpectedCostBasis` is the certified current functional relief. Original quantity, acquisition
 basis, currency, FX, holding dates, and evidence are retained unchanged in every before/after receipt.
 
-A partial discrete disposal retains its exact transaction and functional remainder by subtraction
-in a `DisposalRelief` adjustment on the same versioned lot mutation. Full disposal consumes the exact
+A partial discrete disposal of an adjusted lot retains its exact transaction and functional remainder by subtraction
+in a `DisposalRelief` adjustment on the same versioned lot mutation. Untreated acquisitions keep
+their original proportional basis projection, including the existing first-amortization path after
+ordinary relief. Full disposal consumes the exact
 remaining basis. Journal, lot quantity and basis, evidence, optimistic versions, audit and idempotency
 commit or roll back together; retries return the retained receipt before consulting later lot or
 policy state. Reporting validates the retained pre-relief current basis and reproduces the exact

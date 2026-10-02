@@ -152,7 +152,7 @@ any retained journal contents.
 
 All supported durable relief methods certify current canonical basis under the locked effective
 policy while keeping acquisition unit cost and acquisition evidence immutable. Partial discrete
-relief stores exact remaining transaction and functional basis on its existing mutation; Reporting
+relief of an adjusted lot stores exact remaining transaction and functional basis on its existing mutation; Reporting
 reproduces certified posted basis without rounding it through acquisition unit cost. Migration
 `V_ledger_040` follows PR #3048's reserved amortization ordinal 039. PostgreSQL coverage lives in
 `AtomicTaxLotJournalStoreTests.CurrentBasis`; see the [lot convergence blueprint](../../docs/engineering/blueprints/security-lot-convergence-blueprint.md).

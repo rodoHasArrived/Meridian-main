@@ -11,8 +11,8 @@ public sealed partial class PostgresLedgerJournalStore
     {
         var remainingQuantity = before.OpenQuantity - selection.Quantity;
         // Untreated acquisitions retain their existing proportional projection. A new disposal
-        // treatment is needed only for already adjusted basis, preserving PR #3048's supported
-        // first-amortization path after an ordinary acquisition-basis partial disposal.
+        // treatment is needed only for already adjusted basis, preserving first amortization
+        // after an ordinary acquisition-basis partial disposal.
         if (remainingQuantity == 0m || before.BasisAdjustment is null)
             return null;
 
