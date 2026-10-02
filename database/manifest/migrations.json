@@ -811,6 +811,15 @@
       "sha256": "f835222dbf6b329b2a90b39df0d40d58cfba85912739bdf31634650663e00fcc"
     },
     {
+      "filename": "V_ledger_040__current_basis_disposal.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_040__current_basis_disposal.sql",
+      "schema": "ledger",
+      "sha256": "d41f9435a2570ac89efaab993329dcb78f1b5a4f8d8064a6b0d59dbb18e558e4"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1055,7 +1064,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "cd40be8d16627e90bb0a15e3ea9fb71bd421456c56a5cce0d6b8be2f16502b15",
+  "fingerprint": "7a9fe27810b79fca5decf3f918c7af9c8e64dcb4f3a8a0970283c385a1b2c786",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1293,9 +1302,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 117,
+    "files": 118,
     "migration_sets": 10,
-    "waivers": 11,
+    "waivers": 12,
     "warnings": 0
   },
   "waivers": [
@@ -1346,6 +1355,13 @@
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
       "reason": "Constraint widening, not data loss: ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, and ck_tax_lot_mutations_cost are dropped and immediately re-created in the same transaction as strict supersets that admit the governed AverageCost BasisRedistribution mutation kind and pooled relief basis. Every existing row still satisfies the re-created checks, and no column or data is removed.",
       "review_after": "2027-03-01",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_040__current_basis_disposal.sql",
+      "reason": "Requires human schema/storage review. The cost check is dropped and immediately recreated transactionally as a superset: canonical discrete disposals retain current basis in their pre-relief acquisition and governed-adjustment snapshot, while acquisition-cost, AverageCost and PR #3048 amortization cases remain admitted. No columns or data are removed. Migration 039 from PR #3048 must land before this ordinal 040 slice.",
+      "review_after": "2027-04-02",
       "rule_id": "migration-drop-table-member"
     },
     {

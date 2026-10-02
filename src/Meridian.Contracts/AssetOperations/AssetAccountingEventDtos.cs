@@ -883,8 +883,7 @@ public static class AssetLotMutationInstructionValidator
                     string.IsNullOrWhiteSpace(selection.SelectionEvidenceId) ||
                     !evidenceIds.Contains(selection.SelectionEvidenceId) ||
                     selection.ExpectedUnitCost <= 0m ||
-                    selection.ExpectedCostBasis <= 0m ||
-                    selection.ExpectedCostBasis != selection.Quantity * selection.ExpectedUnitCost)
+                    selection.ExpectedCostBasis <= 0m)
                 {
                     issues.Add("Disposal selections require unique authoritative lot identity/version/order, retained evidence, and exact expected cost basis.");
                     break;

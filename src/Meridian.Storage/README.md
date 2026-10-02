@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Storage
@@ -151,6 +151,15 @@ Public tax-lot, historical disposal, and wash-sale APIs also check the retained 
 Wash-sale deferrals require their referenced replacement lot and disposal batch to belong to
 that book. Global posting-identity collision checks reject foreign authority before returning
 any retained journal contents.
+
+## Current-basis lot relief
+
+All supported durable relief methods certify current canonical basis under the locked effective
+policy while keeping acquisition unit cost and acquisition evidence immutable. Partial discrete
+relief of an adjusted lot stores exact remaining transaction and functional basis on its existing mutation; Reporting
+reproduces certified posted basis without rounding it through acquisition unit cost. Migration
+`V_ledger_040` follows PR #3048's reserved amortization ordinal 039. PostgreSQL coverage lives in
+`AtomicTaxLotJournalStoreTests.CurrentBasis`; see the [lot convergence blueprint](../../docs/engineering/blueprints/security-lot-convergence-blueprint.md).
 
 ## Purpose
 
