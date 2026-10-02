@@ -34,7 +34,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
     private async Task<T> ExecuteMutationAsync<TRequest, T>(
         string operation, TRequest request, string fund, Guid journalEntryId, int version,
         string? tenant, string? company, string? correlationId, Func<string?, string?, Task<T>> execute,
-        CancellationToken ct, bool replayThroughValidation = false, string? fingerprintSalt = null) where T : class
+        CancellationToken ct, bool replayThroughValidation = false, string? fingerprintSalt = null,
+        Func<string?, string?, IReadOnlyList<ManualJournalMutationIntent>, Task>? validateBeforeRecovery = null) where T : class
     {
         ArgumentNullException.ThrowIfNull(request);
         var scope = RecoveryScope(fund, tenant, company);
@@ -50,6 +51,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         await using var session = await _mutationRecovery.OpenSessionAsync(ct).ConfigureAwait(false);
         var pendingIntents = await session.ListPendingAsync(ct).ConfigureAwait(false);
         var resolved = await ResolveMutationScopeAsync(fund, journalEntryId, tenant, company, pendingIntents, ct).ConfigureAwait(false);
+        if (validateBeforeRecovery is not null)
+            await validateBeforeRecovery(resolved.Tenant, resolved.Company, pendingIntents).ConfigureAwait(false);
         var resolvedScope = RecoveryScope(fund, resolved.Tenant, resolved.Company);
         var command = new MutationCommand(key, requestHash, scope, journalEntryId, operation.StartsWith("lifecycle-", StringComparison.Ordinal));
 

@@ -6,10 +6,21 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-01
 ---
 
 # src/Meridian.FinancialOperations
+
+`FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
+recurring schedules and templates, exact source evidence, one claim per schedule/effective date,
+and retained outcome history. A process-independent filesystem lease spans claim, intake and
+completion; retries preserve the deterministic draft identity. Changed definitions block existing
+claims until exact retained definitions are explicitly restored with an actor and reason.
+Initialization is explicit, and missing or corrupt initialized state fails closed. The runtime
+uses the existing PostgreSQL ledger for authoritative periods and governed reopens; the historical
+`FundAdministrationControlService` calendar and lock methods remain in-memory primitives, not
+runtime authority. See [Recurring Journal](../../docs/domain/recurring-journal.md) and
+`RecurringJournalStoreTests` / `RecurringJournalRunnerTests` for recovery and evidence boundaries.
 
 OFX account identity is scoped to the containing bank, credit-card or investment statement.
 The parser does not borrow an account from a sibling statement or unrelated row. Missing,

@@ -6,6 +6,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
+using Meridian.FinancialOperations.FundAdministration;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
@@ -37,7 +38,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ReportPackWorkflowService? reportPackWorkflowService = null,
         IBankTransactionSource? bankTransactionSource = null,
         IGovernedLedgerPostingTarget? postingTarget = null,
-        IManualJournalMutationRecoveryStore? mutationRecovery = null)
+        IManualJournalMutationRecoveryStore? mutationRecovery = null,
+        IRecurringJournalStore? recurringStore = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -48,6 +50,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         _reportPackWorkflowService = reportPackWorkflowService;
         _bankTransactionSource = bankTransactionSource;
         _mutationRecovery = mutationRecovery ?? DefaultMutationRecoveryFor(draftStore);
+        _recurringStore = recurringStore;
     }
 
     public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
@@ -296,12 +299,29 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ? request.Draft.AutomationEvidenceAssessment
                 : existing.AutomationEvidenceAssessment,
             TreasuryContext = existing is not null &&
-                (existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
+                (existing.RequiresRecurringJournalEvidence || existing.RecurringJournalEvidenceJson is not null ||
+                 RecurringJournalEvidenceGuard.IsRecurring(existing.TreasuryContext?.IdempotencyKey) ||
+                 existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
                  ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey))
                 ? (request.Draft.TreasuryContext ?? existing.TreasuryContext) is { } valuationContext
                     ? valuationContext with { IdempotencyKey = existing.TreasuryContext?.IdempotencyKey }
                     : existing.TreasuryContext
                 : request.Draft.TreasuryContext,
+            RecurringJournalEvidenceJson = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.RecurringJournalEvidenceJson : null)
+                : existing.RecurringJournalEvidenceJson,
+            RecurringJournalEvidenceDigest = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.RecurringJournalEvidenceDigest : null)
+                : existing.RecurringJournalEvidenceDigest,
+            ReversalOfJournalEntryId = existing?.RecurringJournalEvidenceJson is not null ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
+            RebookedFromJournalEntryId = existing?.RecurringJournalEvidenceJson is not null ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
+            Reversal = existing?.RecurringJournalEvidenceJson is not null ? existing.Reversal : request.Draft.Reversal,
+            Rebook = existing?.RecurringJournalEvidenceJson is not null ? existing.Rebook : request.Draft.Rebook,
+            RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||
+                existing?.RecurringJournalEvidenceJson is not null || request.Draft.RequiresRecurringJournalEvidence ||
+                RecurringJournalEvidenceGuard.IsRecurring(existing?.TreasuryContext?.IdempotencyKey) ||
+                RecurringJournalEvidenceGuard.IsRecurring(request.Draft.TreasuryContext?.IdempotencyKey) ||
+                request.Draft.RecurringJournalEvidenceJson is not null,
             ValuationMarkEvidenceJson = existing is null
                 ? (trustedAutomatedIntake ? request.Draft.ValuationMarkEvidenceJson : null)
                 : existing.ValuationMarkEvidenceJson,
@@ -390,6 +410,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             TenantId = tenantId,
             CompanyId = companyId,
             // A read-only validation request is not authority to invent a policy or source receipt.
+            RecurringJournalEvidenceJson = existing?.RecurringJournalEvidenceJson,
+            RecurringJournalEvidenceDigest = existing?.RecurringJournalEvidenceDigest,
+            RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||
+                existing?.RecurringJournalEvidenceJson is not null || request.Draft.RequiresRecurringJournalEvidence ||
+                RecurringJournalEvidenceGuard.IsRecurring(existing?.TreasuryContext?.IdempotencyKey) ||
+                RecurringJournalEvidenceGuard.IsRecurring(request.Draft.TreasuryContext?.IdempotencyKey),
             ValuationMarkEvidenceJson = existing?.ValuationMarkEvidenceJson,
             ValuationMarkEvidenceDigest = existing?.ValuationMarkEvidenceDigest,
             RequiresValuationMarkEvidence = existing?.RequiresValuationMarkEvidence == true ||
@@ -404,8 +430,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return ExecuteMutationAsync("submit", request, request.FundProfileId, request.JournalEntryId, request.Version,
-            request.TenantId, request.CompanyId, request.CorrelationId, (tenant, company) => SubmitApprovalCoreAsync(request with { TenantId = tenant, CompanyId = company }, ct), ct);
+        return WithRecurringRegistryLeaseAsync(request.FundProfileId, request.JournalEntryId, request.TenantId, request.CompanyId,
+            session => ExecuteMutationAsync("submit", request, request.FundProfileId, request.JournalEntryId, request.Version,
+                request.TenantId, request.CompanyId, request.CorrelationId, (tenant, company) => SubmitApprovalCoreAsync(request with { TenantId = tenant, CompanyId = company }, ct), ct,
+                validateBeforeRecovery: (tenant, company, pending) => ValidateRecurringBeforeRecoveryAsync(session,
+                    request.FundProfileId, request.JournalEntryId, tenant, company, pending, ct)), ct);
     }
 
     private async Task<ManualJournalEntryDraftDto> SubmitApprovalCoreAsync(
@@ -550,10 +579,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return ExecuteMutationAsync("lifecycle-" + request.Action, request, request.FundProfileId, request.JournalEntryId,
-            request.Version, request.TenantId, request.CompanyId, request.CorrelationId,
-            (tenant, company) => ApplyLifecycleActionCoreAsync(request with { TenantId = tenant, CompanyId = company }, ct), ct,
-            replayThroughValidation: request.Action == JournalEntryLifecycleActionDto.LockAfterClose);
+        return WithRecurringRegistryLeaseAsync(request.FundProfileId, request.JournalEntryId, request.TenantId, request.CompanyId,
+            session => ExecuteMutationAsync("lifecycle-" + request.Action, request, request.FundProfileId, request.JournalEntryId,
+                request.Version, request.TenantId, request.CompanyId, request.CorrelationId,
+                (tenant, company) => ApplyLifecycleActionCoreAsync(request with { TenantId = tenant, CompanyId = company }, ct), ct,
+                replayThroughValidation: request.Action == JournalEntryLifecycleActionDto.LockAfterClose,
+                validateBeforeRecovery: (tenant, company, pending) => ValidateRecurringBeforeRecoveryAsync(session,
+                    request.FundProfileId, request.JournalEntryId, tenant, company, pending, ct)), ct);
     }
 
     private async Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleActionCoreAsync(
@@ -978,6 +1010,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ManualJournalSecurityMasterLineage? securityLineage)
     {
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        AddMetadataTag(tags, RecurringJournalEvidenceGuard.EvidenceTag, draft.RecurringJournalEvidenceJson);
+        AddMetadataTag(tags, RecurringJournalEvidenceGuard.DigestTag, draft.RecurringJournalEvidenceDigest);
         AddMetadataTag(tags, ValuationMarkEvidenceGuard.EvidenceTag, draft.ValuationMarkEvidenceJson);
         AddMetadataTag(tags, ValuationMarkEvidenceGuard.DigestTag, draft.ValuationMarkEvidenceDigest);
         AddMetadataTag(tags, "manualJournalEntryId", draft.JournalEntryId.ToString("D"));
@@ -997,6 +1031,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             tags["evidenceLinks"] = string.Join("|", evidenceLinks);
         }
 
+        IReadOnlyList<JournalEvidenceReference> recurringSources = draft.RecurringJournalEvidenceJson is null ? []
+            : RecurringJournalEvidenceGuard.Deserialize(draft.RecurringJournalEvidenceJson)?.SourceEvidence
+                ?? throw new InvalidOperationException("Recurring source provenance is unavailable at posting.");
         return new JournalEntryMetadata(
             ActivityType: "ManualJournalEntry",
             Symbol: securityLineage?.Symbol,
@@ -1013,14 +1050,15 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             PaymentIntentId: NormalizeOptional(postingCommand.TreasuryContext?.PaymentIntentId),
             SettlementReference: NormalizeOptional(postingCommand.TreasuryContext?.SettlementReference),
             Tags: tags,
-            EvidenceReferences: evidenceLinks.Select(link => new JournalEvidenceReference(
+            EvidenceReferences: recurringSources.Concat(evidenceLinks.Where(link => !recurringSources.Any(source => source.Uri == link))
+                .Select(link => new JournalEvidenceReference(
                 EvidenceId: link,
                 Uri: link,
                 Kind: ClassifyManualPostingEvidence(link).ToString(),
                 SourceSystem: "ManualJournalEntryWorkbench",
                 RetainedAtUtc: recordedAtUtc,
                 RetainedBy: NormalizeOptional(draft.PostedBy) ?? "manual-journal-entry-workbench",
-                SubjectId: draft.JournalEntryId.ToString("D"))).ToArray());
+                SubjectId: draft.JournalEntryId.ToString("D")))).ToArray());
     }
 
     private async Task<ManualJournalSecurityMasterLineage?> ResolveSecurityMasterPostingLineageAsync(
@@ -1395,6 +1433,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             Reversal = reversal,
             Rebook = rebook
         };
+        if (posted.RecurringJournalEvidenceJson is { } recurringJson)
+        {
+            var evidence = RecurringJournalEvidenceGuard.Deserialize(recurringJson)
+                ?? throw new InvalidOperationException("Recurring correction requires its retained source provenance.");
+            correction = correction with
+            {
+                TreasuryContext = (correction.TreasuryContext ?? new TreasuryLedgerContextDto()) with
+                { IdempotencyKey = RecurringJournalEvidenceGuard.CorrectionKey(evidence.OccurrenceKey, correctionId) }
+            };
+        }
         correction = await NormalizeAndValidateAsync(correction, allowIncomplete: false, ct).ConfigureAwait(false);
         if (correction.ValidationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
         {

@@ -59,7 +59,8 @@ public sealed record AutomatedJournalPreparedDraftIntakeRequest(
     string? TenantId = null,
     string? CompanyId = null,
     IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null,
-    string? BatchCorrelationId = null);
+    string? BatchCorrelationId = null,
+    Guid? RecurringJournalEntryId = null);
 
 /// <summary>
 /// One event the intake did not turn into a new draft, with the reason it was skipped.
@@ -193,6 +194,10 @@ public sealed class AutomatedJournalDraftIntakeService
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Currency);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Actor);
 
+        if (request.RecurringJournalEntryId.HasValue &&
+            (request.Drafts.Count != 1 || !RecurringJournalEvidenceGuard.IsRecurring(request.Drafts[0].Event.IdempotencyKey)))
+            throw new InvalidOperationException("A retained recurring draft identity requires exactly one recurring occurrence.");
+
         var workspace = await _configurationService
             .GetWorkspaceAsync(request.FundProfileId, request.LedgerBookId, ct, request.TenantId, request.CompanyId)
             .ConfigureAwait(false);
@@ -210,7 +215,7 @@ public sealed class AutomatedJournalDraftIntakeService
             ct.ThrowIfCancellationRequested();
 
             var idempotencyKey = draft.Event.IdempotencyKey ?? BuildFallbackIdempotencyKey(draft.Event);
-            var journalEntryId = BuildDeterministicJournalEntryId(request, idempotencyKey);
+            var journalEntryId = request.RecurringJournalEntryId ?? BuildDeterministicJournalEntryId(request, idempotencyKey);
 
             var existing = await _draftStore
                 .GetAsync(request.FundProfileId, journalEntryId, ct, request.TenantId, request.CompanyId)
@@ -225,6 +230,11 @@ public sealed class AutomatedJournalDraftIntakeService
                         request.TenantId, request.CompanyId).ConfigureAwait(false)
                         ?? throw new InvalidOperationException("The recovered automated journal draft is missing.");
                 }
+                if (RecurringJournalEvidenceGuard.IsRecurring(idempotencyKey) &&
+                    (RecurringJournalEvidenceGuard.Validate(existing) is not null ||
+                     existing.RecurringJournalEvidenceJson != draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.EvidenceTag) ||
+                     existing.RecurringJournalEvidenceDigest != draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.DigestTag)))
+                    throw new InvalidOperationException("The retained recurring draft does not match this exact occurrence provenance.");
                 var incomingAssessment = request.EvidenceAssessments is not null &&
                                          request.EvidenceAssessments.TryGetValue(idempotencyKey, out var candidateAssessment)
                     ? candidateAssessment
@@ -474,7 +484,10 @@ public sealed class AutomatedJournalDraftIntakeService
             AutomationEvidenceAssessment: evidenceAssessment,
             ValuationMarkEvidenceJson: draft.Metadata.Tags?.GetValueOrDefault(ValuationMarkEvidenceGuard.EvidenceTag),
             ValuationMarkEvidenceDigest: draft.Metadata.Tags?.GetValueOrDefault(ValuationMarkEvidenceGuard.DigestTag),
-            RequiresValuationMarkEvidence: ValuationMarkEvidenceGuard.IsValuation(draft.Metadata.IdempotencyKey));
+            RequiresValuationMarkEvidence: ValuationMarkEvidenceGuard.IsValuation(draft.Metadata.IdempotencyKey),
+            RecurringJournalEvidenceJson: draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.EvidenceTag),
+            RecurringJournalEvidenceDigest: draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.DigestTag),
+            RequiresRecurringJournalEvidence: RecurringJournalEvidenceGuard.IsRecurring(draft.Event.IdempotencyKey));
     }
 
     private static ManualJournalEntryTypeDto MapEntryType(AutomatedJournalEventKind kind)

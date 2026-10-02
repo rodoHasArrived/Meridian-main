@@ -7,6 +7,7 @@ import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
+import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
@@ -75,6 +76,10 @@ vi.mock("@/lib/ledger-reports-api", () => ({
   getLedgerPeriodTrialBalance: vi.fn().mockResolvedValue([]),
   getLedgerPeriodPnlSummary: vi.fn().mockResolvedValue(null),
   getLedgerPeriodJournalEntries: vi.fn().mockResolvedValue([])
+}));
+
+vi.mock("@/lib/api/recurring-journals.api", () => ({
+  getRecurringJournalQueue: vi.fn(async (scope) => ({ ...scope, occurrences: [] }))
 }));
 
 vi.mock("@/lib/api", async () => {
@@ -1585,6 +1590,8 @@ function findAppleSecuritySearchRow() {
 describe("AccountingScreen", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockReset()
+      .mockImplementation(async (scope) => ({ ...scope, occurrences: [] }));
     const searchSecurities = vi.mocked(api.searchSecurities);
     searchSecurities.mockReset();
     if (defaultSearchSecuritiesImplementation) {
@@ -3555,6 +3562,26 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("heading", { name: "Reconciliation exceptions and evidence" })).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Reconciliation runs" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Accounting case workbench" })).not.toBeInTheDocument();
+  });
+
+  it("shows blocked recurring occurrences with no manual drafts after selecting entity scope", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({ ...manualJournalWorkbench, drafts: [] });
+    const scope = { fundProfileId: "fund-alpha", ledgerBookId: "book-alpha", entityId: "entity-master" };
+    vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockResolvedValue({ ...scope, occurrences: [{
+      ...scope, occurrenceId: "blocked-rent", scheduleId: "rent", scheduleVersion: 2,
+      templateId: "rent-template", templateVersion: 4, effectiveDate: "2026-10-01", periodId: "2026-10",
+      state: "Blocked", journalEntryId: null, approvalStatus: null, blockers: ["Period is locked."],
+      sourceEvidenceReferences: ["evidence://rent"], periodLockOwner: "controller-a",
+      governedReopenPath: "Accounting > Close > Request governed reopen"
+    }] });
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+    fireEvent.change(screen.getByLabelText("Recurring journal entity scope"), { target: { value: "entity-master" } });
+    const queue = screen.getByRole("region", { name: "Recurring journal occurrences" });
+    expect(await within(queue).findByText("rent · v2")).toBeInTheDocument();
+    expect(within(queue).getByText("Period is locked.")).toBeInTheDocument();
+    expect(within(queue).getByText("Period lock owner: controller-a")).toBeInTheDocument();
+    expect(recurringJournalsApi.getRecurringJournalQueue).toHaveBeenCalledWith(scope, expect.any(AbortSignal));
+    expect(within(queue).queryByRole("button", { name: "Review retained draft" })).not.toBeInTheDocument();
   });
 
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {

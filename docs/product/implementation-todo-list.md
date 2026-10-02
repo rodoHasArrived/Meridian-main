@@ -2,8 +2,8 @@
 
 **Status:** active; production certification blocked  
 **Owner:** core-team  
-**Reviewed:** 2026-09-28 (current certification and registry inventory; historical implementation evidence retains its recorded dates)
-**Baseline:** certification and registry inventory reconciled at `main` commit `8123e84798ffc3df2689245bc9dedf5bced28ef8`; production readiness remains blocked pending passing certification on the final release commit, operator review, signed release evidence, and required GitHub Actions activation
+**Reviewed:** 2026-10-02 (registry inventory and review-comment reconciliation; historical evidence retains its recorded dates)
+**Baseline:** registry inventory reconciled at `main` commit `a9f02daedfe798484ee1297b75411b4edf388385`; the historical certification baseline remains `8123e84798ffc3df2689245bc9dedf5bced28ef8`; production readiness remains blocked pending passing certification on the final release commit, operator review, signed release evidence, and required GitHub Actions activation
 **Previous production audit:** `f0ac384a2` on 2026-07-11
 **Sources:** [Meridian Design Document (Version 1.0)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
 
@@ -38,8 +38,10 @@ provider-wide. See [credential protection](../../src/Meridian.DataIntegration/Cr
 [draft implementation evidence](https://github.com/rodoHasArrived/Meridian-main/pull/2931). Other historical
 ratings below require their own current-source and release-evidence review.
 
-The current certification and registry review uses `8123e84798ffc3df2689245bc9dedf5bced28ef8`
-on 2026-09-28. This refresh does not re-review every historical implementation row.
+The recorded certification review uses `8123e84798ffc3df2689245bc9dedf5bced28ef8`
+on 2026-09-28. The 2026-10-02 inventory reconciliation preserves the current-main roadmap
+records, including W10-JRNL-001's 2026-10-01 in-progress disposition. This refresh does not
+re-review every historical implementation row.
 Newer main `87dc5bf1512e6df7faf4e7276e82afd1f9c7373a` includes the GL-provider changes from
 PR #2998 and passed all 1,030 PostgreSQL certification tests with zero failures or skips in
 [run 36475262697](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36475262697).
@@ -59,7 +61,7 @@ replace the remaining release-certification evidence.
 | Atomic tax-lot guard ordering | The acquisition fixture supplies the Security Master lineage required by the production posting guard before testing malformed asset-account economics. Provenance remains an earlier fail-closed guard, with explicit guard-order coverage. | Acquisition, replay, disposal, rollback, and AverageCost database cases passed in the same-commit, zero-skip PostgreSQL certification run below. |
 | Trading-calendar convergence | Merged PR #2987 routes completeness and calendar cells through the shared operational calendar. Regression cases cover Juneteenth, observed holidays, an injected closure, and the 2026/2027 boundary. The 2026-only seed is retired. | Retain passing calendar/completeness results with the tested source; preserve population and operator acceptance boundaries. |
 | Corporate-action posting | `W9-CORPACT-011` is now `ready_for_acceptance`. Current source contains #2947's retained 500-share/USD 120 dividend round trip with independent approval, one balanced journal, reload, replay, and unchanged holdings. It passed in the baseline certification and the focused local check. | Operator acceptance under `DEC-W9-ACCEPTANCE-002`; source and CI do not supply that decision. The old branch's incidental generated assets are not a reason to replace current-main assets. |
-| W10 work order requested by the user | Complete `W10-LOT-002`, then `W10-MARK-001`, then `W10-SEAM-001`, before opening `W10-RECON-001` in this work queue. Acquisition convergence and AverageCost relief are implemented; amortization, successor mutations, advance refunding, and shadow-operation acceptance still prevent lot closure. | This queue records the user's explicit priority override; registry `planned_sequence` and dependency fields remain unchanged. MARK and SEAM still require their recorded live acceptance evidence. |
+| W10 work order requested by the user | Complete `W10-LOT-002`, then `W10-MARK-001`, then `W10-SEAM-001`, before opening `W10-RECON-001` in this work queue. Acquisition convergence and AverageCost relief are implemented; amortization, successor mutations, advance refunding, and shadow-operation acceptance still prevent lot closure. | This queue records the user's explicit priority override; registry `sequence` values and recorded dependencies remain unchanged. It creates no roadmap prerequisite. The [recorded operator-session plan](plans/next-work-determination-2026-09-27.md#tier-5--w10-two-rows-await-an-operator-session-one-has-an-undefined-criterion) still certifies SEAM before MARK, with LOT as a separate continuation. MARK and SEAM still require their recorded live acceptance evidence. |
 
 Production Certification [run 36468791566](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36468791566)
 passed all four jobs on its unchanged second attempt on this exact baseline on 2026-09-28.
@@ -76,15 +78,19 @@ signed installer and supported-release evidence.
 
 ### Current Roadmap Inventory
 
-The registry contains **42 rows** as of this review: **17 `done`, 7 `in_progress`, 6 `accepted`,
-1 `ready_for_acceptance`, and 11 `planned`**. The reconciliation and verification sections below
+The registry contains **42 rows** as of this review: **17 `done`, 8 `in_progress`, 6 `accepted`,
+1 `ready_for_acceptance`, and 10 `planned`**. The reconciliation and verification sections below
 enumerate those postures. `W9-SAFETY-007` is accepted under `DEC-W9-ACCEPTANCE-004`, with its OCO
 and deferred risk-journal/read-surface/WPF-parity reservations retained. `W9-CORPACT-011` is the
 only row with `ready_for_acceptance` status; the in-progress `W10-MARK-001` and `W10-SEAM-001`
 also retain live operator acceptance gates. `W9-DEMO-002` reached `done` separately under
-`DEC-W9-DONE-001`. The user-requested work queue completes LOT, then MARK, then SEAM before
-opening `W10-RECON-001`. It does not change the registry's `planned_sequence` or dependency
-fields, or the separately recorded operator-session plan. These are existing registry states,
+`DEC-W9-DONE-001`. `W10-JRNL-001` is in progress under the 2026-10-01 evidence carried by
+merged PR #3040; its operator acceptance and production certification remain open. The
+user-requested work queue completes LOT, then MARK, then SEAM before opening `W10-RECON-001`
+in that queue only. Roadmap ranking remains MARK 1, RECON 2, SEAM 7, and LOT 12. The
+[recorded operator-session plan](plans/next-work-determination-2026-09-27.md#tier-5--w10-two-rows-await-an-operator-session-one-has-an-undefined-criterion)
+continues to schedule SEAM before MARK, with LOT as a separate continuation. The queue adds
+no prerequisite to the recorded roadmap dependencies. These are existing registry states,
 not new acceptance decisions.
 
 ### Historical Implementation and Release Evidence
@@ -337,10 +343,10 @@ The word intended here is **deprecated**. Repeated filenames or concepts are not
 | Roadmap posture | Rows | Production interpretation |
 | --- | --- | --- |
 | Bounded capability evidence complete (17) | `W1-DATA-001`, `W2-TRD-001`, `W2-PROMO-001`, `W3-CONT-001`, `W4-RECON-001`, `W4-RPT-001`, `W5-ACCT-001`, `W5-MASSET-001`, `W5X-FREX-001`, `W5X-FINOPS-001`, `W5X-CONNECT-001`, `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W6-BTSTUDIO-001`, `W7-LIVE-001`, `W9-DEMO-002`, `W9-ASSET-010` | Preserve the bounded evidence and each row's scope. W5X Evidence/Statement are browser claims; W6 covers the Covered Call evidence and governed Paper-promotion loop; W7 closes live-readiness governance; W9-ASSET closes the asset-accounting spine. W9-DEMO reached done under `DEC-W9-DONE-001` with its [closure record](w9-demo-002-closure-2026-09-16.md). None certifies a release. |
-| Active productization (7) | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W9-GOV-008`, `W9-INGEST-009`, `W10-MARK-001`, `W10-SEAM-001`, `W10-LOT-002` | Finish registered exit criteria within the supported release envelope. Complete `W10-LOT-002`, then `W10-MARK-001`, then `W10-SEAM-001` before opening `W10-RECON-001`; source implementation alone does not close their live acceptance gates. |
-| Implementation complete, awaiting acceptance (1) | `W9-CORPACT-011` | Reached `ready_for_acceptance` on 2026-09-22 after the accounting lane posted end to end on PostgreSQL. Operator acceptance remains a fresh decision under `DEC-W9-ACCEPTANCE-002`; no production claim follows from this posture. |
+| Active productization (8) | `W8-WPF-PARITY-001`, `W8-UX-CONSOL-001`, `W9-GOV-008`, `W9-INGEST-009`, `W10-MARK-001`, `W10-SEAM-001`, `W10-LOT-002`, `W10-JRNL-001` | Finish registered exit criteria within the supported release envelope. Apply the registry ranking and recorded operator-session plan; the user's separate queue above adds no roadmap prerequisite. Source implementation alone does not close live acceptance gates. |
+| Registry `ready_for_acceptance` (1) | `W9-CORPACT-011` | Reached `ready_for_acceptance` on 2026-09-22 after the accounting lane posted end to end on PostgreSQL. Operator acceptance remains a fresh decision under `DEC-W9-ACCEPTANCE-002`; no production claim follows from this posture. |
 | Accepted bounded capabilities (6) | `W9-TRUTH-001`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`, `W9-NAV-006`, `W9-SAFETY-007` | Preserve the decisions and reservations in the registry. Safety was accepted on 2026-09-11 under `DEC-W9-ACCEPTANCE-004`, restored on 2026-09-23, with OCO and deferred risk-journal/read-surface/WPF-parity work retained. TRUTH is accepted under the 2026-09-26 owner exception `DEC-W9-ACCEPTANCE-005`; independent non-author verdicts were not obtained. Acceptance alone is neither done nor release certification. |
-| Planned (11) | `W5X-OEG-001`, `W10-RECON-001`, `W10-PROV-001`, `W10-RECON-002`, `W10-JRNL-001`, `W10-TAX-001`, `W10-RECON-003`, `W10-RECON-004`, `W10-PERF-001`, `W10-CONSOL-001`, `W10-DEBT-001` | All retain `planned_evidence` posture. The shared orchestration/durability defects in `PRD-007` and `PRD-106` still apply to broader or alternate backtest entrypoints despite the bounded W6 Covered Call evidence-loop closure. |
+| Planned (10) | `W5X-OEG-001`, `W10-RECON-001`, `W10-PROV-001`, `W10-RECON-002`, `W10-TAX-001`, `W10-RECON-003`, `W10-RECON-004`, `W10-PERF-001`, `W10-CONSOL-001`, `W10-DEBT-001` | All retain `planned_evidence` posture. The shared orchestration/durability defects in `PRD-007` and `PRD-106` still apply to broader or alternate backtest entrypoints despite the bounded W6 Covered Call evidence-loop closure. |
 
 The following remain deferred and are not production blockers unless the signed support envelope reopens them: broad live execution and live portfolio operations beyond bounded W7 governance, treasury payment execution, broad alternative-asset expansion beyond current evidence, forecasting/scenario engines, enterprise risk platform, capital-structure modeling, client portal, no-code workflow designer, broad collaboration productization, and all native mobile lanes.
 
@@ -373,7 +379,7 @@ Reviewed on 2026-09-28 against the registry inventory and recorded decisions at 
 - the current same-commit hosted certification and CI runs linked above
 
 The 42 registry rows reconcile to the five disjoint postures enumerated above: 17 `done`,
-7 `in_progress`, 6 `accepted`, 1 `ready_for_acceptance`, and 11 `planned`. The done and accepted
+8 `in_progress`, 6 `accepted`, 1 `ready_for_acceptance`, and 10 `planned`. The done and accepted
 rows retain `evidence_posture: complete`; active rows retain `in_progress`; CORPACT retains
 `implementation_complete`; planned rows retain `planned_evidence`. This refresh changes no row
 status or per-row review date and creates no new operator decision. Historical implementation
