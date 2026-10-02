@@ -2,13 +2,14 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-01
+**Reviewed:** 2026-10-02
 
 This page is the canonical operator definition of Meridian's service level indicators (SLIs),
 service level objectives (SLOs), error budgets, and recovery objectives.
 
-Every objective below names the exact Prometheus series that measures it, the alert rule that
-pages on it, and the runbook section that resolves it. Those three links are enforced
+Every runtime objective below names the exact Prometheus series that measures it, the alert rule
+that pages on it, and the runbook section that resolves it. Recovery objectives use the dated
+recovery receipt and operator evidence described below. The runtime objective links are enforced
 mechanically: `build/scripts/ci/validate-observability-contract.py` fails the build when an
 objective measures a metric the exporter does not emit, names an alert that does not exist, or
 links to a runbook section that does not resolve.
@@ -46,34 +47,55 @@ by `build/scripts/recovery/invoke-production-recovery.ps1`.
 
 | Objective | Commitment | Status |
 | --- | --- | --- |
-| RPO (Recovery Point Objective) | 1 hour — at most one hour of committed work may be lost. | **Stated, not yet measured.** See below. |
-| RTO (Recovery Time Objective) | 2 hours — from declared loss to a verified, reconciled, operator-accepted restore. | **Stated, not yet measured.** See below. |
+| RPO (Recovery Point Objective) | 1 hour — at most one hour of committed work may be lost. | **Evidence-gated:** no accepted release-commit recovery evidence recorded. |
+| RTO (Recovery Time Objective) | 2 hours — from declared loss to a verified, reconciled, operator-accepted restore. | **Evidence-gated:** no accepted release-commit recovery evidence recorded. |
 
-### What the drill measures today, and what it does not
+### Recovery receipt measurements
 
-`invoke-production-recovery.ps1` writes `measuredRpoSeconds` and `measuredRtoSeconds` into its
-receipt and fails the drill when they exceed `-MaximumRpoSeconds` (default 3600) or
-`-MaximumRtoSeconds` (default 7200). Those field names are aspirational: in Drill mode the script
-computes
+Schema-version-2 receipts retain archive timings under `backupDurationSeconds` and
+`restoreDurationSeconds`. These describe taking the backup and executing the restore; neither is
+an RPO or RTO measurement. A fast archive operation cannot prove recoverability or completed recovery.
 
-- `measuredRpoSeconds` as `backupCompleted - operationStarted` — how long taking a **fresh** backup
-  took, not the age of the last recoverable point;
-- `measuredRtoSeconds` as `restored - backupCompleted` — how long `Invoke-Restore` took, starting
-  after that new backup and stopping the moment the call returns.
+The objective measurements use recorded recovery milestones:
 
-Neither figure includes detection, decision, reconciliation, or operator acceptance, and the RPO
-figure cannot express data loss at all because the backup it times is taken during the drill. A
-fast backup and a fast restore therefore certify these thresholds without demonstrating either
-objective. Read a passing drill as **"backup and restore complete within budget"** — a necessary
-condition for the objectives above, and a useful regression guard, but not evidence of them.
+| Receipt field | Required meaning |
+| --- | --- |
+| `lastVerifiedRecoverablePointAtUtc` | The last committed-work boundary verified recoverable for the complete database/data-root unit before simulated loss. A fresh archive's completion time cannot substitute for this boundary. |
+| `recoverablePointVerifiedAtUtc`, `recoverablePointEvidence` | When that point was verified and the retained evidence reference supporting it. Verification must precede simulated loss. |
+| `simulatedLossAtUtc` | The loss boundary used to measure recoverable-point age. |
+| `lossDeclaredAtUtc` | When the loss was declared and the recovery clock began. |
+| `reconciliationCompletedAtUtc`, `reconciliationEvidence` | Actual completion of restored-state replay/reconciliation and its retained evidence reference. |
+| `operatorAcceptedAtUtc`, `operatorAcceptedBy`, `operatorAcceptanceEvidence` | Actual acceptance after reconciliation, the named operator, and the retained acceptance evidence reference. |
+| `measuredRpoSeconds` | `simulatedLossAtUtc - lastVerifiedRecoverablePointAtUtc`, in seconds. |
+| `measuredRtoSeconds` | `operatorAcceptedAtUtc - lossDeclaredAtUtc`, in seconds. Restore completion does not stop this clock. |
 
-Closing this needs the script to record the timestamp of the last recoverable point before the
-simulated loss, and to run the clock from declared loss through operator acceptance. Until then
-these two rows stay open in `PRD-111`, and no drill receipt should be cited as RPO/RTO evidence.
+`build/scripts/recovery/validate-recovery-receipt.ps1` evaluates the receipt independently with
+policy defaults of 3600 seconds for RPO and 7200 seconds for RTO. Explicit overrides may tighten
+these limits. A receipt's claimed budgets, measurements, or status cannot establish compliance.
+The validator recomputes the measurements and rejects absent, invalid, or inconsistent UTC
+milestones, missing evidence references, and missing operator attribution. Timestamp fields must
+be UTC ISO-8601 strings ending in `Z` or `+00:00`.
 
-The drill does produce a dated receipt that the `Production Certification` workflow uploads, and a
-run that produces no receipt does not count as a drill. Recovery procedure lives in
-[Failover and Recovery](./failover-and-recovery.md).
+The resulting `objectiveStatus` is `unproven` when required evidence is incomplete or invalid,
+`breached` when complete valid evidence exceeds either budget, and `proven` only when complete
+valid evidence meets both budgets. Incomplete evidence stays unproven even when archive operations
+passed or a partial measurement appears within budget. Validation exits nonzero for `unproven`
+and `breached`.
+
+The producer records the simulated-loss and declared-loss milestones around the drill restore;
+it does not generate reconciliation or operator acceptance. The scheduled `Production
+Certification` archive round trip can therefore pass with `objectiveStatus: unproven`. After the
+operator completes recovery, supply actual completion evidence to the validator and retain its
+separate evaluated receipt alongside the original receipt and backing evidence. See
+[Failover and Recovery](./failover-and-recovery.md#recovery-drill-and-objectives) for the commands.
+
+Historical schema-version-1 receipts mislabeled backup duration as `measuredRpoSeconds` and restore
+duration as `measuredRtoSeconds`. Their green runs prove the encrypted archive round trip and its
+state probes only. They cannot be relabeled into objective evidence without the original recovery
+milestones and operator evidence. `PRD-015` stays evidence-gated and `PRD-111` stays open until
+accepted, complete recovery evidence exists on the frozen release commit; the
+[production-certification evidence ledger](../engineering/production-certification-evidence-chain.md#prd-015-recovery-drill-operator-review)
+records that gate.
 
 ## Ingestion Plane
 
