@@ -43,13 +43,18 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     future roadmap row must produce before a deferred product area can move into active delivery;
     boundaries, not implementation claims
 - Treat the following as dated working design inputs, not canonical status sources:
-  - [What To Work On Next (2026-09-27)](plans/next-work-determination-2026-09-27.md) — latest
-    prioritization input, anchored at `main` `5980fa00`; ranks work against the registry, the
-    readiness tracker, live CI, and the pull-request queue, verifies each named roadmap remainder
-    against current source, and supersedes the
+  - [What To Work On Next (2026-10-02)](plans/next-work-determination-2026-10-02.md) — latest
+    prioritization input, anchored at `main` `02196672`; ranks work against the registry, the
+    readiness tracker, live CI, and the pull-request queue, and verifies each named roadmap
+    remainder against current source rather than against its own record. Records that the two
+    top-ranked P0 engineering items merged (#3026, #3028) and that the release-candidate tag is the
+    remaining P0 path. It moves no roadmap row and certifies no release
+  - [What To Work On Next (2026-09-27)](plans/next-work-determination-2026-09-27.md) — superseded by
+    the 2026-10-02 determination and anchored at `main` `5980fa00`; retained in place rather than
+    archived because `docs/roadmap/data/program-state.yml` and the readiness tracker cite it as the
+    recorded operator-session plan. It supersedes the
     [2026-09-23 determination](../../archive/docs/plans/next-work-determination-2026-09-23.md) and the
-    [2026-09-20 determination](../../archive/docs/plans/next-work-determination-2026-09-20.md). It moves no roadmap row
-    and certifies no release
+    [2026-09-20 determination](../../archive/docs/plans/next-work-determination-2026-09-20.md)
   - [Reporting Operating Model (2026-09)](reporting-operating-model-2026-09.md) — refined
     reporting semantics: the `Report`/`Edition`/`Publication` object split, the four-destination
     consolidation inside the existing Reporting root, the scope contract with separated effective
