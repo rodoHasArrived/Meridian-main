@@ -1,8 +1,10 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +25,25 @@ public static class EvidenceEndpoints
         {
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
             var trustedScope = ResolveRequiredDocumentScope(context);
+            // Match storage's trimmed path segments before deciding which subject permission applies.
+            // Canonicalizing the vault alias also keeps case-insensitive filesystem aliases portable.
+            subjectKind = subjectKind.Trim();
+            // Windows can resolve a trailing dot to a different directory name. Refuse it before
+            // storage path normalization can change the subject used for authorization.
+            if (subjectKind.EndsWith('.'))
+                return Results.NotFound(Error("evidence-manifest-not-found", "The retained evidence manifest was not found."));
+            var retainedKind = subjectKind;
+            if (string.Equals(subjectKind, "_vault", StringComparison.OrdinalIgnoreCase))
+            {
+                subjectKind = "_vault";
+                var identity = await store.TryGetVaultIdentityAsync(subjectId, trustedScope.TenantId,
+                    trustedScope.CompanyId, context.RequestAborted).ConfigureAwait(false);
+                if (identity is null)
+                    return Results.NotFound(Error("evidence-manifest-not-found", "The retained evidence manifest was not found."));
+                retainedKind = identity.SubjectKind;
+            }
+            if (!CanReadSubject(retainedKind, context))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
             var manifest = await store
                 .TryOpenManifestAsync(
                     subjectKind,
@@ -50,7 +71,8 @@ public static class EvidenceEndpoints
         .Produces(200, contentType: "application/json")
         .Produces<EvidenceEndpointErrorDto>(404)
         .Produces(StatusCodes.Status403Forbidden)
-        .RequirePermission(UserPermission.ViewReporting)
+        .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ViewLedgerReports,
+            UserPermission.ManageLedgerReports, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .RequireWorkstationTenantCompanyScope();
 
         app.MapGet("/workstation/evidence/vault/{vaultId}", async (
@@ -59,6 +81,13 @@ public static class EvidenceEndpoints
         {
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
             var trustedScope = ResolveRequiredDocumentScope(context);
+            var identity = await store.TryGetVaultIdentityAsync(vaultId, trustedScope.TenantId,
+                trustedScope.CompanyId, context.RequestAborted).ConfigureAwait(false);
+            if (identity is not null && !CanReadSubject(identity.SubjectKind, context))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            var (amountGuard, guardError) = await ResolveLedgerAmountManifestGuardAsync(vaultId, context).ConfigureAwait(false);
+            if (guardError is not null)
+                return guardError;
             var manifest = await store
                 .TryOpenManifestByVaultIdAsync(
                     vaultId,
@@ -66,6 +95,12 @@ public static class EvidenceEndpoints
                     trustedScope.CompanyId,
                     context.RequestAborted)
                 .ConfigureAwait(false);
+            if (manifest is not null && amountGuard is not null &&
+                !await ManifestMatchesAmountGuardAsync(manifest, amountGuard, context.RequestAborted).ConfigureAwait(false))
+            {
+                await manifest.Content.DisposeAsync().ConfigureAwait(false);
+                return Results.Conflict(Error("ledger-amount-proof-stale", "Retained amount evidence changed. Refresh the amount proof before opening it."));
+            }
             return manifest is null
                 ? Results.NotFound(Error(
                     "evidence-vault-manifest-not-found",
@@ -82,7 +117,8 @@ public static class EvidenceEndpoints
         .Produces(200, contentType: "application/json")
         .Produces<EvidenceEndpointErrorDto>(404)
         .Produces(StatusCodes.Status403Forbidden)
-        .RequirePermission(UserPermission.ViewReporting)
+        .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ViewLedgerReports,
+            UserPermission.ManageLedgerReports, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .RequireWorkstationTenantCompanyScope();
 
         var group = app.MapGroup("/api/workstation/evidence");
@@ -104,6 +140,8 @@ public static class EvidenceEndpoints
             string subjectId,
             HttpContext context) =>
         {
+            if (!CanReadSubject(subjectKind, context))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
             var result = await ResolvePacketAsync(subjectKind, subjectId, context, jsonOptions).ConfigureAwait(false);
             return result;
         })
@@ -112,7 +150,8 @@ public static class EvidenceEndpoints
         .Produces<EvidenceEndpointErrorDto>(400)
         .Produces<EvidenceEndpointErrorDto>(404)
         .Produces(StatusCodes.Status403Forbidden)
-        .RequirePermission(UserPermission.ViewReporting)
+        .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ViewLedgerReports,
+            UserPermission.ManageLedgerReports, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjectGraph), async (
@@ -120,6 +159,8 @@ public static class EvidenceEndpoints
             string subjectId,
             HttpContext context) =>
         {
+            if (!CanReadSubject(subjectKind, context))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
             var service = context.RequestServices.GetRequiredService<EvidenceGraphService>();
             if (!service.IsSupportedSubjectKind(subjectKind))
             {
@@ -140,7 +181,10 @@ public static class EvidenceEndpoints
             }
 
             var ledgerBookId = ResolveLedgerBookId(context);
-            var graph = await service.GetGraphAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId).ConfigureAwait(false);
+            var (amountScope, scopeError) = ResolveLedgerAmountScope(subjectKind, context);
+            if (scopeError is not null)
+                return scopeError;
+            var graph = await service.GetGraphAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId, amountScope).ConfigureAwait(false);
             return graph is null
                 ? Results.NotFound(Error(
                     "evidence-subject-not-found",
@@ -154,7 +198,8 @@ public static class EvidenceEndpoints
         .Produces<EvidenceEndpointErrorDto>(400)
         .Produces<EvidenceEndpointErrorDto>(404)
         .Produces(StatusCodes.Status403Forbidden)
-        .RequirePermission(UserPermission.ViewReporting)
+        .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ViewLedgerReports,
+            UserPermission.ManageLedgerReports, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjectValidate), async (
@@ -584,6 +629,9 @@ public static class EvidenceEndpoints
         string subjectId,
         HttpContext context)
     {
+        if (string.Equals(subjectKind, EvidenceSubjectResolver.LedgerAmountKind, StringComparison.OrdinalIgnoreCase) &&
+            !CanReadSubject(subjectKind, context))
+            return (null, Results.StatusCode(StatusCodes.Status403Forbidden));
         var service = context.RequestServices.GetRequiredService<EvidenceGraphService>();
         if (!service.IsSupportedSubjectKind(subjectKind))
         {
@@ -604,7 +652,10 @@ public static class EvidenceEndpoints
         }
 
         var ledgerBookId = ResolveLedgerBookId(context);
-        var packet = await service.GetPacketAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId).ConfigureAwait(false);
+        var (amountScope, scopeError) = ResolveLedgerAmountScope(subjectKind, context);
+        if (scopeError is not null)
+            return (null, scopeError);
+        var packet = await service.GetPacketAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId, amountScope).ConfigureAwait(false);
         return packet is null
             ? (null, Results.NotFound(Error(
                 "evidence-subject-not-found",
@@ -643,6 +694,93 @@ public static class EvidenceEndpoints
         => Guid.TryParse(context.Request.Query["ledgerBookId"].FirstOrDefault(), out var ledgerBookId)
             ? ledgerBookId
             : null;
+
+    private static bool CanReadSubject(string subjectKind, HttpContext context)
+        => string.Equals(subjectKind, EvidenceSubjectResolver.LedgerAmountKind, StringComparison.OrdinalIgnoreCase)
+            ? EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewLedgerReports,
+                UserPermission.ManageLedgerReports, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
+            : EndpointAuthorization.HasPermission(context, UserPermission.ViewReporting);
+
+    private sealed record LedgerAmountManifestGuard(string ContentHash, string RetainedSubjectId);
+
+    private static async Task<(LedgerAmountManifestGuard? Guard, IResult? Error)> ResolveLedgerAmountManifestGuardAsync(
+        string vaultId, HttpContext context)
+    {
+        var query = context.Request.Query;
+        string[] keys = ["ledgerAmountSubjectId", "ledgerBookId", "periodId", "fundProfileId", "expectedContentHash"];
+        if (!query.ContainsKey("ledgerAmountSubjectId") && !query.ContainsKey("expectedContentHash"))
+            return (null, null);
+        if (query.Count != keys.Length || keys.Any(key => query[key].Count != 1) ||
+            !Sha256Digest.IsCanonical(query["expectedContentHash"]) ||
+            !Guid.TryParseExact(query["ledgerBookId"], "D", out var bookId) || query["ledgerBookId"] != bookId.ToString("D") ||
+            !Guid.TryParseExact(query["periodId"], "D", out var periodId) || query["periodId"] != periodId.ToString("D"))
+            return (null, Results.BadRequest(Error("ledger-amount-manifest-scope-required", "The retained amount manifest requires its exact subject, fund, book, period, and content digest.")));
+
+        var (scope, scopeError) = ResolveLedgerAmountScope(EvidenceSubjectResolver.LedgerAmountKind, context);
+        if (scopeError is not null)
+            return (null, scopeError);
+        if (!CanReadSubject(EvidenceSubjectResolver.LedgerAmountKind, context))
+            return (null, Results.StatusCode(StatusCodes.Status403Forbidden));
+        var service = context.RequestServices.GetRequiredService<PostedLedgerAmountProvenanceService>();
+        var subjectId = query["ledgerAmountSubjectId"].ToString();
+        var hash = query["expectedContentHash"].ToString();
+        var packet = await service.GetPacketAsync(subjectId, scope!, context.RequestAborted).ConfigureAwait(false);
+        var prefix = $"/workstation/evidence/vault/{Uri.EscapeDataString(vaultId)}?";
+        if (packet?.LedgerAmount is not { } proof || proof.Status == EvidenceStatusDto.Blocked ||
+            proof.SubjectId != subjectId || !proof.Evidence.Any(item => item.Status == EvidenceStatusDto.Ready &&
+                item.ContentHash == hash && item.Route?.StartsWith(prefix, StringComparison.Ordinal) == true))
+            return (null, Results.Conflict(Error("ledger-amount-proof-stale", "Retained amount evidence is missing, changed, or outside the selected scope. Refresh the amount proof.")));
+        return (new LedgerAmountManifestGuard(hash, PostedLedgerAmountProvenanceService.BuildRetainedSubjectId(subjectId, scope!)), null);
+    }
+
+    private static async Task<bool> ManifestMatchesAmountGuardAsync(
+        EvidenceManifestFile manifest, LedgerAmountManifestGuard guard, CancellationToken ct)
+    {
+        if (!manifest.Content.CanSeek)
+            return false;
+        var position = manifest.Content.Position;
+        try
+        {
+            using var json = await JsonDocument.ParseAsync(manifest.Content, cancellationToken: ct).ConfigureAwait(false);
+            var root = json.RootElement;
+            return root.ValueKind == JsonValueKind.Object && root.TryGetProperty("subject", out var subject) &&
+                Text(subject, "subjectKind") == EvidenceSubjectResolver.LedgerAmountKind &&
+                Text(subject, "subjectId") == guard.RetainedSubjectId &&
+                root.TryGetProperty("vaultIdentity", out var identity) &&
+                Text(identity, "contentHashSha256") == guard.ContentHash;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+        finally
+        {
+            manifest.Content.Position = position;
+        }
+
+        static string? Text(JsonElement element, string key)
+            => element.ValueKind == JsonValueKind.Object && element.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String
+                ? value.GetString() : null;
+    }
+
+    private static (LedgerAmountScopeDto? Scope, IResult? Error) ResolveLedgerAmountScope(
+        string subjectKind, HttpContext context)
+    {
+        if (!string.Equals(subjectKind, EvidenceSubjectResolver.LedgerAmountKind, StringComparison.OrdinalIgnoreCase))
+            return (null, null);
+        var query = context.Request.Query;
+        if (query["ledgerBookId"].Count != 1 || query["periodId"].Count != 1 || query["fundProfileId"].Count != 1 ||
+            !Guid.TryParse(query["ledgerBookId"], out var bookId) || bookId == Guid.Empty ||
+            !Guid.TryParse(query["periodId"], out var periodId) || periodId == Guid.Empty ||
+            string.IsNullOrWhiteSpace(query["fundProfileId"]))
+            return (null, Results.BadRequest(Error("ledger-amount-scope-required",
+                "Amount evidence requires one exact fundProfileId, ledgerBookId, and periodId.")));
+
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        if (!tenant.HasTenantScope || string.IsNullOrWhiteSpace(tenant.CompanyId))
+            return (null, Results.StatusCode(StatusCodes.Status403Forbidden));
+        return (new LedgerAmountScopeDto(tenant.TenantId!, tenant.CompanyId!, query["fundProfileId"].ToString(), bookId, periodId), null);
+    }
 
     private static EvidenceEndpointErrorDto Error(
         string code,

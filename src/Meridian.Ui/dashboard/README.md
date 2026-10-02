@@ -30,6 +30,11 @@ retained subject are never assigned inferred provenance. Reads disable developme
 show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
 use the shared sheet behavior. Full evidence links retain the selected ledger book.
 
+Ledger Explorer clears the selected amount when its tab becomes inactive, its book or period
+changes, or its posted journal no longer contains that amount. Returning to the prior scope
+requires a new amount click; a late evidence response cannot restore the previous drawer.
+`finance-standard-pages-screen.test.tsx` covers tab, book and period round trips and late responses.
+
 Reconciliation break details expose source observation state (New, Aging, Cleared, Recurring),
 lineage, occurrence and successful-run clearing independently of governed casework status.
 

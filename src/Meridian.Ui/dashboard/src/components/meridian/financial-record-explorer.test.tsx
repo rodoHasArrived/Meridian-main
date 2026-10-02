@@ -500,8 +500,8 @@ describe("FinancialRecordExplorerShell", () => {
     const detail = screen.getByRole("dialog", { name: "Apple Inc. proof detail" });
     const passport = within(detail).getByRole("region", { name: "Apple Inc. Number Passport" });
     expect(within(passport).getByText("Report Usage")).toBeInTheDocument();
-    expect(within(passport).getByText("/api/workstation/financial-record-explorers/report-line-provenance?lineKey=holdings.aapl.market-value&sourceId=AAPL")).toBeInTheDocument();
-    expect(within(passport).getByText("/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111/passport")).toBeInTheDocument();
+    expect(within(passport).getByText("Review required: no report usage evidence")).toBeInTheDocument();
+    expect(within(passport).getByText("Review required: no evidence packet")).toBeInTheDocument();
     expect(within(detail).getByText("Instrument Identity")).toBeInTheDocument();
     expect(within(detail).getByText("Provider Evidence")).toBeInTheDocument();
     expect(within(detail).getByText("AssetOperations Readiness")).toBeInTheDocument();

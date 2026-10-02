@@ -67,6 +67,10 @@ public interface IEvidenceArtifactStore
         CancellationToken ct = default) =>
         throw ScopedImplementationRequired();
 
+    /// <summary>Verifies the retained source bytes, not just the manifest or index identity.</summary>
+    Task<bool> VerifyRetainedContentAsync(string vaultId, string tenantId, string scope, CancellationToken ct = default)
+        => Task.FromResult(false);
+
     Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
         EvidenceVaultLookupRequestDto request,
         CancellationToken ct = default);
@@ -117,6 +121,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private const long MaxRetainedArtifactBytes = 100 * 1024 * 1024;
     private static readonly HashSet<string> SupportedCanonicalSubjectKinds = new(StringComparer.OrdinalIgnoreCase)
     {
+        EvidenceSubjectResolver.LedgerAmountKind,
         "run",
         "account",
         "fund",

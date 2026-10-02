@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Wpf
@@ -931,3 +931,24 @@ Use `Controls/EmptyStatePanel` for reusable missing-data states; it supports tit
 - `docs/reference/accounting-report-packs.md`
 - `docs/operators/governed-reporting-operations.md`
 - `docs/source/generated/source-module-index.md`
+
+### Posted amount proof (W10-PROV-001)
+
+The Posted Ledger page reads the selected period's posted journal lines alongside its trial balance.
+Debit and credit buttons use immutable journal/line/side IDs and exact fund/book/period scope to
+request `EvidencePacketDto.LedgerAmount`. `LedgerAmountProofDrawerViewModel` renders the same status,
+retained identity, source digest, and warnings as the browser. It opens only the selected retained
+vault manifest through the authenticated client and checks its returned subject and scope.
+Selection, scope, refresh, navigation, and dismissal invalidate pending proof reads. Missing or
+stale source support requires review; ambiguous and foreign evidence is blocked. Trial-balance
+aggregates and simulated strategy-run amounts are not activated by this first slice.
+
+Accounting bases come from the union of posted journal and trial-balance responses, regardless
+of arrival order. An open period's GAAP-only journal remains selectable when its summary is not
+available. Later responses preserve an available basis selection; book and period changes reset
+that selection. Replacing projected journal rows closes their proof drawer before clearing the
+rows and invalidates any pending evidence read. `PostedLedgerBasisArrivalTests` covers delayed
+summary/journal arrivals, missing summaries, basis preservation, scope resets, and loaded or
+pending proof invalidation.
+
+Acceptance and commands: [W10 posted amount provenance](../../docs/testing/w10-amount-provenance.md).
