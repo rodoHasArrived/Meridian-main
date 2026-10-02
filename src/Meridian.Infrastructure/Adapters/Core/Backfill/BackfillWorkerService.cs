@@ -620,7 +620,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                             bars = await FetchBarsAsync(request, ct).ConfigureAwait(false);
                             MarketDataTracing.RecordEventCount(fetchActivity, bars.Count);
                         }
-                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
                         {
                             MarketDataTracing.RecordError(fetchActivity, ex);
                             throw;
@@ -650,7 +650,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                         {
                             await WriteBarsToStorageAsync(request, bars, ct).ConfigureAwait(false);
                         }
-                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
                         {
                             MarketDataTracing.RecordError(storageActivity, ex);
                             throw;

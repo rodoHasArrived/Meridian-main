@@ -100,6 +100,54 @@ public sealed class EventPipelineTracePropagationTests
         sink.EventTraceIds[3].Should().BeNullOrEmpty();
     }
 
+    [Fact]
+    public void BatchTraceLinks_ExcludeParentAndAbsentContexts_DeduplicateAndClearBetweenBatches()
+    {
+        var parent = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded);
+        var other = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded);
+        var scratch = new EventPipeline.BatchTraceLinks(4);
+        scratch.Add(default, parent);
+        scratch.Add(parent, parent);
+        scratch.Add(other, parent);
+        scratch.Add(other, parent);
+
+        scratch.Links.Should().ContainSingle().Which.Context.Should().Be(other);
+        scratch.Clear();
+        scratch.Add(parent, default);
+        scratch.Links.Should().ContainSingle().Which.Context.Should().Be(parent);
+        scratch.Clear();
+        scratch.Links.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void BatchTraceLinks_ReusedScratch_DoesNotAllocateWhenConstructingLinks()
+    {
+        var parent = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded);
+        var other = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded);
+        var scratch = new EventPipeline.BatchTraceLinks(4);
+        // Warm the same operations before measuring; activity creation/export is excluded.
+        for (var i = 0; i < 100; i++)
+        {
+            scratch.Clear();
+            scratch.Add(default, parent);
+            scratch.Add(parent, parent);
+            scratch.Add(other, parent);
+            scratch.Add(other, parent);
+        }
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 1000; i++)
+        {
+            scratch.Clear();
+            scratch.Add(default, parent);
+            scratch.Add(parent, parent);
+            scratch.Add(other, parent);
+            scratch.Add(other, parent);
+        }
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        allocated.Should().Be(0);
+    }
+
     private static ActivityListener CreateListener()
     {
         var listener = new ActivityListener

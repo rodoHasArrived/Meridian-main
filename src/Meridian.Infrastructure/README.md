@@ -34,7 +34,9 @@ This layer owns external integration details while depending on lower contracts 
 
 Backfill request admission captures the current activity context; queued worker execution restores
 that parent explicitly rather than inheriting the worker's ambient context. Provider fetch and bar
-storage spans are children of the backfill attempt and retain error/exception evidence on failures.
+storage spans are children of the backfill attempt and retain error/exception evidence on failures,
+including internal timeout cancellations while the worker token is still active. Expected worker
+cancellation leaves those spans without error status.
 The request-only context preserves flags and trace state for in-process retries; it is not serialized
 with jobs, so recovery after restart captures a new admission context or starts a new root trace.
 The adapter-local `Meridian` activity source is subscribed by the common host-owned tracing provider

@@ -753,9 +753,12 @@ application service contracts consumed by host and UI surfaces.
 Shared host composition registers the Platform tracing provider only when `AppConfig.Tracing.Enabled`
 or the legacy code option `CompositionOptions.EnableOpenTelemetry` explicitly opts in. Registration
 is idempotent, and a desktop child graph reuses its parent host's ownership. `PipelineFeatureRegistration`
-selects traced metrics for the same opt-in. The event pipeline preserves each producer context across
+selects traced metrics for `EnableOpenTelemetry`; that compatibility option also registers one
+host-owned `Meridian.Pipeline` meter provider with the explicitly selected console/OTLP exporters.
+`Tracing.Enabled` alone does not add pipeline metrics instrumentation. The event pipeline preserves each producer context across
 queueing and storage; mixed-producer batches link the other contexts while each event retains its own
-parent. Processing and storage failures retain error/exception evidence on the affected spans.
+parent. Each consumer reuses batch-link scratch collections to avoid steady-state link-construction
+allocations. Processing and storage failures retain error/exception evidence on the affected spans.
 See [Distributed Tracing Operations](../../docs/operators/distributed-tracing.md) for exporter setup
 and stop/disposal semantics.
 

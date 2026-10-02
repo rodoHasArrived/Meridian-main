@@ -909,6 +909,32 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         );
     }
 
+    // Each consumer reuses its own scratch storage, including when listeners sample
+    // a batch out. Clear it for retries too so links describe only the retained batch.
+    internal sealed class BatchTraceLinks
+    {
+        private readonly HashSet<ActivityContext> _contexts;
+        internal List<ActivityLink> Links { get; }
+
+        internal BatchTraceLinks(int capacity)
+        {
+            _contexts = new HashSet<ActivityContext>(capacity);
+            Links = new List<ActivityLink>(capacity);
+        }
+
+        internal void Clear()
+        {
+            _contexts.Clear();
+            Links.Clear();
+        }
+
+        internal void Add(ActivityContext context, ActivityContext batchParent)
+        {
+            if (context != default && context != batchParent && _contexts.Add(context))
+                Links.Add(new ActivityLink(context));
+        }
+    }
+
     private async Task ConsumeAsync(CancellationToken ct = default)
     {
         // Long-running consumers must not inherit the activity that happened to be
@@ -920,6 +946,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
         var batchBuffer = new List<TracedMarketEvent>(_maxAdaptiveBatchSize);
         var reservationScratch = new List<DedupReservation>(_maxAdaptiveBatchSize);
+        var traceLinks = new BatchTraceLinks(_maxAdaptiveBatchSize);
         var nextPendingEventIndex = 0;
 
         try
@@ -965,13 +992,11 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         var batchParent = batchBuffer.Count > 0
                             ? batchBuffer[0].TraceContext.ParentContext
                             : default;
+                        traceLinks.Clear();
+                        for (var i = 0; i < batchBuffer.Count; i++)
+                            traceLinks.Add(batchBuffer[i].TraceContext.ParentContext, batchParent);
                         batchActivity = MarketDataTracing.StartBatchConsumeActivity(
-                            batchBuffer.Count,
-                            batchParent,
-                            batchBuffer.Select(static traced => traced.TraceContext.ParentContext)
-                                .Where(parent => parent != default && parent != batchParent)
-                                .Distinct()
-                                .Select(static parent => new ActivityLink(parent)));
+                            batchBuffer.Count, batchParent, traceLinks.Links);
                     }
 
                     // Phase 1 — admission (resumable per event): validate, reserve the dedup
