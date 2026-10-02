@@ -163,6 +163,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     private AccountingConfigurationWorkspaceDto? _configuration;
     private ManualJournalEntryDraftDto? _selectedDraft;
+    private string? _selectedRecurringJournalEntityId;
+    private string? _recurringJournalFundProfileId;
+    private Guid? _recurringJournalLedgerBookId;
     private Guid _newManualJournalDraftId = Guid.NewGuid();
     private DateTimeOffset _newManualJournalDraftTimestamp = DateTimeOffset.UtcNow;
     private LedgerPeriodDto? _selectedManualJournalPeriod;
@@ -317,10 +320,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         AccountingProductionCertificationCommandService? productionCertificationCommandService = null,
         IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null,
         IAccountingMigrationRunWorkerPlanStore? migrationRunWorkerPlanStore = null,
-        DesktopAuthenticationSession? authenticationSession = null)
+        DesktopAuthenticationSession? authenticationSession = null,
+        IRecurringJournalQueueSource? recurringJournalQueueSource = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _authenticationSession = authenticationSession;
+        RecurringJournalQueue = new RecurringJournalQueueViewModel(recurringJournalQueueSource);
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
         _capitalAccountWorkbenchService = capitalAccountWorkbenchService;
@@ -427,6 +432,20 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ExternalGlEvidencePackageRows { get; } = [];
     public ObservableCollection<ExternalGlEvidenceRow> ExternalGlRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalDraftRows { get; } = [];
+
+    public RecurringJournalQueueViewModel RecurringJournalQueue { get; }
+
+    public ObservableCollection<string> RecurringJournalEntityOptions { get; } = [];
+
+    public string? SelectedRecurringJournalEntityId
+    {
+        get => _selectedRecurringJournalEntityId;
+        set
+        {
+            if (SetProperty(ref _selectedRecurringJournalEntityId, value))
+                _ = RecurringJournalQueue.LoadAsync(_recurringJournalFundProfileId, _recurringJournalLedgerBookId, value);
+        }
+    }
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalFundEventLedgerRecordRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalCapitalAccountRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalCapitalAccountSubledgerRows { get; } = [];
@@ -1487,6 +1506,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public async Task RefreshAsync(CancellationToken ct = default)
     {
         IsLoading = true;
+        _recurringJournalFundProfileId = null;
+        _recurringJournalLedgerBookId = null;
+        await RecurringJournalQueue.LoadAsync(null, null, null, ct).ConfigureAwait(false);
         try
         {
             _activeFundProfile = _fundContextService.CurrentFundProfile;
@@ -4203,6 +4225,17 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ApplyPrivateCapitalActivityRows(workbench.PrivateCapitalActivity);
         await LoadCapitalAccountWorkbenchAsync(ct).ConfigureAwait(false);
         _selectedDraft ??= workbench.Drafts.FirstOrDefault();
+        var entityOptions = (_activeFundProfile.EntityIds ?? [])
+            .Concat(workbench.Drafts.Where(draft => draft.FundProfileId == _activeFundProfile.FundProfileId
+                && draft.LedgerBookId == _configuration?.LedgerBookId).Select(draft => draft.EntityId))
+            .Where(entity => !string.IsNullOrWhiteSpace(entity)).OfType<string>().Distinct(StringComparer.Ordinal).ToArray();
+        RecurringJournalEntityOptions.ReplaceWith(entityOptions);
+        _recurringJournalFundProfileId = _activeFundProfile.FundProfileId;
+        _recurringJournalLedgerBookId = _configuration?.LedgerBookId;
+        var entityId = entityOptions.Contains(SelectedRecurringJournalEntityId, StringComparer.Ordinal)
+            ? SelectedRecurringJournalEntityId : entityOptions.Length == 1 ? entityOptions[0] : null;
+        SetProperty(ref _selectedRecurringJournalEntityId, entityId, nameof(SelectedRecurringJournalEntityId));
+        await RecurringJournalQueue.LoadAsync(_activeFundProfile.FundProfileId, _configuration?.LedgerBookId, entityId, ct).ConfigureAwait(false);
         ApplyManualJournalLifecycleRows(_selectedDraft);
         ManualJournalStatusText = BuildManualJournalStatusText(workbench);
         RaisePropertyChanged(nameof(CanSubmitManualJournal));
@@ -4928,6 +4961,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ExternalGlEvidencePackageRows.Clear();
         ExternalGlRows.Clear();
         ManualJournalDraftRows.Clear();
+        _ = RecurringJournalQueue.LoadAsync(null, null, null);
+        _recurringJournalFundProfileId = null;
+        _recurringJournalLedgerBookId = null;
+        RecurringJournalEntityOptions.Clear();
+        SetProperty(ref _selectedRecurringJournalEntityId, null, nameof(SelectedRecurringJournalEntityId));
         ManualJournalFundEventLedgerRecordRows.Clear();
         ManualJournalCapitalAccountRows.Clear();
         ManualJournalCapitalAccountSubledgerRows.Clear();

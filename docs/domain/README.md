@@ -12,6 +12,7 @@ Start with:
 - [Corporate Action Case](corporate-action-case.md)
 - [Fund Event](fund-event.md)
 - [Operational Evidence Graph](operational-evidence-graph.md)
+- [Recurring Journal](recurring-journal.md)
 - [Security](security.md)
 
 When new code introduces a durable business concept, add or update the matching dictionary page before broad code generation.

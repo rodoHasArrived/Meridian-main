@@ -56,7 +56,7 @@ Snapshot date: 2026-09-26
 | W10-RECON-001 | Durable break lineage identity and run-over-run break diff | planned | green | high | Accounting and Ledger |
 | W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | planned | green | high | Workstation Shell and UX |
 | W10-RECON-002 | Break clustering and bulk-resolution activation | planned | green | high | Accounting and Ledger |
-| W10-JRNL-001 | Durable recurring journal schedules and draft runner | planned | green | high | Accounting and Ledger |
+| W10-JRNL-001 | Durable recurring journal schedules and draft runner | in_progress | green | high | Accounting and Ledger |
 | W10-TAX-001 | Tax character, wash-sale, and lot-relief operator surface | planned | green | high | Accounting and Ledger |
 | W10-SEAM-001 | Unified close-readiness projection behind one shared contract | in_progress | green | high | Workstation Shell and UX |
 | W10-RECON-003 | Unified tolerance model and what-if replay workbench | planned | green | medium | Accounting and Ledger |

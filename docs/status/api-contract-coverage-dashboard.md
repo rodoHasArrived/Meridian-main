@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 20.6% |
-| Endpoint coverage | 31.7% |
+| Weighted score | 20.5% |
+| Endpoint coverage | 31.6% |
 | Workstation contract coverage | 3.9% |
-| Endpoints documented | 207 / 652 |
-| Workstation contracts documented | 36 / 928 |
+| Endpoints documented | 207 / 656 |
+| Workstation contracts documented | 36 / 930 |
 
 ## Endpoint Coverage
 
@@ -279,20 +279,24 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/ledger/close-management/period-plan/{workflowId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:565` |
 | `POST` | `/api/ledger/close-management/period-reopen` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:919` |
 | `POST` | `/api/ledger/close-management/task-signoffs` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:782` |
-| `POST` | `/api/ledger/journal-automation/capital-call-funding-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:690` |
-| `POST` | `/api/ledger/journal-automation/capital-call-issuance-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:647` |
-| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:387` |
-| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:516` |
-| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:441` |
-| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-run-due` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:357` |
-| `GET` | `/api/ledger/journal-automation/daily-mark-to-market-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:236` |
-| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:267` |
-| `POST` | `/api/ledger/journal-automation/dividend-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:559` |
-| `POST` | `/api/ledger/journal-automation/fee-accrual-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:602` |
-| `GET` | `/api/ledger/journal-automation/monthly-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:24` |
-| `POST` | `/api/ledger/journal-automation/monthly-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:60` |
-| `POST` | `/api/ledger/journal-automation/monthly-schedules/run-due` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:206` |
-| `POST` | `/api/ledger/journal-automation/period-close-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:733` |
+| `POST` | `/api/ledger/journal-automation/capital-call-funding-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:691` |
+| `POST` | `/api/ledger/journal-automation/capital-call-issuance-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:648` |
+| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:388` |
+| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:517` |
+| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:442` |
+| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-run-due` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:358` |
+| `GET` | `/api/ledger/journal-automation/daily-mark-to-market-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:237` |
+| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:268` |
+| `POST` | `/api/ledger/journal-automation/dividend-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:560` |
+| `POST` | `/api/ledger/journal-automation/fee-accrual-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:603` |
+| `GET` | `/api/ledger/journal-automation/monthly-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:25` |
+| `POST` | `/api/ledger/journal-automation/monthly-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:61` |
+| `POST` | `/api/ledger/journal-automation/monthly-schedules/run-due` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:207` |
+| `POST` | `/api/ledger/journal-automation/period-close-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:734` |
+| `POST` | `/api/ledger/journal-automation/recurring/initialize` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:49` |
+| `GET` | `/api/ledger/journal-automation/recurring/occurrences` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:24` |
+| `POST` | `/api/ledger/journal-automation/recurring/restore-definitions` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:114` |
+| `POST` | `/api/ledger/journal-automation/recurring/schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:67` |
 | `GET` | `/api/ledger/journal-entry-workbench` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1194` |
 | `POST` | `/api/ledger/journal-entry-workbench/drafts` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1515` |
 | `POST` | `/api/ledger/journal-entry-workbench/evidence` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1667` |
@@ -1160,6 +1164,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ReconciliationSummary` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:188` |
 | `ReconciliationTaxonomySnapshot` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:679` |
 | `ReconciliationTaxonomyValue` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:671` |
+| `RecurringJournalOccurrenceDto` | Gap | `src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:8` |
+| `RecurringJournalQueueDto` | Gap | `src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:28` |
 | `RejectWorkflow` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:30` |
 | `RenderReportTemplateRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1627` |
 | `RenderReportTemplateResponseDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1632` |
@@ -1609,8 +1615,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 445 mapped endpoint gap(s).
-- Document or intentionally suppress 892 workstation contract gap(s).
+- Document or intentionally suppress 449 mapped endpoint gap(s).
+- Document or intentionally suppress 894 workstation contract gap(s).
 
 ---
 

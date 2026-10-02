@@ -11,6 +11,14 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Wpf
 
+Accounting Configure shows recurring occurrences beside retained journal drafts through
+`WorkstationRecurringJournalQueueClient`, using the same server contract as the browser.
+The operator selects an exact entity scope; rows show schedule/template versions, the retained
+draft and approval status, source references, blockers, period lock owner and governed reopen
+path. Shared-state failures remain unavailable, and late responses cannot replace a newer scope.
+`RecurringJournalQueueViewModelTests` and `WorkstationRecurringJournalQueueClientTests` cover
+retained identity, scope checks, lock remediation, unavailable reads and retry recovery.
+
 The desktop workstation is installed as part of the single Meridian product and opened
 on demand from the browser workstation. It is not a separate end-user package or Start
 Menu product.

@@ -964,7 +964,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ReportPackWorkflowService>(),
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
                 sp.GetService<IGovernedLedgerPostingTarget>(),
-                sp.GetRequiredService<IManualJournalMutationRecoveryStore>()));
+                sp.GetRequiredService<IManualJournalMutationRecoveryStore>(),
+                sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();
@@ -1014,6 +1015,15 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>(sp =>
+            new Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "recurring-journals")));
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>(sp =>
+            sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>());
+        services.TryAddSingleton<IRecurringJournalSubjectAuthority, RecurringJournalSubjectAuthority>();
+        services.TryAddSingleton<IRecurringJournalPeriodAuthority, RecurringJournalPeriodAuthority>();
+        services.TryAddSingleton<RecurringJournalRunner>();
+        services.TryAddSingleton<IRecurringJournalQueueSource>(sp => sp.GetRequiredService<RecurringJournalRunner>());
         services.TryAddSingleton<AutomatedJournalScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, AutomatedJournalSchedulerHostedService>());

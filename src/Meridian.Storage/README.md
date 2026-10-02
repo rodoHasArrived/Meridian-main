@@ -11,6 +11,11 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Storage
 
+`PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
+tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
+authority and this actor for blocked-occurrence evidence; its file-backed schedule store never
+supplies a competing period-lock registry. Missing historical lock attribution remains explicit.
+
 `DurableLedgerPostingTarget.VerifyRetainedEntry` checks an existing journal against the exact
 retained recovery write without posting or appending. It shares the posting target's command
 normalization and strict content comparison, and requires the original journal identity. Manual
@@ -675,6 +680,7 @@ selected-lot cost basis.
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
