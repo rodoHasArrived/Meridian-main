@@ -58,6 +58,12 @@ instrumentation. A host with tracing enabled and both exporters disabled still r
 local activities for an attached listener or custom exporter, but has no built-in output
 destination. Select an exporter to inspect a trace outside the process.
 
+Code integrations using `CompositionOptions.EnableOpenTelemetry` also collect pipeline counters and
+latency through the `Meridian.Pipeline` meter. Its console/OTLP metrics exporters follow the same
+explicit exporter flags, resource identity, destination, headers, and timeout as tracing. The host
+flushes both providers during shutdown. The JSON `Tracing.Enabled` option alone enables tracing;
+existing Prometheus metrics remain available through their normal path.
+
 ## Export to an OTLP collector
 
 Configure an explicit OTLP/gRPC destination. For a local collector listening on port 4317:

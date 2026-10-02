@@ -9,7 +9,7 @@
 This packet prepares the remaining `W10-SEAM-001` and `W10-MARK-001` acceptance session.
 It records no operator approval. Both registry rows remain `in_progress` until their
 commit-bound live evidence and explicit operator decisions satisfy their criteria.
-The candidate was rebased onto source baseline `b8360e682efb8c07c46471388aacf67384c105a5`.
+The candidate includes source baseline `0feac3d50a90e88ebaff241034ceb5bfc220dc81`.
 Pin the final candidate after the authorized lot-amortization changes and required checks;
 historical hosted results in the registry do not certify that candidate.
 

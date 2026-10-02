@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "c88a7e1746c3a95350109ee0b77ba1847819a6e48fd9b601112ec2e982c65a7a",
-      "source_hash": "1b319b5913e3f0128ca3e225a2cecc506129bcd50ce92e5bddc7171198f33843"
+      "readme_hash": "b0d1bdd5d700a9e31837f007ef9ded23d99c2342f57d118c23df0cee950b88e2",
+      "source_hash": "8c41a21c2b3bf45922d5faabb3838c56c5f82dfeb6181026c13778b8f0ef66a5"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -72,8 +72,8 @@
       "id": "SRC-DESIGN-FINANCIAL-OPERATIONS",
       "path": "src/Meridian.FinancialOperations",
       "readme": "src/Meridian.FinancialOperations/README.md",
-      "readme_hash": "1bd59fbbbf23bc5eb8462c1a5afe17188a5f570a8cd0cac0974c2f5440f34a22",
-      "source_hash": "5b68d0474b12616381c1a0862b5f509f1764cfe891d91d9bbe80587111474bf2"
+      "readme_hash": "a0b158d40cdf26c25c59ccaf14c7d4d24cd49116202c93f67555117b6dedea18",
+      "source_hash": "085778e87e49aac563a1578f106c3775d8c7c92fd7e963c284b9a077a6ec935f"
     },
     {
       "id": "SRC-DESIGN-IDENTITY",
@@ -93,8 +93,8 @@
       "id": "SRC-DESIGN-PLATFORM",
       "path": "src/Meridian.Platform",
       "readme": "src/Meridian.Platform/README.md",
-      "readme_hash": "fc4f08296a6a74c79bce63b38b6321d0633d7c3a6ceeb7dd4a7adccab498c3a8",
-      "source_hash": "3a34e1ef8599778b17b60efa455f1e0f7a04672197f477206978dfdf919bcee2"
+      "readme_hash": "4cdc84b1aba6050304b5cf36f04e1c73385f2ebbea652eaf57ae598fa7d444fd",
+      "source_hash": "5490500c34d021c4085081e3c6f9e3872f982f70645e4b7a2dbfa20c4a99bf6d"
     },
     {
       "id": "SRC-DESIGN-PORTFOLIO-RECORDS",
@@ -191,8 +191,8 @@
       "id": "SRC-INFRASTRUCTURE",
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
-      "readme_hash": "5186c1b2046e866b77e28d422f1727bb676ff414ed6fba3e70016224eee23165",
-      "source_hash": "751107c7b2de2db254f89f39c4ee14f93152e5d90716870dda27ffa30cdf39f5"
+      "readme_hash": "c4ae715e4fa32562682fc016eb37c9e84b82f8e14dd843ac73fa78fe17c99f58",
+      "source_hash": "c6349eff1e0bda7926f6fa7117c483fed43fbd0ed69f4e4228a8b4eca8209ac0"
     },
     {
       "id": "SRC-LAUNCHER",

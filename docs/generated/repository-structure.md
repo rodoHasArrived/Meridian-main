@@ -9202,6 +9202,7 @@ Meridian-main
 │   │   │   ├── Backfill
 │   │   │   │   ├── AdditionalProviderContractTests.cs
 │   │   │   │   ├── AutoGapRemediationServiceTests.cs
+│   │   │   │   ├── BackfillCancellationTracingTests.cs
 │   │   │   │   ├── BackfillCoordinatorPreviewTests.cs
 │   │   │   │   ├── BackfillCoordinatorStorageOptionsTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
@@ -9247,6 +9248,7 @@ Meridian-main
 │   │   │   │   │   │   └── CommandModeRunnerTests.cs
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
 │   │   │   │   ├── BackfillFeatureRegistrationTests.cs
+│   │   │   │   ├── CanonicalLotAmortizationCompositionTests.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs

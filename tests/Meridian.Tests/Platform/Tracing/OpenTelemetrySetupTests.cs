@@ -5,6 +5,7 @@ using Meridian.Platform.Tracing;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 
 namespace Meridian.Tests.Platform.Tracing;
 
@@ -122,6 +123,21 @@ public sealed class OpenTelemetrySetupTests
 
         exporter.Activities.Should().ContainSingle(span => span.OperationName == "registration.probe");
         exporter.DisposeCount.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PipelineMetrics_RequireCompatibilityOptInAndOwnOneProvider(bool enablePipelineMetrics)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddOpenTelemetryTracing(OpenTelemetryConfiguration.Default, enablePipelineMetrics);
+        services.AddOpenTelemetryTracing(OpenTelemetryConfiguration.Default, enablePipelineMetrics);
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetServices<TracerProvider>().Should().ContainSingle();
+        provider.GetServices<MeterProvider>().Should().HaveCount(enablePipelineMetrics ? 1 : 0);
     }
 
     private sealed class RecordingExporter : BaseExporter<Activity>
