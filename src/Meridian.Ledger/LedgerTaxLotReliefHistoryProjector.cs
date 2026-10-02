@@ -97,7 +97,9 @@ public static class LedgerTaxLotReliefHistoryProjector
 
         // The retained outcome is attached rather than recomputed: the pack must report the deferral
         // that was actually booked, not one re-derived from today's replacement history.
-        var economicLoss = projection.RealizedGainOrLoss < 0m ? -projection.RealizedGainOrLoss : 0m;
+        var economicLoss = projection.Selections
+            .Where(static selection => selection.RealizedGainOrLoss < 0m)
+            .Sum(static selection => -selection.RealizedGainOrLoss);
         return projection with
         {
             WashSale = new WashSaleOutcome(
