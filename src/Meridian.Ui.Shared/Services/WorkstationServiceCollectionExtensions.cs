@@ -1,3 +1,5 @@
+using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Application.Accounting;
 using Meridian.Application.Composition;
 using Meridian.Application.Config.Credentials;
@@ -79,6 +81,7 @@ public static class WorkstationServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Unified persistence config must resolve before the reporting/scoped-access
         // registrations below read the per-domain connection-string variables.
         Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
@@ -326,7 +329,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>
-            new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp)));
+            new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp), sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IPlaidClient>(sp =>
             new PlaidHttpClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(PlaidHttpClient))));
         services.TryAddSingleton<PlaidWorkstationService>();

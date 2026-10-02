@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -49,8 +50,8 @@ public sealed class StatementImportServiceTests : IDisposable
         var statementStore = new JsonCanonicalStatementStore(_root);
         _workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(statementStore),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
         _service = new StatementImportService(_registry, _catalog, _workflow, _root);

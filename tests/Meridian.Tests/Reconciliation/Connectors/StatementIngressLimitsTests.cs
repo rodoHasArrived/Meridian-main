@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
@@ -2035,8 +2036,8 @@ public sealed class StatementIngressLimitsTests : IDisposable
         var statementStore = new JsonCanonicalStatementStore(_root);
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(statementStore),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
 
@@ -2478,8 +2479,8 @@ public sealed class StatementIngressLimitsTests : IDisposable
         var statementStore = new JsonCanonicalStatementStore(_root);
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(statementStore),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
 

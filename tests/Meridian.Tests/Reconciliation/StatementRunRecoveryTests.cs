@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -69,7 +70,7 @@ public sealed class StatementRunRecoveryTests : IDisposable
             .Should().ContainSingle();
         recoveredCase.AuditEvents.Should().ContainSingle();
 
-        var retainedCase = await new JsonReconciliationCaseStore(_root)
+        var retainedCase = await new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter())
             .GetAsync(recoveredCase.CaseId, timeout.Token);
         retainedCase.Should().BeEquivalentTo(recoveredCase);
         Directory.EnumerateFiles(
@@ -144,9 +145,9 @@ public sealed class StatementRunRecoveryTests : IDisposable
         var firstAct = async () => await first.CreateAsync(request, timeout.Token);
         await firstAct.Should().ThrowAsync<InjectedStatementRunFaultException>();
         var runId = await ResolveImportIdAsync(timeout.Token);
-        var artifact = await new FileStatementRunMatchArtifactStore(_root).GetAsync(runId, timeout.Token);
+        var artifact = await new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter()).GetAsync(runId, timeout.Token);
         var expectedBreak = artifact!.Breaks.Should().ContainSingle().Subject;
-        await new JsonReconciliationBreakStore(_root)
+        await new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter())
             .WriteAsync([expectedBreak with { Status = "FabricatedLegacyStatus" }], timeout.Token);
 
         var act = async () => await CreateWorkflow().CreateAsync(request, timeout.Token);
@@ -164,8 +165,8 @@ public sealed class StatementRunRecoveryTests : IDisposable
 
         Action construct = () => _ = new StatementRunWorkflowService(
             imports,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(imports),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
 
@@ -182,8 +183,8 @@ public sealed class StatementRunRecoveryTests : IDisposable
 
         Action construct = () => _ = new StatementRunWorkflowService(
             imports,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(imports),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
             recoveryRepository: new FileStatementRunRecoveryRepository(_root));
@@ -201,12 +202,12 @@ public sealed class StatementRunRecoveryTests : IDisposable
 
         Action construct = () => _ = new StatementRunWorkflowService(
             imports,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(imports),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
             recoveryRepository: new FileStatementRunRecoveryRepository(_root),
-            matchArtifactStore: new FileStatementRunMatchArtifactStore(_root));
+            matchArtifactStore: new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter()));
 
         construct.Should().Throw<ArgumentNullException>()
             .WithParameterName("caseworkCommitStore");
@@ -311,11 +312,11 @@ public sealed class StatementRunRecoveryTests : IDisposable
         replayedCase.Status.Should().Be("Resolved");
         replayedCase.AuditEvents.Should().Contain(audit =>
             audit.EventId == sourceCommit.CaseAudit!.EventId);
-        (await new JsonReconciliationBreakStore(_root).GetCaseworkAuditAsync(
+        (await new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()).GetCaseworkAuditAsync(
             sourceCommit.NextBreak.BreakId,
             sourceCommit.CommandId,
             timeout.Token))!.PreviousStatus.Should().Be("Open");
-        (await new JsonReconciliationCaseStore(_root).GetCaseworkAuditAsync(
+        (await new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()).GetCaseworkAuditAsync(
             sourceCommit.NextCase!.CaseId,
             sourceCommit.CommandId,
             timeout.Token)).Should().BeEquivalentTo(sourceCommit.CaseAudit);
@@ -338,13 +339,13 @@ public sealed class StatementRunRecoveryTests : IDisposable
         var sourceCommit = await RetainResolvedSourceCommitAsync(completed, timeout.Token);
         if (target == StatementRunProjectionTarget.Break)
         {
-            await new JsonReconciliationBreakStore(_root).WriteAsync(
+            await new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()).WriteAsync(
                 [sourceCommit.NextBreak with { Status = "Tampered" }],
                 timeout.Token);
         }
         else
         {
-            await new JsonReconciliationCaseStore(_root).SaveAsync(
+            await new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()).SaveAsync(
                 sourceCommit.NextCase! with { Status = "Tampered" },
                 timeout.Token);
         }
@@ -376,9 +377,9 @@ public sealed class StatementRunRecoveryTests : IDisposable
 
         replay.Breaks.Should().ContainSingle().Which.Status.Should().Be("Resolved");
         replay.Cases.Should().ContainSingle().Which.Status.Should().Be("Resolved");
-        var commitStore = new FileStatementCaseworkCommitStore(_root);
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var commitStore = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         (await breakStore.GetCaseworkAuditAsync(
             sourceCommit.NextBreak.BreakId,
             sourceCommit.CommandId,
@@ -401,17 +402,17 @@ public sealed class StatementRunRecoveryTests : IDisposable
         var imports = new JsonCanonicalStatementStore(_root);
         return new StatementRunWorkflowService(
             imports,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(imports),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
             EmptyInternalReconciliationPopulationProvider.Instance,
             IdentityReconciliationFxRateProvider.Instance,
             toleranceProfiles ?? new InMemoryStatementToleranceProfileProvider(),
             new FileStatementRunRecoveryRepository(_root),
-            new FileStatementRunMatchArtifactStore(_root),
+            new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter()),
             faultInjector,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
     }
 
     private async Task<string> WriteStatementAsync(string fileName)
@@ -485,8 +486,8 @@ public sealed class StatementRunRecoveryTests : IDisposable
     {
         var expectedBreak = expected.Breaks.Should().ContainSingle().Subject;
         var expectedCase = expected.Cases.Should().ContainSingle().Subject;
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         (await breakStore.GetAsync(expectedBreak.BreakId, ct)).Should().BeEquivalentTo(expectedBreak);
         (await caseStore.GetAsync(expectedCase.CaseId, ct)).Should().BeEquivalentTo(expectedCase);
         (await breakStore.GetRunProjectionAuditAsync(expected.Import.ImportId, expectedBreak.BreakId, ct))
@@ -587,12 +588,12 @@ public sealed class StatementRunRecoveryTests : IDisposable
             caseAudit,
             occurredAt,
             AdoptedLegacyReceipt: false);
-        var commitStore = new FileStatementCaseworkCommitStore(_root);
+        var commitStore = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
         var retained = await commitStore.PrepareAsync(candidate, ct);
         if (materialize)
         {
-            var breakStore = new JsonReconciliationBreakStore(_root);
-            var caseStore = new JsonReconciliationCaseStore(_root);
+            var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+            var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
             await breakStore.MaterializeCaseworkBreakAsync(
                 commitStore,
                 retained.CommandId,

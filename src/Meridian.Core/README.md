@@ -11,6 +11,9 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+`IO/IAtomicFileWriter.cs` exposes only the atomic operations needed by Infrastructure consumers.
+The concrete durable writer stays in Storage and is supplied through application/host composition.
+
 ## Purpose
 
 Provider connection configuration retains optional `TenantId` and `CredentialEnvironment` ownership
