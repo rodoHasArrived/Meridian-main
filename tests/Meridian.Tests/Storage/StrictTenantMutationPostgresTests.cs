@@ -12,6 +12,53 @@ namespace Meridian.Tests.Storage;
 public sealed class StrictTenantMutationPostgresTests
 {
     [LedgerDatabaseFact]
+    public async Task WashSaleResolver_SameLotIdAcrossAccounts_ExcludesOnlyDisposingAccount()
+    {
+        // A LedgerBook-scoped repurchase in a sibling brokerage account is a distinct lot,
+        // even when both brokers assigned the same identifier to their acquisitions.
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var ct = timeout.Token;
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        var registry = new PostgresFundProfileTenancyRegistry(database.Options);
+        await registry.BindAsync("fund-alpha", "tenant-alpha", ct: ct);
+        var now = DateTimeOffset.Parse("2026-05-15T12:00:00Z");
+        var saleDate = new DateOnly(2026, 5, 15);
+        var book = new LedgerBookRecord(Guid.NewGuid(), "fund-alpha", Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund, "Alpha", "USD", now, now);
+        await database.JournalStore.SaveLedgerBookAsync(book, ct);
+        var account = LedgerAccounts.Securities("AAPL", "broker-1");
+        var sibling = LedgerAccounts.Securities("AAPL", "broker-2");
+        var securityId = Guid.NewGuid();
+        var strict = new PostgresLedgerJournalStore(database.Options, new WorkerAccessor(), TenantScopeEnforcementOptions.FailClosed);
+        using var authority = FundScopeTenantAuthority.Enter("tenant-alpha", "wash-sale lot identity regression");
+        foreach (var lotAccount in new[] { account, sibling })
+        {
+            await strict.SaveTaxLotAsync(new LedgerTaxLotRecord(
+                Guid.NewGuid(), book.LedgerBookId, lotAccount, "same-lot", saleDate,
+                100m, 100m, 100m, "USD", now, now, SecurityId: securityId), ct);
+        }
+
+        var query = new WashSaleReplacementQuery(book.LedgerBookId, account, securityId,
+            saleDate, WashSalePolicy.UnitedStates, ["SAME-LOT"]);
+        var lookup = await strict.ResolveAsync(query, ct);
+
+        lookup.Replacements.Should().ContainSingle().Which.Account.Should().Be(sibling);
+        var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
+            account, saleDate, 100m, 80m, LedgerTaxLotReliefMethod.Fifo,
+            [new("same-lot", saleDate, 100m, 100m, securityId)],
+            washSalePolicy: query.Policy, replacementAcquisitions: lookup.Replacements));
+        projection.DisallowedWashSaleLoss.Should().Be(2000m);
+        projection.WashSale!.BasisIncreases.Should().ContainSingle().Which.ReplacementAccount.Should().Be(sibling);
+        projection.IsBalanced.Should().BeTrue();
+
+        var accountLookup = await strict.ResolveAsync(query with
+        {
+            Policy = query.Policy with { Scope = WashSaleReplacementScope.DisposingAccount }
+        }, ct);
+        accountLookup.Replacements.Should().BeEmpty();
+    }
+
+    [LedgerDatabaseFact]
     public async Task LedgerStrictWrites_AllowRetainedOwnerAndRejectMissingOrForeignAuthorityWithoutMutation()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();

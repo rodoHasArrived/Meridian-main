@@ -166,7 +166,7 @@ public static class LedgerTaxLotReliefProjector
 
     /// <summary>
     /// Attributes proceeds and holding-period character to each priced parcel. Proceeds are
-    /// allocated with the rounding residual on the final parcel so the per-parcel amounts sum
+    /// allocated with sign-preserving rounding residuals so the per-parcel amounts sum
     /// exactly to <paramref name="totalProceeds"/>; a realized-gain export can then report row
     /// amounts that tie to the journal instead of re-deriving them and drifting a cent.
     /// </summary>
@@ -178,28 +178,14 @@ public static class LedgerTaxLotReliefProjector
         bool pooled = false)
     {
         var selections = new List<LedgerTaxLotReliefSelection>(parcels.Count);
-        var allocatedProceeds = 0m;
-        var pooledProceeds = pooled ? AllocatePooledProceeds(parcels, totalProceeds) : null;
+        var allocatedProceeds = pooled
+            ? AllocatePooledProceeds(parcels, totalProceeds)
+            : AllocateDiscreteProceeds(parcels, salePrice, totalProceeds);
 
         for (var index = 0; index < parcels.Count; index++)
         {
             var parcel = parcels[index];
-            decimal parcelProceeds;
-            if (pooledProceeds is not null)
-            {
-                parcelProceeds = pooledProceeds[index];
-            }
-            else if (index == parcels.Count - 1)
-            {
-                parcelProceeds = totalProceeds - allocatedProceeds;
-            }
-            else
-            {
-                // Rounding many tiny parcels up must not manufacture a negative final proceed
-                // (and therefore a fictitious loss eligible for wash-sale matching).
-                parcelProceeds = Math.Min(totalProceeds - allocatedProceeds, RoundCurrency(parcel.Quantity * salePrice));
-                allocatedProceeds += parcelProceeds;
-            }
+            var parcelProceeds = allocatedProceeds[index];
 
             // The holding period runs from the lot's effective start, which an earlier wash sale may
             // have moved before the lot was actually acquired (IRC §1223(3)).
@@ -217,6 +203,33 @@ public static class LedgerTaxLotReliefProjector
         }
 
         return selections;
+    }
+
+    private static decimal[] AllocateDiscreteProceeds(
+        IReadOnlyList<ReliefParcel> parcels, decimal salePrice, decimal totalProceeds)
+    {
+        // Reserve each future gain/break-even parcel's rounded basis before consuming proceeds.
+        // Loss parcels may receive at most their basis; rounding may erase a sub-cent result,
+        // but it must never reverse the sign of the parcel's unrounded economic result.
+        var minimums = parcels.Select(parcel => salePrice >= parcel.UnitCost ? parcel.CostBasis : 0m).ToArray();
+        var maximums = parcels.Select(parcel => salePrice <= parcel.UnitCost ? parcel.CostBasis : totalProceeds).ToArray();
+        var remainingMinimum = minimums.Sum();
+        var remainingMaximum = maximums.Sum();
+        if (totalProceeds < remainingMinimum || totalProceeds > remainingMaximum)
+            throw new InvalidOperationException("Rounded proceeds and lot bases cannot preserve every parcel's economic result sign.");
+
+        var proceeds = new decimal[parcels.Count];
+        var remaining = totalProceeds;
+        for (var index = 0; index < parcels.Count; index++)
+        {
+            remainingMinimum -= minimums[index];
+            remainingMaximum -= maximums[index];
+            var lower = Math.Max(minimums[index], remaining - remainingMaximum);
+            var upper = Math.Min(maximums[index], remaining - remainingMinimum);
+            proceeds[index] = Math.Clamp(RoundCurrency(parcels[index].Quantity * salePrice), lower, upper);
+            remaining -= proceeds[index];
+        }
+        return proceeds;
     }
 
     private static decimal[] AllocatePooledProceeds(IReadOnlyList<ReliefParcel> parcels, decimal totalProceeds)
@@ -352,7 +365,8 @@ public static class LedgerTaxLotReliefProjector
                 && replacement.AcquiredDate >= lower && replacement.AcquiredDate <= upper
                 && selections.Any(selection => selection.RealizedGainOrLoss < 0m
                     && SecurityMatches(selection.Lot.SecurityId ?? scopedSecurityId, replacement.SecurityId))
-                && !relievedIds.Contains(replacement.LotId)
+                && !((replacement.Account ?? input.Account) == input.Account
+                    && relievedIds.Contains(replacement.LotId))
                 && (input.WashSalePolicy.Scope != WashSaleReplacementScope.DisposingAccount
                     || replacement.Account is null || replacement.Account == input.Account))
             .OrderBy(static replacement => replacement.AcquiredDate)

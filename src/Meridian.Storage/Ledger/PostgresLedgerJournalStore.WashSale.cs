@@ -77,7 +77,11 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
               and acquired_date >= @window_start
               and acquired_date <= @window_end
               and original_quantity > 0
-              and lower(lot_id) <> all(@relieved_lot_ids)
+              and not (lower(lot_id) = any(@relieved_lot_ids)
+                  and account_name = @account_name
+                  and account_type = @account_type
+                  and symbol is not distinct from @symbol
+                  and financial_account_id is not distinct from @financial_account_id)
             {scopePredicate}
             order by acquired_date, lot_id;
             """;
@@ -86,10 +90,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         command.Parameters.AddWithValue("window_start", query.SaleDate.AddDays(-query.Policy.WindowDays));
         command.Parameters.AddWithValue("window_end", query.SaleDate.AddDays(query.Policy.WindowDays));
         command.Parameters.AddWithValue("relieved_lot_ids", NormalizeLotIds(query.RelievedLotIds));
-        if (accountScoped)
-        {
-            AddAccountParameters(command, query.DisposingAccount);
-        }
+        AddAccountParameters(command, query.DisposingAccount);
 
         var replacements = new List<WashSaleReplacementAcquisition>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
