@@ -322,9 +322,8 @@ disposal. Reporting rebuilds the pre-relief pool from the batch's retained snaps
 relief, and requires every retained slice to match exactly before a report projection is produced.
 `AtomicTaxLotJournalStoreTests.AppendAssetPostingAsync_AverageCostReliefRestatesThePoolAndReportingCertifiesIt`
 proves a partial and a closing AverageCost disposal against PostgreSQL, including replay and a
-tampered-pool refusal. A discrete (FIFO/LIFO/HIFO/SpecificId) disposal of a restated lot fails
-closed, because its acquisition unit cost no longer equals its canonical basis; changing an
-account's relief policy across a restated pool is not a supported transition in this increment.
+tampered-pool refusal. This increment originally blocked discrete relief after restatement; the
+current-basis continuation below supplies that transition.
 The effective-dated lot read (`ListOpenTaxLotsByAssetScopeAsync`, which replays retained mutations to
 restate quantity as of an event date) treats a `BasisRedistribution` row as a zero-quantity
 restatement and rejects one that moves quantity. Its projection keeps the current governed basis
@@ -332,3 +331,36 @@ adjustment, so `ToOpenLot` fails closed on an as-of quantity above the restated 
 reporting an unrestated basis; that read is for held quantity only, never disposal selection. The
 replay now resolves each retained journal's ledger book through its accounting period. Remaining
 phases: amortization, corporate-action successors, advance refunding, and shadow operation.
+
+
+### Partial current-basis relief continuation (2026-10-02)
+
+FIFO, LIFO, HIFO, SpecificId, and AverageCost now certify disposal selections from the current
+canonical open basis, including previously redistributed survivors. The production event spine
+checks the current scoped plan; the durable store rechecks it against locked lots and the effective
+method and policy revision. `ExpectedUnitCost` remains an immutable acquisition snapshot assertion,
+while `ExpectedCostBasis` is the certified current functional relief. Original quantity, acquisition
+basis, currency, FX, holding dates, and evidence are retained unchanged in every before/after receipt.
+
+A partial discrete disposal retains its exact transaction and functional remainder by subtraction
+in a `DisposalRelief` adjustment on the same versioned lot mutation. Full disposal consumes the exact
+remaining basis. Journal, lot quantity and basis, evidence, optimistic versions, audit and idempotency
+commit or roll back together; retries return the retained receipt before consulting later lot or
+policy state. Reporting validates the retained pre-relief current basis and reproduces the exact
+posted cost and journal lines without a currency-rounded unit-cost recalculation. Fractional-cent
+movements are supported when exactly representable in PostgreSQL's twelve-decimal numeric columns;
+unrepresentable quantities or functional relief amounts fail before posting rather than rounding.
+
+Migration `V_ledger_040` reserves ordinal 039 for the atomic amortization work in
+[PR #3048](https://github.com/rodoHasArrived/Meridian-main/pull/3048). Merge and deploy #3048 before
+this continuation so migration 039 cannot later replace the expanded disposal cost check. This
+slice preserves its amortization cost convention and accepts its governed current-basis projection;
+it does not claim delivery or certification of that separate draft.
+
+`AtomicTaxLotJournalStoreTests.CurrentBasis` covers PostgreSQL partial and full relief after real
+pool redistribution, changed effective methods, HIFO current-basis ordering, stale selections,
+late rollback, restart, replay and precision refusals. `CanonicalOpenLotConsumerTests` covers
+Reporting current-basis certification, tamper refusal, fractional cents and face quantity scaling.
+This is partial delivery only: `W10-LOT-002` stays `in_progress`. Amortization convergence remains
+coordinated with #3048; corporate-action successor mutations, advance refunding and shadow-operation
+acceptance remain outside this bounded slice.

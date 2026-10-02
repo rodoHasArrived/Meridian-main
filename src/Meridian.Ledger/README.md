@@ -6,7 +6,7 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Ledger
@@ -21,7 +21,7 @@ the generated event without granting submission, approval or posting authority. 
 
 ## Shared close and lot convergence
 
-`OpenLotReliefService` uses the shared decimal consumption walk for canonical FIFO/LIFO/HIFO/SpecificId/AverageCost selection and retains transaction and functional basis separately. It refuses mixed security, position, book, quantity-basis, and currency scopes. The durable disposal writer and reporting capture consume the canonical evidence contract. AverageCost selection is available for projection; durable posting still requires proof of remaining-lot basis redistribution.
+`OpenLotReliefService` uses the shared decimal consumption walk for canonical FIFO/LIFO/HIFO/SpecificId/AverageCost selection and retains transaction and functional basis separately. It refuses mixed security, position, book, quantity-basis, and currency scopes. The durable disposal writer and reporting capture consume the canonical evidence contract. Durable AverageCost posting restates the surviving pool atomically; discrete relief subsequently consumes that current basis and retains exact remaining basis. Acquisition facts stay immutable, and Reporting reproduces the certified posted result.
 
 `ValuationFreshnessPolicy` owns mark admission with required observation dates, complete coverage, a minimum confidence floor, and rejection of future or over-age marks. Compatibility settings can tighten this policy; Allow, Flag, or disabled settings cannot authorize stale values. `ValuationMarkEvidenceGuard` checks the retained position/date evidence at governed lifecycle boundaries. Read-only previews expose which positions would block before any valuation draft is created.
 

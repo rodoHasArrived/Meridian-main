@@ -42,6 +42,9 @@ public static class OpenLotBasisAdjustmentReasons
 {
     /// <summary>Average-cost relief restated the surviving pool at the pooled per-unit basis.</summary>
     public const string AverageCostRedistribution = "AverageCostRedistribution";
+
+    /// <summary>Discrete relief retains the exact unrelieved current basis on its surviving lot.</summary>
+    public const string DisposalRelief = "DisposalRelief";
 }
 
 /// <summary>Security-identified decimal lot view over the durable ledger lot, never a second store.</summary>
