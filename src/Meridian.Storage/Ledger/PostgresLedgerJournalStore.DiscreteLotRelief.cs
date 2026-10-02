@@ -10,7 +10,10 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerTaxLotDisposalSelection selection)
     {
         var remainingQuantity = before.OpenQuantity - selection.Quantity;
-        if (remainingQuantity == 0m)
+        // Untreated acquisitions retain their existing proportional projection. A new disposal
+        // treatment is needed only for already adjusted basis, preserving PR #3048's supported
+        // first-amortization path after an ordinary acquisition-basis partial disposal.
+        if (remainingQuantity == 0m || before.BasisAdjustment is null)
             return null;
 
         var canonical = before.ToOpenLot();
