@@ -1914,6 +1914,7 @@ Meridian-main
 │   │   ├── plans
 │   │   │   ├── adversarial-review-2026-08-remediation-plan.md
 │   │   │   ├── next-work-determination-2026-09-27.md
+│   │   │   ├── next-work-determination-2026-10-02.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
