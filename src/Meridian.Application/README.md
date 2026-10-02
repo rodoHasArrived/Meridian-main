@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Application
@@ -750,6 +750,15 @@ Core workstation host. Do not introduce a second listener or independent monitor
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
+Shared host composition registers the Platform tracing provider only when `AppConfig.Tracing.Enabled`
+or the legacy code option `CompositionOptions.EnableOpenTelemetry` explicitly opts in. Registration
+is idempotent, and a desktop child graph reuses its parent host's ownership. `PipelineFeatureRegistration`
+selects traced metrics for the same opt-in. The event pipeline preserves each producer context across
+queueing and storage; mixed-producer batches link the other contexts while each event retains its own
+parent. Processing and storage failures retain error/exception evidence on the affected spans.
+See [Distributed Tracing Operations](../../docs/operators/distributed-tracing.md) for exporter setup
+and stop/disposal semantics.
+
 Host startup and mode runners preserve one owner for every started resource. Database
 initialization is asynchronous and cancellation-aware; failed UI starts still stop and dispose the
 created server, and an internally owned lifecycle coordinator is released for failures anywhere
@@ -873,6 +882,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests|FullyQualifiedName~EventPipelineTracePropagationTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"
 ```
 

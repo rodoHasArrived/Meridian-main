@@ -1883,6 +1883,7 @@ Meridian-main
 │   ├── operators
 │   │   ├── browser-workstation-installer.md
 │   │   ├── deployment-packaging.md
+│   │   ├── distributed-tracing.md
 │   │   ├── external-gl-providers.md
 │   │   ├── failover-and-recovery.md
 │   │   ├── fund-ops-persistence-cutover.md
@@ -4220,6 +4221,7 @@ Meridian-main
 │   │   │   ├── SensitiveKeyRegistry.cs
 │   │   │   ├── SensitiveValueMasker.cs
 │   │   │   ├── SyntheticMarketDataConfig.cs
+│   │   │   ├── TracingConfig.cs
 │   │   │   └── ValidatedConfig.cs
 │   │   ├── Contracts
 │   │   │   └── IProviderCredentialStore.cs
@@ -9196,6 +9198,7 @@ Meridian-main
 │   │   │   │   ├── BackfillCoordinatorStorageOptionsTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillExecutionHistoryTests.cs
+│   │   │   │   ├── BackfillRequestTraceContextTests.cs
 │   │   │   │   ├── BackfillScheduleManagerDurabilityTests.cs
 │   │   │   │   ├── BackfillSourceAttributionTests.cs
 │   │   │   │   ├── BackfillWorkerServiceLifecycleTests.cs
@@ -9890,6 +9893,7 @@ Meridian-main
 │   │   │   ├── StatementImportCaseworkEvidenceTests.cs
 │   │   │   ├── StatementLedgerReconciliationPostgresTests.cs
 │   │   │   ├── StatementLedgerReconciliationPostgresTests.Harness.cs
+│   │   │   ├── TracingIntegrationTests.cs
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
 │   │   ├── Ledger
 │   │   │   ├── AutomatedJournalPostingTargetTests.cs
@@ -9972,6 +9976,7 @@ Meridian-main
 │   │   │   │   └── TradingCalendarTests.cs
 │   │   │   ├── Tracing
 │   │   │   │   ├── DefaultEventMetricsTests.cs
+│   │   │   │   ├── OpenTelemetrySetupTests.cs
 │   │   │   │   └── TracedEventMetricsTests.cs
 │   │   │   └── EventTraceContextTests.cs
 │   │   ├── PortfolioRecords
