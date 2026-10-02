@@ -263,7 +263,8 @@ public static class LedgerTaxLotReliefProjector
         if (lossSelections.Count == 0)
             return null;
 
-        var replacements = SelectReplacements(input, selections);
+        var scopedSecurityId = ResolveSoldSecurityId(selections);
+        var replacements = SelectReplacements(input, selections, scopedSecurityId);
         var available = replacements.Select(static replacement => replacement.Quantity).ToArray();
         var sources = replacements.Select(static _ => new List<WashSaleSourceAllocation>()).ToArray();
         var disallowedTotal = 0m;
@@ -275,7 +276,7 @@ public static class LedgerTaxLotReliefProjector
             var matches = new List<(int Index, decimal Quantity)>();
             for (var index = 0; index < replacements.Count && remainingQuantity > 0m; index++)
             {
-                if (available[index] <= 0m || !SecurityMatches(selection.Lot.SecurityId, replacements[index].SecurityId))
+                if (available[index] <= 0m || !SecurityMatches(selection.Lot.SecurityId ?? scopedSecurityId, replacements[index].SecurityId))
                     continue;
 
                 var quantity = Math.Min(remainingQuantity, available[index]);
@@ -337,7 +338,8 @@ public static class LedgerTaxLotReliefProjector
 
     private static IReadOnlyList<WashSaleReplacementAcquisition> SelectReplacements(
         LedgerTaxLotReliefInput input,
-        IReadOnlyList<LedgerTaxLotReliefSelection> selections)
+        IReadOnlyList<LedgerTaxLotReliefSelection> selections,
+        Guid? scopedSecurityId)
     {
         var lower = input.SaleDate.AddDays(-input.WashSalePolicy.WindowDays);
         var upper = input.SaleDate.AddDays(input.WashSalePolicy.WindowDays);
@@ -349,7 +351,7 @@ public static class LedgerTaxLotReliefProjector
             .Where(replacement => replacement.Quantity > 0m
                 && replacement.AcquiredDate >= lower && replacement.AcquiredDate <= upper
                 && selections.Any(selection => selection.RealizedGainOrLoss < 0m
-                    && SecurityMatches(selection.Lot.SecurityId, replacement.SecurityId))
+                    && SecurityMatches(selection.Lot.SecurityId ?? scopedSecurityId, replacement.SecurityId))
                 && !relievedIds.Contains(replacement.LotId)
                 && (input.WashSalePolicy.Scope != WashSaleReplacementScope.DisposingAccount
                     || replacement.Account is null || replacement.Account == input.Account))
@@ -379,6 +381,18 @@ public static class LedgerTaxLotReliefProjector
         }
 
         return replacements;
+    }
+
+    private static Guid? ResolveSoldSecurityId(IReadOnlyList<LedgerTaxLotReliefSelection> selections)
+    {
+        // Legacy lots may lack an identity even when the disposal has one unambiguous known
+        // security. Keep that scope for unidentified lots without overriding explicit identities.
+        var securityIds = selections.Select(static selection => selection.Lot.SecurityId)
+            .Where(static securityId => securityId is not null)
+            .Distinct()
+            .Take(2)
+            .ToArray();
+        return securityIds.Length == 1 ? securityIds[0] : null;
     }
 
     private static bool SecurityMatches(Guid? soldSecurityId, Guid? replacementSecurityId)

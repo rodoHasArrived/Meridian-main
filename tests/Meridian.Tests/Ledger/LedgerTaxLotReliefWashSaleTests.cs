@@ -688,6 +688,86 @@ public sealed class LedgerTaxLotReliefWashSaleTests
         projection.IsBalanced.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData(40, 200, false)]
+    [InlineData(40, 200, true)]
+    [InlineData(60, 0, false)]
+    [InlineData(60, 0, true)]
+    [InlineData(80, -200, false)]
+    [InlineData(80, -200, true)]
+    public void WashSale_UnidentifiedLossLot_UsesUniqueKnownDisposalSecurity(
+        decimal gainLotUnitCost, decimal economicResult, bool matchingReplacement)
+    {
+        // The only known security belongs to the gain lot, so fallback must inspect all
+        // selections while preserving the unidentified loss lot as the exact source evidence.
+        var lossLot = new LedgerTaxLot("loss", new DateOnly(2026, 1, 2), 10m, 140m);
+        var replacement = new WashSaleReplacementAcquisition("replacement", new DateOnly(2026, 3, 5),
+            10m, matchingReplacement ? SecurityId : OtherSecurityId);
+        var input = new LedgerTaxLotReliefInput(
+            Account,
+            new DateOnly(2026, 3, 1),
+            quantitySold: 20m,
+            salePrice: 100m,
+            LedgerTaxLotReliefMethod.Fifo,
+            [new LedgerTaxLot("gain", new DateOnly(2026, 1, 1), 10m, gainLotUnitCost, SecurityId), lossLot],
+            washSalePolicy: WashSalePolicy.UnitedStates,
+            replacementAcquisitions: matchingReplacement
+                ? [replacement]
+                // Conflicting facts for an unrelated security must be excluded before deduplication.
+                : [replacement, replacement with { Quantity = 20m }]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        projection.RealizedGainOrLoss.Should().Be(economicResult);
+        projection.RecognizedGainOrLoss.Should().Be(economicResult + (matchingReplacement ? 400m : 0m));
+        if (matchingReplacement)
+        {
+            projection.WashSale!.DisallowedLoss.Should().Be(400m);
+            projection.WashSale.MatchedReplacementQuantity.Should().Be(10m);
+            var source = projection.WashSale.BasisIncreases.Should().ContainSingle().Which
+                .SourceAllocations.Should().ContainSingle().Which;
+            source.Source.Should().BeSameAs(projection.Selections.Single(selection => selection.Lot.LotId == "loss"));
+            source.Source.Lot.Should().BeSameAs(lossLot);
+            source.Source.Lot.SecurityId.Should().BeNull();
+            source.Quantity.Should().Be(10m);
+            source.Amount.Should().Be(400m);
+        }
+        else
+        {
+            projection.WashSale.Should().BeNull();
+        }
+        projection.IsBalanced.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void WashSale_AllUnidentifiedLots_PreserveCallerScopedReplacementMatching(bool identifiedReplacement)
+    {
+        var lossLot = new LedgerTaxLot("loss", new DateOnly(2026, 1, 2), 10m, 140m);
+        var input = new LedgerTaxLotReliefInput(
+            Account,
+            new DateOnly(2026, 3, 1),
+            quantitySold: 20m,
+            salePrice: 100m,
+            LedgerTaxLotReliefMethod.Fifo,
+            [new LedgerTaxLot("gain", new DateOnly(2026, 1, 1), 10m, 40m), lossLot],
+            washSalePolicy: WashSalePolicy.UnitedStates,
+            replacementAcquisitions:
+            [new("replacement", new DateOnly(2026, 3, 5), 10m, identifiedReplacement ? OtherSecurityId : null)]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        projection.WashSale!.DisallowedLoss.Should().Be(400m);
+        projection.WashSale.MatchedReplacementQuantity.Should().Be(10m);
+        var source = projection.WashSale.BasisIncreases.Should().ContainSingle().Which
+            .SourceAllocations.Should().ContainSingle().Which;
+        source.Source.Should().BeSameAs(projection.Selections.Single(selection => selection.Lot.LotId == "loss"));
+        source.Source.Lot.Should().BeSameAs(lossLot);
+        projection.RecognizedGainOrLoss.Should().Be(600m);
+        projection.IsBalanced.Should().BeTrue();
+    }
+
     [Fact]
     public void WashSale_ProceedsRoundingCannotCreateLossOnZeroBasisLot()
     {
