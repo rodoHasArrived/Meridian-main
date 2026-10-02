@@ -249,6 +249,69 @@ public sealed class LedgerAmountProofInteractionTests
         client.ManifestRoutes.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("duplicate-node")]
+    [InlineData("duplicate-artifact")]
+    [InlineData("duplicate-artifact-valid-and-foreign")]
+    [InlineData("artifact-id")]
+    [InlineData("node-subject-id")]
+    [InlineData("node-subject-kind")]
+    [InlineData("artifact-kind")]
+    [InlineData("retention-timestamp")]
+    [InlineData("not-retained")]
+    [InlineData("missing-node")]
+    [InlineData("missing-artifact")]
+    [InlineData("artifact-hash")]
+    [InlineData("artifact-route")]
+    [InlineData("canonical-subject-kind")]
+    public async Task AmbiguousOrMismatchedRetainedSource_BlocksProofAndManifestCommand(string mismatch)
+    {
+        LedgerAmountProofEvidenceDto? rejectedEvidence = null;
+        var client = new Client
+        {
+            Transform = packet =>
+            {
+                rejectedEvidence = packet.LedgerAmount!.Evidence.Single();
+                var node = packet.Nodes.Single();
+                var artifact = node.ArtifactRefs.Single();
+                IReadOnlyList<EvidenceNodeDto> nodes = mismatch switch
+                {
+                    "duplicate-node" => [node, node with { ArtifactRefs = [] }],
+                    "duplicate-artifact" => [node with { ArtifactRefs = [artifact, artifact] }],
+                    "duplicate-artifact-valid-and-foreign" => [node with
+                    {
+                        ArtifactRefs = [artifact, artifact with { CanonicalSubjectId = "foreign-fund-subject" }]
+                    }],
+                    "artifact-id" => [node with { ArtifactRefs = [artifact with { ArtifactId = "foreign-artifact" }] }],
+                    "node-subject-id" => [node with { Subject = node.Subject with { SubjectId = "foreign-subject" } }],
+                    "node-subject-kind" => [node with { Subject = node.Subject with { SubjectKind = "reconciliation-case" } }],
+                    "artifact-kind" => [node with { ArtifactRefs = [artifact with { Kind = "unrelated-case" }] }],
+                    "retention-timestamp" => [node with { ArtifactRefs = [artifact with { GeneratedAt = artifact.GeneratedAt.AddSeconds(-1) }] }],
+                    "not-retained" => [node with { ArtifactRefs = [artifact with { Retained = false }] }],
+                    "missing-node" => [],
+                    "missing-artifact" => [node with { ArtifactRefs = [] }],
+                    "artifact-hash" => [node with { ArtifactRefs = [artifact with { Hash = new string('b', 64) }] }],
+                    "artifact-route" => [node with { ArtifactRefs = [artifact with { Route = "/workstation/evidence/vault/foreign" }] }],
+                    "canonical-subject-kind" => [node with { ArtifactRefs = [artifact with { CanonicalSubjectKind = "reconciliation-case" }] }],
+                    _ => throw new ArgumentOutOfRangeException(nameof(mismatch))
+                };
+                return packet with { Nodes = nodes };
+            }
+        };
+        using var model = new PostedLedgerViewModel(client);
+        await model.RefreshAsync();
+
+        await model.OpenAmountProofCommand.ExecuteAsync(model.JournalLines.Single().DebitProof);
+
+        model.ProofDrawer.StatusText.Should().Be("Blocked");
+        model.ProofDrawer.Evidence.Should().BeEmpty();
+        model.ProofDrawer.ManifestText.Should().BeEmpty();
+        rejectedEvidence.Should().NotBeNull();
+        model.ProofDrawer.OpenManifestCommand.CanExecute(rejectedEvidence).Should().BeFalse();
+        await model.ProofDrawer.OpenManifestCommand.ExecuteAsync(rejectedEvidence);
+        client.ManifestRoutes.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task MissingPacket_ClearsPreviousProofAndShowsBlocked()
     {

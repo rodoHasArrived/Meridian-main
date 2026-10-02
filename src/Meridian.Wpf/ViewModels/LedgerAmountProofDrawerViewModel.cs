@@ -170,13 +170,18 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
                 {
                     continue;
                 }
-                var artifacts = packet.Nodes.Where(node => node.EvidenceId == item.EvidenceId)
-                    .SelectMany(node => node.ArtifactRefs)
-                    .Where(artifact => artifact.Retained && artifact.Route == item.Route &&
-                        artifact.CanonicalSubjectKind == "ledger-amount" && artifact.CanonicalSubjectId == retainedSubject &&
-                        Sha256Digest.FixedEquals(artifact.Hash, item.ContentHash))
-                    .ToArray();
-                if (artifacts.Length != 1 || !ManifestRouteMatchesScope(item))
+                var nodes = packet.Nodes.Where(node => node?.EvidenceId == item.EvidenceId).ToArray();
+                if (nodes.Length != 1 || nodes[0].Subject?.SubjectKind != "ledger-amount" ||
+                    nodes[0].Subject?.SubjectId != proof.SubjectId || nodes[0].ArtifactRefs is null)
+                {
+                    ShowBlocked("Supporting evidence does not identify this exact retained amount and scope.");
+                    return;
+                }
+                var artifacts = nodes[0].ArtifactRefs.Where(artifact => artifact?.ArtifactId == item.EvidenceId).ToArray();
+                if (artifacts.Length != 1 || artifacts[0].Kind != item.Kind || !artifacts[0].Retained ||
+                    artifacts[0].Route != item.Route || artifacts[0].CanonicalSubjectKind != "ledger-amount" ||
+                    artifacts[0].CanonicalSubjectId != retainedSubject || artifacts[0].GeneratedAt != item.RetainedAt ||
+                    !Sha256Digest.FixedEquals(artifacts[0].Hash, item.ContentHash) || !ManifestRouteMatchesScope(item))
                 {
                     ShowBlocked("Supporting evidence does not identify this exact retained amount and scope.");
                     return;

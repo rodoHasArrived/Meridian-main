@@ -1,7 +1,7 @@
 # W10-PROV-001 first posted amount workflow
 
 **Status:** posted-line slice implemented; full validation tracked in PR #3041
-**Reviewed:** 2026-10-01
+**Reviewed:** 2026-10-02
 
 Browser Accounting Ledger Explorer and WPF Posted Ledger now select an individual posted debit or
 credit amount. Both request the same `ledger-amount` subject packet and display the same retained
@@ -34,13 +34,14 @@ presenting the changed evidence as the previously verified proof.
 
 ## Validation evidence
 
-Targeted validation completed on 2026-10-01. All commands ran against this implementation.
+Initial targeted validation completed on 2026-10-01; WPF parity validation was rerun on
+2026-10-02 with the additional node and artifact regressions. All commands ran against this implementation.
 
 | Check | Result | Coverage and limits |
 | --- | --- | --- |
 | Backend provenance filter | **50 passed, 0 failed, 0 skipped** | Includes 29 posted-amount cases with real file-backed intake, retained review, journal references, HTTP packets, and guarded manifest opening; also compatibility service and authorization tests. |
 | Browser provenance filter | **140 passed across 6 suites** | Selection, exact scope, cross-fund/name/symbol collisions, missing/stale/foreign/ambiguous support, late responses, malformed guarded links/artifacts, and removal of text inference. Final run used one Vitest worker. |
-| WPF provenance and Posted Ledger filter | **48 passed, 0 failed, 0 skipped** | 28 new cases and 20 existing cases; includes actual Page/AutomationPeer amount, manifest, and close interactions with a controlled API client. Full WPF source, XAML, and test assembly compiled. |
+| WPF provenance and Posted Ledger filter | **62 passed, 0 failed, 0 skipped** | 42 amount-proof cases and 20 existing cases; includes node/artifact ambiguity, exact identity/kind/retention checks, and actual Page/AutomationPeer amount, manifest, and close interactions with a controlled API client. Full WPF source, XAML, and test assembly compiled. |
 | Browser TypeScript and production build | **Passed** | `npm run build` runs `tsc --noEmit` and Vite; regenerated the tracked workstation bundle. |
 | Targeted ESLint | **0 errors** | Four existing Financial Record Explorer hook-dependency warnings. |
 | Edge rendering and interaction | **Passed with mocked HTTP** | Actual `/workstation/accounting/ledger` page; amount selection, guarded source-link opening, Escape dismissal, missing support, and foreign-fund rejection; zero console errors or framework overlays and no horizontal clipping at 1440 pixels. |
@@ -53,6 +54,13 @@ It verifies source-link navigation and query binding but does **not** establish 
 database, or source-integrity results. Backend tests independently exercise actual retained source
 files and endpoint revalidation. WPF interaction tests use controlled API responses and actual WPF
 controls. No single live-host browser-to-storage or desktop-to-storage smoke is claimed.
+
+The 2026-10-02 WPF parity run adds 14 regressions for duplicate evidence nodes, duplicate artifact
+identifiers (including one valid and one foreign reference), mismatched artifact identity, node
+subject, artifact kind, retention timestamp, retained status, route, hash, canonical subject kind,
+and missing nodes or artifacts. The desktop now establishes uniqueness before checking source
+content, matching the browser's validation order. Every rejected case withholds all proof and
+disables the manifest command without issuing a manifest request.
 
 Run the backend and WPF filters from the repository root:
 
