@@ -60,7 +60,10 @@ These values are read at host composition time; changes require restart. Enablin
 both exporters disabled permits local activities without a built-in output destination. Enabling
 OTLP does not infer a destination from `OTEL_EXPORTER_OTLP_ENDPOINT`. Existing code integrations
 can also explicitly opt in through `CompositionOptions.EnableOpenTelemetry`; that compatibility
-option still uses the same host-owned provider and does not enable exporters by default.
+option also owns a `Meridian.Pipeline` meter provider for its existing metrics decorator. Metrics use
+the same explicit console/OTLP exporter flags and destination as traces; both providers flush during
+shutdown and are disposed by the host. The compatibility option does not enable exporters by default,
+and `Tracing.Enabled` alone does not add pipeline metrics instrumentation.
 
 ## Security and Mutation Guardrails
 

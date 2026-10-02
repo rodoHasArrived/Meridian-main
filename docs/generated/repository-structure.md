@@ -9194,6 +9194,7 @@ Meridian-main
 │   │   │   ├── Backfill
 │   │   │   │   ├── AdditionalProviderContractTests.cs
 │   │   │   │   ├── AutoGapRemediationServiceTests.cs
+│   │   │   │   ├── BackfillCancellationTracingTests.cs
 │   │   │   │   ├── BackfillCoordinatorPreviewTests.cs
 │   │   │   │   ├── BackfillCoordinatorStorageOptionsTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
