@@ -40,9 +40,10 @@ owner.
 **Current-state correction:** the gap is not only between `TaxLot` and `FaceValueLot`.
 `LedgerTaxLotRecord` already provides decimal original/open quantity, currency, optional
 `SecurityId`, `BookPositionId`, versioned relief, and atomic journal-plus-lot persistence. It is
-the durable convergence anchor. The missing pieces are mandatory identity, explicit units-versus-
-face semantics, acquisition FX, face-value acquisition terms, and one shared selector/amortization
-contract across Execution and Ledger.
+the durable convergence anchor. `V_ledger_034` retains explicit quantity-basis semantics,
+acquisition currencies and FX, and face-value acquisition terms. Remaining gaps include
+mandatory identity across unresolved legacy rows, complete cross-consumer selector/amortization
+parity, corporate-action successors, advance refunding, and shadow-operation acceptance.
 
 ## 2. Architectural Overview
 
@@ -131,7 +132,8 @@ unit and must be positive. `FunctionalCostBasis` is retained, not recomputed fro
 
 ### Durable additions
 
-Additive ledger columns precede any cutover:
+Durable acquisition facts are retained through existing face-term columns and the
+`acquisition_terms` JSON; the logical fields are:
 
 - `quantity_basis`, required after backfill;
 - `acquisition_currency`, `functional_currency`, and
