@@ -11,6 +11,10 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Storage
 
+`Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
+implement lower-level persistence ports consumed by Infrastructure. Application/host composition
+owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.
+
 `LedgerAccountTaxLotPolicyRecord.EffectiveWashSalePolicy` carries the existing `PolicyId` revision
 into wash-sale projection evidence together with the configured window, scope and activation date.
 This adds no persisted policy field or schema migration.
