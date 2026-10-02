@@ -1055,16 +1055,16 @@ Rank 4 of the 2026-07 W10 depth slate and predominantly activation rather than c
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-31 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-10-01 |
 
 ### Current Summary
 
-Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is complete and the service that owns it is unwired and holds its state in process memory, so planned occurrences never become journals and would not survive a restart if they did. A durable schedule store, a time-provider-driven worker, and an idempotent evidence-carrying intake path all already exist for monthly automated journals and are the pattern to follow. Occurrences become drafts for human approval and never post directly. Known source constraints, including which dependencies are currently in-memory, are recorded in docs/product/plans/w10-depth-slate-2026-07.md.
+Implementation in progress 2026-10-01. FileRecurringJournalStore retains versioned schedule and template definitions, exact source evidence, one deterministic claim per schedule and effective date, and occurrence history under an OS-exclusive lease spanning intake. AutomatedJournalScheduledWorker invokes RecurringJournalRunner through the existing journal-intake and manual workbench path; the runner never submits, approves or posts. The existing PostgreSQL ledger remains authoritative for periods, lock owners and governed reopens; unavailable retained state or authority blocks generation. Recurring provenance is retained through draft validation and the human approval lifecycle. Definition drift blocks rather than replacing a draft, with explicit actor-and-reason restoration of exact retained versions. Browser and WPF Accounting queues consume the shared recurring occurrence contract. Linked regression sources cover restart, concurrent runners, interrupted intake completion, retries, version drift, missing evidence, period locks and queue parity. Actual validation results belong to the implementation PR; operator acceptance and production certification are not claimed. The supported occurrence-store boundary is processes sharing one filesystem data root.
 
 ### Exit Criteria
 
@@ -1079,6 +1079,7 @@ Rank 5 of the 2026-07 W10 depth slate. The recurring journal primitive is comple
 
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-LEDGER`
+- `SRC-STORAGE`
 - `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`

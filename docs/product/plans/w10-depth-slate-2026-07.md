@@ -300,6 +300,18 @@ validation recorded in [the acceptance record](../../testing/w10-amount-provenan
 
 ### `W10-JRNL-001` — recurring journals
 
+Implementation in progress (2026-10-01): versioned schedule/template definitions, immutable
+occurrence claims and history now have a file-backed store with process-independent exclusion.
+The existing scheduled worker admits claimed occurrences through the journal-intake/workbench
+path and retains exact definitions and source evidence for human approval. PostgreSQL ledger
+periods remain the lock authority. Browser and WPF consume one queue contract for drafts,
+approval state, blockers, lock owner and the governed reopen path. Definition drift blocks until
+an actor explicitly restores the exact retained definitions with a reason. The roadmap registry
+links implementation and regression sources; the PR records executed validation. Operator
+acceptance remains open. See [Recurring Journal](../../domain/recurring-journal.md).
+
+Baseline constraints at registration, retained as the rationale for this change:
+
 - The owning service is **not registered in dependency injection anywhere**; only tests reference it.
 - Its schedules *and* its posted-occurrence idempotency guard are both in-memory.
 - A schedule holds only a template identifier, while the template book and the locked-period book are

@@ -223,6 +223,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // process would execute valuation and journal automation against a composition whose
         // ledger dependencies resolve null and would fork scheduling state from the server.
         services.TryAddSingleton<DailyValuationScheduledWorker>();
+        services.TryAddSingleton<Meridian.Contracts.Workstation.IRecurringJournalQueueSource, WorkstationRecurringJournalQueueClient>();
         services.TryAddSingleton<AutomatedJournalScheduledWorker>();
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(

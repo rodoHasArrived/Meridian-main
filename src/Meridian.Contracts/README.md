@@ -11,6 +11,12 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Contracts
 
+`Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
+and WPF Accounting queues. It carries retained schedule/template versions, source evidence
+references, authoritative draft approval status, blockers, lock owner and governed reopen path.
+`ManualJournalEntryDraftDto` additionally retains recurring provenance JSON, digest and a required
+evidence marker; these server-owned fields persist through the existing human approval lifecycle.
+
 Provider connection API and configuration DTOs retain optional `TenantId` and `CredentialEnvironment`
 alongside connection and external-account identity. These additive fields preserve server-owned
 credential scope across both workstation lanes. They are not accepted as tenant authority in the

@@ -144,6 +144,7 @@ do_not_edit: true
 | `SRC-STORAGE` | Meridian storage | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-STORAGE` | Meridian storage | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-STORAGE` | Meridian storage | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `SRC-STORAGE` | Meridian storage | `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
 | `SRC-STRATEGIES` | Meridian strategies | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-STRATEGIES` | Meridian strategies | `W3-CONT-001` | Research to paper continuity |
 | `SRC-STRATEGIES` | Meridian strategies | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |

@@ -11974,6 +11974,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.IRecurringJournalQueueSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.IReportingRunNotifier"
     },
     {
@@ -13487,6 +13493,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationTaxonomyValue"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.RecurringJournalOccurrenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.RecurringJournalQueueDto"
     },
     {
       "kind": "contract-set-member",
@@ -37023,6 +37041,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.RecurringJournalQueueDto",
+      "target": "contract:Meridian.Contracts.Workstation.RecurringJournalOccurrenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.RejectWorkflow",
       "target": "contract:Meridian.Contracts.Workstation.FundWorkflowCommandMetadata"
     },
@@ -47449,7 +47473,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bec80ab8eedb6a5935149121c3ece4cf64d7e35cb82dee31b5002e85aa8fe78d",
+  "fingerprint": "c8a37fdcf4967d3443eb88e4ca1cef43b648a4ca9c6189c20f4f83f18db01d6a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -59474,6 +59498,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Workstation.IRecurringJournalQueueSource",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.IRecurringJournalQueueSource"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Workstation.IReportingRunNotifier",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.IReportingRunNotifier"
@@ -60989,6 +61019,18 @@
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationTaxonomyValue",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationTaxonomyValue"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.RecurringJournalOccurrenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.RecurringJournalOccurrenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.RecurringJournalQueueDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.RecurringJournalQueueDto"
     },
     {
       "classification": "record",
@@ -69544,11 +69586,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3117,
-    "contract_set_memberships": 3693,
-    "edges": 7883,
+    "contract_references": 3118,
+    "contract_set_memberships": 3696,
+    "edges": 7887,
     "foreign_keys": 134,
     "logical_references": 6,
-    "nodes": 3829
+    "nodes": 3832
   }
 }
