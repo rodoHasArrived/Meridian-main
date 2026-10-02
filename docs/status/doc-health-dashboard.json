@@ -1,10 +1,10 @@
 {
   "total_files": 679,
-  "total_lines": 149575,
+  "total_lines": 149611,
   "orphaned_count": 248,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 275,
+  "todo_count": 274,
   "average_lines": 220.3,
   "health_score": 81,
   "orphaned_files": [
@@ -3163,9 +3163,9 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 621,
+      "line_count": 657,
       "has_heading": true,
-      "todo_count": 6,
+      "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
