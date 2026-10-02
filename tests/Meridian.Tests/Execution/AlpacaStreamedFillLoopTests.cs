@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -410,6 +411,7 @@ public sealed class AlpacaStreamedFillLoopTests
         var client = new AlpacaTradeUpdatesClient(
             new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: true),
             NullLogger<AlpacaTradeUpdatesClient>.Instance,
+            new AtomicFileWriterAdapter(),
             cursorStore: store);
         client.ConfigureDurableStateScope("paper-account-e2e", AlpacaCredentialEnvironment.PaperEnvironment);
         return client;

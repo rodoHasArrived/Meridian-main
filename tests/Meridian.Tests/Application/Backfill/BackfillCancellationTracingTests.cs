@@ -4,6 +4,8 @@ using FluentAssertions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Storage.Archival;
+using Meridian.Storage.Backfill;
 using Meridian.Testing;
 
 namespace Meridian.Tests.Backfill;
@@ -34,7 +36,7 @@ public sealed class BackfillCancellationTracingTests
         var config = new BackfillConfig(
             EnableSymbolResolution: false, EnableRateLimitRotation: false,
             Jobs: new BackfillJobsConfig(PersistJobs: false, MaxConcurrentRequests: 1, MaxConcurrentPerProvider: 1));
-        await using var services = new BackfillServiceFactory().CreateServices(
+        await using var services = new BackfillServiceFactory(new AtomicFileWriterAdapter(), root => new JsonlBackfillBarWriter(root)).CreateServices(
             new AppConfig(DataRoot: artifacts.RootPath), config, artifacts.RootPath, [provider]);
         if (storageStage)
         {

@@ -11,6 +11,9 @@ last_reviewed: 2026-09-28
 
 # src/Meridian.ProviderSdk
 
+`Backfill/IBackfillBarWriter.cs` is the provider-facing persistence port for one historical-bar
+session batch. Storage implements it; application composition supplies it to the backfill worker.
+
 `AccountingSystem/IAccountingSystemExportValidator.cs` lets each external GL
 provider validate retained import scope, generated lines, and provider-specific
 human review evidence during controlled export certification. It exposes no

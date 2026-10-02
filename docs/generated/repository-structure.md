@@ -3977,6 +3977,7 @@ Meridian-main
 │   │   ├── Etl
 │   │   │   ├── EtlModels.cs
 │   │   │   ├── IEtlJobDefinitionStore.cs
+│   │   │   ├── IEtlStagingStore.cs
 │   │   │   └── ISftpFilePublisher.cs
 │   │   ├── Export
 │   │   │   ├── AnalysisExportModels.cs
@@ -4239,6 +4240,7 @@ Meridian-main
 │   │   │   ├── UnsupportedAssetClassException.cs
 │   │   │   └── ValidationException.cs
 │   │   ├── IO
+│   │   │   ├── IAtomicFileWriter.cs
 │   │   │   └── RootedPathGuard.cs
 │   │   ├── Logging
 │   │   │   └── LoggingSetup.cs
@@ -5390,7 +5392,8 @@ Meridian-main
 │   │   │   ├── IAccountingSystemExportValidator.cs
 │   │   │   └── IAccountingSystemProvider.cs
 │   │   ├── Backfill
-│   │   │   └── BackfillJob.cs
+│   │   │   ├── BackfillJob.cs
+│   │   │   └── IBackfillBarWriter.cs
 │   │   ├── AttributeCredentialResolver.cs
 │   │   ├── ConfigurableProviderModuleBase.cs
 │   │   ├── ConnectionDiagnosticsContracts.cs
@@ -5552,6 +5555,7 @@ Meridian-main
 │   │   ├── Archival
 │   │   │   ├── ArchivalStorageService.cs
 │   │   │   ├── AtomicFileWriter.cs
+│   │   │   ├── AtomicFileWriterAdapter.cs
 │   │   │   ├── CompressionProfileManager.cs
 │   │   │   └── WriteAheadLog.cs
 │   │   ├── AssetOperations
@@ -5573,7 +5577,8 @@ Meridian-main
 │   │   │   └── PostgresAssetOperationsProjectionStore.Locks.cs
 │   │   ├── Backfill
 │   │   │   ├── BackfillStatusStore.cs
-│   │   │   └── BackfillStatusStoreJsonContext.cs
+│   │   │   ├── BackfillStatusStoreJsonContext.cs
+│   │   │   └── JsonlBackfillBarWriter.cs
 │   │   ├── Banking
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_banking.sql
@@ -9415,7 +9420,9 @@ Meridian-main
 │   │   ├── Architecture
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
 │   │   │   ├── LayerBoundaryTests.cs
-│   │   │   └── LedgerNetBalanceCentralizationTests.cs
+│   │   │   ├── LedgerNetBalanceCentralizationTests.cs
+│   │   │   ├── ProjectReferenceGraph.cs
+│   │   │   └── ProjectReferenceGraphTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AssetAccountingEventSpineContractTests.cs
 │   │   │   ├── AssetAccountingEvidenceSubjectContractTests.cs
@@ -10237,6 +10244,7 @@ Meridian-main
 │   │   │   ├── JsonFileIBDataResultStoreTests.cs
 │   │   │   ├── JsonFileSnapshotStoreTests.cs
 │   │   │   ├── JsonlAppendStreamTests.cs
+│   │   │   ├── JsonlBackfillBarWriterTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
 │   │   │   ├── JsonlMarketDataStoreCorruptionTests.cs
 │   │   │   ├── JsonlMarketDataStoreSymbolPathTests.cs
