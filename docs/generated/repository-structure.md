@@ -2330,6 +2330,83 @@ Meridian-main
 │   │   ├── wpf-screen-development-tracker.json
 │   │   └── wpf-screen-development-tracker.md
 │   ├── testing
+│   │   ├── evidence
+│   │   │   └── w10-615abde9
+│   │   │       ├── browser
+│   │   │       │   ├── evidence
+│   │   │       │   │   ├── screenshots
+│   │   │       │   │   │   ├── M-refusal-repair.png
+│   │   │       │   │   │   ├── M-refusal.png
+│   │   │       │   │   │   ├── M1-fresh-1366x768.png
+│   │   │       │   │   │   ├── M1-fresh.png
+│   │   │       │   │   │   ├── M10-unsupported-override-simulation-repair.png
+│   │   │       │   │   │   ├── M10-unsupported-override-simulation.png
+│   │   │       │   │   │   ├── M2-stale-repair.png
+│   │   │       │   │   │   ├── M2-stale.png
+│   │   │       │   │   │   ├── M3-future-repair.png
+│   │   │       │   │   │   ├── M3-future.png
+│   │   │       │   │   │   ├── M4-missing-date-repair.png
+│   │   │       │   │   │   ├── M4-missing-date.png
+│   │   │       │   │   │   ├── M5-coverage-repair.png
+│   │   │       │   │   │   ├── M5-coverage.png
+│   │   │       │   │   │   ├── M6-confidence-repair.png
+│   │   │       │   │   │   ├── M6-confidence.png
+│   │   │       │   │   │   ├── M8-delayed-old-preview.png
+│   │   │       │   │   │   ├── S1-current-scope-1366x768.png
+│   │   │       │   │   │   ├── S1-current-scope.png
+│   │   │       │   │   │   ├── S2-missing-entityId.png
+│   │   │       │   │   │   ├── S2-missing-fundAccountId.png
+│   │   │       │   │   │   ├── S2-missing-fundProfileId.png
+│   │   │       │   │   │   ├── S2-missing-ledgerBookId.png
+│   │   │       │   │   │   ├── S2-missing-periodId.png
+│   │   │       │   │   │   ├── S3-foreign-scope.png
+│   │   │       │   │   │   ├── S4-accounting-details.png
+│   │   │       │   │   │   ├── S4-missing-context.png
+│   │   │       │   │   │   ├── S4-missing-repair-context.png
+│   │   │       │   │   │   ├── S4-missing-repair.png
+│   │   │       │   │   │   ├── S4-missing.png
+│   │   │       │   │   │   ├── S5-accounting-details.png
+│   │   │       │   │   │   ├── S5-stale-context.png
+│   │   │       │   │   │   ├── S5-stale-repair-context.png
+│   │   │       │   │   │   ├── S5-stale-repair.png
+│   │   │       │   │   │   ├── S5-stale.png
+│   │   │       │   │   │   ├── S6-repair.png
+│   │   │       │   │   │   ├── S6-unavailable.png
+│   │   │       │   │   │   ├── S7-refusal-context.png
+│   │   │       │   │   │   ├── S7-refusal.png
+│   │   │       │   │   │   ├── S7-repair-context.png
+│   │   │       │   │   │   ├── S7-repair.png
+│   │   │       │   │   │   ├── S8-delayed-old-response.png
+│   │   │       │   │   │   └── S8-repair.png
+│   │   │       │   │   ├── cases.json
+│   │   │       │   │   ├── findings.json
+│   │   │       │   │   ├── network-observations.json
+│   │   │       │   │   ├── provenance.json
+│   │   │       │   │   └── requests-responses.json
+│   │   │       │   ├── attempts.json
+│   │   │       │   ├── browser-evidence.md
+│   │   │       │   ├── capture.mjs
+│   │   │       │   └── vitest.log.gz
+│   │   │       ├── desktop
+│   │   │       │   ├── desktop-evidence.md
+│   │   │       │   ├── inspect_desktop_support.py
+│   │   │       │   ├── source-inventory.json
+│   │   │       │   └── wpf-finance-ux-static.md
+│   │   │       ├── server
+│   │   │       │   ├── acceptance-support.trx
+│   │   │       │   ├── server-evidence.md
+│   │   │       │   └── summary.json
+│   │   │       ├── case-records.json
+│   │   │       ├── criteria-review.md
+│   │   │       ├── docs-ci.log.gz
+│   │   │       ├── full-ci.log.gz
+│   │   │       ├── hosted-checks.json
+│   │   │       ├── integrity-validation.json
+│   │   │       ├── manifest.json
+│   │   │       ├── population.json
+│   │   │       ├── README.md
+│   │   │       ├── validation.json
+│   │   │       └── verify_packet.py
 │   │   ├── accounting-trust-corrections.md
 │   │   ├── README.md
 │   │   ├── w10-mark-seam-operator-acceptance.md

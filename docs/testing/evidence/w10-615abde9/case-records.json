@@ -1,0 +1,1463 @@
+{
+  "schemaVersion": 1,
+  "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "candidateTree": "9372fc96135e0203c0eb25fc105ed67b1d90f231",
+  "pr": "https://github.com/rodoHasArrived/Meridian-main/pull/3048",
+  "implementationOrder": [
+    "LOT",
+    "MARK",
+    "SEAM",
+    "RECON"
+  ],
+  "operatorSessionOrder": [
+    "SEAM",
+    "MARK"
+  ],
+  "populationDefinition": "population.json",
+  "populationProvisioningState": "planned_not_provisioned",
+  "criteria": [
+    {
+      "id": "MARK-C1",
+      "roadmapRow": "W10-MARK-001",
+      "criterion": "A valuation cannot rest on a mark whose age or observation date falls outside policy, and the default posture blocks rather than accepts.",
+      "cases": [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M9",
+        "M11"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "MARK-C2",
+      "roadmapRow": "W10-MARK-001",
+      "criterion": "Freshness is governed by one policy owner rather than two independently configured controls, and consolidation preserves every non-age gate the stricter control enforces today - minimum confidence, complete coverage, and a required observation date - rather than collapsing to age alone.",
+      "cases": [
+        "M4",
+        "M5",
+        "M6",
+        "M8"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "MARK-C3",
+      "roadmapRow": "W10-MARK-001",
+      "criterion": "Valuations blocked on mark freshness render as review-required with the offending positions named, on both the browser and desktop workstations.",
+      "cases": [
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "M6",
+        "M7",
+        "M11"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "MARK-C4",
+      "roadmapRow": "W10-MARK-001",
+      "criterion": "Mark age and observation date are visible wherever positions appear, and an override is bound to the position, mark observation, valuation date, and policy version it was approved for, expiring or requiring renewed review as the charter's override strategy requires, so it cannot become a standing bypass.",
+      "cases": [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "M6",
+        "M7",
+        "M8",
+        "M9",
+        "M10"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "MARK-C5",
+      "roadmapRow": "W10-MARK-001",
+      "criterion": "Enabling the new default is preceded by a preview of how many current valuations it would block.",
+      "cases": [
+        "M7",
+        "M8"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "MARK-C6",
+      "roadmapRow": "W10-MARK-001",
+      "criterion": "Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the policy, both workstation surfaces, and the fail-closed tests.",
+      "cases": [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "M6",
+        "M7",
+        "M8",
+        "M9",
+        "M10",
+        "M11"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C1",
+      "roadmapRow": "W10-SEAM-001",
+      "criterion": "One close-readiness projection is the shared source both workstation lanes consume rather than each lane deriving its own, and the caller or an explicit operator selection establishes the complete close scope - fund profile, ledger book, fund account, entity, and period - rather than the projection inferring any dimension from whichever workflow it happened to select; every contribution answers for that declared scope, and a dimension that is missing, ambiguous, or mismatched blocks the projection rather than being merged into it.",
+      "cases": [
+        "S1",
+        "S2",
+        "S3",
+        "S8"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C2",
+      "roadmapRow": "W10-SEAM-001",
+      "criterion": "Every blocker names its type, count, severity, owner, and the records causing it.",
+      "cases": [
+        "S4",
+        "S4b",
+        "S5",
+        "S6"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C3",
+      "roadmapRow": "W10-SEAM-001",
+      "criterion": "A contributing lane that is unregistered, failing, stale, or out of scope makes the projection incomplete and blocking rather than silently absent, so readiness is never reported because a contributor did not answer.",
+      "cases": [
+        "S3",
+        "S4",
+        "S4b",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C4",
+      "roadmapRow": "W10-SEAM-001",
+      "criterion": "The contributing services report into that projection instead of publishing independent readiness vocabularies, and the asset-class coverage service no longer reads as close readiness.",
+      "cases": [
+        "S1",
+        "S10"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C5",
+      "roadmapRow": "W10-SEAM-001",
+      "criterion": "The sequencing handshake with W8-WPF-PARITY-001 is recorded so the client-side aggregation is retired rather than duplicated into the desktop lane.",
+      "cases": [
+        "S1",
+        "S8",
+        "S9"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    },
+    {
+      "id": "SEAM-C6",
+      "roadmapRow": "W10-SEAM-001",
+      "criterion": "Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the shared contract, the contributing services, both workstation consumers, and the blocker-projection tests.",
+      "cases": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S4b",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S10"
+      ],
+      "reproductionEvidence": [
+        "criteria-review.md",
+        "desktop/desktop-evidence.md",
+        "browser/browser-evidence.md",
+        "server/server-evidence.md",
+        "server/acceptance-support.trx"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "No designated operator or live retained session; supporting evidence cannot substitute for the missing live criterion proof."
+      }
+    }
+  ],
+  "caseClientResults": [
+    {
+      "case": "S1",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "S1-current-scope",
+        "S1-current-scope-1366x768"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "S1",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S2",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "S2-missing-fundProfileId",
+        "S2-missing-ledgerBookId",
+        "S2-missing-fundAccountId",
+        "S2-missing-entityId",
+        "S2-missing-periodId"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "S2",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S3",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "S3-foreign-scope"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "S3",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S4",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "S4-missing",
+        "S4-missing-repair",
+        "S4-accounting-details"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "S4",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S4b",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "no_rendered_support_for_this_live_case"
+    },
+    {
+      "case": "S4b",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S5",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "S5-stale",
+        "S5-stale-repair",
+        "S5-accounting-details"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "S5",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S6",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "S6-unavailable",
+        "S6-repair"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "S6",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S7",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "S7-refusal",
+        "S7-repair"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_observed_repair_failure"
+    },
+    {
+      "case": "S7",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S8",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "S8-delayed-old-response",
+        "S8-repair"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "S8",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S9",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "no_rendered_support_for_this_live_case"
+    },
+    {
+      "case": "S9",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "S10",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "no_rendered_support_for_this_live_case"
+    },
+    {
+      "case": "S10",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M1",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "M1-fresh",
+        "M1-fresh-1366x768"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "M1",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M2",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "M2-stale",
+        "M2-stale-repair"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "M2",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M3",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "M3-future",
+        "M3-future-repair"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "M3",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M4",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "M4-missing-date",
+        "M4-missing-date-repair"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "M4",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M5",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "M5-coverage",
+        "M5-coverage-repair"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "M5",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M6",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "M6-confidence",
+        "M6-confidence-repair"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "M6",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M7",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "no_rendered_support_for_this_live_case"
+    },
+    {
+      "case": "M7",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M8",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "M8-delayed-old-preview"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "M8",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M9",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "no_rendered_support_for_this_live_case"
+    },
+    {
+      "case": "M9",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M10",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md",
+        "browser/evidence/cases.json",
+        "browser/evidence/requests-responses.json",
+        "browser/evidence/provenance.json"
+      ],
+      "supportingCaptureIds": [
+        "M10-unsupported-override-simulation",
+        "M10-unsupported-override-simulation-repair"
+      ],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "response_simulation_rendered"
+    },
+    {
+      "case": "M10",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    },
+    {
+      "case": "M11",
+      "client": "browser",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "browser/browser-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      },
+      "supportingEngineeringOutcome": "no_rendered_support_for_this_live_case"
+    },
+    {
+      "case": "M11",
+      "client": "desktop",
+      "candidateCommit": "615abde90001ab33bd6e58e545edc7fce635e254",
+      "liveExecutionState": "pending",
+      "liveSessionTimeUtc": null,
+      "retainedScope": null,
+      "retainedRequestResponseIds": [],
+      "materialCommandIds": [],
+      "approvalIds": [],
+      "repairEvidenceIds": [],
+      "supportingEvidence": [
+        "desktop/desktop-evidence.md"
+      ],
+      "supportingCaptureIds": [],
+      "operatorDecision": {
+        "state": "pending",
+        "identity": null,
+        "timeUtc": null,
+        "rationale": "Authenticated provisioned population and human session unavailable."
+      }
+    }
+  ],
+  "actualOperatorDecisions": [],
+  "actualUserEnvironmentInput": "No existing non-production accounting population or Windows operator session is available.",
+  "rowDecisions": {
+    "W10-SEAM-001": "pending",
+    "W10-MARK-001": "pending"
+  },
+  "findings": [
+    {
+      "id": "B1",
+      "state": "open",
+      "case": "S7",
+      "tier": "rendered_response_simulation",
+      "summary": "Refresh workflows retains selected detail version after same-workflow version change; repaired ready projection leaves publication disabled."
+    },
+    {
+      "id": "D1",
+      "state": "open",
+      "case": "S4",
+      "tier": "static_source",
+      "summary": "Desktop shared blocker presentation flattens structured fields."
+    },
+    {
+      "id": "D2",
+      "state": "open",
+      "case": "M7",
+      "tier": "static_source",
+      "summary": "No desktop schedule-population preview consumer found."
+    },
+    {
+      "id": "D3",
+      "state": "open",
+      "case": "M10",
+      "tier": "static_source_and_service_support",
+      "summary": "Governed retained override lifecycle/expiry is unimplemented; inert tags confer no authority."
+    },
+    {
+      "id": "C1",
+      "state": "candidate_failed",
+      "tier": "same_candidate_hosted",
+      "summary": "Hosted docs drift failed required quality/integration gates; Windows and integration runs cancelled."
+    }
+  ]
+}

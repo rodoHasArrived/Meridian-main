@@ -1,0 +1,1011 @@
+{
+  "candidate": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "observedAtUtc": "2026-10-02 22:10:40 UTC",
+  "runs": [
+    {
+      "id": 37070304026,
+      "name": "Meridian CI",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "run_number": 4739,
+      "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070304026/jobs",
+      "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070304026/logs",
+      "workflow_id": 301133648
+    },
+    {
+      "id": 37070303651,
+      "name": "Maintenance",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 3416,
+      "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303651/jobs",
+      "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303651/logs",
+      "workflow_id": 250373524
+    },
+    {
+      "id": 37070303684,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 6726,
+      "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303684/jobs",
+      "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303684/logs",
+      "workflow_id": 278633910
+    },
+    {
+      "id": 37070303676,
+      "name": "Roadmap Source Docs",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 7120,
+      "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303676/jobs",
+      "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303676/logs",
+      "workflow_id": 280516742
+    },
+    {
+      "id": 37070303700,
+      "name": "PostgreSQL Schema Control",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 786,
+      "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303700/jobs",
+      "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303700/logs",
+      "workflow_id": 315515390
+    },
+    {
+      "id": 37070303601,
+      "name": "Documentation Automation",
+      "status": "completed",
+      "conclusion": "failure",
+      "run_number": 5431,
+      "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303601/jobs",
+      "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303601/logs",
+      "workflow_id": 250373519
+    },
+    {
+      "id": 37070303746,
+      "name": "Windows Desktop Build",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "run_number": 4560,
+      "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303746/jobs",
+      "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303746/logs",
+      "workflow_id": 278633915
+    },
+    {
+      "id": 37070303622,
+      "name": "Golden Path Validation",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "run_number": 4026,
+      "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303622/jobs",
+      "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303622/logs",
+      "workflow_id": 250373521
+    },
+    {
+      "id": 37070303598,
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "run_number": 7642,
+      "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303598/jobs",
+      "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303598/logs",
+      "workflow_id": 255103970
+    }
+  ],
+  "jobs": [
+    {
+      "run": {
+        "id": 37070304026,
+        "name": "Meridian CI",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "run_number": 4739,
+        "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070304026/jobs",
+        "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070304026/logs",
+        "workflow_id": 301133648
+      },
+      "jobs": [
+        {
+          "id": 111047929330,
+          "name": "verify-dotnet",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "run_id": 37070304026,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Set up .NET SDK",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Cache NuGet packages",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Run .NET lane",
+              "status": "completed",
+              "conclusion": "cancelled",
+              "number": 6
+            },
+            {
+              "name": "Upload .NET lane artifacts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Post Cache NuGet packages",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 11
+            },
+            {
+              "name": "Post Set up Python",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 12
+            },
+            {
+              "name": "Post Set up .NET SDK",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 13
+            },
+            {
+              "name": "Post Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15
+            }
+          ]
+        },
+        {
+          "id": 111047929340,
+          "name": "verify-docs",
+          "status": "completed",
+          "conclusion": "failure",
+          "run_id": 37070304026,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install docs script dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Install promtool",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Run docs/source/AI lane",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 6
+            },
+            {
+              "name": "Upload docs lane artifacts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Post Set up Python",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 13
+            },
+            {
+              "name": "Post Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15
+            }
+          ]
+        },
+        {
+          "id": 111047929413,
+          "name": "verify-workflows",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37070304026,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install docs script dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Install verified actionlint",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Run workflow hygiene lane",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Upload workflow lane artifacts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Post Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            },
+            {
+              "name": "Post Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15
+            }
+          ]
+        },
+        {
+          "id": 111047929497,
+          "name": "service-backed-integrations / deterministic PostgreSQL integration and coverage evidence",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "run_id": 37070304026,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Initialize containers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Set up .NET SDK",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Cache NuGet packages",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Restore Meridian integration project",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Restore Direct Lending integration project",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Run Meridian service-backed integration tests",
+              "status": "completed",
+              "conclusion": "cancelled",
+              "number": 9
+            },
+            {
+              "name": "Run Direct Lending service-backed integration tests",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10
+            },
+            {
+              "name": "Reject missing, failed, skipped or empty deterministic test evidence",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 11
+            },
+            {
+              "name": "Capture migrated database schema and ledger evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Upload deterministic integration evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            },
+            {
+              "name": "Post Cache NuGet packages",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 22
+            },
+            {
+              "name": "Post Set up Python",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 23
+            },
+            {
+              "name": "Post Set up .NET SDK",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 24
+            },
+            {
+              "name": "Post Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 25
+            },
+            {
+              "name": "Stop containers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 26
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 27
+            }
+          ]
+        },
+        {
+          "id": 111047929600,
+          "name": "verify-browser",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "run_id": 37070304026,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Set up Node.js",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run browser workstation lane",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Upload browser lane artifacts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Post Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Post Set up Node.js",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "Post Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            }
+          ]
+        },
+        {
+          "id": 111049535197,
+          "name": "integration-gate",
+          "status": "completed",
+          "conclusion": "failure",
+          "run_id": 37070304026,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Evaluate service-backed integration evidence",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 2
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "id": 111049589436,
+          "name": "quality-gate",
+          "status": "completed",
+          "conclusion": "failure",
+          "run_id": 37070304026,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Evaluate Meridian CI lanes",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 2
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": {
+        "id": 37070303684,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 6726,
+        "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303684/jobs",
+        "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303684/logs",
+        "workflow_id": 278633910
+      },
+      "jobs": [
+        {
+          "id": 111047928365,
+          "name": "Secret Scan",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37070303684,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run gitleaks",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Scan exact merge-group or release commit",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 4
+            },
+            {
+              "name": "Retain commit secret-scan evidence",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 5
+            },
+            {
+              "name": "Post Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            }
+          ]
+        },
+        {
+          "id": 111047930315,
+          "name": "verify-full (coverage + scenario tests)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "run_id": 37070303684,
+          "logs_url": null,
+          "steps": null
+        }
+      ]
+    },
+    {
+      "run": {
+        "id": 37070303601,
+        "name": "Documentation Automation",
+        "status": "completed",
+        "conclusion": "failure",
+        "run_number": 5431,
+        "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303601/jobs",
+        "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303601/logs",
+        "workflow_id": 250373519
+      },
+      "jobs": [
+        {
+          "id": 111047927139,
+          "name": "regenerate-docs",
+          "status": "completed",
+          "conclusion": "failure",
+          "run_id": 37070303601,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install docs script dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Set up Node.js",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Install diagram dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Run docs automation profile",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Render Mermaid diagrams",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Render WPF UI diagrams",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Render UML diagrams",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Refresh workflow overview",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "Refresh workflow manifest outputs",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Compare dashboard readiness deltas vs previous commit",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            },
+            {
+              "name": "Check generated docs are current",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 14
+            },
+            {
+              "name": "Check whitespace",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 15
+            },
+            {
+              "name": "Post Set up Node.js",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 28
+            },
+            {
+              "name": "Post Set up Python",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 29
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 30
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 31
+            }
+          ]
+        },
+        {
+          "id": 111047927461,
+          "name": "validate-docs",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37070303601,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install docs script dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run docs rules engine",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Validate examples",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Check AI inventory",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Check Codex memory",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Check AI handoff",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Check AI contract drift",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Post Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 21
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": {
+        "id": 37070303746,
+        "name": "Windows Desktop Build",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "run_number": 4560,
+        "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303746/jobs",
+        "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37070303746/logs",
+        "workflow_id": 278633915
+      },
+      "jobs": [
+        {
+          "id": 111047927601,
+          "name": "verify-desktop (build/test WPF)",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "run_id": 37070303746,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Set up .NET SDK",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Cache NuGet packages",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Set up Python",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Run isolated Windows validation",
+              "status": "completed",
+              "conclusion": "cancelled",
+              "number": 6
+            },
+            {
+              "name": "Decide desktop smoke publish",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 7
+            },
+            {
+              "name": "Restore WPF publish graph",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 8
+            },
+            {
+              "name": "Smoke publish WPF app",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9
+            },
+            {
+              "name": "Confirm desktop executable",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10
+            },
+            {
+              "name": "Upload WPF validation artifacts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "Upload desktop smoke publish artifacts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Post Set up Python",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 21
+            },
+            {
+              "name": "Post Cache NuGet packages",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 22
+            },
+            {
+              "name": "Post Set up .NET SDK",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 23
+            },
+            {
+              "name": "Post Check out repository",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 24
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 25
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
