@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import builtins
 import importlib.util
+import locale
+import os
 import shutil
 import subprocess
 import sys
@@ -119,6 +121,35 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
             source.write_text(yaml.safe_dump(expected), encoding="utf-8")
             normalizer.render(str(source), str(output), set())
             self.assertEqual(expected, yaml.safe_load(output.read_text(encoding="utf-8")))
+
+    def test_normalizer_preserves_caller_locale_timezone_and_unicode(self) -> None:
+        original_locale = locale.setlocale(locale.LC_ALL)
+        self.addCleanup(locale.setlocale, locale.LC_ALL, original_locale)
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"TZ": "Pacific/Honolulu"}):
+            source = Path(tmp) / "source.yml"
+            output = Path(tmp) / "output.yml"
+            source.write_text('summary: "Cafe\u0301 – re\u0301sume\u0301"\n', encoding="utf-8")
+
+            normalizer.render(str(source), str(output), set())
+
+            self.assertEqual(original_locale, locale.setlocale(locale.LC_ALL))
+            self.assertEqual("Pacific/Honolulu", os.environ["TZ"])
+            self.assertEqual({"summary": "Café – résumé"}, yaml.safe_load(output.read_text(encoding="utf-8")))
+
+    def test_failed_normalizer_preserves_caller_locale_and_timezone(self) -> None:
+        original_locale = locale.setlocale(locale.LC_ALL)
+        self.addCleanup(locale.setlocale, locale.LC_ALL, original_locale)
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"TZ": "Pacific/Honolulu"}):
+            source = Path(tmp) / "source.yml"
+            output = Path(tmp) / "output.yml"
+            source.write_text(MALFORMED, encoding="utf-8")
+
+            with self.assertRaises(ValueError):
+                normalizer.render(str(source), str(output), set())
+
+            self.assertEqual(original_locale, locale.setlocale(locale.LC_ALL))
+            self.assertEqual("Pacific/Honolulu", os.environ["TZ"])
+            self.assertFalse(output.exists())
 
     def test_malformed_yaml_fails_every_validation_and_render_entry_point(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

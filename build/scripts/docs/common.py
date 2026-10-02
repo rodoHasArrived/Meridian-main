@@ -131,6 +131,11 @@ def load_data(path: Path) -> Any:
     text = path.read_text(encoding="utf-8")
     if path.suffix.lower() == ".json":
         return json.loads(text)
+    return load_yaml_text(text, path)
+
+
+def load_yaml_text(text: str, path: Path, *, line_offset: int = 0) -> Any:
+    """Parse YAML with the source location, including embedded front matter."""
     try:
         import yaml  # type: ignore
     except ImportError as exc:
@@ -142,7 +147,7 @@ def load_data(path: Path) -> Any:
         value = yaml.safe_load(text)
     except yaml.YAMLError as exc:
         mark = getattr(exc, "problem_mark", None)
-        location = f":{mark.line + 1}:{mark.column + 1}" if mark is not None else ""
+        location = f":{mark.line + 1 + line_offset}:{mark.column + 1}" if mark is not None else ""
         problem = getattr(exc, "problem", None) or str(exc)
         raise ValueError(f"{path}{location}: malformed YAML: {problem}") from exc
     return {} if value is None else value

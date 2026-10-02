@@ -62,7 +62,6 @@ def _normalize(value: Any, date_fields: set[str]) -> Any:
 
 
 def render(input_path: str, output_path: str, date_fields: set[str]) -> None:
-    _enforce_environment()
     normalized = _normalize(load_data(Path(input_path)), date_fields)
     import yaml
 
@@ -71,6 +70,7 @@ def render(input_path: str, output_path: str, date_fields: set[str]) -> None:
 
 
 if __name__ == "__main__":
+    _enforce_environment()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input")
     parser.add_argument("output")
