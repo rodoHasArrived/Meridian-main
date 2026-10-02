@@ -11,6 +11,10 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Storage
 
+`LedgerAccountTaxLotPolicyRecord.EffectiveWashSalePolicy` carries the existing `PolicyId` revision
+into wash-sale projection evidence together with the configured window, scope and activation date.
+This adds no persisted policy field or schema migration.
+
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
 authority and this actor for blocked-occurrence evidence; its file-backed schedule store never
