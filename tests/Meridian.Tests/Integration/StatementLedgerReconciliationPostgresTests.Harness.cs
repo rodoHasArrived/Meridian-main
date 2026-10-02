@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Application.Reconciliation;
 using Meridian.Contracts.FundStructure;
@@ -122,16 +123,16 @@ public sealed partial class StatementLedgerReconciliationPostgresTests
             var accounts = new PostgresFundAccountService(new PostgresFundAccountStore(AccountOptions));
             var tenancy = new PostgresFundProfileTenancyRegistry(LedgerOptions);
             var canonical = new JsonCanonicalStatementStore(Root);
-            var artifacts = new FileStatementRunMatchArtifactStore(Root);
+            var artifacts = new FileStatementRunMatchArtifactStore(Root, new AtomicFileWriterAdapter());
             var population = new RetainedInternalReconciliationPopulationProvider(accounts,
                 ledgerTransactionSource: new LedgerJournalInternalTransactionSource(journals));
             var runs = new StatementRunWorkflowService(canonical,
-                new JsonReconciliationCaseStore(Root), new JsonReconciliationBreakStore(Root),
+                new JsonReconciliationCaseStore(Root, new AtomicFileWriterAdapter()), new JsonReconciliationBreakStore(Root, new AtomicFileWriterAdapter()),
                 new CsvBrokerStatementService(canonical),
                 new StatementReconciliationContextAdapter(new StatementReconciliationService()),
                 population, IdentityReconciliationFxRateProvider.Instance,
                 new InMemoryStatementToleranceProfileProvider(), new FileStatementRunRecoveryRepository(Root),
-                artifacts, caseworkCommitStore: new FileStatementCaseworkCommitStore(Root));
+                artifacts, caseworkCommitStore: new FileStatementCaseworkCommitStore(Root, new AtomicFileWriterAdapter()));
             var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(Root));
             var imports = new StatementImportService(new StatementConnectorRegistry([new Bai2StatementConnector()]),
                 catalog, runs, Root);

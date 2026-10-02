@@ -1,3 +1,5 @@
+using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Application.Backfill;
 using Meridian.Core.Config;
 using Meridian.PortfolioRecords.Accounts;
@@ -79,6 +81,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Unified persistence config must resolve before any per-domain in-memory-vs-Postgres
         // decision below reads the per-domain variables.
         MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();

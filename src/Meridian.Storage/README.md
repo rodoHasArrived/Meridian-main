@@ -11,6 +11,10 @@ last_reviewed: 2026-10-01
 
 # src/Meridian.Storage
 
+`Archival/AtomicFileWriterAdapter.cs`, `EtlStagingStore` in `Etl/EtlStores.cs`, and `Backfill/JsonlBackfillBarWriter.cs`
+implement lower-level persistence ports consumed by Infrastructure. Application/host composition
+owns their construction; atomic durability, staging and JSONL naming policies remain in Storage.
+
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
 authority and this actor for blocked-occurrence evidence; its file-backed schedule store never

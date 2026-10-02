@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Threading;
 using Meridian.Core.IO;
 using Meridian.Core.Logging;
-using Meridian.Storage.Archival;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
@@ -46,12 +45,13 @@ public sealed class BackfillJobManager : IDisposable
         DataGapAnalyzer gapAnalyzer,
         BackfillRequestQueue requestQueue,
         string jobsDirectory,
+        IAtomicFileWriter atomicFileWriter,
         ILogger? log = null)
         : this(
             gapAnalyzer,
             requestQueue,
             jobsDirectory,
-            AtomicFileWriter.WriteAsync,
+            (atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter))).WriteAsync,
             log)
     {
     }

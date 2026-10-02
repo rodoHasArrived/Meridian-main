@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
@@ -17,6 +20,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Register credential resolver
         services.AddSingleton<IProviderCredentialResolver>(sp =>
         {

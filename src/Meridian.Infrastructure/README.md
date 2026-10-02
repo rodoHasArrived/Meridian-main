@@ -11,6 +11,11 @@ last_reviewed: 2026-09-30
 
 # src/Meridian.Infrastructure
 
+Persistence is supplied through `Core.IO.IAtomicFileWriter`, `Contracts.Etl.IEtlStagingStore`, and
+ProviderSdk `IBackfillBarWriter`. Infrastructure has no project-reference path to Storage;
+application/host composition supplies Storage implementations. See the PRD-108 inventory in
+[`layer-boundaries.md`](../../docs/architecture/layer-boundaries.md).
+
 Immutable statement match artifacts retain source-comparison completeness, represented population kinds,
 and the executed matcher/tolerance-policy fingerprint. Legacy artifacts omit these fields and cannot
 establish clearing. The optional fields preserve legacy artifact hashes when absent.

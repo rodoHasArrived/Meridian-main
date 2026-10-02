@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -323,7 +324,8 @@ public sealed class AlpacaBrokerageGatewayTests
     {
         var stream = new AlpacaTradeUpdatesClient(
             new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
-            NullLogger<AlpacaTradeUpdatesClient>.Instance);
+            NullLogger<AlpacaTradeUpdatesClient>.Instance,
+            new AtomicFileWriterAdapter());
         var responses = new Queue<HttpResponseMessage>(new[]
         {
             new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1") },
@@ -631,7 +633,8 @@ public sealed class AlpacaBrokerageGatewayTests
     {
         var stream = new AlpacaTradeUpdatesClient(
             new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
-            NullLogger<AlpacaTradeUpdatesClient>.Instance);
+            NullLogger<AlpacaTradeUpdatesClient>.Instance,
+            new AtomicFileWriterAdapter());
         var responses = new Queue<HttpResponseMessage>(new[]
         {
             new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1") },
