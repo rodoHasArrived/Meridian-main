@@ -63,6 +63,10 @@ and the governed ledger boundary rejects mismatches.
 
 ## Shared close and lot convergence
 
+`AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
+through governed drafting and posting. It is omitted from JSON when absent so existing retained
+event payloads keep their shape. Aggregate-only instructions do not claim an original quote.
+
 `Workstation/CloseReadinessDtos.cs` defines the declared five-dimension close scope, required contributor posture, and owner/record-linked blockers. `Accounting/Lots/` defines security-identified decimal lot views with retained acquisition currency, FX, basis, and evidence; this is an additive migration contract, not a legacy-writer cutover.
 
 `OpenLotBackfillDtos` adds retained acquisition-source packets, independent review, a durable exception queue, and versioned application receipts. Apply accepts a retained source identity rather than replacement acquisition facts. `MarkFreshnessDtos` carries one server decision per position, including observation date, age, policy version, and blocking reason; absent assessments remain review required. Close plan transports retain workflow, account, and evidence-version stamps for declared-scope validation.

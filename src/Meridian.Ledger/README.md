@@ -132,10 +132,13 @@ so independent cent residuals cannot manufacture a loss inside a gain-producing 
 Discrete proceeds reserve rounded basis for gain/break-even parcels and cap loss parcels at their
 basis, preserving pre-rounding result signs while conserving the rounded sale proceeds. If the
 independently rounded bases make those sign bounds infeasible, projection fails explicitly.
-Retained disposal history has no proceeds-allocation version. Its reconstruction uses the frozen
-legacy final-residual allocator, including when sign-preserving allocation would also succeed,
-so existing per-lot gains, losses and tax character remain reproducible. This history-only path
-does not relax the sign bounds for new projections or change retained journal fingerprints.
+Unversioned retained disposal history uses the frozen legacy final-residual allocator, including
+when sign-preserving allocation would also succeed. Versioned history uses its explicit retained
+sale price when available, preserving per-lot results and tax character without recovering a
+different source quote from rounded proceeds. Aggregate-only current-version history retains no
+quote and derives its canonical price from journal proceeds after retained wash-sale deferrals.
+Unknown versions or inconsistent retained economics fail closed. The
+history compatibility path does not relax the sign bounds for new projections.
 When a `WashSalePolicy` and replacement acquisitions are
 supplied, it evaluates each negative-result relief parcel even when the disposal has an aggregate
 gain or zero result. Loss parcels consume one shared replacement-quantity pool in relief order;

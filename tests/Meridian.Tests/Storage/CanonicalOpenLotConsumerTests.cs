@@ -145,6 +145,44 @@ public sealed class CanonicalOpenLotConsumerTests
             lots.Select(static lot => new LedgerTaxLot(lot.LotId, lot.AcquiredDate, 1m, lot.UnitCost)).ToArray()));
         current.Selections.Select(static selection => selection.Proceeds)
             .Should().Equal(0.01m, 0.01m, 0.01m, 0.02m, 0.02m);
+
+        var versioned = CanonicalDisposalHistoryProjector.Project(history with
+        {
+            ProceedsAllocationVersion = LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion,
+            SalePrice = 0.014m
+        }, journal, lots[0].LedgerBookId, "USD");
+        versioned.Selections.Select(static selection => selection.Proceeds)
+            .Should().Equal(current.Selections.Select(static selection => selection.Proceeds));
+        versioned.Selections.Select(static selection => selection.RealizedGainOrLoss)
+            .Should().Equal(current.Selections.Select(static selection => selection.RealizedGainOrLoss));
+    }
+
+    [Fact]
+    public void Reporting_VersionedFaceDisposalConvertsRetainedPriceWithQuantity()
+    {
+        var lot = DurableLot(1) with { OriginalFace = 1000m, BookedFactor = 0.9m, ParBasis = 100m };
+        lot = lot with
+        {
+            Acquisition = lot.Acquisition! with
+            {
+                QuantityBasis = LotQuantityBasis.Face,
+                FaceValueTerms = new(100m, 0.9m, BondAmortizationMethod.ConstantYield, 0.05m)
+            }
+        };
+        var journal = DisposalJournal(lot);
+        var history = History(lot, journal, lot.ToOpenLot()) with
+        {
+            ProceedsAllocationVersion = LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion,
+            SalePrice = 140m
+        };
+
+        var rebuilt = CanonicalDisposalHistoryProjector.Project(history, journal, lot.LedgerBookId, "USD");
+
+        rebuilt.Input.QuantitySold.Should().Be(250m);
+        rebuilt.Input.SalePrice.Should().Be(1.4m);
+        rebuilt.Proceeds.Should().Be(350m);
+        rebuilt.CostBasis.Should().Be(300m);
+        rebuilt.RecognizedGainOrLoss.Should().Be(50m);
     }
 
     [Fact]
