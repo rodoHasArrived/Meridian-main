@@ -69,8 +69,8 @@ public static class LedgerTaxLotReliefHistoryProjector
         if (quantitySold <= 0m)
             return null;
 
-        // Proceeds are recovered rather than stored: recognized = proceeds - basis - deferred, so
-        // proceeds = basis + recognized + deferred. Deriving them from the booked gain/loss keeps the
+        // Proceeds are recovered rather than stored: recognized = proceeds - basis + deferred, so
+        // proceeds = basis + recognized - deferred. Deriving them from the booked gain/loss keeps the
         // rebuilt rows tied to the journal instead of to a separately-recorded price that could drift.
         var retainedCostBasis = history.Lots.Sum(static lot => lot.CostBasis);
         var disallowed = history.DisallowedWashSaleLoss;
@@ -83,7 +83,9 @@ public static class LedgerTaxLotReliefHistoryProjector
         LedgerTaxLotReliefProjection projection;
         try
         {
-            projection = LedgerTaxLotReliefProjector.Project(BuildInput(history, quantitySold, salePrice));
+            // No proceeds-allocation version was retained with these disposals. Replay their
+            // original parcel allocation instead of applying today's posting-only sign bounds.
+            projection = LedgerTaxLotReliefProjector.ReconstructRetainedDisposal(BuildInput(history, quantitySold, salePrice));
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
         {
