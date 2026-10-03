@@ -73,7 +73,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         {
             await using var database = await LedgerPostgresTestDatabase.CreateAsync();
             var (command, lots, _) = await PrepareProceedsDisposalAsync(database, precisePrice: false, washSale: true);
-            var replacementAccount = LedgerAccounts.Securities("AAPL", "broker-2");
+            var replacementAccount = lots[0].Account with { FinancialAccountId = "broker-2" };
             var timestamp = command.Journal.Entry.Timestamp;
             var replacement = await database.JournalStore.SaveTaxLotAsync(new LedgerTaxLotRecord(
                 Guid.NewGuid(), command.LedgerBookId, replacementAccount, "wash-replacement", new(2026, 5, 15),
@@ -236,7 +236,9 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var id = Guid.NewGuid();
             var proof = BuildEvidence($"proceeds-acquisition-{i}", 'a') with
             {
-                SubjectType = "OpenLotAcquisition", SubjectId = id.ToString("D"), EffectiveDate = acquired
+                SubjectType = "OpenLotAcquisition",
+                SubjectId = id.ToString("D"),
+                EffectiveDate = acquired
             };
             lots.Add(await database.JournalStore.SaveTaxLotAsync(new(id, bookId, account,
                 $"proceeds-lot-{i}", acquired, quantity, quantity, unitCost, "USD", at, at,

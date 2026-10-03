@@ -5712,7 +5712,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_035__open_lot_backfill.sql
 │   │   │   │   ├── V_ledger_036__ledger_event_audit_chain.sql
 │   │   │   │   ├── V_ledger_037__open_lot_basis_adjustment.sql
-│   │   │   │   └── V_ledger_038__audit_safe_tenant_attribution.sql
+│   │   │   │   ├── V_ledger_038__audit_safe_tenant_attribution.sql
+│   │   │   │   └── V_ledger_039__tax_lot_proceeds_allocation.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -5744,6 +5745,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.HistoricalTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.OpenLotBackfill.cs
 │   │   │   ├── PostgresLedgerJournalStore.PeriodLockOwner.cs
+│   │   │   ├── PostgresLedgerJournalStore.ProceedsAllocation.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotDisposalHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLots.cs
@@ -10215,6 +10217,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
 │   │   │   ├── AuditChainProcessTests.cs
 │   │   │   ├── AuditChainServiceTests.cs
 │   │   │   ├── CanonicalOpenLotConsumerTests.cs
