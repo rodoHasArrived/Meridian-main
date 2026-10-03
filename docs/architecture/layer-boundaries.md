@@ -63,9 +63,12 @@ Meridian (Host/Exe)   →  Application (+ transitive)
 3. **Evaluated project graph**: `Infrastructure_ShouldNot_Reference_Storage_DirectlyOrTransitively`
    in `LayerBoundaryTests` evaluates MSBuild's actual `ProjectReference` items for Debug and
    Release, including imports, properties and conditions, then traverses the dependency closure.
+   Each child inherits the effective reference-specific global properties, including overrides
+   and removals; traversal distinguishes the same project under different property contexts.
    A direct edge or any intermediate path from Infrastructure to Storage fails with its chain.
    `ProjectReferenceGraphTests` includes source-free negative fixtures, including an unused
-   `ReferenceOutputAssembly="false"` edge, an indirect path and a conditional imported edge.
+   `ReferenceOutputAssembly="false"` edge, an indirect path, a conditional imported edge and
+   a transitive edge enabled by `AdditionalProperties` on its parent reference.
    These tests require the repository checkout and .NET SDK; they do not compile fixture types.
 
 4. **CI gate**: The maintained .NET test lane executes the architecture tests. Run the scoped
