@@ -224,7 +224,7 @@
     },
     {
       "path": "case-records.json",
-      "sha256": "a538380680618c56150b4cf5c912dca1a4b594e8f963e1a9772828355ced1256"
+      "sha256": "20cc368ab467a31825e9a26d7ad212d0838e8c2225b4a9b8ec0aa846dcf92e60"
     },
     {
       "path": "criteria-review.md",
@@ -267,8 +267,12 @@
       "sha256": "26a13b1ae1885d3cb855fbc96ba338da472ce0de9e2ff3d13aef394af7130294"
     },
     {
-      "path": "server/acceptance-support.trx",
-      "sha256": "b3f39ac1e5ffc764556fe23b309de49940cef4f87a80a713411ba08e1b48b3bf"
+      "path": "server/acceptance-support.trx.gz",
+      "sha256": "dd26c4d02467d030f320f20f27bb38f2ba51a799669f64398ddcae93e5960a69",
+      "compression": "gzip",
+      "originalPath": "server/acceptance-support.trx",
+      "uncompressedSizeBytes": 1716443,
+      "uncompressedSha256": "b3f39ac1e5ffc764556fe23b309de49940cef4f87a80a713411ba08e1b48b3bf"
     },
     {
       "path": "server/focused-tests.log",
@@ -276,7 +280,7 @@
     },
     {
       "path": "server/server-evidence.md",
-      "sha256": "5dd6ef73aef5ee76de3dc46233e0ec0177e8922158ef2fe201a2d4d96eebfd71"
+      "sha256": "1ec06703112e2f3358d96e5e26b02d8a6c7da16b7bbbf0b0a2e09626db6ab665"
     },
     {
       "path": "server/summary.json",
@@ -288,7 +292,7 @@
     },
     {
       "path": "verify_packet.py",
-      "sha256": "c6931d07033df8d0eb425fc176ad606a856e77ca86bbabf8d206e694d6b9bb14"
+      "sha256": "0e628ebd3a09f52d622fe5700d186ced21259d5545fd404bd6e734df457d47a8"
     }
   ],
   "sourceHashes": [

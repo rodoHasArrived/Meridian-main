@@ -7,6 +7,7 @@ The checkout HEAD may be the later documentation/evidence commit.
 """
 
 import argparse
+import gzip
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
@@ -18,6 +19,7 @@ from urllib.parse import unquote, urlsplit
 
 
 CANDIDATE = "615abde90001ab33bd6e58e545edc7fce635e254"
+MAX_ARCHIVE_BYTES = 64 * 1024 * 1024
 CASES = ["S1", "S2", "S3", "S4", "S4b", "S5", "S6", "S7", "S8", "S9", "S10"] + [
     f"M{i}" for i in range(1, 12)
 ]
@@ -67,6 +69,24 @@ def pending(record, label):
     null_fields(record, ["identity", "timeUtc"], label)
 
 
+def verify_archive(path, item, name):
+    require(item.get("compression") == "gzip" and name.endswith(".gz"),
+            f"Unsupported archive encoding: {name}")
+    original = relative_path(item["originalPath"]).as_posix()
+    require(original + ".gz" == name, f"Archive path mismatch: {name}")
+    size = item["uncompressedSizeBytes"]
+    require(type(size) is int and 0 < size <= MAX_ARCHIVE_BYTES,
+            f"Invalid or oversized archive payload: {name}")
+    digest = item["uncompressedSha256"]
+    require(isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest) is not None,
+            f"Invalid uncompressed SHA-256: {name}")
+    with gzip.open(path, "rb") as handle:
+        payload = handle.read(size + 1)
+    require(len(payload) == size, f"Archive payload size mismatch: {name}")
+    require(hashlib.sha256(payload).hexdigest() == digest,
+            f"Archive payload checksum mismatch: {name}")
+
+
 def verify_files(package, manifest, root):
     listed = {}
     for item in manifest["files"]:
@@ -80,6 +100,8 @@ def verify_files(package, manifest, root):
                 f"Invalid SHA-256: {name}")
         require(hashlib.sha256(path.read_bytes()).hexdigest() == item["sha256"],
                 f"Checksum mismatch: {name}")
+        if "compression" in item:
+            verify_archive(path, item, name)
         listed[name] = path
     require({"case-records.json", "population.json", "verify_packet.py"} <= listed.keys(),
             "Manifest must checksum case records, population and validator")
@@ -238,7 +260,7 @@ def main():
         tree = subprocess.run(["git", "rev-parse", f"{CANDIDATE}^{{tree}}"], cwd=root,
                               capture_output=True, check=True, text=True, timeout=30).stdout.strip()
         require(records.get("candidateTree") == tree, "Candidate tree mismatch")
-    except (ValueError, KeyError, TypeError, AttributeError, IndexError, OSError,
+    except (ValueError, KeyError, TypeError, AttributeError, IndexError, OSError, EOFError,
             subprocess.SubprocessError) as error:
         print(f"packet integrity failed: {error}; acceptance pending", file=sys.stderr)
         return 1

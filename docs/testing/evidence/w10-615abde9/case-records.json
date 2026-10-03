@@ -33,7 +33,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -57,7 +57,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -84,7 +84,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -114,7 +114,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -136,7 +136,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -167,7 +167,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -191,7 +191,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -215,7 +215,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -241,7 +241,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -263,7 +263,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -286,7 +286,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",
@@ -317,7 +317,7 @@
         "desktop/desktop-evidence.md",
         "browser/browser-evidence.md",
         "server/server-evidence.md",
-        "server/acceptance-support.trx"
+        "server/acceptance-support.trx.gz"
       ],
       "operatorDecision": {
         "state": "pending",

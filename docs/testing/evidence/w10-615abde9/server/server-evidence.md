@@ -7,8 +7,10 @@
 Candidate `615abde90001ab33bd6e58e545edc7fce635e254` was initially checked out clean.
 The run used Debian 13 and .NET SDK 10.0.100, installed in task-local storage. No
 PostgreSQL acceptance population, authenticated retained host or human operator was
-configured. The [TRX](acceptance-support.trx), [summary](summary.json) and
+configured. The [TRX archive](acceptance-support.trx.gz), [summary](summary.json) and
 [raw build/test log](focused-tests.log) retain actual results and UTC timings.
+The TRX is retained as deterministic gzip; the [manifest](../manifest.json) checks both
+the archive and the canonical original payload SHA-256 and byte count.
 
 **570 passed, zero failed, zero skipped, exit code 0.**
 

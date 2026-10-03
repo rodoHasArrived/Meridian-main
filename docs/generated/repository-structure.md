@@ -2393,7 +2393,7 @@ Meridian-main
 │   │   │       │   ├── source-inventory.json
 │   │   │       │   └── wpf-finance-ux-static.md
 │   │   │       ├── server
-│   │   │       │   ├── acceptance-support.trx
+│   │   │       │   ├── acceptance-support.trx.gz
 │   │   │       │   ├── server-evidence.md
 │   │   │       │   └── summary.json
 │   │   │       ├── case-records.json
