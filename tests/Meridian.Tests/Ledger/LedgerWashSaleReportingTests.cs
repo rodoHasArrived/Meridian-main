@@ -51,6 +51,49 @@ public sealed class LedgerWashSaleReportingTests
     }
 
     [Fact]
+    public void HistoryProjector_VersionedDisposalRetainsExactQuoteAndLongShortAttribution()
+    {
+        // Rounded aggregate proceeds imply .005, but the actual .0051 quote makes the final
+        // short-term parcel a gain. Losing the source precision would reassign two cents to
+        // the long-term loss parcels even when replay uses the same algorithm version.
+        var lots = Enumerable.Range(1, 8)
+            .Select(index => new LedgerTaxLot($"long-{index}", new DateOnly(2024, 1, index), 0.5m, 0.02m))
+            .Append(new LedgerTaxLot("short", new DateOnly(2026, 1, 1), 2m, 0.005m)).ToArray();
+        var input = new LedgerTaxLotReliefInput(Account, new DateOnly(2026, 3, 1), 6m, 0.0051m,
+            LedgerTaxLotReliefMethod.Fifo, lots);
+        var posted = LedgerTaxLotReliefProjector.Project(input);
+        posted.LongTermRealizedGainOrLoss.Should().Be(-0.08m);
+        posted.ShortTermRealizedGainOrLoss.Should().Be(0.02m);
+        var history = new LedgerTaxLotDisposalHistory(Guid.NewGuid(), Guid.NewGuid(), Account, input.SaleDate,
+            input.ReliefMethod, posted.Selections.Select(static selection => new LedgerTaxLotDisposalHistoryLot(
+                selection.Lot.LotId, selection.Lot.AcquiredDate, selection.Lot.HoldingPeriodStart,
+                selection.QuantityRelieved, selection.UnitCost, selection.CostBasis)).ToArray(),
+            -0.06m, [], 0m, LedgerTaxLotReliefProjector.CurrentProceedsAllocationVersion, input.SalePrice);
+
+        var rebuilt = LedgerTaxLotReliefHistoryProjector.Project(history)!;
+        rebuilt.Should().NotBeNull();
+        rebuilt.Selections.Select(static selection =>
+                (selection.Lot.LotId, selection.Proceeds, selection.RealizedGainOrLoss, selection.TaxCharacter))
+            .Should().Equal(posted.Selections.Select(static selection =>
+                (selection.Lot.LotId, selection.Proceeds, selection.RealizedGainOrLoss, selection.TaxCharacter)));
+        rebuilt.LongTermRealizedGainOrLoss.Should().Be(-0.08m);
+        rebuilt.ShortTermRealizedGainOrLoss.Should().Be(0.02m);
+        rebuilt.Proceeds.Should().Be(0.03m);
+        rebuilt.RecognizedGainOrLoss.Should().Be(-0.06m);
+
+        var priceLost = LedgerTaxLotReliefHistoryProjector.Project(history with { SalePrice = 0.005m })!;
+        priceLost.LongTermRealizedGainOrLoss.Should().Be(-0.06m);
+        priceLost.ShortTermRealizedGainOrLoss.Should().Be(0m);
+
+        var aggregateOnly = LedgerTaxLotReliefHistoryProjector.Project(history with { SalePrice = null })!;
+        aggregateOnly.LongTermRealizedGainOrLoss.Should().Be(-0.06m);
+        aggregateOnly.ShortTermRealizedGainOrLoss.Should().Be(0m);
+        LedgerTaxLotReliefHistoryProjector.Project(history with { SalePrice = 0.02m }).Should().BeNull();
+        LedgerTaxLotReliefHistoryProjector.Project(history with { ProceedsAllocationVersion = 99 }).Should().BeNull();
+        LedgerTaxLotReliefHistoryProjector.Project(history with { ProceedsAllocationVersion = null }).Should().BeNull();
+    }
+
+    [Fact]
     public void ReportPack_AttributesDeferralToLossLotWithoutChangingGainLotOrTaxCharacter()
     {
         // The long-term gain exceeds the short-term loss. Only the short-term lot's loss is

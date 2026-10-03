@@ -7,17 +7,26 @@ namespace Meridian.Ledger;
 /// </summary>
 public static class LedgerTaxLotReliefProjector
 {
+    /// <summary>Retained convention for the current sign-preserving proceeds allocator.</summary>
+    public const int CurrentProceedsAllocationVersion = 1;
+
     public static LedgerTaxLotReliefProjection Project(LedgerTaxLotReliefInput input)
         => Project(input, retainedLegacyProceeds: false);
 
     /// <summary>
-    /// Replays the unversioned retained-disposal convention. Durable history does not retain a
-    /// proceeds-allocation version, so its discrete parcel amounts must keep the original final-
-    /// residual allocator even when today's sign-preserving allocator would also succeed.
+    /// Replays the convention retained with a disposal. Unversioned history keeps the original
+    /// final-residual allocator even when today's sign-preserving allocator would also succeed.
     /// This compatibility entry point is only for history; new projections use <see cref="Project(LedgerTaxLotReliefInput)"/>.
     /// </summary>
-    internal static LedgerTaxLotReliefProjection ReconstructRetainedDisposal(LedgerTaxLotReliefInput input)
-        => Project(input, retainedLegacyProceeds: true);
+    internal static LedgerTaxLotReliefProjection ReconstructRetainedDisposal(
+        LedgerTaxLotReliefInput input, int? proceedsAllocationVersion)
+        => proceedsAllocationVersion switch
+        {
+            null => Project(input, retainedLegacyProceeds: true),
+            CurrentProceedsAllocationVersion => Project(input, retainedLegacyProceeds: false),
+            _ => throw new ArgumentOutOfRangeException(nameof(proceedsAllocationVersion),
+                proceedsAllocationVersion, "Unknown retained tax-lot proceeds allocation version."),
+        };
 
     private static LedgerTaxLotReliefProjection Project(LedgerTaxLotReliefInput input, bool retainedLegacyProceeds)
     {

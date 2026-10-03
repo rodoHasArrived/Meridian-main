@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Ledger;
 
 /// <summary>One lot relieved by a retained disposal, as recorded at the time it was booked.</summary>
@@ -33,7 +35,11 @@ public sealed record LedgerTaxLotDisposalHistory(
     IReadOnlyList<LedgerTaxLotDisposalHistoryLot> Lots,
     decimal RecognizedGainOrLoss,
     IReadOnlyList<WashSaleBasisIncrease> WashSaleBasisIncreases,
-    decimal MatchedReplacementQuantity)
+    decimal MatchedReplacementQuantity,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? ProceedsAllocationVersion = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? SalePrice = null)
 {
     /// <summary>Total wash-sale loss deferred out of this disposal.</summary>
     public decimal DisallowedWashSaleLoss
@@ -78,14 +84,20 @@ public static class LedgerTaxLotReliefHistoryProjector
         if (proceeds < 0m)
             return null;
 
-        var salePrice = proceeds / quantitySold;
+        // An explicit quote preserves sub-cent input that can control parcel signs and character.
+        // Current aggregate-only postings retain the version but no invented execution quote;
+        // their price follows final journal economics, including subsequently retained deferrals.
+        // Legacy rows keep the original recovered-price precision and final-residual convention.
+        if (history.ProceedsAllocationVersion is null && history.SalePrice is not null)
+            return null;
+        var salePrice = history.SalePrice ?? (history.ProceedsAllocationVersion is null
+            ? RoundUnitPrice(proceeds / quantitySold) : proceeds / quantitySold);
 
         LedgerTaxLotReliefProjection projection;
         try
         {
-            // No proceeds-allocation version was retained with these disposals. Replay their
-            // original parcel allocation instead of applying today's posting-only sign bounds.
-            projection = LedgerTaxLotReliefProjector.ReconstructRetainedDisposal(BuildInput(history, quantitySold, salePrice));
+            projection = LedgerTaxLotReliefProjector.ReconstructRetainedDisposal(
+                BuildInput(history, quantitySold, salePrice), history.ProceedsAllocationVersion);
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
         {
@@ -93,6 +105,10 @@ public static class LedgerTaxLotReliefHistoryProjector
             // lot, a duplicate SpecificId selection) is skipped rather than aborting the whole pack.
             return null;
         }
+
+        if (history.ProceedsAllocationVersion is not null &&
+            (projection.Proceeds != proceeds || projection.CostBasis != retainedCostBasis))
+            return null;
 
         if (history.WashSaleBasisIncreases.Count == 0)
             return projection;
@@ -120,7 +136,7 @@ public static class LedgerTaxLotReliefHistoryProjector
             history.Account,
             history.SaleDate,
             quantitySold,
-            RoundUnitPrice(salePrice),
+            salePrice,
             history.ReliefMethod,
             history.Lots
                 .Select(static lot => new LedgerTaxLot(
