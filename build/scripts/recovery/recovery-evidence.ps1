@@ -72,7 +72,13 @@ function Get-RecoveryObjectiveEvidence {
     if ($Receipt['mode'] -isnot [string] -or $Receipt['mode'] -ne 'Drill') {
         $issues.Add(@{ scope = 'common'; message = 'Objective proof requires a Drill receipt with recorded loss milestones.' })
     }
-    foreach ($field in @('sourceCommit', 'backupId', 'recoverablePointEvidence', 'reconciliationEvidence', 'operatorAcceptedBy', 'operatorAcceptanceEvidence')) {
+    if ($Receipt['manifestAuthenticated'] -isnot [bool] -or -not $Receipt['manifestAuthenticated']) {
+        $issues.Add(@{ scope = 'common'; message = 'manifestAuthenticated must be true; unauthenticated backup metadata cannot prove recovery objectives.' })
+    }
+    if ($Receipt['manifestSha256'] -isnot [string] -or $Receipt['manifestSha256'] -cnotmatch '^[0-9a-fA-F]{64}$') {
+        $issues.Add(@{ scope = 'common'; message = 'manifestSha256 must identify the authenticated manifest bytes.' })
+    }
+    foreach ($field in @('sourceCommit', 'drillSourceCommit', 'backupId', 'recoverablePointEvidence', 'reconciliationEvidence', 'operatorAcceptedBy', 'operatorAcceptanceEvidence')) {
         $scope = switch ($field) {
             'recoverablePointEvidence' { 'rpo' }
             { $_ -in @('reconciliationEvidence', 'operatorAcceptedBy', 'operatorAcceptanceEvidence') } { 'rto' }

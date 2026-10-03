@@ -20,10 +20,16 @@ apparently healthy host whose evidence and command state disagree.
 `build/scripts/recovery/invoke-production-recovery.ps1` is the canonical automation. It creates a
 custom-format PostgreSQL dump and a data-root ZIP, encrypts each with independently derived
 AES-256 encryption and HMAC-SHA256 authentication keys, verifies plaintext and ciphertext SHA-256
-hashes, publishes the backup atomically, applies retention only after success, and emits a JSON
-receipt. The encryption key must be a 32-byte random value supplied through
+hashes, authenticates the exact manifest bytes with a separately derived HMAC key, publishes the
+backup atomically, applies retention only after success, and emits a JSON receipt. Keep the detached
+`manifest.hmac` alongside `manifest.json`; metadata authentication is checked before any manifest
+evidence is trusted or either store is restored. The encryption key must be a 32-byte random value supplied through
 `MDC_RECOVERY_ENCRYPTION_KEY_BASE64`; store it in the approved secret manager, never in the backup
 location or repository.
+
+Receipts are created exclusively before backup or restore work begins. An existing `-ReceiptPath`
+is rejected without changing it or starting recovery work. Omit that option for a unique per-run
+receipt, or choose a new explicit path for every attempt, including failed attempts.
 
 ## Backup
 
@@ -77,14 +83,21 @@ and the operator inbox before approving traffic.
 
 `Production Certification` runs the same encrypted backup and clean restore path against disposable
 PostgreSQL source/target databases. It validates a retained
-database business row and an encrypted-vault file after restore and uploads the dated backup,
-manifest, and receipt for 90 days. This proves archive operations and those state probes; it does
-not perform business reconciliation or operator acceptance.
+database business row and an encrypted-vault file after restore. Before backup, it records a
+committed checkpoint for that isolated fixture, verifies both stores, and retains checkpoint JSON
+inside the data root with a SHA-256-bound evidence reference. The restored checkpoint and state
+probes must agree. It uses RPO 3600s/RTO 7200s and uploads the dated backup, authenticated manifest,
+checkpoint, and receipt for 90 days. This proves archive operations and those fixture probes; it
+does not perform business reconciliation or operator acceptance.
 
 Drill a retained backup to expose its age at simulated loss. The backup's manifest carries its
 recoverable-point assertion and supporting reference; the drill verifies the archive before
 recording `simulatedLossAtUtc` and `lossDeclaredAtUtc` and beginning the clean restore. The drill
-records a simulated boundary without destroying source data.
+records a simulated boundary without destroying source data. `sourceCommit` identifies the
+authenticated backup-creation commit; `drillSourceCommit` separately identifies the code executing
+the drill. Drilling a backup from commit A on commit B does not relabel that backup as B. An
+unauthenticated schema-2 manifest is rejected; schema-1 backups remain archive-only and cannot
+supply trusted checkpoint metadata.
 
 ```powershell
 pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
@@ -116,9 +129,12 @@ and the one-hour/two-hour policy.
 
 ### Complete and validate the recovery evidence
 
-1. Preserve the original drill receipt and manifest. Confirm its `backupId`, `sourceCommit`,
-   recoverable point, pre-loss verification, and loss milestones identify the backup and frozen
-   release commit being reviewed. A restore-only receipt lacks loss milestones and proves no
+1. Preserve the original drill receipt, manifest, and detached manifest authentication. Confirm
+   `manifestAuthenticated: true`, its `manifestSha256`, `backupId`, `sourceCommit`, and
+   `drillSourceCommit` identify the authenticated backup and drill code. Both commits must match
+   the frozen release commit for same-release certification; a different retained-backup commit
+   remains visible and requires its own explicit provenance review. Confirm the recoverable
+   point, pre-loss verification, and loss milestones. A restore-only receipt lacks loss milestones and proves no
    drill objective.
 2. Start the restored host, perform replay/reconciliation, verify the business state described
    under [Clean Restore](#clean-restore), and retain the outcome evidence. Record the actual
@@ -137,6 +153,8 @@ $drillReceipt = Read-RecoveryJson 'E:\MeridianBackups\drills\recovery-drill-rece
 [ordered]@{
   backupId = $drillReceipt.backupId
   sourceCommit = $drillReceipt.sourceCommit
+  drillSourceCommit = $drillReceipt.drillSourceCommit
+  manifestSha256 = $drillReceipt.manifestSha256
   simulatedLossAtUtc = $drillReceipt.simulatedLossAtUtc
   lossDeclaredAtUtc = $drillReceipt.lossDeclaredAtUtc
   reconciliationCompletedAtUtc = $reconciliationCompletedAtUtc
@@ -152,14 +170,18 @@ pwsh ./build/scripts/recovery/validate-recovery-receipt.ps1 `
   -OutputPath 'E:\MeridianBackups\drills\recovery-drill-evaluated-receipt.json'
 ```
 
-The standalone validator binds the completion evidence to the same backup, source commit, and
-loss milestones and writes a separate evaluated receipt. It independently enforces RPO 3600s and
+The standalone validator binds the completion evidence to the same backup, backup and drill
+commits, authenticated manifest digest, and loss milestones and writes a separate evaluated receipt. It independently enforces RPO 3600s and
 RTO 7200s by default; explicit `-MaximumRpoSeconds`/`-MaximumRtoSeconds` overrides may tighten those
 budgets. It recomputes both measurements and fails for absent, malformed, future, or out-of-order
 milestones, missing evidence references or operator attribution, or a budget breach. Incomplete
 or invalid evidence produces `objectiveStatus: unproven`; complete valid evidence over a budget
 produces `breached`. Only complete valid evidence within both budgets produces `proven` and exit 0.
-Automation does not supply operator acceptance or reconciliation on the operator's behalf.
+Automation does not supply operator acceptance or reconciliation on the operator's behalf. The
+validator consumes the preserved producer receipt; it does not independently re-authenticate
+archives without their key. Protect the original receipt and its retained artifact provenance.
+Earlier schema-2 receipts without authenticated-manifest evidence cannot be upgraded by adding
+those fields in completion JSON; run a new authenticated drill.
 
 A workflow definition or green archive job is not accepted recovery-objective evidence. Retain
 the release-commit run URL, its `production-recovery-drill-*` artifact, original receipt,

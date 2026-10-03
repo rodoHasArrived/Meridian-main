@@ -38,7 +38,7 @@ try {
     $receipt = Read-RecoveryJson $sourcePath
     if (-not [string]::IsNullOrWhiteSpace($RecoveryEvidencePath)) {
         $completion = Read-RecoveryJson ([IO.Path]::GetFullPath($RecoveryEvidencePath))
-        $bindings = @('sourceCommit', 'backupId', 'simulatedLossAtUtc', 'lossDeclaredAtUtc')
+        $bindings = @('sourceCommit', 'drillSourceCommit', 'manifestSha256', 'backupId', 'simulatedLossAtUtc', 'lossDeclaredAtUtc')
         $completionFields = @('reconciliationCompletedAtUtc', 'reconciliationEvidence', 'operatorAcceptedAtUtc', 'operatorAcceptedBy', 'operatorAcceptanceEvidence')
         foreach ($field in $completion.Keys) {
             if ($field -notin ($bindings + $completionFields + @('schemaVersion'))) {

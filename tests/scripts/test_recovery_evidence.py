@@ -22,6 +22,9 @@ def complete_receipt():
         "mode": "Drill",
         "status": "passed",
         "sourceCommit": "a" * 40,
+        "drillSourceCommit": "b" * 40,
+        "manifestAuthenticated": True,
+        "manifestSha256": "c" * 64,
         "backupId": "backup-20250101T001000Z",
         "startedAtUtc": "2025-01-01T00:10:00Z",
         "completedAtUtc": "2025-01-01T00:30:04Z",
@@ -313,10 +316,44 @@ class RecoveryEvidenceTests(unittest.TestCase):
     def test_archive_only_legacy_receipt_is_not_objective_proof(self):
         self.assert_unproven({"schemaVersion": 1, "mode": "Drill", "status": "passed", "measuredRpoSeconds": 1, "measuredRtoSeconds": 1}, "legacy")
 
+    def test_unauthenticated_schema_two_receipt_cannot_prove_objectives(self):
+        for value in (None, False, "true", 1):
+            with self.subTest(value=value):
+                receipt = complete_receipt()
+                receipt["manifestAuthenticated"] = value
+                self.assert_unproven(receipt, "manifestAuthenticated")
+
+    def test_manifest_digest_and_drill_commit_are_required(self):
+        for field, value in (("manifestSha256", None), ("manifestSha256", "c" * 63),
+                             ("manifestSha256", "x" * 64), ("drillSourceCommit", "")):
+            with self.subTest(field=field, value=value):
+                receipt = complete_receipt()
+                receipt[field] = value
+                self.assert_unproven(receipt, field)
+
+    def test_completion_cannot_relabel_retained_backup_as_drill_commit(self):
+        receipt = complete_receipt()
+        completion = {key: receipt[key] for key in ("sourceCommit", "drillSourceCommit", "manifestSha256", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
+        completion["sourceCommit"] = receipt["drillSourceCommit"]
+        result, evaluated = self.validate(receipt, completion)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIsNone(evaluated)
+        self.assertIn("sourceCommit must exactly match", result.stderr)
+
+    def test_completion_cannot_add_manifest_authentication_to_old_receipt(self):
+        receipt = complete_receipt()
+        del receipt["manifestAuthenticated"]
+        completion = {key: receipt[key] for key in ("sourceCommit", "drillSourceCommit", "manifestSha256", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
+        completion["manifestAuthenticated"] = True
+        result, evaluated = self.validate(receipt, completion)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIsNone(evaluated)
+        self.assertIn("immutable receipt field: manifestAuthenticated", result.stderr)
+
     def test_bound_completion_finishes_evidence_without_rewriting_source(self):
         receipt = complete_receipt()
         fields = ("reconciliationCompletedAtUtc", "reconciliationEvidence", "operatorAcceptedAtUtc", "operatorAcceptedBy", "operatorAcceptanceEvidence")
-        completion = {field: receipt[field] for field in ("sourceCommit", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc") + fields}
+        completion = {field: receipt[field] for field in ("sourceCommit", "drillSourceCommit", "manifestSha256", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc") + fields}
         completion["schemaVersion"] = 2
         for field in fields:
             receipt[field] = None
@@ -327,10 +364,10 @@ class RecoveryEvidenceTests(unittest.TestCase):
         self.assertEqual(json.loads(output.read_text(encoding="utf-8")), evaluated)
 
     def test_completion_cannot_attach_to_different_commit_backup_or_loss(self):
-        for field in ("sourceCommit", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc"):
+        for field in ("sourceCommit", "drillSourceCommit", "manifestSha256", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc"):
             with self.subTest(field=field):
                 receipt = complete_receipt()
-                completion = {key: receipt[key] for key in ("sourceCommit", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
+                completion = {key: receipt[key] for key in ("sourceCommit", "drillSourceCommit", "manifestSha256", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
                 completion[field] = "different"
                 result, evaluated = self.validate(receipt, completion)
                 self.assertNotEqual(result.returncode, 0)
@@ -341,7 +378,7 @@ class RecoveryEvidenceTests(unittest.TestCase):
         for field, value in (("lastVerifiedRecoverablePointAtUtc", "2025-01-01T00:20:00Z"), ("maximumRpoSeconds", 86400), ("operatorAcceptedAtUtc", "2025-01-01T00:39:00Z")):
             with self.subTest(field=field):
                 receipt = complete_receipt()
-                completion = {key: receipt[key] for key in ("sourceCommit", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
+                completion = {key: receipt[key] for key in ("sourceCommit", "drillSourceCommit", "manifestSha256", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
                 completion[field] = value
                 result, evaluated = self.validate(receipt, completion)
                 self.assertNotEqual(result.returncode, 0)
@@ -350,7 +387,7 @@ class RecoveryEvidenceTests(unittest.TestCase):
 
     def test_completion_cannot_legalize_non_string_source_evidence(self):
         receipt = complete_receipt()
-        completion = {key: receipt[key] for key in ("sourceCommit", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc", "reconciliationCompletedAtUtc")}
+        completion = {key: receipt[key] for key in ("sourceCommit", "drillSourceCommit", "manifestSha256", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc", "reconciliationCompletedAtUtc")}
         receipt["reconciliationCompletedAtUtc"] = [receipt["reconciliationCompletedAtUtc"]]
         result, evaluated = self.validate(receipt, completion)
         self.assertNotEqual(result.returncode, 0)
@@ -361,7 +398,7 @@ class RecoveryEvidenceTests(unittest.TestCase):
         for version in (True, "2", 2.1, None):
             with self.subTest(version=version):
                 receipt = complete_receipt()
-                completion = {key: receipt[key] for key in ("sourceCommit", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
+                completion = {key: receipt[key] for key in ("sourceCommit", "drillSourceCommit", "manifestSha256", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
                 completion["schemaVersion"] = version
                 result, evaluated = self.validate(receipt, completion)
                 self.assertNotEqual(result.returncode, 0)
@@ -371,7 +408,7 @@ class RecoveryEvidenceTests(unittest.TestCase):
     def test_incomplete_completion_is_still_unproven(self):
         receipt = complete_receipt()
         receipt["operatorAcceptedAtUtc"] = None
-        completion = {key: receipt[key] for key in ("sourceCommit", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
+        completion = {key: receipt[key] for key in ("sourceCommit", "drillSourceCommit", "manifestSha256", "backupId", "simulatedLossAtUtc", "lossDeclaredAtUtc")}
         result, evaluated = self.validate(receipt, completion)
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(evaluated["objectiveStatus"], "unproven")

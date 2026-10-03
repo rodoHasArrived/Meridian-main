@@ -73,7 +73,10 @@ The objective measurements use recorded recovery milestones:
 policy defaults of 3600 seconds for RPO and 7200 seconds for RTO. Explicit overrides may tighten
 these limits. A receipt's claimed budgets, measurements, or status cannot establish compliance.
 The validator recomputes the measurements and rejects absent, invalid, or inconsistent UTC
-milestones, missing evidence references, and missing operator attribution. Timestamp fields must
+milestones, missing evidence references, and missing operator attribution. Objective proof also
+requires the producer's `manifestAuthenticated: true`, authenticated `manifestSha256`, and distinct
+backup `sourceCommit` and execution `drillSourceCommit` provenance. Completion evidence binds
+both commits and that digest; it cannot retrofit authentication onto an older receipt. Timestamp fields must
 be UTC ISO-8601 strings ending in `Z` or `+00:00`.
 
 The resulting `objectiveStatus` is `unproven` when required evidence is incomplete or invalid,

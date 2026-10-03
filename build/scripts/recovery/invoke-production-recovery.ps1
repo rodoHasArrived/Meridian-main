@@ -124,6 +124,70 @@ function Test-FixedTimeEqual([byte[]]$Left, [byte[]]$Right) {
     return $difference -eq 0
 }
 
+function Write-AuthenticatedManifest([System.Collections.IDictionary]$Manifest, [string]$Directory, [byte[]]$RootKey) {
+    $bytes = [Text.Encoding]::UTF8.GetBytes(($Manifest | ConvertTo-Json -Depth 8))
+    $salt = [byte[]]::new(16)
+    [Security.Cryptography.RandomNumberGenerator]::Fill($salt)
+    $authenticationKey = Derive-Key $RootKey $salt "manifest-authentication"
+    $hmac = [Security.Cryptography.HMACSHA256]::new($authenticationKey)
+    try {
+        $tag = $hmac.ComputeHash($bytes)
+        [IO.File]::WriteAllBytes((Join-Path $Directory "manifest.json"), $bytes)
+        [IO.File]::WriteAllBytes((Join-Path $Directory "manifest.hmac"), [byte[]]($salt + $tag))
+    }
+    finally {
+        $hmac.Dispose()
+        [Array]::Clear($authenticationKey, 0, $authenticationKey.Length)
+    }
+}
+
+function Read-AuthenticatedManifest([string]$Directory, [byte[]]$RootKey) {
+    $manifestPath = Join-Path $Directory "manifest.json"
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { throw "Backup manifest is missing: $manifestPath" }
+    # Parse the same bytes that are authenticated, never a second filesystem read.
+    $bytes = [IO.File]::ReadAllBytes($manifestPath)
+    $document = [System.Text.Json.JsonDocument]::Parse([Text.Encoding]::UTF8.GetString($bytes))
+    try {
+        if ($document.RootElement.ValueKind -ne [System.Text.Json.JsonValueKind]::Object) {
+            throw "Backup manifest must be a JSON object."
+        }
+        $manifest = ConvertFrom-RecoveryJsonElement $document.RootElement
+    }
+    finally { $document.Dispose() }
+    if (-not $manifest.Contains("schemaVersion") -or -not (Test-RecoveryNumber $manifest.schemaVersion) -or
+        $manifest.schemaVersion -notin @(1, 2)) {
+        throw "Backup manifest requires a supported schemaVersion."
+    }
+    $authenticated = $false
+    $manifestHash = $null
+    if ($manifest.schemaVersion -eq 2) {
+        $tagPath = Join-Path $Directory "manifest.hmac"
+        if (-not (Test-Path -LiteralPath $tagPath -PathType Leaf)) { throw "Backup manifest authentication is missing." }
+        $authentication = [IO.File]::ReadAllBytes($tagPath)
+        if ($authentication.Length -ne 48) { throw "Backup manifest authentication is invalid." }
+        $salt = [byte[]]$authentication[0..15]
+        $expectedTag = [byte[]]$authentication[16..47]
+        $authenticationKey = Derive-Key $RootKey $salt "manifest-authentication"
+        $hmac = [Security.Cryptography.HMACSHA256]::new($authenticationKey)
+        try {
+            if (-not (Test-FixedTimeEqual ($hmac.ComputeHash($bytes)) $expectedTag)) {
+                throw "Backup manifest authentication failed."
+            }
+        }
+        finally {
+            $hmac.Dispose()
+            [Array]::Clear($authenticationKey, 0, $authenticationKey.Length)
+        }
+        if (-not $manifest.Contains("sourceCommit") -or $manifest.sourceCommit -isnot [string] -or
+            $manifest.sourceCommit -notmatch '^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$') {
+            throw "Authenticated backup manifest requires its original sourceCommit."
+        }
+        $authenticated = $true
+        $manifestHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
+    }
+    return [ordered]@{ manifest = $manifest; authenticated = $authenticated; sha256 = $manifestHash }
+}
+
 function Protect-RecoveryFile([string]$InputPath, [string]$OutputPath, [byte[]]$RootKey) {
     $salt = [byte[]]::new(16)
     $iv = [byte[]]::new(16)
@@ -288,10 +352,15 @@ function Get-PgArguments([System.Collections.IDictionary]$Parts) {
     return @("--host", $Parts.Host, "--port", $Parts.Port, "--username", $Parts.Username, "--dbname", $Parts.Database)
 }
 
-function Copy-BackupEvidence([System.Collections.IDictionary]$Manifest, [string]$SelectedBackup) {
+function Copy-BackupEvidence([System.Collections.IDictionary]$VerifiedArchive, [string]$SelectedBackup) {
+    $Manifest = $VerifiedArchive.manifest
     $receipt.backupPath = Resolve-FullPath $SelectedBackup
     $receipt.backupId = $Manifest.backupId
-    if ((Test-RecoveryNumber $Manifest.schemaVersion) -and $Manifest.schemaVersion -eq 2) {
+    # The execution checkout is drillSourceCommit; it must never relabel retained data.
+    $receipt.sourceCommit = if ($Manifest.Contains("sourceCommit")) { $Manifest.sourceCommit } else { $null }
+    $receipt.manifestAuthenticated = $VerifiedArchive.manifestAuthenticated
+    $receipt.manifestSha256 = $VerifiedArchive.manifestSha256
+    if ($VerifiedArchive.manifestAuthenticated) {
         foreach ($field in @("backupStartedAtUtc", "backupCompletedAtUtc", "backupDurationSeconds",
                 "lastVerifiedRecoverablePointAtUtc", "recoverablePointVerifiedAtUtc", "recoverablePointEvidence")) {
             if ($Manifest.Contains($field)) { $receipt[$field] = $Manifest[$field] }
@@ -313,13 +382,10 @@ function Set-VerifiedRecoverablePoint {
 
 function Get-VerifiedRecoveryArchive([string]$SelectedBackup, [byte[]]$Key) {
     $selected = Resolve-FullPath $SelectedBackup
-    $manifestPath = Join-Path $selected "manifest.json"
-    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { throw "Backup manifest is missing: $manifestPath" }
-    $manifest = Read-RecoveryJson $manifestPath
-    if (-not $manifest.Contains("schemaVersion") -or -not (Test-RecoveryNumber $manifest.schemaVersion) -or
-        $manifest.schemaVersion -notin @(1, 2) -or
-        -not $manifest.Contains("backupId") -or [string]::IsNullOrWhiteSpace([string]$manifest.backupId)) {
-        throw "Backup manifest requires a supported schemaVersion and backupId."
+    $verifiedManifest = Read-AuthenticatedManifest $selected $Key
+    $manifest = $verifiedManifest.manifest
+    if (-not $manifest.Contains("backupId") -or [string]::IsNullOrWhiteSpace([string]$manifest.backupId)) {
+        throw "Backup manifest requires a backupId."
     }
     foreach ($kind in @("database", "dataRoot")) {
         if (-not $manifest.Contains($kind) -or $manifest[$kind] -isnot [System.Collections.IDictionary]) {
@@ -355,6 +421,8 @@ function Get-VerifiedRecoveryArchive([string]$SelectedBackup, [byte[]]$Key) {
         }
         return [ordered]@{
             manifest = $manifest
+            manifestAuthenticated = $verifiedManifest.authenticated
+            manifestSha256 = $verifiedManifest.sha256
             databaseDump = $databaseDump
             dataArchive = $dataArchive
             stagePath = $validationStage
@@ -380,6 +448,9 @@ function Invoke-Backup([string]$SourceConnection, [string]$SourceDataRoot, [byte
     $stage = $null
     $verifiedArchive = $null
     try {
+        if ($SourceCommit -notmatch '^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$') {
+            throw "Backup requires the original full source commit."
+        }
         $sourceRoot = Resolve-FullPath $SourceDataRoot
         $backupRootFull = Resolve-FullPath $BackupRoot
         if (-not (Test-Path -LiteralPath $sourceRoot -PathType Container)) { throw "Data root does not exist: $sourceRoot" }
@@ -417,7 +488,7 @@ function Invoke-Backup([string]$SourceConnection, [string]$SourceDataRoot, [byte
             dataRoot = [ordered]@{ archive = "data-root.zip.enc"; plaintextSha256 = $dataHash; encryptedSha256 = Get-Sha256 "$dataArchive.enc" }
             encryption = "AES-256-CBC-HMAC-SHA256; independent per-file keys"
         }
-        $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $stage "manifest.json") -Encoding utf8NoBOM
+        Write-AuthenticatedManifest $manifest $stage $Key
         $verifiedArchive = Get-VerifiedRecoveryArchive $stage $Key
         Remove-VerifiedRecoveryArchive $verifiedArchive
         $verifiedArchive = $null
@@ -429,9 +500,11 @@ function Invoke-Backup([string]$SourceConnection, [string]$SourceDataRoot, [byte
         $manifest.backupCompletedAtUtc = $receipt.backupCompletedAtUtc
         $manifest.backupDurationSeconds = $receipt.backupDurationSeconds
         $manifest.recoverablePointVerifiedAtUtc = $receipt.recoverablePointVerifiedAtUtc
-        $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $stage "manifest.json") -Encoding utf8NoBOM
+        Write-AuthenticatedManifest $manifest $stage $Key
+        # Recheck the final signed bytes before publishing their evidence.
+        $verifiedArchive = Get-VerifiedRecoveryArchive $stage $Key
         Move-Item -LiteralPath $stage -Destination $final
-        Copy-BackupEvidence $manifest $final
+        Copy-BackupEvidence $verifiedArchive $final
         $cutoff = [DateTimeOffset]::UtcNow.AddDays(-$RetentionDays)
         Get-ChildItem -LiteralPath $backupRootFull -Directory -Filter "backup-*" |
             Where-Object { $_.LastWriteTimeUtc -lt $cutoff.UtcDateTime -and $_.FullName -ne $final } |
@@ -461,6 +534,12 @@ function Invoke-Restore([string]$SelectedBackup, [string]$TargetConnection, [str
         # Repeat full integrity validation immediately before using the archive at the target.
         $verifiedArchive = Get-VerifiedRecoveryArchive $SelectedBackup $Key
         $manifest = $verifiedArchive.manifest
+        if ($Mode -eq "Drill") {
+            if ($receipt.backupId -ne $manifest.backupId -or $receipt.manifestSha256 -ne $verifiedArchive.manifestSha256) {
+                throw "Backup manifest changed after the drill established its recovery evidence."
+            }
+        }
+        else { Copy-BackupEvidence $verifiedArchive $SelectedBackup }
         $targetRoot = Resolve-FullPath $TargetDataRoot
         if (Test-Path -LiteralPath $targetRoot) {
             # The array subexpression gives an empty directory a real Count under StrictMode.
@@ -504,13 +583,27 @@ public sealed class MeridianRecoveryBoundedStream : Stream
 }
 "@
 
+# Reserve the receipt before any backup or restore work. CreateNew also rejects a
+# concurrent writer and existing symlinks without changing the earlier evidence.
+if ([string]::IsNullOrWhiteSpace($ReceiptPath)) {
+    $receiptDirectory = Resolve-FullPath $BackupRoot
+    $receiptName = "recovery-$($Mode.ToLowerInvariant())-$([DateTimeOffset]::UtcNow.ToString('yyyyMMddTHHmmssZ'))-$([Guid]::NewGuid().ToString('N'))-receipt.json"
+    $ReceiptPath = Join-Path $receiptDirectory $receiptName
+}
+else { $ReceiptPath = Resolve-FullPath $ReceiptPath }
+if (Test-Path -LiteralPath $ReceiptPath) { throw "Recovery receipt already exists; choose a new -ReceiptPath: $ReceiptPath" }
+[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($ReceiptPath)) | Out-Null
+$receiptStream = [IO.File]::Open($ReceiptPath, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
 $operationStarted = [DateTimeOffset]::UtcNow
 $key = $null
 $operationError = $null
 $receipt = [ordered]@{
     schemaVersion = 2
     mode = $Mode
-    sourceCommit = $SourceCommit
+    sourceCommit = $null
+    drillSourceCommit = $SourceCommit
+    manifestAuthenticated = $false
+    manifestSha256 = $null
     startedAtUtc = $operationStarted.ToString("o")
     completedAtUtc = $null
     status = "failed"
@@ -545,7 +638,7 @@ try {
         $gitCommit = & git -C $repositoryRoot rev-parse HEAD 2>$null
         if ($LASTEXITCODE -eq 0) { $SourceCommit = [string]$gitCommit }
     }
-    $receipt.sourceCommit = $SourceCommit
+    $receipt.drillSourceCommit = $SourceCommit
     # Key validation belongs inside the receipt lifecycle, so rejected keys leave a failure receipt.
     $key = Get-RecoveryKey
     switch ($Mode) {
@@ -562,8 +655,7 @@ try {
             $receipt.backupPath = Resolve-FullPath $BackupPath
             $targetConnection = if ([string]::IsNullOrWhiteSpace($RestoreConnectionString)) { $ConnectionString } else { $RestoreConnectionString }
             $targetData = if ([string]::IsNullOrWhiteSpace($RestoreDataRoot)) { $DataRoot } else { $RestoreDataRoot }
-            $manifest = Invoke-Restore $BackupPath $targetConnection $targetData $key
-            Copy-BackupEvidence $manifest $BackupPath
+            [void](Invoke-Restore $BackupPath $targetConnection $targetData $key)
         }
         "Drill" {
             if ([string]::IsNullOrWhiteSpace($RestoreConnectionString) -or [string]::IsNullOrWhiteSpace($RestoreDataRoot)) {
@@ -584,7 +676,7 @@ try {
             try {
                 # Confirm both archives and the checkpoint assertion before establishing simulated loss.
                 $verifiedArchive = Get-VerifiedRecoveryArchive $selectedBackup $key
-                Copy-BackupEvidence $verifiedArchive.manifest $selectedBackup
+                Copy-BackupEvidence $verifiedArchive $selectedBackup
                 Set-VerifiedRecoverablePoint
             }
             finally {
@@ -604,22 +696,18 @@ catch {
 }
 finally {
     if ($null -ne $key) { [Array]::Clear($key, 0, $key.Length) }
-    $receipt.completedAtUtc = [DateTimeOffset]::UtcNow.ToString("o")
-    $objective = Get-RecoveryObjectiveEvidence -Receipt $receipt
-    foreach ($field in @("objectiveStatus", "measuredRpoSeconds", "measuredRtoSeconds", "objectiveErrors",
-            "rpoStatus", "rtoStatus", "effectiveMaximumRpoSeconds", "effectiveMaximumRtoSeconds")) {
-        $receipt[$field] = $objective[$field]
+    try {
+        $receipt.completedAtUtc = [DateTimeOffset]::UtcNow.ToString("o")
+        $objective = Get-RecoveryObjectiveEvidence -Receipt $receipt
+        foreach ($field in @("objectiveStatus", "measuredRpoSeconds", "measuredRtoSeconds", "objectiveErrors",
+                "rpoStatus", "rtoStatus", "effectiveMaximumRpoSeconds", "effectiveMaximumRtoSeconds")) {
+            $receipt[$field] = $objective[$field]
+        }
+        $receiptBytes = [Text.Encoding]::UTF8.GetBytes(($receipt | ConvertTo-Json -Depth 8))
+        $receiptStream.Write($receiptBytes, 0, $receiptBytes.Length)
+        $receiptStream.Flush($true)
     }
-    if ([string]::IsNullOrWhiteSpace($ReceiptPath)) {
-        $receiptDirectory = Resolve-FullPath $BackupRoot
-        [IO.Directory]::CreateDirectory($receiptDirectory) | Out-Null
-        $ReceiptPath = Join-Path $receiptDirectory "recovery-$($Mode.ToLowerInvariant())-receipt.json"
-    }
-    else {
-        $ReceiptPath = Resolve-FullPath $ReceiptPath
-        [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($ReceiptPath)) | Out-Null
-    }
-    $receipt | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $ReceiptPath -Encoding utf8NoBOM
+    finally { $receiptStream.Dispose() }
 }
 
 if ($null -ne $operationError) { throw $operationError }

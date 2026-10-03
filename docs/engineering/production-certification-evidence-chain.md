@@ -161,8 +161,10 @@ drain/flush ordering, and lifecycle receipts.
 
 1. After a green `Production Certification` run on the frozen release commit, download the dated
    `production-recovery-drill-<run id>` artifact (original receipt, backup manifest, and restored-state
-   verification). Confirm `sourceCommit` is that release commit and `backupId` identifies the
-   complete database/data-root unit being reviewed. Historical schema-version-1 receipts that call
+   verification). Confirm `sourceCommit` and `drillSourceCommit` are that release commit,
+   `manifestAuthenticated` is true, `manifestSha256` identifies the retained manifest (with its
+   detached `manifest.hmac`), and `backupId` identifies the complete database/data-root unit.
+   A retained backup from a different commit must not be relabeled as the release commit. Historical schema-version-1 receipts that call
    archive durations RPO/RTO prove the archive round trip only.
 2. Review `lastVerifiedRecoverablePointAtUtc`, `recoverablePointVerifiedAtUtc`, and
    `recoverablePointEvidence` for the committed-work boundary recoverable before `simulatedLossAtUtc`.
@@ -174,7 +176,7 @@ drain/flush ordering, and lifecycle receipts.
    record actual `operatorAcceptedAtUtc`, named `operatorAcceptedBy`, and `operatorAcceptanceEvidence`.
 4. Follow [Complete and validate the recovery evidence](../operators/failover-and-recovery.md#complete-and-validate-the-recovery-evidence)
    to supply completion-evidence JSON bound to the same `backupId`, `sourceCommit`, `simulatedLossAtUtc`,
-   and `lossDeclaredAtUtc`, and run `validate-recovery-receipt.ps1` to write a separate evaluated
+   `drillSourceCommit`, `manifestSha256`, and `lossDeclaredAtUtc`, and run `validate-recovery-receipt.ps1` to write a separate evaluated
    receipt. The validator independently recomputes `measuredRpoSeconds` as simulated loss minus the
    verified point and `measuredRtoSeconds` as acceptance minus declared loss, with policy defaults
    RPO 3600s/RTO 7200s; explicit overrides can tighten those budgets. Missing/invalid/inconsistent

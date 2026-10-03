@@ -19,6 +19,11 @@ owns their construction; atomic durability, staging and JSONL naming policies re
 into wash-sale projection evidence together with the configured window, scope and activation date.
 This adds no persisted policy field or schema migration.
 
+The durable replacement resolver excludes relieved lot IDs only within the disposing account's
+complete identity. LedgerBook scope retains same-ID acquisitions in sibling accounts. Prior-deferral
+basis adjustments use that same full account identity (name, type, symbol and financial account ID),
+so a sibling account's same-ID lot cannot change the disposing lot's basis or holding-period start.
+
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
 authority and this actor for blocked-occurrence evidence; its file-backed schedule store never
