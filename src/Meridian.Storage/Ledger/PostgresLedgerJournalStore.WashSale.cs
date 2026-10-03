@@ -57,7 +57,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
             ? "and account_name = @account_name "
                 + "and account_type = @account_type "
                 + "and symbol is not distinct from @symbol "
-                + "and financial_account_id is not distinct from @financial_account_id"
+                + "and lower(financial_account_id) is not distinct from lower(@financial_account_id)"
             : string.Empty;
 
         await using var command = connection.CreateCommand();
@@ -77,7 +77,11 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
               and acquired_date >= @window_start
               and acquired_date <= @window_end
               and original_quantity > 0
-              and lower(lot_id) <> all(@relieved_lot_ids)
+              and not (lower(lot_id) = any(@relieved_lot_ids)
+                  and account_name = @account_name
+                  and account_type = @account_type
+                  and symbol is not distinct from @symbol
+                  and lower(financial_account_id) is not distinct from lower(@financial_account_id))
             {scopePredicate}
             order by acquired_date, lot_id;
             """;
@@ -86,10 +90,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         command.Parameters.AddWithValue("window_start", query.SaleDate.AddDays(-query.Policy.WindowDays));
         command.Parameters.AddWithValue("window_end", query.SaleDate.AddDays(query.Policy.WindowDays));
         command.Parameters.AddWithValue("relieved_lot_ids", NormalizeLotIds(query.RelievedLotIds));
-        if (accountScoped)
-        {
-            AddAccountParameters(command, query.DisposingAccount);
-        }
+        AddAccountParameters(command, query.DisposingAccount);
 
         var replacements = new List<WashSaleReplacementAcquisition>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
@@ -122,7 +123,8 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         // Deferrals previously capitalized into the lots this disposal is about to relieve. Replaying
         // them as basis adjustments is what finally recognizes a deferred loss: the replacement is
         // relieved at its increased basis and with the holding period it inherited, rather than at
-        // the raw price it was bought for.
+        // the raw price it was bought for. Unlike replacement discovery, this is always scoped to
+        // the disposing account: sibling accounts can reuse a lot id but cannot share its basis.
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -138,11 +140,16 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
             where deferral.ledger_book_id = @ledger_book_id
               and deferral.security_id = @security_id
               and lower(lot.lot_id) = any(@relieved_lot_ids)
+              and lot.account_name = @account_name
+              and lot.account_type = @account_type
+              and lot.symbol is not distinct from @symbol
+              and lower(lot.financial_account_id) is not distinct from lower(@financial_account_id)
             order by deferral.sale_date, deferral.deferral_id;
             """;
         command.Parameters.AddWithValue("ledger_book_id", query.LedgerBookId);
         command.Parameters.AddWithValue("security_id", query.SecurityId);
         command.Parameters.AddWithValue("relieved_lot_ids", relievedLotIds);
+        AddAccountParameters(command, query.DisposingAccount);
 
         var adjustments = new List<LedgerTaxLotBasisAdjustment>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);

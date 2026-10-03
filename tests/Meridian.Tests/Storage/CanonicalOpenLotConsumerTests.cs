@@ -93,6 +93,61 @@ public sealed class CanonicalOpenLotConsumerTests
     }
 
     [Fact]
+    public void Reporting_FrozenLegacyDisposalPreservesParcelAmountsEvenWhenCurrentAllocatorSucceeds()
+    {
+        // Frozen legacy economics with exact-cent canonical bases: five shares sold at .014
+        // produced .07 proceeds and .01 recognized gain. The final-residual allocator assigned
+        // .03 to lot 5; a successful new projection would instead move .01 from lot 5 to lot 4.
+        var lots = new[]
+        {
+            OpenLotConvergenceTests.Lot(1, 1m, 0.01m, 1m),
+            OpenLotConvergenceTests.Lot(2, 1m, 0.01m, 1m),
+            OpenLotConvergenceTests.Lot(3, 1m, 0.01m, 1m),
+            OpenLotConvergenceTests.Lot(4, 1m, 0.01m, 1m),
+            OpenLotConvergenceTests.Lot(5, 1m, 0.02m, 1m),
+        };
+        var id = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var time = new DateTimeOffset(2026, 3, 1, 12, 0, 0, TimeSpan.Zero);
+        var dimensions = new LedgerLineDimensionSet(InstrumentId: lots[0].SecurityId)
+        {
+            PositionId = lots[0].BookPositionId
+        };
+        const string description = "Frozen legacy disposal";
+        var journal = new JournalEntry(id, time, description,
+        [
+            new LedgerEntry(Guid.NewGuid(), id, time, LedgerAccounts.Cash, 0.07m, 0m, description, dimensions),
+            new LedgerEntry(Guid.NewGuid(), id, time, lots[0].Account, 0m, 0.06m, description, dimensions),
+            new LedgerEntry(Guid.NewGuid(), id, time, LedgerAccounts.RealizedGain, 0m, 0.01m, description, dimensions),
+        ]);
+        var history = new LedgerTaxLotDisposalHistoryRecord(
+            Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            id, lots[0].Account, LedgerTaxLotReliefMethod.Fifo,
+            lots.Select(static lot => new LedgerTaxLotDisposalHistoryLot(
+                lot.LotId, lot.AcquiredDate, lot.AcquiredDate, 1m, lot.UnitCost, lot.UnitCost)).ToArray(),
+            [], 0m, lots.Select(static lot => lot.ToOpenLot()).ToArray());
+
+        var rebuilt = CanonicalDisposalHistoryProjector.Project(history, journal, lots[0].LedgerBookId, "USD");
+
+        rebuilt.Selections.Select(static selection => selection.Proceeds)
+            .Should().Equal(0.01m, 0.01m, 0.01m, 0.01m, 0.03m);
+        rebuilt.Selections.Select(static selection => selection.RealizedGainOrLoss)
+            .Should().Equal(0m, 0m, 0m, 0m, 0.01m);
+        rebuilt.Proceeds.Should().Be(0.07m);
+        rebuilt.CostBasis.Should().Be(0.06m);
+        rebuilt.RecognizedGainOrLoss.Should().Be(0.01m);
+        rebuilt.IsBalanced.Should().BeTrue();
+        rebuilt.CanonicalOpenLots.Should().HaveCount(5);
+
+        // This guards against a try-current-then-fallback implementation: it would succeed but
+        // silently change which retained lot reported the gain.
+        var current = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
+            lots[0].Account, new DateOnly(2026, 3, 1), 5m, 0.014m, LedgerTaxLotReliefMethod.Fifo,
+            lots.Select(static lot => new LedgerTaxLot(lot.LotId, lot.AcquiredDate, 1m, lot.UnitCost)).ToArray()));
+        current.Selections.Select(static selection => selection.Proceeds)
+            .Should().Equal(0.01m, 0.01m, 0.01m, 0.02m, 0.02m);
+    }
+
+    [Fact]
     public void DurableRelief_AverageCostCertifiesThePooledBasis()
     {
         // Functional bases 1,100 and 1,400 pool to 125 per unit; the lot's own 110 is refused.

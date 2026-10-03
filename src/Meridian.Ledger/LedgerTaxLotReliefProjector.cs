@@ -8,6 +8,18 @@ namespace Meridian.Ledger;
 public static class LedgerTaxLotReliefProjector
 {
     public static LedgerTaxLotReliefProjection Project(LedgerTaxLotReliefInput input)
+        => Project(input, retainedLegacyProceeds: false);
+
+    /// <summary>
+    /// Replays the unversioned retained-disposal convention. Durable history does not retain a
+    /// proceeds-allocation version, so its discrete parcel amounts must keep the original final-
+    /// residual allocator even when today's sign-preserving allocator would also succeed.
+    /// This compatibility entry point is only for history; new projections use <see cref="Project(LedgerTaxLotReliefInput)"/>.
+    /// </summary>
+    internal static LedgerTaxLotReliefProjection ReconstructRetainedDisposal(LedgerTaxLotReliefInput input)
+        => Project(input, retainedLegacyProceeds: true);
+
+    private static LedgerTaxLotReliefProjection Project(LedgerTaxLotReliefInput input, bool retainedLegacyProceeds)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -23,7 +35,7 @@ public static class LedgerTaxLotReliefProjector
         var parcels = SelectLots(input.QuantitySold, orderedLots, averageUnitCost);
         var proceeds = RoundCurrency(input.QuantitySold * input.SalePrice);
         var selections = BuildSelections(parcels, input.SalePrice, proceeds, input.SaleDate,
-            pooled: input.ReliefMethod == LedgerTaxLotReliefMethod.AverageCost);
+            pooled: input.ReliefMethod == LedgerTaxLotReliefMethod.AverageCost, retainedLegacyProceeds);
         var costBasis = selections.Sum(static selection => selection.CostBasis);
         var realizedGainOrLoss = proceeds - costBasis;
         var washSale = ComputeWashSale(input, selections);
@@ -166,7 +178,7 @@ public static class LedgerTaxLotReliefProjector
 
     /// <summary>
     /// Attributes proceeds and holding-period character to each priced parcel. Proceeds are
-    /// allocated with the rounding residual on the final parcel so the per-parcel amounts sum
+    /// allocated with sign-preserving rounding residuals so the per-parcel amounts sum
     /// exactly to <paramref name="totalProceeds"/>; a realized-gain export can then report row
     /// amounts that tie to the journal instead of re-deriving them and drifting a cent.
     /// </summary>
@@ -175,31 +187,20 @@ public static class LedgerTaxLotReliefProjector
         decimal salePrice,
         decimal totalProceeds,
         DateOnly saleDate,
-        bool pooled = false)
+        bool pooled,
+        bool retainedLegacyProceeds)
     {
         var selections = new List<LedgerTaxLotReliefSelection>(parcels.Count);
-        var allocatedProceeds = 0m;
-        var pooledProceeds = pooled ? AllocatePooledProceeds(parcels, totalProceeds) : null;
+        var allocatedProceeds = pooled
+            ? AllocatePooledProceeds(parcels, totalProceeds)
+            : retainedLegacyProceeds
+                ? AllocateLegacyDiscreteProceeds(parcels, salePrice, totalProceeds)
+                : AllocateDiscreteProceeds(parcels, salePrice, totalProceeds);
 
         for (var index = 0; index < parcels.Count; index++)
         {
             var parcel = parcels[index];
-            decimal parcelProceeds;
-            if (pooledProceeds is not null)
-            {
-                parcelProceeds = pooledProceeds[index];
-            }
-            else if (index == parcels.Count - 1)
-            {
-                parcelProceeds = totalProceeds - allocatedProceeds;
-            }
-            else
-            {
-                // Rounding many tiny parcels up must not manufacture a negative final proceed
-                // (and therefore a fictitious loss eligible for wash-sale matching).
-                parcelProceeds = Math.Min(totalProceeds - allocatedProceeds, RoundCurrency(parcel.Quantity * salePrice));
-                allocatedProceeds += parcelProceeds;
-            }
+            var parcelProceeds = allocatedProceeds[index];
 
             // The holding period runs from the lot's effective start, which an earlier wash sale may
             // have moved before the lot was actually acquired (IRC §1223(3)).
@@ -217,6 +218,51 @@ public static class LedgerTaxLotReliefProjector
         }
 
         return selections;
+    }
+
+    private static decimal[] AllocateLegacyDiscreteProceeds(
+        IReadOnlyList<ReliefParcel> parcels, decimal salePrice, decimal totalProceeds)
+    {
+        // Frozen unversioned history convention: independently round each parcel, cap it at
+        // remaining proceeds, and put the final residual on the last parcel. Do not apply the
+        // new sign bounds retroactively or silently move results between historical tax lots.
+        var proceeds = new decimal[parcels.Count];
+        var remaining = totalProceeds;
+        for (var index = 0; index < parcels.Count; index++)
+        {
+            proceeds[index] = index == parcels.Count - 1
+                ? remaining
+                : Math.Min(remaining, RoundCurrency(parcels[index].Quantity * salePrice));
+            remaining -= proceeds[index];
+        }
+        return proceeds;
+    }
+
+    private static decimal[] AllocateDiscreteProceeds(
+        IReadOnlyList<ReliefParcel> parcels, decimal salePrice, decimal totalProceeds)
+    {
+        // Reserve each future gain/break-even parcel's rounded basis before consuming proceeds.
+        // Loss parcels may receive at most their basis; rounding may erase a sub-cent result,
+        // but it must never reverse the sign of the parcel's unrounded economic result.
+        var minimums = parcels.Select(parcel => salePrice >= parcel.UnitCost ? parcel.CostBasis : 0m).ToArray();
+        var maximums = parcels.Select(parcel => salePrice <= parcel.UnitCost ? parcel.CostBasis : totalProceeds).ToArray();
+        var remainingMinimum = minimums.Sum();
+        var remainingMaximum = maximums.Sum();
+        if (totalProceeds < remainingMinimum || totalProceeds > remainingMaximum)
+            throw new InvalidOperationException("Rounded proceeds and lot bases cannot preserve every parcel's economic result sign.");
+
+        var proceeds = new decimal[parcels.Count];
+        var remaining = totalProceeds;
+        for (var index = 0; index < parcels.Count; index++)
+        {
+            remainingMinimum -= minimums[index];
+            remainingMaximum -= maximums[index];
+            var lower = Math.Max(minimums[index], remaining - remainingMaximum);
+            var upper = Math.Min(maximums[index], remaining - remainingMinimum);
+            proceeds[index] = Math.Clamp(RoundCurrency(parcels[index].Quantity * salePrice), lower, upper);
+            remaining -= proceeds[index];
+        }
+        return proceeds;
     }
 
     private static decimal[] AllocatePooledProceeds(IReadOnlyList<ReliefParcel> parcels, decimal totalProceeds)
@@ -352,7 +398,8 @@ public static class LedgerTaxLotReliefProjector
                 && replacement.AcquiredDate >= lower && replacement.AcquiredDate <= upper
                 && selections.Any(selection => selection.RealizedGainOrLoss < 0m
                     && SecurityMatches(selection.Lot.SecurityId ?? scopedSecurityId, replacement.SecurityId))
-                && !relievedIds.Contains(replacement.LotId)
+                && !((replacement.Account ?? input.Account) == input.Account
+                    && relievedIds.Contains(replacement.LotId))
                 && (input.WashSalePolicy.Scope != WashSaleReplacementScope.DisposingAccount
                     || replacement.Account is null || replacement.Account == input.Account))
             .OrderBy(static replacement => replacement.AcquiredDate)
