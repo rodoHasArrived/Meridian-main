@@ -43,12 +43,20 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     future roadmap row must produce before a deferred product area can move into active delivery;
     boundaries, not implementation claims
 - Treat the following as dated working design inputs, not canonical status sources:
-  - [What To Work On Next (2026-10-02)](plans/next-work-determination-2026-10-02.md) — latest
-    prioritization input, anchored at `main` `02196672`; ranks work against the registry, the
-    readiness tracker, live CI, and the pull-request queue, and verifies each named roadmap
-    remainder against current source rather than against its own record. Records that the two
-    top-ranked P0 engineering items merged (#3026, #3028) and that the release-candidate tag is the
-    remaining P0 path. It moves no roadmap row and certifies no release
+  - [What To Work On Next (2026-10-03)](plans/next-work-determination-2026-10-03.md) — latest
+    prioritization input, anchored at `main` `94c53780`. Records that `Production Certification`
+    went red on `main` across runs #131 and #132 against a byte-identical dependency set, because a
+    newly surfaced `braces` advisory (GHSA-vfj7-8cjw-p6xm) has no upstream fix, and that the
+    release-candidate tag is therefore blocked until the advisory is risk-accepted by a named
+    approver. Also records that the lane's npm gate is date-scoped rather than commit-scoped. It
+    risk-accepts nothing, moves no roadmap row, and certifies no release
+  - [What To Work On Next (2026-10-02)](plans/next-work-determination-2026-10-02.md) — Tier 0
+    superseded by the 2026-10-03 determination; its remaining tiers are carried forward by reference
+    and remain the rationale of record. Anchored at `main` `02196672`; ranks work against the
+    registry, the readiness tracker, live CI, and the pull-request queue, and verifies each named
+    roadmap remainder against current source rather than against its own record. Records that the
+    two top-ranked P0 engineering items merged (#3026, #3028). It moves no roadmap row and certifies
+    no release
   - [What To Work On Next (2026-09-27)](plans/next-work-determination-2026-09-27.md) — superseded by
     the 2026-10-02 determination and anchored at `main` `5980fa00`; retained in place rather than
     archived because `docs/roadmap/data/program-state.yml` and the readiness tracker cite it as the
