@@ -1092,7 +1092,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             ? parsedKind
             : throw new InvalidOperationException("Asset lot mutation requires a canonical asset accounting event type.");
         if ((instruction.Intent == AssetLotMutationIntentDto.Acquire && eventKind != AssetAccountingEventKindDto.Acquisition) ||
-            (instruction.Intent == AssetLotMutationIntentDto.Dispose && eventKind != AssetAccountingEventKindDto.Disposal))
+            (instruction.Intent == AssetLotMutationIntentDto.Dispose && eventKind != AssetAccountingEventKindDto.Disposal) ||
+            (instruction.Intent == AssetLotMutationIntentDto.Amortize && eventKind != AssetAccountingEventKindDto.DepreciationAmortization))
         {
             throw new InvalidOperationException(
                 "Asset lot mutation intent must match the canonical acquisition or disposal event kind.");
@@ -1217,6 +1218,29 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                 approvedWrite.Entry);
             mutationKind = AtomicTaxLotMutationKind.Disposal;
         }
+        else if (instruction.Intent == AssetLotMutationIntentDto.Amortize)
+        {
+            var inputs = instruction.Amortization
+                ?? throw new InvalidOperationException("Amortization requires retained canonical lot and reference inputs.");
+            var projection = OpenLotAmortization.Project(inputs);
+            RequireAssetAssertion(inputs.ExpectedLot.SecurityId == authority.Context.SecurityId
+                && inputs.ExpectedLot.BookPositionId == authority.Context.BookPositionId
+                && inputs.Security.Version == authority.Context.SecurityVersion
+                && inputs.ExpectedBookPositionVersion == authority.Context.ExpectedBookPositionVersion
+                && inputs.AsOfDate == request.Candidate.EffectiveDate
+                && Math.Abs(projection.FunctionalMovement) == request.Candidate.EventAmount,
+                "Amortization inputs must match the governed event authority and carrying-value movement.");
+            var retained = authority.Drafted.Projection.DraftedCandidateResult!;
+            var indexes = retained.GeneratedPostingLines.Select((line, index) => (line, index))
+                .Where(item => item.line.AccountPath == instruction.AssetAccountId).Select(static item => item.index).ToArray();
+            RequireAssetAssertion(indexes.Length == 1 && indexes[0] < approvedWrite.Entry.Lines.Count,
+                "Amortization requires one exact retained asset account posting.");
+            var asset = approvedWrite.Entry.Lines[indexes[0]];
+            RequireAssetAssertion(asset.Debit == Math.Max(projection.FunctionalMovement, 0m)
+                && asset.Credit == Math.Max(-projection.FunctionalMovement, 0m),
+                "Amortization asset posting must equal the reviewed carrying-value movement.");
+            mutationKind = AtomicTaxLotMutationKind.Amortization;
+        }
         else
         {
             throw new InvalidOperationException(
@@ -1238,7 +1262,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             disposalSelections,
             instruction.CorrectsMutationBatchId,
             instruction.ReliefMethod,
-            instruction.PolicyRevision);
+            instruction.PolicyRevision,
+            instruction.Amortization);
         return await atomicStore.AppendAssetPostingAsync(command, ct).ConfigureAwait(false);
     }
 

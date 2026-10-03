@@ -811,6 +811,15 @@
       "sha256": "f835222dbf6b329b2a90b39df0d40d58cfba85912739bdf31634650663e00fcc"
     },
     {
+      "filename": "V_ledger_039__canonical_lot_amortization.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_039__canonical_lot_amortization.sql",
+      "schema": "ledger",
+      "sha256": "2c355e21469f47d0595dca1a55a6bce4fed6df56937229e1bec2f65213249092"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1055,7 +1064,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "cd40be8d16627e90bb0a15e3ea9fb71bd421456c56a5cce0d6b8be2f16502b15",
+  "fingerprint": "d9b8ed817d69eab160f4a5db90de8fcb5056a552f3a1365b1ae4032826ee33be",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1293,9 +1302,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 117,
+    "files": 118,
     "migration_sets": 10,
-    "waivers": 11,
+    "waivers": 12,
     "warnings": 0
   },
   "waivers": [
@@ -1346,6 +1355,13 @@
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
       "reason": "Constraint widening, not data loss: ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, and ck_tax_lot_mutations_cost are dropped and immediately re-created in the same transaction as strict supersets that admit the governed AverageCost BasisRedistribution mutation kind and pooled relief basis. Every existing row still satisfies the re-created checks, and no column or data is removed.",
       "review_after": "2027-03-01",
+      "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_039__canonical_lot_amortization.sql",
+      "reason": "Requires human schema/storage review. Replaces only four check constraints transactionally with strict supersets admitting basis-only Amortization. Existing acquisition, disposal and average-cost rules remain intact; every previously valid row stays valid. No table, column, row or acquisition fact is removed. The migration runner rolls back the constraint replacement on failure. Validate fresh and upgrade databases before release.",
+      "review_after": "2027-04-02",
       "rule_id": "migration-drop-table-member"
     },
     {

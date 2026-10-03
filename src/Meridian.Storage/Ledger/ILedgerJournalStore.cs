@@ -408,7 +408,8 @@ public enum AtomicTaxLotMutationKind
     Acquisition = 0,
     Disposal = 1,
     // Mutation rows only: a surviving pool lot restated within a disposal batch.
-    BasisRedistribution = 2
+    BasisRedistribution = 2,
+    Amortization = 3
 }
 
 public sealed record LedgerTaxLotDisposalSelection(
@@ -436,7 +437,9 @@ public sealed record AtomicTaxLotJournalCommand(
     IReadOnlyList<LedgerTaxLotDisposalSelection>? DisposalSelections = null,
     Guid? CorrectsMutationBatchId = null,
     string? ReliefMethod = null,
-    string? PolicyRevision = null)
+    string? PolicyRevision = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization = null)
 {
     public static AtomicTaxLotJournalCommand Create(
         Guid mutationBatchId,
@@ -451,7 +454,8 @@ public sealed record AtomicTaxLotJournalCommand(
         IReadOnlyList<LedgerTaxLotDisposalSelection>? disposalSelections = null,
         Guid? correctsMutationBatchId = null,
         string? reliefMethod = null,
-        string? policyRevision = null)
+        string? policyRevision = null,
+        Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? amortization = null)
     {
         var command = new AtomicTaxLotJournalCommand(
             mutationBatchId,
@@ -467,7 +471,8 @@ public sealed record AtomicTaxLotJournalCommand(
             disposalSelections,
             correctsMutationBatchId,
             reliefMethod,
-            policyRevision);
+            policyRevision,
+            amortization);
         return command.WithComputedFingerprint();
     }
 

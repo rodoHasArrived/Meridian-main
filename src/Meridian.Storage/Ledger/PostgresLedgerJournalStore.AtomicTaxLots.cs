@@ -125,6 +125,9 @@ public sealed partial class PostgresLedgerJournalStore
 
         // This is the existing governed journal append path, deliberately using the same connection
         // and transaction as the lot CAS and append-only mutation evidence below.
+        LedgerTaxLotRecord? amortizationLot = null;
+        if (command.MutationKind == AtomicTaxLotMutationKind.Amortization)
+            amortizationLot = await LockAmortizationAuthorityAsync(connection, transaction, command, ct).ConfigureAwait(false);
         await AppendAsync(connection, transaction, command.Journal, ct).ConfigureAwait(false);
 
         var recordedAt = DateTimeOffset.UtcNow;
@@ -134,6 +137,13 @@ public sealed partial class PostgresLedgerJournalStore
         if (command.MutationKind == AtomicTaxLotMutationKind.Acquisition)
         {
             var mutation = await ApplyAcquisitionAsync(connection, transaction, command, recordedAt, ct)
+                .ConfigureAwait(false);
+            ValidateAtomicJournalLotEconomics(command, [mutation]);
+            await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
+        }
+        else if (command.MutationKind == AtomicTaxLotMutationKind.Amortization)
+        {
+            var mutation = await ApplyAmortizationAsync(connection, transaction, command, amortizationLot!, recordedAt, ct)
                 .ConfigureAwait(false);
             ValidateAtomicJournalLotEconomics(command, [mutation]);
             await InsertTaxLotMutationAsync(connection, transaction, mutation, ct).ConfigureAwait(false);
@@ -334,12 +344,18 @@ public sealed partial class PostgresLedgerJournalStore
         {
             disposalSelections = ValidateAtomicDisposals(normalizedCommand, evidenceIds);
         }
+        else if (command.MutationKind == AtomicTaxLotMutationKind.Amortization)
+        {
+            ValidateAtomicAmortization(normalizedCommand);
+        }
         else
         {
             throw new LedgerValidationException(
                 $"Unsupported atomic tax-lot mutation kind '{command.MutationKind}'.");
         }
 
+        if (command.MutationKind != AtomicTaxLotMutationKind.Amortization && command.Amortization is not null)
+            throw new LedgerValidationException("Only amortization batches may retain amortization inputs.");
         return normalizedCommand with
         {
             DisposalSelections = disposalSelections
@@ -1266,6 +1282,16 @@ public sealed partial class PostgresLedgerJournalStore
         var assetLines = command.Journal.Entry.Lines
             .Where(line => line.Account == assetAccounts[0])
             .ToArray();
+        if (command.MutationKind == AtomicTaxLotMutationKind.Amortization)
+        {
+            var movement = mutations.Sum(static mutation =>
+                mutation.LotAfter.ToOpenLot().OpenFunctionalCostBasis - mutation.LotBefore!.ToOpenLot().OpenFunctionalCostBasis);
+            if (mutations.Count != 1 || movement == 0m || expectedCostBasis != Math.Abs(movement) || assetLines.Length != 1
+                || assetLines[0].Debit != Math.Max(movement, 0m) || assetLines[0].Credit != Math.Max(-movement, 0m))
+                throw new LedgerValidationException("Amortization journal asset movement must exactly equal the canonical lot carrying-basis change.");
+            ValidateAmortizationAssetCurrency(command, assetLines[0]);
+            return;
+        }
         var hasExpectedMovement = assetLines.Length == 1 &&
             (command.MutationKind == AtomicTaxLotMutationKind.Acquisition
                 ? assetLines[0].Debit == expectedCostBasis && assetLines[0].Credit == 0m
