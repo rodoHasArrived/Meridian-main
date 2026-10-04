@@ -277,7 +277,13 @@ public sealed record AssetAcquisitionLotDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     decimal? BookedFactor = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    decimal? ParBasis = null)
+    decimal? ParBasis = null,
+    // The amortization inputs a face lot's canonical acquisition facts retain. Absent, a face lot
+    // keeps its par terms but no canonical facts; a method is never inferred.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.FixedIncome.BondAmortizationMethod? AmortizationMethod = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? EffectiveYield = null)
 {
     /// <summary>
     /// True when the instruction states the acquisition-time par conventions of a face-denominated
@@ -314,7 +320,9 @@ public sealed record AssetLotMutationInstructionDto(
     Guid? CorrectsMutationBatchId = null,
     Guid? CorrectsJournalEntryId = null,
     LedgerAdjustmentApprovalMetadataDto? CorrectionApproval = null,
-    string? AssetAccountId = null)
+    string? AssetAccountId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? DisposalSalePrice = null)
 {
     public IReadOnlyList<AssetDisposalLotSelectionDto> DisposalSelections { get; init; } =
         DisposalSelections ?? [];
@@ -842,6 +850,17 @@ public static class AssetLotMutationInstructionValidator
             if (!string.IsNullOrWhiteSpace(instruction.AssetAccountId) &&
                 !string.Equals(instruction.AssetAccountId, acquisition.AccountId, StringComparison.Ordinal))
                 issues.Add("Acquisition instruction asset account must exactly match the acquisition lot account.");
+            if ((acquisition.AmortizationMethod.HasValue || acquisition.EffectiveYield.HasValue) &&
+                !acquisition.HasFaceValueTerms)
+                issues.Add("Acquisition amortization inputs apply only to a face lot stating its par terms.");
+            if (instruction.DisposalSalePrice is not null)
+                issues.Add("Acquisition instructions cannot carry a disposal sale price.");
+            if (acquisition.AmortizationMethod is { } method &&
+                (!Enum.IsDefined(method) ||
+                 (method == Meridian.Contracts.FixedIncome.BondAmortizationMethod.ConstantYield) != acquisition.EffectiveYield.HasValue))
+                issues.Add("Constant-yield amortization requires an effective yield, and only constant yield carries one.");
+            if (acquisition.EffectiveYield.HasValue && !acquisition.AmortizationMethod.HasValue)
+                issues.Add("An effective yield requires the amortization method it parameterizes.");
         }
         else if (eventKind == AssetAccountingEventKindDto.Disposal)
         {
@@ -855,6 +874,8 @@ public static class AssetLotMutationInstructionValidator
             }
 
             var ordinals = new HashSet<int>();
+            if (instruction.DisposalSalePrice is < 0m)
+                issues.Add("Disposal sale price must be nonnegative when supplied.");
             var lotIds = new HashSet<Guid>();
             var evidenceIds = retainedEvidence.Select(static item => item.EvidenceId)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);

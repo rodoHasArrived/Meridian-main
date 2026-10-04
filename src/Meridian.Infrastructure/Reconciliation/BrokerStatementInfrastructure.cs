@@ -3,8 +3,9 @@ using System.Text;
 using System.Text.Json;
 using System.Globalization;
 using Meridian.Contracts.Integrity;
+using Meridian.Core.ReferenceData;
 using Meridian.Domain.Reconciliation;
-using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
@@ -158,9 +159,17 @@ internal static class ReconciliationRecordFileName
         => Sha256Digest.ComputeUtf8(value);
 }
 
-public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalStatementStore
+public sealed class JsonCanonicalStatementStore : ICanonicalStatementStore
 {
-    private readonly string _folder = Path.Combine(dataRoot, "reconciliation", "statement-imports");
+    private readonly IAtomicFileWriter _atomicFileWriter;
+    private readonly string _folder;
+
+    public JsonCanonicalStatementStore(string dataRoot, IAtomicFileWriter atomicFileWriter)
+    {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
+        _folder = Path.Combine(dataRoot, "reconciliation", "statement-imports");
+    }
 
     public Task<bool> ImportExistsByChecksumAsync(string checksum, CancellationToken ct = default)
         => Task.FromResult(Directory.Exists(_folder) && Directory.EnumerateFiles(_folder, "*.json").Any(path => File.ReadAllText(path).Contains(checksum, StringComparison.Ordinal)));
@@ -215,7 +224,7 @@ public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalSta
                 return false;
             }
             // Caller cancellation cannot turn a published import into a cancellation response.
-            await AtomicFileWriter.SyncDirectoryAsync(_folder, CancellationToken.None).ConfigureAwait(false);
+            await _atomicFileWriter.SyncDirectoryAsync(_folder, CancellationToken.None).ConfigureAwait(false);
             return true;
         }
         finally
@@ -478,8 +487,8 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
             if (fields.Count <= 8 || string.IsNullOrWhiteSpace(fields[8]))
                 throw new InvalidDataException($"Statement CSV row {recordStartLine} requires explicit currency evidence.");
             var currency = fields[8].Trim().ToUpperInvariant();
-            if (currency.Length != 3 || currency.Any(c => c is < 'A' or > 'Z'))
-                throw new InvalidDataException($"Statement CSV row {recordStartLine} requires a three-letter currency code.");
+            if (!CurrencyCodeCatalog.IsRecognized(currency))
+                throw new InvalidDataException($"Statement CSV row {recordStartLine} requires a recognized currency code.");
             decimal? feesCommission = null;
             string? externalTransactionId = null;
             if (fields.Count > 7 && !string.IsNullOrWhiteSpace(fields[7]))
@@ -752,11 +761,13 @@ public sealed record StatementBreakCaseworkAuditEvent(
 
 public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
 {
+    private readonly IAtomicFileWriter _atomicFileWriter;
     private readonly string _folder;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
-    public JsonReconciliationBreakStore(string dataRoot)
+    public JsonReconciliationBreakStore(string dataRoot, IAtomicFileWriter atomicFileWriter)
     {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _folder = Path.Combine(dataRoot, "reconciliation", "statement-breaks");
     }
@@ -770,7 +781,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
             foreach (var record in records)
             {
                 ArgumentNullException.ThrowIfNull(record);
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .WriteAsync(
                         BreakPath(record.BreakId),
                         JsonSerializer.Serialize(
@@ -876,7 +887,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
 
             if (retained is null || !SameArtifact(retained, authoritativeRecord))
             {
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .WriteAsync(
                         BreakPath(initialRecord.BreakId),
                         JsonSerializer.Serialize(
@@ -888,7 +899,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
 
             if (retainedAudit is null)
             {
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .WriteAsync(
                         auditPath,
                         JsonSerializer.Serialize(
@@ -960,7 +971,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
                     $"Source statement break '{next.BreakId}' no longer matches either retained source-commit image.");
             }
 
-            await AtomicFileWriter
+            await _atomicFileWriter
                 .WriteAsync(
                     BreakPath(next.BreakId),
                     JsonSerializer.Serialize(
@@ -1010,7 +1021,7 @@ public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
                 return;
             }
 
-            await AtomicFileWriter
+            await _atomicFileWriter
                 .WriteAsync(
                     path,
                     JsonSerializer.Serialize(

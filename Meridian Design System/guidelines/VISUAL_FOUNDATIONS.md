@@ -1,35 +1,51 @@
 # Meridian — Visual Foundations
 
 Grounded in the desktop app `src/Meridian.Wpf/Styles/*.xaml`. The language is **"Institutional
-Ops"**: a light paper workstation, hairline structure, one teal-blue accent, desaturated
+Ops"**: a warm paper workstation, hairline structure, one copper accent, desaturated
 semantics, no gradients or glow.
 
 ## Color
 
 **Canvas & surfaces** (`ThemeTokens.xaml`)
-- Window canvas `#DEE3EA` — the paper everything sits on
-- Command bars / wells `#EBEFF4`
-- Card / panel `#FFFFFF`; raised (metric tiles, inspector rails) `#F3F6F9`
-- Row hover `#EAEEF3`; pressed / selected wash `#D7E5F1`
-- Chrome (brand bar + status bar) near-black `#171A1F`, text `#F4F6F8`
+*Programmed Institutionalism v2.0 — warm paper, not cool concrete. The interface material is
+drafting stock: surfaces are separated by fine rules and tonal steps, never by shadow.*
 
-**Borders** carry the structure — `#CBD3DC` default, `#ADB8C4` hover, `#99A5B2` strong,
-`#2F6F8F` focus.
+- Window canvas `#F2F0EC` (Soft Stone) — the drafting table everything sits on
+- Command bars / wells `#EDEAE4`
+- Card / panel `#FBFAF8` (Architect White); raised (metric tiles, inspector rails) `#F6F4F0`
+- Row hover `#F0EEE9`; pressed / selected wash `#F2E3DB`
+- Chrome (brand bar + status bar) warm black `#1F1D1A`, text `#F4F2ED`
 
-**Text** — primary `#22272E`, secondary `#4D5967`, muted `#59636F`, disabled `#889099`.
+**Borders** carry the structure — `#E4E3DE` default, `#C6C3BB` hover, `#AFABA1` strong,
+`#A85436` focus. 1px rules do the separating; 2px only for emphasis.
 
-**Accent** — a single muted teal-blue `#2F6F8F` (primary buttons, focus rings, active nav,
-crosshair). Pressed `#255B75`, vibrant `#3B82A6`. One accented action per screen.
+**Text** — primary `#22252A` (Carbon), secondary `#4E5258` (Warm Graphite), muted `#5E666F`
+(Slate), disabled `#94999F`.
 
-**Semantic accents** are desaturated and always rendered as a **trio** — dim text · solid 1px
-border · alpha-10 fill. Never solid fills.
-- Success green `#16885F`
-- Danger red `#BA3F55`
-- Warning amber `#8A520E`
-- Pending purple `#6F5BA7`
+**Accent** — a single copper `#A85436` (primary buttons, focus rings, active nav, crosshair).
+Pressed `#8C4429`, hover `#AF6143` (opaque — 4.55:1 under the white label). One accented
+action per screen. Deliberately *not* blue.
 
-**Environment modes** — always visible: Live red `#BA3F55` (real money), Paper blue `#2F6F8F`
-(simulated), Fixture amber `#8A520E` (replay/recorded).
+> The source brief proposed Terracotta `#D16A4A` or Copper `#B76841`. Both fail this package's
+> WCAG AA gate as text on a card (3.43:1 and 3.97:1 against a 4.5:1 floor), so the hue is kept
+> and the value taken down to `#A85436` — 5.05:1 as text, 5.27:1 under a white label. The lighter
+> `#D16A4A` survives as `--accent-figure`, for the Meridian Field motif and report covers, where
+> it never sits behind text.
+
+**Semantic accents** are desaturated, independent of the brand accent, and always rendered as a
+**trio** — dim text · solid 1px border · alpha-10 fill. Never solid fills. Never use the accent
+for positive/negative values.
+- Success, muted forest `#3A7A56`
+- Danger, brick `#A8443C`
+- Warning, amber ochre `#8A5C12`
+- Pending, slate-violet `#5D5486`
+
+**Environment modes** — always visible: Live brick `#A8443C` (real money), Paper copper `#A85436`
+(simulated), Fixture ochre `#8A5C12` (replay/recorded).
+
+**Dark mode** is material, not luminous: warm black `#14120F` canvas, graphite `#201D19` panels,
+paper-white `#EFEBE4` text, and a lifted copper `#D98A64` carrying dark ink `#1A1511`. No glowing
+grids, no saturated gradients, no glass.
 
 ## Type (`ThemeTypography.xaml`)
 
@@ -38,28 +54,31 @@ border · alpha-10 fill. Never solid fills.
 - Data — Cascadia Mono / JetBrains Mono / Consolas, tabular-nums, for every price, id,
   timestamp, count
 
-Ramp (px): page title 24 · section 16 · card title 13 · body 13 · **metric 28 (mono 700)** ·
-data value 16 (mono 600) · label 9 (small-caps, muted). Labels use `AllSmallCaps`, so they
+Ramp (px): page title 22 · section 15 · card title 14 · body 13 · **metric 24 (mono 600)** ·
+data value 18 (mono 600) · label 10 (small-caps, muted). Labels use `AllSmallCaps`, so they
 render as small-caps rather than ALL-CAPS.
 
 ## Elevation, radii, spacing (`ThemeSurfaces.xaml`)
 
-- Radii: unified **2px** across chips, controls, and cards/panels — one tight corner. Structure
-  comes from borders, not rounding; the system never exceeds a 6px corner (large sheets only)
+- Radii: unified **2px** across chips, controls, and cards/panels — one tight corner.
+  Structure comes from borders, not rounding; the named scale never exceeds 6px (`--radius-xl`,
+  large sheets only).
 - Accent bars: 3px metric-card left border; 4px tone-inspector / queue-card left border
-- Shadows: surfaces are **flat — no card shadow**. The only elevation is a tight hard-edged
-  **menu** shadow `0 2px 6px rgba(0,0,0,.18)` on detached overlays. Everything else is borders.
-- Spacing rhythm: 32 major · 24 section · 16 generous · 12 standard · 6 tight · 3 micro
+- Shadows: surfaces are **flat — `--shadow-card: none`**. The only elevation is a tight,
+  hard-edged **menu** shadow `0 2px 6px rgba(0,0,0,.18)` on detached overlays that genuinely
+  float above the plane. Everything else is borders.
+- Spacing rhythm: 24 section · 16 card · 12 compact · 8 tight
 - Padding: card 20 · compact card 16 · metric 18
 - Chrome: 48px brand bar · 28px status bar · 224px nav rail · ~34px dense row
 
 ## Interaction & motion
 
-- Primary button: hover = accent @ 80% α, press = `--accent-dim` (no movement, no offset shadow)
-- Ghost button: hover `#EAEEF3`, press `#D7E5F1`, border darkens to focus on press
-- Nav item: active = `#D7E5F1` wash + **3px teal-blue left indicator**; hover `#EAEEF3`
-- Table row: hover/selected = `#D7E5F1` + `inset 3px 0 0 #2F6F8F` left rail; zebra at `#F3F6F9`
-- Input: hover darkens border; focus = teal-blue border + 2px ring; error = red border
+- Primary button: hover = `--accent-hover` **opaque** (never accent @ α — compositing eats the
+  label contrast), press = `--accent-dim` (no movement, no offset shadow)
+- Ghost button: hover `#F0EEE9`, press `#F2E3DB`, border darkens to focus on press
+- Nav item: active = `#F2E3DB` wash + **3px copper left indicator**; hover `#F0EEE9`
+- Table row: hover/selected = `#F2E3DB` + `inset 3px 0 0 #A85436` left rail; zebra at `#F6F4F0`
+- Input: hover darkens border; focus = copper border + 2px ring; error = red border
 - Motion: 100–150ms ease on color/background/border only. No springs, no entrance animation,
   no decorative loops. Live numbers update silently.
 
@@ -67,10 +86,12 @@ render as small-caps rather than ALL-CAPS.
 
 Flat solid surfaces. **No gradients, no textures, no photography, no glow.** The only
 decorative asset is `assets/brand/meridian-hero.svg`. Depth is carried entirely by visible,
-load-bearing borders \u2014 surfaces are flat, with no card shadow.
+load-bearing borders — surfaces are flat, with no card shadow.
 
 ## Charts
 
-White plot `#FFFFFF`, surround `#FFFFFF`, grid `#D2D9E2`, axis text `#59636F`, border `#CBD3DC`,
-crosshair teal-blue. Series: equity green `#16885F`, drawdown red `#BA3F55`, primary line
-teal-blue `#2F6F8F`, secondary/benchmark `#6E8597` (dashed), warning amber `#8A520E`.
+Paper plot `#FBFAF8`, surround `#F2F0EC`, grid `#E4E3DE`, axis text `#5E666F`, border `#AFABA1`.
+The crosshair is chrome, not a series: it takes `--text-secondary` `#4E5258` so it separates from
+the loss series by chroma rather than hue, which it crosses in every candle and equity plot.
+Series: equity green `#3A7A56`, drawdown red `#A8443C`, primary line copper `#A85436`,
+secondary/benchmark `--text-muted` `#5E666F` (dashed), warning ochre `#8A5C12`.

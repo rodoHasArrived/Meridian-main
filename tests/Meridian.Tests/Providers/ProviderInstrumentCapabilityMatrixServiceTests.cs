@@ -10,20 +10,23 @@ namespace Meridian.Tests.Providers;
 
 /// <summary>
 /// Guards the provider × instrument-type capability matrix read-model: every declared
-/// provider appears with a cell per instrument type, capability flags stay grounded in the
+/// market-data provider appears with a cell per instrument type, capability flags stay grounded in the
 /// descriptor catalogs, and discovery failures surface alongside the grid.
 /// </summary>
 public sealed class ProviderInstrumentCapabilityMatrixServiceTests
 {
     [Fact]
-    public void GetMatrix_IncludesEveryCatalogProviderWithFullInstrumentCoverage()
+    public void GetMatrix_IncludesEveryMarketDataCatalogProviderWithFullInstrumentCoverage()
     {
         var matrix = new ProviderInstrumentCapabilityMatrixService().GetMatrix();
 
         matrix.InstrumentTypes.Should().BeEquivalentTo(
             InstrumentTypeDescriptorCatalog.All.Select(static descriptor => descriptor.InstrumentType.ToString()));
         matrix.Providers.Select(static row => row.ProviderId).Should().BeEquivalentTo(
-            ProviderCapabilityDescriptorCatalog.Descriptors.Select(static descriptor => descriptor.ProviderId));
+            ProviderCapabilityDescriptorCatalog.Descriptors
+                .Where(static descriptor => descriptor.ProviderId != "openfigi")
+                .Select(static descriptor => descriptor.ProviderId),
+            "OpenFIGI is inventoried as a symbol resolver, which the matrix does not display");
 
         foreach (var row in matrix.Providers)
         {
@@ -69,6 +72,44 @@ public sealed class ProviderInstrumentCapabilityMatrixServiceTests
             .CorporateActions.Should().BeTrue();
         finnhub.Cells.Single(static cell => cell.InstrumentType == "Crypto")
             .CorporateActions.Should().BeFalse("crypto instruments do not carry corporate actions");
+    }
+
+    [Fact]
+    public void GetMatrix_PolygonRetainsHistoricalCoverageWithoutUnsupportedStreamingClaims()
+    {
+        var polygon = new ProviderInstrumentCapabilityMatrixService().GetMatrix().Providers.Single(row => row.ProviderId == "polygon");
+        foreach (var instrument in new[] { "Forex", "Crypto", "Index" })
+        {
+            var cell = polygon.Cells.Single(cell => cell.InstrumentType == instrument);
+            cell.Backfill.Should().BeTrue();
+            cell.Stream.Should().BeFalse("the current Polygon client handles stock/option channel messages only");
+        }
+        polygon.Cells.Single(cell => cell.InstrumentType == "Equity").Stream.Should().BeTrue();
+        polygon.Cells.Single(cell => cell.InstrumentType == "EquityOption").Stream.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetMatrix_SyntheticOptionsRemainVisibleWithoutClaimingOptionStreamingOrSearch()
+    {
+        var matrix = new ProviderInstrumentCapabilityMatrixService().GetMatrix();
+        var synthetic = matrix.Providers.Single(row => row.ProviderId == "synthetic");
+        foreach (var instrument in new[] { "EquityOption", "IndexOption" })
+        {
+            var cell = synthetic.Cells.Single(cell => cell.InstrumentType == instrument);
+            cell.OptionsChain.Should().BeTrue();
+            cell.Stream.Should().BeFalse();
+            cell.SymbolSearch.Should().BeFalse("the synthetic reference catalog has no option instruments");
+        }
+        synthetic.Cells.Single(cell => cell.InstrumentType == "Equity").SymbolSearch.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetMatrix_SymbolResolverOnlyFamilyRemainsInCatalogWithoutAnEmptyMatrixRow()
+    {
+        var openFigi = ProviderCapabilityDescriptorCatalog.Descriptors.Single(descriptor => descriptor.ProviderId == "openfigi");
+        openFigi.HasSymbolResolver.Should().BeTrue();
+        new ProviderInstrumentCapabilityMatrixService().GetMatrix().Providers.Should().NotContain(row => row.ProviderId == "openfigi",
+            "the matrix has no symbol-resolution surface and must not render a misleading empty row");
     }
 
     [Fact]

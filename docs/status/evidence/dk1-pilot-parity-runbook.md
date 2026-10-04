@@ -1,5 +1,13 @@
 # DK1 Pilot Parity Runbook (Alpaca, Robinhood, Yahoo)
 
+**Status:** active-runbook
+**Owner:** Data and Provider Reliability
+**Reviewed:** 2026-09-23
+
+Run-date artifacts and packet-bound human sign-off must be regenerated for each acceptance review.
+The example timestamps below illustrate the payload shape; they are not current sign-off evidence.
+Use the [production-readiness tracker](../../product/implementation-todo-list.md) for release gates.
+
 **Last Updated:** 2026-04-26
 **Owners:** Data + Provider Reliability
 **Scope:** Evidence-backed parity execution for DK1 pilot provider set (Alpaca, Robinhood, Yahoo)

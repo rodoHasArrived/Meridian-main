@@ -37,6 +37,8 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | First local setup | [Start](../start/README.md) | fastest contributor/operator orientation |
 | Product operating scope | [Meridian Design Document](../product/meridian-design-document.md) | stakeholder design context for operator posture |
 | Daily operator controls | [Operators](./README.md) | this page |
+| Adapter implementation readiness | [Generated Adapter Readiness Matrix](../source/generated/adapter-readiness-matrix.md) | credentials, SDK dependencies, capability claims, risks, degradation behavior, evidence, and next actions; source readiness does not confer operator certification |
+| Xero and NetSuite GL evidence | [External GL Providers](./external-gl-providers.md) | credential setup, import boundaries, and controlled export certification |
 | Startup, restart, and shutdown control | [Lifecycle Control Plane](../reference/lifecycle-control-plane.md) | states, supervisor commands, database ownership, and receipts |
 | Failed, blocked, or warning operation | [Verified Outcome Recovery](./verified-outcome-recovery.md) | terminal receipt triage, evidence verification, safe retry, and escalation |
 | Historical journal legs missing their currency | [Ledger Currency Backfill](./ledger-currency-backfill.md) | why legs are currency-blind, what the repair may assert, and the survey/affirm workflow |
@@ -44,6 +46,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | A firing alert | [Operator Runbook](./operator-runbook.md) | per-alert response, diagnostics bundle, incident procedure and ownership |
+| Inspect a connected pipeline or backfill trace | [Distributed Tracing](./distributed-tracing.md) | opt-in exporters, collector configuration, sampling, and shutdown delivery |
 | Objectives, thresholds, RTO/RPO | [Service Level Objectives](./service-level-objectives.md) | SLIs, targets, error budgets, and recovery objectives |
 | Troubleshooting and support evidence | [Operator Preflight Checklist](./preflight-checklist.md) | readiness gate and rollback posture |
 
@@ -52,6 +55,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 - [Browser Workstation Installer](./browser-workstation-installer.md)
 - [Lifecycle Control Plane Reference](../reference/lifecycle-control-plane.md)
 - [Deployment and Packaging](./deployment-packaging.md)
+- [Distributed Tracing](./distributed-tracing.md)
 - [Failover and Recovery](./failover-and-recovery.md)
 - [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)
 - [Governed Reporting Operations](./governed-reporting-operations.md)
@@ -107,21 +111,22 @@ The table below tracks active legacy/high-traffic routes and their replacements 
 | `docs/operations/tradier-provider-endpoint-catalog.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | catalog content mapped as source for provider onboarding references |
 | `docs/operations/workstation-governance-approval-runbook.md` | [fund-ops-persistence-cutover.md](./fund-ops-persistence-cutover.md) | Canonical | accounting-control approval gates mapped to operator cutover lane |
 | `docs/operations/orphaned-doc-triage-index.md` | [README.md](./README.md) | Canonical | migration inventory remains here |
-| `archive/docs/providers/alpaca-setup.md` | [provider-onboarding-alpaca.md](./provider-onboarding-alpaca.md) | Canonical | provider onboarding canonicalized |
-| `archive/docs/providers/interactive-brokers-setup.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | provider onboarding canonicalized |
-| `archive/docs/providers/backfill-guide.md` | [provider-backfill-operations.md](./provider-backfill-operations.md) | Canonical | backfill operations canonicalized |
-| `archive/docs/providers/README.md` | [provider-credentials.md](./provider-credentials.md) | Canonical | provider onboarding/program overview canonicalized |
-| `archive/docs/providers/provider-comparison.md` | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | provider comparison merged into capability matrix |
-| `archive/docs/providers/provider-confidence-baseline.md` | [provider-validation-matrix.md](../reference/provider-validation-matrix.md) | Canonical | provider confidence thresholds moved to validation matrix |
-| `archive/docs/providers/security-master-guide.md` | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | security/provider controls routing moved to capability matrix |
-| `archive/docs/providers/stocksharp-connectors.md` | [provider-integration-status.md](../reference/provider-integration-status.md) | Canonical | connector inventory moved to provider integration status |
-| `archive/docs/providers/data-sources.md` | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | data source mapping merged into capability matrix |
-| `archive/docs/providers/tradestation-endpoint-inventory.md` | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | tradestation endpoint data migrated to capability matrix |
-| `archive/docs/providers/broker-adapter-template-guide.md` | [provider-integration-status.md](../reference/provider-integration-status.md) | Canonical | broker adapter template guidance moved to provider integration status |
-| `archive/docs/providers/interactive-brokers-free-equity-reference.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | IBKR free-equity notes merged into IBKR onboarding page |
+| [`archive/docs/providers/alpaca-setup.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/alpaca-setup.md) | [provider-onboarding-alpaca.md](./provider-onboarding-alpaca.md) | Canonical | provider onboarding canonicalized |
+| [`archive/docs/providers/interactive-brokers-setup.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/interactive-brokers-setup.md) | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | provider onboarding canonicalized |
+| [`archive/docs/providers/backfill-guide.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/backfill-guide.md) | [provider-backfill-operations.md](./provider-backfill-operations.md) | Canonical | backfill operations canonicalized |
+| [`archive/docs/providers/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/README.md) | [provider-credentials.md](./provider-credentials.md) | Canonical | provider onboarding/program overview canonicalized |
+| [`archive/docs/providers/provider-comparison.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/provider-comparison.md) | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | provider comparison merged into capability matrix |
+| [`archive/docs/providers/provider-confidence-baseline.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/provider-confidence-baseline.md) | [provider-validation-matrix.md](../reference/provider-validation-matrix.md) | Canonical | provider confidence thresholds moved to validation matrix |
+| [`archive/docs/providers/security-master-guide.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/security-master-guide.md) | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | security/provider controls routing moved to capability matrix |
+| [`archive/docs/providers/stocksharp-connectors.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/stocksharp-connectors.md) | [provider-integration-status.md](../reference/provider-integration-status.md) | Canonical | connector inventory moved to provider integration status |
+| [`archive/docs/providers/data-sources.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/data-sources.md) | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | data source mapping merged into capability matrix |
+| [`archive/docs/providers/tradestation-endpoint-inventory.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/tradestation-endpoint-inventory.md) | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | tradestation endpoint data migrated to capability matrix |
+| [`archive/docs/providers/broker-adapter-template-guide.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/broker-adapter-template-guide.md) | [provider-integration-status.md](../reference/provider-integration-status.md) | Canonical | broker adapter template guidance moved to provider integration status |
+| [`archive/docs/providers/interactive-brokers-free-equity-reference.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/interactive-brokers-free-equity-reference.md) | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | IBKR free-equity notes merged into IBKR onboarding page |
 
 For quick operator evidence lookups, map claims to:
 
+- [Generated Adapter Readiness Matrix](../source/generated/adapter-readiness-matrix.md) (source readiness from the [canonical adapter registry](../source/data/adapter-readiness.yml); operator sign-off still requires the validation gates below)
 - [provider-integration-status.md](../reference/provider-integration-status.md) (operational posture and phase)
 - [provider-validation-matrix.md](../reference/provider-validation-matrix.md) (gates and evidence criteria)
 - [provider-validation-evidence-schema.md](../reference/provider-validation-evidence-schema.md) (artifact shape)

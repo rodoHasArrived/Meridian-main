@@ -37,7 +37,7 @@ public sealed class ProviderReadinessService
         var providerIds = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in ProviderCredentialCatalog.All)
         {
-            providerIds.Add(entry.ProviderId);
+            providerIds.Add(ProviderCredentialCatalog.NormalizeProviderId(entry.ProviderId));
         }
 
         foreach (var source in configuredProviders)
@@ -58,7 +58,13 @@ public sealed class ProviderReadinessService
             var source = FindSource(configuredProviders, providerId);
             var providerMetrics = FindMetrics(metrics, providerId, source);
             var degradationScore = scorer?.GetScore(providerId).CompositeScore;
-            var isEnabled = source?.Enabled ?? connection is not null || descriptor is not null;
+            var familyId = ProviderCredentialCatalog.NormalizeProviderId(source?.Provider.ToString() ?? providerId);
+            var moduleDisabled = cfg.ProviderModules?.Modules?.Any(module =>
+                !module.Value.Enabled &&
+                string.Equals(ProviderCredentialCatalog.NormalizeProviderId(module.Key), familyId, StringComparison.Ordinal)) == true;
+            // A family-wide module disable wins over source settings and retained healthy
+            // connection evidence, matching the application's factory registration gate.
+            var isEnabled = !moduleDisabled && (source?.Enabled ?? (connection is not null || descriptor is not null));
             var isConnected = providerMetrics is not null
                 ? providerMetrics.IsConnected
                 : connection?.Health is ProviderContinuityHealthDto.Healthy;

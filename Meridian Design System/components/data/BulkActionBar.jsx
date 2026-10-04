@@ -18,8 +18,8 @@ const BulkActionBar = ({ selectedCount = 0, onAction, actions = [] }) => {
   border-radius:var(--radius-chip,2px);transition:all .12s;}
 .mds-bulk-action-btn:hover{background:color-mix(in srgb, currentColor 20%, transparent);border-color:color-mix(in srgb, currentColor 40%, transparent);}
 .mds-bulk-action-btn:active{background:color-mix(in srgb, currentColor 30%, transparent);}
-.mds-bulk-action-btn--danger{border-color:var(--red,#BA3F55);background:var(--red,#BA3F55);color:var(--text-on-accent,#fff);}
-.mds-bulk-action-btn--danger:hover{background:var(--red-dim,#8C2F40);border-color:var(--red-dim,#8C2F40);}
+.mds-bulk-action-btn--danger{border-color:var(--red,#A8443C);background:var(--red,#A8443C);color:var(--text-on-accent,#fff);}
+.mds-bulk-action-btn--danger:hover{background:var(--red-dim,#7E332D);border-color:var(--red-dim,#7E332D);}
 `;
   if (!document.getElementById("mds-bulk-bar-css")) {
     const el = document.createElement("style");
@@ -82,7 +82,7 @@ const ContextMenu = ({ x, y, items, onClose }) => {
   color:var(--text-primary);transition:background .12s;}
 .mds-context-item:hover{background:var(--bg-hover);}
 .mds-context-item--danger{color:var(--red);}
-.mds-context-item--danger:hover{background:var(--red-a10,rgba(186,63,85,.10));}
+.mds-context-item--danger:hover{background:var(--red-a10,rgba(168,68,60,.10));}
 `;
   if (!document.getElementById("mds-context-menu-css")) {
     const el = document.createElement("style");

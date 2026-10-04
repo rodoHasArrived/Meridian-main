@@ -683,7 +683,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 TransactionId: BuildActivityId(activity),
                 TransactionType: activity.ActivityType ?? "unknown",
                 Amount: ParseDecimal(activity.NetAmount),
-                Currency: activity.Currency ?? "USD",
+                Currency: activity.Currency ?? string.Empty,
                 PostedAt: ParseActivityTimestamp(activity),
                 Symbol: activity.Symbol,
                 Description: activity.Description))
@@ -718,7 +718,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             // argument is dropped rather than the fetch restored because nothing reads
             // `BrokerageActivitySnapshotDto.Cursor` today; re-landing Alpaca activity paging is a
             // product decision, not a build fix.
-            Activities: activities.Select(BuildCanonicalActivityEvent).ToArray());
+            Activities: activities.Select(activity => BuildCanonicalActivityEvent(activity, account.Currency)).ToArray());
     }
 
     private async Task<AccountInfo> RequireRequestedAccountAsync(
@@ -1505,13 +1505,21 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             $"alpaca:{activity.ActivityType ?? "unknown"}:{ParseActivityTimestamp(activity):O}:{activity.OrderId}:{activity.Symbol}:{activity.NetAmount}:{activity.Qty}:{activity.Price}:{activity.Description}");
     }
 
-    private static BrokerageActivityEventDto BuildCanonicalActivityEvent(AlpacaAccountActivityResponse activity)
+    private static BrokerageActivityEventDto BuildCanonicalActivityEvent(
+        AlpacaAccountActivityResponse activity,
+        string? verifiedAccountCurrency)
     {
         var providerCode = activity.ActivityType?.Trim().ToUpperInvariant() ?? "UNKNOWN";
         var (category, subtype) = MapActivityType(providerCode, activity.Description);
         var option = category == BrokerageActivityCategory.OptionLifecycle
             ? BuildOptionLifecycle(activity.Symbol, subtype)
             : null;
+        // Trading API fills omit currency. Only the account already verified for this request
+        // can establish their USD denomination; non-fill activity still needs its own currency.
+        var usesAccountCurrency = string.IsNullOrWhiteSpace(activity.Currency)
+            && category == BrokerageActivityCategory.Trade
+            && subtype == BrokerageActivitySubtype.TradeFill
+            && string.Equals(verifiedAccountCurrency?.Trim(), "USD", StringComparison.OrdinalIgnoreCase);
 
         return new BrokerageActivityEventDto(
             EventId: BuildActivityId(activity),
@@ -1519,7 +1527,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             Category: category,
             Subtype: subtype,
             EffectiveAt: ParseActivityTimestamp(activity),
-            Currency: activity.Currency ?? "USD",
+            Currency: usesAccountCurrency ? verifiedAccountCurrency!.Trim().ToUpperInvariant() : activity.Currency ?? string.Empty,
             NetAmount: ParseDecimal(activity.NetAmount),
             Symbol: activity.Symbol,
             Quantity: ParseSignedActivityQuantity(activity),
@@ -1528,7 +1536,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             RelatedEventId: activity.TradeId,
             Description: activity.Description,
             Option: option,
-            Metadata: BuildActivityMetadata(activity, providerCode));
+            Metadata: BuildActivityMetadata(activity, providerCode, usesAccountCurrency));
     }
 
     private static decimal? ParseSignedActivityQuantity(AlpacaAccountActivityResponse activity)
@@ -1544,13 +1552,16 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
 
     private static IReadOnlyDictionary<string, string> BuildActivityMetadata(
         AlpacaAccountActivityResponse activity,
-        string providerCode)
+        string providerCode,
+        bool usesAccountCurrency)
     {
         var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["sourceAuthority"] = "ProviderReported",
             ["providerActivityCode"] = providerCode
         };
+        if (usesAccountCurrency)
+            metadata["currencySource"] = "VerifiedAccount";
         if (!string.IsNullOrWhiteSpace(activity.Side))
             metadata["side"] = activity.Side;
         if (!string.IsNullOrWhiteSpace(activity.Commission))

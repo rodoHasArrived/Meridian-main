@@ -30,7 +30,7 @@ This rule set defines the non-negotiable standards for contributing to Meridian 
 - Do not block async work (`.Result`, `.Wait()`, sync-over-async).
 - Do not use `Task.Run` for I/O-bound operations.
 - Prefer `IAsyncEnumerable<T>` where streaming semantics are natural.
-- Use pipeline/channel abstractions approved by ADRs for producer-consumer flows (see [Async streaming policy ADR](../../archive/docs/adr/004-async-streaming-patterns.md) and [Bounded channel policy ADR](../../archive/docs/adr/013-bounded-channel-policy.md)).
+- Use pipeline/channel abstractions approved by ADRs for producer-consumer flows (see [Async streaming policy ADR](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/004-async-streaming-patterns.md) and [Bounded channel policy ADR](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/013-bounded-channel-policy.md)).
 
 ### 3.2 Logging and diagnostics
 

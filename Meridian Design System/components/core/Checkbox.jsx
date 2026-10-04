@@ -8,21 +8,21 @@ function inject() {
   const css = `
 .mds-chk-wrap{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
 .mds-chk-wrap--disabled{opacity:.5;cursor:not-allowed;}
-.mds-chk-box{width:16px;height:16px;flex-shrink:0;border:1.5px solid var(--border,#D7DCE2);
-  background:var(--bg-light,#fff);display:flex;align-items:center;justify-content:center;}
+.mds-chk-box{width:16px;height:16px;flex-shrink:0;border:1.5px solid var(--border,#E4E3DE);
+  background:var(--bg-light,#FBFAF8);display:flex;align-items:center;justify-content:center;}
 .mds-chk-box:focus-within{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
-.mds-chk-box--checked{background:var(--accent,#2F6F8F);border-color:var(--accent,#2F6F8F);}
+.mds-chk-box--checked{background:var(--accent,#A85436);border-color:var(--accent,#A85436);}
 .mds-chk-check{color:var(--text-on-accent,#fff);font-size:10px;font-weight:700;line-height:1;}
-.mds-chk-label{font-family:var(--font-body);font-size:13px;color:var(--text-primary,#22272E);}
-.mds-chk-hint{font-family:var(--font-body);font-size:11px;color:var(--text-muted,#59636F);margin-top:1px;}
+.mds-chk-label{font-family:var(--font-body);font-size:13px;color:var(--text-primary,#22252A);}
+.mds-chk-hint{font-family:var(--font-body);font-size:11px;color:var(--text-muted,#5E666F);margin-top:1px;}
 
 .mds-tog-wrap{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
 .mds-tog-wrap--disabled{opacity:.5;cursor:not-allowed;}
-.mds-tog-track{width:36px;height:20px;background:var(--border,#D7DCE2);position:relative;flex-shrink:0;}
-.mds-tog-track--on{background:var(--accent,#2F6F8F);}
+.mds-tog-track{width:36px;height:20px;background:var(--border,#E4E3DE);position:relative;flex-shrink:0;}
+.mds-tog-track--on{background:var(--accent,#A85436);}
 .mds-tog-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;background:white;}
 .mds-tog-track--on .mds-tog-thumb{left:18px;}
-.mds-tog-label{font-family:var(--font-body);font-size:13px;color:var(--text-primary,#22272E);}
+.mds-tog-label{font-family:var(--font-body);font-size:13px;color:var(--text-primary,#22252A);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds","checkbox");

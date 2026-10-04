@@ -259,8 +259,8 @@ tool-specific rule file to carry shared Meridian policy.
 The following high-traffic files are source material or historical entrypoints only and now point to canonical lanes:
 
 - `docs/AGENTS.md` shim → `docs/README.md`
-- `archive/docs/developer/setup.md` and `archive/docs/developer/build-test-run.md` → [start/](../start/README.md) and [engineering/](../engineering/README.md)
-- `archive/docs/developer/` and `docs/development/` guidance files → [engineering/README.md](../engineering/README.md)
+- [`archive/docs/developer/setup.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/setup.md) and [`archive/docs/developer/build-test-run.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/build-test-run.md) → [start/](../start/README.md) and [engineering/](../engineering/README.md)
+- [`archive/docs/developer/`](https://github.com/rodoHasArrived/Meridian-main/tree/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer) and `docs/development/` guidance files → [engineering/README.md](../engineering/README.md)
 - `docs/ops`-style quickstart notes and one-off operator snapshots → [operators/README.md](../operators/README.md)
 - archived `docs/providers/*` setup, matrix, and provider-reference pages → [operators/provider-*.md](../operators/README.md) and [reference/provider-*.md](../reference/README.md)
 

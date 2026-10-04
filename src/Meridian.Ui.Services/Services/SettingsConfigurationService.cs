@@ -8,6 +8,8 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
+using ProviderIdentity = Meridian.Infrastructure.Adapters.Core.ProviderIdentity;
 
 namespace Meridian.Ui.Services.Services;
 
@@ -23,14 +25,18 @@ public sealed class SettingsConfigurationService
     private readonly Lock _desktopPreferencesGate = new();
     private DesktopShellPreferences _desktopShellPreferences = DesktopShellPreferences.Default;
     private bool _desktopPreferencesLoaded;
+    private readonly ApiClientService _apiClient;
 
     /// <summary>Gets the singleton instance.</summary>
     public static SettingsConfigurationService Instance => LazyInstance.Value;
 
     public event EventHandler<DesktopShellPreferences>? DesktopShellPreferencesChanged;
 
-    private SettingsConfigurationService()
+    private SettingsConfigurationService() : this(ApiClientService.Instance) { }
+
+    internal SettingsConfigurationService(ApiClientService apiClient)
     {
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         // Seed built-in profiles
         _profiles.Add(new ConfigProfile("research", "Strategy", "Balanced for strategy analysis workflows. Gzip compression, BySymbol naming.", IsBuiltIn: true));
         _profiles.Add(new ConfigProfile("low-latency", "Low Latency", "Minimum ingest latency. No compression, hourly partitioning.", IsBuiltIn: true));
@@ -86,7 +92,7 @@ public sealed class SettingsConfigurationService
     }
 
     /// <summary>
-    /// Gets the credential status for each provider by checking environment variables.
+    /// Gets legacy environment diagnostics. Operator workflows use the asynchronous server status method.
     /// </summary>
     public IReadOnlyList<ProviderCredentialStatus> GetProviderCredentialStatuses()
     {
@@ -131,6 +137,163 @@ public sealed class SettingsConfigurationService
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Saves credential fields through the authenticated service and returns the persisted state.
+    /// <see cref="ProviderCredentialStateDto.Partial"/> means the fields were saved but required fields are
+    /// still missing; callers present that as incomplete rather than as a failed save.
+    /// </summary>
+    public async Task<ProviderCredentialStateDto> SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary<string, string?> fields,
+        string? connectionId = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(fields);
+        var route = CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId);
+        var response = await _apiClient.PutWithResponseAsync<ProviderCredentialMutationResultDto>(route,
+            new ProviderCredentialUpsertRequestDto(fields), ct).ConfigureAwait(false);
+        ThrowIfRefused(response.StatusCode, "persistence");
+        if (!response.Success || response.Data is null ||
+            !ProviderIdentity.EqualsId(response.Data.ProviderId, providerId) ||
+            response.Data.CredentialState is not (ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified
+                or ProviderCredentialStateDto.Partial))
+            throw new InvalidOperationException("Credential persistence was not confirmed by the authenticated service.");
+        return response.Data.CredentialState;
+    }
+
+    /// <summary>Removes credentials through the authenticated service.</summary>
+    public async Task RemoveProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default)
+    {
+        var route = CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId);
+        var response = await _apiClient.DeleteWithResponseAsync<ProviderCredentialMutationResultDto>(route, ct).ConfigureAwait(false);
+        ThrowIfRefused(response.StatusCode, "removal");
+        if (!response.Success || response.Data is null ||
+            !ProviderIdentity.EqualsId(response.Data.ProviderId, providerId) ||
+            (response.Data.CredentialState != ProviderCredentialStateDto.Missing && response.Data is not
+            { CredentialState: ProviderCredentialStateDto.NotRequired, CredentialSource: ProviderCredentialSourceDto.NotRequired }))
+            throw new InvalidOperationException("Credential removal was not confirmed by the authenticated service.");
+    }
+
+    /// <summary>Requests verification from the authenticated credential service.</summary>
+    public async Task<bool> VerifyProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default)
+    {
+        var route = CredentialRoute(UiApiRoutes.ProviderCredentialVerify, providerId, connectionId);
+        var response = await _apiClient.PostWithResponseAsync<ProviderCredentialVerificationResultDto>(route, null, ct).ConfigureAwait(false);
+        // A dated Verified result proves the credentials. A successful NotRequired result is the service
+        // confirming the provider needs no credentials (IB, Yahoo, Synthetic), which is also ready.
+        return response.Success && response.Data is { Success: true } result &&
+            (result is { VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null } ||
+             result.VerificationState == ProviderVerificationStateDto.NotRequired) &&
+            ProviderIdentity.EqualsId(result.ProviderId, providerId);
+    }
+
+    private static void ThrowIfRefused(int statusCode, string operation)
+    {
+        if (statusCode is 401 or 403)
+            throw new CredentialServiceRefusedException(
+                $"Credential {operation} was not confirmed by the authenticated service: the session was refused. " +
+                "Credential changes require a signed-in account with a tenant (company) assignment and the ManageCredentials permission.");
+    }
+
+    private static string CredentialRoute(string template, string providerId, string? connectionId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
+        if (connectionId is not null)
+            ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
+        var route = UiApiRoutes.WithParam(template, "providerId", ProviderIdentity.NormalizeId(providerId));
+        return connectionId is null ? route : UiApiRoutes.WithQuery(route, "connectionId=" + Uri.EscapeDataString(connectionId));
+    }
+
+    /// <summary>Lists uniquely identified connections with complete retained credential ownership.</summary>
+    public async Task<IReadOnlyList<ProviderConnectionDto>> GetOwnedCredentialConnectionsAsync(CancellationToken ct = default)
+    {
+        var response = await _apiClient.GetWithResponseAsync<List<ProviderConnectionDto>>(UiApiRoutes.ProviderRoutingConnections, ct).ConfigureAwait(false);
+        if (!response.Success || response.Data is null)
+            throw new InvalidOperationException("Owned connections are unavailable from the authenticated service.");
+        return response.Data.Where(connection => connection is not null)
+            .GroupBy(connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1).Select(group => group.Single())
+            .Where(connection => !string.IsNullOrWhiteSpace(connection.ConnectionId) &&
+                !string.IsNullOrWhiteSpace(connection.ProviderFamilyId) && !string.IsNullOrWhiteSpace(connection.TenantId) &&
+                !string.IsNullOrWhiteSpace(connection.ExternalAccountId) && !string.IsNullOrWhiteSpace(connection.CredentialEnvironment)).ToArray();
+    }
+
+    /// <summary>
+    /// Reads server-owned credential status without treating local environment values as authority.
+    /// By default provider rows include the authenticated tenant's own connection credentials;
+    /// <paramref name="providerWideOnly"/> reads only the provider-wide records, for flows that write them.
+    /// </summary>
+    public async Task<IReadOnlyList<ProviderCredentialStatus>> GetProviderCredentialStatusesAsync(CancellationToken ct = default,
+        string? connectionId = null, bool providerWideOnly = false)
+    {
+        if (connectionId is not null)
+            ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
+        if (connectionId is not null && providerWideOnly)
+            throw new ArgumentException("A connection-scoped read cannot also be provider-wide.", nameof(providerWideOnly));
+        var route = connectionId is not null
+            ? UiApiRoutes.WithQuery(UiApiRoutes.ProviderConnections, "connectionId=" + Uri.EscapeDataString(connectionId))
+            : providerWideOnly
+                ? UiApiRoutes.WithQuery(UiApiRoutes.ProviderConnections, "scope=provider")
+                : UiApiRoutes.ProviderConnections;
+        IReadOnlyList<ProviderConnectionRowDto> rows = [];
+        try
+        {
+            var response = await _apiClient.GetWithResponseAsync<List<ProviderConnectionRowDto>>(route, ct).ConfigureAwait(false);
+            if (response.Success && response.Data is not null)
+                rows = response.Data;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception) { /* Failed reads never authorize a configured state. */ }
+
+        var catalog = GetProviderCatalog()
+            .GroupBy(provider => ProviderIdentity.NormalizeId(provider.Id), StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        var rowsByProvider = rows
+            .Where(row => row is not null && !string.IsNullOrWhiteSpace(row.ProviderId))
+            .ToLookup(row => ProviderIdentity.NormalizeId(row.ProviderId), StringComparer.Ordinal);
+        var localStatuses = catalog.Select(entry =>
+        {
+            var providerId = entry.Key;
+            var provider = entry.Value;
+            var matches = rowsByProvider[providerId].ToArray();
+            if (matches.Length != 1)
+                return new ProviderCredentialStatus(providerId, provider.DisplayName, CredentialState.Unavailable,
+                    "Credential status is unavailable from the service.", []);
+            return ToStatus(providerId, provider.DisplayName, matches[0]);
+        });
+
+        // Managed providers the service reports but the local market-data catalog omits (for example
+        // QuickBooks, Plaid or IB Flex) are still credentials the operator owns, so they are included.
+        var serverOnlyStatuses = rowsByProvider
+            .Where(group => !catalog.ContainsKey(group.Key) && group.Count() == 1)
+            .Select(group =>
+            {
+                var row = group.Single();
+                return ToStatus(group.Key, string.IsNullOrWhiteSpace(row.DisplayName) ? group.Key : row.DisplayName, row);
+            });
+
+        return localStatuses.Concat(serverOnlyStatuses).ToArray();
+    }
+
+    private static ProviderCredentialStatus ToStatus(string providerId, string displayName, ProviderConnectionRowDto row)
+    {
+        var state = row.CredentialState switch
+        {
+            ProviderCredentialStateDto.NotRequired => CredentialState.NotRequired,
+            ProviderCredentialStateDto.Configured or ProviderCredentialStateDto.Verified => CredentialState.Configured,
+            ProviderCredentialStateDto.Partial => CredentialState.Partial,
+            ProviderCredentialStateDto.Missing or ProviderCredentialStateDto.Invalid => CredentialState.Missing,
+            _ => CredentialState.Unavailable
+        };
+        var message = state switch
+        {
+            CredentialState.Configured => "Configured in the credential service",
+            CredentialState.NotRequired => "No credentials required",
+            CredentialState.Partial => "Credential setup is incomplete",
+            CredentialState.Missing => "Credentials are missing or require correction",
+            _ => "Credential status is unavailable from the service."
+        };
+        return new ProviderCredentialStatus(providerId, displayName, state, message, [], row.CredentialFields,
+            row.VerificationState, row.LastVerifiedAt);
     }
 
     /// <summary>
@@ -486,12 +649,20 @@ public enum ProviderTier : byte
 }
 
 /// <summary>Credential configuration state for a provider.</summary>
+/// <summary>
+/// The authenticated service refused a credential mutation (401/403), for example because the session
+/// has no tenant scope or lacks ManageCredentials. Nothing was written; callers should explain the refusal
+/// rather than fall back to an unauthenticated local store.
+/// </summary>
+public sealed class CredentialServiceRefusedException(string message) : InvalidOperationException(message);
+
 public enum CredentialState : byte
 {
     NotRequired,
     Configured,
     Partial,
     Missing,
+    Unavailable,
 }
 
 /// <summary>Credential status for a specific provider.</summary>
@@ -500,4 +671,15 @@ public sealed record ProviderCredentialStatus(
     string DisplayName,
     CredentialState State,
     string StatusMessage,
-    string[] MissingEnvVars);
+    string[] MissingEnvVars,
+    IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null,
+    ProviderVerificationStateDto VerificationState = ProviderVerificationStateDto.NotVerified,
+    DateTimeOffset? LastVerifiedAt = null)
+{
+    /// <summary>
+    /// True when the authenticated credential service reported this provider together with the
+    /// field names its vault accepts. Editors must use these names; the local provider catalog's
+    /// field names are not the vault schema.
+    /// </summary>
+    public bool HasServiceFieldSchema => CredentialFields is not null;
+}

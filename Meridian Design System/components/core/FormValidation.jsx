@@ -97,7 +97,7 @@ const FormErrorSummary = ({ errors, fields }) => {
   if (errorList.length === 0) return null;
 
   const css = `
-.mds-form-errors{background:var(--red-a10,rgba(186,63,85,.10));border:1px solid color-mix(in srgb,var(--red) 30%,transparent);border-radius:var(--radius-chip,2px);
+.mds-form-errors{background:var(--red-a10,rgba(168,68,60,.10));border:1px solid color-mix(in srgb,var(--red) 30%,transparent);border-radius:var(--radius-chip,2px);
   padding:12px;margin-bottom:16px;}
 .mds-form-errors-title{font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px;}
 .mds-form-errors-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}

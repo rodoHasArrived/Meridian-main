@@ -1,9 +1,13 @@
+using Meridian.Storage.Archival;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
+using Meridian.Execution.Sdk;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
@@ -43,11 +47,11 @@ public sealed class StatementImportServiceTests : IDisposable
             _fetchingConnector
         ]);
 
-        var statementStore = new JsonCanonicalStatementStore(_root);
+        var statementStore = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         _workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(statementStore),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
         _service = new StatementImportService(_registry, _catalog, _workflow, _root);
@@ -55,6 +59,31 @@ public sealed class StatementImportServiceTests : IDisposable
 
     private static StatementSourceDocument FixtureDocument(string fileName, string? mappingProfileId = null)
         => new(fileName, StatementConnectorTestData.ReadFixture(fileName), mappingProfileId);
+
+    private static StatementSourceDocument RichAlpacaDocument(
+        string? currency,
+        string? accountCurrency = "USD",
+        BrokerageActivityCategory category = BrokerageActivityCategory.Trade,
+        BrokerageActivitySubtype subtype = BrokerageActivitySubtype.TradeFill)
+    {
+        var snapshot = JsonNode.Parse(StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"))!;
+        snapshot["portfolio"]!["account"]!["currency"] = accountCurrency;
+        snapshot["activity"]!["activities"] = new JsonArray(new JsonObject
+        {
+            ["eventId"] = "rich-fill-1",
+            ["providerCode"] = subtype.ToString(),
+            ["category"] = category.ToString(),
+            ["subtype"] = subtype.ToString(),
+            ["effectiveAt"] = "2026-06-02T14:30:00Z",
+            ["currency"] = currency,
+            ["netAmount"] = category == BrokerageActivityCategory.Trade ? 0m : 25m,
+            ["symbol"] = "AAPL",
+            ["quantity"] = 10m,
+            ["price"] = 187.25m,
+            ["metadata"] = new JsonObject { ["commission"] = "0.55" }
+        });
+        return new StatementSourceDocument("rich-alpaca.json", Encoding.UTF8.GetBytes(snapshot.ToJsonString()));
+    }
 
     private StatementImportCommitRequest CommitRequest(
         StatementSourceDocument document,
@@ -96,6 +125,7 @@ public sealed class StatementImportServiceTests : IDisposable
     [InlineData("missing-currency")]
     [InlineData("blank-currency")]
     [InlineData("invalid-currency")]
+    [InlineData("unknown-currency")]
     [InlineData("quantity-comma")]
     [InlineData("price-comma")]
     [InlineData("cash-comma")]
@@ -119,6 +149,9 @@ public sealed class StatementImportServiceTests : IDisposable
                 break;
             case "invalid-currency":
                 values[8] = "???";
+                break;
+            case "unknown-currency":
+                values[8] = "ZZZ";
                 break;
             case "quantity-comma":
                 values[2] = "1,25";
@@ -160,15 +193,20 @@ public sealed class StatementImportServiceTests : IDisposable
     [InlineData("<CURSYM></CURSYM>")]
     [InlineData("<CURSYM>  </CURSYM>")]
     [InlineData("<CURSYM/>")]
-    public async Task MonthEndOfxUpload_ExplicitBlankCurrencyCannotBorrowStatementCurrency(string currencyTag)
+    [InlineData("<CURSYM>ZZZ</CURSYM>")]
+    public async Task MonthEndOfxUpload_ExplicitInvalidCurrencyCannotBorrowStatementCurrency(string currencyTag)
     {
         var content = "<OFX><STMTRS><CURDEF>USD</CURDEF><BANKACCTFROM><ACCTID>FUND-A</ACCTID></BANKACCTFROM>"
             + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT><FITID>BANK-1</FITID>"
             + currencyTag + "</STMTTRN></STMTRS></OFX>";
         var document = new StatementSourceDocument("blank-currency.ofx", Encoding.UTF8.GetBytes(content));
 
-        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
-        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        var validation = await _service.ValidateAsync(document, null);
+        validation.IsValid.Should().BeFalse();
+        var preview = await _service.PreviewAsync(document, null);
+        preview.Issues.Should().Contain(issue => issue.Code == "ROW_INVALID_CURRENCY" && issue.RowNumber == null,
+            "retained-record order cannot identify a physical source row for an OFX diagnostic");
+        preview.Status.Should().Be("NeedsAttention");
         await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
         Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
     }
@@ -196,18 +234,45 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task MonthEndOfxUpload_EquivalentAccountCasingPreservesAuthorizedImport()
+    public async Task MonthEndOfxUpload_EquivalentAccountCasingWithinOneStatementPreservesAuthorizedImport()
     {
-        static string Statement(string account, string id) => "<STMTRS><CURDEF>USD</CURDEF>"
-            + $"<BANKACCTFROM><ACCTID>{account}</ACCTID><ACCTID>{account.ToLowerInvariant()}</ACCTID></BANKACCTFROM>"
-            + "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT>"
-            + $"<FITID>{id}</FITID></STMTTRN></STMTRS>";
+        static string Transaction(string id) => "<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>20260602</DTPOSTED><TRNAMT>-25</TRNAMT>"
+            + $"<FITID>{id}</FITID></STMTTRN>";
         var document = new StatementSourceDocument("account-casing.ofx",
-            Encoding.UTF8.GetBytes("<OFX>" + Statement("FUND-A", "1") + Statement("fund-a", "2") + "</OFX>"));
+            Encoding.UTF8.GetBytes("<OFX><STMTRS><CURDEF>USD</CURDEF>"
+                + "<BANKACCTFROM><ACCTID>fund-a</ACCTID><ACCTID>FUND-A</ACCTID></BANKACCTFROM>"
+                + Transaction("1") + Transaction("2") + "</STMTRS></OFX>"));
 
         (await _service.ValidateAsync(document, null)).IsValid.Should().BeTrue();
         (await _service.PreviewAsync(document, null)).Status.Should().Be("ReadyToImport");
         (await _service.CommitAsync(CommitRequest(document))).RecordCount.Should().Be(2);
+    }
+
+    [Theory]
+    [InlineData("STMTRS", "BANKACCTFROM", false)]
+    [InlineData("STMTRS", "BANKACCTFROM", true)]
+    [InlineData("CCSTMTRS", "CCACCTFROM", false)]
+    [InlineData("CCSTMTRS", "CCACCTFROM", true)]
+    [InlineData("INVSTMTRS", "INVACCTFROM", false)]
+    [InlineData("INVSTMTRS", "INVACCTFROM", true)]
+    public async Task MonthEndOfxUpload_MultipleContainingStatementsFailBeforeRetention(
+        string statementTag, string accountTag, bool emptySecondStatement)
+    {
+        string Statement(string account, string id, string date) => $"<{statementTag}><CURDEF>USD</CURDEF>"
+            + $"<{accountTag}><ACCTID>{account}</ACCTID></{accountTag}>"
+            + $"<STMTTRN><TRNTYPE>DEBIT</TRNTYPE><DTPOSTED>{date}</DTPOSTED><TRNAMT>-25</TRNAMT><FITID>{id}</FITID></STMTTRN>"
+            + $"<LEDGERBAL><BALAMT>1000</BALAMT><DTASOF>{date}</DTASOF></LEDGERBAL></{statementTag}>";
+        var second = emptySecondStatement ? $"<{statementTag}/>" : Statement("fund-a", "2", "20260630");
+        var document = new StatementSourceDocument("multiple-statements.ofx",
+            Encoding.UTF8.GetBytes("<OFX>" + Statement("FUND-A", "1", "20260615") + second + "</OFX>"));
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeFalse();
+        var preview = await _service.PreviewAsync(document, null);
+        preview.Status.Should().Be("NeedsAttention");
+        preview.Issues.Should().Contain(issue => issue.Code == "OFX_MULTIPLE_STATEMENTS");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(CommitRequest(document)));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
     }
 
     [Theory]
@@ -266,6 +331,81 @@ public sealed class StatementImportServiceTests : IDisposable
         var canonical = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
         canonical.Should().Contain(",USD,1.05,fill-1001");
         canonical.Should().Contain(",USD,1.02,fill-1002");
+    }
+
+    [Theory]
+    [InlineData(null, "USD")]
+    [InlineData("", "USD")]
+    [InlineData("EUR", "EUR")]
+    public async Task MonthEndAlpacaSnapshot_RichFillsRetainProvenCurrencyThroughCommit(
+        string? sourceCurrency, string expectedCurrency)
+    {
+        var document = RichAlpacaDocument(sourceCurrency);
+
+        (await _service.ValidateAsync(document, null)).IsValid.Should().BeTrue();
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("ReadyToImport");
+        var result = await _service.CommitAsync(CommitRequest(document, externalAccountId: "PA3ALPACA01"));
+
+        result.RecordCount.Should().Be(4, "rich activities replace the legacy fill/cash collections");
+        var canonical = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
+        canonical.Should().Contain($",{expectedCurrency},0.55,rich-fill-1");
+        canonical.Should().Contain("-1872.5");
+        canonical.Should().NotContain("fill-1001");
+    }
+
+    [Theory]
+    [InlineData("", null)]
+    [InlineData("", "")]
+    [InlineData("", "EUR")]
+    [InlineData("ZZZ", "USD")]
+    [InlineData("XXX", "USD")]
+    [InlineData("XTS", "USD")]
+    public async Task MonthEndAlpacaSnapshot_RichFillsWithoutCurrencyEvidenceRefuseBeforeRetention(
+        string sourceCurrency, string? accountCurrency)
+    {
+        var document = RichAlpacaDocument(sourceCurrency, accountCurrency);
+
+        var validation = await _service.ValidateAsync(document, null);
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains("ROW_INVALID_CURRENCY", StringComparison.Ordinal));
+        (await _service.PreviewAsync(document, null)).Status.Should().Be("NeedsAttention");
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(
+            CommitRequest(document, externalAccountId: "PA3ALPACA01")));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashDeposit)]
+    [InlineData(BrokerageActivityCategory.Dividend, BrokerageActivitySubtype.CashDividend)]
+    [InlineData(BrokerageActivityCategory.Fee, BrokerageActivitySubtype.Fee)]
+    [InlineData(BrokerageActivityCategory.Trade, BrokerageActivitySubtype.TradeCorrection)]
+    [InlineData(BrokerageActivityCategory.Trade, BrokerageActivitySubtype.TradeBust)]
+    public async Task MonthEndAlpacaSnapshot_NonFillRichActivitiesCannotBorrowAccountCurrency(
+        BrokerageActivityCategory category, BrokerageActivitySubtype subtype)
+    {
+        var document = RichAlpacaDocument("", category: category, subtype: subtype);
+
+        var validation = await _service.ValidateAsync(document, null);
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains("ROW_INVALID_CURRENCY", StringComparison.Ordinal));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(
+            CommitRequest(document, externalAccountId: "PA3ALPACA01")));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task MonthEndAlpacaSnapshot_RichFillCannotBorrowAnotherAccountsCurrency()
+    {
+        var snapshot = JsonNode.Parse(RichAlpacaDocument("").Content.Span)!;
+        snapshot["portfolio"]!["account"]!["accountId"] = "OTHER-ACCOUNT";
+        var document = new StatementSourceDocument("foreign-account.json", Encoding.UTF8.GetBytes(snapshot.ToJsonString()));
+
+        var validation = await _service.ValidateAsync(document, null);
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains("ACCOUNT_SCOPE_MISMATCH", StringComparison.Ordinal));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(
+            CommitRequest(document, externalAccountId: "PA3ALPACA01")));
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports")).Should().BeFalse();
     }
 
     [Fact]
@@ -802,7 +942,7 @@ public sealed class StatementImportServiceTests : IDisposable
             canonicalHash);
         legacyRunId.Should().NotBe(hardenedRunId, "the upgrade scenario must exercise the old canonical-only identity");
 
-        var store = new JsonCanonicalStatementStore(_root);
+        var store = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         await store.SaveImportAsync(
             new CanonicalStatementImport(
                 legacyRunId,
@@ -1083,6 +1223,9 @@ public sealed class StatementImportServiceTests : IDisposable
         ingestion.LastAuthorizationCommand.ExternalAccountId.Should().Be("EXT-001");
         ingestion.LastAuthorizationCommand.SourceInstitution.Should().Be("Fake Custodian");
         ingestion.LastAuthorizationCommand.AccountingScope.Should().Be(accountingScope);
+        ingestion.AuthorizationTenant.Should().Be("tenant-scheduled");
+        ingestion.IngestionTenant.Should().Be("tenant-scheduled");
+        FundScopeTenantAuthority.CurrentTenantId.Should().BeNull("completed work must release retained authority");
         _fetchingConnector.LastRequest.Should().NotBeNull();
         _fetchingConnector.LastRequest!.Since.Should().Be(
             new DateTimeOffset(periodStart, TimeOnly.MinValue, TimeSpan.Zero),
@@ -1122,6 +1265,8 @@ public sealed class StatementImportServiceTests : IDisposable
         ingestion.LastAuthorizationCommand.CompanyId.Should().Be("company-scheduled");
         ingestion.LastAuthorizationCommand.FundAccountId.Should().Be("FUND-SCHED");
         ingestion.LastAuthorizationCommand.ExternalAccountId.Should().Be("EXT-001");
+        ingestion.AuthorizationTenant.Should().Be("tenant-scheduled");
+        FundScopeTenantAuthority.CurrentTenantId.Should().BeNull("failed reauthorization must release retained authority");
         ingestion.LastCommand.Should().BeNull(
             "a revoked account must never enter the statement ingestion workflow");
         _fetchingConnector.LastRequest.Should().BeNull(
@@ -1131,6 +1276,60 @@ public sealed class StatementImportServiceTests : IDisposable
             .LastRunStatus
             .Should()
             .Be("Failed: InvalidOperationException");
+    }
+
+    [Theory]
+    [InlineData(null, "company-scheduled")]
+    [InlineData(" ", "company-scheduled")]
+    [InlineData("tenant-scheduled", null)]
+    [InlineData("tenant-scheduled", " ")]
+    public async Task ScheduleRunner_MissingRetainedAuthority_CannotBorrowAnAmbientWorkerTenant(
+        string? tenantId, string? companyId)
+    {
+        var scheduleStore = new FileStatementFetchScheduleStore(_root);
+        var schedule = await scheduleStore.UpsertAsync(CreateScopedSchedule(
+            "missing-authority", new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 30)));
+        var ingestion = new RecordingStatementFetchIngestionAuthority(_service);
+        var runner = new StatementFetchScheduleRunner(scheduleStore, _service, ingestion);
+
+        using (FundScopeTenantAuthority.Enter("tenant-scheduled", "unrelated enclosing worker"))
+        {
+            var result = await runner.RunScheduleAsync(schedule with { TenantId = tenantId, CompanyId = companyId },
+                new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero));
+
+            result.Should().BeNull();
+            ingestion.LastAuthorizationCommand.Should().BeNull();
+            ingestion.LastCommand.Should().BeNull();
+            _fetchingConnector.LastRequest.Should().BeNull();
+            FundScopeTenantAuthority.CurrentTenantId.Should().Be("tenant-scheduled");
+        }
+        FundScopeTenantAuthority.CurrentTenantId.Should().BeNull();
+        (await scheduleStore.ListAsync()).Single().LastRunStatus.Should().Be("Failed: InvalidOperationException");
+    }
+
+    [Fact]
+    public async Task ScheduleRunner_MismatchedReauthorizedScope_RefusesProviderAccessAndRestoresEnclosingAuthority()
+    {
+        var scheduleStore = new FileStatementFetchScheduleStore(_root);
+        var schedule = await scheduleStore.UpsertAsync(CreateScopedSchedule(
+            "mismatched-authority", new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 30)));
+        var ingestion = new RecordingStatementFetchIngestionAuthority(_service,
+            authorizedScope: schedule.AccountingScope! with { FundProfileId = "foreign-fund" });
+        var runner = new StatementFetchScheduleRunner(scheduleStore, _service, ingestion);
+
+        using (FundScopeTenantAuthority.Enter("outer-tenant", "enclosing dispatcher"))
+        {
+            var result = await runner.RunScheduleAsync(schedule,
+                new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero));
+
+            result.Should().BeNull();
+            ingestion.AuthorizationTenant.Should().Be("tenant-scheduled");
+            ingestion.LastCommand.Should().BeNull();
+            _fetchingConnector.LastRequest.Should().BeNull();
+            FundScopeTenantAuthority.CurrentTenantId.Should().Be("outer-tenant");
+        }
+        FundScopeTenantAuthority.CurrentTenantId.Should().BeNull();
+        (await scheduleStore.ListAsync()).Single().LastRunStatus.Should().Be("Failed: InvalidOperationException");
     }
 
     [Fact]
@@ -1238,11 +1437,14 @@ public sealed class StatementImportServiceTests : IDisposable
 
     private sealed class RecordingStatementFetchIngestionAuthority(
         StatementImportService imports,
-        Exception? authorizationFailure = null)
+        Exception? authorizationFailure = null,
+        StatementAccountingScope? authorizedScope = null)
         : IStatementFetchIngestionAuthority
     {
         public StatementFetchAuthorizationCommand? LastAuthorizationCommand { get; private set; }
         public StatementFetchIngestionCommand? LastCommand { get; private set; }
+        public string? AuthorizationTenant { get; private set; }
+        public string? IngestionTenant { get; private set; }
 
         public Task<StatementAccountingScope> AuthorizeAsync(
             StatementFetchAuthorizationCommand command,
@@ -1250,8 +1452,9 @@ public sealed class StatementImportServiceTests : IDisposable
         {
             ct.ThrowIfCancellationRequested();
             LastAuthorizationCommand = command;
+            AuthorizationTenant = FundScopeTenantAuthority.CurrentTenantId;
             return authorizationFailure is null
-                ? Task.FromResult(command.AccountingScope)
+                ? Task.FromResult(authorizedScope ?? command.AccountingScope)
                 : Task.FromException<StatementAccountingScope>(authorizationFailure);
         }
 
@@ -1260,6 +1463,7 @@ public sealed class StatementImportServiceTests : IDisposable
             CancellationToken ct = default)
         {
             LastCommand = command;
+            IngestionTenant = FundScopeTenantAuthority.CurrentTenantId;
             return await imports.CommitAsync(
                     new StatementImportCommitRequest(
                         command.Document,

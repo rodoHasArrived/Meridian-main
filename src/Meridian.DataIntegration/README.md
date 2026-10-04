@@ -6,12 +6,112 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-08-05
+last_reviewed: 2026-09-28
 ---
 
 # src/Meridian.DataIntegration
 
+## External GL providers
+
+`AccountingSystem/XeroAccountingProvider.cs` and `NetSuiteAccountingProvider.cs`
+import credentialed read-only evidence through `CredentialedAccountingProvider`.
+The shared base serializes token rotation, persists rotated refresh tokens in the
+provider vault with a complete snapshot in both recovery generations, and sanitizes transport failures.
+Environment credentials migrate together on rotation; cancellation after receiving a replacement
+cannot discard it. Provider adapters own scope,
+pagination, strict mapping, and controlled export validation. They never post
+journals. Imports reject unbalanced or malformed trial balances. Export review lines
+retain gross debit/credit account totals. NetSuite standard date-based trial balances
+normalize calendar-year income-statement balances and carry prior-year net income
+into the provider-identified system retained-earnings account, preserving direct
+postings. Both journal and balance reads exclude period-end journals; ambiguous
+system account identity fails closed. See [External GL Providers](../../docs/operators/external-gl-providers.md)
+for supported scope, permissions, failure recovery and human review evidence.
+The NetSuite chart filters direct subsidiary assignments and inherited assignments with
+Include Children, using a validated ancestor chain. Unnumbered accounts have stable
+provider-prefixed internal-ID codes. Both providers retain an explicit balance basis:
+NetSuite uses the calendar year; Xero uses the organisation's financial year and system
+retained-earnings identity. The requested journal period remains independent.
+Xero payroll wage and superannuation expense types participate in that income-year
+roll-forward. HTTP timeouts are sanitized provider failures and update verification
+status; cancellation requested by the caller remains cancellation.
+Xero GET reads honor valid `Retry-After` delays up to two minutes, with at most three
+retries of the same cursor. Token exchanges are never retried automatically. The
+connection lifecycle owns verification-result persistence and the operator audit
+identity; imports persist their own result. Export validation requires currently
+verified credentials, so credential replacement blocks review until verification succeeds.
+Vault status honors the pending verification marker even when an earlier success
+timestamp is retained for audit history.
+Conditional token saves compare the complete expected connection while holding the
+vault writer lock and return a new opaque credential generation. Import and lifecycle
+verification results must still match that generation when persisted. A concurrent
+operator replacement is preserved and the stale operation cannot verify it.
+
+## OAuth token ownership
+
+`IOAuthTokenVault` stores refreshable tokens in the same encrypted vault as provider credentials.
+Mutations hold the shared writer lock and update only the named provider token; readers open a stable
+published generation without requiring a writable lock. Legacy imports preserve existing tokens and
+audit every attempted provider, retaining the imported generation in both primary and backup before
+acknowledging the import. Scoped and unscoped OAuth saves mirror the replacement token to the backup before success,
+because remote rotation can invalidate the previous refresh token immediately. Backup-write failures
+are reported; the retained replacement can be saved again without another remote rotation.
+Durable markers and sanitized recovery generations prevent deletion reversal;
+empty or missing primaries recover from the retained backup. Both audit surfaces append under the vault
+lock without copying accumulated history. Before appending, an incomplete final record is durably retained
+in a uniquely named `.partial-*` file, preserving every newline-terminated record in the original log.
+The service never writes plaintext OAuth JSON.
+Scoped readers use the same stable generation path, including backup recovery, without acquiring a
+writer lock or creating storage for an absent vault. Scoped deletion sanitizes recovery generations
+while retaining other owners and unassigned records. Scoped audit appends retain tenant, connection,
+external account and environment through incomplete-tail recovery.
+The existing non-Windows local key file remains a production-hardening gap; this does not certify PRD-002.
+
+`IScopedOAuthTokenVault` isolates tokens by the same four ownership dimensions as provider secrets.
+Scoped token records retain and validate their provider and ownership context; legacy token enumeration
+cannot return scoped tokens. `OAuthTokenRefreshService` accepts trusted `ownershipScope` for loading,
+saving, refresh rotation and deletion. Scoped services never claim or erase an unassigned legacy OAuth
+sidecar. Host callers must supply authorized scope; the default service remains a legacy compatibility path.
+
+## Credential migration recovery
+
+Provider credential descriptors and telemetry aggregation use the shared ProviderSdk family
+identity map (`ibkr`, `nasdaq`, and explicit legacy aliases). Existing encrypted vault records and
+legacy-import markers normalize in memory when read; a subsequent normal mutation persists the
+canonical keys under the existing writer lock. Alias collisions retain the newest whole saved
+record, preserving verification metadata without mixing credentials from separate generations.
+The IB Flex credential resource keeps its independent `ib-flex` identity. Scoped legacy provider
+aliases validate their persisted provider/scope key and retained account/environment before re-keying
+to the canonical provider. The ownership hash is rebuilt using all retained dimensions; aliases can
+coalesce only inside that same ownership scope. Malformed or absent scope metadata fails closed.
+Read-only migration preserves credential generation and verification evidence; the next mutation
+persists the canonical key while retaining all other owners.
+
+Legacy provider sidecars are imported as one validated, insert-only vault snapshot. Compatible module aliases are combined; conflicting fields or environments reject the whole snapshot before publication. Existing encrypted records, including rotated credentials and verification metadata, remain authoritative on retries. Import markers survive deletion so retained sidecars cannot resurrect removed secrets after an audit failure. Deletion also replaces the recovery generation with the sanitized vault. Mutations share a bounded, cancellable file lock across store instances. Readers open one immutable published generation without a writable lock, including on read-only secret volumes; primary and backup generations are both replaced atomically. Audit failure retains the sidecar for retry.
+
+`LegacyCredentialFileMigration` serializes source discovery, import and cleanup across processes for
+both provider setup and OAuth callers. Successful imports retain both encrypted generations before
+the helper moves the plaintext source to `.migrated`, synchronizes the directory, then erases it.
+A restart completes cleanup without deserializing partly erased bytes. Empty migration lock files
+remain in place so every process continues to acquire the same lock identity.
+
 ## Purpose
+
+`IScopedProviderCredentialStore` binds provider secrets to explicit tenant, connection, external
+account and environment identities. Scoped operations use independent encrypted records, validate
+persisted scope, and never fall back to provider-wide or process-environment credentials. Rotation,
+verification and deletion operate on one scope; audit entries retain the corresponding scope.
+The provider-only API remains a legacy compatibility surface. Runtime consumer and OAuth routing
+must be migrated to trusted scoped context before PRD-002 can claim end-to-end isolation.
+
+A vault that holds any scoped provider record or scoped OAuth token is written as format version 2
+with a `+scoped-v2` protection tag. Releases that predate scoped ownership ignore the envelope
+version and would otherwise rewrite the vault without `Scope` or scoped OAuth records. They reject
+the new tag as unreadable instead, so after a rollback they fail closed rather than taking scoped
+credentials offline. Every surviving generation carries the tag: the previous generation is
+re-protected when it becomes the backup, and a legacy backup left by a missing or corrupt primary
+is upgraded before the scoped primary is published. Removing the last scoped record restores the
+version 1 format. Readers refuse envelope versions newer than they understand.
 
 ETL runs acquire a unique execution lease before admission. Staging, audit/reject writes, and
 event publication use guarded actions; flush, catalog/export commit, checkpoint, source cleanup,
@@ -54,7 +154,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   event-type, and processing-tier matching.
 - `Historical/HistoricalDataQueryService.cs` - JSONL-backed historical market-data query and
   OHLCV bar aggregation service used by CLI, diagnostics, simulation, and shared-data access
-  adapters.
+  adapters. File-date filtering and date-range discovery inspect paths relative to the configured
+  data root, so dated workspace or backup directories cannot replace the data's own session date.
 - `Monitoring/BadTickFilter.cs`, `Monitoring/TickSizeValidator.cs`,
   `Monitoring/TimestampMonotonicityChecker.cs`, `Monitoring/ValidationMetrics.cs`,
   `Monitoring/ClockSkewEstimator.cs`, `Monitoring/SpreadMonitor.cs`,
@@ -81,11 +182,17 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
 
+Connection-health ping cancellation and linked-token disposal execute outside the operation-state
+lock, so provider callbacks and completion cleanup can re-enter the monitor without deadlocking.
+Cleanup requested during cancellation is deferred until the active cancellation calls return;
+shutdown still cancels scans and observes late faults from non-cooperative pings.
+
 Accounting-system integration lives in this module. The adapter family imports chart-of-accounts,
 journal-entry, and trial-balance evidence as read-only reconciliation input through
 `IAccountingSystemProvider`. QuickBooks Online refreshes OAuth access tokens through the server-side
 QuickBooks client seam, records connection verification posture, and maps provider-vault
-credentials into the QuickBooks connection store. QuickBooks, Xero, and NetSuite fixture providers
+credentials into the QuickBooks connection store. Xero and NetSuite also have credentialed
+read-only adapters registered alongside their fixtures. QuickBooks, Xero, and NetSuite fixture providers
 publish deterministic read-only import evidence for mapping, reconciliation, browser, and WPF
 validation. Posting/export to an external GL remains disabled; UI Shared registers the Data
 Integration providers and connection store but does not own transport, credential persistence

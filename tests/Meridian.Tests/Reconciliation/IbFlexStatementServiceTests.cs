@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Globalization;
 using System.Xml.Linq;
 using System.Xml;
@@ -41,7 +42,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     {
         _tempDir = Path.Combine(Path.GetTempPath(), $"meridian-test-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempDir);
-        _store = new JsonCanonicalStatementStore(_tempDir);
+        _store = new JsonCanonicalStatementStore(_tempDir, new AtomicFileWriterAdapter());
         _service = new IbFlexBrokerStatementService(_store);
     }
 
@@ -372,8 +373,8 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     {
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             _store,
-            new JsonReconciliationCaseStore(_tempDir),
-            new JsonReconciliationBreakStore(_tempDir),
+            new JsonReconciliationCaseStore(_tempDir, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_tempDir, new AtomicFileWriterAdapter()),
             new RoutingBrokerStatementService(new CsvBrokerStatementService(_store), _service),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
         var path = WriteFlexFile(SampleFlexXml);
@@ -417,8 +418,8 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     {
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             _store,
-            new JsonReconciliationCaseStore(_tempDir),
-            new JsonReconciliationBreakStore(_tempDir),
+            new JsonReconciliationCaseStore(_tempDir, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_tempDir, new AtomicFileWriterAdapter()),
             new RoutingBrokerStatementService(new CsvBrokerStatementService(_store), _service),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
         var path = WriteFlexFile(SampleFlexXml, "generic-broker-report.xml");

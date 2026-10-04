@@ -967,11 +967,11 @@ public sealed class MockExampleClient : IMarketDataClient
 ## Related Documentation
 
 - **Architecture and Design:**
-  - [ADR-001: Provider Abstraction](../../archive/docs/adr/001-provider-abstraction.md) — Interface contracts for data providers
-  - [ADR-004: Async Streaming Patterns](../../archive/docs/adr/004-async-streaming-patterns.md) — CancellationToken, IAsyncEnumerable
-  - [ADR-005: Attribute-Based Discovery](../../archive/docs/adr/005-attribute-based-discovery.md) — `[DataSource]`, `[ImplementsAdr]`
-  - [ADR-010: HttpClient Factory](../../archive/docs/adr/010-httpclient-factory.md) — HTTP client lifecycle management
-  - [ADR-013: Bounded Channel Policy](../../archive/docs/adr/013-bounded-channel-policy.md) — Consistent backpressure presets
+  - [ADR-001: Provider Abstraction](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/001-provider-abstraction.md) — Interface contracts for data providers
+  - [ADR-004: Async Streaming Patterns](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/004-async-streaming-patterns.md) — CancellationToken, IAsyncEnumerable
+  - [ADR-005: Attribute-Based Discovery](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/005-attribute-based-discovery.md) — `[DataSource]`, `[ImplementsAdr]`
+  - [ADR-010: HttpClient Factory](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/010-httpclient-factory.md) — HTTP client lifecycle management
+  - [ADR-013: Bounded Channel Policy](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/013-bounded-channel-policy.md) — Consistent backpressure presets
   - [Provider Capability Matrix](../reference/provider-capability-matrix.md) — Feature comparison matrix and provider catalog
 
 - **Implementation Guides:**
@@ -981,7 +981,7 @@ public sealed class MockExampleClient : IMarketDataClient
 
 - **Operations and Testing:**
   - [Provider Backfill Operations](../operators/provider-backfill-operations.md) — Historical data procedures
-  - [Performance Tuning](../../archive/docs/operations/performance-tuning.md) — Optimization strategies
+  - [Performance Tuning](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/operations/performance-tuning.md) — Optimization strategies
 - [Provider onboarding guides](../operators/README.md) — Interactive Brokers, Alpaca, and related operator procedures
 
 - **AI Guides:**

@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 1 of 4
 
-Objects 1-80 of 298. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 299. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -462,6 +462,11 @@ classDiagram
         +DateOnly PeriodStart
         +string PostingDisabledReason
     }
+    class Meridian_Contracts_AccountingSystem_AccountingSystemTrialBalanceBasisDto["AccountingSystemTrialBalanceBasisDto"] {
+        +IReadOnlyList~string~ IncomeStatementAccountCodes
+        +DateOnly IncomeStatementPeriodStart
+        +string? RetainedEarningsAccountCode
+    }
     class Meridian_Contracts_AccountingSystem_AccountingSystemTrialBalanceLineDto["AccountingSystemTrialBalanceLineDto"] {
         +string AccountCode
         +string AccountName
@@ -635,8 +640,6 @@ classDiagram
         +string? Detail
         +AccountingAuditRecoveryOutcome Outcome
     }
-    class Meridian_Contracts_Ledger_AccountingBasisKindDto["AccountingBasisKindDto"] {
-    }
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactIssueDto
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactStatusDto
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationLaneDto
@@ -687,12 +690,12 @@ classDiagram
     Meridian_Contracts_AccountingSystem_AccountingProductionReadinessRequestDto --> Meridian_Contracts_AccountingSystem_AccountingMigrationRunArtifactDto
     Meridian_Contracts_AccountingSystem_AccountingProductionReadinessRequestDto --> Meridian_Contracts_AccountingSystem_AccountingTenantAdminCertificationArtifactDto
     Meridian_Contracts_AccountingSystem_AccountingProductionReadinessRequestDto --> Meridian_Contracts_AccountingSystem_AccountingWorkflowCertificationArtifactDto
-    Meridian_Contracts_AccountingSystem_AccountingProductionReadinessRequestDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_AccountingSystem_AccountingSystemImportDetailDto --> Meridian_Contracts_AccountingSystem_AccountingSystemChartAccountDto
     Meridian_Contracts_AccountingSystem_AccountingSystemImportDetailDto --> Meridian_Contracts_AccountingSystem_AccountingSystemImportSummaryDto
     Meridian_Contracts_AccountingSystem_AccountingSystemImportDetailDto --> Meridian_Contracts_AccountingSystem_AccountingSystemJournalEntryDto
     Meridian_Contracts_AccountingSystem_AccountingSystemImportDetailDto --> Meridian_Contracts_AccountingSystem_AccountingSystemTrialBalanceLineDto
     Meridian_Contracts_AccountingSystem_AccountingSystemImportSummaryDto --> Meridian_Contracts_AccountingSystem_AccountingSystemImportStateDto
+    Meridian_Contracts_AccountingSystem_AccountingSystemImportSummaryDto --> Meridian_Contracts_AccountingSystem_AccountingSystemTrialBalanceBasisDto
     Meridian_Contracts_AccountingSystem_AccountingSystemJournalEntryDto --> Meridian_Contracts_AccountingSystem_AccountingSystemJournalLineDto
     Meridian_Contracts_AccountingSystem_AccountingSystemProviderDto --> Meridian_Contracts_AccountingSystem_AccountingSystemConnectionMetadataDto
     Meridian_Contracts_AccountingSystem_AccountingSystemProviderDto --> Meridian_Contracts_AccountingSystem_AccountingSystemProviderMappingRequirementDto

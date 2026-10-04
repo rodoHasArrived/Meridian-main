@@ -8,6 +8,7 @@
 [`docs/roadmap/data/decision-log.yml`](../roadmap/data/decision-log.yml)
 **Reassessment decision:** `DEC-W9-ACCEPTANCE-002` in the same decision log
 **Hold-closure decision:** `DEC-W9-ACCEPTANCE-003` in the same decision log (2026-09-01)
+**W9-TRUTH-001 owner-exception decision:** `DEC-W9-ACCEPTANCE-005` in the same decision log (2026-09-26)
 
 ## What this record is
 
@@ -26,7 +27,145 @@ release-certification gate in [`implementation-todo-list.md`](implementation-tod
 of these rows moves to `done` here — `done` additionally requires the release or status
 documentation each row's lane owns.
 
-## Currently accepted (six)
+> **Later status change.** `W9-DEMO-002` has since moved to `done`, on 2026-09-16, under
+> `DEC-W9-DONE-001` and the closure record in
+> [`w9-demo-002-closure-2026-09-16.md`](w9-demo-002-closure-2026-09-16.md). That record also
+> documents a correction to the evidence this acceptance was taken on. The other rows below are
+> unaffected, and this file remains the acceptance record for all of them.
+
+> **W9-TRUTH-001 reassessment — 2026-09-25.** Issue #2626 was reopened after source review at
+> `a03238c69f86c7455e03c0f6be2196d55719a044` found that reconciliation `SaveAsync` omitted the
+> entry-provenance guard, the actual legacy rekey path could discard an incoming mark, and
+> duplicate-create identity excluded provenance. The original acceptance remains historical
+> evidence; the row moved to `in_progress` pending correction, validation, and review. This status
+> was superseded by the correction closure below, which was itself superseded by the
+> 2026-09-26 review-gate correction and then the explicit owner exception below. Other rows'
+> decisions are unchanged.
+
+## W9-TRUTH-001 correction closure — 2026-09-25 (superseded)
+
+The reconciliation correction merged in [PR #3000](https://github.com/rodoHasArrived/Meridian-main/pull/3000)
+as `f96917619ea357aad3759449d9ea69bb6596a9b5`. Saves and actual legacy rekeys now enforce
+entry provenance, retained non-real marks cannot be removed by renaming source fields, and
+normalized provenance participates in duplicate-create identity. New migration audit entries
+retain the original request hash so exact retries survive restart and stronger inherited marks.
+
+All nine hosted workflows passed on head `432d8882bd6bcafe730408d6a64ba32600921c56`, including
+[Meridian CI run 36209318392](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36209318392),
+Windows Desktop Build, Golden Path Validation, CodeQL, and both WPF validation workflows.
+The focused repository suite passed 106 cases, including 35 new regression cases. Automated
+source review found no further correction blockers. Local full CI passed restore using
+`DOTNET_PROCESSOR_COUNT=1`, then could not evaluate formatting because Roslyn's named-pipe
+client received `SocketException (13): Permission denied`; hosted validation supplied the
+integration evidence. No local full-CI pass is claimed.
+
+After receiving the correction checkpoint, the user instructed: "Go ahead and merge the completed
+work and then move on to implement the remaining open items." PR #3001 restored the bounded
+`accepted` posture on that instruction, the merged correction, and the original acceptance evidence
+above. It merged as `13f2a11df9fb95c548a50c9e60449fee2353dfb4` at 2026-09-26 03:15:00 UTC
+and closed issue #2626 one second later. That closure did not satisfy the separately required
+independent security/storage and reconciliation-lineage reviews. The status correction below
+supersedes it; the code correction remains in place. Invalid legacy cases still require an explicit
+non-real mark before repair or rekey.
+
+## W9-TRUTH-001 review gate reopened — 2026-09-26
+
+**Historical disposition, superseded by the [owner exception below](#w9-truth-001-owner-exception--2026-09-26).**
+Issue [#2626](https://github.com/rodoHasArrived/Meridian-main/issues/2626) was reopened for the
+required independent human reviews. The row moved to `ready_for_acceptance`, with
+`evidence_posture: implementation_complete` and `health: yellow`. This preserves the implemented
+correction and its validation while withdrawing the unsupported acceptance closure. Generic merge
+authorization, the original acceptance decision, CI, and automated review do not discharge the
+specific human review requirement.
+
+The review records checked on 2026-09-26 contain no review submissions on PR #3000. PR #3001 has
+an automated Codex `COMMENTED` review and the PR author's `COMMENTED` reply resolving a wording
+finding. Neither is independent human security/storage or reconciliation-lineage approval. The
+last issue comment before closure explicitly left independent human review outstanding.
+
+Machine evidence was completed after the closure. [Production Certification run 36214217538](https://github.com/rodoHasArrived/Meridian-main/actions/runs/36214217538)
+passed all four jobs on merge commit `13f2a11df9fb95c548a50c9e60449fee2353dfb4`. Its retained
+`production-certification-90-1` artifact (ID `10897155552`, created 2026-09-26 03:21:38 UTC)
+has SHA-256 `2b69dcd66f7bf238ed0e25bd037d61e55282471c46fdb1e01d4ee44129f758dd`;
+downloaded bytes matched that digest. `skip-evidence.json` records 1,018 Meridian integration tests
+and 12 Direct Lending integration tests passed, with zero failures or skips. The artifact contains
+TRX, coverage, schema and inventory evidence. These 1,030 integration cases do not include the
+106 focused reconciliation repository tests cited above and do not represent a human review.
+The run also retains recovery, documentation, and dependency artifacts. GitHub retention currently
+expires on 2026-12-25.
+
+The separate retained review archive is named
+`meridian-3001-2626-certification-review-evidence-2026-09-26.zip`, created 2026-09-26 04:02:55 UTC
+(1,998,437 bytes). Its existence was confirmed, but its contents could not be inspected during this
+reassessment because retrieval failed. The directly downloaded GitHub artifact supplies the
+verified certification evidence above; no independent review is inferred from the archive's name.
+
+The reopened gate required dated, named independent human verdicts for both review lanes:
+
+- **Security/storage:** provenance admission before mutation, retained-mark monotonicity, durable
+  case/audit consistency, and refusal of invalid legacy repair paths.
+- **Reconciliation lineage:** normalized create identity, the original migration request hash,
+  exact retries across restart and stronger inherited marks, and compatibility of the legacy
+  migration comparison path.
+
+Each verdict was to identify the reviewed source (`432d8882bd6bcafe730408d6a64ba32600921c56`,
+merged by #3000 as `f96917619ea357aad3759449d9ea69bb6596a9b5`), the certification commit/run
+above, the evidence inspected, and any findings and their disposition. The required next step was
+to link both verdicts here and from #2626 and resolve blocking findings before reconciling acceptance.
+That pending disposition is superseded only for this correction by the owner exception below. A later change to
+the reviewed source requires a fresh assessment of the evidence boundary. No `done` transition or
+release certification is claimed here.
+
+## W9-TRUTH-001 owner exception — 2026-09-26
+
+**Current disposition:** `accepted`, `evidence_posture: complete`, `health: green`, under
+`DEC-W9-ACCEPTANCE-005`. Issue [#2626](https://github.com/rodoHasArrived/Meridian-main/issues/2626)
+is closed. This restores bounded roadmap acceptance only.
+
+[PR #3003](https://github.com/rodoHasArrived/Meridian-main/pull/3003) merged as
+`6bd732dcbc83db70e97c18f7ecca0e0adce2a789` at 10:36 UTC. The repository owner then
+[attested to completing their own human review](https://github.com/rodoHasArrived/Meridian-main/issues/2626#issuecomment-5845544214)
+at 10:37 UTC (03:37 Phoenix time). At 10:39 UTC (03:39 Phoenix time), the owner
+[explicitly instructed that the independent-review requirement be marked satisfied](https://github.com/rodoHasArrived/Meridian-main/issues/2626#issuecomment-5845555204).
+That decision accepts the completed owner self-review in place of the previously requested
+independent non-author reviews for the PR #3000 provenance correction / #2626 gate.
+
+| Review lane | Current gate disposition | Basis |
+| --- | --- | --- |
+| Security/storage | Satisfied by owner-authorized exception | Completed owner self-review and explicit owner instruction linked above |
+| Reconciliation lineage | Satisfied by owner-authorized exception | Completed owner self-review and explicit owner instruction linked above |
+
+**Independent non-author verdicts were not obtained.** The owner is the implementation and
+acceptance author. No detailed lane findings, inspected-artifact list, or specific reviewed SHA
+was supplied with the self-review attestation; none is inferred. The retained certification and
+focused-test evidence above remains unchanged. The earlier requirement and
+[two-lane review brief](https://github.com/rodoHasArrived/Meridian-main/pull/3003#issuecomment-5845473719)
+remain historical evidence; this exception supersedes their pending review-gate disposition for
+this correction only.
+
+The exception does not change repository rules, branch protections, CI requirements, other review
+gates, or release certification. The row does not move to `done`, and the P0 release-certification
+gate remains open. No fresh test execution or current-head release certification is asserted by
+this status reconciliation.
+
+## W9-PAPER-003 final-price correction — 2026-09-25
+
+Source verification for issue #2628 found that both paper gateways rounded prices to tick size
+after matching admission. A buy at an observed print and limit of 100.006 could therefore become
+a 100.01 fill on a 0.01 tick, violating both the observed envelope and the limit. The equivalent
+sell-side rounding could cross the lower bound. The earlier property suite tested the matcher,
+while its gateway cases omitted Security Master tick sizes, so it did not catch this final step.
+
+The shared final-price helper now keeps a rounded tick only if it remains positive, within the
+captured envelope, and within a limit or stop-limit order's price constraint. Otherwise it retains
+the admitted observed price; best-effort tick rounding cannot fabricate a price outside those
+bounds. Costs use the final price. `PaperGatewayTickSizeBoundaryTests` exercises both gateways,
+all four supported order types, limit breaches inside a wider envelope, valid rounding, and
+resting-order execution. Against the original code, 28 regressions failed and four valid-rounding
+controls passed. Validation of the correction and hosted merge evidence belong to its PR.
+The historical bounded acceptance remains recorded; this is not a release-certification claim.
+
+## Recorded acceptances (six)
 
 | Row | Priority | Accepted on the evidence of |
 | --- | --- | --- |
@@ -37,8 +176,10 @@ documentation each row's lane owns.
 | `W9-NAV-006` | high | Unitized NAV per share class with an auditable movement-level trail, the fee/waterfall/commitment kernels, and the golden-file worked-example pack computed independently of the implementation. |
 | `W9-ALPACA-004` | high | Accepted 2026-09-01 under `DEC-W9-ACCEPTANCE-003` on closure of the three held caveats (see [Held back, then closed](#held-back-then-closed) below): the authenticated `trade_updates` stream with its durable content-hashed inbox, the reconnect REST reconciliation with an overlap window, the OMS fill loop with exactly-once accounting handoff, and the restart adoption of untracked fills as the broker's own executed increment. |
 
-Each of these six accepted rows links this file as acceptance evidence and carries
-`evidence_posture: complete` and `health: green`. `DEC-W9-ACCEPTANCE-001` originally accepted
+The table preserves historical acceptance evidence. `W9-TRUTH-001` has returned to bounded
+acceptance under the owner exception above, and `W9-DEMO-002` reached `done` under its later closure record. The current
+registry, rather than this historical table, owns each row's status and evidence posture.
+`DEC-W9-ACCEPTANCE-001` originally accepted
 `W9-CORPACT-011` as a sixth row, but `DEC-W9-ACCEPTANCE-002` supersedes that disposition for that row
 only after the corrected approval-lane evidence described below. The registry remains live status.
 

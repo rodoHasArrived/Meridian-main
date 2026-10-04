@@ -28,6 +28,7 @@ namespace Meridian.Infrastructure.Adapters.Templates;
 /// 8. Add tests under tests/Meridian.Tests/Brokerage/
 /// </summary>
 [DataSource("template-brokerage", "Template Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
+    IsProductionProvider = false,
     Priority = 99, Description = "Deterministic brokerage gateway scaffold for provider implementations")]
 [ImplementsAdr("ADR-001", "Template brokerage provider scaffold")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Execution.PaperMatching;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 
@@ -40,10 +41,33 @@ internal sealed class PaperTradingGatewayTradingParameters
             : $"Order quantity {absQty} is not a valid multiple of the lot-size {lotSize} for {request.Symbol}.";
     }
 
-    public async Task<decimal> SnapToTickSizeAsync(string symbol, decimal price, CancellationToken ct)
+    public async Task<decimal> ResolveFillPriceAsync(
+        OrderRequest request, decimal price, PaperMarketObservation observation, CancellationToken ct)
     {
-        var tradingParams = await TryGetTradingParamsAsync(symbol, ct).ConfigureAwait(false);
-        return SnapToTickSize(price, tradingParams?.TickSize);
+        var tradingParams = await TryGetTradingParamsAsync(request.Symbol, ct).ConfigureAwait(false);
+        var rounded = SnapToTickSize(price, tradingParams?.TickSize);
+        if (rounded == price)
+        {
+            return price;
+        }
+
+        // Tick snapping is best-effort: it must not undo the matcher's admission checks.
+        // Retain the admitted observed price when the tick grid cannot preserve its bounds.
+        if (rounded <= 0m
+            || (observation.EnvelopeLow is { } low && rounded < low)
+            || (observation.EnvelopeHigh is { } high && rounded > high))
+        {
+            return price;
+        }
+
+        if (request.Type is OrderType.Limit or OrderType.StopLimit
+            && request.LimitPrice is { } limit
+            && (request.Side == OrderSide.Buy ? rounded > limit : rounded < limit))
+        {
+            return price;
+        }
+
+        return rounded;
     }
 
     private async Task<TradingParametersDto?> TryGetTradingParamsAsync(string symbol, CancellationToken ct)

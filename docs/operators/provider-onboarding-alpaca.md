@@ -77,4 +77,4 @@ Keep evidence packets under sanitized paths used by team policy (for example: `a
 
 ## Source and archive
 
-- Legacy source archived at [archive/docs/providers/alpaca-setup.md](../../archive/docs/providers/alpaca-setup.md)
+- Legacy source archived at [archive/docs/providers/alpaca-setup.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/alpaca-setup.md)

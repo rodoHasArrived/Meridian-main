@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
@@ -23,8 +24,8 @@ public sealed class StatementCaseworkCommitStoreTests : IDisposable
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var envelope = BuildEnvelope("command-concurrent", new string('a', 64));
-        var first = new FileStatementCaseworkCommitStore(_root);
-        var second = new FileStatementCaseworkCommitStore(_root);
+        var first = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
+        var second = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
 
         var retained = await Task.WhenAll(
             first.PrepareAsync(envelope, timeout.Token),
@@ -53,7 +54,7 @@ public sealed class StatementCaseworkCommitStoreTests : IDisposable
     public async Task Scenario_CommandIdReusedForDifferentInput_SourceCommitFailsClosed()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var store = new FileStatementCaseworkCommitStore(_root);
+        var store = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
         await store.PrepareAsync(BuildEnvelope("command-conflict", new string('a', 64)), timeout.Token);
 
         var act = async () => await store.PrepareAsync(
@@ -68,7 +69,7 @@ public sealed class StatementCaseworkCommitStoreTests : IDisposable
     public async Task Scenario_PreparedSourceCommit_ListByRunExposesRecoveryAuthorityBeforeCompletion()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var store = new FileStatementCaseworkCommitStore(_root);
+        var store = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
         var envelope = BuildEnvelope("command-prepared", new string('c', 64));
         await store.PrepareAsync(envelope, timeout.Token);
 
@@ -86,7 +87,7 @@ public sealed class StatementCaseworkCommitStoreTests : IDisposable
     public async Task Scenario_LegacyBreakReceipt_OnlyExactInputFingerprintCanBeAdopted()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var breakStore = new JsonReconciliationBreakStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
         var original = BuildBreak("legacy-break", "legacy-import", "Open");
         await breakStore.WriteAsync([original], timeout.Token);
         var update = new StatementBreakCaseworkUpdate(
@@ -152,7 +153,7 @@ public sealed class StatementCaseworkCommitStoreTests : IDisposable
                 legacyReceiptFixture,
                 StatementLegacyCaseworkJsonContext.Default.StatementCaseworkLegacyReceipt),
             timeout.Token);
-        var store = new FileStatementCaseworkCommitStore(_root);
+        var store = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
 
         var receipt = await store.GetLegacyReceiptAsync(update.CommandId, inputHash, timeout.Token);
 
@@ -170,7 +171,7 @@ public sealed class StatementCaseworkCommitStoreTests : IDisposable
     public async Task Scenario_DirectLegacyCaseworkMutation_IsUnavailableAndLeavesBreakUnchanged()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var breakStore = new JsonReconciliationBreakStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
         var original = BuildBreak("direct-break", "direct-import", "Open");
         await breakStore.WriteAsync([original], timeout.Token);
         var update = new StatementBreakCaseworkUpdate(
@@ -200,11 +201,11 @@ public sealed class StatementCaseworkCommitStoreTests : IDisposable
     public async Task Scenario_DirectProjectionWithoutPreparedCommit_IsRejectedAndLeavesBreakUnchanged()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var breakStore = new JsonReconciliationBreakStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
         var original = BuildBreak("unprepared-break", "unprepared-import", "Open");
         await breakStore.WriteAsync([original], timeout.Token);
         var inputHash = new string('a', 64);
-        var commitStore = new FileStatementCaseworkCommitStore(_root);
+        var commitStore = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
 
         var act = async () => await breakStore.MaterializeCaseworkBreakAsync(
             commitStore,

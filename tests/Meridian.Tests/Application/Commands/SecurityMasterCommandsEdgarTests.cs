@@ -110,6 +110,36 @@ public sealed class SecurityMasterCommandsEdgarTests
         }
     }
 
+    [Fact]
+    public async Task ExecuteAsync_FileIngestWithoutValidatedAuthority_FailsBeforeImportServiceCall()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-security-master-cli-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var filePath = Path.Combine(root, "securities.csv");
+        await File.WriteAllTextAsync(filePath, "Ticker,Name,AssetClass\nSPY,SPDR S&P 500 ETF,Equity\n");
+        var importService = new TrackingImportService();
+        var command = new SecurityMasterCommands(importService, Logger.None);
+
+        var originalError = Console.Error;
+        try
+        {
+            using var writer = new StringWriter();
+            Console.SetError(writer);
+
+            var result = await command.ExecuteAsync(
+                ["--security-master-ingest", filePath, "--imported-by", "spoofed.operator"]);
+
+            result.Error.Should().Be(ErrorCode.AuthenticationFailed);
+            importService.CallCount.Should().Be(0);
+            writer.ToString().Should().Contain("requires a validated operator or workload authority");
+        }
+        finally
+        {
+            Console.SetError(originalError);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     private sealed class FakeEdgarIngestOrchestrator : IEdgarIngestOrchestrator
     {
         public EdgarIngestRequest? LastRequest { get; private set; }
@@ -128,6 +158,22 @@ public sealed class SecurityMasterCommandsEdgarTests
                 ConflictsDetected: 0,
                 DryRun: request.DryRun,
                 Errors: []));
+        }
+    }
+
+    private sealed class TrackingImportService : ISecurityMasterImportService
+    {
+        public int CallCount { get; private set; }
+
+        public Task<SecurityMasterImportResult> ImportAsync(
+            string fileContent,
+            string fileExtension,
+            string actor,
+            IProgress<SecurityMasterImportProgress>? progress = null,
+            CancellationToken ct = default)
+        {
+            CallCount++;
+            return Task.FromResult(new SecurityMasterImportResult(0, 0, 0, 0, []));
         }
     }
 }

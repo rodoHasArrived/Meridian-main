@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
@@ -2032,11 +2033,11 @@ public sealed class StatementIngressLimitsTests : IDisposable
     {
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
         var registry = new StatementConnectorRegistry(connectors);
-        var statementStore = new JsonCanonicalStatementStore(_root);
+        var statementStore = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(statementStore),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
 
@@ -2475,11 +2476,11 @@ public sealed class StatementIngressLimitsTests : IDisposable
             new CsvStatementConnector(catalog, effectiveConnectorLimits)
         ]);
 
-        var statementStore = new JsonCanonicalStatementStore(_root);
+        var statementStore = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(statementStore),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()));
 

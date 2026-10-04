@@ -9,21 +9,19 @@ using NSubstitute;
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// Correcting an alias must not restate WHEN it was recorded. As-of rebuilds retain aliases whose
-/// <see cref="SecurityAliasDto.CreatedAt"/> is at or before the cutoff, so advancing that stamp on an
-/// edit would retroactively remove a corrected identifier from every view older than the correction —
-/// an identifier recorded in January and corrected in June would vanish from the January view.
+/// Alias rows feed recorded-as-of reconstruction. Until the schema retains append-only alias
+/// revisions, a material edit must fail closed instead of rewriting what an older view reports.
 /// </summary>
 public sealed class SecurityMasterAliasRecordedHistoryTests
 {
     private static readonly DateTimeOffset RecordedInJanuary = new(2026, 1, 15, 0, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public async Task UpsertAliasAsync_ReturnsPersistedCreationStamp_NotAFreshOne()
+    public async Task UpsertAliasAsync_IdempotentReplay_ReturnsPersistedCreationStamp()
     {
         var store = Substitute.For<ISecurityMasterStore>();
 
-        // The store retains the original creation facts on conflict and echoes them back.
+        // The store retains the original creation facts on an idempotent replay and echoes them back.
         store.UpsertAliasAsync(Arg.Any<SecurityAliasDto>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => callInfo.Arg<SecurityAliasDto>() with
             {
@@ -33,7 +31,7 @@ public sealed class SecurityMasterAliasRecordedHistoryTests
 
         var service = CreateService(store);
 
-        var corrected = await service.UpsertAliasAsync(new UpsertSecurityAliasRequest(
+        var replayed = await service.UpsertAliasAsync(new UpsertSecurityAliasRequest(
             AliasId: Guid.NewGuid(),
             SecurityId: Guid.NewGuid(),
             AliasKind: "Ticker",
@@ -43,17 +41,17 @@ public sealed class SecurityMasterAliasRecordedHistoryTests
             CreatedBy: "june.operator",
             ValidFrom: RecordedInJanuary,
             ValidTo: null,
-            Reason: "ticker correction"));
+            Reason: "original registration"));
 
-        corrected.CreatedAt.Should().Be(
+        replayed.CreatedAt.Should().Be(
             RecordedInJanuary,
-            "an edit must report when the alias was first recorded, not when it was corrected");
-        corrected.CreatedBy.Should().Be("january.operator");
-        corrected.AliasValue.Should().Be("MRDN", "the corrected value itself must still be returned");
+            "an idempotent replay must report when the alias was first recorded");
+        replayed.CreatedBy.Should().Be("january.operator");
+        replayed.AliasValue.Should().Be("MRDN");
     }
 
     [Fact]
-    public async Task UpsertAliasAsync_FallsBackToProposedStamp_WhenStoreCannotReadRowBack()
+    public async Task UpsertAliasAsync_FailsClosed_WhenStoreCannotConfirmPersistence()
     {
         var store = Substitute.For<ISecurityMasterStore>();
         store.UpsertAliasAsync(Arg.Any<SecurityAliasDto>(), Arg.Any<CancellationToken>())
@@ -61,7 +59,7 @@ public sealed class SecurityMasterAliasRecordedHistoryTests
 
         var service = CreateService(store);
 
-        var alias = await service.UpsertAliasAsync(new UpsertSecurityAliasRequest(
+        var act = () => service.UpsertAliasAsync(new UpsertSecurityAliasRequest(
             AliasId: Guid.NewGuid(),
             SecurityId: Guid.NewGuid(),
             AliasKind: "Ticker",
@@ -73,8 +71,8 @@ public sealed class SecurityMasterAliasRecordedHistoryTests
             ValidTo: null,
             Reason: null));
 
-        alias.Should().NotBeNull();
-        alias.CreatedBy.Should().Be("operator");
+        await act.Should().ThrowAsync<SecurityAliasHistoryConflictException>()
+            .WithMessage("*append-only alias revisions*");
     }
 
     private static SecurityMasterService CreateService(ISecurityMasterStore store)

@@ -1,4 +1,7 @@
+using Meridian.Storage.Archival;
 using System.Globalization;
+using Meridian.Core.IO;
+using NSubstitute;
 using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
@@ -18,7 +21,7 @@ public sealed class StatementImportAndMatchingTests
         Directory.CreateDirectory(root);
         var path = Path.Combine(root, "statement.csv");
         await File.WriteAllTextAsync(path, "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\nA1,SPY,10,500,5000,BUY,2026-01-02,,USD\n");
-        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
+        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter()));
         var req = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)) with
         {
             ExternalAccountId = "A1"
@@ -35,7 +38,7 @@ public sealed class StatementImportAndMatchingTests
         var path = Path.Combine(root, "bad.csv");
         Directory.CreateDirectory(root);
         await File.WriteAllTextAsync(path, "foo,bar\n1,2\n");
-        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
+        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter()));
         var result = await service.ValidateAsync(new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)));
         Assert.False(result.IsValid);
     }
@@ -90,7 +93,7 @@ public sealed class StatementImportAndMatchingTests
         await File.WriteAllTextAsync(firstPath, content);
         await File.WriteAllTextAsync(secondPath, content);
 
-        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
+        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter()));
         var first = await StatementRunCreateRequest.FromFileAsync(
             "samplebroker",
             "samplecustodian",
@@ -131,7 +134,7 @@ public sealed class StatementImportAndMatchingTests
             path,
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n"
             + "A1,SPY,10,500,-5000,BUY,2026-01-02,2026-01-04,EUR,1.5,EXT-42\n");
-        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
+        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter()));
 
         var imported = await service.ImportAsync(
             new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)) with
@@ -161,7 +164,7 @@ public sealed class StatementImportAndMatchingTests
         await File.WriteAllTextAsync(path, original);
         var staleHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(original)));
         await File.WriteAllTextAsync(path, changed);
-        var store = new JsonCanonicalStatementStore(root);
+        var store = new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter());
         var service = new CsvBrokerStatementService(store);
         var request = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31))
         {
@@ -184,7 +187,7 @@ public sealed class StatementImportAndMatchingTests
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n" +
             "A1,\"BRK,B\",1,500,-500,\"OTHER \"\"SPECIAL\"\"\",2026-01-02,,USD,,\"TX,\"\"1\"\"\"\n";
         await File.WriteAllTextAsync(path, content);
-        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
+        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter()));
 
         var imported = await service.ImportAsync(
             new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31))
@@ -205,6 +208,38 @@ public sealed class StatementImportAndMatchingTests
 public sealed class StatementStoreDurabilityTests
 {
     [Fact]
+    public async Task PublishedImport_SyncsDirectoryThroughPortWithoutCallerCancellation()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-statement-sync-{Guid.NewGuid():N}");
+        using var cancellation = new CancellationTokenSource();
+        var writer = Substitute.For<IAtomicFileWriter>();
+        var folder = Path.Combine(root, "reconciliation", "statement-imports");
+        var target = Path.Combine(folder, "committed.json");
+        writer.SyncDirectoryAsync(folder, CancellationToken.None).Returns(_ =>
+        {
+            Assert.True(File.Exists(target), "Directory durability follows complete publication.");
+            cancellation.Cancel();
+            return Task.CompletedTask;
+        });
+        var import = new CanonicalStatementImport("committed", "fixture", new DateOnly(2026, 6, 30),
+            DateTimeOffset.UnixEpoch, "source.csv", "hash", 0, 0);
+        try
+        {
+            var store = new JsonCanonicalStatementStore(root, writer);
+            Assert.True(await store.TrySaveImportAsync(import, [], cancellation.Token));
+            await writer.Received(1).SyncDirectoryAsync(folder, CancellationToken.None);
+            Assert.NotNull(await store.GetImportAsync("committed"));
+            Assert.False(await store.TrySaveImportAsync(import, []));
+            await writer.Received(1).SyncDirectoryAsync(folder, CancellationToken.None);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     [Trait("Category", "Integration")]
     public async Task CanceledBeforeWrite_DoesNotCreateAnImportOrTemporaryFile()
     {
@@ -215,7 +250,7 @@ public sealed class StatementStoreDurabilityTests
             DateTimeOffset.UnixEpoch, "source.csv", "hash", 0, 0);
         try
         {
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new JsonCanonicalStatementStore(root)
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter())
                 .TrySaveImportAsync(import, [], canceled.Token));
             Assert.False(Directory.Exists(root));
         }
@@ -246,7 +281,7 @@ public sealed class StatementStoreDurabilityTests
             }
             child.Kill(entireProcessTree: true);
             await child.WaitForExitAsync(timeout.Token);
-            var store = new JsonCanonicalStatementStore(root);
+            var store = new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter());
             var retained = await store.ListImportsAsync(timeout.Token);
             Assert.Equal(published ? 1 : 0, retained.Count);
             if (published)
@@ -292,7 +327,7 @@ public sealed class StatementStoreDurabilityTests
             var results = await Task.WhenAll(Enumerable.Range(0, 4).Select(index => File.ReadAllTextAsync(Path.Combine(root, $"result-{index}"), timeout.Token)));
             Assert.Equal(1, results.Count(result => result == "created"));
             Assert.Equal(3, results.Count(result => result == "duplicate"));
-            var store = new JsonCanonicalStatementStore(root);
+            var store = new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter());
             Assert.Single(await store.ListImportsAsync(timeout.Token));
             AssertComplete(await store.GetImportAsync("durable-import", timeout.Token));
             Assert.Empty(Directory.GetFiles(Path.Combine(root, "reconciliation", "statement-imports"), "*.tmp"));
@@ -354,7 +389,7 @@ public sealed class CsvStatementEvidenceTests : IDisposable
         var path = Path.Combine(_root, "empty-statement.csv");
         await File.WriteAllTextAsync(path, header + "\n\n");
         var request = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)) { ExternalAccountId = "A1" };
-        var store = new JsonCanonicalStatementStore(_root);
+        var store = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         var service = new CsvBrokerStatementService(store);
 
         (await service.ValidateAsync(request)).IsValid.Should().BeFalse();
@@ -408,7 +443,7 @@ public sealed class CsvStatementEvidenceTests : IDisposable
                 break;
         }
         var request = await WriteAsync(string.Join(',', columns), values);
-        var store = new JsonCanonicalStatementStore(_root);
+        var store = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         var service = new CsvBrokerStatementService(store);
         Assert.False((await service.ValidateAsync(request)).IsValid);
         await Assert.ThrowsAsync<InvalidDataException>(() => service.ImportAsync(request));
@@ -425,7 +460,7 @@ public sealed class CsvStatementEvidenceTests : IDisposable
         {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
             var request = await WriteAsync(Header, ["A1", "Quoted, asset", "0", "1.25", "0", "BUY", "2026-01-02", "", "eur", "0"]);
-            var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(_root));
+            var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter()));
             Assert.True((await service.ValidateAsync(request)).IsValid);
             var result = await service.ImportAsync(request);
             var row = Assert.Single(result.Rows);

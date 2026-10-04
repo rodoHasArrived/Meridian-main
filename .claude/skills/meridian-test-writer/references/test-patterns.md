@@ -17,9 +17,9 @@ description: >
 Generate high-quality, idiomatic xUnit tests for any Meridian component. Every test
 produced by this skill must pass the `meridian-code-review` Lens 4 (Test Code Quality) checks.
 
-> **Shared project context:** [`../_shared/project-context.md`](../_shared/project-context.md)
-> **Test patterns reference:** [`references/test-patterns.md`](references/test-patterns.md)
-> **Code review skill:** [`../meridian-code-review/SKILL.md`](../meridian-code-review/SKILL.md)
+> **Shared project context:** [`../../_shared/project-context.md`](../../_shared/project-context.md)
+> **Test patterns reference:** this file
+> **Code review skill:** [`../../meridian-code-review/SKILL.md`](../../meridian-code-review/SKILL.md)
 
 ---
 

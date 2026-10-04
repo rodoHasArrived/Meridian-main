@@ -169,10 +169,11 @@ Backfill operations entering support/handover should include:
 
 ## Related operator runbooks
 
+- [Distributed Tracing](./distributed-tracing.md) for connected queue, worker, provider-fetch, and storage spans
 - [Operator Preflight Checklist](./preflight-checklist.md)
 - [Reconciliation Operations](./reconciliation-operations.md)
 - [Failover and Recovery](./failover-and-recovery.md)
 
 ## Source and archive
 
-- Legacy source archived at [archive/docs/providers/backfill-guide.md](../../archive/docs/providers/backfill-guide.md)
+- Legacy source archived at [archive/docs/providers/backfill-guide.md](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/providers/backfill-guide.md)

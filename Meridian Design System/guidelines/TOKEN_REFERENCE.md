@@ -57,25 +57,25 @@ Both are legible body weights; the distinction is **role, not just darkness**.
 
 | | Token | Hex · on panel | Use for |
 | --- | --- | --- | --- |
-| Secondary | `--text-secondary` | `#4D5967` · 7.1:1 | Content that is *still primary reading* but subordinate — row labels, field labels, secondary values, body copy in a side panel. The user is meant to read it. |
-| Muted | `--text-muted` | `#59636F` · 6.1:1 | *Metadata about* content — captions, hints, timestamps, unit suffixes, column sublabels, "last synced" lines. Glanceable, not primary reading. |
+| Secondary | `--text-secondary` | `#4E5258` · 7.5:1 | Content that is *still primary reading* but subordinate — row labels, field labels, secondary values, body copy in a side panel. The user is meant to read it. |
+| Muted | `--text-muted` | `#5E666F` · 5.6:1 | *Metadata about* content — captions, hints, timestamps, unit suffixes, column sublabels, "last synced" lines. Glanceable, not primary reading. |
 
 Rule of thumb: if the user reads it to do the task → **secondary**; if it annotates or timestamps
 the thing they read → **muted**. (Both pass AA on every surface; choosing correctly is about
 hierarchy, not contrast.)
 
 ### `--accent-hover` vs `--accent-dim`
-`--accent-hover` (#3B82A6, lighter) is the **pointer-hover** state; `--accent-dim` (#255B75,
+`--accent-hover` (#AF6143, lighter) is the **pointer-hover** state; `--accent-dim` (#8C4429,
 darker) is the **pressed/active** state. Lighter on hover, darker on press — never swap them.
 `--accent-dim` also doubles as **emphasized accent text** (Toast action, role badges).
-**Dark-mode exception (2026-07):** in dark, `--accent-dim` is `#609BC9` — *lighter* than the
+**Dark-mode exception (2026-07):** in dark, `--accent-dim` is `#E39A77` — *lighter* than the
 accent, sitting between accent and hover — because a darker pressed fill left the dark button
 ink at 3.11:1 and failed as text on dark panels. Semantics are unchanged (still "pressed" +
 "accent text"); only the direction of the shift flips in dark, per standard dark-UI convention.
 
 ### `--bg-hover` vs `--bg-active`
-`--bg-hover` (#EAEEF3) is a flat neutral shift for transient hover. `--bg-active` (#D7E5F1) is a
-cool blue wash for *selected/engaged* state (selected row, active nav). Active is a state that
+`--bg-hover` (#F0EEE9) is a flat neutral shift for transient hover. `--bg-active` (#F2E3DB) is a
+warm copper-tinted wash for *selected/engaged* state (selected row, active nav). Active is a state that
 persists; hover is not.
 
 ### `--border` vs `--border-strong` vs `--border-divider`
@@ -85,7 +85,7 @@ for splitting sections *inside* a surface where a full border would be too much.
 
 ---
 
-## Spacing, radius, elevation — the Concrete constraints
+## Spacing, radius, elevation — the Programmed Institutionalism constraints
 
 **Spacing** is a 6-step scale: `--space-xs 3px · sm 6px · md 12px · lg 16px · xl 24px · 2xl 32px`.
 The density switch rescales the *theme* spacing (`--theme-spacing-*`) and `--theme-row-height`
@@ -94,7 +94,7 @@ The density switch rescales the *theme* spacing (`--theme-spacing-*`) and `--the
 **Radius is intentionally tiny.** Everything is `2px` (`--radius-chip` / `-button` / `-card` all
 2px); the named scale tops out at `--radius-xl 6px` for large sheets only. *Structure comes from
 borders, not rounding.* If you find yourself wanting a 12px corner, you're off-system — Meridian is
-"Concrete," not "friendly SaaS."
+"Programmed Institutionalism," not "friendly SaaS."
 
 **Elevation is flat by mandate.** `--shadow-card`, `--shadow-panel`, `--shadow-soft`,
 `--shadow-workstation` are all `none` — the workstation plane is flat and **borders carry
@@ -156,7 +156,7 @@ The near-black bars stay dark in **both** modes, so their interior details have 
 instead of reusing panel tokens (which flip in dark): `--topbar-text-muted` / `--topbar-text-faint`
 (secondary/hint ink on chrome), `--topbar-sep`, `--topbar-field-bg` / `--topbar-field-border`(`-hover`)
 (the inset search field and kbd caps), and `--chrome-ok/warn/err` (status dots bright enough to read
-on `#171A1F` — deliberately lighter than the panel semantics `--green/--orange/--red`). Anything that
+on `#1F1D1A` — deliberately lighter than the panel semantics `--green/--orange/--red`). Anything that
 sits ON the chrome uses these; anything on paper uses the normal panel tokens. Defined in
 `tokens/colors.css` under "Chrome interior details"; no dark override needed.
 
@@ -164,7 +164,7 @@ sits ON the chrome uses these; anything on paper uses the normal panel tokens. D
 
 ## Anti-patterns
 
-- ❌ Hardcoding a hex (`color:#2F6F8F`) — breaks white-label + dark. Use `var(--accent)`.
+- ❌ Hardcoding a hex (`color:#A85436`) — breaks white-label + dark. Use `var(--accent)`.
 - ❌ Authoring against Tier 3 (`var(--green-dim)` for a non-semantic surface) or `--ws-*` names.
 - ❌ Typed pixel padding/margins instead of `--space-*`; typed corners instead of `--radius-*`.
 - ❌ A shadow to separate two coplanar panels — use a border or surface step.
@@ -173,5 +173,5 @@ sits ON the chrome uses these; anything on paper uses the normal panel tokens. D
 
 ---
 
-**See also:** `guidelines/VISUAL_FOUNDATIONS.md` (the "why" behind Concrete) ·
+**See also:** `guidelines/VISUAL_FOUNDATIONS.md` (the "why" behind Programmed Institutionalism) ·
 `guidelines/ACCESSIBILITY.md` (measured contrast for every token) · `PATTERNS.md` (composition).

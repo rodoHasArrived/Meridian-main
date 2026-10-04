@@ -24,9 +24,7 @@ public sealed class SmartRecommendationsService
 
     private SmartRecommendationsService()
     {
-        var tradingCalendar = new TradingCalendarService();
-        var manifestService = ManifestService.Instance;
-        _completenessService = new DataCompletenessService(manifestService, tradingCalendar);
+        _completenessService = new DataCompletenessService(ManifestService.Instance);
         _storageService = StorageAnalyticsService.Instance;
         _configService = new ConfigService();
     }

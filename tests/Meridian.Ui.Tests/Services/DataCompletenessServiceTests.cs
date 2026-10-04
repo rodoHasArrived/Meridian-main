@@ -436,4 +436,42 @@ public sealed class DataCompletenessServiceTests : IDisposable
     {
         Enum.IsDefined(typeof(GapType), gapType).Should().BeTrue();
     }
+    [Theory]
+    [InlineData(2026, 6, 19)]
+    [InlineData(2027, 1, 1)]
+    [InlineData(2027, 6, 18)]
+    public async Task Holidays_AreExcludedFromCompletenessDenominatorAndMissingDays(int year, int month, int day)
+    {
+        var holiday = new DateOnly(year, month, day);
+        Directory.CreateDirectory(Path.Combine(_tempDir, "SPY"));
+        var service = new DataCompletenessService(ManifestService.Instance);
+
+        var report = await service.GetCompletenessReportAsync(_tempDir, holiday, holiday, ["SPY"]);
+        var daily = await service.GetDailyCompletenessAsync(_tempDir, holiday);
+
+        _calendar.IsHoliday(holiday).Should().BeTrue();
+        _calendar.IsTradingDay(holiday).Should().BeFalse();
+        report.ExpectedTradingDays.Should().Be(0);
+        report.Symbols.Should().ContainSingle().Which.MissingDays.Should().BeEmpty();
+        report.DaysWithGaps.Should().Be(0);
+        report.Gaps.Should().BeEmpty();
+        report.CalendarData.Should().ContainSingle().Which.Status.Should().Be(CompletenessStatus.NonTradingDay);
+        daily.Status.Should().Be(CompletenessStatus.NonTradingDay);
+    }
+
+    [Fact]
+    public async Task CompletenessAcrossYearBoundary_UsesBothYearsHolidayCoverage()
+    {
+        Directory.CreateDirectory(Path.Combine(_tempDir, "SPY"));
+        var service = new DataCompletenessService(ManifestService.Instance);
+
+        var report = await service.GetCompletenessReportAsync(
+            _tempDir, new DateOnly(2026, 12, 31), new DateOnly(2027, 1, 4), ["SPY"]);
+
+        report.ExpectedTradingDays.Should().Be(2);
+        report.Symbols.Should().ContainSingle().Which.MissingDays.Should().Equal(
+            new DateOnly(2026, 12, 31), new DateOnly(2027, 1, 4));
+        report.CalendarData.Single(day => day.Date == new DateOnly(2027, 1, 1)).IsHoliday.Should().BeTrue();
+    }
+
 }

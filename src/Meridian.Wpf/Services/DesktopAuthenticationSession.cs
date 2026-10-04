@@ -19,14 +19,39 @@ public interface IDesktopActorSource
 }
 
 /// <summary>
+/// Supplies the active desktop operator and the permissions granted to that operator. Governed
+/// in-process writes use this seam because no HTTP authorization filter runs between a WPF view
+/// model and the shared application service.
+/// </summary>
+public interface IDesktopAuthorizationSource : IDesktopActorSource
+{
+    /// <summary>
+    /// Resolves the actor only when the active, non-expired desktop session grants
+    /// <paramref name="permission"/>. Callers use this single boundary check for audit attribution
+    /// and authorization rather than composing independent actor and permission probes.
+    /// </summary>
+    bool TryAuthorize(UserPermission permission, out string actor);
+}
+
+/// <summary>
 /// Holds the authenticated desktop operator for the current WPF process.
 /// Credentials stay hash-backed through <see cref="UserProfileRegistry"/>.
 /// </summary>
-public sealed class DesktopAuthenticationSession(LoginSessionService loginSessionService) : IDesktopActorSource
+public sealed class DesktopAuthenticationSession(LoginSessionService loginSessionService) : IDesktopAuthorizationSource
 {
+    private const string AnonymousRoleEnvironmentVariable = "MDC_ANONYMOUS_ROLE";
     private string? _sessionToken;
 
     public event EventHandler? SignedOut;
+
+    /// <summary>
+    /// Raised after a successful credentialed sign-in or after the explicit anonymous
+    /// local-development session is established. Surfaces that gate on the session (command
+    /// enablement, authorization badges) re-evaluate on both transitions: a journal-restored
+    /// page that observed <see cref="SignedOut"/> would otherwise stay disabled for the newly
+    /// authorized operator, because signing in raises no other signal.
+    /// </summary>
+    public event EventHandler? SignedIn;
 
     public bool IsConfigured => loginSessionService.IsConfigured;
 
@@ -102,13 +127,46 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
     {
         if (CanContinueWithoutCredentials)
         {
-            // Unconfigured local development: gating defers to the authentication gates so the
-            // local shell is not blocked.
-            return true;
+            var configuredAnonymousRole = Environment.GetEnvironmentVariable(AnonymousRoleEnvironmentVariable);
+            if (string.IsNullOrWhiteSpace(configuredAnonymousRole))
+            {
+                // Unconfigured local development with no declared anonymous role keeps the existing
+                // fail-open posture. Governed writes separately require the explicit anonymous
+                // development session so merely launching the process does not authorize a write.
+                return true;
+            }
+
+            // The browser uses the shared name-only role parser for MDC_ANONYMOUS_ROLE. Mirror it
+            // here so a typo (or a numeric enum value such as "0") cannot grant desktop authority.
+            if (!RolePermissions.TryParseRoleName(configuredAnonymousRole, out var anonymousRole))
+            {
+                return false;
+            }
+
+            var anonymousPermissions = RolePermissions.For(anonymousRole);
+            return (anonymousPermissions & permission) == permission;
+        }
+
+        // CurrentUser is a projection, not proof that the token still validates. Check the live
+        // session before using its permission set so expiry or revocation fails closed.
+        if (!IsAuthenticated)
+        {
+            return false;
         }
 
         var current = CurrentPermissions;
         return current is not null && (current.Value & permission) == permission;
+    }
+
+    public bool TryAuthorize(UserPermission permission, out string actor)
+    {
+        if (HasPermission(permission) && TryGetAuthenticatedActor(out actor))
+        {
+            return true;
+        }
+
+        actor = string.Empty;
+        return false;
     }
 
     public DesktopSignInResult SignIn(string username, string password)
@@ -134,9 +192,13 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
         _sessionToken = token;
         IsAnonymousDevelopmentSession = false;
         var profile = loginSessionService.GetSessionProfile(token);
-        return profile is null
-            ? DesktopSignInResult.Failed("Meridian created a desktop session but could not resolve the user profile.")
-            : DesktopSignInResult.SignedIn(profile);
+        if (profile is null)
+        {
+            return DesktopSignInResult.Failed("Meridian created a desktop session but could not resolve the user profile.");
+        }
+
+        SignedIn?.Invoke(this, EventArgs.Empty);
+        return DesktopSignInResult.SignedIn(profile);
     }
 
     public DesktopSignInResult ContinueWithoutCredentials()
@@ -148,6 +210,7 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
 
         _sessionToken = null;
         IsAnonymousDevelopmentSession = true;
+        SignedIn?.Invoke(this, EventArgs.Empty);
         return DesktopSignInResult.AnonymousDevelopment();
     }
 

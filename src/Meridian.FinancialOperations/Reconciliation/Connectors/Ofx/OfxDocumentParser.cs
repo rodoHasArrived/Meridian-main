@@ -74,6 +74,7 @@ public static class OfxDocumentParser
         bound = OfxParseBound.None;
         var nodes = 0;
         var entryCount = 0;
+        var statementCount = 0;
         var root = new OfxNode("OFX-ROOT", null);
         var stack = new Stack<OfxNode>();
         stack.Push(root);
@@ -124,6 +125,8 @@ public static class OfxDocumentParser
 
             var selfClosing = rawTag.EndsWith("/", StringComparison.Ordinal);
             var name = NormalizeTagName(selfClosing ? rawTag[..^1] : rawTag);
+            if (name is "STMTRS" or "CCSTMTRS" or "INVSTMTRS")
+                statementCount++;
             var valueEnd = body.IndexOf('<', index);
             var value = selfClosing ? string.Empty : (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
             if (value.Length > 0 || name is "CURSYM" or "CURDEF" or "ACCTID")
@@ -209,7 +212,7 @@ public static class OfxDocumentParser
 
         var accounts = entries.Select(entry => entry.GetValueOrDefault("ACCTID")?.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var accountId = accounts.Length == 1 && !string.IsNullOrWhiteSpace(accounts[0]) ? accounts[0] : null;
-        return new OfxDocument(accountId, entries);
+        return new OfxDocument(accountId, entries) { StatementCount = statementCount };
     }
 
     private static bool IsEntryNode(OfxNode node)
@@ -437,7 +440,11 @@ public static class OfxDocumentParser
 /// <summary>A parsed OFX file flattened into uniform per-entry tag dictionaries.</summary>
 public sealed record OfxDocument(
     string? AccountId,
-    IReadOnlyList<IReadOnlyDictionary<string, string>> Entries);
+    IReadOnlyList<IReadOnlyDictionary<string, string>> Entries)
+{
+    /// <summary>Number of containing statement sections, including empty sections.</summary>
+    public int StatementCount { get; init; }
+}
 
 /// <summary>Which ingress bound, if any, stopped an OFX parse before the document was complete.</summary>
 public enum OfxParseBound

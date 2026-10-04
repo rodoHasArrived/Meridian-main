@@ -15,6 +15,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         WashSaleReplacementQuery query,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(query);
         if (query.LedgerBookId == Guid.Empty)
         {
@@ -38,6 +39,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         query.Policy.EnsureValid();
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, query.LedgerBookId, ct).ConfigureAwait(false);
         var replacements = await LoadReplacementAcquisitionsAsync(connection, query, ct).ConfigureAwait(false);
         var priorDeferrals = await LoadPriorDeferralAdjustmentsAsync(connection, query, ct).ConfigureAwait(false);
         return new WashSaleReplacementLookup(replacements, priorDeferrals);
@@ -55,7 +57,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
             ? "and account_name = @account_name "
                 + "and account_type = @account_type "
                 + "and symbol is not distinct from @symbol "
-                + "and financial_account_id is not distinct from @financial_account_id"
+                + "and lower(financial_account_id) is not distinct from lower(@financial_account_id)"
             : string.Empty;
 
         await using var command = connection.CreateCommand();
@@ -75,7 +77,11 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
               and acquired_date >= @window_start
               and acquired_date <= @window_end
               and original_quantity > 0
-              and lower(lot_id) <> all(@relieved_lot_ids)
+              and not (lower(lot_id) = any(@relieved_lot_ids)
+                  and account_name = @account_name
+                  and account_type = @account_type
+                  and symbol is not distinct from @symbol
+                  and lower(financial_account_id) is not distinct from lower(@financial_account_id))
             {scopePredicate}
             order by acquired_date, lot_id;
             """;
@@ -84,10 +90,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         command.Parameters.AddWithValue("window_start", query.SaleDate.AddDays(-query.Policy.WindowDays));
         command.Parameters.AddWithValue("window_end", query.SaleDate.AddDays(query.Policy.WindowDays));
         command.Parameters.AddWithValue("relieved_lot_ids", NormalizeLotIds(query.RelievedLotIds));
-        if (accountScoped)
-        {
-            AddAccountParameters(command, query.DisposingAccount);
-        }
+        AddAccountParameters(command, query.DisposingAccount);
 
         var replacements = new List<WashSaleReplacementAcquisition>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
@@ -120,7 +123,8 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         // Deferrals previously capitalized into the lots this disposal is about to relieve. Replaying
         // them as basis adjustments is what finally recognizes a deferred loss: the replacement is
         // relieved at its increased basis and with the holding period it inherited, rather than at
-        // the raw price it was bought for.
+        // the raw price it was bought for. Unlike replacement discovery, this is always scoped to
+        // the disposing account: sibling accounts can reuse a lot id but cannot share its basis.
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -136,11 +140,16 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
             where deferral.ledger_book_id = @ledger_book_id
               and deferral.security_id = @security_id
               and lower(lot.lot_id) = any(@relieved_lot_ids)
+              and lot.account_name = @account_name
+              and lot.account_type = @account_type
+              and lot.symbol is not distinct from @symbol
+              and lower(lot.financial_account_id) is not distinct from lower(@financial_account_id)
             order by deferral.sale_date, deferral.deferral_id;
             """;
         command.Parameters.AddWithValue("ledger_book_id", query.LedgerBookId);
         command.Parameters.AddWithValue("security_id", query.SecurityId);
         command.Parameters.AddWithValue("relieved_lot_ids", relievedLotIds);
+        AddAccountParameters(command, query.DisposingAccount);
 
         var adjustments = new List<LedgerTaxLotBasisAdjustment>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
@@ -165,6 +174,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         IReadOnlyList<WashSaleDeferralRecord> deferrals,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(deferrals);
         if (deferrals.Count == 0)
         {
@@ -176,6 +186,11 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         foreach (var deferral in deferrals)
         {
             ValidateWashSaleDeferral(deferral);
+            await EnsureBookWriteAuthorityAsync(connection, transaction, deferral.LedgerBookId, ct).ConfigureAwait(false);
+            await EnsureBookReferenceAuthorityAsync(connection, transaction, "tax_lots", "tax_lot_record_id",
+                deferral.ReplacementTaxLotRecordId, deferral.LedgerBookId, false, ct).ConfigureAwait(false);
+            await EnsureBookReferenceAuthorityAsync(connection, transaction, "atomic_tax_lot_posting_batches", "mutation_batch_id",
+                deferral.DisposalMutationBatchId, deferral.LedgerBookId, false, ct).ConfigureAwait(false);
             await InsertWashSaleDeferralAsync(connection, transaction, deferral, ct).ConfigureAwait(false);
         }
 
@@ -258,6 +273,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         DateOnly toSaleDate,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         if (ledgerBookId == Guid.Empty)
         {
             throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
@@ -271,6 +287,7 @@ public sealed partial class PostgresLedgerJournalStore : IWashSaleReplacementRes
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, null, ledgerBookId, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""

@@ -444,4 +444,4 @@ Contributions to improve the Lean integration are welcome:
 
 **Version:** 1.4.0
 **Last Updated:** 2026-01-04
-**See Also:** [lean-integration.md](../../../../docs/lean-integration.md) | [DEPENDENCIES.md](../../../../DEPENDENCIES.md)
+**See Also:** [lean-integration.md](../../../../docs/integrations/lean-integration.md) | [DEPENDENCIES.md](../../../../docs/DEPENDENCIES.md)

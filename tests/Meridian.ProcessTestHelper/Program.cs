@@ -30,6 +30,7 @@ internal static partial class Program
                 "etl-crash-stage" => await RunEtlUntilKilledAsync(args).ConfigureAwait(false),
                 "audit-append-batch" => await AppendAuditBatchAsync(args).ConfigureAwait(false),
                 "wal-append-and-wait" => await AppendWalAndWaitAsync(args).ConfigureAwait(false),
+                "session-create-and-observe-revocation" => await CreateSessionAndObserveRevocationAsync(args).ConfigureAwait(false),
                 _ => throw new ArgumentOutOfRangeException(nameof(args), args[0], "Unknown helper mode.")
             };
         }
@@ -194,7 +195,7 @@ internal static partial class Program
             "durable-import", "fixture", new DateOnly(2026, 6, 30), DateTimeOffset.UnixEpoch,
             "source.csv", "source-hash", 256, 256)
         { DuplicateKey = "durable-import" };
-        var store = new Meridian.Infrastructure.Reconciliation.JsonCanonicalStatementStore(root);
+        var store = new Meridian.Infrastructure.Reconciliation.JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter());
         var created = await store.TrySaveImportAsync(import, new StatementStageRows(stage == "mid-write" ? ready : null));
         await File.WriteAllTextAsync(ready, created ? "created" : "duplicate");
         if (stage != "race")

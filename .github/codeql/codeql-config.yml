@@ -1,0 +1,12 @@
+name: Meridian CodeQL configuration
+
+# Generated/bundled JavaScript is excluded so the javascript-typescript extractor
+# only walks real sources. The authored equivalents of everything listed here are
+# still analyzed, so this narrows extraction cost without narrowing coverage.
+paths-ignore:
+  # Vite build output for the browser workstation (~8.3 MB of emitted bundles).
+  # The TypeScript sources it is built from live in src/Meridian.Ui/dashboard/.
+  - src/Meridian.Ui/wwwroot/workstation
+  # Concatenated design-system bundle (~700 KB). The component sources beside it
+  # (Meridian Design System/components/**) are analyzed instead.
+  - "Meridian Design System/_ds_bundle.js"

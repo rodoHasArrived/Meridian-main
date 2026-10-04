@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Tenancy;
@@ -58,12 +59,12 @@ public sealed class ReconciliationApiServiceTests
         services.AddSingleton<IStatementReconciliationValidationService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
         services.AddSingleton<IDataIntegrationIngestionService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
         services.AddSingleton<IReconciliationCaseIntakeService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
-        services.AddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(root));
-        services.AddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(root));
-        services.AddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(root));
+        services.AddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter()));
+        services.AddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(root, new AtomicFileWriterAdapter()));
+        services.AddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(root, new AtomicFileWriterAdapter()));
         services.AddSingleton<IStatementRunRecoveryRepository>(_ => new FileStatementRunRecoveryRepository(root));
-        services.AddSingleton<IStatementRunMatchArtifactStore>(_ => new FileStatementRunMatchArtifactStore(root));
-        services.AddSingleton<IStatementCaseworkCommitStore>(_ => new FileStatementCaseworkCommitStore(root));
+        services.AddSingleton<IStatementRunMatchArtifactStore>(_ => new FileStatementRunMatchArtifactStore(root, new AtomicFileWriterAdapter()));
+        services.AddSingleton<IStatementCaseworkCommitStore>(_ => new FileStatementCaseworkCommitStore(root, new AtomicFileWriterAdapter()));
         services.AddSingleton<IBrokerStatementService>(sp => new CsvBrokerStatementService(sp.GetRequiredService<ICanonicalStatementStore>()));
         // Reconcile against a small internal book that holds the statement's SPY position, so the
         // position matches exactly and only the cash and fee rows surface as breaks. This proves the

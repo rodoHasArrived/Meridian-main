@@ -172,6 +172,12 @@ public sealed class OfxStatementConnector(
             }
         }
 
+        if (ofx.StatementCount > 1)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "OFX_MULTIPLE_STATEMENTS", "An OFX import must contain one statement section; split statements before importing."));
+        }
+
         if (records.Select(static record => record.Account.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Skip(1).Any())
         {
             issues.Add(StatementParseIssue.Error(
